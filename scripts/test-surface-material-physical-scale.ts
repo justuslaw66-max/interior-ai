@@ -213,18 +213,19 @@ const isEpoque = isGardeniaCollection("epoque-20");
 const isCamouflage = isGardeniaCollection("camouflage");
 const isBlock = isGardeniaCollection("block");
 const isEterea = isGardeniaCollection("eterea");
+const isPleinAir = isGardeniaCollection("plein-air");
 const onAbkFaces = [
   isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
   isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock, isEterea,
-  isPleinAirOutdoor,
+  isPleinAirOutdoor, isPleinAir,
 ];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
   "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
-    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage, Block and Eterea " +
-    "(with Plein Air's outdoor sizes of them) declare physical-scale data"
+    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage, Block, Eterea " +
+    "(with Plein Air's outdoor sizes of them) and Plein Air declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -240,11 +241,12 @@ for (const material of physicalMaterials) {
   // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
   // are dropped) and two for most Pietra Viva and La Geoteca 120x280 slabs and Concrea Plain's and Luce's; Bon Ton's decors (Network,
   // Octagon, Tricot), La Geoteca's Plissè decors, every Gioia colour, and I Pigmenti's 120x280 slabs and
-  // decors (Crocini, Pillole, Rattan), and Block's and Eterea's Righe decors have a single face; Camouflage's 120x280 slabs have two.
+  // decors (Crocini, Pillole, Rattan), and Block's and Eterea's Righe decors have a single face; Camouflage's 120x280 slabs, and Plein
+  // Air's Raye planks and Warehouse Tan, have two.
   const singleFace = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-|-i-pigmenti-(crocini|pillole|rattan|.+-120x280)-|-(block|eterea)-righe-/;
   const minimumFaces = singleFace.test(id)
     ? 1
-    : /-(pietra-viva|la-geoteca|concrea-plain|luce|camouflage)-.+-120x280-/.test(id)
+    : /-(pietra-viva|la-geoteca|concrea-plain|luce|camouflage)-.+-120x280-|-plein-air-(raye|warehouse-tan)-/.test(id)
       ? 2
       : 3;
   assert.ok(sources.length >= minimumFaces, `${id} has at least ${minimumFaces} faces`);
@@ -412,7 +414,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce|storm|epoque-20|camouflage|block|eterea)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce|storm|epoque-20|camouflage|block|eterea|plein-air)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
         material.surface_material.material_id
       )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
@@ -1081,11 +1083,11 @@ assert.equal(
   "the import guard finds every Gardenia entry on faces"
 );
 assert.deepEqual(
-  ["hermione", "concrea-plain", "just-nature", "luce", "storm", "epoque-20", "camouflage", "block", "eterea"].map((collection) =>
-    lostToImport.get(collection)
+  ["hermione", "concrea-plain", "just-nature", "luce", "storm", "epoque-20", "camouflage", "block", "eterea", "plein-air"].map(
+    (collection) => lostToImport.get(collection)
   ),
-  // Hermione, Storm and Camouflage with their outdoor sizes (3, 4 and 4 floor entries, 13 Oct 2026).
-  [9, 22, 22, 28, 36, 42, 50, 54, 64]
+  // Hermione, Storm and Camouflage with their outdoor sizes (3, 4 and 4 floor entries, 13 Oct 2026); Plein Air's own 50 floor entries.
+  [9, 22, 22, 28, 36, 42, 50, 54, 64, 50]
 );
 
 // Gardenia Just Nature and Luce (downloaded 10 Oct 2026), from ABK's pages like Hermione and Concrea Plain, with
@@ -1593,6 +1595,157 @@ for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAirOutdoor)
 }
 const pleinAirStandIns = [["0014519", "0012911"], ["0014518", "0012908"]] as const;
 
+// Gardenia Plein Air (downloaded 13 Oct 2026): the outdoor range's eleven ranges of its own, a collection of their own (J, 13 Oct
+// 2026: split, floor only), from ABK's pages like the collections above: 50 floor entries, 20 mm, R11, outdoor. Concept Stone, the
+// twelfth range, has no pictures and is left out. Every size that can be checked is true to its label (crop test) but Urban Sand
+// 60x60, whose pictures are the colour's 800x800 mm graphic squeezed to 600 mm (declared 800x800). Mineral's pages show each face
+// again as another range's export (OUT.20 MONOLITH) and Greige's a lower-resolution cut (GREIGE): only the FUSION pictures are used.
+// Repeats are used once: Salento's pages list each picture three times, Urban's 60x60 twice, byte for byte; Travertine Honey Vein's
+// 60x90 picture 6 (NAVONA) is picture 7 exported again.
+assert.equal(physicalMaterials.filter(isPleinAir).length, 50, "every Plein Air entry is on real faces");
+assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(isPleinAir).length, 50, "Plein Air entries in the catalogue");
+assert.deepEqual(collectionCards(isPleinAir, "wall_tile"), [], "Plein Air is for floors only");
+assert.deepEqual(
+  collectionCards(isPleinAir, "flooring"),
+  [
+    ...["Belgian Stone Black", "Belgian Stone Grey", "Belgian Stone Sand"].map((c) => [c, ["80x80 R11", "60x60 R11"]]),
+    ...["Legend Havana", "Legend Sand"].map((c) => [c, ["30x120 R11"]]),
+    ...["Livingstone Cream", "Livingstone Light Grey", "Livingstone Sand"].map((c) => [c, ["80x80 R11"]]),
+    ["Mineral Fog", ["60x120 R11", "60x60 R11"]],
+    ["Mineral Graphite", ["60x120 R11"]],
+    ...["Mineral Greige", "Mineral Sand"].map((c) => [c, ["60x120 R11", "60x60 R11"]]),
+    ["Native Concrete", ["80x80 R11"]],
+    ...["Native Mud", "Native Sand", "Native Silver"].map((c) => [c, ["80x80 R11", "60x60 R11"]]),
+    ...["Nimbus Fog", "Nimbus Rope"].map((c) => [c, ["60x90 R11"]]),
+    ...["Raye Honey", "Raye Sand"].map((c) => [c, ["30x120 R11"]]),
+    ...["Salento Gris", "Salento Ivoire", "Salento Ocre"].map((c) => [c, ["60x120 R11", "80x80 R11", "60x60 R11"]]),
+    ["Travertine Honey Cross", ["80x80 R11", "60x90 R11", "60x60 R11"]],
+    ["Travertine Honey Vein", ["60x90 R11", "60x60 R11"]],
+    ...["Urban Ash", "Urban Sand"].map((c) => [c, ["80x80 R11", "60x60 R11"]]),
+    ...["Warehouse Ash", "Warehouse Graphite", "Warehouse Tan"].map((c) => [c, ["80x80 R11"]]),
+  ].map(([colour, sizes]) => [`Plein Air ${colour}`, sizes])
+);
+const pleinAirRow = (colour: string, tile: string, n: number, code: string, face = tile) => {
+  const [w, h] = tile.split("x").map(Number);
+  return [colour, w >= h ? tile : `${h}x${w}`, n, face, `${code}_01.webp`];
+};
+assert.deepEqual(collectionFaceRows(isPleinAir), [
+  pleinAirRow("belgian-stone-black", "600x600", 7, "0015169"),
+  pleinAirRow("belgian-stone-black", "800x800", 7, "0012112"),
+  pleinAirRow("belgian-stone-grey", "600x600", 7, "0014528"),
+  pleinAirRow("belgian-stone-grey", "800x800", 7, "0012111"),
+  pleinAirRow("belgian-stone-sand", "600x600", 7, "0014527"),
+  pleinAirRow("belgian-stone-sand", "800x800", 7, "0012110"),
+  pleinAirRow("legend-havana", "300x1200", 12, "0003691"),
+  pleinAirRow("legend-sand", "300x1200", 12, "0003690"),
+  pleinAirRow("livingstone-cream", "800x800", 5, "0020645"),
+  pleinAirRow("livingstone-light-grey", "800x800", 5, "0020646"),
+  pleinAirRow("livingstone-sand", "800x800", 5, "0020647"),
+  pleinAirRow("mineral-fog", "600x1200", 6, "0001821"),
+  pleinAirRow("mineral-fog", "600x600", 11, "0013511"),
+  pleinAirRow("mineral-graphite", "600x1200", 6, "0001822"),
+  pleinAirRow("mineral-greige", "600x1200", 6, "0001820"),
+  pleinAirRow("mineral-greige", "600x600", 12, "0013512"),
+  pleinAirRow("mineral-sand", "600x1200", 6, "0013514"),
+  pleinAirRow("mineral-sand", "600x600", 12, "0013513"),
+  pleinAirRow("native-concrete", "800x800", 3, "g56793"),
+  pleinAirRow("native-mud", "600x600", 4, "0013509"),
+  pleinAirRow("native-mud", "800x800", 4, "g56792"),
+  pleinAirRow("native-sand", "600x600", 4, "0013508"),
+  pleinAirRow("native-sand", "800x800", 4, "g56790"),
+  pleinAirRow("native-silver", "600x600", 4, "0013507"),
+  pleinAirRow("native-silver", "800x800", 4, "g56791"),
+  pleinAirRow("nimbus-fog", "600x900", 9, "0007178"),
+  pleinAirRow("nimbus-rope", "600x900", 9, "0007177"),
+  pleinAirRow("raye-honey", "300x1200", 2, "0014949"),
+  pleinAirRow("raye-sand", "300x1200", 2, "0014329"),
+  pleinAirRow("salento-gris", "600x1200", 16, "0202335"),
+  pleinAirRow("salento-gris", "600x600", 16, "0202323"),
+  pleinAirRow("salento-gris", "800x800", 8, "0202326"),
+  pleinAirRow("salento-ivoire", "600x1200", 16, "0202333"),
+  pleinAirRow("salento-ivoire", "600x600", 16, "0202321"),
+  pleinAirRow("salento-ivoire", "800x800", 8, "0202324"),
+  pleinAirRow("salento-ocre", "600x1200", 15, "0202334"),
+  pleinAirRow("salento-ocre", "600x600", 15, "0202322"),
+  pleinAirRow("salento-ocre", "800x800", 8, "0202325"),
+  pleinAirRow("travertine-honey-cross", "600x600", 9, "0012103"),
+  pleinAirRow("travertine-honey-cross", "800x800", 6, "0012106"),
+  pleinAirRow("travertine-honey-cross", "600x900", 9, "0007181"),
+  pleinAirRow("travertine-honey-vein", "600x600", 8, "0012104"),
+  pleinAirRow("travertine-honey-vein", "600x900", 9, "0007180"),
+  pleinAirRow("urban-ash", "600x600", 12, "0012163"),
+  pleinAirRow("urban-ash", "800x800", 8, "0012161"),
+  pleinAirRow("urban-sand", "600x600", 12, "0012164", "800x800"),
+  pleinAirRow("urban-sand", "800x800", 12, "0012162"),
+  pleinAirRow("warehouse-ash", "800x800", 7, "0012107"),
+  pleinAirRow("warehouse-graphite", "800x800", 7, "0012109"),
+  pleinAirRow("warehouse-tan", "800x800", 2, "0012108"),
+]);
+// The repeats left out, as the manifests record them: Salento's pages list each picture three times (Ocre 60x120 one picture a
+// fourth time too), Urban's 60x60 pages twice, Native Concrete's and Mineral Fog's 60x60 one picture twice, byte for byte; Travertine
+// Honey Vein's 60x90 picture 6 is picture 7 exported again.
+const pleinAirManifest = (colour: string) =>
+  JSON.parse(
+    readFileSync(
+      path.join(process.cwd(), `catalog/surface-materials/flooring/gardenia/plein-air/gardenia-plein-air-${colour}-faces.manifest.json`),
+      "utf8"
+    )
+  ) as { formats: { format: string; duplicates_dropped_site_positions?: number[]; duplicates_note?: string }[] };
+const pleinAirDropped = (colour: string, format: string) =>
+  pleinAirManifest(colour).formats.find((entry) => entry.format === format)?.duplicates_dropped_site_positions?.length ?? 0;
+assert.deepEqual(
+  [
+    ["salento-gris", "60x120"], ["salento-gris", "80x80"], ["salento-ivoire", "60x120"], ["salento-ivoire", "80x80"],
+    ["salento-ocre", "60x120"], ["salento-ocre", "60x60"], ["salento-ocre", "80x80"], ["urban-ash", "60x60"], ["urban-sand", "60x60"],
+    ["native-concrete", "80x80"], ["mineral-fog", "60x60"], ["travertine-honey-vein", "60x90"],
+  ].map(([colour, format]) => pleinAirDropped(colour, format)),
+  [16, 16, 32, 16, 33, 1, 16, 12, 12, 1, 2, 1]
+);
+assert.match(
+  pleinAirManifest("travertine-honey-vein").formats.find((entry) => entry.format === "60x90")?.duplicates_note ?? "",
+  /picture 6 \(NAVONA\) is picture 7/
+);
+// Colour and look as ABK describes them; Mineral Sand (white and beige) and Native Mud (grey and beige) are filed by their pictures.
+assert.deepEqual(
+  [...new Set(physicalMaterials.filter(isPleinAir).map((material) =>
+    `${/-plein-air-([a-z-]+?)-g?\d/.exec(material.surface_material.material_id)?.[1]}: ` +
+    `${material.classification?.design_effect} ${material.classification?.color_family}`
+  ))].sort(),
+  [
+    "belgian-stone-black: stone black", "belgian-stone-grey: stone grey", "belgian-stone-sand: stone beige",
+    "legend-havana: wood beige", "legend-sand: wood beige",
+    "livingstone-cream: stone beige", "livingstone-light-grey: stone grey", "livingstone-sand: stone beige",
+    "mineral-fog: stone grey", "mineral-graphite: stone grey", "mineral-greige: stone grey", "mineral-sand: stone beige",
+    "native-concrete: concrete grey", "native-mud: concrete grey", "native-sand: concrete beige", "native-silver: concrete grey",
+    "nimbus-fog: stone grey", "nimbus-rope: stone beige", "raye-honey: wood beige", "raye-sand: wood beige",
+    "salento-gris: stone grey", "salento-ivoire: stone white", "salento-ocre: stone beige",
+    "travertine-honey-cross: stone beige", "travertine-honey-vein: stone beige",
+    "urban-ash: concrete beige", "urban-sand: concrete beige",
+    "warehouse-ash: concrete beige", "warehouse-graphite: concrete grey", "warehouse-tan: concrete beige",
+  ]
+);
+// What the entries take from ABK's Plein Air pages: floor only, 20 mm, R11, outdoor (balcony among the rooms); no configurator pattern
+// ids; planks for the wood ranges (Legend, Raye), tiles otherwise; no blocker but the price.
+for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAir)) {
+  const id = entry.surface_material.material_id;
+  assert.equal(entry.surface_material.surface_category, "flooring", `${id} is for floors`);
+  assert.deepEqual(
+    [entry.physical_specs.total_thickness_mm, entry.physical_specs.slip_rating, entry.physical_specs.suitable_for_outdoor],
+    [20, "R11", true],
+    `${id}: 20 mm, R11, outdoor`
+  );
+  assert.ok(entry.classification.room_suitability.includes("balcony"), `${id} suits a balcony`);
+  assert.ok(entry.import_governance.qa_flags.includes("gardenia_abk_site_import"), `${id} is imported from ABK's pages`);
+  assert.ok(!entry.import_governance.qa_flags.includes("gardenia_plein_air_outdoor_size"), `${id} is not an outdoor size of another collection`);
+  assert.equal(entry.rendering.source_pattern_ids, undefined, `${id} has no configurator pattern ids`);
+  assert.deepEqual(
+    entry.rendering.available_pattern_layouts,
+    /-plein-air-(legend|raye)-/.test(id) ? ["random_stagger", "straight", "herringbone"] : ["straight", "brick", "vertical_brick"],
+    `${id} layouts`
+  );
+  assert.deepEqual(entry.import_governance.publish_blockers, ["confirm_price_per_sqm_or_quote_mode"], `${id} blockers`);
+}
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
 // are wall-only).
@@ -1662,6 +1815,7 @@ const collectionById = new Map(
       [
         isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
         isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock, isEterea,
+        isPleinAir,
       ].some((filter) => filter(material))
     )
     .map((material) => [material.surface_material.material_id, material])

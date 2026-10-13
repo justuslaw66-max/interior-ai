@@ -1,0 +1,196 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/warehouse-ash/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - WAREHOUSE ASH - minimali.zip (17089336 bytes, sha256 3fc9d3e8c6b779a23b6eadaf80f42abef92faee68ce519d739193e7747ba9394).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0012107",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/warehouse-ash/pf60012107-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012107_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-warehouse-ash-0012107-80x80-r11",
+   "faces": [
+    {
+     "file": "0012107_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31362,
+     "source_zip": "PLEIN AIR - WAREHOUSE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE ASH - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f358b2adf614eb51bb680d11e630a6d165cafa4cd4be31ab0b464feb4a1a6a9f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1",
+      "name": "WAREHOUSE ASH 80X80 R11_20 MM_03",
+      "id": "d2cbd9bd-dfb8-43eb-ac24-3754e68415fc",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012107_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41762,
+     "source_zip": "PLEIN AIR - WAREHOUSE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE ASH - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9d9a2b3537ee0cd00c26d000777ef9e2aedc6aa165b010de993ceb536719f586",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "WAREHOUSE ASH 80X80 R11_20 MM_04",
+      "id": "9f2713f6-dec7-4604-bc41-18db79b8b6d1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012107_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 41188,
+     "source_zip": "PLEIN AIR - WAREHOUSE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE ASH - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6dc72e7f1902d57acb7dbf1c68b6e7282d7c0304bd4f93174d09bc062f439479",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "WAREHOUSE ASH 80X80 R11_20 MM_05",
+      "id": "b7cd773d-00c3-4b99-b8c2-802a67a2e78b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012107_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 30754,
+     "source_zip": "PLEIN AIR - WAREHOUSE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE ASH - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3b1cdd94ddcef9f10014329933b993cd7005c916337bac26d9a332c5497c6d7f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "WAREHOUSE ASH 80X80 R11_20 MM_06",
+      "id": "3aaf039c-9f2f-4e74-a0cd-717c6ce7f563",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012107_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 26598,
+     "source_zip": "PLEIN AIR - WAREHOUSE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE ASH - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1ad7cc019043b9c7200002a73041fe7c253c35c04abe8e24043c081aee261dd7",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "WAREHOUSE ASH 80X80 R11_20 MM_07",
+      "id": "adaf9b63-0eb5-4d78-b0a6-ee0232022783",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012107_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 37464,
+     "source_zip": "PLEIN AIR - WAREHOUSE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE ASH - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "7aba30d30d3c5b71d79338ccaf1879f38ed143f7063435363b5c47021cde9fc5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 6",
+      "name": "WAREHOUSE ASH 80X80 R11_20 MM_01",
+      "id": "a8ac6171-177f-48f0-9f01-a6b947176500",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012107_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 29802,
+     "source_zip": "PLEIN AIR - WAREHOUSE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE ASH - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "69abfaa6d7e542c5626e05723e07a214f0856c7d9096886f00fc1d1689f7e5b6",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 7",
+      "name": "WAREHOUSE ASH 80X80 R11_20 MM_02",
+      "id": "ca8bd9a4-b901-410f-9402-516d976a14e9",
+      "site_position": 7
+     }
+    }
+   ]
+  }
+ ]
+}

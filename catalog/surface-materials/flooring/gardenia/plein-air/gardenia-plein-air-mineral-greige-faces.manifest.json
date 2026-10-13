@@ -1,0 +1,475 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-greige/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - MINERAL GREIGE - minimali.zip (82066799 bytes, sha256 a82d5c94e16e56aab3a9368e757a440371592fc357e96abb60b61d3cb9aac224).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0001820",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-greige/pf60001820-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0001820_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-mineral-greige-0001820-60x120-r11",
+   "faces": [
+    {
+     "file": "0001820_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55606,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GREIGE - 60X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "ffdc5d904d22ffe54428b30be1bdb586b4e11af4799631c457d558d2d4e93628",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 2 (view_01)",
+      "name": "FUSION GREIGE 60X120_01",
+      "id": "30c4c084-1f34-4fdd-8115-48081f74f49c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0001820_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 61306,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GREIGE - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "495ec9f1ad491fc696c2e4308e67726e0e2083d553d2a17bc0ea8772c24fd5f9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 3 (view_02)",
+      "name": "FUSION  GREIGE 60X120_02",
+      "id": "3344649d-e4b0-476a-9258-0571fc1c7b7c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0001820_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60712,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GREIGE - 60X120 - R11 - view_3 (2).jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "bdb457827f5051e2e0cf967fbc18a15b8e57fb59c6cd872212ef364bd7ac428b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 6 (view_03)",
+      "name": "FUSION  GREIGE 60X120_03",
+      "id": "af71a241-3667-4fb4-bd43-77daf56cccb9",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0001820_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60278,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GREIGE - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "87b28534af026c2bee191f92c50dc485c83667af00fd55af769276f9deab72fb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 7 (view_04)",
+      "name": "FUSION  GREIGE 60X120_04",
+      "id": "309a1dfb-2aa2-4c52-a891-780911f4076d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0001820_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57430,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GREIGE - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "57221fa0613d4d10ee7f2cda4cdd3ef1c7b2cde95bb5997ca8dc0510ea51dc61",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 9 (view_05)",
+      "name": "FUSION  GREIGE 60X120_05",
+      "id": "1e6bc249-c91c-4017-995c-a2edab1ae53b",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0001820_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 53404,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GREIGE - 60X120 - R11 - view_6 (2).jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "628abfe65eb31d57ff82162203b42cab594b3b8a395db3ca20261459f03def3c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 12 (view_06)",
+      "name": "FUSION  GREIGE 60X120_06",
+      "id": "f01c88aa-5cdb-4181-a43f-6041f2693edd",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0013512",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-greige/pf60013512-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0013512_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-mineral-greige-0013512-60x60-r11",
+   "faces": [
+    {
+     "file": "0013512_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29908,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "11ca76d27cf34e97316ab553300f5ecceaa174b220be9cca1cc36aa0d94edee1",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "FUSION GREIGE 60X60_01",
+      "id": "4b91079a-271c-489c-8e35-7269b4f7b3c6",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0013512_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25678,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_2 (3).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f06c314cd521c54e5a4289264fc1a34a0152137760e03c735590205e4c725cec",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 6 (view_02)",
+      "name": "FUSION GREIGE 60X60_02",
+      "id": "eb197537-86d7-4610-9a25-77e73e888c65",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0013512_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26028,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_3 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "181fdc20579f94e0dc953b7f2282bf7d317bb28dc29e60da5556824f83bb0791",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 8 (view_03)",
+      "name": "FUSION GREIGE 60X60_03",
+      "id": "5d45f7ab-db50-4f3c-96bc-e47c8fc2aeb0",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0013512_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26710,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "eace56a989ba8029740f314c24e0705c10d334f8534886aa7452918f6a28299f",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 10 (view_04)",
+      "name": "FUSION GREIGE 60X60_04",
+      "id": "31b43687-8fe6-4a72-bce7-5e21b05e7086",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0013512_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28020,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_5 (3).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3730893689fdd3ceddc008e548510d3960217d764361eeed31b49816d32609f8",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 15 (view_05)",
+      "name": "FUSION GREIGE 60X60_05",
+      "id": "8d377e7f-91ed-4c49-a0c6-dd2ebb7a0aa8",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0013512_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29252,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_6 (3).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9f22f8169d2d7ebc98234caea7088d42597792a4d2b5c5f90b6b643f7adb0b0b",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 18 (view_06)",
+      "name": "FUSION GREIGE 60X60_06",
+      "id": "abc33d84-87c5-436b-b079-3a85465d2a11",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0013512_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29222,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4d32af28d50dc3fb4bcfa64d339caf29698c0ae7d58e7853bddcc3de346b991c",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 19 (view_07)",
+      "name": "FUSION GREIGE 60X60_07",
+      "id": "1b923a39-e620-44c6-948f-f4c0fac2f595",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0013512_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31690,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "dc28de4848142760e3bed28f0a1658a023f02a31330f59f647b3ef918d2bfe68",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 21 (view_08)",
+      "name": "FUSION GREIGE 60X60_08",
+      "id": "20c662e1-b289-47bb-a62b-1ed23b9cf689",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0013512_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29254,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_9 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "017cf44b58e7d1bf1526f81efbddcb7267b647b70e28e0f22428d4d1c05d58aa",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 24 (view_09)",
+      "name": "FUSION GREIGE 60X60_09",
+      "id": "e7c6d244-0d6e-4fbd-b9e2-85bf1ec95ad7",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0013512_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32552,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_10 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c5c59115dc2585d4ec13d0556626e55fd8a76f4f196a67544ad3daa236856ad8",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 26 (view_10)",
+      "name": "FUSION GREIGE 60X60_10",
+      "id": "a5d90e38-5baa-42e4-9d04-66a3177241c2",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0013512_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30598,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9697371966874e3c0442c63aea078d90ebf5f850f3018f614e117b12fd6e9396",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 27 (view_11)",
+      "name": "FUSION GREIGE 60X60_11",
+      "id": "159bc25f-6536-4f18-9de2-bf6691b85e85",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0013512_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31504,
+     "source_zip": "PLEIN AIR - MINERAL GREIGE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL GREIGE - 60X60 - R11 - view_12 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d042c8144d11450f74cbd1ac9018c1f7ee33f7f28fe04ee9e0cf6de61d2237b8",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 30 (view_12)",
+      "name": "FUSION GREIGE 60X60_12",
+      "id": "879bc4e3-6168-4830-9c4c-7fb93b2d916a",
+      "site_position": 30
+     }
+    }
+   ]
+  }
+ ]
+}

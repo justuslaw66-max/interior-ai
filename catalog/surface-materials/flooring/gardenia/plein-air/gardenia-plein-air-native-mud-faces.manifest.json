@@ -1,0 +1,235 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-mud/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - NATIVE MUD - minimali.zip (16666216 bytes, sha256 3191f799e27b5b136e819a8253d367819126921c12b0693257acd78b98eae805).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g56792",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-mud/g0056792-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "g56792_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-native-mud-g56792-80x80-r11",
+   "faces": [
+    {
+     "file": "g56792_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34144,
+     "source_zip": "PLEIN AIR - NATIVE MUD - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE MUD - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f8476ed7b4e738f6dded95c14c8d873461943bab47d0a502cb4843011274f7f8",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "NATIVE MUD 80X80 R11 20 MM_01",
+      "id": "4754e86f-bfbb-4ae4-9e7c-6b3f6cebe271",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g56792_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31192,
+     "source_zip": "PLEIN AIR - NATIVE MUD - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE MUD - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "272cc7be736e109759cfa012fee21b50b09d9904d90420040fc8e7ec7483a0ed",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "NATIVE MUD 80X80 R11 20 MM_04",
+      "id": "e2642863-1d50-4142-8fbf-48a486a86d9a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g56792_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33280,
+     "source_zip": "PLEIN AIR - NATIVE MUD - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE MUD - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2221291335371b33cf04a30dd568f01aa232acbbe5290d6d9c579ed6d277be28",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "NATIVE MUD 80X80 R11 20 MM_03",
+      "id": "0379de88-d32f-4f5e-87c7-d9bd03b3a72a",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g56792_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 29110,
+     "source_zip": "PLEIN AIR - NATIVE MUD - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE MUD - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "31cdb593abe0f76485d29f3e3f24efb6b12db513f3415331980f93aef02ffdb9",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "NATIVE MUD 80X80 R11 20 MM_02",
+      "id": "b3ae90dc-50b0-470d-81e7-27a79b97fd94",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0013509",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-mud/pf60013509-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0013509_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-native-mud-0013509-60x60-r11",
+   "faces": [
+    {
+     "file": "0013509_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14594,
+     "source_zip": "PLEIN AIR - NATIVE MUD - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE MUD - 60X60 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "23c51d529ba04be3d8aed754747baa61e95f3bcd3f8ff5e43f9aac511bd78383",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "NATIVE MUD 60X60 R11 20 MM_01",
+      "id": "fe0e9890-ef86-4007-a307-cecbf6df68c4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0013509_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15612,
+     "source_zip": "PLEIN AIR - NATIVE MUD - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE MUD - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bd3655da0b2abdce813abefa90cce32354ea1b4781e20f05323045c91d9aee2a",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2",
+      "name": "NATIVE MUD 60X60 R11 20 MM_02",
+      "id": "a28a7df7-c8d5-4dde-87fb-d88dad65208a",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0013509_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 13312,
+     "source_zip": "PLEIN AIR - NATIVE MUD - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE MUD - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f5c9a542cae9c0d4be628ca8470a3fa4d5bfb71fce209d30655df9bf8ed1a10b",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3",
+      "name": "NATIVE MUD 60X60 R11 20 MM_03",
+      "id": "50b3fe6d-9486-45e4-aa9f-45968301903b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0013509_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16672,
+     "source_zip": "PLEIN AIR - NATIVE MUD - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE MUD - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e74276d5ffecec3940bebec9741277e9b4b361c94af95c0af3786a8c766ff867",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4",
+      "name": "NATIVE MUD 60X60 R11 20 MM_04",
+      "id": "2f61cf33-5182-4877-80db-b191c2db2a78",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

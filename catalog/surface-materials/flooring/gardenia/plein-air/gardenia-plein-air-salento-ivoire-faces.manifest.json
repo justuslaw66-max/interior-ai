@@ -1,0 +1,1070 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/salento-ivoire/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - SALENTO IVOIRE - minimali.zip (94290393 bytes, sha256 785b643fc0899009ffc83c39e906a41e7fcfcba55930f767c5b7231aecb10dbf).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0202333",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/salento-ivoire/d00202333-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0202333_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48
+   ],
+   "used_by": "floor gardenia-flooring-plein-air-salento-ivoire-0202333-60x120-r11",
+   "faces": [
+    {
+     "file": "0202333_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 19180,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_1 (4).jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "babc968141f3825305dca2ca23d7116a7ecc0ee94186a8f293407def2a972a5f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 1 (view_01)",
+      "name": "SALENTO IVOIRE 60X120_01",
+      "id": "9a0bb21c-6405-4b75-b17a-a7fd8331bae5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0202333_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25032,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_39.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "dcb5d3884c6447b27c791217b12bf6334769b8a0c9aa763e969764c7de21d553",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 4 (view_02)",
+      "name": "SALENTO IVOIRE 60X120_02",
+      "id": "cbc79db0-9358-4d11-9543-70f0239f90ed",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0202333_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 28850,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_26.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "97dae479120352ac2a0fa560b0785c87b0dcbb264766628597bca563e193dda8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 5 (view_03)",
+      "name": "SALENTO IVOIRE 60X120_03",
+      "id": "dca4bc0b-4d8d-438c-a148-75b99f90ce02",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0202333_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17430,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_46.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "9709cc2eeaf9cfe8a756cb0b9d1fa10e00d83c12b946422f7e34b9a604f019c4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 6 (view_04)",
+      "name": "SALENTO IVOIRE 60X120_04",
+      "id": "90bac8b3-9e2f-4551-8d75-4336d710013a",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0202333_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 21882,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_22.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "8ca62c766787e5390f915f2b06da71c834c2ac4247057143e6b8605e29f60423",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 7 (view_05)",
+      "name": "SALENTO IVOIRE 60X120_05",
+      "id": "f1627e44-8ca8-41b8-bc07-6cde7fd2d22d",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0202333_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 38864,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_16.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "0bbf8f1cc83b420410328b00fd1750aea6290ad89a83fb0f96c60e57761d4f76",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 8 (view_06)",
+      "name": "SALENTO IVOIRE 60X120_06",
+      "id": "3399abed-f890-4ebe-ad91-67667f01b5ef",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0202333_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17496,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_31.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "b5d8b14d22a914a484b5762db2751cf0dd4c7f0790f5c671194bfc88b700720c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 9 (view_07)",
+      "name": "SALENTO IVOIRE 60X120_07",
+      "id": "cdad38ee-0dd6-465b-a016-6ca5f09a8eda",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0202333_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25894,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_21.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "4af42fc8ab5030b73053abb501de439d93182efa6c3b97d6e6ddaab75376a82a",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 10 (view_08)",
+      "name": "SALENTO IVOIRE 60X120_08",
+      "id": "f92a44b7-5bdf-473c-9d7c-c609f10e220b",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0202333_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 32056,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_30.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "22caca7e21b40c8a39696efe4badf544e92d7a1f4cdd198c043d4ce365d2adc7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 11 (view_09)",
+      "name": "SALENTO IVOIRE 60X120_09",
+      "id": "45de4c29-fd56-400c-b374-292c7cfd70b3",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0202333_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16884,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_27.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "0a4b5b4df144132421bb9d018f60d139e7ac7231454073762f7288f1739147fe",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 12 (view_10)",
+      "name": "SALENTO IVOIRE 60X120_10",
+      "id": "4f69c584-8545-4060-983e-65446718407c",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0202333_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25262,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_43.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "ec355cb5975cba1bc810422345ecd86d21481ff6a192109cb0e3fb9626b36074",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 13 (view_11)",
+      "name": "SALENTO IVOIRE 60X120_11",
+      "id": "8c426aea-5985-4ff1-a7a7-d0c1951a904b",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0202333_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25716,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_38.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "7a40e6369f409b39be165a0369ae8801e391952851955d6580ab04472f39a7c8",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 14 (view_12)",
+      "name": "SALENTO IVOIRE 60X120_12",
+      "id": "3a53c6a7-faa2-4934-bb51-2cedb91a1cd2",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0202333_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20824,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_47.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "0a9d836da089259cd14b301130fe3b64dce63c269b79f4f81fcaf7659a0ab027",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 15 (view_13)",
+      "name": "SALENTO IVOIRE 60X120_13",
+      "id": "0c7ef586-7071-4bdc-b358-c30c632dc122",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0202333_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 23468,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_24.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "2564e133a36636af90a379cd32763d7e94a8cbdcdfb0fbb5dcf1fa7854ccfeb5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 16 (view_14)",
+      "name": "SALENTO IVOIRE 60X120_14",
+      "id": "20d966f2-953f-4396-b9c3-7a41dca627f7",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0202333_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 25634,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_34.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "a1dd352bfa0897a4c80bf2776f5deb2b471696005d30b07a5b05919149049b09",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 17 (view_15)",
+      "name": "SALENTO IVOIRE 60X120_15",
+      "id": "fb8bcf2e-490e-435d-9983-6506afd36541",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0202333_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16854,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - SALENTO IVOIRE - 60X120 - R11 - view_35.jpg",
+     "source_px": [
+      2560,
+      1279
+     ],
+     "source_sha256": "cc0bbc05cba667f75e3323342d8b10838e20b046d34ef1a408882e29ec7301b7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 18 (view_16)",
+      "name": "SALENTO IVOIRE 60X120_16",
+      "id": "c9fbcc38-87f2-4f01-beda-c83a84c96e80",
+      "site_position": 18
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "0202324",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/salento-ivoire/d00202324-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0202324_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    3,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+   ],
+   "used_by": "floor gardenia-flooring-plein-air-salento-ivoire-0202324-80x80-r11",
+   "faces": [
+    {
+     "file": "0202324_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24044,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - SALENTO IVOIRE - 80X80 - R11 - view_1 (4).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "246b1fceaf506998634b881459d036ff18d40bd864b434a7b2802b50210955a2",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "OUT.20 SALENTO IVOIRE 80X80_01",
+      "id": "19bae4ea-93a3-4422-955e-e042c1d825e3",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0202324_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 20514,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - SALENTO IVOIRE - 80X80 - R11 - view_24.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "db52f54193c5e4b4574c929e230de5629a3532ce51545edb305c01767d1cca6c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4 (view_02)",
+      "name": "SALENTO IVOIRE 80X80_02",
+      "id": "10ebe810-eb41-4fcc-a06a-e01382e7af94",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0202324_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 19212,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - SALENTO IVOIRE - 80X80 - R11 - view_23.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "68119393672523e8b5c196b1fbc67b246f5e11f4e20f1372c84674b450cb3100",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5 (view_03)",
+      "name": "SALENTO IVOIRE 80X80_03",
+      "id": "3d36ba63-b37a-4fad-84e2-5b4cbff9bdb4",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0202324_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25182,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - SALENTO IVOIRE - 80X80 - R11 - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8541ed784c3fc5c9c11f9ea276c3ac7ad2a10b504900b1a2b921ed627803546c",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 6 (view_04)",
+      "name": "SALENTO IVOIRE 80X80_04",
+      "id": "2ae9ca34-3d40-43fd-bc42-09649263ef69",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0202324_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 22692,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - SALENTO IVOIRE - 80X80 - R11 - view_18.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "75a6c93b764765e348bb8213183794d86bc5c235055afa92c4933297e6fcbb41",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 7 (view_05)",
+      "name": "SALENTO IVOIRE 80X80_05",
+      "id": "18bd7548-e932-4ac8-bf18-401bdeb2cc55",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0202324_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 21240,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - SALENTO IVOIRE - 80X80 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "34d7ad038b3d3c42e13b7948d2844b7358702bcb3203ccfdf93fafd0b105a1d8",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 8 (view_06)",
+      "name": "SALENTO IVOIRE 80X80_06",
+      "id": "bf6d3257-104e-4fd9-86e4-1a3a538a2967",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0202324_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 18786,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - SALENTO IVOIRE - 80X80 - R11 - view_19.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "380b48eb675eb385aa1c640d487a830df5c7f308fa1befd856acd28d27abf18f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 9 (view_07)",
+      "name": "SALENTO IVOIRE 80X80_07",
+      "id": "ce2b837b-52c6-47c3-bdb1-c96329a59803",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0202324_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 23408,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - SALENTO IVOIRE - 80X80 - R11 - view_17.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fa8b36c7e3282298bb6609e400b1b43630722a9d72f7c4839fe7b5df60aaee67",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 10 (view_08)",
+      "name": "SALENTO IVOIRE 80X80_08",
+      "id": "d8b298bb-1def-4e44-b92a-342ffff1b90a",
+      "site_position": 10
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0202321",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/salento-ivoire/d00202321-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0202321_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-salento-ivoire-0202321-60x60-r11",
+   "faces": [
+    {
+     "file": "0202321_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 7340,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "e5d7c2573fdb2340ccbe8db9e4571d38e1b2a7e8b9960c41e5fe47a784fa1e5e",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_01",
+      "id": "99c2622f-e72e-48f5-b9fc-442b563757a4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0202321_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 7688,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "d830a9d569f1dfe612d55a3e94fe16224e5c7eaecb420b0dd92ece162d7cc5d7",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_10",
+      "id": "61c73ede-8ac9-46ab-8402-de1dd24208d4",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0202321_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 7190,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "608cdafebbb73d9babb67fe6081810264cf916d9e0fa408fd221d059042ab04f",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_16",
+      "id": "7f5f695c-8346-43da-b05b-1505020199f0",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0202321_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 18374,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "fba5f05ebfb7f0e4a392f5485884170d39094fccbd6337867e431bf6b9bb318f",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_06",
+      "id": "d0f05edf-c8c5-424d-9cd5-f6e88684b434",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0202321_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 15968,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "e32817d3f78527afc16a41f1905427aadab9b2cc3b369f4abcc647fc481f2885",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_03",
+      "id": "f9f0a200-1adf-4bdd-84d1-a226a126e62e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0202321_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14734,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "107328cbf5bf325288c0f2293c42a564dab690d5329c9113a082d555fcd33759",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 6",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_12",
+      "id": "090f29e1-d7e4-4e01-9410-0e8a659176e5",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0202321_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11076,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "edd4f7119dd1e542950550d3df561a69bcdd2c87a61d53995be8c28312219146",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 7",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_11",
+      "id": "9ebc1b7c-d6ef-48db-b52b-9b9c6f320cf5",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0202321_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 10532,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "8aedad32e735a0e94c9dda64930c73bea3ee5740d3b9cfe11de166d5a46f9154",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 8",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_15",
+      "id": "d8b06d03-a2ca-494b-8740-73006983095c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0202321_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 12166,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "618872fcd14a82308282c97cb136d5869cf8039ee7430624bfbcfba1620a48b2",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 9",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_13",
+      "id": "9267ded1-8fbe-44a6-84e9-0e9db44c2247",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0202321_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 12162,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "0f24103fcab921ca1183c72f6b37db93759f632afee8f02f65b06973845e4a33",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 10",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_14",
+      "id": "6fbb2b87-ab90-4b14-b28c-a4f3c3bccd74",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0202321_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 8414,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_10.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "0bad80dbec495a4623db5718dd8413d15a2187293a264ca80a92ae25654b6257",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 11",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_04",
+      "id": "7075e067-1473-47df-9860-fae41427243c",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0202321_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 14566,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "2388ca4d5ac0facd544c0a7192055f483a4b4c99d02bf7f1964156a85c213590",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 12",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_09",
+      "id": "4dd35f60-d795-4852-9a9c-dd6f1ce56870",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0202321_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11338,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_12.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "4aa967b1a724fb1117553b1c1f28669ad1a7853ef3214fb64cee91d85a34ea7b",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 13",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_02",
+      "id": "911a3e16-95bd-4bda-95fe-757aeae6805d",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0202321_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11880,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_13.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "502ec946b6712056c940aac86d435f726bfd7eb4c607c821305df40aa0a036ea",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 14",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_08",
+      "id": "24813b33-4d44-4d5c-87c4-f3efa111e6cf",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0202321_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 11866,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_14.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "587f01b2841027e654560e41e7493e46acbb909a2819ecbd21ea25d38890e7f8",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 15",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_05",
+      "id": "d679c8e8-172e-4421-abea-8de538f4a74b",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0202321_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 6326,
+     "source_zip": "PLEIN AIR - SALENTO IVOIRE - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - SALENTO IVOIRE - 60X60 - R11 - view_15.jpg",
+     "source_px": [
+      2560,
+      2556
+     ],
+     "source_sha256": "9fbc8028f1fc195cc505dcbb7c0f53b8492733e46f4917133d5e70eca0e121e4",
+     "source_px_per_mm": 4.26,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 16",
+      "name": "SALENTO IVOIRE 60X60_R11_20 MM_07",
+      "id": "7d6c924f-b541-4f0f-bc8e-ef448f5e71b6",
+      "site_position": 16
+     }
+    }
+   ]
+  }
+ ]
+}

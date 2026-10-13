@@ -1,0 +1,379 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/belgian-stone-black/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - BELGIAN STONE BLACK - minimali.zip (7350836 bytes, sha256 5da6d07341ac5788e120ff386acacdb115ecca9ba55f1ce65fd191fef3479299).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0012112",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/belgian-stone-black/pf60012112-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012112_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-belgian-stone-black-0012112-80x80-r11",
+   "faces": [
+    {
+     "file": "0012112_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 44912,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE BLACK - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1600,
+      1599
+     ],
+     "source_sha256": "e2002ce6c51dd7983f2077c9e34798e34b6f8af771c23fc48191c291ca870392",
+     "source_px_per_mm": 1.999,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "BELGIAN STONE BLACK 80X80 R11_20MM_01",
+      "id": "3e5d2de4-8c23-4cc9-93ca-1a518a0fea0b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012112_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 29544,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE BLACK - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1599
+     ],
+     "source_sha256": "21805a880bc046a4c8d409accd799052902bfc3143ca343f8a2f5022154c5640",
+     "source_px_per_mm": 1.999,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "BELGIAN STONE BLACK 80X80 R11_20MM_02",
+      "id": "2e045dec-8fd9-42ae-ac87-bf991eac70fb",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012112_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 40362,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE BLACK - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1599
+     ],
+     "source_sha256": "0b8f53b2842d6bb50904b7758d144545cfce7f6528c5f8d5392d11aa748817cd",
+     "source_px_per_mm": 1.999,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "BELGIAN STONE BLACK 80X80 R11_20MM_03",
+      "id": "c343ff2b-9a6f-4684-b11f-1c022f00515b",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012112_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 49582,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE BLACK - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1599
+     ],
+     "source_sha256": "da5757ef64215bc437ca5d21a8f7192867a726887b38d282deed81153bda043d",
+     "source_px_per_mm": 1.999,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "BELGIAN STONE BLACK 80X80 R11_20MM_04",
+      "id": "b6d22d2c-036d-41f8-b94b-676eefa26421",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012112_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 55684,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE BLACK - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1599
+     ],
+     "source_sha256": "33ddd376db7165c35256c109555f0a192214cadf2682e3b183783a1696f98a5e",
+     "source_px_per_mm": 1.999,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "BELGIAN STONE BLACK 80X80 R11_20MM_06",
+      "id": "4cfe8b8d-3674-4a19-a772-90927717e54a",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012112_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46958,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE BLACK - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1599
+     ],
+     "source_sha256": "162ee1c2a9a87f9dd507ec0484f6937c30fcc109a576e216048b2fd53a085eb2",
+     "source_px_per_mm": 1.999,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 6",
+      "name": "BELGIAN STONE BLACK 80X80 R11_20MM_05",
+      "id": "bd3f64dc-14fe-4d23-8c8a-5b24144e4df9",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012112_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 39398,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - BELGIAN STONE BLACK - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1599
+     ],
+     "source_sha256": "26a896cf2035c94dd78fe03e004f37d911864ae95fe68ea1fd9dc708ce4ebc0d",
+     "source_px_per_mm": 1.999,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 7",
+      "name": "BELGIAN STONE BLACK 80X80 R11_20MM_07",
+      "id": "09695ac1-882c-4124-beca-c9d58cc93f4d",
+      "site_position": 7
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0015169",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/belgian-stone-black/pf60015169-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0015169_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-belgian-stone-black-0015169-60x60-r11",
+   "faces": [
+    {
+     "file": "0015169_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 25502,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE BLACK - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "bfa8cd1ca0488877bd6d07cd7fd58e5956d876217fb03b08fb7d924e47525cfc",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "BELGIAN STONE BLACK 60X60 R11_20MM_01",
+      "id": "23f1982a-6413-4ca4-bf8d-06dfd7b4c97a",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0015169_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 23782,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE BLACK - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "ac2d159fe1cc38f653cb0982ba084d919169cf38090cd36693070ae405d3e4df",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2",
+      "name": "BELGIAN STONE BLACK 60X60 R11_20MM_03",
+      "id": "bd5ce367-6909-4513-9d55-5d0b228a0aed",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0015169_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 24952,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE BLACK - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "694b6e09b98a0834ad611d97cdfedf04b22e0163438eb67b6e4201172a5847f1",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3",
+      "name": "BELGIAN STONE BLACK 60X60 R11_20MM_05",
+      "id": "f51ec864-0fba-4f68-a34e-1863b294207e",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0015169_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32278,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE BLACK - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "e44b3132cd67f0696e6df949fab75c079843b30be9ca09496b5498b78808af4f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4",
+      "name": "BELGIAN STONE BLACK 60X60 R11_20MM_06",
+      "id": "1c5cb7a5-50e8-46e4-8964-e238a5f1702b",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0015169_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 16770,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE BLACK - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "de3a7022c8e220bb4b387b763a9e55c01e42a06a670abf615600374d7bd409e1",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5",
+      "name": "BELGIAN STONE BLACK 60X60 R11_20MM_02",
+      "id": "ec9bab31-cab9-4062-a184-1e0f4a8544fd",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0015169_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 20038,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE BLACK - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "63eaa27c576ef85facd70dbca31ced3795137f79500bdbddf1f7b77fc8fc9188",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 6",
+      "name": "BELGIAN STONE BLACK 60X60 R11_20MM_07",
+      "id": "c692b767-dc2a-4a23-a30e-9329cafd8a09",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0015169_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26764,
+     "source_zip": "PLEIN AIR - BELGIAN STONE BLACK - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - BELGIAN STONE BLACK - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      1200,
+      1200
+     ],
+     "source_sha256": "d63beaa86cd3a17fd9a85d63dfeee24aea7616d0ec33cd800dd56b8cb38702d6",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 7",
+      "name": "BELGIAN STONE BLACK 60X60 R11_20MM_04",
+      "id": "ce66f84b-64ee-43de-b63d-3ffc20ff1d4f",
+      "site_position": 7
+     }
+    }
+   ]
+  }
+ ]
+}

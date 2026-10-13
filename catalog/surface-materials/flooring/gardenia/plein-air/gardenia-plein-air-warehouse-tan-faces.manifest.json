@@ -1,0 +1,76 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/warehouse-tan/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - WAREHOUSE TAN - minimali.zip (5123260 bytes, sha256 b62abf78f4a3947d754b40bf5a08bffcf9040c794c8381de82bf2e24eb814047).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0012108",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/warehouse-tan/pf60012108-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012108_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-warehouse-tan-0012108-80x80-r11",
+   "faces": [
+    {
+     "file": "0012108_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 50552,
+     "source_zip": "PLEIN AIR - WAREHOUSE TAN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE TAN - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "698f1783b061b171e3bdfba3f6d1cb5cc3fb23e459d0b7181a77c0a5080dd5bd",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1",
+      "name": "WAREHOUSE TAN 80X80 R11_20 MM_01",
+      "id": "9efd4d6d-44f1-49c2-ac21-ad784cf0e7d7",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012108_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 48022,
+     "source_zip": "PLEIN AIR - WAREHOUSE TAN - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - WAREHOUSE TAN - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "92ce667839424755cc04a48b4ecf04fe097b528c1670eb025b9bf7ccecdef202",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "WAREHOUSE TAN 80X80 R11_20 MM_02",
+      "id": "15473005-6873-4a58-89f7-e025939edc72",
+      "site_position": 2
+     }
+    }
+   ]
+  }
+ ]
+}
