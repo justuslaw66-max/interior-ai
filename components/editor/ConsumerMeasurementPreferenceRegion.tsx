@@ -7,7 +7,6 @@ import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayArea, formatDisplayLength } from "@/lib/display-units";
 
 type ConsumerMeasurementPreferenceRegionProps = {
-  dark: boolean;
   canEditPlanGeometry: boolean;
   hasRooms: boolean;
   ready: boolean;
@@ -21,8 +20,8 @@ type ConsumerMeasurementPreferenceRegionProps = {
   onCommitDimension: (axis: "width" | "depth", valueMm: number) => void;
 };
 
-function MeasurementPreferencePlaceholder({ dark }: { dark: boolean }) {
-  const blockClass = dark ? "bg-white/10" : "bg-neutral-200";
+function MeasurementPreferencePlaceholder() {
+  const blockClass = "bg-neutral-200";
   return (
     <div
       data-testid="room-setup-measurement-placeholder"
@@ -46,7 +45,6 @@ type ReadyMeasurementPreferenceProps = Omit<
 >;
 
 function ReadyMeasurementPreference({
-  dark,
   canEditPlanGeometry,
   hasRooms,
   widthMm,
@@ -62,22 +60,20 @@ function ReadyMeasurementPreference({
     onChangeDraft(axis, String(valueMm / 1000));
   };
   return <>
-    <DisplayUnitSelect value={measurementUnit} dark={dark}
+    <DisplayUnitSelect value={measurementUnit}
       testId="room-setup-measurement-units" className="mt-3" onChange={onChangeUnit} />
     <div className="mt-3 grid grid-cols-2 gap-2">
       {(["width", "depth"] as const).map((axis) => (
         <MeasurementField key={axis} label={axis === "width" ? "Width" : "Depth"}
           valueMm={axis === "width" ? widthMm : depthMm} unit={measurementUnit}
           minMm={ROOM_DIMENSION_DEFAULTS.min * 1000} maxMm={ROOM_DIMENSION_DEFAULTS.max * 1000}
-          stepMm={10} keyboardStepMm={50} disabled={!canEditPlanGeometry} dark={dark}
+          stepMm={10} keyboardStepMm={50} disabled={!canEditPlanGeometry}
           compact touchFriendly testId={`room-setup-${axis}-input`}
           onCommit={(valueMm) => commit(axis, valueMm)} />
       ))}
     </div>
     <div data-testid="room-setup-scale-summary" role="status" aria-live="polite"
-      className={dark
-        ? "designer-raised mt-2 rounded-lg px-3 py-2 text-xs text-neutral-300"
-        : "mt-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600"}>
+      className="mt-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600">
       <span className="font-semibold">Visible scale:</span>{" "}
       {formatDisplayLength(widthMm, measurementUnit)} ×{" "}
       {formatDisplayLength(depthMm, measurementUnit)} ·{" "}
@@ -87,7 +83,6 @@ function ReadyMeasurementPreference({
 }
 
 export function ConsumerMeasurementPreferenceRegion({
-  dark,
   canEditPlanGeometry,
   hasRooms,
   ready,
@@ -107,11 +102,11 @@ export function ConsumerMeasurementPreferenceRegion({
     >
       {!ready ? (
         <>
-          <MeasurementPreferencePlaceholder dark={dark} />
+          <MeasurementPreferencePlaceholder />
           <span className="sr-only" role="status">Loading units…</span>
         </>
       ) : (
-        <ReadyMeasurementPreference dark={dark} canEditPlanGeometry={canEditPlanGeometry}
+        <ReadyMeasurementPreference canEditPlanGeometry={canEditPlanGeometry}
           hasRooms={hasRooms} widthMm={widthMm} depthMm={depthMm} roomFloorAreaSqm={roomFloorAreaSqm}
           measurementUnit={measurementUnit} onChangeUnit={onChangeUnit}
           onChangeDraft={onChangeDraft} onCommitDimension={onCommitDimension} />

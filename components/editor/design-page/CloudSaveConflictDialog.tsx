@@ -7,7 +7,6 @@ import type { DesignPageCloudSaveConflictState } from "@/lib/useDesignPagePersis
 
 export type CloudSaveConflictDialogProps = {
   state: DesignPageCloudSaveConflictState | null;
-  dark?: boolean;
   onSaveAsNewCopy: () => void | Promise<void>;
   onReloadCloudCopy: () => void | Promise<void>;
 };
@@ -20,7 +19,6 @@ const ignoreDismissal = () => undefined;
  */
 export function CloudSaveConflictDialog({
   state,
-  dark = false,
   onSaveAsNewCopy,
   onReloadCloudCopy,
 }: CloudSaveConflictDialogProps) {
@@ -37,23 +35,17 @@ export function CloudSaveConflictDialog({
       closeDisabled
       showCloseButton={false}
       busy={state.isWorking}
-      dark={dark}
-      forceLight={!dark}
       initialFocusRef={primaryActionRef}
       testId="cloud-save-conflict-dialog"
       layerClassName="z-[125]"
       panelClassName="max-w-xl"
     >
-      <p className={dark ? "text-xs text-slate-400" : "text-xs text-slate-500"}>
+      <p className="text-xs text-slate-500">
         Detected <time dateTime={new Date(state.detectedAt).toISOString()}>{new Date(state.detectedAt).toLocaleString()}</time>
       </p>
       <p
         data-testid="cloud-save-conflict-message"
-        className={
-          dark
-            ? "mt-4 rounded-lg border border-amber-400/30 bg-amber-300/10 px-3 py-2 text-sm text-amber-100"
-            : "mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
-        }
+        className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
       >
         {state.message}
       </p>
@@ -70,11 +62,7 @@ export function CloudSaveConflictDialog({
         <button
           type="button"
           data-testid="cloud-conflict-reload"
-          className={
-            dark
-              ? "rounded-lg border border-rose-400/70 px-4 py-2 text-sm font-semibold text-rose-200 disabled:opacity-50"
-              : "rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
-          }
+          className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
           disabled={state.isWorking}
           onClick={() => void onReloadCloudCopy()}
         >

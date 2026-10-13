@@ -3,23 +3,23 @@ import fs from "node:fs";
 import path from "node:path";
 import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 
+// The editor's colour contract. Its name is older than its job: the Pro "designer theme" it
+// once checked was never switched on and went in UX 5l (13 Oct 2026). It now checks the light
+// theme's tokens and their contrast, and that the retired theme stays gone; the dark mode
+// modelled on Apple's (claude/dark-mode-plan-2026-10-13.md) adds its dark values here.
+
 const root = process.cwd();
-const cssPath = path.join(root, "app", "globals.css");
-const css = fs.readFileSync(cssPath, "utf8");
+const read = (relativePath: string) => fs.readFileSync(path.join(root, relativePath), "utf8");
+const css = read("app/globals.css");
 const consumerTheme = css.match(/:root\s*\{([\s\S]*?)\n\}/)?.[1];
-const designerTheme = css.match(/\[data-theme="designer"\]\s*\{([\s\S]*?)\n\}/)?.[1];
 
 assert.ok(consumerTheme, "Consumer theme tokens should be defined.");
-assert.ok(designerTheme, "Designer theme tokens should be defined.");
 
-function readHexTokenFrom(theme: string | undefined, themeLabel: string, name: string): string {
-  const match = theme?.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, "i"));
-  assert.ok(match?.[1], `${themeLabel} theme should define --${name} as a six-digit hex color.`);
+function readConsumerHexToken(name: string): string {
+  const match = consumerTheme?.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, "i"));
+  assert.ok(match?.[1], `The consumer theme should define --${name} as a six-digit hex color.`);
   return match[1];
 }
-
-const readHexToken = (name: string) => readHexTokenFrom(designerTheme, "Designer", name);
-const readConsumerHexToken = (name: string) => readHexTokenFrom(consumerTheme, "Consumer", name);
 
 function relativeLuminance(hex: string): number {
   const channels = hex
@@ -42,7 +42,6 @@ function contrastRatio(foreground: string, background: string): number {
   );
 }
 
-const panel = readHexToken("bg-panel");
 const consumerTokens = {
   "bg-canvas": "#ffffff",
   "bg-panel": "#ffffff",
@@ -85,202 +84,29 @@ assert.match(
   "The darker neutral text sits in the utilities layer, so hover and disabled variants still apply."
 );
 
-const exactDesignerTokens = {
-  "bg-canvas": "#dedfdf",
-  "bg-canvas-3d": "#dedfdf",
-  "bg-command": "#141514",
-  "bg-frame": "#141514",
-  "bg-frame-raised": "#242725",
-  "bg-frame-hover": "#303330",
-  "bg-frame-selected": "#e7e9e5",
-  "bg-panel": "#f7f7f4",
-  "bg-panel-raised": "#ffffff",
-  "bg-panel-hover": "#e8e9e5",
-  "bg-panel-recessed": "#eeefeb",
-  "border-subtle": "#d4d6d1",
-  "border-strong": "#9da29c",
-  "border-control": "#717773",
-  "border-on-dark-subtle": "#3f4340",
-  "border-on-dark": "#7b827d",
-  "text-primary": "#191b1a",
-  "text-secondary": "#4b514e",
-  "text-muted": "#626965",
-  "text-on-dark-primary": "#f4f5f2",
-  "text-on-dark-secondary": "#c7cdc8",
-  "text-on-dark-muted": "#aab2ac",
-  accent: "#275fcb",
-  "accent-designer": "#275fcb",
-  "accent-soft": "#e7eefc",
-  "accent-on-dark": "#7ea7ff",
-  "text-on-accent": "#ffffff",
-  "text-on-accent-dark": "#11151d",
-  danger: "#a53d3e",
-  "status-ready-bg": "#e3f3ea",
-  "status-ready-border": "#2f7356",
-  "status-ready-text": "#20553f",
-  "status-warning-bg": "#fbefcf",
-  "status-warning-border": "#8a6515",
-  "status-warning-text": "#624708",
-  "status-blocked-bg": "#fbe6e5",
-  "status-blocked-border": "#a53d3e",
-  "status-blocked-text": "#7c2528",
-  "status-info-bg": "#e5eefc",
-  "status-info-border": "#356bb4",
-  "status-info-text": "#264e86",
-  "status-pending-bg": "#eceeea",
-  "status-pending-border": "#6f756f",
-  "status-pending-text": "#474d49",
-} as const;
-
-for (const [name, expected] of Object.entries(exactDesignerTokens)) {
-  assert.equal(
-    readHexToken(name).toLowerCase(),
-    expected,
-    `Designer token --${name} should match the shared-product Pro palette.`
-  );
-}
-
-const normalTextPairs = [
-  ["primary on panel", readHexToken("text-primary"), panel],
-  ["secondary on panel", readHexToken("text-secondary"), panel],
-  ["muted on panel", readHexToken("text-muted"), panel],
-  ["primary on raised", readHexToken("text-primary"), readHexToken("bg-panel-raised")],
-  ["secondary on raised", readHexToken("text-secondary"), readHexToken("bg-panel-raised")],
-  ["muted on raised", readHexToken("text-muted"), readHexToken("bg-panel-raised")],
-  ["primary on hover", readHexToken("text-primary"), readHexToken("bg-panel-hover")],
-  ["secondary on hover", readHexToken("text-secondary"), readHexToken("bg-panel-hover")],
-  ["muted on hover", readHexToken("text-muted"), readHexToken("bg-panel-hover")],
-  ["primary on recessed", readHexToken("text-primary"), readHexToken("bg-panel-recessed")],
-  ["secondary on recessed", readHexToken("text-secondary"), readHexToken("bg-panel-recessed")],
-  ["muted on recessed", readHexToken("text-muted"), readHexToken("bg-panel-recessed")],
-  ["accent text on soft active", readHexToken("accent"), readHexToken("accent-soft")],
-  ["text on accent", readHexToken("text-on-accent"), readHexToken("accent")],
-  ["primary on command selection", readHexToken("text-primary"), readHexToken("bg-frame-selected")],
-  ["primary on frame", readHexToken("text-on-dark-primary"), readHexToken("bg-frame")],
-  ["secondary on frame", readHexToken("text-on-dark-secondary"), readHexToken("bg-frame")],
-  ["muted on frame", readHexToken("text-on-dark-muted"), readHexToken("bg-frame")],
-  ["secondary on raised frame", readHexToken("text-on-dark-secondary"), readHexToken("bg-frame-raised")],
-  ["muted on raised frame", readHexToken("text-on-dark-muted"), readHexToken("bg-frame-raised")],
-  ["text on on-dark accent", readHexToken("text-on-accent-dark"), readHexToken("accent-on-dark")],
-] as const;
-
-for (const [label, foreground, background] of normalTextPairs) {
-  const ratio = contrastRatio(foreground, background);
-  assert.ok(ratio >= 4.5, `${label} text contrast is ${ratio.toFixed(2)}:1; expected at least 4.5:1.`);
-}
-
-for (const [label, background] of [
-  ["panel", panel],
-  ["raised", readHexToken("bg-panel-raised")],
-  ["hover", readHexToken("bg-panel-hover")],
-  ["recessed", readHexToken("bg-panel-recessed")],
-] as const) {
-  const controlBoundaryRatio = contrastRatio(readHexToken("border-control"), background);
-  assert.ok(
-    controlBoundaryRatio >= 3,
-    `Control boundaries are ${controlBoundaryRatio.toFixed(2)}:1 against ${label}; expected at least 3:1.`
-  );
-  const activeBoundaryRatio = contrastRatio(readHexToken("accent"), background);
-  assert.ok(
-    activeBoundaryRatio >= 3,
-    `Active-state boundaries are ${activeBoundaryRatio.toFixed(2)}:1 against ${label}; expected at least 3:1.`
-  );
-}
-
-for (const [label, background] of [
-  ["frame", readHexToken("bg-frame")],
-  ["raised frame", readHexToken("bg-frame-raised")],
-  ["hovered frame", readHexToken("bg-frame-hover")],
-] as const) {
-  const boundaryRatio = contrastRatio(readHexToken("border-on-dark"), background);
-  assert.ok(
-    boundaryRatio >= 3,
-    `On-dark control boundaries are ${boundaryRatio.toFixed(2)}:1 against ${label}; expected at least 3:1.`
-  );
-}
-
-const commandSelectionBoundaryRatio = contrastRatio(
-  readHexToken("border-on-dark"),
-  readHexToken("bg-frame-selected")
-);
-assert.ok(
-  commandSelectionBoundaryRatio >= 3,
-  `Command selection boundary is ${commandSelectionBoundaryRatio.toFixed(2)}:1; expected at least 3:1.`
-);
-
-const toolRailActiveBoundaryRatio = contrastRatio(
-  readHexToken("accent-on-dark"),
-  readHexToken("bg-frame")
-);
-assert.ok(
-  toolRailActiveBoundaryRatio >= 3,
-  `On-dark active state is ${toolRailActiveBoundaryRatio.toFixed(2)}:1; expected at least 3:1.`
-);
-
-for (const status of ["ready", "warning", "blocked", "info", "pending"] as const) {
-  const background = readHexToken(`status-${status}-bg`);
-  const border = readHexToken(`status-${status}-border`);
-  const foreground = readHexToken(`status-${status}-text`);
-  const textRatio = contrastRatio(foreground, background);
-  const innerBoundaryRatio = contrastRatio(border, background);
-  const outerBoundaryRatio = contrastRatio(border, panel);
-  const frameBoundaryRatio = contrastRatio(background, readHexToken("bg-frame"));
-  assert.ok(textRatio >= 4.5, `${status} text contrast is ${textRatio.toFixed(2)}:1; expected at least 4.5:1.`);
-  assert.ok(innerBoundaryRatio >= 3, `${status} inner boundary is ${innerBoundaryRatio.toFixed(2)}:1; expected at least 3:1.`);
-  assert.ok(outerBoundaryRatio >= 3, `${status} outer boundary is ${outerBoundaryRatio.toFixed(2)}:1; expected at least 3:1.`);
-  assert.ok(frameBoundaryRatio >= 3, `${status} surface boundary on the frame is ${frameBoundaryRatio.toFixed(2)}:1; expected at least 3:1.`);
-}
-
-assert.match(
+// The retired designer theme stays gone (UX 5l): no theme attribute, no designer palette, and
+// no component switching its colours on a dark flag. Dark mode comes back as tokens.
+assert.doesNotMatch(css, /data-theme/, "No stylesheet rule may key on a data-theme attribute.");
+assert.doesNotMatch(
   css,
-  /Keep legacy utility classes readable[\s\S]*?var\(--text-primary\)[\s\S]*?var\(--text-secondary\)[\s\S]*?var\(--text-muted\)/,
-  "Designer mode should map legacy text utilities to the readable light-work-surface scale."
+  /--(?:bg-frame|bg-command|text-on-dark|accent-on-dark|accent-designer|status-[a-z]+-(?:bg|border|text))\b/,
+  "The designer palette's tokens should not come back."
 );
-assert.match(
-  css,
-  /Graphite shell regions[\s\S]*?var\(--text-on-dark-primary\)[\s\S]*?var\(--text-on-dark-secondary\)[\s\S]*?var\(--text-on-dark-muted\)/,
-  "Designer mode should map command and tool-rail utilities to the on-dark text scale."
-);
-
-for (const semanticClass of [
-  "designer-tool-rail",
-  "designer-command-selection",
-  "designer-work-surface",
-  "designer-work-section",
-  "designer-work-divider",
-  "designer-work-control",
-  "designer-work-control-active",
-  "designer-work-muted",
-  "designer-primary-action",
-]) {
-  assert.match(css, new RegExp(`\\.${semanticClass}\\b`), `${semanticClass} should have a semantic CSS rule.`);
-}
-
-for (const [relativePath, semanticClass] of [
-  ["components/editor/DesignControlsPanelFrame.tsx", "designer-dock"],
-  ["components/editor/EditorToolRail.tsx", "designer-tool-rail"],
-  ["components/editor/FloorPropertiesPanel.tsx", "designer-dock"],
-  ["components/editor/RoomPanNavigator.tsx", "designer-dock"],
-  ["components/editor/RoomPlanStatusBar.tsx", "designer-work-surface"],
-  ["components/editor/SceneAdjustmentToolbar.tsx", "designer-work-surface"],
-  ["components/editor/FloorPlanToolStrip.tsx", "designer-work-section"],
-] as const) {
-  const source = fs.readFileSync(path.join(root, relativePath), "utf8");
-  assert.match(
-    source,
-    new RegExp(semanticClass),
-    `${relativePath} should use ${semanticClass}.`
-  );
-}
+const retiredThemeProps = /\b(?:showDesignerTheme|designerTheme|forceLight)\b|\bdark\s*\?|\bdark=\{|data-theme=/;
+const sourceRoots = ["app", "components", "features", "lib"];
+const sourceFiles: string[] = [];
+const collect = (directory: string) => {
+  for (const entry of fs.readdirSync(path.join(root, directory), { withFileTypes: true })) {
+    const relativePath = path.join(directory, entry.name);
+    if (entry.isDirectory()) collect(relativePath);
+    else if (/\.tsx?$/.test(entry.name)) sourceFiles.push(relativePath);
+  }
+};
+sourceRoots.forEach(collect);
+const themedFiles = sourceFiles.filter((file) => retiredThemeProps.test(read(file)));
+assert.deepEqual(themedFiles, [], "No component should take the retired dark/designer theme flags.");
 
 const commandBarSource = readEditorCommandBarSource(root);
-assert.match(commandBarSource, /designer-command-bar/, "The Pro command bar should use the shell token.");
-assert.match(commandBarSource, /designer-control/, "The Pro command bar should use strong control boundaries.");
-assert.match(
-  commandBarSource,
-  /data-testid="editor-design-steps"[\s\S]*?dark \? "designer-control md:border"/,
-  "The Pro design steps should sit in a restrained neutral command control."
-);
 assert.match(
   commandBarSource,
   /data-testid=\{step\.testId\}[\s\S]*?data-active=\{step\.active \? "true" : "false"\}[\s\S]*?aria-current=\{step\.active \? "step" : undefined\}/,
@@ -288,15 +114,13 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /if \(dark\) return `\$\{shape\} \$\{active \? "designer-control-active" : "designer-work-control"\}`;/,
-  "The current Pro design step should use the active control token."
+  /if \(saveStatus\.tone === "error"\) return "text-red-700";[\s\S]*?return "text-success";/,
+  "The save status line keeps red for Not saved and green for Saved (UX 4c)."
 );
-assert.match(commandBarSource, /designer-work-surface/, "The Pro command menus should use light work surfaces.");
-assert.match(commandBarSource, /designer-primary-action/, "The Pro command bar should reserve solid blue for its primary action.");
 assert.match(
   commandBarSource,
-  /if \(saveStatus\.tone === "error"\) return dark \? "text-red-300" : "text-red-700";[\s\S]*?return dark \? "text-emerald-300" : "text-success";/,
-  "The save status line keeps red for Not saved and green for Saved, in both themes (UX 4c)."
+  /data-testid="pro-mode-indicator"[\s\S]{0,300}?aria-label="Pro tools on"[\s\S]{0,300}?>Pro tools</,
+  "The shared command bar should clearly label Pro mode without changing its theme."
 );
 
 const legacySurfacePattern = /#(?:10131a|12151d|151820|1b2030)/i;
@@ -305,208 +129,25 @@ for (const relativePath of [
   "components/editor/DesignControlsFurnishPanel.tsx",
   "components/editor/DesignControlsPlanPanel.tsx",
   "components/editor/FloorPlanUploadPanel.tsx",
+  "components/editor/design-page/DesignPageWorkspace.tsx",
+  "components/editor/design-page/SelectedItemPanel.tsx",
 ]) {
-  const source = fs.readFileSync(path.join(root, relativePath), "utf8");
-  assert.doesNotMatch(source, legacySurfacePattern, `${relativePath} should not restore the legacy blue-black Pro palette.`);
-  assert.match(source, /designer-(?:dock|raised|recessed|control)/, `${relativePath} should use semantic Pro surfaces.`);
+  assert.doesNotMatch(read(relativePath), legacySurfacePattern, `${relativePath} should not restore the legacy blue-black Pro palette.`);
 }
 
-const planPanelSource = fs.readFileSync(
-  path.join(root, "components", "editor", "DesignControlsPlanPanel.tsx"),
-  "utf8"
-);
-const designControlsSource = fs.readFileSync(
-  path.join(root, "components", "editor", "DesignControlsPanelFrame.tsx"),
-  "utf8"
-);
-assert.match(designControlsSource, /panelShellClass = `\$\{dark \? "designer-dock/, "The design workspace should have one outer Pro dock.");
-assert.doesNotMatch(planPanelSource, /<div className=\{dark \? "designer-dock/, "The Plan content should not nest another dock.");
-assert.match(planPanelSource, /progressCardClass = dark[\s\S]*?designer-divider/, "Internal Plan sections should use dividers.");
-assert.doesNotMatch(planPanelSource, /progressCardClass = dark[\s\S]{0,100}?designer-dock/, "Internal Plan sections should not each become shadowed docks.");
-
-const designPageSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "DesignPageWorkspace.tsx"),
-  "utf8"
-);
-const viewportReadModelSource = fs.readFileSync(
-  path.join(root, "lib", "design-page-viewport-workspace-read-model.ts"),
-  "utf8"
-);
-const presentationWorkspaceSource = fs.readFileSync(
-  path.join(root, "lib/useDesignPagePresentationWorkspaceRegistration.ts"),
-  "utf8"
-);
-const designPagePanelRegionSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "DesignPagePanelRegion.tsx"),
-  "utf8"
-);
-const planPresentationSource = fs.readFileSync(
-  path.join(root, "lib", "useDesignPagePlanPresentationModel.ts"),
-  "utf8"
-);
-const coreShellSource = fs.readFileSync(
-  path.join(root, "lib", "useDesignPageCoreShellRegistration.ts"),
-  "utf8"
-);
-const editorCommandBarSource = readEditorCommandBarSource(root);
-const designPageCommandBarSource = fs.readFileSync(
-  path.join(
-    root,
-    "components",
-    "editor",
-    "design-page",
-    "DesignPageEditorCommandBar.tsx"
-  ),
-  "utf8"
-);
-const designPageEditorChromeSource = fs.readFileSync(
-  path.join(
-    root,
-    "components",
-    "editor",
-    "design-page",
-    "DesignPageEditorChrome.tsx"
-  ),
-  "utf8"
-);
-const editorChromeControllerSource = fs.readFileSync(
-  path.join(root, "lib", "useDesignPageEditorChromeController.ts"),
-  "utf8"
-);
-const viewportAdapterSource = fs.readFileSync(
-  path.join(root, "lib", "design-page-viewport-region-adapter.ts"),
-  "utf8"
-);
-const viewportOverlaySource = fs.readFileSync(
-  path.join(
-    root,
-    "components",
-    "editor",
-    "design-page",
-    "DesignPageViewportOverlayLayer.tsx"
-  ),
-  "utf8"
-);
-// The inspector's frame (placement and style) lives beside it, read first (UX 4d).
-const selectionInspectorSource = ["selectionInspectorPlacement.ts", "DesignPageSelectionInspector.tsx"]
-  .map((file) => fs.readFileSync(path.join(root, "components", "editor", "design-page", file), "utf8"))
-  .join("\n");
-const selectedItemPanelSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "SelectedItemPanel.tsx"),
-  "utf8"
-);
-const designSceneCanvasSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "DesignSceneCanvas.tsx"),
-  "utf8"
-);
-const lightingSystemSource = fs.readFileSync(
-  path.join(
-    root,
-    "components",
-    "editor",
-    "design-page",
-    "lighting",
-    "LightingSystem.tsx"
-  ),
-  "utf8"
-);
-const exposureControllerSource = fs.readFileSync(
-  path.join(
-    root,
-    "components",
-    "editor",
-    "design-page",
-    "lighting",
-    "ExposureController.tsx"
-  ),
-  "utf8"
-);
-const commandPaletteSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "EditorCommandPalette.tsx"),
-  "utf8"
-);
-const planQualityReviewPanelSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "PlanQualityReviewPanel.tsx"),
-  "utf8"
-);
-const sceneReadyVeilSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "SceneReadyVeil.tsx"),
-  "utf8"
-);
-const selectedPlanOpeningActionsSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "SelectedPlanOpeningActions.tsx"),
-  "utf8"
-);
-const selectedSurfaceInspectorSource = fs.readFileSync(
-  path.join(root, "components", "editor", "design-page", "SelectedSurfaceInspector.tsx"),
-  "utf8"
-);
-assert.doesNotMatch(
-  designPageSource,
-  legacySurfacePattern,
-  "The Pro design workspace should not restore the legacy blue-black palette."
-);
-assert.doesNotMatch(
-  selectedItemPanelSource,
-  legacySurfacePattern,
-  "The Pro selected-item panel should not restore the legacy blue-black palette."
-);
-assert.match(
-  coreShellSource,
-  /const showDesignerTheme = false;/,
-  "Pro capability mode should keep the shared light product theme."
-);
-assert.match(
-  editorCommandBarSource,
-  /data-testid="pro-mode-indicator"[\s\S]{0,300}?aria-label="Pro tools on"[\s\S]{0,300}?>Pro tools</,
-  "The shared command bar should clearly label Pro mode without changing its theme."
-);
-assert.match(
-  designPageCommandBarSource,
-  /<RoomPlanStatusBar[\s\S]*?dark=\{configuration\.dark\}/,
-  "The command wrapper should apply the resolved Pro theme to room context."
-);
-assert.match(
-  designPageCommandBarSource,
-  /<EditorCommandBar[\s\S]*?dark=\{configuration\.dark\}/,
-  "The command wrapper should apply the resolved Pro theme to the command-bar leaf."
-);
-assert.match(
-  presentationWorkspaceSource,
-  /useDesignPagePresentationQaFacade\(\{[\s\S]*?configuration:\s*\{[\s\S]*?designerTheme:\s*coreShell\.derived\.access\.showDesignerTheme/,
-  "The presentation workspace should inject its resolved designer theme into the presentation/QA facade."
-);
-assert.match(
-  editorChromeControllerSource,
-  /commandBar: configuration\.commandBar/,
-  "The chrome controller should preserve the resolved command-bar theme."
-);
-assert.match(
-  designPageEditorChromeSource,
-  /<DesignPageEditorCommandBar[\s\S]*?configuration=\{configuration\.commandBar\}/,
-  "The editor chrome should pass its resolved designer theme through the command-wrapper boundary."
-);
+const designPageSource = read("components/editor/design-page/DesignPageWorkspace.tsx");
 assert.doesNotMatch(
   designPageSource,
   /<(?:EditorCommandBar|RoomPlanStatusBar)\b/,
-  "The workspace should delegate themed command and room-status composition to the wrapper."
+  "The workspace should delegate command and room-status composition to the wrapper."
 );
-assert.match(
-  commandPaletteSource,
-  /<EditorDialog[\s\S]{0,500}?testId="editor-command-palette"[\s\S]{0,700}?panelClassName=\{[\s\S]{0,300}?designer-(?:dock|work-surface)/,
-  "The shared Pro command-palette dialog should use an opaque semantic panel surface."
-);
-assert.match(
-  planQualityReviewPanelSource,
-  /data-testid="plan-quality-review-panel"[\s\S]{0,500}?designer-(?:dock|work-surface)/,
-  "The Pro plan review should use an opaque semantic surface."
-);
-assert.match(
-  selectedPlanOpeningActionsSource,
-  /data-testid="selected-plan-opening-actions"[\s\S]{0,500}?designer-(?:dock|work-surface)/,
-  "The Pro selected-opening toolbar should use an opaque semantic surface."
+assert.doesNotMatch(
+  designPageSource,
+  /<SceneReadyVeil/,
+  "The design workspace should delegate the loading veil to the viewport overlay layer."
 );
 // Shop is one light page over the canvas for everyone (audit finding FU8; J's Q6, 27 Sep), not a dock.
+const designPagePanelRegionSource = read("components/editor/design-page/DesignPagePanelRegion.tsx");
 assert.match(
   designPagePanelRegionSource,
   /data-testid="shop-step"[\s\S]{0,200}?bg-\[#fafaf9\]/,
@@ -514,40 +155,27 @@ assert.match(
 );
 assert.doesNotMatch(designPagePanelRegionSource, /shopping-dock/, "Shop should not come back as a dock.");
 assert.match(
-  sceneReadyVeilSource,
-  /data-testid="scene-ready-veil"[\s\S]{0,700}?backgroundColor:\s*configuration\.backgroundColor/,
-  "The scene loading veil should match the resolved scene background without a white flash."
-);
-assert.match(
-  viewportOverlaySource,
-  /state\.sceneLoadingVisible \? \([\s\S]{0,250}?<SceneReadyVeil configuration=\{configuration\.sceneLoading\}/,
+  read("components/editor/design-page/DesignPageViewportOverlayLayer.tsx"),
+  /state\.sceneLoadingVisible \? \([\s\S]{0,250}?<SceneReadyVeil \/>/,
   "The viewport overlay layer should own scene-loading veil composition."
 );
-assert.doesNotMatch(
-  designPageSource,
-  /<SceneReadyVeil/,
-  "The design workspace should delegate the loading veil to the viewport overlay layer."
+assert.match(
+  read("lib/design-page-viewport-workspace-read-model.ts"),
+  /sceneLoading: sceneRoomRead\.state\.scene\.showSceneLoadingVeil,/,
+  "The viewport read model should say when the scene is still loading."
 );
 assert.match(
-  viewportReadModelSource,
-  /sceneLoading: sceneRoomRead\.state\.scene\.showSceneLoadingVeil,[\s\S]*?const dark = coreShell\.derived\.access\.showDesignerTheme;[\s\S]*?sceneBackgroundColor: planWorkspace\.derived\.sceneBackgroundColor/,
-  "The viewport read model should inject the resolved loading theme and background."
-);
-assert.match(
-  viewportAdapterSource,
-  /sceneLoading:\s*\{[\s\S]*?dark: configuration\.dark,[\s\S]*?backgroundColor: configuration\.sceneBackgroundColor,/,
-  "The viewport adapter should pass the resolved scene-loading theme and background through the overlay boundary."
-);
-assert.match(
-  selectedSurfaceInspectorSource,
+  read("components/editor/design-page/SelectedSurfaceInspector.tsx"),
   /\{pro \? \([\s\S]{0,200}?data-testid="surface-inspector-publish-status"[\s\S]{0,200}?header\.draft/,
-  "Pro sees material publication statuses (UX 4f, ED5); the dark theme's status classes went with the dark theme (Q3)."
+  "Pro sees material publication statuses (UX 4f, ED5)."
 );
 assert.match(
-  planPresentationSource,
-  /layout\.viewMode\s*===\s*"3d"[\s\S]{0,120}?presentation\.showDesignerTheme[\s\S]{0,80}?"#dedfdf"[\s\S]{0,80}?"#f4f2ed"[\s\S]{0,80}?"#ffffff"/,
-  "The plan presentation model should use the normal warm 3D canvas whenever the optional designer theme is inactive."
+  read("lib/useDesignPagePlanPresentationModel.ts"),
+  /layout\.viewMode\s*===\s*"3d"\s*\?\s*"#f4f2ed"\s*:\s*"#ffffff"/,
+  "The 3D canvas is the warm #f4f2ed and the 2D plan white."
 );
+
+const designSceneCanvasSource = read("components/editor/design-page/DesignSceneCanvas.tsx");
 assert.match(
   designSceneCanvasSource,
   /<Canvas[\s\S]*?data-shadow-maps-enabled=\{[\s\S]*?effectiveShadowsEnabled[\s\S]*?data-tone-mapping="aces"[\s\S]*?data-lighting-model="central-environment-sun-ambient"[\s\S]*?shadows=\{effectiveShadowsEnabled \? QUALITY_SHADOW_FILTER : false\}[\s\S]*?<LightingSystem/,
@@ -559,24 +187,14 @@ assert.doesNotMatch(
   "The whole-home renderer should not restore the obsolete physical-light assignment."
 );
 assert.match(
-  lightingSystemSource,
+  read("components/editor/design-page/lighting/LightingSystem.tsx"),
   /<ExposureController[\s\S]*?<EnvironmentController[\s\S]*?<ambientLight[\s\S]*?<SunController/,
   "The central lighting system should own renderer output and the complete global light stack."
 );
 assert.match(
-  exposureControllerSource,
+  read("components/editor/design-page/lighting/ExposureController.tsx"),
   /THREE\.SRGBColorSpace[\s\S]*?THREE\.ACESFilmicToneMapping[\s\S]*?lighting\.renderer\.exposure/,
   "The renderer controller should own sRGB output, ACES tone mapping, and preset exposure."
-);
-assert.match(
-  selectionInspectorSource,
-  /function inspectorFrame[\s\S]*?designer-work-surface[\s\S]*?data-testid="selection-inspector"/,
-  "The Pro selection inspector should use the light work-surface semantic."
-);
-assert.match(
-  selectedItemPanelSource,
-  /data-testid="selected-item-panel"[\s\S]{0,500}?designer-panel/,
-  "The Pro selected-item panel should preserve its semantic panel surface."
 );
 
 assert.match(
@@ -590,4 +208,4 @@ assert.doesNotMatch(
   "No stylesheet rule may follow the OS dark setting until the app has a designed dark theme."
 );
 
-console.log("Designer theme contrast checks passed.");
+console.log("Light theme contrast checks passed.");

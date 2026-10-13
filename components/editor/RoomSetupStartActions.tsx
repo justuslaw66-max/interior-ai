@@ -4,7 +4,6 @@ import { FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID } from "@/lib/floor-plan-upload-di
 import { PLAN_START_TEMPLATE_ACTION_ID } from "@/lib/start-templates-request";
 
 type RoomSetupStartActionsProps = {
-  dark: boolean;
   canEdit: boolean;
   secondaryActionClass: string;
   actions: {
@@ -18,11 +17,9 @@ type RoomSetupStartActionsProps = {
  * The other ways to start, under the room card: a template (Start a new design's, ST8), a measured
  * room, or a floor plan.
  * Upload floor plan is one visible line here, as in the Plan mockup (audit finding ST2); it was
- * a "Choose a file" tile in a section that started collapsed. The link is the same blue in the
- * Pro theme, whose work surfaces are light too.
+ * a "Choose a file" tile in a section that started collapsed.
  */
 export function RoomSetupStartActions({
-  dark,
   canEdit,
   secondaryActionClass,
   actions,
@@ -50,7 +47,7 @@ export function RoomSetupStartActions({
           Draw measured room
         </button>
       </div>
-      <p className={`mt-2 text-center text-[13px] ${dark ? "text-neutral-400" : "text-neutral-600"}`}>
+      <p className="mt-2 text-center text-[13px] text-neutral-600">
         Have a floor plan?{" "}
         <button
           id={FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID}

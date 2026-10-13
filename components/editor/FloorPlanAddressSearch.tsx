@@ -22,7 +22,6 @@ import { useFloorPlanResultApplicationRequests } from "./useFloorPlanResultAppli
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type FloorPlanAddressSearchProps = {
-  dark?: boolean;
   canEdit: boolean;
   measurementUnit: PlanMeasurementUnit;
   onApplyPlanTemplate: (
@@ -32,7 +31,6 @@ type FloorPlanAddressSearchProps = {
 };
 
 export default function FloorPlanAddressSearch({
-  dark = false,
   canEdit,
   measurementUnit,
   onApplyPlanTemplate,
@@ -105,23 +103,20 @@ export default function FloorPlanAddressSearch({
     project: effectiveProjectFilter,
     flatType: effectiveFlatTypeFilter,
   }));
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
-  const control = dark
-    ? "designer-control rounded-md border px-2 py-1.5 text-xs"
-    : "rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-700";
+  const subtle = "text-neutral-600";
+  const control = "rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-700";
 
   const requestUpload = () =>
     requestFloorPlanUpload({ source: "address_search", openerId: FLOOR_PLAN_ADDRESS_UPLOAD_ACTION_ID });
   return (
     <section
-      className={`${dark ? "designer-recessed rounded-xl border border-white/10 p-3" : "rounded-xl border border-blue-100 bg-blue-50/70 p-3"} ph-no-capture`}
+      className="rounded-xl border border-blue-100 bg-blue-50/70 p-3 ph-no-capture"
       data-testid="floor-plan-address-library"
     >
       <p className={`text-xs ${subtle}`}>
         Add both floor and stack to search privately for an exact unit match.
       </p>
       <FloorPlanAddressFields
-        dark={dark}
         address={address}
         floor={floor}
         stack={stack}
@@ -162,7 +157,7 @@ export default function FloorPlanAddressSearch({
       </div>
 
       {exactSearchReady && results.length === 0 ? (
-        <div className={dark ? "mt-2 rounded-lg border border-white/10 p-3" : "mt-2 rounded-lg border border-blue-200 bg-white p-3"}>
+        <div className="mt-2 rounded-lg border border-blue-200 bg-white p-3">
           <div className="text-xs font-semibold">No directory match yet</div>
           <p className={`mt-1 text-xs leading-4 ${subtle}`}>
             Directory requests are not available yet. You can still upload your own floor plan now.
@@ -187,7 +182,7 @@ export default function FloorPlanAddressSearch({
       ) : null}
 
       {pendingApplication?.template.canonical ? (
-        <div role="region" aria-label="Confirm floor-plan configuration" data-testid="floor-plan-configuration-confirmation" className={dark ? "mt-3 rounded-xl border border-white/10 p-3" : "mt-3 rounded-xl border border-sky-200 bg-white p-3 shadow-sm"}>
+        <div role="region" aria-label="Confirm floor-plan configuration" data-testid="floor-plan-configuration-confirmation" className="mt-3 rounded-xl border border-sky-200 bg-white p-3 shadow-sm">
           <div className="text-sm font-semibold">Confirm this source layout</div>
           <p className={`mt-1 text-xs leading-4 ${subtle}`}>
             Review the source-supported options before opening this immutable published layout.
@@ -199,7 +194,6 @@ export default function FloorPlanAddressSearch({
             selectedRevisionId={pendingApplication.template.canonical.revisionId}
             onChoosePublicVariant={(group, option) => void chooseAuthoredVariant(group, option)}
             disabled={applicationDisabled}
-            dark={dark}
             compact
           />
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -213,7 +207,6 @@ export default function FloorPlanAddressSearch({
 
       {groups.length > 0 ? (
         <FloorPlanCatalogResultList
-          dark={dark}
           canEdit={canEdit}
           groups={groups}
           resultListId={hasAddress ? undefined : "floor-plan-library-browse-results"}

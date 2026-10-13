@@ -3,7 +3,6 @@
 import GoogleAddressAutocomplete from "@/components/GoogleAddressAutocomplete";
 
 type FloorPlanAddressFieldsProps = {
-  dark: boolean;
   address: string;
   floor: string;
   stack: string;
@@ -18,7 +17,6 @@ type FloorPlanAddressFieldsProps = {
 };
 
 export default function FloorPlanAddressFields({
-  dark,
   address,
   floor,
   stack,
@@ -31,10 +29,8 @@ export default function FloorPlanAddressFields({
   onStackChange,
   onToggleBrowse,
 }: FloorPlanAddressFieldsProps) {
-  const inputClass = dark
-    ? "designer-control rounded-lg border px-3 py-2 text-sm text-neutral-100 placeholder:text-neutral-500"
-    : "rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-hidden placeholder:text-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
+  const inputClass = "rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-hidden placeholder:text-neutral-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100";
+  const subtle = "text-neutral-600";
 
   return (
     <div className="ph-no-capture" data-private-floor-plan="true">
@@ -82,15 +78,13 @@ export default function FloorPlanAddressFields({
         aria-expanded={browseOpen}
         aria-controls="floor-plan-library-browse-results"
         onClick={onToggleBrowse}
-        className={dark
-          ? "designer-control mt-3 flex w-full items-center justify-between gap-3 rounded-lg border border-white/10 px-3 py-2.5 text-left"
-          : "mt-3 flex w-full items-center justify-between gap-3 rounded-lg border border-blue-200 bg-white px-3 py-2.5 text-left shadow-sm hover:border-blue-300 hover:bg-blue-50"}
+        className="mt-3 flex w-full items-center justify-between gap-3 rounded-lg border border-blue-200 bg-white px-3 py-2.5 text-left shadow-sm hover:border-blue-300 hover:bg-blue-50"
       >
         <span className="min-w-0">
           <span className="block text-xs font-semibold">Browse approved floor plans</span>
           <span className={`mt-0.5 block truncate text-xs ${subtle}`}>{browseAddressSummary}</span>
         </span>
-        <span className={dark ? "shrink-0 text-xs font-semibold text-blue-200" : "shrink-0 text-xs font-semibold text-blue-700"}>
+        <span className="shrink-0 text-xs font-semibold text-blue-700">
           {browseStatus === "loading" ? "Loading…" : browseStatus === "error" ? "Unavailable" : `${browseCount} plans`}
           <span aria-hidden="true" className="ml-1">{browseOpen ? "−" : "+"}</span>
         </span>

@@ -10,7 +10,6 @@ function signInWithReturn() {
 }
 
 type CommandBarAccountMenuProps = {
-  dark: boolean;
   containerRef: RefObject<HTMLDivElement | null>;
   open: boolean;
   onToggle: () => void;
@@ -37,11 +36,11 @@ export type AccountMenuItemsProps = Omit<CommandBarAccountMenuProps, "containerR
  * or billing, and Sign out. Phones find the same items in the Menu.
  */
 export function CommandBarAccountMenu(props: CommandBarAccountMenuProps) {
-  const { dark, containerRef, open, onToggle } = props;
+  const { containerRef, open, onToggle } = props;
   if (!props.accountReady) {
     return <span aria-hidden="true" data-testid="editor-command-account-pending" className="h-9 w-9 shrink-0" />;
   }
-  if (!props.isAuthed) return <CommandBarSignInButton dark={dark} />;
+  if (!props.isAuthed) return <CommandBarSignInButton />;
   const initial = props.accountName?.trim().charAt(0).toUpperCase();
   return (
     <div ref={containerRef} className="relative shrink-0">
@@ -51,11 +50,7 @@ export function CommandBarAccountMenu(props: CommandBarAccountMenuProps) {
         aria-label="Account"
         aria-haspopup="menu"
         aria-expanded={open}
-        className={
-          dark
-            ? "designer-control inline-flex h-9 w-9 items-center justify-center rounded-full border text-sm font-bold leading-none"
-            : "inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-300 bg-neutral-100 text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-200"
-        }
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-300 bg-neutral-100 text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-200"
         onClick={onToggle}
       >
         {initial ? <span aria-hidden="true">{initial}</span> : <UserRound className="h-4 w-4" aria-hidden="true" />}
@@ -66,12 +61,12 @@ export function CommandBarAccountMenu(props: CommandBarAccountMenuProps) {
 }
 
 function AccountMenuPanel(props: CommandBarAccountMenuProps) {
-  const { dark, menuPanelClass } = props;
+  const { menuPanelClass } = props;
   return (
     <div
       data-testid="editor-command-account-menu" data-touch-area
       role="menu"
-      className={dark ? menuPanelClass : `${menuPanelClass} w-56`}
+      className={`${menuPanelClass} w-56`}
     >
       <AccountMenuItems {...props} />
     </div>
@@ -79,18 +74,13 @@ function AccountMenuPanel(props: CommandBarAccountMenuProps) {
 }
 
 export function AccountMenuItems(props: AccountMenuItemsProps) {
-  const { dark } = props;
   if (!props.accountReady) return null;
-  if (!props.isAuthed) return <CommandBarSignInButton dark={dark} menuButtonClass={props.menuButtonClass} />;
+  if (!props.isAuthed) return <CommandBarSignInButton menuButtonClass={props.menuButtonClass} />;
   return (
     <>
       <div
         data-testid="editor-account-plan"
-        className={
-          dark
-            ? "designer-work-muted mb-1 rounded-lg px-3 py-2 text-xs font-semibold"
-            : "mb-1 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-600"
-        }
+        className="mb-1 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-600"
       >
         {props.planLabel}
       </div>
@@ -150,7 +140,7 @@ function AccountBillingItem({
  * Guests sign in from the bar from md (the word from lg), and from the Menu on phones: given the
  * menu's item class, it's one of the Menu's items.
  */
-function CommandBarSignInButton({ dark, menuButtonClass }: { dark: boolean; menuButtonClass?: string }) {
+function CommandBarSignInButton({ menuButtonClass }: { menuButtonClass?: string }) {
   return (
     <button
       type="button"
@@ -159,9 +149,7 @@ function CommandBarSignInButton({ dark, menuButtonClass }: { dark: boolean; menu
       aria-label="Sign in"
       className={
         menuButtonClass ??
-        (dark
-          ? "designer-control inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-sm font-bold leading-none lg:w-auto lg:px-3.5"
-          : "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 lg:w-auto lg:px-3.5")
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 lg:w-auto lg:px-3.5"
       }
       onClick={signInWithReturn}
     >

@@ -21,14 +21,13 @@ type FieldProps = {
   maxHeightMeters: number;
   maxWidthMm: number;
   unit: PlanMeasurementUnit;
-  dark: boolean;
   onChange: (id: string, patch: DesignPageOpeningMetricsPatch) => void;
 };
 
 function measuredField(props: FieldProps & {
   dimension: "width" | "height" | "sill";
 }) {
-  const { opening, vertical, dimension, maxHeightMeters, maxWidthMm, unit, dark, onChange } = props;
+  const { opening, vertical, dimension, maxHeightMeters, maxWidthMm, unit, onChange } = props;
   const propertyEvidence = dimension === "width"
     ? opening.evidence?.width
     : dimension === "height" ? opening.evidence?.height : opening.evidence?.sillHeight;
@@ -51,10 +50,10 @@ function measuredField(props: FieldProps & {
         valueMm={valueMm} unit={unit} minMm={dimension === "sill" ? 0 : dimension === "width" ? 400 : 1}
         maxMm={maxMm} stepMm={1} keyboardStepMm={50}
         disabled={Boolean(propertyEvidence && !floorPlanPropertyEvidenceIsEditable(propertyEvidence))}
-        dark={dark} compact touchFriendly onCommit={(next) => commit(next)}
+        compact touchFriendly onCommit={(next) => commit(next)}
       />
       <FloorPlanPropertyEvidenceControl
-        evidence={evidence(propertyEvidence)} dark={dark}
+        evidence={evidence(propertyEvidence)}
         testId={`plan-opening-${dimension === "sill" ? "sill" : dimension}-evidence`}
         {...openingEvidenceHelp}
         onConfirm={(nextEvidence, note) => commit(valueMm, nextEvidence, note)}
@@ -66,7 +65,7 @@ function measuredField(props: FieldProps & {
 export function PlanOpeningDimensionFields(props: FieldProps & {
   wallSpanMeters: number;
 }) {
-  const { opening, unit, dark, onChange, wallSpanMeters } = props;
+  const { opening, unit, onChange, wallSpanMeters } = props;
   const maxOffsetMm = Math.max(0, (wallSpanMeters * 1000 - opening.widthMm) / 2);
   return (
     <div className="grid grid-cols-2 gap-2">
@@ -76,7 +75,7 @@ export function PlanOpeningDimensionFields(props: FieldProps & {
       <MeasurementField
         label="Position from wall centre" testId="plan-opening-offset-input"
         valueMm={opening.offsetMm} unit={unit} minMm={-maxOffsetMm} maxMm={maxOffsetMm}
-        stepMm={50} keyboardStepMm={50} dark={dark} compact touchFriendly
+        stepMm={50} keyboardStepMm={50} compact touchFriendly
         onCommit={(valueMm) => onChange(opening.id, { offsetMeters: valueMm / 1000 })}
       />
     </div>

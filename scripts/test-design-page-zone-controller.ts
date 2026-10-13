@@ -305,7 +305,7 @@ assert.match(
 
 assert.match(
   viewportOverlaySource,
-  /<DesignPageViewportSelectionControls\s+[\s\S]*?state=\{state\.selectionControls\}[\s\S]*?configuration=\{configuration\.selectionControls\}[\s\S]*?actions=\{actions\.selectionControls\}/,
+  /<DesignPageViewportSelectionControls\s+[\s\S]*?state=\{state\.selectionControls\}[\s\S]*?actions=\{actions\.selectionControls\}/,
   "The viewport layer should own selection-control rendering while Workspace retains live zone policy and actions."
 );
 

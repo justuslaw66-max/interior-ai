@@ -45,7 +45,6 @@ export function UploadSignInDialog({ open, openerId, onClose, onSignIn }: Upload
       closeLabel="Close"
       testId="upload-sign-in-dialog"
       returnFocusIds={returnFocusIds}
-      forceLight
       panelClassName="max-w-[520px]"
     >
       <ol className="flex flex-col gap-3">

@@ -25,7 +25,6 @@ type FloorPlanOpeningTracePanelProps = {
   onOpeningPointsChange: (value: ReviewSourcePoint[]) => void;
   onChange: (value: FloorPlanDocumentV2) => void;
   onError: (message: string | null) => void;
-  dark: boolean;
   disabled: boolean;
 };
 
@@ -50,7 +49,6 @@ export default function FloorPlanOpeningTracePanel({
   onOpeningPointsChange,
   onChange,
   onError,
-  dark,
   disabled,
 }: FloorPlanOpeningTracePanelProps) {
   const floor = document.floors.find((entry) => entry.id === floorId);
@@ -71,10 +69,8 @@ export default function FloorPlanOpeningTracePanel({
   );
   if (!floor) return null;
 
-  const control = dark
-    ? "designer-control rounded-md border px-2 py-1.5 text-xs"
-    : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
+  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
+  const subtle = "text-neutral-600";
 
   return (
     <details

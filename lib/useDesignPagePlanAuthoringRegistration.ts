@@ -64,7 +64,7 @@ export function useDesignPagePlanAuthoringRegistration({
     designPanelCollapsed,
     dismissedPlanCanvasGuidanceKey,
   } = base.state.panels;
-  const { isClientPreview, isDesigner, showDesignerTheme, canEdit } =
+  const { isClientPreview, isDesigner, canEdit } =
     coreShell.derived.access;
   const { liveCatalogReady } = coreShell.derived.access;
   const { showRuleToast } = coreShell.actions.feedback;
@@ -153,7 +153,6 @@ export function useDesignPagePlanAuthoringRegistration({
         viewMode,
         isDesigner,
         simplePlanControls: planViewport.state.plan.simplePlanControls,
-        showDesignerTheme,
         lightingPreset,
         guidedPlanStartMode,
         showBetaStart,

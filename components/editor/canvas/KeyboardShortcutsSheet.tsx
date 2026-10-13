@@ -19,7 +19,6 @@ type KeyboardShortcutsSheetProps = {
   /** Client Preview shows nothing editable, so it has no shortcuts to list. */
   enabled: boolean;
   isDesigner: boolean;
-  dark: boolean;
 };
 
 function Chord({ chord, isMac }: { chord: ShortcutChord; isMac: boolean }) {
@@ -75,7 +74,7 @@ export function KeyboardShortcutsList({ isDesigner, isMac }: { isDesigner: boole
  * `lib/editor-shortcuts.ts`, grouped. It opens from the canvas corner button, the ? key and the
  * command palette, all through one window event, and hands focus back to where it came from.
  */
-export function KeyboardShortcutsSheet({ enabled, isDesigner, dark }: KeyboardShortcutsSheetProps) {
+export function KeyboardShortcutsSheet({ enabled, isDesigner }: KeyboardShortcutsSheetProps) {
   const [open, setOpen] = useState(false);
   const [isMac, setIsMac] = useState(false);
 
@@ -104,7 +103,6 @@ export function KeyboardShortcutsSheet({ enabled, isDesigner, dark }: KeyboardSh
       title="Keyboard shortcuts"
       description="Shortcuts don't act while you type in a field."
       onClose={() => setOpen(false)}
-      dark={dark}
       testId="keyboard-shortcuts-dialog"
       closeButtonTestId="keyboard-shortcuts-close"
       panelClassName="max-w-2xl"
@@ -116,7 +114,7 @@ export function KeyboardShortcutsSheet({ enabled, isDesigner, dark }: KeyboardSh
 }
 
 /** The canvas corner's "Keyboard shortcuts" button (from lg, under any open panel). */
-export function KeyboardShortcutsButton({ dark }: { dark: boolean }) {
+export function KeyboardShortcutsButton() {
   return (
     <Button
       variant="secondary"
@@ -125,7 +123,7 @@ export function KeyboardShortcutsButton({ dark }: { dark: boolean }) {
       aria-label="Keyboard shortcuts"
       title="Keyboard shortcuts (?)"
       onClick={openKeyboardShortcuts}
-      className={`absolute bottom-4 right-4 z-30 max-lg:hidden shadow-sm ${dark ? "designer-control" : ""}`}
+      className="absolute bottom-4 right-4 z-30 max-lg:hidden shadow-sm"
     >
       <Keyboard className="h-5 w-5" aria-hidden="true" />
     </Button>

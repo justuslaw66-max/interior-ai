@@ -50,7 +50,7 @@ const floor: SelectedSurfaceInspectorState = {
   blockers: null,
 };
 const render = (state: SelectedSurfaceInspectorState, pro: boolean) =>
-  renderToStaticMarkup(createElement(SelectedSurfaceInspector, { state, configuration: { dark: false, pro }, actions }));
+  renderToStaticMarkup(createElement(SelectedSurfaceInspector, { state, configuration: { pro }, actions }));
 
 const consumerFloor = render(floor, false);
 assert.match(consumerFloor, /<h3 data-testid="surface-inspector-heading"[^>]*>Floor<\/h3>/);
@@ -89,7 +89,7 @@ const picked = render({ ...floor, picker: { title: "Floor materials", options: [
 assert.match(picked, /data-testid="selection-inspector-floor-picker"[\s\S]*Floor materials[\s\S]*selection-inspector-floor-picker-close[\s\S]*No other materials\./);
 
 // The inspector hands Pro to the surface inspector; the extracted parts carry the controls.
-assert.match(read("components/editor/design-page/DesignPageSelectionInspector.tsx"), /configuration=\{\{ dark: configuration\.dark, pro: configuration\.proMode \}\}/);
+assert.match(read("components/editor/design-page/DesignPageSelectionInspector.tsx"), /configuration=\{\{ pro: configuration\.proMode \}\}/);
 assert.match(read("lib/useDesignPageSurfaceInspector.ts"), /const headerLabel = surfaceInspectorIsWall\s+\? getWallFaceLabel\(wallInspectorFaceId\)\s+: surfaceInspectorIsCeiling\s+\? "Ceiling"\s+: "Floor";/);
 for (const file of ["SelectedSurfaceInspector", "SurfacePatternControls", "SurfaceMaterialPicker"]) {
   const lines = read(`components/editor/design-page/${file}.tsx`).split("\n").length;

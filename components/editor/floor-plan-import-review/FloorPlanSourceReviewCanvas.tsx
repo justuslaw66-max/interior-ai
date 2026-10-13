@@ -38,7 +38,6 @@ type FloorPlanSourceReviewCanvasProps = {
   openingPoints?: ReviewSourcePoint[];
   onOpeningPoint?: (point: ReviewSourcePoint) => void;
   assetRoutePrefix?: string;
-  dark?: boolean;
   onDocumentChange?: (document: FloorPlanDocumentV2) => void;
   disabled?: boolean;
   previewOnly?: boolean;
@@ -63,7 +62,6 @@ export default function FloorPlanSourceReviewCanvas({
   openingPoints = [],
   onOpeningPoint,
   assetRoutePrefix,
-  dark = false,
   onDocumentChange,
   disabled = false,
   previewOnly = false,
@@ -95,7 +93,7 @@ export default function FloorPlanSourceReviewCanvas({
 
   const presentation = sourceReviewPresentation(sourceReview.layer, sourceOpacity, overlayOpacity);
   const visibleOverlay = sourceReviewOverlay(sourceReview.layer, overlay);
-  if (!page) return <p className={dark ? "mt-2 text-xs text-neutral-300" : "mt-2 text-xs text-neutral-600"}>
+  if (!page) return <p className="mt-2 text-xs text-neutral-600">
     A preview of your floor plan is not available. Use guided tracing.
   </p>;
 
@@ -169,22 +167,14 @@ export default function FloorPlanSourceReviewCanvas({
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>
           <div className="text-sm font-semibold">{labels.title}</div>
-          <div
-            className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-600"}
-          >
+          <div className="text-xs text-neutral-600">
             {labels.description}
           </div>
         </div>
-        <FloorPlanReviewZoomControls zoom={zoom} setZoom={setZoom} pages={pages} pageNumber={page.pageNumber} dark={dark}
+        <FloorPlanReviewZoomControls zoom={zoom} setZoom={setZoom} pages={pages} pageNumber={page.pageNumber}
           onPageNumberChange={(value) => { setHoverSnap(null); onPageNumberChange(value); }} />
       </div>
-      <figure
-        className={
-          dark
-            ? "overflow-hidden rounded-md border border-white/10 bg-white"
-            : "overflow-hidden rounded-md border border-neutral-200 bg-white"
-        }
-      >
+      <figure className="overflow-hidden rounded-md border border-neutral-200 bg-white">
         <div className="relative">
           <div ref={scrollRef} data-testid="source-review-scroll" className="max-h-[72vh] overflow-auto bg-neutral-100">
             <div

@@ -3,18 +3,16 @@ import { getSurfacePatternPreviewTiles } from "@/lib/design-page-surface-inspect
 
 export type SurfacePatternPreviewProps = {
   pattern: RoomFloorPattern;
-  dark: boolean;
 };
 
 export default function SurfacePatternPreview({
   pattern,
-  dark,
 }: SurfacePatternPreviewProps) {
-  const background = dark ? "#252826" : "#f8fafc";
-  const stroke = dark ? "#7c8798" : "#b8bec7";
-  const fill = dark ? "#f3f4f6" : "#ffffff";
-  const shadedFill = dark ? "#d6d9df" : "#eef0f3";
-  const centerFill = dark ? "#8d96a6" : "#9ca3af";
+  const background = "#f8fafc";
+  const stroke = "#b8bec7";
+  const fill = "#ffffff";
+  const shadedFill = "#eef0f3";
+  const centerFill = "#9ca3af";
 
   return (
     <svg
@@ -37,7 +35,7 @@ export default function SurfacePatternPreview({
         />
       ))}
       <rect x="25" y="17" width="10" height="8" rx="1" fill={centerFill} />
-      <circle cx="30" cy="21" r="1.1" fill={dark ? "#d1d5db" : "#ffffff"} opacity="0.9" />
+      <circle cx="30" cy="21" r="1.1" fill="#ffffff" opacity="0.9" />
     </svg>
   );
 }

@@ -5,7 +5,6 @@ import EditorViewToggle, { type EditorViewMode } from "@/components/editor/Edito
 import { CanvasSavedViews, type CanvasSavedViewsActions, type CanvasSavedViewsState } from "@/components/editor/canvas/CanvasSavedViews";
 
 export type PhoneCanvasPillsProps = {
-  dark: boolean;
   viewMode: EditorViewMode;
   onViewModeChange: (next: EditorViewMode) => void;
   canUndo: boolean;
@@ -27,16 +26,14 @@ const PILL_CLASS =
  * keep the controls' test ids, so the specs that press them find them here.
  */
 export function PhoneCanvasPills(props: PhoneCanvasPillsProps) {
-  const { dark, undoName, redoName } = props;
-  const pillClass = `${PILL_CLASS} ${dark ? "designer-work-surface" : "border-neutral-200 bg-white text-neutral-900"}`;
-  const historyClass = `inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[9px] disabled:cursor-not-allowed disabled:opacity-40 ${
-    dark ? "designer-work-control" : "text-neutral-800 hover:bg-neutral-100"
-  }`;
+  const { undoName, redoName } = props;
+  const pillClass = `${PILL_CLASS} border-neutral-200 bg-white text-neutral-900`;
+  const historyClass = "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[9px] disabled:cursor-not-allowed disabled:opacity-40 text-neutral-800 hover:bg-neutral-100";
   return (
     <>
       <div data-testid="canvas-view-pill" className={`${pillClass} left-3`}>
-        <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} dark={dark} variant="pill" />
-        {props.viewMode === "3d" ? <CanvasSavedViews {...props.savedViews} dark={dark} size="pill" /> : null}
+        <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} variant="pill" />
+        {props.viewMode === "3d" ? <CanvasSavedViews {...props.savedViews} size="pill" /> : null}
       </div>
       <div role="group" aria-label="History" data-testid="canvas-history-pill" className={`${pillClass} right-3`}>
         <button

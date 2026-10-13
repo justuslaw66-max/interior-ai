@@ -4,7 +4,6 @@ import type { EditorViewMode } from "./EditorViewToggle";
 
 type SceneAdjustmentToolbarProps = {
   viewMode: EditorViewMode;
-  dark?: boolean;
   roomsActive?: boolean;
   drawingActive?: boolean;
   disabled?: boolean;
@@ -44,7 +43,6 @@ function FitIcon() {
 
 export default function SceneAdjustmentToolbar({
   viewMode,
-  dark = false,
   roomsActive = false,
   drawingActive = false,
   disabled = false,
@@ -53,17 +51,13 @@ export default function SceneAdjustmentToolbar({
   onOpenDrawing,
   onFitView,
 }: SceneAdjustmentToolbarProps) {
-  const shellClass = dark
-    ? "designer-work-surface flex items-center overflow-hidden rounded-xl"
-    : "flex items-center overflow-hidden rounded-xl border border-neutral-200 bg-white/95 text-neutral-600 shadow-xl backdrop-blur";
-  const dividerClass = dark ? "designer-work-divider h-10 border-l" : "h-10 w-px bg-neutral-200";
+  const shellClass = "flex items-center overflow-hidden rounded-xl border border-neutral-200 bg-white/95 text-neutral-600 shadow-xl backdrop-blur";
+  const dividerClass = "h-10 w-px bg-neutral-200";
   const baseButtonClass =
     "flex h-10 items-center justify-center px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-45";
-  const activeTextClass = dark ? "designer-work-control-active" : "bg-white text-blue-600";
-  const idleTextClass = dark ? "designer-work-control" : "hover:bg-neutral-50 hover:text-neutral-950";
-  const iconButtonClass = dark
-    ? "designer-work-control flex h-10 w-10 items-center justify-center transition disabled:opacity-45"
-    : "flex h-10 w-10 items-center justify-center text-neutral-500 transition hover:bg-neutral-50 hover:text-neutral-950 disabled:opacity-45";
+  const activeTextClass = "bg-white text-blue-600";
+  const idleTextClass = "hover:bg-neutral-50 hover:text-neutral-950";
+  const iconButtonClass = "flex h-10 w-10 items-center justify-center text-neutral-500 transition hover:bg-neutral-50 hover:text-neutral-950 disabled:opacity-45";
 
   return (
     <div data-testid="scene-adjustment-toolbar" className={shellClass} aria-label="Scene adjustment tools">

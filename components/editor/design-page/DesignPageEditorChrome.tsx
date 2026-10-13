@@ -39,7 +39,7 @@ export type DesignPageEditorChromeState = {
 
 export type DesignPageEditorChromeConfiguration = {
   commandBar: CommandBarProps["configuration"];
-  toolRail: Pick<ToolRailProps, "dark" | "aiDesignEnabled">;
+  toolRail: Pick<ToolRailProps, "aiDesignEnabled">;
 };
 
 export type DesignPageEditorChromeActions = {
@@ -64,7 +64,6 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
   const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
   const bar = state.commandBar.commandBar;
   const barActions = actions.commandBar.commandBar;
-  const dark = configuration.commandBar.dark;
   const overCanvas = !bar.isClientPreview && bar.editorMode !== "buy";
   const onCanvas = wide && overCanvas;
   const tablet = useTabletPanelPolicy(useMediaQuery(TABLET_MEDIA_QUERY), bar.designSidebarCollapsed);
@@ -79,7 +78,6 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
     <>
       {onCanvas ? (
         <CanvasViewToolbar
-          dark={dark}
           leftInsetPx={leftInsetPx}
           viewMode={bar.viewMode}
           onViewModeChange={barActions.onViewModeChange}
@@ -96,7 +94,6 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
       ) : null}
       {overCanvas && !wide ? (
         <PhoneCanvasPills
-          dark={dark}
           viewMode={bar.viewMode}
           onViewModeChange={barActions.onViewModeChange}
           canUndo={bar.canUndo}
@@ -108,8 +105,8 @@ function CanvasControls({ state, configuration, actions }: DesignPageEditorChrom
           savedViews={savedViews}
         />
       ) : null}
-      {onCanvas ? <KeyboardShortcutsButton dark={dark} /> : null}
-      <KeyboardShortcutsSheet enabled={!bar.isClientPreview} isDesigner={bar.isDesigner} dark={dark} />
+      {onCanvas ? <KeyboardShortcutsButton /> : null}
+      <KeyboardShortcutsSheet enabled={!bar.isClientPreview} isDesigner={bar.isDesigner} />
     </>
   );
 }
@@ -139,7 +136,6 @@ export function DesignPageEditorChrome({
       {state.toolRail.visible ? (
         <EditorToolRail
           mode={state.toolRail.mode}
-          dark={configuration.toolRail.dark}
           aiDesignEnabled={configuration.toolRail.aiDesignEnabled}
           {...actions.toolRail}
         />

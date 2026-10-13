@@ -31,57 +31,31 @@ function PlanToolSvg({ className, children }: { className: string; children: Rea
 
 export function PlanToolIcon({
   name,
-  dark,
   muted = false,
 }: {
   name: PlanToolIconName;
-  dark: boolean;
   muted?: boolean;
 }) {
   const svgClass = "mx-auto h-12 w-12 max-w-full";
   const stroke = muted
-    ? dark
-      ? "#7f8794"
-      : "#858a92"
-    : dark
-      ? "#d6dae2"
-      : "#50535a";
+    ? "#858a92"
+    : "#50535a";
   const lightStroke = muted
-    ? dark
-      ? "#646c78"
-      : "#c4c9d0"
-    : dark
-      ? "#858d9b"
-      : "#9ca1a8";
+    ? "#c4c9d0"
+    : "#9ca1a8";
   const fill = muted
-    ? dark
-      ? "#343a44"
-      : "#d7d9dc"
-    : dark
-      ? "#3c424d"
-      : "#c0c2c5";
+    ? "#d7d9dc"
+    : "#c0c2c5";
   const side = muted
-    ? dark
-      ? "#292f38"
-      : "#b7bbc1"
-    : dark
-      ? "#272d36"
-      : "#a7a9ad";
+    ? "#b7bbc1"
+    : "#a7a9ad";
   const top = muted
-    ? dark
-      ? "#464d58"
-      : "#e7e8ea"
-    : dark
-      ? "#555d69"
-      : "#ebeced";
-  const glass = dark ? "#29475a" : "#d9edf7";
+    ? "#e7e8ea"
+    : "#ebeced";
+  const glass = "#d9edf7";
   const inset = muted
-    ? dark
-      ? "#303640"
-      : "#c6c9ce"
-    : dark
-      ? "#171b21"
-      : "#b7b9bd";
+    ? "#c6c9ce"
+    : "#b7b9bd";
 
   if (name === "upload") {
     return (
@@ -158,16 +132,16 @@ export function PlanToolIcon({
   if (name === "externalArea") {
     return (
       <PlanToolSvg className={svgClass}>
-        <path d="m3 23 15-17 21 9-16 16Z" fill={dark ? "#2b313a" : "#f5f6f7"} />
+        <path d="m3 23 15-17 21 9-16 16Z" fill="#f5f6f7" />
         <path
           d="m3 23 20 8v21L3 43Z"
-          fill={dark ? "#252b34" : "#eef0f2"}
+          fill="#eef0f2"
           stroke={lightStroke}
           strokeWidth="1.4"
         />
         <path
           d="m23 31 16-16v20L23 52Z"
-          fill={dark ? "#20262e" : "#e4e6e9"}
+          fill="#e4e6e9"
           stroke={lightStroke}
           strokeWidth="1.4"
         />

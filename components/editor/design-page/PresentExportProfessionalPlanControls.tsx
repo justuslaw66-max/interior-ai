@@ -10,7 +10,6 @@ import type {
 } from "@/lib/useDesignPagePlanState";
 
 export type PresentExportProfessionalPlanControlsProps = {
-  dark: boolean;
   preset: PlanLayerPresetId;
   layers: PlanLayers;
   theme: PlanTheme;
@@ -30,7 +29,6 @@ const LAYERS: ReadonlyArray<[keyof PlanLayers, string]> = [
 ];
 
 export default function PresentExportProfessionalPlanControls({
-  dark,
   preset,
   layers,
   theme,
@@ -41,14 +39,12 @@ export default function PresentExportProfessionalPlanControls({
   const controlClass = (active: boolean, compact = false) =>
     active
       ? `min-h-11 rounded-lg bg-neutral-900 ${compact ? "px-2" : "px-3"} py-2 text-xs font-semibold text-white outline-hidden focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2`
-      : dark
-        ? `designer-control min-h-11 rounded-lg border ${compact ? "px-2" : "px-3"} py-2 text-xs text-neutral-200 outline-hidden focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2`
-        : `min-h-11 rounded-lg bg-gray-100 ${compact ? "px-2" : "px-3"} py-2 text-xs outline-hidden hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2`;
+      : `min-h-11 rounded-lg bg-gray-100 ${compact ? "px-2" : "px-3"} py-2 text-xs outline-hidden hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2`;
 
   return (
     <div className="space-y-2" data-testid="professional-plan-controls">
       <div className="rounded-lg border border-gray-200/70 p-2">
-        <div className={dark ? "mb-2 text-xs text-neutral-400" : "mb-2 text-xs text-gray-500"}>
+        <div className="mb-2 text-xs text-gray-500">
           Layer presets
         </div>
         <div className="grid grid-cols-3 gap-2">

@@ -33,7 +33,6 @@ type FloorPlanVisualReviewToolsProps = {
   onManualToolsOpenChange?: (value: boolean) => void;
   previewOnly?: boolean;
   sidebarFooter?: ReactNode;
-  dark?: boolean;
   disabled?: boolean;
 };
 
@@ -51,7 +50,6 @@ export default function FloorPlanVisualReviewTools({
   onManualToolsOpenChange,
   previewOnly = false,
   sidebarFooter,
-  dark = false,
   disabled = false,
 }: FloorPlanVisualReviewToolsProps) {
   const floor = document.floors[0];
@@ -115,7 +113,6 @@ export default function FloorPlanVisualReviewTools({
           )
         }
         assetRoutePrefix={assetRoutePrefix}
-        dark={dark}
       />
       {!previewOnly && <FloorPlanReviewIssueAction target={reviewTarget} root={root} disabled={disabled} />}
     </>
@@ -141,12 +138,10 @@ export default function FloorPlanVisualReviewTools({
         onChange={onChange}
         onError={setError}
         openByDefault={openScaleByDefault}
-        dark={dark}
         disabled={disabled}
       />
       <FloorPlanRoomTracePanel
         calibration={calibration}
-        dark={dark}
         disabled={disabled}
         document={document}
         floorId={floor.id}
@@ -161,7 +156,6 @@ export default function FloorPlanVisualReviewTools({
       />
       <FloorPlanOpeningTracePanel
         calibration={calibration}
-        dark={dark}
         disabled={disabled}
         document={document}
         floorId={floor.id}
@@ -186,14 +180,12 @@ export default function FloorPlanVisualReviewTools({
           onChange={onChange}
           onFocusIds={setFocusedCorrectionIds}
           onError={setError}
-          dark={dark}
           disabled={disabled} proMode={proMode}
         />
         <FloorPlanOrientationReviewPanel
           document={document}
           onChange={onChange}
           onError={setError}
-          dark={dark}
           disabled={disabled}
         />
       </details>
@@ -214,11 +206,7 @@ export default function FloorPlanVisualReviewTools({
         {canvas}
         <details
           id="floor-plan-manual-tools"
-          className={
-            dark
-              ? "designer-recessed mt-4 rounded-xl border border-white/10 p-4"
-              : "mt-4 rounded-xl border border-neutral-200 bg-white p-4"
-          }
+          className="mt-4 rounded-xl border border-neutral-200 bg-white p-4"
           open={manualToolsOpen}
           onToggle={(event) => {
             const open = event.currentTarget.open;
@@ -228,13 +216,7 @@ export default function FloorPlanVisualReviewTools({
           <summary className="cursor-pointer text-sm font-semibold">
             Help AI finish this plan
           </summary>
-          <p
-            className={
-              dark
-                ? "mt-2 text-xs leading-5 text-neutral-400"
-                : "mt-2 text-xs leading-5 text-neutral-600"
-            }
-          >
+          <p className="mt-2 text-xs leading-5 text-neutral-600">
             Only use these tools when the preview is missing a room, scale,
             door, or wall. Your changes are checked again before a design can
             be created.

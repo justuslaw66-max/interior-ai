@@ -61,7 +61,7 @@ assert.equal(
 );
 assert.match(
   saveStatusClassName,
-  /\$\{\s*getSaveStatusClassName\(\s*saveStatus,\s*dark\s*\)\s*\}/,
+  /\$\{\s*getSaveStatusClassName\(\s*saveStatus\s*\)\s*\}/,
   "Save status dynamic classes should stay limited to tone styling."
 );
 const saveStatusToneHelperStart = commandBarSource.indexOf(
@@ -177,7 +177,7 @@ assert.doesNotMatch(
 );
 assert.match(
   designPageCommandBarSource,
-  /<EditorCommandBar[\s\S]*?\{\.\.\.state\.commandBar\}[\s\S]*?\{\.\.\.actions\.commandBar\}[\s\S]*?dark=\{configuration\.dark\}/,
+  /<EditorCommandBar[\s\S]*?\{\.\.\.state\.commandBar\}[\s\S]*?\{\.\.\.actions\.commandBar\}/,
   "The design-page command wrapper should forward save state and actions to the command-bar leaf."
 );
 assert.match(

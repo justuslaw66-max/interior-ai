@@ -4,28 +4,24 @@ import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
 import type { RoomOpening2D } from "@/lib/editorScene";
 
-const warningClass = (dark: boolean) => dark
-  ? "rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-xs text-amber-100"
-  : "rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900";
+const warningClass = "rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900";
 
 function HostWarning({
   opening,
-  dark,
   onChange,
 }: {
   opening: RoomOpening2D;
-  dark: boolean;
   onChange: (id: string, patch: DesignPageOpeningMetricsPatch) => void;
 }) {
   if (opening.canonicalHost) return (
-    <div data-testid="plan-opening-host-warning" className={warningClass(dark)}>
+    <div data-testid="plan-opening-host-warning" className={warningClass}>
       {opening.canonicalHost.pathKind === "arc"
         ? "This opening is retained on its curved wall. Position and width editing on curves is not supported."
         : "This opening needs a valid wall position before it can be edited."}
     </div>
   );
   return (
-    <div data-testid="plan-opening-host-warning" className={warningClass(dark)}>
+    <div data-testid="plan-opening-host-warning" className={warningClass}>
       <div className="font-semibold">{opening.kind === "door" ? "Door" : "Window"} needs wall repair</div>
       <div className="mt-0.5">
         It is saved, but it will not cut the plan or reduce wall-material quantities until it resolves to one physical wall.
@@ -34,9 +30,7 @@ function HostWarning({
         Requested wall
         <select
           data-testid="plan-opening-wall-repair-input"
-          className={dark
-            ? "designer-control mt-1 w-full rounded-md border px-2 py-2 text-xs text-neutral-100"
-            : "mt-1 w-full rounded-md border border-amber-300 bg-white px-2 py-2 text-xs text-gray-900"}
+          className="mt-1 w-full rounded-md border border-amber-300 bg-white px-2 py-2 text-xs text-gray-900"
           value={opening.wall}
           onChange={(event) => onChange(opening.id, {
             wall: event.currentTarget.value as RoomOpening2D["wall"],
@@ -54,18 +48,16 @@ function HostWarning({
 function DimensionWarning({
   vertical,
   unit,
-  dark,
 }: {
   vertical: OpeningInspectorVerticalState;
   unit: PlanMeasurementUnit;
-  dark: boolean;
 }) {
   const needsWarning = [vertical.heightStatus, vertical.bottomStatus]
     .some((status) => status === "constrained" || status === "invalid");
   if (!needsWarning) return null;
   const length = (valueMm: number) => formatDisplayLength(valueMm, unit);
   return (
-    <div data-testid="plan-opening-dimension-resolution-warning" className={warningClass(dark)}>
+    <div data-testid="plan-opening-dimension-resolution-warning" className={warningClass}>
       <div className="font-semibold">Stored dimensions differ from physical geometry</div>
       <div className="mt-0.5">
         Stored: {length(vertical.heightMm)} high at {length(vertical.bottomMm)}. Effective render: {length(vertical.effectiveHeightMm)} high at {length(vertical.effectiveBottomMm)}.
@@ -80,20 +72,18 @@ export function PlanOpeningInspectorWarnings({
   hostNeedsRepair,
   vertical,
   unit,
-  dark,
   onChange,
 }: {
   opening: RoomOpening2D;
   hostNeedsRepair: boolean;
   vertical: OpeningInspectorVerticalState;
   unit: PlanMeasurementUnit;
-  dark: boolean;
   onChange: (id: string, patch: DesignPageOpeningMetricsPatch) => void;
 }) {
   return (
     <>
-      {hostNeedsRepair ? <HostWarning opening={opening} dark={dark} onChange={onChange} /> : null}
-      <DimensionWarning vertical={vertical} unit={unit} dark={dark} />
+      {hostNeedsRepair ? <HostWarning opening={opening} onChange={onChange} /> : null}
+      <DimensionWarning vertical={vertical} unit={unit} />
     </>
   );
 }

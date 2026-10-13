@@ -76,28 +76,18 @@ export type JaronConfigurationSelectorActions = {
 
 export type JaronConfigurationSelectorProps = {
   state: JaronConfigurationSelectorState;
-  configuration: {
-    dark: boolean;
-  };
   actions: JaronConfigurationSelectorActions;
 };
 
 export function JaronConfigurationSelector({
   state,
-  configuration,
   actions,
 }: JaronConfigurationSelectorProps) {
   const activeGroup = state.groups.find((group) => group.key === state.activeGroupKey);
 
   return (
     <div className="pt-3" data-testid="jaron-configuration-selector">
-      <div
-        className={
-          configuration.dark
-            ? "designer-text-primary text-sm font-semibold"
-            : "text-sm font-semibold text-neutral-900"
-        }
-      >
+      <div className="text-sm font-semibold text-neutral-900">
         Configuration
       </div>
 
@@ -119,9 +109,7 @@ export function JaronConfigurationSelector({
                 className={`px-3 py-2 text-xs font-semibold ${
                   active
                     ? "bg-neutral-900 text-white"
-                    : configuration.dark
-                      ? "designer-text-primary bg-white"
-                      : "bg-white text-neutral-900"
+                    : "bg-white text-neutral-900"
                 }`}
                 disabled={group.disabled}
                 onClick={() => actions.onSelectGroup(group.key)}
@@ -144,9 +132,7 @@ export function JaronConfigurationSelector({
                 className={`block w-full rounded-lg border px-3 py-3 text-left ${
                   active
                     ? "bg-neutral-900 text-white"
-                    : configuration.dark
-                      ? "designer-text-primary border-neutral-200 bg-white"
-                      : "border-neutral-200 bg-white text-neutral-900"
+                    : "border-neutral-200 bg-white text-neutral-900"
                 }`}
                 disabled={option.disabled}
                 onClick={() => actions.onSelectOption(option.key)}
@@ -174,13 +160,7 @@ export function JaronConfigurationSelector({
 
       {state.armOptions.length ? (
         <div className="mt-3">
-          <div
-            className={
-              configuration.dark
-                ? "designer-text-primary text-sm font-semibold"
-                : "text-sm font-semibold text-neutral-900"
-            }
-          >
+          <div className="text-sm font-semibold text-neutral-900">
             Arm style
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -192,9 +172,7 @@ export function JaronConfigurationSelector({
                   key={option.key}
                   data-testid={`jaron-arm-${option.key}`}
                   data-active={active ? "true" : "false"}
-                  className={`rounded-lg border px-3 py-2 text-sm ${
-                    configuration.dark ? "designer-text-primary" : "text-neutral-900"
-                  } ${active ? "designer-accent-border" : "border-neutral-200"}`}
+                  className={`rounded-lg border px-3 py-2 text-sm text-neutral-900 ${active ? "designer-accent-border" : "border-neutral-200"}`}
                   disabled={option.disabled}
                   onClick={() => actions.onSelectArm(option.key)}
                   title={option.label}
