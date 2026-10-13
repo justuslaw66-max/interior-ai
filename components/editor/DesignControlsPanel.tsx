@@ -58,7 +58,6 @@ type HouseRoomTemplate = {
 };
 
 export type DesignControlsPanelProps = {
-  dark: boolean;
   isClientPreview: boolean;
   isAuthed: boolean; floorPlanLifecycleIdentity: FloorPlanLifecycleIdentity;
   isDesigner: boolean;
@@ -282,7 +281,7 @@ export type DesignControlsPanelProps = {
 };
 
 export default function DesignControlsPanel({
-  dark, floorPlanLifecycleIdentity, stepFooter, furnishFooter,
+  floorPlanLifecycleIdentity, stepFooter, furnishFooter,
   isClientPreview,
   isDesigner,
   canEdit, canChangeProducts,
@@ -498,7 +497,6 @@ export default function DesignControlsPanel({
 
   return (
     <DesignControlsPanelFrame
-      dark={dark}
       isDesigner={isDesigner}
       collapsed={collapsed}
       onCollapsedChange={onCollapsedChange}
@@ -506,13 +504,12 @@ export default function DesignControlsPanel({
       subtitle={panelSubtitle}
     >
       {selectionContext && effectivePanelMode !== "plan" && (
-        <SelectedObjectContextCard dark={dark} selectionContext={selectionContext} />
+        <SelectedObjectContextCard selectionContext={selectionContext} />
       )}
 
       <div className="space-y-3">
         {effectivePanelMode === "plan" && (
           <DesignControlsPlanPanel floorPlanLifecycleIdentity={floorPlanLifecycleIdentity}
-            dark={dark}
             isClientPreview={isClientPreview}
             isDesigner={isDesigner}
             canEdit={canEdit}
@@ -671,11 +668,10 @@ export default function DesignControlsPanel({
           />
         )}
         {(effectivePanelMode === "furnish" || effectivePanelMode === "ai") && (
-          <FurnishStepModes mode={effectivePanelMode} {...{ dark, onGoFurnish, onOpenBuiltIns }} />
+          <FurnishStepModes mode={effectivePanelMode} {...{ onGoFurnish, onOpenBuiltIns }} />
         )}
         {effectivePanelMode === "ai" && aiDesignEnabled && (
           <DesignControlsAiPanel
-            dark={dark}
             style={style}
             budget={budget}
             {...{ activeRoomName, activeRoomType, activeRoomTypeLabel, roomWidth, roomDepth, measurementUnit, roomIsDraft }}
@@ -693,7 +689,6 @@ export default function DesignControlsPanel({
 
         {effectivePanelMode === "furnish" && (
           <DesignControlsFurnishPanel
-            dark={dark}
             canEdit={canEdit} canChangeProducts={canChangeProducts} isDesigner={isDesigner} footer={furnishFooter}
             {...{ aiDesignEnabled, onGoAiDesign, activeRoomName, activeRoomId, catalogRoomNavigationRevision }}
             rooms={rooms}
@@ -725,7 +720,7 @@ export default function DesignControlsPanel({
           />
         )}
 
-        {effectivePanelMode !== "ai" && isDesigner && <ProGridSnapToggles {...{ dark, showGrid, snapEnabled, onGridToggle, onSnapToggle }} />}
+        {effectivePanelMode !== "ai" && isDesigner && <ProGridSnapToggles {...{ showGrid, snapEnabled, onGridToggle, onSnapToggle }} />}
         {stepFooter}
       </div>
     </DesignControlsPanelFrame>

@@ -61,7 +61,6 @@ export type UseDesignPagePlanWorkspaceFacadeInput = {
     editor: EditingInput["state"]["editor"] & {
       isDesigner: PresentationState["layout"]["isDesigner"];
       simplePlanControls: PresentationPlanState["simplePlanControls"];
-      showDesignerTheme: PresentationPlanState["showDesignerTheme"];
       lightingPreset: PresentationPlanState["lightingPreset"];
       guidedPlanStartMode: PresentationPlanState["guidedPlanStartMode"];
       showBetaStart: PresentationPlanState["showBetaStart"];
@@ -216,7 +215,6 @@ export function useDesignPagePlanWorkspaceFacade({
       },
       presentation: {
         lightingPreset: editor.lightingPreset,
-        showDesignerTheme: editor.showDesignerTheme,
         simplePlanControls: editor.simplePlanControls,
         planLayers: plan.layers,
         planTheme: plan.theme,

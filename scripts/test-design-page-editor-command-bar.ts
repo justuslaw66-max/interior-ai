@@ -217,8 +217,8 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /viewMode=\{room\.viewMode\}\s*dark=\{configuration\.dark\}[\s\S]*?compact=\{configuration\.compactRoomStatus\}[\s\S]*?variant="command"/,
-  "Room status should preserve theme, compact layout, and command variant."
+  /viewMode=\{room\.viewMode\}[\s\S]*?compact=\{configuration\.compactRoomStatus\}[\s\S]*?variant="command"/,
+  "Room status should preserve compact layout and the command variant."
 );
 assert.match(
   commandBarSource,
@@ -264,7 +264,7 @@ assert.match(
 
 assert.match(
   commandBarSource,
-  /<EditorCommandBar\s*[\s\S]*?\{\.\.\.state\.commandBar\}[\s\S]*?\{\.\.\.actions\.commandBar\}[\s\S]*?dark=\{configuration\.dark\}[\s\S]*?contextSlot=\{contextSlot\}[\s\S]*?overflowSlot=\{overflowSlot\}/,
+  /<EditorCommandBar\s*[\s\S]*?\{\.\.\.state\.commandBar\}[\s\S]*?\{\.\.\.actions\.commandBar\}[\s\S]*?contextSlot=\{contextSlot\}[\s\S]*?overflowSlot=\{overflowSlot\}/,
   "The wrapper should forward inferred leaf state and actions before installing its owned slots."
 );
 

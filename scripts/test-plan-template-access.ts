@@ -229,7 +229,7 @@ assert.match(source, /const openStartTemplates = \(openerId: string\) => \(\) =>
 assert.match(source, /chooseTemplate: openStartTemplates\(PLAN_START_TEMPLATE_ACTION_ID\),/);
 assert.match(
   source,
-  /id: PLAN_TEMPLATE_LIBRARY_ACTION_ID,\s*testId: "plan-tool-template-library",[\s\S]*?onClick: openStartTemplates\(PLAN_TEMPLATE_LIBRARY_ACTION_ID\),\s*\}\)\}\s*<\/div>\s*<AddRoomTemplateTiles dark=\{dark\} canEdit=\{canEdit\} measurementUnit=\{measurementUnit\}\s*onAddRoomTemplate=\{onAddRoomTemplate\} \/>/,
+  /id: PLAN_TEMPLATE_LIBRARY_ACTION_ID,\s*testId: "plan-tool-template-library",[\s\S]*?onClick: openStartTemplates\(PLAN_TEMPLATE_LIBRARY_ACTION_ID\),\s*\}\)\}\s*<\/div>\s*<AddRoomTemplateTiles canEdit=\{canEdit\} measurementUnit=\{measurementUnit\}\s*onAddRoomTemplate=\{onAddRoomTemplate\} \/>/,
   "The palette's Templates hold Choose a template, then Add one room."
 );
 assert.match(
@@ -275,7 +275,6 @@ const renderedPlanToolSections = planToolSectionContracts.map(
     title,
     markup: renderToStaticMarkup(
       PlanToolSection({
-        dark: false,
         section,
         title,
         collapsed: true,
@@ -795,7 +794,7 @@ const replaceCurrentPlan = () => undefined;
 const saveCurrentAndStartNew = () => undefined;
 const signInForPlan = () => undefined;
 const dialogModel = buildDesignPageDialogLayerModel({
-  access: { isClientPreview: false, isAuthenticated: true, capabilities: resolveEditorCapabilities("pro"), designerTheme: false },
+  access: { isClientPreview: false, isAuthenticated: true, capabilities: resolveEditorCapabilities("pro") },
   billing: { upgrade: {}, plans: {}, startingCheckout: false, annualSavingsLabel: "", upgradeActions: {}, plansActions: {} },
   persistence: {
     guestSave: {

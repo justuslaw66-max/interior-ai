@@ -6,7 +6,6 @@ import { useMediaQuery } from "@/lib/useMediaQuery";
 import { CommandBarActionToast } from "./CommandBarActionToast";
 
 type CommandBarCanvasControlsProps = {
-  dark: boolean;
   isClientPreview: boolean;
   sidebarToggleVisible: boolean;
   designSidebarCollapsed: boolean;
@@ -26,7 +25,6 @@ export function CommandBarCanvasControls(props: CommandBarCanvasControlsProps) {
     <>
       {props.sidebarToggleVisible ? (
         <DesignSidebarToggle
-          dark={props.dark}
           designSidebarCollapsed={props.designSidebarCollapsed}
           onToggleDesignSidebar={props.onToggleDesignSidebar}
         />
@@ -38,10 +36,9 @@ export function CommandBarCanvasControls(props: CommandBarCanvasControlsProps) {
 
 /** On a tablet the panel may be collapsed for a right panel (UX 4d, AX11): the toggle shows it. */
 function DesignSidebarToggle({
-  dark,
   designSidebarCollapsed: storedCollapsed,
   onToggleDesignSidebar,
-}: Pick<CommandBarCanvasControlsProps, "dark" | "designSidebarCollapsed" | "onToggleDesignSidebar">) {
+}: Pick<CommandBarCanvasControlsProps, "designSidebarCollapsed" | "onToggleDesignSidebar">) {
   const policy = useTabletPanelPolicy(useMediaQuery(TABLET_MEDIA_QUERY), storedCollapsed);
   const designSidebarCollapsed = policy.collapsed;
   const setCollapsed = (next: boolean) => {
@@ -59,11 +56,7 @@ function DesignSidebarToggle({
       }
       aria-expanded={!designSidebarCollapsed}
       title="Toggle design sidebar (Ctrl/⌘ B)"
-      className={
-        dark
-          ? "designer-control inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border"
-          : "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950"
-      }
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950"
       onClick={() => toggleStepPanel(policy, storedCollapsed, setCollapsed)}
     >
       <PanelLeft className="h-4 w-4" aria-hidden="true" />

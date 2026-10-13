@@ -17,7 +17,6 @@ type RoomPlanStatusBarProps = {
   healthNextAction?: string;
   viewMode: EditorViewMode;
   disabled?: boolean;
-  dark?: boolean;
   compact?: boolean;
   variant?: "floating" | "command";
   onViewModeChange: (next: EditorViewMode) => void;
@@ -65,7 +64,6 @@ export default function RoomPlanStatusBar({
   healthNextAction,
   viewMode,
   disabled = false,
-  dark = false,
   compact = false,
   variant = "floating",
   onViewModeChange,
@@ -93,24 +91,12 @@ export default function RoomPlanStatusBar({
       : compact
       ? "max-w-[min(34rem,calc(100vw-2rem))] gap-1.5 px-1.5 py-1 shadow-md"
       : "max-w-[min(44rem,calc(100vw-2rem))] gap-2 px-2 py-1.5 shadow-lg",
-    dark
-      ? isCommand
-        ? "border-white/10 bg-white/[0.04] text-neutral-100"
-        : "designer-work-surface"
-      : isCommand
+    isCommand
         ? "border-neutral-200 bg-white/70 text-neutral-900"
         : "border-neutral-200 bg-white/95 text-neutral-900",
   ].join(" ");
-  const pillClass = dark
-    ? isCommand
-      ? `rounded-full bg-white/10 px-2 py-1 text-xs text-neutral-200`
-      : `designer-work-muted rounded-full px-2 py-1 text-xs`
-    : `rounded-full bg-neutral-100 px-2 py-1 text-xs text-neutral-700`;
-  const metaClass = dark
-    ? isCommand
-      ? `text-xs font-medium text-neutral-300`
-      : `designer-work-muted text-xs font-medium`
-    : `text-xs font-medium text-neutral-600`;
+  const pillClass = `rounded-full bg-neutral-100 px-2 py-1 text-xs text-neutral-700`;
+  const metaClass = `text-xs font-medium text-neutral-600`;
   const roomCountClass = [
     metaClass,
     isCommand ? "hidden 2xl:block" : "hidden sm:block",
@@ -118,23 +104,13 @@ export default function RoomPlanStatusBar({
   ].join(" ");
   const healthClass =
     healthLevel === "ready"
-      ? dark
-        ? `designer-status-ready rounded-full px-2 py-1 text-xs font-semibold`
-        : `rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700`
+      ? `rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700`
       : healthLevel === "review"
-        ? dark
-          ? `designer-status-warning rounded-full px-2 py-1 text-xs font-semibold`
-          : `rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700`
-          : dark
-            ? `designer-status-blocked rounded-full px-2 py-1 text-xs font-semibold`
-            : `rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700`;
+        ? `rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700`
+          : `rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700`;
   const healthActionClass = `${healthClass} disabled:cursor-default`;
-  const buttonClass = dark
-    ? `${isCommand ? "designer-command-selection" : "designer-work-control-active"} rounded-full ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold disabled:opacity-50`
-    : `rounded-full bg-neutral-900 ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold text-white hover:bg-neutral-700 disabled:opacity-50`;
-  const secondaryButtonClass = dark
-    ? `${isCommand ? "border border-white/15 text-neutral-100 hover:bg-white/10" : "designer-work-control ml-auto"} rounded-full ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold disabled:opacity-50`
-    : `${isCommand ? "" : "ml-auto"} rounded-full border border-neutral-200 ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50`;
+  const buttonClass = `rounded-full bg-neutral-900 ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold text-white hover:bg-neutral-700 disabled:opacity-50`;
+  const secondaryButtonClass = `${isCommand ? "" : "ml-auto"} rounded-full border border-neutral-200 ${compact || isCommand ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs"} font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50`;
 
   return (
     <div
@@ -211,9 +187,7 @@ export default function RoomPlanStatusBar({
           data-testid="room-plan-status-rename"
           onClick={onRenameRoom}
           disabled={disabled}
-          className={dark
-            ? `${isCommand ? "hidden 2xl:block border border-white/15 text-neutral-100 hover:bg-white/10" : "designer-work-control hidden lg:block"} shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold disabled:opacity-50`
-            : `${isCommand ? "hidden 2xl:block" : "hidden lg:block"} shrink-0 rounded-full border border-neutral-200 px-2.5 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50`
+          className={`${isCommand ? "hidden 2xl:block" : "hidden lg:block"} shrink-0 rounded-full border border-neutral-200 px-2.5 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50`
           }
         >
           Rename

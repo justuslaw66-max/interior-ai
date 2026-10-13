@@ -6,7 +6,6 @@ export type EditorToolRailMode = "design" | "adjust" | "ai" | "buy";
 
 type EditorToolRailProps = {
   mode: EditorToolRailMode;
-  dark?: boolean;
   aiDesignEnabled?: boolean;
   onDesign: () => void;
   onAdjust: () => void;
@@ -17,7 +16,6 @@ type EditorToolRailProps = {
 
 type ToolButtonProps = {
   active?: boolean;
-  dark: boolean;
   label: string;
   testId: string;
   title: string;
@@ -25,21 +23,16 @@ type ToolButtonProps = {
   children: ReactNode;
 };
 
-function toolButtonClass(active: boolean, dark: boolean): string {
+function toolButtonClass(active: boolean): string {
   if (active) {
-    return dark
-      ? "designer-command-selection"
-      : "bg-neutral-900 text-white";
+    return "bg-neutral-900 text-white";
   }
 
-  return dark
-    ? "text-neutral-200 hover:bg-white/10"
-    : "text-neutral-700 hover:bg-neutral-100";
+  return "text-neutral-700 hover:bg-neutral-100";
 }
 
 function ToolButton({
   active = false,
-  dark,
   label,
   testId,
   title,
@@ -52,7 +45,7 @@ function ToolButton({
       aria-label={label}
       data-testid={testId}
       title={title}
-      className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${toolButtonClass(active, dark)}`}
+      className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${toolButtonClass(active)}`}
       onClick={onClick}
     >
       {children}
@@ -107,7 +100,6 @@ function FitIcon() {
 
 export default function EditorToolRail({
   mode,
-  dark = false,
   aiDesignEnabled = false,
   onDesign,
   onAdjust,
@@ -118,16 +110,11 @@ export default function EditorToolRail({
   return (
     <div
       data-testid="editor-tool-rail"
-      className={
-        dark
-          ? "designer-tool-rail absolute left-4 top-bar-17 z-40 md:top-bar-6 flex w-12 flex-col items-center gap-2 rounded-2xl p-2"
-          : "absolute left-4 top-bar-17 z-40 md:top-bar-6 flex w-12 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
-      }
+      className="absolute left-4 top-bar-17 z-40 md:top-bar-6 flex w-12 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
       aria-label="Editor tools"
     >
       <ToolButton
         active={mode === "design"}
-        dark={dark}
         label="Planning shortcut"
         testId="editor-rail-design"
         title="Draw or upload a floor plan"
@@ -137,7 +124,6 @@ export default function EditorToolRail({
       </ToolButton>
       <ToolButton
         active={mode === "adjust"}
-        dark={dark}
         label="Furniture shortcut"
         testId="editor-rail-adjust"
         title="Add and adjust furniture"
@@ -148,7 +134,6 @@ export default function EditorToolRail({
       {aiDesignEnabled && (
         <ToolButton
           active={mode === "ai"}
-          dark={dark}
           label="AI shortcut"
           testId="editor-rail-ai"
           title="Suggest a layout"
@@ -159,7 +144,6 @@ export default function EditorToolRail({
       )}
       <ToolButton
         active={mode === "buy"}
-        dark={dark}
         label="Commerce shortcut"
         testId="editor-rail-cart"
         title="Shopping list"
@@ -167,15 +151,8 @@ export default function EditorToolRail({
       >
         <CartIcon />
       </ToolButton>
-      <div
-        className={
-          dark
-            ? "designer-divider my-1 h-px w-7 border-t"
-            : "my-1 h-px w-7 bg-neutral-200"
-        }
-      />
+      <div className="my-1 h-px w-7 bg-neutral-200" />
       <ToolButton
-        dark={dark}
         label="Fit to screen"
         testId="editor-rail-fit-plan"
         title="Fit to screen"

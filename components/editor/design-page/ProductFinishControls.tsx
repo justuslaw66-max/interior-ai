@@ -119,41 +119,28 @@ export type ProductFinishControlsActions = {
 
 type ProductFinishControlsProps = {
   state: ProductFinishControlsState;
-  configuration: {
-    dark: boolean;
-  };
   actions: ProductFinishControlsActions;
 };
 
-function sectionHeadingClass(dark: boolean): string {
-  return dark
-    ? "designer-text-primary text-sm font-semibold"
-    : "text-sm font-semibold text-neutral-900";
-}
+const sectionHeadingClass = "text-sm font-semibold text-neutral-900";
 
-function selectedLabelClass(dark: boolean): string {
-  return dark
-    ? "designer-text-secondary mt-2 text-xs"
-    : "mt-2 text-xs text-neutral-600";
-}
+const selectedLabelClass = "mt-2 text-xs text-neutral-600";
 
 export function ProductFinishControls({
   state,
-  configuration,
   actions,
 }: ProductFinishControlsProps) {
-  const { dark } = configuration;
 
   return (
     <>
       {state.finish ? (
         <div className="pt-3">
           <div className="flex items-center justify-between gap-2">
-            <div className={sectionHeadingClass(dark)}>{state.finish.label}</div>
+            <div className={sectionHeadingClass}>{state.finish.label}</div>
           </div>
 
           {state.finish.selectedLabel ? (
-            <div className={selectedLabelClass(dark)}>
+            <div className={selectedLabelClass}>
               Selected: {state.finish.selectedLabel}
             </div>
           ) : null}
@@ -219,9 +206,9 @@ export function ProductFinishControls({
 
       {state.legFinish ? (
         <div className="pt-3" data-testid="selected-leg-finish-section">
-          <div className={sectionHeadingClass(dark)}>Wood colour</div>
+          <div className={sectionHeadingClass}>Wood colour</div>
           <div
-            className={selectedLabelClass(dark)}
+            className={selectedLabelClass}
             data-testid="selected-leg-finish-label"
           >
             Selected: {state.legFinish.selectedLabel}
@@ -254,11 +241,11 @@ export function ProductFinishControls({
 
       {state.singleWoodFinish ? (
         <div className="pt-3" data-testid="selected-single-finish-section">
-          <div className={sectionHeadingClass(dark)}>
+          <div className={sectionHeadingClass}>
             {state.singleWoodFinish.sectionLabel}
           </div>
           <div
-            className={selectedLabelClass(dark)}
+            className={selectedLabelClass}
             data-testid="selected-single-finish-label"
           >
             Selected: {state.singleWoodFinish.label}
@@ -283,8 +270,8 @@ export function ProductFinishControls({
 
       {state.sloaneBench ? (
         <div className="pt-3" data-testid="selected-sloane-bench-variant-section">
-          <div className={sectionHeadingClass(dark)}>Variant</div>
-          <div className={selectedLabelClass(dark)}>
+          <div className={sectionHeadingClass}>Variant</div>
+          <div className={selectedLabelClass}>
             Selected: {state.sloaneBench.selectedLabel}
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -293,9 +280,7 @@ export function ProductFinishControls({
                 key={`variant-swatch-sloane-bench-${option.key}`}
                 data-testid={`variant-swatch-sloane-bench-${option.key}`}
                 data-active={option.active ? "true" : "false"}
-                className={`rounded-lg border px-3 py-2 text-sm ${
-                  dark ? "designer-text-primary" : "text-neutral-900"
-                } ${option.active ? "designer-accent-border" : "border-neutral-200"}`}
+                className={`rounded-lg border px-3 py-2 text-sm text-neutral-900 ${option.active ? "designer-accent-border" : "border-neutral-200"}`}
                 disabled={option.disabled}
                 onClick={() =>
                   actions.onSelectSloaneBenchCushion(option.key, option.label)
@@ -310,15 +295,13 @@ export function ProductFinishControls({
 
       {state.size ? (
         <div className="pt-3">
-          <div className={sectionHeadingClass(dark)}>Size</div>
+          <div className={sectionHeadingClass}>Size</div>
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.size.options.map((option) => (
               <button
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${
-                  dark ? "designer-text-primary" : "text-neutral-900"
-                } ${option.active ? "designer-accent-border" : "border-neutral-200"}`}
+                className={`rounded-lg border px-3 py-2 text-sm text-neutral-900 ${option.active ? "designer-accent-border" : "border-neutral-200"}`}
                 disabled={option.disabled}
                 onClick={() => actions.onSelectSize(option.variantId, option.label)}
                 title={option.label}
@@ -332,10 +315,10 @@ export function ProductFinishControls({
 
       {state.structuredColour ? (
         <div className="pt-3">
-          <div className={sectionHeadingClass(dark)}>{state.structuredColour.label}</div>
+          <div className={sectionHeadingClass}>{state.structuredColour.label}</div>
 
           {state.structuredColour.selectedLabel ? (
-            <div className={selectedLabelClass(dark)}>
+            <div className={selectedLabelClass}>
               Selected: {state.structuredColour.selectedLabel}
             </div>
           ) : null}
@@ -415,13 +398,7 @@ export function ProductFinishControls({
             {state.structuredColour.groups.map((group) => (
               <div key={group.key}>
                 {group.label ? (
-                  <div
-                    className={
-                      dark
-                        ? "designer-text-secondary mb-2 text-[15px] font-medium tracking-tight"
-                        : "mb-2 text-[15px] font-medium tracking-tight text-[#4b2635]"
-                    }
-                  >
+                  <div className="mb-2 text-[15px] font-medium tracking-tight text-[#4b2635]">
                     {group.label}
                   </div>
                 ) : null}

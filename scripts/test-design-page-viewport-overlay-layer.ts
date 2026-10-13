@@ -202,7 +202,6 @@ function selectedOpeningFor(input: {
       },
     },
     configuration: {
-      dark: false,
       sceneBackgroundColor: "#ffffff",
       canEditPlanGeometry: true,
       proMode: false,
@@ -430,7 +429,7 @@ for (const portalWiring of [
   "...configuration.selectionInspector, portalTarget: selectionRailElement",
   "...configuration.planQuality, portalTarget: reviewRailElement",
   "references={references.planQuality}",
-  "<RoomPanNavigator {...state.navigator} {...configuration.navigator} {...actions.navigator} />",
+  "<RoomPanNavigator {...state.navigator} {...actions.navigator} />",
   "/>, navigatorRailElement )",
   "<FloorPropertiesPanel {...state.floorProperties} {...configuration.floorProperties} {...actions.floorProperties} />",
   "/>, floorRailElement )",
@@ -449,7 +448,7 @@ assert.ok(
 );
 assert.ok(
   normalizedOverlay.includes(
-    "<DesignPageViewportSelectionControls state={state.selectionControls} configuration={configuration.selectionControls} actions={actions.selectionControls} />"
+    "<DesignPageViewportSelectionControls state={state.selectionControls} actions={actions.selectionControls} />"
   ),
   "Selection controls should remain an unconditional child driven by resolved nullable state."
 );
