@@ -42,7 +42,6 @@ export function PlanTemplateChoiceDialog({
       closeDisabled={busy}
       busy={busy}
       showCloseButton={false}
-      forceLight
       initialFocusRef={primaryActionRef}
       testId="new-plan-choice-dialog"
       panelClassName="max-w-lg"

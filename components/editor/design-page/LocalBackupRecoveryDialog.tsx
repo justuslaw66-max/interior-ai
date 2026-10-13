@@ -34,7 +34,6 @@ export function LocalBackupRecoveryDialog({
       closeDisabled
       showCloseButton={false}
       busy={state.isWorking}
-      dark
       initialFocusRef={primaryActionRef}
       testId="local-backup-recovery-dialog"
       layerClassName="z-[120]"

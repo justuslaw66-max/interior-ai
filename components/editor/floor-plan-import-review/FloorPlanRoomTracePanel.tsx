@@ -23,7 +23,6 @@ type FloorPlanRoomTracePanelProps = {
   onRoomPointsChange: (value: ReviewSourcePoint[]) => void;
   onChange: (value: FloorPlanDocumentV2) => void;
   onError: (message: string | null) => void;
-  dark: boolean;
   disabled: boolean;
 };
 
@@ -39,7 +38,6 @@ export default function FloorPlanRoomTracePanel({
   onRoomPointsChange,
   onChange,
   onError,
-  dark,
   disabled,
 }: FloorPlanRoomTracePanelProps) {
   const floor = document.floors.find((entry) => entry.id === floorId);
@@ -48,10 +46,8 @@ export default function FloorPlanRoomTracePanel({
   const [wallThicknessMm, setWallThicknessMm] = useState(120);
   if (!floor) return null;
 
-  const control = dark
-    ? "designer-control rounded-md border px-2 py-1.5 text-xs"
-    : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
+  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
+  const subtle = "text-neutral-600";
 
   return (
     <details data-review-controls="room" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3" open={pickingRoom || !floor.rooms.length}>

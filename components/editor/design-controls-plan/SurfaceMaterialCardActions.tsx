@@ -6,7 +6,6 @@ type SurfaceMaterialCardActionsProps = {
   materialId: string;
   productName: string;
   favorite: boolean;
-  dark: boolean;
   detailsClassName: string;
   onToggleFavorite: () => void;
   onOpenDetails: () => void;
@@ -20,14 +19,11 @@ export function SurfaceMaterialCardActions({
   materialId,
   productName,
   favorite,
-  dark,
   detailsClassName,
   onToggleFavorite,
   onOpenDetails,
 }: SurfaceMaterialCardActionsProps) {
-  const toggleClassName = dark
-    ? "designer-control flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border"
-    : "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-100";
+  const toggleClassName = "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-100";
   return (
     <div className="mt-2 flex items-center gap-1.5">
       <button

@@ -116,7 +116,7 @@ assert.match(read("components/editor/renderers/RoomRenderer2D.tsx"), /if \(planZ
 // that's hidden while the sheet only peeks.
 const sheet = (collapsed: boolean) =>
   renderToStaticMarkup(
-    <PhoneStepSheet dark={false} title="Furnish" subtitle="Add real purchasable furniture." collapsed={collapsed} onCollapsedChange={noop}>
+    <PhoneStepSheet title="Furnish" subtitle="Add real purchasable furniture." collapsed={collapsed} onCollapsedChange={noop}>
       <p>Products</p>
     </PhoneStepSheet>
   );
@@ -170,9 +170,9 @@ assert.match(frame, /const wide = useMediaQuery\(CANVAS_TOOLBAR_MEDIA_QUERY\);[\
 // One component draws the sheet and the column (UX 4d), so crossing md (a phone turned sideways,
 // hydrating on a desktop) keeps the step's content mounted: an open product's details survived.
 assert.equal(frame.match(/<PhoneStepSheet /g)?.length, 1, "The frame renders one PhoneStepSheet, for both.");
-assert.match(frame, /<PhoneStepSheet dark=\{dark\} title=\{title\} subtitle=\{subtitle\} collapsed=\{props\.collapsed\} onCollapsedChange=\{onCollapsedChange\} column=\{column\}>/);
+assert.match(frame, /<PhoneStepSheet title=\{title\} subtitle=\{subtitle\} collapsed=\{props\.collapsed\} onCollapsedChange=\{onCollapsedChange\} column=\{column\}>/);
 const columnPanel = renderToStaticMarkup(
-  <PhoneStepSheet dark={false} title="Furnish" subtitle="x" collapsed={false}
+  <PhoneStepSheet title="Furnish" subtitle="x" collapsed={false}
     column={{ className: "absolute top-bar-2 z-20", temporarilyRevealed: false, header: <div>Furnish</div>, onMouseEnter: noop, onMouseLeave: noop }}>
     <p>Products</p>
   </PhoneStepSheet>
@@ -182,7 +182,7 @@ assert.equal(
   '<section data-testid="design-controls-panel" data-temporary-reveal="false" class="absolute top-bar-2 z-20"><div>Furnish</div><div class="space-y-3"><div data-testid="phone-sheet-inspector" hidden=""></div><div class="space-y-3"><p>Products</p></div></div></section>',
   "The column: its header, then the same body as the sheet's, with the step's content in the same place."
 );
-assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsPanelFrame\s+dark=\{dark\}/);
+assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsPanelFrame/);
 const model = read("lib/useDesignPagePlanPresentationModel.ts");
 assert.match(model, /const phoneSheetHeightPx = usePhoneSheetState\(\)\.heightPx;/);
 assert.match(model, /plan2DSafeAreaTopPx: phoneInsets\.topPx,\s*plan2DSafeAreaBottomPx: phoneInsets\.bottomPx,/);

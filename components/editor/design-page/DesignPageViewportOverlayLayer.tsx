@@ -15,7 +15,6 @@ import { PlanRoomSummaryCard } from "@/components/editor/design-page/PlanRoomSum
 import { SceneReadyVeil } from "@/components/editor/design-page/SceneReadyVeil";
 import { SelectedPlanOpeningActions } from "@/components/editor/design-page/SelectedPlanOpeningActions";
 
-type SceneReadyVeilProps = ComponentProps<typeof SceneReadyVeil>;
 type SelectedPlanOpeningActionsProps = ComponentProps<
   typeof SelectedPlanOpeningActions
 >;
@@ -44,11 +43,7 @@ type HandlerKeys<T> = Extract<keyof T, `on${string}`>;
 
 type RoomPanNavigatorState = Omit<
   RoomPanNavigatorProps,
-  HandlerKeys<RoomPanNavigatorProps> | "dark" | "disabled"
->;
-type RoomPanNavigatorConfiguration = Pick<
-  RoomPanNavigatorProps,
-  "dark"
+  HandlerKeys<RoomPanNavigatorProps> | "disabled"
 >;
 type RoomPanNavigatorActions = Pick<
   RoomPanNavigatorProps,
@@ -57,11 +52,11 @@ type RoomPanNavigatorActions = Pick<
 
 type FloorPropertiesState = Omit<
   FloorPropertiesPanelProps,
-  HandlerKeys<FloorPropertiesPanelProps> | "dark" | "canEdit"
+  HandlerKeys<FloorPropertiesPanelProps> | "canEdit"
 >;
 type FloorPropertiesConfiguration = Pick<
   FloorPropertiesPanelProps,
-  "dark" | "canEdit"
+  "canEdit"
 >;
 type FloorPropertiesActions = Pick<
   FloorPropertiesPanelProps,
@@ -85,7 +80,6 @@ export type DesignPageViewportOverlayLayerState = {
 };
 
 export type DesignPageViewportOverlayLayerConfiguration = {
-  sceneLoading: SceneReadyVeilProps["configuration"];
   selectedOpening: SelectedPlanOpeningActionsProps["configuration"];
   selectionInspector: Omit<
     SelectionInspectorProps["configuration"],
@@ -96,11 +90,8 @@ export type DesignPageViewportOverlayLayerConfiguration = {
     PlanQualityReviewPanelProps["configuration"],
     "portalTarget"
   >;
-  aiLayoutPreview: AiLayoutPreviewBannerProps["configuration"];
-  navigator: RoomPanNavigatorConfiguration;
   floorProperties: FloorPropertiesConfiguration;
   importedWallEditor: ImportedWallEditorProps["configuration"];
-  selectionControls: ViewportSelectionControlsProps["configuration"];
 };
 
 export type DesignPageViewportOverlayLayerReferences = {
@@ -195,7 +186,7 @@ export function DesignPageViewportOverlayLayer({
       ) : null}
 
       {state.sceneLoadingVisible ? (
-        <SceneReadyVeil configuration={configuration.sceneLoading} />
+        <SceneReadyVeil />
       ) : null}
 
       {state.selectedOpening ? (
@@ -247,7 +238,6 @@ export function DesignPageViewportOverlayLayer({
       {state.aiLayoutPreview ? (
         <AiLayoutPreviewBanner
           state={state.aiLayoutPreview}
-          configuration={configuration.aiLayoutPreview}
           actions={actions.aiLayoutPreview}
         />
       ) : null}
@@ -260,7 +250,6 @@ export function DesignPageViewportOverlayLayer({
         ? createPortal(
             <RoomPanNavigator
               {...state.navigator}
-              {...configuration.navigator}
               {...actions.navigator}
             />,
             navigatorRailElement
@@ -302,7 +291,6 @@ export function DesignPageViewportOverlayLayer({
 
       <DesignPageViewportSelectionControls
         state={state.selectionControls}
-        configuration={configuration.selectionControls}
         actions={actions.selectionControls}
       />
     </>

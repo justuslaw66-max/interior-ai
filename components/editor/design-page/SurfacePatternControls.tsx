@@ -158,7 +158,7 @@ function PatternChoices({ pattern, actions }: PatternProps) {
             }
             onClick={() => actions.onSelectPattern(option.id)}
           >
-            <SurfacePatternPreview pattern={option.id} dark={false} />
+            <SurfacePatternPreview pattern={option.id} />
             <span className="sr-only">{option.label}</span>
           </button>
         ))}

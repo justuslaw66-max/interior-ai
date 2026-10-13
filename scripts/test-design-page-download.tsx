@@ -14,7 +14,7 @@ import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
 const noop = () => undefined;
 const resolved = async () => undefined;
 const base: DownloadDialogProps = {
-  open: true, dark: false, signedIn: true, freeLimits: true, sceneReady: true, hasItems: true,
+  open: true, signedIn: true, freeLimits: true, sceneReady: true, hasItems: true,
   exportingImages: false, exportingPdf: false,
   onClose: noop, onDownloadImages: resolved, onDownloadPdf: resolved, onSignIn: noop, onSeePricing: noop,
 };
@@ -42,10 +42,8 @@ assert.match(guest, /data-testid="download-pdf-sign-in"[^>]*>Sign in to download
 assert.doesNotMatch(guest, /data-testid="download-pdf"/);
 assert.match(button(guest, "download-images"), /aria-disabled="false"/, "Guests can still download pictures.");
 
-const pro = render({ freeLimits: false, dark: true });
+const pro = render({ freeLimits: false });
 assert.doesNotMatch(pro, /download-free-note|download-see-pricing/, "Pro downloads have no Free note.");
-assert.match(pro, /designer-panel/, "The Pro theme styles the dialog like its other dialogs.");
-assert.match(button(pro, "download-images"), /designer-primary-action/);
 
 const empty = render({ hasItems: false });
 assert.match(button(empty, "download-pdf"), /disabled=""/);
@@ -66,7 +64,7 @@ assert.match(render({ exportingPdf: true }), /Preparing PDF…/);
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 const commandBar = readEditorCommandBarSource();
-assert.match(commandBar, /data-testid="editor-command-download"[\s\S]{0,400}?"designer-control hidden h-9 w-9 [^"]*md:inline-flex/,
+assert.match(commandBar, /data-testid="editor-command-download"[\s\S]{0,400}?"hidden h-9 w-9 [^"]*md:inline-flex/,
   "Download sits in the bar from tablet width up.");
 assert.match(commandBar, /data-testid="editor-command-overflow-download"\s*className=\{`\$\{menuButtonClass\} md:hidden`\}/,
   "Phones reach Download through More.");

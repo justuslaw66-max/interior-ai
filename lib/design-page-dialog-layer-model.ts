@@ -62,7 +62,6 @@ export type BuildDesignPageDialogLayerModelInput = {
     isAuthenticated: boolean;
     isDesigner: boolean;
     capabilities: EditorCapabilities;
-    designerTheme: boolean;
   };
   billing: {
     upgrade: UpgradeModel;
@@ -154,7 +153,6 @@ function buildDownloadDialog(
   const exportState = presentation.presentExport.state;
   return {
     ...presentation.download,
-    dark: access.designerTheme,
     signedIn: access.isAuthenticated,
     freeLimits: !access.capabilities.exportWithoutWatermark,
     sceneReady: exportState.sceneReady,
@@ -258,7 +256,7 @@ export function buildDesignPageDialogLayerModel({
       },
       toasts: feedback.toasts,
       shareFallback: {
-        url: sharing.url, designId: presentation.presentExport.state.designId, dark: access.designerTheme,
+        url: sharing.url, designId: presentation.presentExport.state.designId,
         lifecycleMode: access.isDesigner ? "designer" : "consumer",
         onClose: sharing.onClose, onCopy: sharing.onCopy, onOpen: sharing.onOpen,
       },

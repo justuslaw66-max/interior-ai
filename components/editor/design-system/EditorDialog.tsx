@@ -17,8 +17,6 @@ export type EditorDialogProps = {
   closeDisabled?: boolean;
   closeOnBackdrop?: boolean;
   showCloseButton?: boolean;
-  dark?: boolean;
-  forceLight?: boolean;
   testId?: string;
   /** A test id for the panel itself, where a test measures the sheet rather than its layer. */
   panelTestId?: string;
@@ -68,23 +66,12 @@ function getDialogPlacementClasses(placement: EditorDialogPlacement) {
   };
 }
 
-function getDialogThemeClasses(dark: boolean, forceLight: boolean) {
-  if (dark) return {
-    panel: "border-white/10 bg-[#1e2839] text-white",
-    description: "text-neutral-300",
-    close: "text-neutral-300 hover:bg-white/10 hover:text-white focus-visible:ring-offset-[#1e2839]",
-  };
-  if (forceLight) return {
-    panel: "border-neutral-200 bg-white text-neutral-950",
-    description: "text-neutral-600",
-    close: "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus-visible:ring-offset-white",
-  };
-  return {
-    panel: "border-neutral-200 bg-white text-neutral-950 dark:border-gray-700 dark:bg-[#1e2839] dark:text-white",
-    description: "text-neutral-600 dark:text-neutral-300",
-    close: "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus-visible:ring-offset-white dark:text-neutral-300 dark:hover:bg-white/10 dark:hover:text-white dark:focus-visible:ring-offset-[#1e2839]",
-  };
-}
+/** The panel's colours: one light theme. */
+const DIALOG_THEME_CLASSES = {
+  panel: "border-neutral-200 bg-white text-neutral-950",
+  description: "text-neutral-600",
+  close: "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus-visible:ring-offset-white",
+};
 
 type EditorDialogCloseButtonProps = {
   buttonRef: { current: HTMLButtonElement | null };
@@ -131,8 +118,6 @@ export function EditorDialog({
   closeDisabled = false,
   closeOnBackdrop = true,
   showCloseButton = true,
-  dark = false,
-  forceLight = false,
   testId, panelTestId, dialogId,
   closeButtonTestId, closeButtonId, closeButtonClassName = "",
   closeButtonRef: providedCloseButtonRef,
@@ -152,7 +137,6 @@ export function EditorDialog({
   const panelRef = useRef<HTMLDivElement | null>(null);
   const internalCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = providedCloseButtonRef ?? internalCloseButtonRef;
-  const themeClasses = getDialogThemeClasses(dark, forceLight);
   const placementClasses = getDialogPlacementClasses(placement);
   const requestClose = useEditorDialogLifecycle({
     open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
@@ -189,7 +173,7 @@ export function EditorDialog({
       <div
         ref={panelRef}
         tabIndex={-1} data-editor-dialog-state="mounting" data-testid={panelTestId}
-        className={`${placementClasses.panel} outline-hidden transition-transform motion-reduce:transition-none ${themeClasses.panel} ${panelClassName}`}
+        className={`${placementClasses.panel} outline-hidden transition-transform motion-reduce:transition-none ${DIALOG_THEME_CLASSES.panel} ${panelClassName}`}
       >
         <div className={`flex items-start justify-between gap-4 ${headerClassName}`}>
           <div className="min-w-0">
@@ -199,7 +183,7 @@ export function EditorDialog({
             {description ? (
               <div
                 id={descriptionId}
-                className={`mt-1 text-sm leading-5 ${themeClasses.description}`}
+                className={`mt-1 text-sm leading-5 ${DIALOG_THEME_CLASSES.description}`}
               >
                 {description}
               </div>
@@ -208,7 +192,7 @@ export function EditorDialog({
           {showCloseButton ? (
             <EditorDialogCloseButton
               buttonRef={closeButtonRef} id={closeButtonId} label={closeLabel} testId={closeButtonTestId}
-              disabled={closeDisabled} className={`${themeClasses.close} ${closeButtonClassName}`} onClick={requestClose}
+              disabled={closeDisabled} className={`${DIALOG_THEME_CLASSES.close} ${closeButtonClassName}`} onClick={requestClose}
             />
           ) : null}
         </div>

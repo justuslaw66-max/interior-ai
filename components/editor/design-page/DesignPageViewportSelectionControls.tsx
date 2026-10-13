@@ -11,10 +11,6 @@ import type {
 export type DesignPageViewportSelectionControlsState =
   ResolvedViewportSelectionControlsState;
 
-export type DesignPageViewportSelectionControlsConfiguration = {
-  dark: boolean;
-};
-
 export type DesignPageViewportSelectionControlsActions = {
   floorStack: {
     switchFloor: (level: number) => void;
@@ -35,13 +31,11 @@ export type DesignPageViewportSelectionControlsActions = {
 
 type DesignPageViewportSelectionControlsProps = {
   state: DesignPageViewportSelectionControlsState;
-  configuration: DesignPageViewportSelectionControlsConfiguration;
   actions: DesignPageViewportSelectionControlsActions;
 };
 
 export function DesignPageViewportSelectionControls({
   state,
-  configuration,
   actions,
 }: DesignPageViewportSelectionControlsProps) {
   const selectedZone = state.selectedZone;
@@ -51,7 +45,6 @@ export function DesignPageViewportSelectionControls({
       {state.floorStack && (
         <FloorStackControl
           state={state.floorStack}
-          configuration={configuration}
           actions={actions.floorStack}
         />
       )}
@@ -59,7 +52,6 @@ export function DesignPageViewportSelectionControls({
       {state.multiSelection && (
         <MultiSelectionToolbar
           state={state.multiSelection}
-          configuration={configuration}
           actions={actions.multiSelection}
         />
       )}
@@ -67,7 +59,6 @@ export function DesignPageViewportSelectionControls({
       {selectedZone && (
         <SelectedZoneToolbar
           state={{ label: selectedZone.label }}
-          configuration={configuration}
           actions={{
             autoLayout: () => actions.selectedZone.autoLayout(selectedZone.id),
             rotate: () =>

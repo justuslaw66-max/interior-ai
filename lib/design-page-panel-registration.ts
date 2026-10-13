@@ -63,7 +63,6 @@ export function buildDesignPagePanelRegistration({
         canUseStudio: configuration.canUseCabinetryStudio,
         isDesigner: configuration.isDesigner,
         isClientPreview: configuration.isClientPreview,
-        designerTheme: configuration.designerTheme,
       },
       actions: {
         center: cabinetry.actions.centerSelected,
@@ -122,7 +121,6 @@ export function buildDesignPagePanelRegistration({
         productFinishes: inspectionState.productFinishControlsState,
       },
       configuration: {
-        dark: configuration.designerTheme,
         isDesigner: configuration.isDesigner,
         isClientPreview: configuration.isClientPreview,
         canEdit: configuration.canEdit, canChangeProducts: configuration.canChangeProducts,
@@ -159,7 +157,7 @@ export function buildDesignPagePanelRegistration({
   });
   const designControlsPanelModel = buildDesignControlsPanelModel({
     access: {
-      dark: configuration.designerTheme, isClientPreview: configuration.isClientPreview,
+      isClientPreview: configuration.isClientPreview,
       isAuthed: state.document.authenticated,
       floorPlanLifecycleIdentity: { authScopeKey: state.document.authScopeKey, currentDesignId: state.document.designId ?? null, subscriptionPlan: state.document.plan },
       isDesigner: configuration.isDesigner,
@@ -435,7 +433,6 @@ export function buildDesignPagePanelRegistration({
       hasSelectedProduct: Boolean(inspection.selectedProduct),
     },
     configuration: {
-      designerTheme: configuration.designerTheme,
       isDesigner: configuration.isDesigner,
       isClientPreview: configuration.isClientPreview,
     },

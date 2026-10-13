@@ -22,7 +22,6 @@ export function useLightingSettingsOpen(viewMode: EditorViewMode) {
 
 type LightingSettingsDrawerProps = {
   open: boolean;
-  dark: boolean;
   onClose: () => void;
   children: ReactNode;
 };
@@ -35,7 +34,6 @@ type LightingSettingsDrawerProps = {
  */
 export function LightingSettingsDrawer({
   open,
-  dark,
   onClose,
   children,
 }: LightingSettingsDrawerProps) {
@@ -50,8 +48,6 @@ export function LightingSettingsDrawer({
       onClose={onClose}
       closeLabel="Close lighting settings"
       closeButtonTestId="lighting-settings-close"
-      dark={dark}
-      forceLight={!dark}
       dialogId="lighting-settings-drawer"
       testId="lighting-settings-overlay"
       panelTestId="lighting-settings-drawer"

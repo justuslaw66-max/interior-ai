@@ -52,7 +52,6 @@ type HouseRoomTemplate = {
 
 export type DesignControlsPlanPanelProps = {
   floorPlanLifecycleIdentity: FloorPlanLifecycleIdentity;
-  dark: boolean;
   isClientPreview: boolean;
   isDesigner: boolean;
   canEdit: boolean;

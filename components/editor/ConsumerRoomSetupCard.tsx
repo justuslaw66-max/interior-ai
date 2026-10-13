@@ -14,7 +14,6 @@ import { RoomSetupStartActions } from "@/components/editor/RoomSetupStartActions
 import { RoomSetupStatusBadge, roomSetupStatus } from "@/components/editor/RoomSetupStatusBadge";
 
 export type ConsumerRoomSetupCardProps = {
-  dark: boolean;
   canEdit: boolean;
   canEditPlanGeometry: boolean;
   hasRooms: boolean;
@@ -50,7 +49,6 @@ export type ConsumerRoomSetupCardProps = {
 };
 
 export function ConsumerRoomSetupCard({
-  dark,
   canEdit,
   canEditPlanGeometry,
   hasRooms, roomIsDraft = false,
@@ -70,21 +68,11 @@ export function ConsumerRoomSetupCard({
 }: ConsumerRoomSetupCardProps) {
   const dimensions = consumerRoomMeasurementDimensions({ hasRooms, roomWidth, roomDepth, roomWidthInput, roomDepthInput });
   const roomTypeLabel = HOUSE_ROOM_TYPES.find((option) => option.type === newRoomType)?.label ?? "Room";
-  const shellClass = dark
-    ? "designer-recessed border-b border-white/10 p-3"
-    : "border-b border-neutral-100 bg-neutral-50/80 p-3";
-  const labelClass = dark
-    ? "text-xs font-semibold text-neutral-200"
-    : "text-xs font-semibold text-neutral-700";
-  const inputClass = dark
-    ? "designer-control min-h-11 w-full rounded-lg border px-3 text-sm text-neutral-100 outline-hidden focus-visible:ring-2 focus-visible:ring-blue-400/40 disabled:opacity-50"
-    : "min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-900 outline-hidden focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
-  const secondaryActionClass = dark
-    ? "designer-control min-h-11 rounded-lg border px-3 py-2 text-xs font-semibold focus-visible:ring-2 focus-visible:ring-blue-400/40 disabled:opacity-50"
-    : "min-h-11 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
-  const primaryActionClass = dark
-    ? "designer-control-active min-h-11 rounded-lg border px-3 py-2 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-blue-400/40 disabled:opacity-50"
-    : "min-h-11 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-blue-600/30 disabled:opacity-50";
+  const shellClass = "border-b border-neutral-100 bg-neutral-50/80 p-3";
+  const labelClass = "text-xs font-semibold text-neutral-700";
+  const inputClass = "min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-900 outline-hidden focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
+  const secondaryActionClass = "min-h-11 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
+  const primaryActionClass = "min-h-11 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-blue-600/30 disabled:opacity-50";
 
   return (
     <section
@@ -96,27 +84,17 @@ export function ConsumerRoomSetupCard({
         <div>
           <h2
             id="consumer-room-setup-title"
-            className={
-              dark
-                ? "text-sm font-semibold text-neutral-100"
-                : "text-sm font-semibold text-neutral-950"
-            }
+            className="text-sm font-semibold text-neutral-950"
           >
             {hasRooms ? "Check your room" : "Set up your room"}
           </h2>
-          <p
-            className={
-              dark
-                ? "mt-1 text-xs text-neutral-400"
-                : "mt-1 text-xs text-neutral-600"
-            }
-          >
+          <p className="mt-1 text-xs text-neutral-600">
             {hasRooms
               ? `${activeRoomName}: confirm the real dimensions before furnishing.`
               : "Start with a safe rectangle, then adjust it to your measurements."}
           </p>
         </div>
-        <RoomSetupStatusBadge dark={dark} status={roomSetupStatus(hasRooms, roomIsDraft)} />
+        <RoomSetupStatusBadge status={roomSetupStatus(hasRooms, roomIsDraft)} />
       </div>
 
       {!hasRooms ? (
@@ -166,7 +144,6 @@ export function ConsumerRoomSetupCard({
       ) : null}
 
       <ConsumerMeasurementPreferenceRegion
-        dark={dark}
         canEditPlanGeometry={canEditPlanGeometry}
         hasRooms={hasRooms}
         ready={measurementUnitReady}
@@ -180,13 +157,7 @@ export function ConsumerRoomSetupCard({
         onCommitDimension={actions.commitRoomDimension}
       />
 
-      <p
-        className={
-          dark
-            ? "mt-2 text-xs leading-4 text-neutral-400"
-            : "mt-2 text-xs leading-4 text-neutral-500"
-        }
-      >
+      <p className="mt-2 text-xs leading-4 text-neutral-500">
         Enter applies, Escape restores the last valid value, and arrow keys
         adjust by 50 mm. Valid room sizes are 1.8–20 m.
       </p>
@@ -194,11 +165,7 @@ export function ConsumerRoomSetupCard({
       {!canEditPlanGeometry ? (
         <div
           role="alert"
-          className={
-            dark
-              ? "mt-3 rounded-lg bg-amber-400/10 px-3 py-2 text-xs text-amber-100"
-              : "mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800"
-          }
+          className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800"
         >
           Room geometry is read-only in this view. Return to the editable plan
           to change dimensions, doors or windows.
@@ -223,12 +190,8 @@ export function ConsumerRoomSetupCard({
             role="status"
             className={
               hasConnectionBlockers
-                ? dark
-                  ? "rounded-lg bg-amber-400/10 px-3 py-2 text-xs text-amber-100"
-                  : "rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800"
-                : dark
-                  ? "designer-raised rounded-lg px-3 py-2 text-xs text-neutral-300"
-                  : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600"
+                ? "rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800"
+                : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600"
             }
           >
             {roomSetupOpeningStatus({ hasConnectionBlockers, planSettingsReady: measurementUnitReady, openingCount })}
@@ -266,7 +229,7 @@ export function ConsumerRoomSetupCard({
         </div>
       )}
 
-      <RoomSetupStartActions dark={dark} canEdit={canEdit} secondaryActionClass={secondaryActionClass} actions={actions} />
+      <RoomSetupStartActions canEdit={canEdit} secondaryActionClass={secondaryActionClass} actions={actions} />
     </section>
   );
 }

@@ -11,7 +11,6 @@ type FloorPlanPageSelectionPanelProps = {
   onConfirm: () => void;
   submitting?: boolean;
   disabled?: boolean;
-  dark?: boolean;
 };
 
 export default function FloorPlanPageSelectionPanel({
@@ -22,9 +21,8 @@ export default function FloorPlanPageSelectionPanel({
   onConfirm,
   submitting = false,
   disabled = false,
-  dark = false,
 }: FloorPlanPageSelectionPanelProps) {
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
+  const subtle = "text-neutral-600";
 
   return (
     <section data-testid="floor-plan-page-selection" data-floor-plan-workspace-state="page-selection">
@@ -47,9 +45,7 @@ export default function FloorPlanPageSelectionPanel({
                 "overflow-hidden rounded-lg border text-left transition disabled:opacity-50",
                 selectedPageNumber === candidate.pageNumber
                   ? "border-emerald-500 ring-2 ring-emerald-500/25"
-                  : dark
-                    ? "border-white/10"
-                    : "border-neutral-200 hover:border-neutral-400",
+                  : "border-neutral-200 hover:border-neutral-400",
               ].join(" ")}
               disabled={disabled || submitting}
               onClick={() =>

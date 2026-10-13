@@ -51,7 +51,7 @@ assert.match(
 const furnishPanel = read("components/editor/DesignControlsFurnishPanel.tsx");
 assert.match(furnishPanel, /<PlacementAddModeToggle visible=\{isDesigner\} mode=\{placementAddMode\} onChange=\{onPlacementAddModeChange\} \/>/);
 assert.match(furnishPanel, /onAddToRoom=\{onAddCatalogItemToRoom\} directAdd=\{!isDesigner\}/);
-assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsFurnishPanel\s+dark=\{dark\}\s+canEdit=\{canEdit\} canChangeProducts=\{canChangeProducts\} isDesigner=\{isDesigner\}/);
+assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsFurnishPanel\s+canEdit=\{canEdit\} canChangeProducts=\{canChangeProducts\} isDesigner=\{isDesigner\}/);
 const catalogPanel = read("components/catalog/CatalogPanel.tsx");
 assert.match(catalogPanel, /placesDirectly=\{directAdd\} addDisabled=\{!canEdit\} onChooseSpot=\{onAutoPlaceInRoom\}/);
 assert.equal(renderToStaticMarkup(createElement(PlacementAddModeToggle, { visible: false, mode: "auto", onChange: noop })), "");

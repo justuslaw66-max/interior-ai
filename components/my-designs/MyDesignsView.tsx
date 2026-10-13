@@ -98,7 +98,7 @@ function MyDesignsDialogs({ state }: { state: MyDesignsPageState }) {
   const returnFocusIds = dialog?.returnFocusIds ?? NO_RETURN_FOCUS;
   return (
     <>
-      <DesignRenameDialog open={dialog?.kind === "rename"} dark={false} busy={dialog?.kind === "rename" && dialog.busy}
+      <DesignRenameDialog open={dialog?.kind === "rename"} busy={dialog?.kind === "rename" && dialog.busy}
         value={dialog?.kind === "rename" ? dialog.value : ""} returnFocusIds={returnFocusIds}
         onValueChange={(value) => state.setDialog((current) => (current?.kind === "rename" ? { ...current, value } : current))}
         onCancel={() => state.setDialog(null)} onSave={() => void saveRename(state)} />

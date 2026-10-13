@@ -22,7 +22,7 @@ const CLASSIFICATIONS: FloorPlanWallClassificationV2[] = [
 
 export type ImportedFloorPlanWallEditorProps = {
   state: ImportedWallEditingState;
-  configuration: { dark: boolean; vectorExport?: CanonicalPlanVectorExportSource };
+  configuration: { vectorExport?: CanonicalPlanVectorExportSource };
   actions: ImportedWallEditingActions;
 };
 
@@ -74,21 +74,11 @@ export function ImportedFloorPlanWallEditor({
   const vertexZ = currentVertexDraft.zMm;
 
   if (!state.available || !document || !floor || !wall) return null;
-
-  const dark = configuration.dark;
-  const shell = dark
-    ? "designer-work-surface rounded-lg border p-3 text-xs"
-    : "rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-lg backdrop-blur";
-  const control = dark
-    ? "designer-control rounded-md border px-2 py-1.5"
-    : "rounded-md border border-neutral-300 bg-white px-2 py-1.5";
-  const secondaryButton = dark
-    ? "designer-work-control rounded-md px-2.5 py-1.5 font-semibold"
-    : "rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 font-semibold hover:bg-neutral-50";
-  const primaryButton = dark
-    ? "designer-work-control-active rounded-md px-2.5 py-1.5 font-semibold disabled:opacity-40"
-    : "rounded-md bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800 disabled:opacity-40";
-  const subtle = dark ? "text-neutral-400" : "text-neutral-500";
+  const shell = "rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-lg backdrop-blur";
+  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5";
+  const secondaryButton = "rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 font-semibold hover:bg-neutral-50";
+  const primaryButton = "rounded-md bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800 disabled:opacity-40";
+  const subtle = "text-neutral-500";
   const straightWall = wall.path.kind === "line";
   const updateChanged =
     thicknessMm !== wall.thicknessMm || classification !== wall.classification;

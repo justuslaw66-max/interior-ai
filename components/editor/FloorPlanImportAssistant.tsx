@@ -33,7 +33,7 @@ import { userFacingErrorMessage } from "@/lib/user-facing-error";
 type FloorPlanImportAssistantProps = {
   file: File | null;
   trainingBenchmarkOptIn?: boolean;
-  dark?: boolean; disabled?: boolean; proMode?: boolean;
+  disabled?: boolean; proMode?: boolean;
   resumeJobId?: string | null;
   onChooseFile?: () => void;
   onActiveJobIdChange?: (jobId: string | null) => void;
@@ -62,7 +62,7 @@ function uploadRetentionNote(input: {
 export default function FloorPlanImportAssistant({
   file,
   trainingBenchmarkOptIn = false,
-  dark = false, disabled = false, proMode = false,
+  disabled = false, proMode = false,
   resumeJobId = null,
   onChooseFile,
   onActiveJobIdChange,
@@ -342,13 +342,9 @@ export default function FloorPlanImportAssistant({
   };
 
   if ((!file && !resumeJobId) || state.kind === "idle") return null;
-  const surface = dark
-    ? "designer-recessed rounded-xl border border-white/10 p-4 sm:p-5"
-    : "rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-sm sm:p-5";
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
-  const control = dark
-    ? "designer-control rounded-md border px-2 py-1.5 text-xs text-neutral-100"
-    : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs text-neutral-900";
+  const surface = "rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-sm sm:p-5";
+  const subtle = "text-neutral-600";
+  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs text-neutral-900";
 
   if (state.kind === "working") {
     const estimate = state.estimate;
@@ -409,11 +405,7 @@ export default function FloorPlanImportAssistant({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progress}
-            className={
-              dark
-                ? "mt-2 h-2 overflow-hidden rounded-full bg-white/10"
-                : "mt-2 h-2 overflow-hidden rounded-full bg-emerald-100"
-            }
+            className="mt-2 h-2 overflow-hidden rounded-full bg-emerald-100"
           >
             <div
               className="h-full rounded-full bg-emerald-500 transition-all"
@@ -436,7 +428,7 @@ export default function FloorPlanImportAssistant({
 
   if (state.kind === "error") {
     return (
-      <FloorPlanImportPausedNotice dark={dark} subtle={subtle} control={control} message={state.message}
+      <FloorPlanImportPausedNotice subtle={subtle} control={control} message={state.message}
         authenticationRequired={Boolean(state.authenticationRequired)} resumableJobId={state.resumableJobId ?? null} />
     );
   }
@@ -463,7 +455,7 @@ export default function FloorPlanImportAssistant({
         {!sourceContentDeleted && !sourceDeletionPending ? (
           <button
             type="button"
-            className={dark ? "designer-control mt-2 rounded-md border px-2 py-1.5 text-xs" : "mt-2 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs"}
+            className="mt-2 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs"
             disabled={disabled || deletingSource || retryingDetection}
             onClick={() => void deletePrivateSource()}
           >
@@ -519,7 +511,6 @@ export default function FloorPlanImportAssistant({
             focusedIssueEntityIds={[]}
             onChange={(next) => setCandidate(next)}
             previewOnly
-            dark={dark}
             disabled
           />
         ) : null}
@@ -543,13 +534,7 @@ export default function FloorPlanImportAssistant({
             Creation paused: {createError}
           </p>
         ) : null}
-        <details
-          className={
-            dark
-              ? "designer-recessed mt-4 rounded-xl p-3"
-              : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"
-          }
-        >
+        <details className="mt-4 rounded-xl border border-neutral-200 bg-white p-3">
           <summary className="cursor-pointer text-xs font-semibold">
             Rename, plan options & privacy
           </summary>
@@ -566,7 +551,6 @@ export default function FloorPlanImportAssistant({
           {candidate && optionalConfigurationCount > 0 ? (
             <FloorPlanOptionalConfigurationPanel
               document={candidate}
-              dark={dark}
               disabled={disabled || submitting || deletingSource}
               compact
             />
@@ -588,11 +572,7 @@ export default function FloorPlanImportAssistant({
           {!sourceContentDeleted && !sourceDeletionPending ? (
             <button
               type="button"
-              className={
-                dark
-                  ? "designer-control mt-2 rounded-md border px-3 py-2 text-xs font-semibold"
-                  : "mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
-              }
+              className="mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
               disabled={disabled || deletingSource || submitting}
               onClick={() => void deletePrivateSource()}
             >
@@ -602,11 +582,7 @@ export default function FloorPlanImportAssistant({
           {onChooseFile ? (
             <button
               type="button"
-              className={
-                dark
-                  ? "designer-control ml-2 mt-2 rounded-md border px-3 py-2 text-xs font-semibold"
-                  : "ml-2 mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
-              }
+              className="ml-2 mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
               disabled={disabled || submitting || deletingSource}
               onClick={onChooseFile}
             >
@@ -635,7 +611,6 @@ export default function FloorPlanImportAssistant({
           onConfirm={() => void confirmSelectedPage()}
           submitting={submitting}
           disabled={disabled}
-          dark={dark}
         />
       </div>
     );
@@ -666,7 +641,7 @@ export default function FloorPlanImportAssistant({
         retryingDetection={retryingDetection}
         onSubmit={(reviewIssues) => void submitReview(reviewIssues)}
         submitting={submitting}
-        disabled={photoReviewBusy(disabled,submitting,retryingDetection)} proMode={proMode} dark={dark}
+        disabled={photoReviewBusy(disabled,submitting,retryingDetection)} proMode={proMode}
       /></PhotoReviewAction.Provider></SourceTraceAction.Provider>
     </div>
   );

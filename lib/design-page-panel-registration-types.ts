@@ -77,7 +77,6 @@ export type BuildDesignPagePanelRegistrationInput = {
     surface: { showFloorPropertiesPanel: boolean };
   };
   configuration: {
-    designerTheme: boolean;
     isDesigner: boolean;
     isClientPreview: boolean;
     canEdit: boolean;

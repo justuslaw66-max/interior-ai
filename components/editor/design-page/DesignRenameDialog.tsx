@@ -10,7 +10,6 @@ import { DESIGN_TITLE_MAX_LENGTH } from "@/lib/design-title";
 
 export type DesignRenameDialogProps = {
   open: boolean;
-  dark: boolean;
   value: string;
   onValueChange: (value: string) => void;
   onCancel: () => void;
@@ -28,7 +27,6 @@ export type DesignRenameDialogProps = {
  */
 export function DesignRenameDialog({
   open,
-  dark,
   value,
   onValueChange,
   onCancel,
@@ -44,18 +42,15 @@ export function DesignRenameDialog({
       closeLabel="Close Rename design"
       testId="design-rename-dialog"
       returnFocusIds={returnFocusIds}
-      dark={dark}
-      forceLight={!dark}
-      panelClassName={`${dark ? "designer-panel " : ""}max-w-[360px]`}
+      panelClassName="max-w-[360px]"
       footer={
         <EditorDialogActions>
-          <EditorDialogButton className={dark ? "designer-control" : undefined} onClick={onCancel}>
+          <EditorDialogButton onClick={onCancel}>
             Cancel
           </EditorDialogButton>
           <EditorDialogButton
             variant="primary"
             data-testid="design-rename-save"
-            className={dark ? "designer-primary-action" : undefined}
             disabled={!canSave}
             onClick={onSave}
           >
@@ -65,16 +60,14 @@ export function DesignRenameDialog({
       }
     >
       <label className="block">
-        <span className={dark ? "text-xs font-semibold" : "text-xs font-semibold text-neutral-700"}>
+        <span className="text-xs font-semibold text-neutral-700">
           Design name
         </span>
         <input
           data-testid="design-rename-input"
           data-editor-dialog-initial-focus="true"
           maxLength={DESIGN_TITLE_MAX_LENGTH}
-          className={`mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30 ${
-            dark ? "designer-recessed" : "border-neutral-200 bg-white text-neutral-950"
-          }`}
+          className="mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30 border-neutral-200 bg-white text-neutral-950"
           value={value}
           onChange={(event) => onValueChange(event.currentTarget.value)}
           onFocus={(event) => event.currentTarget.select()}

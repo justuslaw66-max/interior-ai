@@ -51,7 +51,7 @@ assert.equal(roomSetupStatus(false, false), "none");
 assert.equal(roomSetupStatus(true, true), "draft");
 assert.equal(roomSetupStatus(true, false), "ready");
 const badge = (status: Parameters<typeof RoomSetupStatusBadge>[0]["status"]) =>
-  renderToStaticMarkup(createElement(RoomSetupStatusBadge, { dark: false, status }));
+  renderToStaticMarkup(createElement(RoomSetupStatusBadge, { status }));
 assert.match(badge("draft"), /data-testid="room-setup-status" data-status="draft" class="[^"]*bg-amber-50[^"]*">Default size</);
 assert.match(badge("ready"), /data-status="ready" class="[^"]*bg-emerald-50[^"]*">Room ready</);
 assert.match(badge("none"), /data-status="none" class="[^"]*bg-amber-50[^"]*">Needs a room</);
@@ -74,7 +74,7 @@ assert.equal(checks(false)[1].ready, true);
 assert.match(checks(false)[1].detail, /20/);
 assert.deepEqual(checks(false, 0)[1], { label: "Measured room", ready: false, detail: "Add dimensions" });
 assert.deepEqual(checks(true).map((check) => check.label), ["Living room", "Measured room", "Must-haves"]);
-const checklist = renderToStaticMarkup(createElement(AiLayoutReadinessChecklist, { dark: false, checks: checks(true) }));
+const checklist = renderToStaticMarkup(createElement(AiLayoutReadinessChecklist, { checks: checks(true) }));
 assert.match(checklist, /data-testid="ai-layout-readiness"/);
 assert.match(checklist, />Ready to generate</);
 assert.match(checklist, /Measured room<\/span><span class="[^"]*bg-amber-50[^"]*">Default size</);
