@@ -81,20 +81,18 @@ export function CabinetryStudioOverlay({
 
   return (
     <CabinetryStudioDialog mode={state.mode} onDismiss={handleCancel}>
-      <div className="h-full overflow-hidden rounded-xl bg-white shadow-2xl">
-        <CabinetMeasurementUnitProvider unit={cabinetryMeasurementUnit}>
-          <CabinetryStudio
-            mode={state.mode}
-            accessLevel={accessLevel}
-            initialDefinition={state.initialDefinition}
-            availableSpaces={availableSpaces}
-            preferredSpaceId={preferredSpaceId}
-            onSave={onSave}
-            onPlaceInPlan={onPlaceInPlan}
-            onCancel={handleCancel}
-          />
-        </CabinetMeasurementUnitProvider>
-      </div>
+      <CabinetMeasurementUnitProvider unit={cabinetryMeasurementUnit}>
+        <CabinetryStudio
+          mode={state.mode}
+          accessLevel={accessLevel}
+          initialDefinition={state.initialDefinition}
+          availableSpaces={availableSpaces}
+          preferredSpaceId={preferredSpaceId}
+          onSave={onSave}
+          onPlaceInPlan={onPlaceInPlan}
+          onCancel={handleCancel}
+        />
+      </CabinetMeasurementUnitProvider>
     </CabinetryStudioDialog>
   );
 }

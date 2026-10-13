@@ -19,6 +19,10 @@ const dialogSource = readFileSync(
   resolve(root, "components/editor/design-page/CabinetryStudioDialog.tsx"),
   "utf8"
 );
+const lifecycleSource = readFileSync(
+  resolve(root, "components/editor/design-system/useEditorDialogLifecycle.ts"),
+  "utf8"
+);
 
 assert.match(
   contractSource,
@@ -54,19 +58,34 @@ for (const required of [
   'role="dialog"',
   'aria-modal="true"',
   'aria-label="Built-ins"',
-  "handleDialogKeyDown(event, onDismiss)",
-  "dialogRef.current?.focus()",
-  "returnFocus?.isConnected",
-  "returnFocus.focus()",
+  "ref={dialogRef}",
+  "ref={panelRef}",
 ]) {
   assert.ok(
     dialogSource.includes(required),
     `The Studio overlay must preserve its focus/dialog contract (${required}).`
   );
 }
+// UX AX5: the shared dialog lifecycle owns focus entry, the Tab trap, Escape, the inert page,
+// the scroll lock and focus return.
 assert.match(
   dialogSource,
-  /if \(event\.key === "Escape"\) \{\s*event\.stopPropagation\(\);\s*if \(!event\.defaultPrevented\) \{\s*event\.preventDefault\(\);\s*onDismiss\(\);\s*\}\s*return;/,
+  /useEditorDialogLifecycle\(\{[\s\S]*?initialFocusRef: dialogRef,[\s\S]*?resolveReturnFocusTarget: mode === "create" \? findCreateReturnTarget : undefined,[\s\S]*?cancelFocusRestorationOnUnmount: false,[\s\S]*?manageBackground: true,[\s\S]*?lockBodyScroll: true,[\s\S]*?closeDisabled: false,[\s\S]*?onClose: onDismiss,/,
+  "The Studio overlay must take focus itself, make the page behind inert and dismiss through the Studio's cancellation."
+);
+assert.match(
+  dialogSource,
+  /function findCreateReturnTarget\(\) \{[\s\S]*?'\[data-testid="editor-workflow-millwork"\]'[\s\S]*?\?\?[\s\S]*?'\[data-testid="editor-workflow-furnish"\]'/,
+  "A new studio must return focus to Built-ins, else to the Furnish step."
+);
+assert.doesNotMatch(
+  dialogSource,
+  /onKeyDown|addEventListener\(|requestAnimationFrame|\.focus\(/,
+  "The Studio overlay must not keep a key handler, trap or focus timing of its own."
+);
+assert.match(
+  lifecycleSource,
+  /if \(event\.key === "Escape" && !options\.closeDisabledRef\.current\) \{\s*event\.stopImmediatePropagation\(\);\s*\/\/[^\n]*\n\s*if \(event\.defaultPrevented\) return;\s*event\.preventDefault\(\);\s*options\.requestClose\(\);/,
   "Every modal Escape must be isolated while only an unhandled Escape dismisses the Studio."
 );
 assert.match(

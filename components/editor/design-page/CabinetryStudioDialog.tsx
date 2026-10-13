@@ -1,55 +1,26 @@
 "use client";
 
-import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { useEditorDialogLifecycle } from "@/components/editor/design-system/useEditorDialogLifecycle";
 
-const FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])',
-].join(",");
-
-function trapFocus(event: KeyboardEvent<HTMLDivElement>) {
-  if (event.key !== "Tab") return;
-  const dialog = event.currentTarget;
-  const focusable = Array.from(
-    dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-  ).filter((element) => element.getClientRects().length > 0);
-  if (focusable.length === 0) {
-    event.preventDefault();
-    dialog.focus();
-    return;
-  }
-
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const active = document.activeElement;
-  const wrapsBackward = event.shiftKey &&
-    (active === dialog || active === first || !dialog.contains(active));
-  const wrapsForward = !event.shiftKey &&
-    (active === dialog || active === last || !dialog.contains(active));
-  if (!wrapsBackward && !wrapsForward) return;
-  event.preventDefault();
-  (wrapsBackward ? last : first).focus();
+/**
+ * A new studio opens from the Furnish step's Built-ins button, so focus goes back there, or to the
+ * Furnish step if the button is gone. An edited cabinet returns to its opener (the shared default).
+ */
+function findCreateReturnTarget() {
+  return (
+    document.querySelector<HTMLElement>('[data-testid="editor-workflow-millwork"]') ??
+    document.querySelector<HTMLElement>('[data-testid="editor-workflow-furnish"]')
+  );
 }
 
-function handleDialogKeyDown(
-  event: KeyboardEvent<HTMLDivElement>,
-  onDismiss: () => void
-) {
-  if (event.key === "Escape") {
-    event.stopPropagation();
-    if (!event.defaultPrevented) {
-      event.preventDefault();
-      onDismiss();
-    }
-    return;
-  }
-  trapFocus(event);
-}
-
+/**
+ * Built-ins' full-screen modal frame, on the shared dialog lifecycle (UX AX5): the page behind is
+ * inert and doesn't scroll, Tab stays inside, and it stacks with the editor's other dialogs. The
+ * dialog itself takes focus, so it's announced as "Built-ins" while the studio loads. Escape
+ * cancels the studio unless a control inside it handled Escape first (a field reverting its draft,
+ * a drag cancelled).
+ */
 export function CabinetryStudioDialog({
   children,
   mode,
@@ -60,29 +31,24 @@ export function CabinetryStudioDialog({
   onDismiss: () => void;
 }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const opener = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
-    const frame = window.requestAnimationFrame(() => dialogRef.current?.focus());
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.requestAnimationFrame(() => {
-        const replacementDialog = document.querySelector(
-          '[role="dialog"][aria-label="Built-ins"]'
-        );
-        // A new studio opens from the Furnish step's Built-ins button, so focus goes back there,
-        // or to the Furnish step if the button is gone. An edited cabinet returns to its opener.
-        const returnFocus = mode === "create"
-          ? document.querySelector<HTMLElement>('[data-testid="editor-workflow-millwork"]') ??
-            document.querySelector<HTMLElement>('[data-testid="editor-workflow-furnish"]')
-          : opener;
-        if (!replacementDialog && returnFocus?.isConnected) returnFocus.focus();
-      });
-    };
-  }, [mode]);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  // The studio's own Close lives in the lazy studio; the dialog takes focus instead.
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  useEditorDialogLifecycle({
+    open: true,
+    dialogRef,
+    panelRef,
+    closeButtonRef,
+    initialFocusRef: dialogRef,
+    resolveReturnFocusTarget: mode === "create" ? findCreateReturnTarget : undefined,
+    hideWhenSuperseded: false,
+    cancelFocusRestorationOnUnmount: false,
+    manageBackground: true,
+    lockBodyScroll: true,
+    waitForEntryTransition: false,
+    closeDisabled: false,
+    onClose: onDismiss,
+  });
 
   return (
     <div
@@ -91,10 +57,16 @@ export function CabinetryStudioDialog({
       aria-modal="true"
       aria-label="Built-ins"
       tabIndex={-1}
+      data-editor-dialog-state="mounting"
       className="fixed inset-0 z-[80] bg-black/45 p-4 backdrop-blur-sm outline-hidden"
-      onKeyDown={(event) => handleDialogKeyDown(event, onDismiss)}
     >
-      {children}
+      <div
+        ref={panelRef}
+        data-editor-dialog-state="mounting"
+        className="h-full overflow-hidden rounded-xl bg-white shadow-2xl"
+      >
+        {children}
+      </div>
     </div>
   );
 }
