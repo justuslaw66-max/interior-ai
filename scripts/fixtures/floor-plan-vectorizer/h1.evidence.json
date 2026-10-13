@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.27.0",
+ "exporterVersion": "app-evidence-0.28.0",
  "page": {
   "widthPx": 1220,
   "heightPx": 1046,
@@ -5611,6 +5611,312 @@
    "thicknessPx": 2.5,
    "thicknessMm": 36,
    "opening": null
+  },
+  {
+   "id": "e134",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1060.75,
+     154.5
+    ],
+    [
+     1060.75,
+     247.0
+    ]
+   ],
+   "thicknessPx": 9.5,
+   "thicknessMm": 138,
+   "opening": null
+  },
+  {
+   "id": "e135",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     808.902211490973,
+     221.0
+    ],
+    [
+     830.509520935082,
+     221.0
+    ]
+   ],
+   "thicknessPx": 11.0,
+   "thicknessMm": 160,
+   "opening": null
+  },
+  {
+   "id": "e136",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     223.00744790317862,
+     246.5
+    ],
+    [
+     223.00744790317862,
+     270.2059933724944
+    ]
+   ],
+   "thicknessPx": 22.26,
+   "thicknessMm": 325,
+   "opening": null
+  },
+  {
+   "id": "e137",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     429.126125,
+     246.0
+    ],
+    [
+     429.126125,
+     269.5
+    ]
+   ],
+   "thicknessPx": 21.25,
+   "thicknessMm": 310,
+   "opening": null
+  },
+  {
+   "id": "e138",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     426.5,
+     271.0
+    ],
+    [
+     426.5,
+     329.5
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 233,
+   "opening": null
+  },
+  {
+   "id": "e139",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     641.5,
+     429.0
+    ],
+    [
+     641.5,
+     535.0
+    ]
+   ],
+   "thicknessPx": 8.0,
+   "thicknessMm": 117,
+   "opening": null
+  },
+  {
+   "id": "e140",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     198.5,
+     449.25
+    ],
+    [
+     222.5,
+     449.25
+    ]
+   ],
+   "thicknessPx": 8.5,
+   "thicknessMm": 124,
+   "opening": null
+  },
+  {
+   "id": "e141",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     198.5,
+     497.0
+    ],
+    [
+     222.5,
+     497.0
+    ]
+   ],
+   "thicknessPx": 8.0,
+   "thicknessMm": 117,
+   "opening": null
+  },
+  {
+   "id": "e142",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     219.0,
+     588.5
+    ],
+    [
+     268.0,
+     588.5
+    ]
+   ],
+   "thicknessPx": 18.0,
+   "thicknessMm": 262,
+   "opening": null
+  },
+  {
+   "id": "e143",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     211.85452450200296,
+     593.75
+    ],
+    [
+     261.5,
+     593.75
+    ]
+   ],
+   "thicknessPx": 7.5,
+   "thicknessMm": 109,
+   "opening": null
+  },
+  {
+   "id": "e144",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     276.0,
+     579.556055534215
+    ],
+    [
+     276.0,
+     733.9625747681501
+    ]
+   ],
+   "thicknessPx": 13.0,
+   "thicknessMm": 190,
+   "opening": null
+  },
+  {
+   "id": "e145",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     125.7682598913461,
+     720.5
+    ],
+    [
+     149.5,
+     720.5
+    ]
+   ],
+   "thicknessPx": 17.0,
+   "thicknessMm": 248,
+   "opening": null
+  },
+  {
+   "id": "e146",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     260.75,
+     712.0
+    ],
+    [
+     260.75,
+     729.0
+    ]
+   ],
+   "thicknessPx": 14.5,
+   "thicknessMm": 211,
+   "opening": null
+  },
+  {
+   "id": "e147",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     432.75,
+     800.0
+    ],
+    [
+     432.75,
+     865.0
+    ]
+   ],
+   "thicknessPx": 13.5,
+   "thicknessMm": 197,
+   "opening": null
+  },
+  {
+   "id": "e148",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     632.0,
+     827.0
+    ],
+    [
+     632.0,
+     851.0
+    ]
+   ],
+   "thicknessPx": 18.0,
+   "thicknessMm": 262,
+   "opening": null
+  },
+  {
+   "id": "e149",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1067.0,
+     938.2079626749612
+    ],
+    [
+     1090.5,
+     938.2079626749612
+    ]
+   ],
+   "thicknessPx": 16.58,
+   "thicknessMm": 242,
+   "opening": null
+  },
+  {
+   "id": "e150",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     138.0,
+     944.25
+    ],
+    [
+     424.5,
+     944.25
+    ]
+   ],
+   "thicknessPx": 16.5,
+   "thicknessMm": 241,
+   "opening": null
+  },
+  {
+   "id": "e151",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     215.93872395158928,
+     582.0
+    ],
+    [
+     215.93872395158928,
+     591.0
+    ]
+   ],
+   "thicknessPx": 8.12,
+   "thicknessMm": 118,
+   "opening": null
   }
  ],
  "rooms": [
@@ -6666,6 +6972,7 @@
   "jogFacesFlushed": 1,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 71,
+  "standaloneWallsAdded": 18,
   "itemsLeftOutForTheAppsLimits": 0
  }
 }

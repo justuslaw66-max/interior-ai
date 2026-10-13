@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.27.0",
+ "exporterVersion": "app-evidence-0.28.0",
  "page": {
   "widthPx": 1440,
   "heightPx": 1424,
@@ -5501,6 +5501,261 @@
    "thicknessPx": 9.08,
    "thicknessMm": 129,
    "opening": null
+  },
+  {
+   "id": "e134",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     652.4560783488932,
+     152.43474600056132
+    ],
+    [
+     652.4560783488932,
+     201.75
+    ]
+   ],
+   "thicknessPx": 43.09,
+   "thicknessMm": 614,
+   "opening": null
+  },
+  {
+   "id": "e135",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     664.0,
+     152.43474600056132
+    ],
+    [
+     664.0,
+     201.5
+    ]
+   ],
+   "thicknessPx": 20.0,
+   "thicknessMm": 285,
+   "opening": null
+  },
+  {
+   "id": "e136",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     630.5,
+     155.75
+    ],
+    [
+     664.0,
+     155.75
+    ]
+   ],
+   "thicknessPx": 6.5,
+   "thicknessMm": 93,
+   "opening": null
+  },
+  {
+   "id": "e137",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     883.1236216264167,
+     152.5
+    ],
+    [
+     883.1236216264167,
+     183.75
+    ]
+   ],
+   "thicknessPx": 25.75,
+   "thicknessMm": 367,
+   "opening": null
+  },
+  {
+   "id": "e138",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1115.954674361088,
+     152.5
+    ],
+    [
+     1115.954674361088,
+     183.0
+    ]
+   ],
+   "thicknessPx": 23.09,
+   "thicknessMm": 329,
+   "opening": null
+  },
+  {
+   "id": "e139",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1127.75,
+     159.0
+    ],
+    [
+     1127.75,
+     194.0
+    ]
+   ],
+   "thicknessPx": 20.5,
+   "thicknessMm": 292,
+   "opening": null
+  },
+  {
+   "id": "e140",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     712.0,
+     166.5
+    ],
+    [
+     712.0,
+     201.5
+    ]
+   ],
+   "thicknessPx": 10.0,
+   "thicknessMm": 143,
+   "opening": null
+  },
+  {
+   "id": "e141",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     821.5,
+     166.5
+    ],
+    [
+     821.5,
+     201.5
+    ]
+   ],
+   "thicknessPx": 10.0,
+   "thicknessMm": 143,
+   "opening": null
+  },
+  {
+   "id": "e142",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     222.0,
+     463.0
+    ],
+    [
+     243.614931237721,
+     463.0
+    ]
+   ],
+   "thicknessPx": 19.0,
+   "thicknessMm": 271,
+   "opening": null
+  },
+  {
+   "id": "e143",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1067.0,
+     722.0
+    ],
+    [
+     1121.0,
+     722.0
+    ]
+   ],
+   "thicknessPx": 19.0,
+   "thicknessMm": 271,
+   "opening": null
+  },
+  {
+   "id": "e144",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1054.5,
+     925.75
+    ],
+    [
+     1121.0,
+     925.75
+    ]
+   ],
+   "thicknessPx": 17.5,
+   "thicknessMm": 249,
+   "opening": null
+  },
+  {
+   "id": "e145",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1232.0,
+     925.75
+    ],
+    [
+     1266.5,
+     925.75
+    ]
+   ],
+   "thicknessPx": 17.5,
+   "thicknessMm": 249,
+   "opening": null
+  },
+  {
+   "id": "e146",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     886.5,
+     1001.0
+    ],
+    [
+     886.5,
+     1095.0
+    ]
+   ],
+   "thicknessPx": 19.0,
+   "thicknessMm": 271,
+   "opening": null
+  },
+  {
+   "id": "e147",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     892.0,
+     1056.0
+    ],
+    [
+     892.0,
+     1103.0
+    ]
+   ],
+   "thicknessPx": 8.0,
+   "thicknessMm": 114,
+   "opening": null
+  },
+  {
+   "id": "e148",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     1026.5,
+     1230.5
+    ],
+    [
+     1026.5,
+     1249.0
+    ]
+   ],
+   "thicknessPx": 16.0,
+   "thicknessMm": 228,
+   "opening": null
   }
  ],
  "rooms": [
@@ -6546,6 +6801,7 @@
   "jogFacesFlushed": 1,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 83,
+  "standaloneWallsAdded": 15,
   "itemsLeftOutForTheAppsLimits": 0
  }
 }

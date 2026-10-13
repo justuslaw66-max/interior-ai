@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.27.0",
+ "exporterVersion": "app-evidence-0.28.0",
  "page": {
   "widthPx": 828,
   "heightPx": 957,
@@ -3904,6 +3904,176 @@
    "thicknessPx": 3.38,
    "thicknessMm": 56,
    "opening": null
+  },
+  {
+   "id": "e86",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     716.75,
+     218.0
+    ],
+    [
+     716.75,
+     256.5
+    ]
+   ],
+   "thicknessPx": 8.5,
+   "thicknessMm": 141,
+   "opening": null
+  },
+  {
+   "id": "e87",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     113.75,
+     233.5
+    ],
+    [
+     113.75,
+     291.5
+    ]
+   ],
+   "thicknessPx": 9.5,
+   "thicknessMm": 158,
+   "opening": null
+  },
+  {
+   "id": "e88",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     322.75,
+     233.5
+    ],
+    [
+     322.75,
+     291.5
+    ]
+   ],
+   "thicknessPx": 14.5,
+   "thicknessMm": 241,
+   "opening": null
+  },
+  {
+   "id": "e89",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     716.75,
+     258.0
+    ],
+    [
+     716.75,
+     291.5
+    ]
+   ],
+   "thicknessPx": 8.5,
+   "thicknessMm": 141,
+   "opening": null
+  },
+  {
+   "id": "e90",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     113.75,
+     651.0
+    ],
+    [
+     113.75,
+     720.0
+    ]
+   ],
+   "thicknessPx": 9.5,
+   "thicknessMm": 158,
+   "opening": null
+  },
+  {
+   "id": "e91",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     322.75,
+     651.0
+    ],
+    [
+     322.75,
+     719.5
+    ]
+   ],
+   "thicknessPx": 14.5,
+   "thicknessMm": 241,
+   "opening": null
+  },
+  {
+   "id": "e92",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     319.0,
+     709.0
+    ],
+    [
+     319.0,
+     717.5
+    ]
+   ],
+   "thicknessPx": 7.0,
+   "thicknessMm": 116,
+   "opening": null
+  },
+  {
+   "id": "e93",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     716.75,
+     651.0
+    ],
+    [
+     716.75,
+     709.0
+    ]
+   ],
+   "thicknessPx": 8.5,
+   "thicknessMm": 141,
+   "opening": null
+  },
+  {
+   "id": "e94",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     505.5,
+     670.0
+    ],
+    [
+     505.5,
+     709.5
+    ]
+   ],
+   "thicknessPx": 20.0,
+   "thicknessMm": 332,
+   "opening": null
+  },
+  {
+   "id": "e95",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     593.25,
+     710.5
+    ],
+    [
+     593.25,
+     724.5
+    ]
+   ],
+   "thicknessPx": 13.5,
+   "thicknessMm": 224,
+   "opening": null
   }
  ],
  "rooms": [
@@ -4647,6 +4817,7 @@
   "jogFacesFlushed": 0,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 53,
+  "standaloneWallsAdded": 10,
   "itemsLeftOutForTheAppsLimits": 0
  }
 }

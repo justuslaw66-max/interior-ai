@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.27.0",
+ "exporterVersion": "app-evidence-0.28.0",
  "page": {
   "widthPx": 958,
   "heightPx": 1464,
@@ -4192,6 +4192,210 @@
    "thicknessPx": 3.51,
    "thicknessMm": 40,
    "opening": null
+  },
+  {
+   "id": "e123",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     437.02728518845134,
+     106.0
+    ],
+    [
+     437.02728518845134,
+     140.56270096463027
+    ]
+   ],
+   "thicknessPx": 19.45,
+   "thicknessMm": 220,
+   "opening": null
+  },
+  {
+   "id": "e124",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     755.2627551020408,
+     113.75
+    ],
+    [
+     776.5,
+     113.75
+    ]
+   ],
+   "thicknessPx": 15.5,
+   "thicknessMm": 175,
+   "opening": null
+  },
+  {
+   "id": "e125",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     605.75,
+     479.5
+    ],
+    [
+     605.75,
+     538.5
+    ]
+   ],
+   "thicknessPx": 9.5,
+   "thicknessMm": 107,
+   "opening": null
+  },
+  {
+   "id": "e126",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     186.5,
+     529.25
+    ],
+    [
+     248.5,
+     529.25
+    ]
+   ],
+   "thicknessPx": 8.5,
+   "thicknessMm": 96,
+   "opening": null
+  },
+  {
+   "id": "e127",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     710.0,
+     531.75
+    ],
+    [
+     755.0,
+     531.75
+    ]
+   ],
+   "thicknessPx": 13.5,
+   "thicknessMm": 152,
+   "opening": null
+  },
+  {
+   "id": "e128",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     756.5,
+     532.0
+    ],
+    [
+     801.5,
+     532.0
+    ]
+   ],
+   "thicknessPx": 13.0,
+   "thicknessMm": 147,
+   "opening": null
+  },
+  {
+   "id": "e129",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     189.0,
+     688.25
+    ],
+    [
+     248.5,
+     688.25
+    ]
+   ],
+   "thicknessPx": 9.5,
+   "thicknessMm": 107,
+   "opening": null
+  },
+  {
+   "id": "e130",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     710.0,
+     755.5
+    ],
+    [
+     745.5,
+     755.5
+    ]
+   ],
+   "thicknessPx": 14.0,
+   "thicknessMm": 158,
+   "opening": null
+  },
+  {
+   "id": "e131",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     747.0,
+     755.5
+    ],
+    [
+     771.8437491147057,
+     755.5
+    ]
+   ],
+   "thicknessPx": 14.0,
+   "thicknessMm": 158,
+   "opening": null
+  },
+  {
+   "id": "e132",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     723.0,
+     1160.0
+    ],
+    [
+     800.5,
+     1160.0
+    ]
+   ],
+   "thicknessPx": 13.0,
+   "thicknessMm": 147,
+   "opening": null
+  },
+  {
+   "id": "e133",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     188.25,
+     1320.25
+    ],
+    [
+     188.25,
+     1370.0
+    ]
+   ],
+   "thicknessPx": 19.5,
+   "thicknessMm": 220,
+   "opening": null
+  },
+  {
+   "id": "e134",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     673.5318280971131,
+     135.25
+    ],
+    [
+     678.5,
+     135.25
+    ]
+   ],
+   "thicknessPx": 5.5,
+   "thicknessMm": 62,
+   "opening": null
   }
  ],
  "rooms": [
@@ -5259,6 +5463,7 @@
   "jogFacesFlushed": 0,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 52,
+  "standaloneWallsAdded": 12,
   "itemsLeftOutForTheAppsLimits": 0
  }
 }

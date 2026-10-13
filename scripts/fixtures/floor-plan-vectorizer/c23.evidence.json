@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.27.0",
+ "exporterVersion": "app-evidence-0.28.0",
  "page": {
   "widthPx": 776,
   "heightPx": 1400,
@@ -3374,6 +3374,108 @@
    "thicknessPx": 1.38,
    "thicknessMm": 23,
    "opening": null
+  },
+  {
+   "id": "e89",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     594.5,
+     348.5
+    ],
+    [
+     594.5,
+     389.5
+    ]
+   ],
+   "thicknessPx": 6.0,
+   "thicknessMm": 102,
+   "opening": null
+  },
+  {
+   "id": "e90",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     119.5,
+     357.5
+    ],
+    [
+     119.5,
+     405.5
+    ]
+   ],
+   "thicknessPx": 6.0,
+   "thicknessMm": 102,
+   "opening": null
+  },
+  {
+   "id": "e91",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     472.5,
+     411.75
+    ],
+    [
+     527.9645476772616,
+     411.75
+    ]
+   ],
+   "thicknessPx": 9.5,
+   "thicknessMm": 162,
+   "opening": null
+  },
+  {
+   "id": "e92",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     184.5,
+     415.25
+    ],
+    [
+     231.0,
+     415.25
+    ]
+   ],
+   "thicknessPx": 6.5,
+   "thicknessMm": 111,
+   "opening": null
+  },
+  {
+   "id": "e93",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     184.5,
+     531.5
+    ],
+    [
+     231.0,
+     531.5
+    ]
+   ],
+   "thicknessPx": 7.0,
+   "thicknessMm": 119,
+   "opening": null
+  },
+  {
+   "id": "e94",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
+     370.75,
+     568.5
+    ],
+    [
+     370.75,
+     617.0
+    ]
+   ],
+   "thicknessPx": 9.5,
+   "thicknessMm": 162,
+   "opening": null
   }
  ],
  "rooms": [
@@ -4153,6 +4255,7 @@
   "jogFacesFlushed": 0,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 50,
+  "standaloneWallsAdded": 6,
   "itemsLeftOutForTheAppsLimits": 0
  }
 }

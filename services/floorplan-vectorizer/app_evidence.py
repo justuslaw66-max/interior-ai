@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.27.0"
+VERSION = "app-evidence-0.28.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -5096,6 +5096,7 @@ def build(m, gray=None):
         out["diagnostics"]["wallThicknessUnified"] = unify_wall_thickness(out, (scale_work / k_len) if (scale_work and k_len) else None)
     out["diagnostics"]["jogFacesFlushed"] = flush_jog_faces(out, FLUSH_JOGS) if FLUSH_JOGS > 0 else 0
     out["diagnostics"]["facesFitToTheDrawing"] = fit_drawn_faces(out, gray, S, T * k_len, FIT_FACES) if FIT_FACES > 0 else 0
+    out["diagnostics"]["standaloneWallsAdded"] = leftover_walls(out, m, S, T, gray) if LEFTOVER else 0
     if SCHEMA_CAPS:
         out["diagnostics"]["itemsLeftOutForTheAppsLimits"] = fit_app_limits(out)
     dbg = {"k": k, "closed": closed, "bars": bars, "blobs": blobs, "gaps": gaps, "openings": openings, "rooms": rooms, "labels": labels}
@@ -5416,6 +5417,76 @@ def _corner_keys(E, rooms):
     return key
 
 
+def _drawing_across(gray, S, ax, s_, offs):
+    """the drawing across a level (ax 'h') or plumb edge at station s_, at the offsets given; with its paper and darkest"""
+    v = np.array([_sample(gray, *_from_source(S, *((s_, d) if ax == "h" else (d, s_)))) for d in offs])
+    return v, float(np.percentile(v, 90)), float(v.min())
+
+
+def _band_stations(a, b):
+    L = b - a
+    n = max(3, min(40, int(L / 2.0)))
+    return n, np.linspace(a + 0.2 * L, a + 0.8 * L, n)
+
+
+def _dark_runs(v, paper, dark, offs):
+    """the drawn lines across one station: [(lo, hi)] offsets of each run darker than halfway (and than 180)"""
+    ink = v <= max(180.0, (paper + dark) / 2.0)
+    runs, i = [], 0
+    while i < len(ink):
+        if ink[i]:
+            j = i
+            while j + 1 < len(ink) and ink[j + 1]:
+                j += 1
+            runs.append((offs[i] - 0.25, offs[j] + 0.25))
+            i = j + 1
+        else:
+            i += 1
+    return runs
+
+
+def _outline_pair(gray, S, ax, c, a, b, t, mm_px):
+    """round 36 (J, 13 Oct, his PDF's BATH/W.C. 2): a wall drawn as two thin lines with paper between, traced with one
+    of them inside the trace and the other past its face (the reader took the paper on the room's side for wall).  At
+    each station, on the side where it holds: the outermost line in the trace and the first line past that face, both
+    thin, paper between, the second at most a wall's thickness out, the two from 0.75 to 1.4 thicknesses (and at least
+    80 mm) across, and past the face by more than round 35's margin.  Returns (lo, hi, alone) as medians when three
+    fifths of the stations agree on one side, alone when the trace holds only that one line, at its face; else None."""
+    lo_t, hi_t = c - t / 2.0, c + t / 2.0
+    thin = min(3.0, t / 2.5)
+    w_min = max(0.75 * t, min(t, 80.0 / mm_px if mm_px else 0.0))
+    offs = np.arange(-t / 2.0 - max(3.0, t), t / 2.0 + max(3.0, t) + 1e-9, 0.5)
+    n, at = _band_stations(a, b)
+    got = {0: [], 1: []}
+    for s_ in at:
+        v, paper, dark = _drawing_across(gray, S, ax, s_, c + offs)
+        if paper - dark < 40.0:
+            continue
+        runs = [(c + r0, c + r1) for r0, r1 in _dark_runs(v, paper, dark, offs)]
+        inside = [r for r in runs if r[1] > lo_t and r[0] < hi_t]
+        for side in (0, 1):
+            past = [r for r in runs if (r[0] >= hi_t if side else r[1] <= lo_t)]
+            if not inside or not past:
+                continue
+            r1 = max(inside) if side else min(inside)
+            r2 = min(past) if side else max(past)
+            band = (r1[0], r2[1]) if side else (r2[0], r1[1])
+            gap = r2[0] - r1[1] if side else r1[0] - r2[1]
+            beyond = band[1] - hi_t if side else lo_t - band[0]
+            if (r1[1] - r1[0] > thin or r2[1] - r2[0] > thin or gap < 1.0 or beyond > max(3.0, t) + thin
+                    or beyond <= max(2.0, 0.25 * t) or not (w_min <= band[1] - band[0] <= 1.4 * t)):
+                continue
+            face = hi_t if side else lo_t
+            alone = len(inside) == 1 and abs((r1[0] + r1[1]) / 2.0 - face) <= t / 3.0
+            got[side].append((band[0], band[1], alone))
+    side = max((0, 1), key=lambda k: len(got[k]))
+    if len(got[side]) < 0.6 * n:
+        return None
+    g = got[side]
+    return (float(np.median([x[0] for x in g])), float(np.median([x[1] for x in g])),
+            sum(x[2] for x in g) >= 0.6 * n)
+
+
 def _drawn_pieces(E, gray, S, mm_px):
     """1  the pieces: level / plumb edges, with the drawn band of each wall and window.  A wall's band must lie within its
     trace (a quarter of its thickness either side) and never thins it to one drawn line or under 80 mm; a window's band is
@@ -5445,8 +5516,10 @@ def _drawn_pieces(E, gray, S, mm_px):
                     band = None
             elif not (max(2.5, 0.12 * t) <= w <= 1.15 * t):
                 band = None
-        pcs[e["id"]] = {"e": e, "ax": ax, "c": c, "a": a, "b": b, "t": t, "kind": kind, "band": band,
-                        "ends": [tuple(e["sourcePx"][0]), tuple(e["sourcePx"][1])]}
+        pair = _outline_pair(gray, S, ax, c, a, b, t, mm_px) if kind == "wall" and b - a >= max(6.0, 0.5 * t) else None
+        pcs[e["id"]] = {"e": e, "ax": ax, "c": c, "a": a, "b": b, "t": t, "kind": kind,
+                        "band": band, "ends": [tuple(e["sourcePx"][0]), tuple(e["sourcePx"][1])],
+                        "outline": bool(pair and pair[2]), "pair": pair[:2] if pair else None}
     return pcs
 
 
@@ -5546,10 +5619,27 @@ def _clamp_windows(P, new):
             new[id(p)] = [lo, hi] if hi - lo >= max(1.0, 0.12 * p["t"]) else [p["c"] - p["t"] / 2.0, p["c"] + p["t"] / 2.0]
 
 
+def _outline_line(P):
+    """round 36: a wall line drawn as two thin lines with paper between and traced off them (J's BATH/W.C. 2) takes the
+    two lines as the band of every wall piece - when a piece of it holds only the inner line, at its trace's face, and
+    every wall piece of the line shows the same two lines (within 1.5 px; a piece whose trace also holds a fixture's edge
+    still shows them).  Otherwise nothing changes: a railing or a fixture's edge beside part of a line is no wall."""
+    seeds = [p for p in P if p.get("outline")]
+    if not seeds:
+        return
+    lo = float(np.median([p["pair"][0] for p in seeds]))
+    hi = float(np.median([p["pair"][1] for p in seeds]))
+    walls = [p for p in P if p["kind"] == "wall"]
+    if all(p.get("pair") and abs(p["pair"][0] - lo) <= 1.5 and abs(p["pair"][1] - hi) <= 1.5 for p in walls):
+        for p in walls:
+            p["band"] = (lo, hi)
+
+
 def _line_plan(P, nb, key, tol_):
     """3-5 for one wall line: {edge id: (centre-line, thickness)} of the pieces that change"""
     ids = {p["e"]["id"]: p for p in P}
     _drop_stray_window_bands(P)
+    _outline_line(P)
     new = _face_lines(P, tol_)
     _clamp_windows(P, new)
     # 4  doors and passages take the faces of the pieces they stand between when those agree
@@ -5818,6 +5908,803 @@ def _apply_face_plan(out, pcs, plan, nb, key, next_id, line_ids):
         if e.get("thicknessMm") is not None and mm_px:
             e["thicknessMm"] = int(round(t2 * mm_px))
     return True
+
+
+# Round 36 - drawn wall the app would leave out (J, 13 Oct, on the review of round 35: the top of BEDROOM 2's corner
+# columns, the study's wall and the short returns at its open end, the column at the AIR-CON LEDGE corner).  The app builds
+# walls from room sides only, so ink the drawing has as wall but no room side runs through stays empty in 2D and 3D: a
+# column standing out past a wall's face or end, and a wall with the same room on both sides (a study open to the living
+# room).  Stage 1's solid wall masses and partitions, minus the walls the app will build (each edge's band, square caps at
+# its ends), leave parts; a part that touches a wall and either lies inside a room or is compact (a column: at most
+# LEFTOVER_COMPACT_T wall thicknesses long) becomes standalone wall edges - wall edges no room references, which the app
+# builds as walls with no room on either side.  A long strip outside every room (a
+# corridor parapet, the neighbour's wall, an exterior wall drawn thicker than traced) is left alone.  J's review of the
+# first cut (13 Oct) left: a column standing on a room corner met the corner with a step and a hairline, and the last
+# few pixels of a column beside a wall stayed out.  So a piece standing on the end of a wall line, or on a corner, ends
+# on that corner's vertex and takes the wall's faces when they are a step away (one joint, as the app builds corners),
+# a piece facing a wall across an empty strip narrower than half a wall meets it (the 3D showed a slot), and a
+# last pass covers a sliver of solid ink that carries on a piece (at most LEFTOVER_SLIVER_T wall thicknesses deep).  His
+# second review: that sliver read as a separate box, so it takes the piece's faces, overlaps the wall it meets and ends
+# flush with the wall beside it (_align_sliver).
+LEFTOVER = os.environ.get("AE_LEFTOVER_WALLS", "1") != "0"
+LEFTOVER_COMPACT_T = float(os.environ.get("AE_LEFTOVER_COMPACT_T", "4"))
+LEFTOVER_LOG = os.environ.get("AE_LEFTOVER_LOG")
+LEFTOVER_MAX = 60
+LEFTOVER_SLIVER_T = float(os.environ.get("AE_LEFTOVER_SLIVER_T", "0.35"))
+LEFTOVER_SLIVERS = 12
+
+
+def _work_wall_mask(out, S, shape, centre_only=False, joints=None):
+    """the walls the app will build, in working pixels: each edge's band with square caps (the app squares its corners);
+    or only their centre-lines.  With joints (_wall_vertices), an end is carried on only as far as the faces of the walls
+    meeting it across - how the app joins a corner - and not at all at a free end or where the line runs straight on
+    (a thick wall's square cap would claim the last pixels of a column standing past a thinner wall: J's BEDROOM 2)"""
+    mask = np.zeros(shape, np.uint8)
+    for e in out["wallEdges"]:
+        p, q = e["sourcePx"][:2]
+        (ax, ay), (bx, by) = _from_source(S, *p), _from_source(S, *q)
+        t = float(e.get("thicknessPx") or 0) / S.k
+        L = math.hypot(bx - ax, by - ay)
+        if t <= 0 or L <= 1e-6:
+            continue
+        if centre_only:
+            cv2.line(mask, (int(round(ax)), int(round(ay))), (int(round(bx)), int(round(by))), 255, 1)
+            continue
+        ux, uy = (bx - ax) / L, (by - ay) / L
+        nx, ny, h = -uy, ux, t / 2.0
+        ha = hb = h
+        if joints is not None:
+            across = ("E", "W") if abs(ux) < 0.5 else ("N", "S")
+            ha, hb = (max([joints.get((round(r[0], 2), round(r[1], 2)), [0, 0, 0, {}])[3].get(d, 0.0) / 2.0 for d in across] + [0.0])
+                      for r in (p, q))
+        ax, ay, bx, by = ax - ux * ha, ay - uy * ha, bx + ux * hb, by + uy * hb
+        poly = np.array([[ax + nx * h, ay + ny * h], [bx + nx * h, by + ny * h], [bx - nx * h, by - ny * h], [ax - nx * h, ay - ny * h]])
+        cv2.fillPoly(mask, [np.round(poly).astype(np.int32)], 255)
+    return mask
+
+
+def _work_drawn_mask(m, shape, masses=True, partitions=True):
+    """stage 1's solid wall masses (with their holes) and partitions, in working pixels"""
+    mask = np.zeros(shape, np.uint8)
+    for w in sorted(m.get("walls", []) if masses else [], key=lambda w_: bool(w_.get("hole"))):
+        pts = np.round(np.array(w["pts"], float)).astype(np.int32)
+        if len(pts) >= 3:
+            cv2.fillPoly(mask, [pts], 0 if w.get("hole") else 255)
+    for p in m.get("partitions", []) if partitions else []:
+        x0, y0, x1, y1 = (p["a"], p["c0"], p["b"], p["c1"]) if p["o"] == "h" else (p["c0"], p["a"], p["c1"], p["b"])
+        cv2.rectangle(mask, (int(round(x0)), int(round(y0))), (int(round(x1)), int(round(y1))), 255, -1)
+    return mask
+
+
+def _rectangles(comp, min_area, min_side):
+    """a part as axis-aligned rectangles, largest first, until 95 % of it is covered"""
+    left = comp.copy(); total = int(comp.sum()); rects = []
+    while left.sum() > 0.05 * total and len(rects) < 10:
+        best = None
+        h_ = np.zeros(left.shape[1], np.int32)
+        for y in range(left.shape[0]):                       # largest rectangle in a histogram, row by row
+            h_ = np.where(left[y] > 0, h_ + 1, 0)
+            stack = []
+            for x in range(len(h_) + 1):
+                cur = h_[x] if x < len(h_) else 0
+                start = x
+                while stack and stack[-1][1] >= cur:
+                    s_, hh = stack.pop()
+                    if hh > 0 and (best is None or hh * (x - s_) > best[0]):
+                        best = (hh * (x - s_), s_, y - hh + 1, x, y + 1)
+                    start = s_
+                stack.append((start, cur))
+        if best is None or best[0] < min_area:
+            break
+        _, x0, y0, x1, y1 = best
+        if min(x1 - x0, y1 - y0) >= min_side:
+            rects.append((x0, y0, x1, y1))
+        left[y0:y1, x0:x1] = 0
+    return _absorb(comp, rects)
+
+
+def _absorb(comp, rects):
+    """the rectangles grown, within the part, over what none of them covers: a corner of the part too small to be a
+    rectangle of its own stayed out, a pocket of drawn column beside the piece (h1, s005; J: "there is still a hole
+    here").  A side grows only while its strip lies in the part (nine tenths) and takes in some of the uncovered rest."""
+    H, W = comp.shape
+    covered = np.zeros_like(comp)
+    for x0, y0, x1, y1 in rects:
+        covered[y0:y1, x0:x1] = 1
+    out = []
+    for x0, y0, x1, y1 in rects:
+        grew = True
+        while grew:
+            grew = False
+            for side in range(4):
+                a, b, c, d = ((x0 - 1, y0, x0, y1), (x0, y0 - 1, x1, y0), (x1, y0, x1 + 1, y1), (x0, y1, x1, y1 + 1))[side]
+                if a < 0 or b < 0 or c > W or d > H:
+                    continue
+                strip, cov = comp[b:d, a:c], covered[b:d, a:c]
+                if strip.mean() >= 0.9 and (strip & (1 - cov)).any():
+                    covered[b:d, a:c] = 1
+                    x0, y0, x1, y1 = (a if side == 0 else x0, b if side == 1 else y0, c if side == 2 else x1, d if side == 3 else y1)
+                    grew = True
+        out.append((x0, y0, x1, y1))
+    return out
+
+
+def _sides(mask, x0, y0, x1, y1):
+    """how much of the strip two pixels beyond each side of a rectangle the mask covers: (left, top, right, bottom)"""
+    H, W = mask.shape
+    strips = (mask[y0:y1, max(0, x0 - 2):x0], mask[max(0, y0 - 2):y0, x0:x1], mask[y0:y1, x1:min(W, x1 + 2)],
+              mask[y1:min(H, y1 + 2), x0:x1])
+    return [float((s_ > 0).mean()) if s_.size else 0.0 for s_ in strips]
+
+
+def _along_wall(near, x0, y0, x1, y1):
+    """a sliver lying against a wall along one of its long sides (the strip two pixels beyond it, three fifths near)"""
+    H, W = near.shape
+    if x1 - x0 >= y1 - y0:
+        sides = (near[max(0, y0 - 2):y0, x0:x1], near[y1:min(H, y1 + 2), x0:x1])
+    else:
+        sides = (near[y0:y1, max(0, x0 - 2):x0], near[y0:y1, x1:min(W, x1 + 2)])
+    return any(s_.size > 0 and float((s_ > 0).mean()) >= 0.6 for s_ in sides)
+
+
+def _reach_walls(app, drawn, lines, x0, y0, x1, y1, reach):
+    """a rectangle grown, on each side, over drawn wall and into the walls it meets (so it meets them in the app whatever
+    corner the app builds there), never over bare paper and never onto a wall's centre-line: the app refuses a wall whose
+    centre-line crosses another's without a shared end"""
+    H, W = app.shape
+    grow = [0, 0, 0, 0]
+    strips = (lambda k: (x0 - k, y0, x0 - k + 1, y1), lambda k: (x0, y0 - k, x1, y0 - k + 1),
+              lambda k: (x1 + k - 1, y0, x1 + k, y1), lambda k: (x0, y1 + k - 1, x1, y1 + k))
+    for side, strip in enumerate(strips):
+        for k in range(1, reach + 1):
+            a, b, c, d = strip(k)
+            if a < 0 or b < 0 or c > W or d > H or lines[b:d, a:c].any():
+                break
+            if ((app[b:d, a:c] > 0) | (drawn[b:d, a:c] > 0)).mean() < 0.5:
+                break
+            grow[side] = k
+    return x0 - grow[0], y0 - grow[1], x1 + grow[2], y1 + grow[3]
+
+
+def _through_mass(rect, drawn, app_j, lines, limit):
+    """A piece is carried on along its length through the rest of its own drawn mass to the wall it meets there, as the
+    app builds that wall (ends as the app joins them): the part was cut short where the square-capped walls claimed the
+    mass, and a pocket of drawn column stayed out between the piece and the wall (s056, J: "there is still a hole here").
+    Only over drawn wall that no app wall covers, never onto a centre-line, at most limit px, and only when it does reach
+    a wall - else the side stays as it was."""
+    x0, y0, x1, y1 = (int(math.floor(rect[0])), int(math.floor(rect[1])), int(math.ceil(rect[2])), int(math.ceil(rect[3])))
+    H, W = drawn.shape
+    plumb = y1 - y0 > x1 - x0
+    sides = ((1, lambda k: (x0, y0 - k, x1, y0 - k + 1)), (3, lambda k: (x0, y1 + k - 1, x1, y1 + k))) if plumb else \
+        ((0, lambda k: (x0 - k, y0, x0 - k + 1, y1)), (2, lambda k: (x1 + k - 1, y0, x1 + k, y1)))
+    grow = [0, 0, 0, 0]
+    for side, strip in sides:
+        for k in range(1, int(limit) + 1):
+            a, b, c, d = strip(k)
+            if a < 0 or b < 0 or c > W or d > H or lines[b:d, a:c].any():
+                break
+            if float((app_j[b:d, a:c] > 0).mean()) >= 0.6:
+                grow[side] = k - 1                           # (met the wall: the overlap step joins them)
+                break
+            if float((drawn[b:d, a:c] > 0).mean()) < 0.8:
+                break                                        # (out of the mass before any wall: no change)
+    return (rect[0] - grow[0], rect[1] - grow[1], rect[2] + grow[2], rect[3] + grow[3])
+
+
+def _meet_across(rect, app, lines, T):
+    """A piece facing a wall across an empty strip narrower than half a wall is carried across to meet it: the 3D would
+    show the strip as a slot (s071's black wall).  Not wider: a pocket the walls close off is no strip (s001)"""
+    x0, y0, x1, y1 = (int(math.floor(rect[0])), int(math.floor(rect[1])), int(math.ceil(rect[2])), int(math.ceil(rect[3])))
+    H, W = app.shape
+    strips = (lambda k: (x0 - k, y0, x0 - k + 1, y1), lambda k: (x0, y0 - k, x1, y0 - k + 1),
+              lambda k: (x1 + k - 1, y0, x1 + k, y1), lambda k: (x0, y1 + k - 1, x1, y1 + k))
+    grow = [0, 0, 0, 0]
+    for side, strip in enumerate(strips):
+        for k in range(1, int(math.ceil(0.5 * T)) + 1):
+            a, b, c, d = strip(k)
+            if a < 0 or b < 0 or c > W or d > H or lines[b:d, a:c].any():
+                break
+            cover = float((app[b:d, a:c] > 0).mean())
+            if cover >= 0.6:
+                grow[side] = k if k > 2 else 0                 # (a wall met at once needs nothing)
+                break
+            if cover > 0.2:
+                break                                        # (a wall's corner or end, not one facing the piece)
+    return (rect[0] - grow[0], rect[1] - grow[1], rect[2] + grow[2], rect[3] + grow[3])
+
+
+def _wall_vertices(out, S):
+    """the room walls' centre-line ends, in working px: {key: [x, y, source point, {direction: thickness}]} with the
+    directions (N E S W) of the level / plumb edges leaving each"""
+    verts = {}
+    for e in out["wallEdges"]:
+        p, q = e["sourcePx"][:2]
+        (ax, ay), (bx, by) = _from_source(S, *p), _from_source(S, *q)
+        t = float(e.get("thicknessPx") or 0) / S.k
+        for (x, y), (ox, oy), src in (((ax, ay), (bx, by), p), ((bx, by), (ax, ay), q)):
+            v = verts.setdefault((round(src[0], 2), round(src[1], 2)), [x, y, src, {}])
+            if abs(oy - y) <= 0.5 and abs(ox - x) > 0.5:
+                v[3]["E" if ox > x else "W"] = t
+            elif abs(ox - x) <= 0.5 and abs(oy - y) > 0.5:
+                v[3]["S" if oy > y else "N"] = t
+    return verts
+
+
+def _join_vertex(rect, verts, lines, T, reach):
+    """A piece standing on the end of a wall line or on a corner ends on that vertex - one joint, as the app builds a
+    corner, instead of a step and a hairline beside it - and takes the faces of the wall it continues when they are a
+    step away (J's BEDROOM 2, right column).  Returns (rectangle, vertex at its start or None, vertex at its end or None):
+    unchanged when no vertex qualifies: near the piece's centre-line (within a quarter of its width, at most half a wall
+    thickness), within reach of its end, no wall leaving it into the piece, and no other centre-line on the way."""
+    x0, y0, x1, y1 = rect
+    plumb = y1 - y0 > x1 - x0
+    lo, hi, c0, c1 = (y0, y1, x0, x1) if plumb else (x0, x1, y0, y1)     # (along, across)
+    c = (c0 + c1) / 2.0
+    best = None
+    for v in verts.values():
+        va, vc = (v[1], v[0]) if plumb else (v[0], v[1])
+        if abs(vc - c) > min(0.5 * T, 0.25 * (c1 - c0) + 1.0) or not v[3]:
+            continue                                         # (near the piece's own centre-line, not at its face)
+        for end, into, back, lo_, hi_ in ((lo, "S" if plumb else "E", "N" if plumb else "W", lo - reach, lo + 2),
+                                          (hi, "N" if plumb else "W", "S" if plumb else "E", hi - 2, hi + reach)):
+            if lo_ <= va <= hi_ and into not in v[3] and (best is None or abs(va - end) < best[0]):
+                best = (abs(va - end), v, end == lo, va, vc, back)
+    if best is None:
+        return _flush_faces(rect, verts, plumb, lo, hi, c0, c1, reach), None, None
+    _, v, at_lo, va, vc, back = best
+    h = max(vc - c0, c1 - vc)
+    tw = v[3].get(back)                                      # the wall this piece continues, straight on past the vertex
+    if tw is not None and h <= tw / 2.0 + 2.0 and tw / 2.0 - h <= max(2.0, 0.2 * T):
+        h = tw / 2.0                                         # (that wall's faces: traced from the same ink)
+    elif max(c0 - (vc - h), vc + h - c1) > 2.0:
+        return _flush_faces(rect, verts, plumb, lo, hi, c0, c1, reach), None, None   # (centred on the vertex it would
+                                                                                    # stand out past its own ink: s071)
+    lo, hi = (va, hi) if at_lo else (lo, va)
+    a0, a1, b0, b1 = int(math.floor(lo)), int(math.ceil(hi)), int(math.floor(vc - h)), int(math.ceil(vc + h))
+    keep = int(math.ceil(h)) + 3                             # (the vertex's own walls cross its centre-line there)
+    path = lines[a0:a1, int(round(vc))] if plumb else lines[int(round(vc)), a0:a1]
+    wide = lines[a0:a1, b0:b1] if plumb else lines[b0:b1, a0:a1]
+    near_v = slice(0, -keep) if not at_lo else slice(keep, None)
+    if path[near_v].any() or (wide[near_v] if plumb else wide[:, near_v]).any():
+        return rect, None, None
+    new = (vc - h, lo, vc + h, hi) if plumb else (lo, vc - h, hi, vc + h)
+    return new, (v if at_lo else None), (None if at_lo else v)
+
+
+def _flush_faces(rect, verts, plumb, lo, hi, c0, c1, reach):
+    """A piece carrying a wall line straight on from its end vertex, off that wall's centre-line (a thinner piece on one
+    face of a thicker wall), takes the wall's face on the side where the two miss by two pixels or less: no step in the
+    face, no hairline at the joint (exec).  Only ever wider."""
+    for v in verts.values():
+        va, vc = (v[1], v[0]) if plumb else (v[0], v[1])
+        for end_ok, back in ((lo - reach <= va <= lo + 2, "N" if plumb else "W"), (hi - 2 <= va <= hi + reach, "S" if plumb else "E")):
+            tw = v[3].get(back)
+            if not end_ok or tw is None or not (c0 - 2 <= vc <= c1 + 2 or abs(vc - (c0 + c1) / 2.0) <= tw / 2.0):
+                continue
+            f0, f1 = vc - tw / 2.0, vc + tw / 2.0
+            n0 = min(c0, f0) if abs(f0 - c0) <= 2.0 else c0     # (only ever wider: a face moved in would open a gap)
+            n1 = max(c1, f1) if abs(f1 - c1) <= 2.0 else c1
+            if (n0, n1) != (c0, c1) and n1 - n0 >= 1.0:
+                return (n0, lo, n1, hi) if plumb else (lo, n0, hi, n1)
+    return rect
+
+
+def _touch_walls(rect, app, lines):
+    """A side within two pixels of a wall it runs along is carried onto it: the traced faces of one ink edge miss by a
+    fraction of a pixel, and the app showed the miss as a hairline (exec)"""
+    x0, y0, x1, y1 = (int(math.floor(rect[0])), int(math.floor(rect[1])), int(math.ceil(rect[2])), int(math.ceil(rect[3])))
+    H, W = app.shape
+    strips = (lambda k: (x0 - k, y0, x0 - k + 1, y1), lambda k: (x0, y0 - k, x1, y0 - k + 1),
+              lambda k: (x1 + k - 1, y0, x1 + k, y1), lambda k: (x0, y1 + k - 1, x1, y1 + k))
+    grow = [0, 0, 0, 0]
+    for side, strip in enumerate(strips):
+        a, b, c, d = strip(1)
+        if a < 0 or b < 0 or c > W or d > H or (app[b:d, a:c] > 0).mean() >= 0.3:
+            continue                                         # (touching already)
+        for k in (2, 3):
+            a, b, c, d = strip(k)
+            if a < 0 or b < 0 or c > W or d > H or lines[b:d, a:c].any():
+                break
+            if (app[b:d, a:c] > 0).mean() >= 0.3:
+                grow[side] = k
+                break
+    return (rect[0] - grow[0], rect[1] - grow[1], rect[2] + grow[2], rect[3] + grow[3])
+
+
+def _wall_rects(out, S, joints):
+    """the app's level and plumb walls (openings too: their lintels are wall above) as rectangles in working px, the ends
+    carried as _work_wall_mask carries them"""
+    rects = []
+    for e in out["wallEdges"]:
+        p, q = e["sourcePx"][:2]
+        (ax, ay), (bx, by) = _from_source(S, *p), _from_source(S, *q)
+        h = float(e.get("thicknessPx") or 0) / S.k / 2.0
+        level, plumb = abs(ay - by) <= 0.5 < abs(ax - bx), abs(ax - bx) <= 0.5 < abs(ay - by)
+        if h <= 0 or not (level or plumb):
+            continue
+        ha, hb = (max([joints.get((round(r[0], 2), round(r[1], 2)), [0, 0, 0, {}])[3].get(d, 0.0) / 2.0
+                       for d in (("N", "S") if level else ("E", "W"))] + [0.0]) for r in (p, q))
+        if level:
+            (lo, c_lo), (hi, c_hi) = sorted(((ax, ha), (bx, hb)))
+            rects.append((lo - c_lo, (ay + by) / 2.0 - h, hi + c_hi, (ay + by) / 2.0 + h))
+        else:
+            (lo, c_lo), (hi, c_hi) = sorted(((ay, ha), (by, hb)))
+            rects.append(((ax + bx) / 2.0 - h, lo - c_lo, (ax + bx) / 2.0 + h, hi + c_hi))
+    return rects
+
+
+def _overlap_walls(rect, walls, lines):
+    """Each side of a piece that touches a wall (or an earlier piece) - its face within 0.75 px inside to 1.5 px out, along a
+    third of the side or more - is carried a pixel into it, or two where the wall lies beyond the whole side: the app joins wall solids
+    that overlap, and draws two that only touch with a seam between, a separate box against the wall (J's BEDROOM 2
+    column; s029, s071).  Never onto a centre-line (the strip's last two pixels aside, where the piece's own neighbours end)."""
+    x0, y0, x1, y1 = rect
+    H, W = lines.shape
+    grow = [0, 0, 0, 0]
+    for side in range(4):
+        f, lo, hi = ((x0, y0, y1), (y0, x0, x1), (x1, y0, y1), (y1, x0, x1))[side]
+        wf = (2, 3, 0, 1)[side]                              # (the face of a wall that meets this side)
+        out_ = -1.0 if side < 2 else 1.0                     # (outward along the side's normal)
+        meet = [w for w in walls if -0.75 <= (w[wf] - f) * out_ <= 1.5]
+        n = sum(max(0.0, min(hi, (w[3] if side in (0, 2) else w[2])) - max(lo, (w[1] if side in (0, 2) else w[0])))
+                for w in meet)
+        cover = n / max(hi - lo, 1e-6)
+        if cover < 0.3:
+            continue
+        gap = max(0, int(math.ceil(max((w[wf] - f) * out_ for w in meet) - 1e-6)))
+        ix0, iy0, ix1, iy1 = (int(math.floor(x0)), int(math.floor(y0)), int(math.ceil(x1)), int(math.ceil(y1)))
+        for k in ((gap + 2, gap + 1) if cover >= 0.95 else (gap + 1,)):
+            a, b, c, d = ((ix0 - k, iy0 + 2, ix0, iy1 - 2), (ix0 + 2, iy0 - k, ix1 - 2, iy0), (ix1, iy0 + 2, ix1 + k, iy1 - 2),
+                          (ix0 + 2, iy1, ix1 - 2, iy1 + k))[side]
+            if a >= 0 and b >= 0 and c <= W and d <= H and not lines[b:d, a:c].any():
+                grow[side] = k
+                break
+    return (x0 - grow[0], y0 - grow[1], x1 + grow[2], y1 + grow[3])
+
+
+def _app_face_ends(out, S, rect, pa, pb, mm, free, head_on=False, own=None, across=None):
+    """J, on the third review: a piece ending flush with a wall's face showed a step a pixel's twentieth wide, because
+    the app keeps vertices in whole millimetres and thicknesses in steps of 5 mm.  So an end within 0.75 px of the face
+    of a wall across the piece's line, next to it and facing the same way (a wall the end runs into is left to the
+    overlap), is put where the app will build that face (in source px)."""
+    lv = abs(pa[1] - pb[1]) <= abs(pa[0] - pb[0])            # (a level piece: its ends move in x)
+    k = 0 if lv else 1
+    if across is None:
+        (sx0, sy0), (sx1, sy1) = S(rect[0], rect[1]), S(rect[2], rect[3])
+        across = (min(sy0, sy1), max(sy0, sy1)) if lv else (min(sx0, sx1), max(sx0, sx1))
+    lo, hi = across                                          # (the piece across its line, source px)
+    rnd = lambda v: math.floor(v + 0.5)                      # (as JavaScript rounds)
+    for pt in free:
+        out_sign = 1 if pt[k] >= (pb if pt is pa else pa)[k] else -1   # (the end's outward direction: only a face whose
+        best = None                                                      # wall lies behind it lines up; one in front is met)
+        for e in out["wallEdges"]:
+            if e is own:
+                continue
+            (ax, ay), (bx, by) = e["sourcePx"][:2]
+            t = float(e.get("thicknessPx") or 0)
+            if t <= 0 or e.get("opening") or not (abs(ax - bx) <= 0.01 if lv else abs(ay - by) <= 0.01):
+                continue                                     # (a wall across the piece's line: plumb for a level piece)
+            c, w0, w1 = (ax, min(ay, by), max(ay, by)) if lv else (ay, min(ax, bx), max(ax, bx))
+            if min(hi, w1 + t / 2.0) - max(lo, w0 - t / 2.0) < (0.5 * (hi - lo) if head_on else -1.0):
+                continue                                     # (not next to the piece; head on: not across most of it)
+            tm = max(40, min(600, rnd(t * mm / 5.0) * 5))
+            for sign in ((-out_sign,) if head_on else (out_sign,)):
+                f = (rnd(c * mm) + sign * tm / 2.0) / mm
+                if abs(f - pt[k]) <= 0.75 and (best is None or abs(f - pt[k]) < abs(best - pt[k])):
+                    best = f
+        for e in out["wallEdges"] if head_on else ():         # (head on, a wall of the same line ending there: end on
+            if e is own:                                     # its end, where the app builds it)
+                continue
+            (ax, ay), (bx, by) = e["sourcePx"][:2]
+            t = float(e.get("thicknessPx") or 0)
+            if t <= 0 or e.get("opening") or not (abs(ay - by) <= 0.01 if lv else abs(ax - bx) <= 0.01):
+                continue
+            c = ay if lv else ax
+            if min(hi, c + t / 2.0) - max(lo, c - t / 2.0) <= 0:
+                continue
+            for q in ((ax, bx) if lv else (ay, by)):
+                f = rnd(q * mm) / mm
+                if abs(f - pt[k]) <= 0.75 and (best is None or (f - best) * out_sign > 0):
+                    best = f                                 # (the farthest out: meeting every wall there, not one)
+        if best is not None:
+            pt[k] = best
+
+
+def _emit(out, S, rect, next_id, mm_src, start=None, end=None, head_on=False):
+    """the wall edge of a rectangle (working px): its centre-line along the longer side, ending on a vertex's own
+    source point where it joins one"""
+    x0, y0, x1, y1 = rect
+    if x1 - x0 >= y1 - y0:
+        a, b, t = (x0, (y0 + y1) / 2.0), (x1, (y0 + y1) / 2.0), y1 - y0
+    else:
+        a, b, t = ((x0 + x1) / 2.0, y0), ((x0 + x1) / 2.0, y1), x1 - x0
+    pa, pb = (list(start[2]) if start else S(*a)), (list(end[2]) if end else S(*b))
+    if not (start or end):                                   # (an end within 0.75 px of a wall's end: the app would merge
+        near = []                                            # the two, so the piece would lean - s045 - and is put on it)
+        for e in out["wallEdges"]:
+            for q in e["sourcePx"][:2]:
+                for which, pt in (("start", pa), ("end", pb)):
+                    dq = math.hypot(q[0] - pt[0], q[1] - pt[1])
+                    if dq <= 0.75:
+                        near.append((dq, which, [float(q[0]), float(q[1])]))
+        if near:
+            _, which, q = min(near)
+            if which == "start":
+                start = [0, 0, q]; pa = list(q)
+            else:
+                end = [0, 0, q]; pb = list(q)
+    if (start or end) and S.Hi is None and S.b == 0:         # (a plan drawn level stays level: one coordinate shared)
+        k_ = 0 if x1 - x0 < y1 - y0 else 1
+        pa[k_] = pb[k_] = (start or end)[2][k_]
+    if mm_src and not (start and end) and S.Hi is None and S.b == 0:
+        _app_face_ends(out, S, rect, pa, pb, float(mm_src), [pt for pt, j in ((pa, start), (pb, end)) if not j], head_on)
+    ts = t * S.k
+    out["wallEdges"].append({"id": "e%d" % next_id, "kind": "wall_centerline", "sourcePx": [pa, pb],
+                             "thicknessPx": round(ts, 2), "thicknessMm": int(round(ts * mm_src)) if mm_src else None,
+                             "opening": None})
+    return a, b, ts
+
+
+def _mark(lines, app_near, rect, a, b):
+    """a later piece meets this one as it meets a room's wall: over its band, never onto its centre-line"""
+    x0, y0, x1, y1 = rect
+    cv2.line(lines, (int(round(a[0])), int(round(a[1]))), (int(round(b[0])), int(round(b[1]))), 255, 3)
+    cv2.rectangle(app_near, (int(math.floor(x0)), int(math.floor(y0))), (int(math.ceil(x1)) - 1, int(math.ceil(y1)) - 1), 255, -1)
+
+
+def _log(kind, x, y, w, h, extra, T, rect, eid, S, a, b, ts):
+    if LEFTOVER_LOG:
+        print("leftover: %s at %d,%d %dx%d (%s, T %.1f) rect %.0fx%.0f -> e%d %s-%s t %.1f" % (
+            kind, x, y, w, h, extra, T, rect[2] - rect[0], rect[3] - rect[1], eid,
+            [round(float(v), 1) for v in S(*a)], [round(float(v), 1) for v in S(*b)], ts), file=sys.stderr)
+
+
+def _continues(rect, rects, app, T):
+    """the piece a sliver carries on past its end, and whether that piece is plumb, or None - the piece's own width,
+    beyond its end or across the wall it stopped at (J's BEDROOM 2, left column: the column runs on past its wall's
+    line).  Not one hanging off a piece's long side: that is a fixture's or a frame's teeth (c24)"""
+    x0, y0, x1, y1 = rect
+    for piece in rects:
+        px0, py0, px1, py1 = piece
+        plumb = py1 - py0 > px1 - px0
+        a0, a1, pa0, pa1 = (x0, x1, px0, px1) if plumb else (y0, y1, py0, py1)          # across the piece
+        b0, b1, pb0, pb1 = (y0, y1, py0, py1) if plumb else (x0, x1, px0, px1)          # along it
+        if min(a1, pa1) - max(a0, pa0) < 0.6 * (a1 - a0):
+            continue
+        gap = max(pb0 - b1, b0 - pb1)
+        if gap < -1 or gap > T + 3:
+            continue
+        if gap <= 2:
+            return piece, plumb
+        lo, hi = (b1, pb0) if pb0 >= b1 else (pb1, b0)
+        o0, o1 = int(max(a0, pa0)), int(math.ceil(min(a1, pa1)))
+        between = app[int(lo):int(math.ceil(hi)), o0:o1] if plumb else app[o0:o1, int(lo):int(math.ceil(hi))]
+        if between.size and float((between > 0).mean()) >= 0.8:
+            return piece, plumb
+    return None
+
+
+def _clear(lines, rect):
+    """no wall's centre-line under a rectangle"""
+    x0, y0, x1, y1 = (int(math.floor(rect[0])), int(math.floor(rect[1])), int(math.ceil(rect[2])), int(math.ceil(rect[3])))
+    return x0 >= 0 and y0 >= 0 and not lines[y0:y1, x0:x1].any()
+
+
+def _cross_faces(out, S):
+    """the faces of the walls (no openings), in working px: {True: level walls' faces (y), False: plumb walls' (x)} -
+    where a plumb or a level sliver's far end may stop flush"""
+    faces = {True: [], False: []}
+    for e in out["wallEdges"]:
+        if e.get("opening"):
+            continue
+        p, q = e["sourcePx"][:2]
+        (ax, ay), (bx, by) = _from_source(S, *p), _from_source(S, *q)
+        h = float(e.get("thicknessPx") or 0) / S.k / 2.0
+        if abs(ay - by) <= 0.5 < abs(ax - bx):
+            faces[True] += [(ay + by) / 2.0 - h, (ay + by) / 2.0 + h]
+        elif abs(ax - bx) <= 0.5 < abs(ay - by):
+            faces[False] += [(ax + bx) / 2.0 - h, (ax + bx) / 2.0 + h]
+    return faces
+
+
+def _align_sliver(rect, piece, plumb, app, lines, T, faces):
+    """J, on the second review: the sliver past his BEDROOM 2 column read as a separate box - off the column's face by
+    a step, short of the corner's face below by a notch, outlined on its own.  So a sliver takes the faces of the piece
+    it carries on where it lies within two pixels of them, overlaps the wall at its near end by two pixels (the app
+    joins walls that overlap, not walls that only touch), and its far end goes on to the face of a wall beside it that
+    stops at most a quarter of a wall further on.  Never onto a centre-line."""
+    x0, y0, x1, y1 = rect
+    a0, a1, b0, b1 = (x0, x1, y0, y1) if plumb else (y0, y1, x0, x1)          # (across, along) the piece
+    pa0, pa1 = (piece[0], piece[2]) if plumb else (piece[1], piece[3])
+    pb0, pb1 = (piece[1], piece[3]) if plumb else (piece[0], piece[2])
+    box = (lambda a0_, a1_, b0_, b1_: (a0_, b0_, a1_, b1_)) if plumb else (lambda a0_, a1_, b0_, b1_: (b0_, a0_, b1_, a1_))
+    if a0 >= pa0 - 2 and _clear(lines, box(pa0, a1, b0, b1)):
+        a0 = pa0
+    if a1 <= pa1 + 2 and _clear(lines, box(a0, pa1, b0, b1)):
+        a1 = pa1
+    after = pb1 <= b0 + 2                                    # (the sliver lies past the piece's far end)
+    near = (lambda k: (b0 - k, b0 - k + 1)) if after else (lambda k: (b1 + k - 1, b1 + k))
+    ia0, ia1 = int(math.floor(a0)), int(math.ceil(a1))
+    def cover(c0, c1, d0, d1):
+        c0, c1, d0, d1 = int(math.floor(c0)), int(math.ceil(c1)), int(math.floor(d0)), int(math.ceil(d1))
+        if c0 < 0 or d0 < 0 or c1 > app.shape[1 if plumb else 0] or d1 > app.shape[0 if plumb else 1]:
+            return 0.0
+        s_ = app[d0:d1, c0:c1] if plumb else app[c0:c1, d0:d1]
+        return float((s_ > 0).mean()) if s_.size else 0.0
+    for k in (1, 2):                                         # (into the wall at the near end)
+        d0, d1 = near(k)
+        if cover(ia0, ia1, d0, d1) < 0.6 or not _clear(lines, box(a0, a1, min(b0, d0), max(b1, d1))):
+            break
+        b0, b1 = min(b0, d0), max(b1, d1)
+    reach = max(3, int(math.ceil(0.25 * T)))
+    for c0, c1 in ((ia0 - 2, ia0), (ia1, ia1 + 2)):          # (the far end, flush with a wall beside it)
+        f = 0
+        for k in range(1, reach + 1):
+            d0, d1 = (b1 + k - 1, b1 + k) if after else (b0 - k, b0 - k + 1)
+            if cover(c0, c1, d0, d1) < 0.6:
+                break
+            f = k
+        if 0 < f < reach and cover(c0, c1, *((b1 - 2, b1) if after else (b0, b0 + 2))) >= 0.6:
+            end = b1 + f if after else b0 - f                # (the wall's own face, where the mask's pixel rounds it)
+            exact = [v for v in faces[plumb] if abs(v - end) <= 1.5 and (v > b1 if after else v < b0)]
+            end = min(exact, key=lambda v: abs(v - end)) if exact else end
+            new = (b0, end) if after else (end, b1)
+            if _clear(lines, box(a0, a1, *new)):
+                b0, b1 = new
+                break
+    return box(a0, a1, b0, b1)
+
+
+def _slivers(out, S, T, drawn, ink_raw, lines, verts, rects, next_id, mm_src, room_left):
+    """Last pass: a sliver of solid ink still left out that carries on one of this round's pieces - the last few pixels
+    of a column past a wall's face or line (J's BEDROOM 2, left column; a column's bottom on his PDF): at most
+    LEFTOVER_SLIVER_T wall thicknesses deep, at least 3 x 6 source pixels, 3/4 ink across its rectangle, not against a
+    window or door, LEFTOVER_SLIVERS a page.  A strip along a wall's face alone is that wall drawn wider than traced, and
+    stays out: covering those added stubs to window frames and fixtures on the test plans (exec, c24)."""
+    H, W = drawn.shape
+    joints = _wall_vertices(out, S)
+    app = _work_wall_mask(out, S, (H, W), joints=joints)
+    depth = max(3, int(round(LEFTOVER_SLIVER_T * T)))
+    band = cv2.dilate(app, np.ones((2 * depth + 1, 2 * depth + 1), np.uint8)) > 0
+    cand = (((drawn > 0) | (ink_raw > 0)) & (app == 0) & band).astype(np.uint8)
+    cand = cv2.morphologyEx(cand, cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
+    touch = cv2.dilate(app, np.ones((3, 3), np.uint8))       # (the opening can leave a pixel between a sliver and its wall)
+    openings = cv2.dilate(_work_wall_mask({"wallEdges": [e for e in out["wallEdges"] if e.get("opening")]}, S, (H, W),
+                                          joints=joints), np.ones((3, 3), np.uint8))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(cand, 8)
+    faces = _cross_faces(out, S)
+    walls, placed = _wall_rects(out, S, joints), list(rects)
+    added = 0
+    for i in range(1, n):
+        x, y, w, h, area = (int(v) for v in st[i])
+        short, long_ = min(w, h), max(w, h)
+        if (added >= room_left or area < max(10, 0.04 * T * T) or short * S.k < 3.0 or long_ * S.k < 6.0 or short > depth + 1
+                or long_ < max(4, 0.25 * T) or long_ > LEFTOVER_COMPACT_T * T):
+            continue
+        box = (slice(y, y + h), slice(x, x + w))
+        carried = _continues((x, y, x + w, y + h), rects, app, T)
+        if (lab[box] == i).mean() < 0.7 or ink_raw[box].mean() < 0.75 or carried is None:
+            continue                                         # (not a solid strip carrying on a piece)
+        if max(_sides(openings, x, y, x + w, y + h)) > 0.3:
+            continue                                         # (a window's mullion or a door's jamb, not a column)
+        rect = _reach_walls(touch, drawn, lines, x, y, x + w, y + h, 2)   # (into the wall it meets, no further)
+        rect = _align_sliver(rect, carried[0], carried[1], app, lines, T, faces)
+        rect, sv, ev = _join_vertex(rect, verts, lines, T, 3)
+        if sv is None and ev is None:
+            rect = _overlap_walls(rect, walls + placed, lines)
+        placed.append(rect)
+        a, b, ts = _emit(out, S, rect, next_id, mm_src, sv, ev)
+        _mark(lines, touch, rect, a, b)
+        _log("sliver", x, y, w, h, "carries on a piece", T, rect, next_id, S, a, b, ts)
+        next_id += 1; added += 1
+    return added
+
+
+def _crosses(rect, lines, ends=()):
+    """the centre-line _emit would give a rectangle runs onto another wall's - away from ends (working px) where it
+    will share a wall's own end (_emit puts it there; the app joins two walls at a shared end)"""
+    x0, y0, x1, y1 = rect
+    cl = np.zeros_like(lines)
+    if x1 - x0 >= y1 - y0:
+        cv2.line(cl, (int(round(x0)), int(round((y0 + y1) / 2))), (int(round(x1)) - 1, int(round((y0 + y1) / 2))), 255, 1)
+    else:
+        cv2.line(cl, (int(round((x0 + x1) / 2)), int(round(y0))), (int(round((x0 + x1) / 2)), int(round(y1)) - 1), 255, 1)
+    for ex, ey in ends:
+        cv2.circle(cl, (int(round(ex)), int(round(ey))), 3, 0, -1)
+    return bool(((cl > 0) & (lines > 0)).any())
+
+
+def _shared_ends(out, S, rect):
+    """the ends of a rectangle's centre-line (working px) that lie within 0.75 source px of a wall's end"""
+    x0, y0, x1, y1 = rect
+    ends = [(x0, (y0 + y1) / 2.0), (x1, (y0 + y1) / 2.0)] if x1 - x0 >= y1 - y0 else [((x0 + x1) / 2.0, y0), ((x0 + x1) / 2.0, y1)]
+    verts = [q for e in out["wallEdges"] for q in e["sourcePx"][:2]]
+    hit = []
+    for ex, ey in ends:
+        sx, sy = S(ex, ey)
+        if any(math.hypot(q[0] - sx, q[1] - sy) <= 0.75 for q in verts):
+            hit.append((ex, ey))
+    return hit
+
+
+def _flush_with(rect, walls, grow):
+    """a pocket's rectangle, grown into the walls round it (grow, per side) and, on a side it did not grow, carried out
+    to the outermost face of the walls it lies between when that face is within 1.5 px: a face a fraction of a pixel
+    short of its neighbours' showed as a hairline (h1)"""
+    x0, y0, x1, y1 = rect[0] - grow[0], rect[1] - grow[1], rect[2] + grow[2], rect[3] + grow[3]
+    out_ = [x0, y0, x1, y1]
+    for side in range(4):
+        if grow[side]:
+            continue
+        lv = side in (0, 2)                                  # (a left or right side: the walls above and below matter)
+        f = out_[side]
+        lo_, hi_ = (y0, y1) if lv else (x0, x1)
+        faces = []
+        for w in walls:
+            near_ends = (abs(w[3] - lo_) <= 1.5 or abs(w[1] - hi_) <= 1.5) if lv else (abs(w[2] - lo_) <= 1.5 or abs(w[0] - hi_) <= 1.5)
+            if not near_ends:
+                continue
+            wf = w[side]
+            beyond = (f - wf) if side in (0, 1) else (wf - f)
+            if 0 < beyond <= 1.5:
+                faces.append(wf)
+        if faces:
+            out_[side] = min(faces) if side in (0, 1) else max(faces)
+    return tuple(out_)
+
+
+def _pockets(out, S, T, drawn, ink_raw, lines, rooms_mask, mm_src, room_left):
+    """Last of all: a pocket of drawn wall still left out where the walls meet - not wall, not in a room, closed over by
+    a square of one and a half walls (what the app check counts as a notch), mostly ink and nearly rectangular - gets a
+    piece of its own, carried a pixel or two into the walls round it (J: "can you see there is still a hole here", a
+    column covered only in part on s056; h1, s005, s057).  Paper between walls (a wedge where a wall meets a slanted
+    one) is left alone.  Returns the number added."""
+    H, W = drawn.shape
+    wall = _work_wall_mask(out, S, (H, W), joints=_wall_vertices(out, S))
+    k = max(3, int(round(1.5 * T)) | 1)
+    closed = cv2.morphologyEx(wall, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (k, k)))
+    gap = ((closed > 0) & (wall == 0) & (rooms_mask == 0)).astype(np.uint8)
+    inked = (drawn > 0) | (ink_raw > 0)
+    slanted = np.zeros((H, W), np.uint8)                     # (a pocket at a slanted wall is that joint's own shape:
+    for e in out["wallEdges"]:                               # filled with level pieces it showed seams and steps, s042)
+        (ax, ay), (bx, by) = (_from_source(S, *q) for q in e["sourcePx"][:2])
+        ang = abs(math.degrees(math.atan2(by - ay, bx - ax))) % 90.0
+        if min(ang, 90.0 - ang) > 2.0:
+            t = max(1, int(round(float(e.get("thicknessPx") or 0) / S.k)))
+            cv2.line(slanted, (int(round(ax)), int(round(ay))), (int(round(bx)), int(round(by))), 255, t + 4)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(gap, 8)
+    next_id = max((int(e["id"][1:]) for e in out["wallEdges"] if e["id"][1:].isdigit()), default=0) + 1
+    min_t = (40.0 / float(mm_src)) / S.k if mm_src else 2.0   # (the app builds no wall thinner than 40 mm)
+    added = 0
+    for i in range(1, n):
+        x, y, w, h, area = (int(v) for v in st[i])
+        if added >= room_left or area < 4 or max(w, h) > 1.5 * T or area < 0.6 * w * h:
+            continue
+        comp = lab[y:y + h, x:x + w] == i
+        if float(inked[y:y + h, x:x + w][comp].mean()) < 0.6 or (slanted[y:y + h, x:x + w][comp] > 0).any():
+            continue                                         # (paper: the shape the drawing has, not a hole)
+        rect = (float(x), float(y), float(x + w), float(y + h))
+        grow = [0, 0, 0, 0]                                  # (into the walls round it; its centre-line is checked below)
+        for side in range(4):
+            for kk in (1, 2):
+                a, b, c, d = ((x - kk, y, x - kk + 1, y + h), (x, y - kk, x + w, y - kk + 1),
+                              (x + w + kk - 1, y, x + w + kk, y + h), (x, y + h + kk - 1, x + w, y + h + kk))[side]
+                if a < 0 or b < 0 or c > W or d > H or (wall[b:d, a:c] > 0).mean() < 0.5:
+                    break
+                grow[side] = kk
+        walls_ = _wall_rects(out, S, _wall_vertices(out, S))
+        rect = _flush_with(rect, walls_, grow)
+        if _crosses(rect, lines, _shared_ends(out, S, rect)):                            # (its ends overlapping a wall would meet that wall's
+            lv = w >= h                                      # centre-line: they end on its face instead, exactly
+            g = list(grow)                                   # where the app builds it)
+            g[0 if lv else 1] = g[2 if lv else 3] = 0
+            rect = _flush_with((float(x), float(y), float(x + w), float(y + h)), walls_, g)
+            if _crosses(rect, lines, _shared_ends(out, S, rect)):
+                continue
+        across = (0, 2) if rect[3] - rect[1] > rect[2] - rect[0] else (1, 3)
+        if min(rect[2] - rect[0], rect[3] - rect[1]) < min_t and not all(grow[sd] for sd in across):
+            continue                                         # (the app would build it thicker than the pocket, out past
+                                                             # it - unless it lies between two walls that hide that)
+        a_, b_, ts = _emit(out, S, rect, next_id, mm_src, head_on=True)   # (an end short of a wall by a slit meets it)
+        _mark(lines, wall, rect, a_, b_)
+        _log("pocket", x, y, w, h, "ink %.0f%%" % (100 * float(inked[y:y + h, x:x + w][comp].mean())), T, rect, next_id,
+             S, a_, b_, ts)
+        next_id += 1; added += 1
+    return added
+
+
+def _align_after(out, S, first, mm_src):
+    """The pieces' free ends once more, with every piece in place: an end flush with a piece emitted after it (the
+    study's wall and its return on J's screenshot, a step a pixel's thirtieth wide) goes where the app builds that face."""
+    if not mm_src or S.Hi is not None or S.b != 0:
+        return
+    count = {}
+    for e in out["wallEdges"]:
+        for q in e["sourcePx"][:2]:
+            key = (round(q[0], 3), round(q[1], 3))
+            count[key] = count.get(key, 0) + 1
+    for e in out["wallEdges"][first:]:
+        pa, pb = e["sourcePx"][0], e["sourcePx"][1]
+        h = float(e.get("thicknessPx") or 0) / 2.0
+        lv = abs(pa[1] - pb[1]) <= abs(pa[0] - pb[0])
+        c = (pa[1] + pb[1]) / 2.0 if lv else (pa[0] + pb[0]) / 2.0
+        free = [pt for pt in (pa, pb) if count.get((round(pt[0], 3), round(pt[1], 3)), 0) == 1]
+        if free and h > 0:
+            _app_face_ends(out, S, None, pa, pb, float(mm_src), free, own=e, across=(c - h, c + h))
+
+
+def leftover_walls(out, m, S, T, gray):
+    """Round 36 (see above).  Returns the number of standalone wall edges added."""
+    W, H = int(m["size"][0]), int(m["size"][1])
+    app = _work_wall_mask(out, S, (H, W))
+    lines = cv2.dilate(_work_wall_mask(out, S, (H, W), centre_only=True), np.ones((3, 3), np.uint8))
+    room_lines = lines.copy()                                # (a few pixels' touch may cross a piece's line: the app
+                                                             # drops such a piece, the document stands)
+    drawn = _work_drawn_mask(m, (H, W))
+    partitions = _work_drawn_mask(m, (H, W), masses=False)
+    verts = _wall_vertices(out, S)
+    ink = ink_raw = None                                     # solid ink: what stays of the dark pixels after a 1 px
+    if gray is not None and gray.shape == (H, W):            # erosion (lines and hatching go, a filled column stays)
+        ink_raw = (gray < float(m.get("ink_threshold") or 180)).astype(np.uint8)
+        ink = cv2.erode(ink_raw, np.ones((3, 3), np.uint8))
+    left = (drawn > 0) & (cv2.dilate(app, np.ones((5, 5), np.uint8)) == 0)
+    left = cv2.morphologyEx(left.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    rooms_mask = np.zeros((H, W), np.uint8)
+    for r in out["rooms"]:
+        pts = np.round(np.array([_from_source(S, q["x"], q["y"]) for q in r["sourcePoints"]])).astype(np.int32)
+        cv2.fillPoly(rooms_mask, [pts], 255)
+    near = cv2.dilate(app, np.ones((9, 9), np.uint8))
+    app_near = cv2.dilate(app, np.ones((7, 7), np.uint8))
+    app_j = _work_wall_mask(out, S, (H, W), joints=verts)   # (ends as the app joins them: where a piece truly meets a wall)
+    walls = _wall_rects(out, S, verts)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(left, 8)
+    mm_src = (out.get("scale") or {}).get("millimetresPerPixel")
+    next_id = max((int(e["id"][1:]) for e in out["wallEdges"] if e["id"][1:].isdigit()), default=0) + 1
+    reach = int(math.ceil(T)) + 3
+    added, rects = 0, []
+    for i in range(1, n):
+        x, y, w, h, area = (int(v) for v in st[i])
+        if area < 0.25 * T * T:
+            continue
+        comp = (lab[y:y + h, x:x + w] == i).astype(np.uint8)
+        if not (near[y:y + h, x:x + w][comp > 0] > 0).any():
+            continue                                         # (standing apart from every wall: not this pass's)
+        inside = float((rooms_mask[y:y + h, x:x + w][comp > 0] > 0).mean())
+        compact = max(w, h) <= LEFTOVER_COMPACT_T * T and area <= 2.0 * LEFTOVER_COMPACT_T * T * T
+        if inside < 0.7 and not compact:
+            continue
+        for x0, y0, x1, y1 in _rectangles(comp, 0.25 * T * T, max(3.0, 0.2 * T)):
+            if added >= LEFTOVER_MAX:
+                break
+            box = (slice(y + y0, y + y1), slice(x + x0, x + x1))
+            # (a sliver a few pixels wide along a wall, a column standing a little past the wall's face, is judged
+            # unshaved; a fixture's outline drawn as thick as that stands against no wall along its length)
+            solid = ink is not None and (ink[box].mean() >= 0.6
+                                         or (min(x1 - x0, y1 - y0) <= 8 and ink_raw[box].mean() >= 0.75
+                                             and _along_wall(near, x + x0, y + y0, x + x1, y + y1)))
+            outlined = partitions[box].mean() >= 0.8 * 255 and inside >= 0.7 and max(x1 - x0, y1 - y0) >= 2.0 * T
+            if not (solid or outlined):
+                continue                                     # (thin lines, not a filled wall or column: a bed's pillows
+                                                             # stage 1 took for two partitions on p02)
+            rect = _reach_walls(app_near, drawn, lines, x0 + x, y0 + y, x1 + x, y1 + y, reach)
+            rect = _through_mass(rect, drawn, app_j, lines, 2 * reach)
+            rect = _touch_walls(_meet_across(rect, app_j, lines, T), app_j, room_lines)
+            rect, sv, ev = _join_vertex(rect, verts, lines, T, reach)
+            if sv is None and ev is None:
+                rect = _overlap_walls(rect, walls + rects, lines)
+            rects.append(rect)
+            a, b, ts = _emit(out, S, rect, next_id, mm_src, sv, ev)
+            _mark(lines, app_near, rect, a, b)
+            _log("part", x, y, w, h, "%s, inside %.0f%%" % ("compact" if compact else "long", 100 * inside), T, rect,
+                 next_id, S, a, b, ts)
+            next_id += 1; added += 1
+    if ink_raw is not None and added < LEFTOVER_MAX:
+        added += _slivers(out, S, T, drawn, ink_raw, lines, verts, rects, next_id, mm_src,
+                          min(LEFTOVER_MAX - added, LEFTOVER_SLIVERS))
+    if ink_raw is not None and added < LEFTOVER_MAX:
+        added += _pockets(out, S, T, drawn, ink_raw, lines, rooms_mask, mm_src, min(LEFTOVER_MAX - added, LEFTOVER_SLIVERS))
+    _align_after(out, S, len(out["wallEdges"]) - added, mm_src)
+    return added
 
 
 def weld_shared_ends(rooms, tol):
