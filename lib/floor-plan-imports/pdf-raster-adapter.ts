@@ -93,6 +93,7 @@ import {
 import { sourceDrawingAnnotations } from "./source-drawing-annotations";
 import { appendPdfRasterRegion, mergeMixedPdfEvidence, pageGeometryBasis, pageLineworkKind, positionedPdfTextBounds } from "./mixed-pdf-evidence";
 import { parsePdfDrawPathEvidence } from "./pdf-vector-evidence";
+import { addVectorizerStandaloneWalls } from "./vectorizer-standalone-walls";
 import {
   buildSourceBoundCatalogDraft,
   catalogFloorPlanDraftMatchReference,
@@ -1706,10 +1707,8 @@ function buildCanonicalCandidate(
   // exterior-only 3D dollhouse cutaway. Older raster candidates marked every
   // wall as interior, which forced the renderer to guess from incomplete room
   // ownership and allowed camera movement to remove room partitions.
-  for (const wall of walls) {
-    wall.classification =
-      wall.adjacentRoomIds.length > 1 ? "interior" : "exterior";
-  }
+  for (const wall of walls) wall.classification = wall.adjacentRoomIds.length > 1 ? "interior" : "exterior";
+  addVectorizerStandaloneWalls({ page, rooms, millimetresPerPixel, vertices, walls, getVertex, provenance: edgeProvenance });
 
   if (page && canonicalRooms.length > 0) {
     const mappedLabels = new Set(
