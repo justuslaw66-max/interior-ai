@@ -753,16 +753,14 @@ assert.match(
   /variant: "canvas" \| "pill";/,
   "The view selector is the canvas toolbar's or the phone's: Present & export's 30px one retired with it."
 );
+// The shared segmented control (UX 5n) draws both: its 44px segments without a track in the
+// phone's pill, and its regular 36px control with 32px segments in the canvas toolbar.
 assert.match(
   editorViewToggleSource,
-  /const PILL_SEGMENT_CLASS =\s*"inline-flex h-11 w-12 items-center justify-center rounded-\[9px\] text-sm font-bold leading-none";/,
-  "The phone's view selector should use 44px segments, in a pill over the canvas (UX 4d)."
+  /<SegmentedControl\b[\s\S]*?size=\{variant === "pill" \? "touch" : "regular"\}[\s\S]*?track=\{variant === "canvas"\}/,
+  "The phone's view selector should use 44px segments, in a pill over the canvas (UX 4d), and the canvas toolbar's the mockup's 32px segments."
 );
-assert.match(
-  editorViewToggleSource,
-  /const CANVAS_SEGMENT_CLASS =\s*"inline-flex h-8 touch:h-11 items-center justify-center rounded-\[7px\] px-3\.5 text-\[13px\] font-bold leading-none";/,
-  "The canvas toolbar's view selector should use the mockup's 32px segments."
-);
+assert.doesNotMatch(editorViewToggleSource, /<button\b/, "The view selector is the shared SegmentedControl.");
 
 assert.match(
   roomPlanStatusBarSource,

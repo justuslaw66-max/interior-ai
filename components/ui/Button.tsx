@@ -7,7 +7,9 @@ import { forwardRef, type ButtonHTMLAttributes } from "react";
  * (UX 5m, J's choice on 13 Oct); `compact` is the 30px size for dense bars. `icon` is a 36px
  * square for an icon with an accessible name (the canvas toolbar, UX 4c), and `round` a 40px
  * circle (the canvas corner). On phones and touch screens all of them are 44px (UX 4d, the touch:
- * variant in globals.css).
+ * variant in globals.css). `pressed` makes it an on/off toggle (Grid, Snap, Details): it sets
+ * `aria-pressed` and takes the primary look while on, as Q3 asks of pressed toggles (UX 5n, J's
+ * choice on 14 Oct). A choice between options is a `SegmentedControl` instead.
  */
 export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger";
 export type ButtonSize = "touch" | "regular" | "compact" | "icon" | "round";
@@ -15,6 +17,8 @@ export type ButtonSize = "touch" | "regular" | "compact" | "icon" | "round";
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  /** An on/off toggle: on is the primary look and `aria-pressed="true"`, off is `variant`. */
+  pressed?: boolean;
 };
 
 const BUTTON_BASE_CLASS =
@@ -47,8 +51,16 @@ export function buttonClassName({
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "secondary", size = "touch", className = "", type = "button", ...props },
+  { variant = "secondary", size = "touch", className = "", type = "button", pressed, ...props },
   ref
 ) {
-  return <button ref={ref} type={type} className={buttonClassName({ variant, size, className })} {...props} />;
+  return (
+    <button
+      ref={ref}
+      type={type}
+      aria-pressed={pressed}
+      className={buttonClassName({ variant: pressed ? "primary" : variant, size, className })}
+      {...props}
+    />
+  );
 });
