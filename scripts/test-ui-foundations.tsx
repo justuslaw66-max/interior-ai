@@ -121,7 +121,7 @@ assert.match(segmented, /^<div role="group" aria-label="Design view" data-testid
 assert.equal(segmented.match(/<button type="button"/g)?.length, 2, "Each segment is a button.");
 assert.match(segmented, /aria-pressed="true" data-testid="view-2d" class="[^"]*\bh-8 touch:h-11\b[^"]*\bbg-neutral-900 text-white\b/);
 assert.match(segmented, /aria-pressed="false" data-testid="view-3d" disabled="" class="[^"]*\btext-neutral-700\b/);
-assert.match(segmented, /\bfocus-visible:ring-2\b[^"]*\bfocus-visible:ring-focus\b/);
+assert.doesNotMatch(segmented, /outline-hidden|focus-visible:ring/, "Segments show the shared focus ring.");
 const filled = markup(
   <SegmentedControl label="Surface" value={1} onChange={() => undefined} size="compact" fill options={[1, 2, 3, 4].map((value) => ({ value, label: String(value) }))} />
 );
