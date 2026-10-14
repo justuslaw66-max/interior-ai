@@ -21,6 +21,7 @@ import FloorPlanPropertyEvidenceControl from "@/components/editor/FloorPlanPrope
 import { SelectedOpeningDimensions, type SelectedOpeningDimensionsActions as OpeningActions } from "./SelectedOpeningDimensions";
 import type { resolveDesignPageOpeningViewportState } from "@/lib/design-page-opening-viewport";
 import { inspectorFrame, useInspectorPlacement } from "./selectionInspectorPlacement";
+import { Button } from "@/components/ui/Button";
 
 type SelectedRoom = Pick<HousePlanRoom2D, "id" | "w" | "d">;
 
@@ -232,49 +233,44 @@ export function DesignPageSelectionInspector({
       >
         {roomSelectionActive && state.selectedRoom ? (
           <>
-            <button
-              type="button"
+            <Button
               data-testid="selection-inspector-edit-floor"
-              className="rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"
+              variant="primary" size="compact"
               onClick={() => actions.room.editFloor(state.selectedRoom!.id)}
             >
               Surfaces
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               data-testid="selection-inspector-fit-room"
-              className="rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"
+              variant="secondary" size="compact"
               onClick={() => actions.room.fit(state.selectedRoom!.id)}
             >
               Fit
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               data-testid="selection-inspector-duplicate-room"
-              className="rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"
+              variant="secondary" size="compact"
               onClick={() => actions.room.duplicate(state.selectedRoom!.id)}
             >
               Duplicate
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               data-testid="selection-inspector-delete-room"
-              className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+              variant="danger" size="compact"
               disabled={!state.canDeleteSelectedRoom}
               onClick={() => actions.room.delete(state.selectedRoom!.id)}
             >
               Delete
-            </button>
+            </Button>
           </>
         ) : state.hasSelectedPlanOverlay ? (
-          <button
-            type="button"
+          <Button
             data-testid="selection-inspector-delete-overlay"
-            className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"
+            variant="danger" size="compact"
             onClick={actions.deleteSelectedPlanOverlay}
           >
             Delete
-          </button>
+          </Button>
         ) : null}
       </div>
 

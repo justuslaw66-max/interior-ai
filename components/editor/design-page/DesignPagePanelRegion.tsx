@@ -18,6 +18,7 @@ import {
 import { CLIENT_PREVIEW_EXIT_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
 import type { PresentationTools } from "@/lib/design-page-presentation-tools";
 import { stepPanelFooters } from "@/components/editor/design-page/StepPanelFooters";
+import { Button } from "@/components/ui/Button";
 
 export type DesignPagePanelRegionState = {
   shopping: ShopStepProps | null;
@@ -65,17 +66,16 @@ function ClientPreviewExitAction({
   if (!visible) return null;
   return (
     <div className="fixed left-1/2 top-4 z-60 -translate-x-1/2 transform">
-      <button
+      <Button
         id={CLIENT_PREVIEW_EXIT_ACTION_ID}
         data-testid="client-preview-exit"
-        type="button"
         aria-label="Exit presentation"
-        className="rounded-lg bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-700"
+        variant="danger" size="touch"
         onClick={onExit}
         title="Exit presentation mode (P)"
       >
         ✕ Exit presentation
-      </button>
+      </Button>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import type { PendingCatalogPlacementScene } from "@/lib/catalog-placement";
 import type { ManualPlacementScore } from "@/lib/manual-placement-scoring";
+import { Button } from "@/components/ui/Button";
 
 type PlacementQuality = {
   label: string;
@@ -284,24 +285,22 @@ export function CatalogPlacementConfirmPanel({
               </button>
             ) : null}
             {pendingCatalogPlacementBlocked && hasRestorablePlacement ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-restore-valid"
-                className="min-h-11 rounded-lg border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onRestoreValidPlacement}
               >
                 Back to valid spot
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementBlocked ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-select-blocker"
-                className="min-h-11 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="danger" size="regular"
                 onClick={actions.onSelectBlocker}
               >
                 Select blocker
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("swap_with_blocker") ? (
               <button
@@ -324,33 +323,30 @@ export function CatalogPlacementConfirmPanel({
               </button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("place_beside_blocker") ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-beside-blocker"
-                className="min-h-11 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onPlaceBesideBlocker}
               >
                 Place beside blocker
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("try_smaller_variant") ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-smaller-variant"
-                className="min-h-11 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onTrySmallerVariant}
               >
                 Try smaller variant
-              </button>
+              </Button>
             ) : null}
-            <button
-              type="button"
+            <Button
               data-testid="catalog-placement-center"
-              className="min-h-11 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+              variant="secondary" size="regular"
               onClick={actions.onCenter}
             >
               Centre
-            </button>
+            </Button>
             <button
               type="button"
               data-testid="catalog-placement-nudge-left"
@@ -390,30 +386,27 @@ export function CatalogPlacementConfirmPanel({
           </div>
         </div>
         <div className="sticky bottom-0 -mx-4 grid shrink-0 grid-cols-2 gap-2 border-t border-neutral-200 bg-white/95 px-4 pb-1 pt-3 backdrop-blur md:-mx-3 md:px-3 md:pb-0 md:pt-2">
-          <button
-            type="button"
+          <Button
             data-testid="catalog-placement-rotate-left"
-            className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:text-xs"
+            variant="secondary" size="regular"
             onClick={() => actions.onRotate("left")}
           >
             Rotate left
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="catalog-placement-rotate-right"
-            className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:text-xs"
+            variant="secondary" size="regular"
             onClick={() => actions.onRotate("right")}
           >
             Rotate right
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="catalog-placement-cancel"
-            className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:text-xs"
+            variant="secondary" size="regular"
             onClick={actions.onCancel}
           >
             Cancel
-          </button>
+          </Button>
           <button
             type="button"
             data-testid="catalog-placement-confirm"

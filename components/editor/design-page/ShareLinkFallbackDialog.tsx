@@ -6,6 +6,7 @@ import {
   SHARE_LINK_FALLBACK_OPEN_ACTION_ID,
   SHARE_LINK_FALLBACK_RETURN_FOCUS_IDS,
 } from "@/lib/share-link-fallback-dialog-focus";
+import { Button } from "@/components/ui/Button";
 
 export type ShareLinkFallbackDialogProps = {
   url: string | null;
@@ -22,26 +23,31 @@ function ShareLinkFallbackControls({
   url: string; onCopy: (url: string) => void;
 }) {
   const inputClassName = "min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono text-gray-700 outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
-  const doneClassName = "min-h-11 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 outline-hidden hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
   return <>
     <div className="mb-4 flex min-w-0 gap-2">
       <input type="text" readOnly aria-label="Share URL" data-testid="share-url-input"
         value={url} className={inputClassName} />
-      <button id={SHARE_LINK_FALLBACK_COPY_ACTION_ID} data-testid="share-copy-button"
+      <Button
+        id={SHARE_LINK_FALLBACK_COPY_ACTION_ID}
+        data-testid="share-copy-button"
         onClick={() => onCopy(url)}
-        className="shrink-0 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white outline-hidden hover:bg-purple-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+        variant="primary" size="regular" className="shrink-0"
+      >
         Copy
-      </button>
+      </Button>
     </div>
     <div className="grid grid-cols-2 gap-2">
-      <button id={SHARE_LINK_FALLBACK_OPEN_ACTION_ID} data-testid="share-open-button"
+      <Button
+        id={SHARE_LINK_FALLBACK_OPEN_ACTION_ID}
+        data-testid="share-open-button"
         onClick={() => onOpen(url)}
-        className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white outline-hidden hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+        variant="primary" size="touch"
+      >
         Open link
-      </button>
-      <button data-testid="share-done-button" onClick={onClose} className={doneClassName}>
+      </Button>
+      <Button data-testid="share-done-button" onClick={onClose} variant="secondary" size="touch">
         Done
-      </button>
+      </Button>
     </div>
   </>;
 }

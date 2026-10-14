@@ -8,6 +8,7 @@ import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import MeasurementField from "./MeasurementField";
 import FloorPlanPropertyEvidenceControl from "./FloorPlanPropertyEvidenceControl";
+import { Button } from "@/components/ui/Button";
 
 export type FloorCreationMode = "blank" | "layout" | "walls";
 
@@ -524,22 +525,20 @@ export default function FloorPropertiesPanel({
               />
             </label>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
-              <button
-                type="button"
-                className={secondaryButtonClass}
+              <Button
+                variant="secondary" size="compact"
                 onClick={() => setRenameOpen(false)}
               >
                 Cancel
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="floor-rename-save"
-                className="rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+                variant="primary" size="compact"
                 disabled={!renameValue.trim() || renameValue.trim() === activeFloorLabel}
                 onClick={commitRename}
               >
                 Save
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -555,21 +554,19 @@ export default function FloorPropertiesPanel({
               This removes {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"} and their doors and windows.
             </div>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
-              <button
-                type="button"
-                className={secondaryButtonClass}
+              <Button
+                variant="secondary" size="compact"
                 onClick={() => setDeleteOpen(false)}
               >
                 Cancel
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="floor-delete-confirm"
-                className="rounded-lg bg-red-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+                variant="danger" size="compact"
                 onClick={commitDelete}
               >
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         )}

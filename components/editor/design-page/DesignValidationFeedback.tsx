@@ -1,6 +1,7 @@
 import type { ConstraintResult } from "@/lib/constraints/evaluate";
 import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
 import { FLOOR_PLAN_CONSUMER_ORIENTATION_OPTIONS } from "@/lib/floor-plan-consumer-orientation";
+import { Button } from "@/components/ui/Button";
 
 export type DesignValidationFeedbackProps = {
   hidden: boolean;
@@ -70,13 +71,12 @@ export function DesignValidationFeedback({
                   ))}
                 </select>
               </label>
-              <button
-                type="button"
-                className="rounded-lg bg-neutral-900 px-3 py-2 text-xs font-semibold text-white hover:bg-neutral-800"
+              <Button
+                variant="primary" size="compact"
                 onClick={floorPlanOrientation.onConfirm}
               >
                 Yes, it matches
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -132,25 +132,23 @@ export function DesignValidationFeedback({
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+                <Button
+                  variant="secondary" size="compact"
                   onClick={floorPlanRevisionUpdate.onDismiss}
                   disabled={floorPlanRevisionUpdate.creatingCopy}
                 >
                   Not now
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
                   data-testid="create-updated-floor-plan-copy"
-                  className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60"
+                  variant="primary" size="compact"
                   onClick={floorPlanRevisionUpdate.onCreateUpdatedCopy}
                   disabled={floorPlanRevisionUpdate.creatingCopy}
                 >
                   {floorPlanRevisionUpdate.creatingCopy
                     ? "Creating copy…"
                     : "Create updated copy"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

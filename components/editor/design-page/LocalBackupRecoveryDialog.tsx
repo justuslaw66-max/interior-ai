@@ -7,6 +7,7 @@ import type {
   DesignPageLocalBackupRecoveryActions,
   DesignPageLocalBackupRecoveryState,
 } from "@/lib/useDesignPageLocalBackupHydration";
+import { Button } from "@/components/ui/Button";
 
 const ignoreDismissal = () => undefined;
 
@@ -73,23 +74,21 @@ export function LocalBackupRecoveryDialog({
           Retry recovery
         </button>
         {state.lastKnownValidAvailable ? (
-          <button
-            type="button"
-            className="rounded-lg border border-emerald-500/70 px-4 py-2 text-sm font-semibold text-emerald-200 disabled:opacity-50"
+          <Button
+            variant="secondary" size="regular"
             onClick={() => void actions.openLastKnownValid()}
             disabled={state.isWorking}
           >
             Open last valid copy
-          </button>
+          </Button>
         ) : null}
-        <button
-          type="button"
-          className="rounded-lg border border-rose-500/70 px-4 py-2 text-sm font-semibold text-rose-200 disabled:opacity-50"
+        <Button
+          variant="secondary" size="regular"
           onClick={actions.startCleanCopy}
           disabled={state.isWorking}
         >
           Start a clean copy
-        </button>
+        </Button>
       </div>
     </EditorDialog>
   );

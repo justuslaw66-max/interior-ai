@@ -19,8 +19,8 @@ the first editor paint. The Tailwind scanner continues to cover `app`,
 
 Each scoped stylesheet contains the sorted Tailwind candidate list that is
 valid in, and exclusive to, its owner. Those inline lists are the canonical
-exact selector inventories: on 13 Oct 2026, 54 admin utilities, 26 tools
-utilities, and 104 Cabinetry Studio utilities. Ten more utilities are used by
+exact selector inventories: on 14 Oct 2026, 54 admin utilities, 26 tools
+utilities, and 105 Cabinetry Studio utilities. Ten more utilities are used by
 two or more of those excluded owners but nowhere in the remaining global scan:
 `bg-blue-700`, `gap-5`, `gap-6`, `max-h-40`, `min-w-[760px]`, `sm:col-span-2`,
 `text-3xl`, `text-neutral-100`, `text-red-950`, and `xl:grid-cols-2`. They remain once in
@@ -30,7 +30,7 @@ steps moved `text-[10px]` from the global scan to the cross-owner set, then to
 Cabinetry, then out, and left `text-green-900` to Admin alone; UX 5l's removal of the unused
 designer theme took eleven dark-palette utilities out of the global scan, so `bg-black/20`,
 `bg-white/10` and `border-l` moved to Cabinetry, seven to tools, and `text-neutral-100` to
-the cross-owner set); the guard below recomputes them, so it, not this
+the cross-owner set; UX 5m's shared buttons left `bg-sky-700` to Cabinetry); the guard below recomputes them, so it, not this
 paragraph, is authoritative.
 
 `scripts/test-phase8-performance-boundaries.ts` recomputes all four

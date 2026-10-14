@@ -22,6 +22,7 @@ import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
 import { floorPlanUploadFileProblem, floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import type { RoomType } from "@/lib/room-types";
+import { Button } from "@/components/ui/Button";
 
 type TraceRoomTypeOption = {
   type: RoomType;
@@ -201,7 +202,6 @@ export default function FloorPlanUploadPanel({
   const cardClass = "rounded-xl border border-neutral-200 bg-white p-3";
   const titleClass = "text-sm font-semibold text-neutral-900";
   const subtleClass = "text-xs text-neutral-500";
-  const buttonClass = "rounded-lg bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
   const secondaryButtonClass = "rounded-lg border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
   const rangeClass = "h-2 w-full accent-neutral-900";
   const selectClass = "rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 disabled:opacity-50";
@@ -248,15 +248,14 @@ export default function FloorPlanUploadPanel({
             </div>
           )}
         </div>
-        <button
+        <Button
           id={FLOOR_PLAN_IMPORT_ACTION_ID}
-          type="button"
-          className={buttonClass}
+          variant="primary" size="regular"
           disabled={disabled}
           onClick={() => dialog.openWorkspace(FLOOR_PLAN_IMPORT_ACTION_ID)}
         >
           Upload
-        </button>
+        </Button>
       </div>
 
       <input
@@ -375,15 +374,14 @@ export default function FloorPlanUploadPanel({
                   {calibrationSummary ?? "Click two points, then enter the real distance."}
                 </div>
               </div>
-              <button
-                type="button"
+              <Button
                 data-testid="floor-plan-calibration-toggle"
-                className={secondaryButtonClass}
+                variant="secondary" size="compact"
                 disabled={disabled || !canCalibrate}
                 onClick={() => onCalibrationModeChange?.(!calibrationMode)}
               >
                 {calibrationMode ? "Done" : "Set scale"}
-              </button>
+              </Button>
             </div>
 
             {calibrationMode && (
@@ -405,23 +403,21 @@ export default function FloorPlanUploadPanel({
                     placeholder="m"
                   />
                   <span className={subtleClass}>m</span>
-                  <button
-                    type="button"
+                  <Button
                     data-testid="floor-plan-apply-calibration"
-                    className={secondaryButtonClass}
+                    variant="secondary" size="compact"
                     disabled={disabled || calibrationPointCount < 2 || !calibrationDistanceMeters}
                     onClick={onApplyCalibration}
                   >
                     Apply
-                  </button>
-                  <button
-                    type="button"
-                    className={secondaryButtonClass}
+                  </Button>
+                  <Button
+                    variant="secondary" size="compact"
                     disabled={disabled || calibrationPointCount === 0}
                     onClick={onResetCalibrationPoints}
                   >
                     Reset
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -442,10 +438,9 @@ export default function FloorPlanUploadPanel({
                     : "Set scale on your floor plan before drawing over it."}
                 </div>
               </div>
-              <button
-                type="button"
+              <Button
                 data-testid="floor-plan-trace-room-toggle"
-                className={secondaryButtonClass}
+                variant="secondary" size="compact"
                 disabled={disabled || !canTraceRooms}
                 onClick={() => {
                   if (traceRoomMode) {
@@ -456,7 +451,7 @@ export default function FloorPlanUploadPanel({
                 }}
               >
                 {traceRoomMode ? "Done" : "Draw"}
-              </button>
+              </Button>
             </div>
 
             <div className="mt-3 grid gap-2">
@@ -510,16 +505,15 @@ export default function FloorPlanUploadPanel({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
+                  <Button
                     data-testid="floor-plan-undo-wall-point"
-                    className={secondaryButtonClass}
+                    variant="secondary" size="compact"
                     disabled={disabled || !canUndoTraceRoomPoint}
                     onClick={onUndoTraceRoomPoint}
                     title="Remove the last wall point"
                   >
                     Undo point
-                  </button>
+                  </Button>
                   {traceRoomTypeOptions.length > 0 && (
                     <select
                       data-testid="floor-plan-trace-room-type"
@@ -535,14 +529,13 @@ export default function FloorPlanUploadPanel({
                       ))}
                     </select>
                   )}
-                  <button
-                    type="button"
-                    className={secondaryButtonClass}
+                  <Button
+                    variant="secondary" size="compact"
                     disabled={disabled || traceRoomPointCount === 0}
                     onClick={onResetTraceRoomPoints}
                   >
                     Reset
-                  </button>
+                  </Button>
                 </div>
                 {(showAngleLockControls || showExactWallLengthControls) && (
                   <div className="rounded-lg bg-white p-2">
@@ -598,17 +591,16 @@ export default function FloorPlanUploadPanel({
                             placeholder="3500"
                           />
                           <span className={subtleClass}>mm</span>
-                          <button
-                            type="button"
+                          <Button
                             data-testid="floor-plan-apply-exact-wall-length"
-                            className={secondaryButtonClass}
+                            variant="secondary" size="compact"
                             disabled={
                               disabled || !canApplyExactWallLength || !exactWallLengthInput
                             }
                             onClick={onApplyExactWallLength}
                           >
                             Place
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -661,15 +653,14 @@ export default function FloorPlanUploadPanel({
                     : "Draw a room before adding doors or windows."}
                 </div>
               </div>
-              <button
-                type="button"
+              <Button
                 data-testid="floor-plan-trace-opening-toggle"
-                className={secondaryButtonClass}
+                variant="secondary" size="compact"
                 disabled={disabled || !canTraceOpenings}
                 onClick={() => onTraceOpeningModeChange?.(!traceOpeningMode)}
               >
                 {traceOpeningMode ? "Done" : "Trace"}
-              </button>
+              </Button>
             </div>
 
             {traceOpeningMode && (
@@ -690,14 +681,13 @@ export default function FloorPlanUploadPanel({
                     <option value="door">Door</option>
                     <option value="window">Window</option>
                   </select>
-                  <button
-                    type="button"
-                    className={secondaryButtonClass}
+                  <Button
+                    variant="secondary" size="compact"
                     disabled={disabled || traceOpeningPointCount === 0}
                     onClick={onResetTraceOpeningPoints}
                   >
                     Reset
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -713,9 +703,8 @@ export default function FloorPlanUploadPanel({
               />
               Lock
             </label>
-            <button
-              type="button"
-              className={secondaryButtonClass}
+            <Button
+              variant="secondary" size="compact"
               disabled={disabled}
               onClick={() => {
                 choice.forget();
@@ -723,7 +712,7 @@ export default function FloorPlanUploadPanel({
               }}
             >
               Clear
-            </button>
+            </Button>
           </div>
 
           {underlay.sourceMimeType === "application/pdf" && (

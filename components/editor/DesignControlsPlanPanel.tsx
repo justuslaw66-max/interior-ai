@@ -120,6 +120,7 @@ import type {
   PlanStartMode,
 } from "./design-controls-plan/DesignControlsPlanPanel.types";
 import { planPaletteOpeningSummary } from "@/lib/consumer-room-setup-copy";
+import { Button } from "@/components/ui/Button";
 
 export default function DesignControlsPlanPanel({
   floorPlanLifecycleIdentity,
@@ -1311,23 +1312,21 @@ export default function DesignControlsPlanPanel({
             >
               Favourites
             </button>
-            <button
-              type="button"
+            <Button
               data-testid="surfaces-view-toggle"
-              className={progressSecondaryActionClass}
+              variant="secondary" size="compact"
               onClick={() => setSurfaceViewMode((mode) => (mode === "grid" ? "list" : "grid"))}
             >
               {surfaceViewMode === "grid" ? "List" : "Grid"}
-            </button>
+            </Button>
             {hasSurfaceFilters ? (
-              <button
-                type="button"
+              <Button
                 data-testid="surfaces-clear-filters"
-                className={progressSecondaryActionClass}
+                variant="secondary" size="compact"
                 onClick={clearSurfaceFilters}
               >
                 Clear
-              </button>
+              </Button>
             ) : null}
           </div>
 
@@ -1445,16 +1444,15 @@ export default function DesignControlsPlanPanel({
           </div>
 
           {hiddenSurfaceMaterialCount > 0 ? (
-            <button
-              type="button"
+            <Button
               data-testid="surfaces-show-more"
-              className={`${progressSecondaryActionClass} mt-2 min-h-9 w-full`}
+              variant="secondary" size="regular" className="mt-2 w-full"
               onClick={() =>
                 setSurfaceVisibleLimit((limit) => limit + SURFACE_MATERIAL_VISIBLE_INCREMENT)
               }
             >
               Show more ({hiddenSurfaceMaterialCount})
-            </button>
+            </Button>
           ) : null}
 
           <div data-testid="surface-product-detail" className="mt-3 rounded-lg border border-neutral-200 bg-white p-2">
@@ -1505,25 +1503,23 @@ export default function DesignControlsPlanPanel({
             </div>
 
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                className={progressActionClass}
+              <Button
+                variant="primary" size="compact"
                 disabled={!canEdit || !selectedSurfaceMaterialPrimaryId || !canApplyActiveSurfaceTarget}
                 onClick={() => selectedSurfaceMaterialPrimaryId && applySurfaceMaterialToActiveRoom(selectedSurfaceMaterialPrimaryId)}
               >
                 Apply target
-              </button>
-              <button
-                type="button"
-                className={progressSecondaryActionClass}
+              </Button>
+              <Button
+                variant="secondary" size="compact"
                 disabled={!canEdit || !selectedSurfaceMaterialPrimaryId}
                 onClick={() => selectedSurfaceMaterialPrimaryId && applySurfaceMaterialToAllRooms(selectedSurfaceMaterialPrimaryId)}
               >
                 Apply all
-              </button>
-              <button type="button" className={progressSecondaryActionClass} onClick={requestSelectedSurfaceInformation}>
+              </Button>
+              <Button variant="secondary" size="compact" onClick={requestSelectedSurfaceInformation}>
                 Information
-              </button>
+              </Button>
               {selectedSurfaceMaterial?.source?.source_url && isDesigner ? (
                 <a
                   href={selectedSurfaceMaterial.source.source_url}
@@ -1569,12 +1565,11 @@ export default function DesignControlsPlanPanel({
                   {active ? <span className={progressReadyClass}>Active</span> : null}
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
-                  <button type="button" className={progressSecondaryActionClass} onClick={() => onSelectRoom(room.id)}>
+                  <Button variant="secondary" size="compact" onClick={() => onSelectRoom(room.id)}>
                     Open
-                  </button>
-                  <button
-                    type="button"
-                    className={progressSecondaryActionClass}
+                  </Button>
+                  <Button
+                    variant="secondary" size="compact"
                     disabled={
                       !canEdit ||
                       !canApplyActiveSurfaceTarget ||
@@ -1622,7 +1617,7 @@ export default function DesignControlsPlanPanel({
                     }}
                   >
                     Apply
-                  </button>
+                  </Button>
                 </div>
               </div>
             );
@@ -1642,9 +1637,9 @@ export default function DesignControlsPlanPanel({
               </div>
               <div className={progressMetaClass}>{activeSurfaceSummaryRows.length} surfaces</div>
             </div>
-            <button type="button" className={progressSecondaryActionClass} onClick={() => setSurfaceSummaryOpen(false)}>
+            <Button variant="secondary" size="compact" onClick={() => setSurfaceSummaryOpen(false)}>
               Close
-            </button>
+            </Button>
           </div>
           <div className="mt-2 grid gap-2">
             {activeSurfaceSummaryRows.map((row) => (
@@ -1752,15 +1747,14 @@ export default function DesignControlsPlanPanel({
                     <div className="mt-1 text-neutral-500">
                       {issue.detail}
                     </div>
-                    <button
-                      type="button"
+                    <Button
                       data-testid={`plan-quality-issue-action-${index}`}
-                      className={`${progressSecondaryActionClass} mt-2 min-h-8 w-full`}
+                      variant="secondary" size="compact" className="mt-2 w-full"
                       disabled={!canEdit}
                       onClick={() => handlePlanQualityAction(issue.action, issue)}
                     >
                       {getPlanQualityActionLabel(issue.action)}
-                    </button>
+                    </Button>
                   </details>
                 ))}
               </div>
@@ -1769,10 +1763,9 @@ export default function DesignControlsPlanPanel({
                 The main room links, daylight, and furniture footprint look ready.
               </div>
             )}
-            <button
-              type="button"
+            <Button
               data-testid="plan-quality-primary-action"
-              className={`${progressActionClass} mt-3 min-h-10 w-full`}
+              variant="primary" size="regular" className="mt-3 w-full"
               disabled={!canEdit}
               onClick={() =>
                 handlePlanQualityAction(
@@ -1784,7 +1777,7 @@ export default function DesignControlsPlanPanel({
               }
             >
               {floorPlanQualityReport.primaryAction.label}
-            </button>
+            </Button>
           </>
         )}
       </div>
@@ -1815,17 +1808,16 @@ export default function DesignControlsPlanPanel({
                   </div>
                 )}
               </div>
-              <button
+              <Button
                 id={FLOOR_PLAN_WORKSPACE_FALLBACK_ACTION_ID}
-                type="button"
                 data-testid="plan-section-toggle-floorPlan"
-                className={collapsedToggleClass}
+                variant="secondary" size="compact" className="shrink-0"
                 aria-label={`${floorPlanCollapsed ? "Expand" : "Collapse"} floor plan`}
                 aria-expanded={!floorPlanCollapsed}
                 onClick={() => setPlanSectionCollapsed("floorPlan", !floorPlanCollapsed)}
               >
                 {floorPlanCollapsed ? "Expand" : "Collapse"}
-              </button>
+              </Button>
             </div>
             <RoomSetupProgressChips roomIsDraft={roomIsDraft} hasRooms={hasRooms}
               furniture={{ label: furnitureStatusLabel, ready: hasStartedFurniture }}
@@ -1993,14 +1985,13 @@ export default function DesignControlsPlanPanel({
               </div>
             </div>
             {showPlanDetails && (
-              <button
-                type="button"
-                className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700"
+              <Button
+                variant="secondary" size="compact"
                 data-testid="close-plan-start-workflow"
                 onClick={closePlanStartWorkflow}
               >
                 Close
-              </button>
+              </Button>
             )}
           </div>
 
@@ -2072,10 +2063,9 @@ export default function DesignControlsPlanPanel({
                 />
               </div>
 
-              <button
-                type="button"
+              <Button
                 data-testid="guided-create-room"
-                className={`${progressActionClass} mt-3 min-h-11 w-full text-sm`}
+                variant="primary" size="touch" className="mt-3 w-full"
                 disabled={!canEditPlanGeometry}
                 onClick={() => {
                   onNewRoomShapeChange("rectangle");
@@ -2083,7 +2073,7 @@ export default function DesignControlsPlanPanel({
                 }}
               >
                 Create {roomTypeLabel.toLowerCase()}
-              </button>
+              </Button>
             </div>
           )}
 
@@ -2351,24 +2341,22 @@ export default function DesignControlsPlanPanel({
               <div className={titleClass}>Next action</div>
               <div className={progressMetaClass}>{nextAction.body}</div>
             </div>
-            <button
-              type="button"
-              className={`${progressActionClass} min-h-10 shrink-0 px-3`}
+            <Button
+              variant="primary" size="regular" className="shrink-0"
               onClick={nextAction.action}
               disabled={!canEdit && !hasStartedFurniture}
             >
               {nextAction.label}
-            </button>
+            </Button>
           </div>
           {hasRooms && !hasOpenings && !hasConnectionBlockers && (
-            <button
-              type="button"
-              className={`${progressSecondaryActionClass} mt-2 w-full min-h-10`}
+            <Button
+              variant="secondary" size="regular" className="mt-2 w-full"
               onClick={() => onAddFloorPlanOpeningFromTool("door")}
               disabled={!canEdit}
             >
               Add doors or windows
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -2639,12 +2627,14 @@ export default function DesignControlsPlanPanel({
               </div>
             </div>
             <div className="flex gap-2">
-              <button type="button" data-testid="standalone-change-floor-finish" className={progressSecondaryActionClass} disabled={!canEdit} aria-expanded={roomFinishPanelOpen} onClick={() => setRoomFinishPanelOpen((open) => !open)}>Browse / hide</button>
-              <button
-                type="button" className={progressSecondaryActionClass} disabled={!canEdit} onClick={() => onApplyFloorMaterialToAllRooms(activeSurfaceMaterial?.surface_material.material_id ?? activeFloorMaterial.id)}
+              <Button data-testid="standalone-change-floor-finish" variant="secondary" size="compact" disabled={!canEdit} aria-expanded={roomFinishPanelOpen} onClick={() => setRoomFinishPanelOpen((open) => !open)}>Browse / hide</Button>
+              <Button
+                variant="secondary" size="compact"
+                disabled={!canEdit}
+                onClick={() => onApplyFloorMaterialToAllRooms(activeSurfaceMaterial?.surface_material.material_id ?? activeFloorMaterial.id)}
               >
                 Apply all
-              </button>
+              </Button>
             </div>
           </div>
           {renderSurfaceMaterialBrowser()}
@@ -2659,22 +2649,20 @@ export default function DesignControlsPlanPanel({
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  <button
-                    type="button"
-                    className={progressSecondaryActionClass}
+                  <Button
+                    variant="secondary" size="compact"
                     disabled={!canEdit}
                     onClick={onRotateActiveFloorMaterial}
                   >
                     Rotate 90
-                  </button>
-                  <button
-                    type="button"
-                    className={progressSecondaryActionClass}
+                  </Button>
+                  <Button
+                    variant="secondary" size="compact"
                     disabled={!canEdit}
                     onClick={onResetActiveFloorMaterialPattern}
                   >
                     Reset
-                  </button>
+                  </Button>
                 </div>
               </div>
               {isDesigner && (
@@ -2725,13 +2713,12 @@ export default function DesignControlsPlanPanel({
                 Esc {floorPlanTraceOpeningPointCount > 0 ? "clears points" : "exits tool"}
               </div>
             </div>
-            <button
-              type="button"
-              className={progressSecondaryActionClass}
+            <Button
+              variant="secondary" size="compact"
               onClick={() => onFloorPlanTraceOpeningModeChange(false)}
             >
               Done
-            </button>
+            </Button>
           </div>
           <div className="mt-3 flex items-center gap-2">
             <select
@@ -2746,14 +2733,13 @@ export default function DesignControlsPlanPanel({
               <option value="door">Door</option>
               <option value="window">Window</option>
             </select>
-            <button
-              type="button"
-              className={progressSecondaryActionClass}
+            <Button
+              variant="secondary" size="compact"
               disabled={!canEdit || floorPlanTraceOpeningPointCount === 0}
               onClick={onResetFloorPlanTraceOpeningPoints}
             >
               Reset points
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -2942,14 +2928,13 @@ export default function DesignControlsPlanPanel({
           </div>
 
           <div className="mt-3">
-            <button
-              type="button"
-              className="w-full rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            <Button
+              variant="primary" size="regular" className="w-full"
               onClick={onAddDesignerRoom}
               disabled={!canEditPlanGeometry}
             >
               Add room
-            </button>
+            </Button>
           </div>
         </div>
       )}

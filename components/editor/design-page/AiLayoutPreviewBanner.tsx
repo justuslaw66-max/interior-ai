@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/Button";
 
 type AiLayoutPreviewBannerProps = {
   state: {
@@ -36,22 +37,20 @@ export function AiLayoutPreviewBanner({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <button
-          type="button"
+        <Button
           data-testid="ai-layout-preview-apply"
-          className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-neutral-800"
+          variant="primary" size="compact"
           onClick={actions.apply}
         >
           Apply
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           data-testid="ai-layout-preview-dismiss"
-          className="rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+          variant="secondary" size="compact"
           onClick={actions.dismiss}
         >
           Dismiss
-        </button>
+        </Button>
       </div>
     </div>
   );

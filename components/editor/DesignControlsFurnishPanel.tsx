@@ -11,6 +11,7 @@ import { FurnishFooter } from "./FurnishFooter";
 import { FurnishImportedModels } from "./FurnishImportedModels";
 import { FurnishInThisRoom } from "./FurnishInThisRoom";
 import { PlacementAddModeToggle } from "./PlacementAddModeToggle";
+import { Button } from "@/components/ui/Button";
 
 type ImportedFamilyOption = {
   familyKey: string;
@@ -107,14 +108,13 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
   } = useCatalogCategoryNavigation(`${activeRoomName}:${activeRoomTypeLabel}`, "all");
   const catalogRoomNavigationRevision = props.catalogRoomNavigationRevision;
   const suggestLayout = props.aiDesignEnabled ? (
-    <button
-      type="button"
+    <Button
       data-testid="editor-workflow-ai"
-      className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-neutral-300 bg-white px-1.5 text-[13px] font-bold text-blue-800 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900"
+      variant="secondary" size="regular" className="shrink-0"
       onClick={props.onGoAiDesign}
     >
       Suggest a layout
-    </button>
+    </Button>
   ) : null;
   return (
     <CatalogPanel

@@ -2,6 +2,7 @@
 
 import type { FloorPlanPageCandidate } from "@/lib/floor-plan-imports/types";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanPageSelectionPanelProps = {
   job: Pick<ConsumerFloorPlanImportJob, "id" | "renderedPagesJson">;
@@ -88,11 +89,11 @@ export default function FloorPlanPageSelectionPanel({
           );
         })}
       </div>
-      <button
-        type="button" data-floor-plan-workspace-focus={
+      <Button
+        data-floor-plan-workspace-focus={
           selectedPageNumber === null ? "primary" : undefined
         }
-        className="mt-3 w-full rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+        variant="primary" size="compact" className="mt-3 w-full"
         disabled={
           disabled ||
           submitting ||
@@ -101,7 +102,7 @@ export default function FloorPlanPageSelectionPanel({
         onClick={onConfirm}
       >
         {submitting ? "Analysing selected page…" : "Use this page"}
-      </button>
+      </Button>
     </section>
   );
 }

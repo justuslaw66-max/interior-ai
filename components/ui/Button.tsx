@@ -3,13 +3,14 @@ import { forwardRef, type ButtonHTMLAttributes } from "react";
 /**
  * The app's one button (UX audit AX10, phase 4b). Primary is black, secondary an outline, quiet
  * has no border, danger is red; the focus ring is the one accent blue. `touch` is 44px tall for
- * dialogs, sheets and anything a finger presses; `compact` is the 30px desktop size for dense
- * bars. `icon` is a 36px square for an icon with an accessible name (the canvas toolbar, UX 4c),
- * and `round` a 40px circle (the canvas corner). On phones and touch screens all three are 44px
- * (UX 4d, the touch: variant in globals.css).
+ * dialogs, sheets and anything a finger presses; `regular` is the 36px size of the panels' buttons
+ * (UX 5m, J's choice on 13 Oct); `compact` is the 30px size for dense bars. `icon` is a 36px
+ * square for an icon with an accessible name (the canvas toolbar, UX 4c), and `round` a 40px
+ * circle (the canvas corner). On phones and touch screens all of them are 44px (UX 4d, the touch:
+ * variant in globals.css).
  */
 export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger";
-export type ButtonSize = "touch" | "compact" | "icon" | "round";
+export type ButtonSize = "touch" | "regular" | "compact" | "icon" | "round";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -28,6 +29,7 @@ const BUTTON_VARIANT_CLASS: Record<ButtonVariant, string> = {
 
 const BUTTON_SIZE_CLASS: Record<ButtonSize, string> = {
   touch: "min-h-11 rounded-lg px-4 py-2 text-sm",
+  regular: "touch:min-h-11 min-h-9 rounded-lg px-3.5 py-1.5 text-sm",
   compact: "touch:h-11 h-[30px] rounded-lg px-3 text-xs",
   icon: "touch:h-11 touch:w-11 h-9 w-9 shrink-0 rounded-lg p-0",
   round: "touch:h-11 touch:w-11 h-10 w-10 shrink-0 rounded-full p-0",

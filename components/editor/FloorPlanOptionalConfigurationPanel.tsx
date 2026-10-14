@@ -8,6 +8,7 @@ import {
   type FloorPlanAuthoredConfigurationVariant,
 } from "@/lib/floor-plan-optional-configurations";
 import type { PublicFloorPlanAuthoredVariantGroup } from "@/lib/floor-plan-authored-variant-links";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanOptionalConfigurationPanelProps = {
   document: FloorPlanDocumentV2;
@@ -117,14 +118,13 @@ export default function FloorPlanOptionalConfigurationPanel({
                 </span>
               </div>
               {hasSelectableVariant ? (
-                <button
-                  type="button"
-                  className="mt-2 w-full rounded-md bg-sky-700 px-2 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                <Button
+                  variant="primary" size="compact" className="mt-2 w-full"
                   disabled={disabled}
                   onClick={() => onChooseVariant!(suggestion.variant!)}
                 >
                   Use reviewed {suggestion.variant!.label}
-                </button>
+                </Button>
               ) : (
                 <p className={`mt-1 text-xs leading-4 ${subtle}`}>
                   {suggestion.status === "authored_variant_available"
