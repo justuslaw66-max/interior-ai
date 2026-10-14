@@ -51,7 +51,7 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-assert.equal(records.length, 1394, "the browser must join all 1394 render and catalog identities");
+assert.equal(records.length, 1403, "the browser must join all 1403 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);
@@ -75,8 +75,8 @@ assert.equal(
 );
 assert.equal(
   getSurfaceMaterialGroupSizeLabels(doricaGroup).length,
-  5,
-  "the Dorica Crema browser group must retain all five size variants"
+  6,
+  "the Dorica Crema browser group must retain all six size variants (the outdoor 60x120 R11 since 13 Oct 2026)"
 );
 
 const dorica120 = doricaGroup.variants.find(
@@ -241,6 +241,27 @@ for (const [field, query] of [
     `surface search must retain product, ID, supplier, collection, and suitability terms (case: ${field})`
   );
 }
+
+// Outdoor floors are found by where they go (13 Oct 2026): "terrace", "patio", "pool" and "outdoor" find every card with an
+// outdoor size and no other card; "grass" finds Plein Air Native, the range Gardenia says can be dry laid on grass. ("garden" is
+// part of every Gardenia name, so it isn't a test of this.)
+const outdoorGroupIds = groups
+  .filter((group) => group.variants.some((variant) => variant.classification.outdoor))
+  .map((group) => group.id)
+  .sort();
+assert.equal(outdoorGroupIds.length, 66, "cards with an outdoor size: 36 of catalogued colours, 30 of Plein Air's own");
+for (const query of ["terrace", "Patio", "pool", "outdoor"]) {
+  assert.deepEqual(
+    runProductionSurfaceFilter({ search: query }).map((group) => group.id).sort(),
+    outdoorGroupIds,
+    `a search for "${query}" finds the cards with an outdoor size`
+  );
+}
+assert.deepEqual(
+  runProductionSurfaceFilter({ search: "grass" }).map((group) => getSurfaceMaterialModelName(group.primary)).sort(),
+  ["Native Concrete", "Native Mud", "Native Sand", "Native Silver"],
+  "a search for grass finds the outdoor range that can be dry laid on it"
+);
 
 const mismatchingFilterCases: Array<[string, SurfaceFilterState]> = [
   ["brand", { brand: "impossible-brand" }],

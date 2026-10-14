@@ -1,4 +1,4 @@
-import type { SurfaceMaterial } from "./surface-material-schema";
+import type { SurfaceMaterial, SurfaceMaterialOutdoorProfile } from "./surface-material-schema";
 import type { SurfaceTextureFacesData } from "./surface-texture-face-run";
 
 export type SurfaceMaterialRenderRecord = {
@@ -39,7 +39,10 @@ export type SurfaceMaterialCatalogMetadata = {
   classification: Pick<
     SurfaceMaterial["classification"],
     "tone" | "style_cluster" | "room_suitability"
-  >;
+  > & {
+    /** Outdoor floor tiles only: where it goes, how it can be laid, the same colour's indoor floor entries. */
+    outdoor?: SurfaceMaterialOutdoorProfile;
+  };
   physical_specs: Pick<
     SurfaceMaterial["physical_specs"],
     | "total_thickness_mm"

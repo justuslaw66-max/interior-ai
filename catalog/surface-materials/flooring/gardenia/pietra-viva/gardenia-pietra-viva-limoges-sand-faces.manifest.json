@@ -557,7 +557,7 @@
    },
    "swatch": "0012331_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-pietra-viva-limoges-sand-0012293-80x80-nat-140000-0 (uses 0012331's faces: ABK's 12 R11 pictures (on Plein Air's page) are 0012331's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-limoges-sand-0012331-80x80-nat-139998-0",
+   "used_by": "floor gardenia-flooring-pietra-viva-limoges-sand-0012293-80x80-nat-140000-0 (0012331 itself; the id keeps the outdoor item's code, split on 2026-10-13); floor gardenia-flooring-pietra-viva-limoges-sand-0012293-80x80-r11 (uses 0012331's faces: ABK's 12 R11 pictures (on Plein Air's page) are 0012331's Nat P.tech pictures, byte for byte); wall gardenia-wall-tile-pietra-viva-limoges-sand-0012331-80x80-nat-139998-0",
    "faces": [
     {
      "file": "0012331_01.webp",

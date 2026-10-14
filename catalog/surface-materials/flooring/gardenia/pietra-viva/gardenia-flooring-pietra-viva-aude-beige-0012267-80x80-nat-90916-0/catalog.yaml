@@ -15,10 +15,10 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
-    - "Tile faces: the 8 single item pictures of item 0012265 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-beige/pf60012265-v102/), because ABK's Plein Air page for Aude Beige 80x80 R11 shows no pictures; the 80x80 Nat P.tech pictures stand in, as ABK's R11 pictures are the Nat P.tech ones wherever Pietra Viva has both (J, 9 Oct 2026). Downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-pietra-viva-aude-beige-faces.manifest.json. Each covers 1200x1200 mm; the renderer cuts tile-sized windows at true scale. ABK's 80x80 pictures are this colour's 120x120 graphic squeezed to 800 mm: drawn as 1200 mm they match the colour's 120x120 and 60x120 pictures (r 1.00), and drawn as 800 mm nothing (r 0.10 to 0.12). So they are declared as 1200x1200 mm faces; the renderer cuts true-scale 800x800 windows from them."
+    - "Tile faces: the 8 single item pictures of item 0012265 (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/pietra-viva/aude-beige/pf60012265-v102/), this item's own pictures. Downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-pietra-viva-aude-beige-faces.manifest.json. Each covers 1200x1200 mm; the renderer cuts tile-sized windows at true scale. ABK's 80x80 pictures are this colour's 120x120 graphic squeezed to 800 mm: drawn as 1200 mm they match the colour's 120x120 and 60x120 pictures (r 1.00), and drawn as 800 mm nothing (r 0.10 to 0.12). So they are declared as 1200x1200 mm faces; the renderer cuts true-scale 800x800 windows from them."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
-    - Gardenia tile item GARDENIA/0012267/0/90916 for floor use.
-    - "Configurator format: 80x80 Nat; surface destination: PAVIMENTO."
+    - Gardenia tile item GARDENIA/0012265/0/90914 for floor use.
+    - "Configurator format: 80x80 Nat; surface destination: ENTRAMBE."
     - "Configurator pattern IDs: pieno_01, pieno_05."
     - "Collection page technology: Fine porcelain stoneware."
     - "Collection page thicknesses: 6, 8.5, 20 mm."
@@ -26,7 +26,8 @@ source:
     - "Collection page color availability for AUDE BEIGE: AUDE BEIGE 6mm LUX3D: 120x280 (48\"x110\") | 8,5mm ANT3D, NAT: 120x120 (48\"x48\"), 60x120 (24\"x48\") | 8,5mm NAT: 80x80 (32\"x32\") | 20mm NAT R11: 80x80 (32\"x32\"), 60x60 (24\"x24\")."
     - "Available configurator formats: 0012260 120x120 ENTRAMBE patterns pieno_01,pieno_05; 0012911 120x120 Nat ENTRAMBE patterns pieno_01,pieno_05; 0011974 60x120 ENTRAMBE patterns pieno_01,pieno_05; 0012915 60x120 Nat ENTRAMBE patterns pieno_01,pieno_05; 0014862 120x280 ENTRAMBE patterns pieno_01,pieno_05; 0012265 80x80 Nat ENTRAMBE patterns pieno_01,pieno_05; 0012267 80x80 Nat PAVIMENTO patterns pieno_01,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
-    - "Equivalent Gardenia configurator item codes represented by this visible variant: GARDENIA/0012265/0/90914."
+    - "Split (J, 2026-10-13): the configurator showed this item as one variant with GARDENIA/0012267/0/90916, ABK's 20 mm R11 outdoor item (Plein Air), and the July import filed both here under that item's code. The outdoor item has an entry of its own (gardenia-flooring-pietra-viva-aude-beige-0012267-80x80-r11); this entry keeps its id, so saved designs keep their floor, and stands for 0012265."
+    - "Thickness 8.5 mm: the collection page's 80x80 Nat (above)."
 classification:
   flooring_type: tile
   design_effect: stone
@@ -58,7 +59,7 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 800
   tile_length_mm: 800
-  total_thickness_mm: null
+  total_thickness_mm: 8.5
   wear_layer_mm: null
   installation_method:
     - direct_stick
@@ -140,5 +141,3 @@ import_governance:
     - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry
-    - gardenia_equivalent_variant_collapsed
-    - stand_in_faces

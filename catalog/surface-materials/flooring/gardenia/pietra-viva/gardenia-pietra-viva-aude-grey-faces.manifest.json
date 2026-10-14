@@ -20,7 +20,7 @@
    },
    "swatch": "0012262_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "floor gardenia-flooring-pietra-viva-aude-grey-0012266-80x80-nat-90915-0 (uses 0012262's faces: ABK's Plein Air page for Aude Grey 80x80 R11 shows no pictures; the 80x80 Nat P.tech pictures stand in, as ABK's R11 pictures are the Nat P.tech ones wherever Pietra Viva has both (J, 9 Oct 2026)); wall gardenia-wall-tile-pietra-viva-aude-grey-0012262-80x80-nat-90911-0",
+   "used_by": "floor gardenia-flooring-pietra-viva-aude-grey-0012266-80x80-nat-90915-0 (0012262 itself; the id keeps the outdoor item's code, split on 2026-10-13); floor gardenia-flooring-pietra-viva-aude-grey-0012266-80x80-r11 (uses 0012262's faces: ABK's Plein Air page for Aude Grey 80x80 R11 shows no pictures; the 80x80 Nat P.tech pictures stand in, as ABK's R11 pictures are the Nat P.tech ones wherever Pietra Viva has both (J, 9 Oct 2026)); wall gardenia-wall-tile-pietra-viva-aude-grey-0012262-80x80-nat-90911-0",
    "faces": [
     {
      "file": "0012262_01.webp",

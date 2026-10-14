@@ -19,6 +19,7 @@ import {
   expandSurfaceTextureFaces,
 } from "../lib/surface-texture-face-run";
 import { PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES } from "../lib/generated/surface-material-render.generated";
+import { PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA } from "../lib/generated/surface-material-catalog.generated";
 import {
   buildSurfaceMaterialProductGroups,
   getSurfaceMaterialGroupSizeLabels,
@@ -27,7 +28,18 @@ import {
 } from "../components/editor/design-controls-plan/surfaceCatalog";
 import { getAllSurfaceMaterialYamlEntries } from "../lib/surface-material-yaml";
 import { collectNoOwnPictures } from "../lib/surface-material-picture-source";
-import type { SurfaceMaterial } from "../lib/surface-material-schema";
+import { SURFACE_MATERIAL_VOCABULARY, type SurfaceMaterial } from "../lib/surface-material-schema";
+import {
+  SURFACE_OUTDOOR_LAYING_LABELS,
+  SURFACE_OUTDOOR_USE_LABELS,
+  getSurfaceMaterialOutdoorFailures,
+} from "../lib/surface-material-outdoor";
+import {
+  ABK_ROOM_FILTER_TO_SURFACE_ROOM,
+  SURFACE_OUTDOOR_FACTS,
+  SURFACE_OUTDOOR_PAIRINGS,
+  SURFACE_OUTDOOR_SOURCES,
+} from "../lib/surface-material-outdoor-knowledge";
 import type { SurfaceMaterialRenderTuple } from "../lib/surface-material-runtime-types";
 import { findGardeniaEntriesAWriteRunWouldLose } from "./gardenia-import-guard";
 
@@ -375,7 +387,8 @@ for (const material of animaById.values()) {
 // item's pictures, found by image matching (see the colour manifests):
 //  - Dorica 20x120 planks use the 120x120 faces turned a quarter (veins along the plank), stored as
 //    0010518_nn / 0010519_nn: ABK's plank pictures are that graphic at 0.75 scale;
-//  - Dorica 0010147 / 0010148 use 0010008's / 0010009's faces (the same visible variant as R11);
+//  - the entries with Dorica 0010147 / 0010148 in their ids use 0010008's / 0010009's faces: the 8.5 mm R11 items
+//    0010588 / 0010589 (whose pictures those are) and, since 13 Oct 2026, the Plein Air items themselves (below);
 //  - Oxide Iron 80x80 uses the 120x120 faces: its 80x80 pictures are the 120x120 pictures.
 // Oxide Aluminum's and Brass's 80x80 pictures are their 120x120 graphic squeezed to 800 mm and are
 // declared 1200x1200 mm (re-checked 8 Oct 2026; 6 Oct had found three of Aluminum's).
@@ -1477,12 +1490,13 @@ assert.deepEqual(
 // the same 1000 mm graphic. Pietra Viva Aude Beige and Grey 60x60 have no pictures and draw the colour's 120x120 Nat P.tech faces
 // (J, 13 Oct 2026: cut from 120x120). Left out: Ceppo di Gre's second 60x120 R11 item (0002933, the CENERE export) and
 // Hermione Beige and Miel 60x60 (pictures far lighter and pinker than the colour's planks; J, 13 Oct 2026: both left out).
+// Nine more were split on 13 Oct 2026 from July entries that had folded them together with an indoor item (below).
 const outdoor = physicalMaterials.filter(isPleinAirOutdoor);
-assert.equal(pleinAirOutdoorIds.size, 34, "34 outdoor sizes of catalogued collections");
-assert.equal(outdoor.length, 34, "every outdoor entry is on real faces");
+assert.equal(pleinAirOutdoorIds.size, 43, "43 outdoor sizes of catalogued collections");
+assert.equal(outdoor.length, 43, "every outdoor entry is on real faces");
 const outdoorRow = (material: (typeof outdoor)[number]) => {
   const [, collection, colour] =
-    /^gardenia-flooring-(anima|camouflage|hermione|la-geoteca|make|orosei|pietra-viva|storm)-([a-z-]+?)-g?\d/.exec(
+    /^gardenia-flooring-(anima|camouflage|dorica|hermione|la-geoteca|make|orosei|pietra-viva|storm)-([a-z-]+?)-g?\d/.exec(
       material.surface_material.material_id
     ) ?? [];
   return [
@@ -1506,6 +1520,8 @@ assert.deepEqual(outdoor.map(outdoorRow).sort(), [
   ["camouflage", "ecru-beton", "0016318", "600x600", 24, "600x600", "0018160_01.webp"],
   ["camouflage", "taupe-beton", "0014333", "1200x600", 12, "600x1200", "0014255_01.webp"],
   ["camouflage", "taupe-beton", "0014883", "600x600", 24, "600x600", "0018158_01.webp"],
+  ["dorica", "avorio", "0010147", "1200x600", 16, "600x1200", "0010008_01.webp"],
+  ["dorica", "crema", "0010148", "1200x600", 16, "600x1200", "0010009_01.webp"],
   ["hermione", "beige", "0202268", "1200x300", 22, "300x1200", "0202268_01.webp"],
   ["hermione", "miel", "0202269", "1200x300", 22, "300x1200", "0202269_01.webp"],
   ["hermione", "noisette", "0202270", "1200x300", 22, "300x1200", "0202270_01.webp"],
@@ -1524,8 +1540,15 @@ assert.deepEqual(outdoor.map(outdoorRow).sort(), [
   ["orosei", "rope", "0030272", "800x800", 9, "800x800", "0030232_01.webp"],
   ["orosei", "vanilla", "0030259", "600x600", 9, "1200x1200+600x600", "0030224_01.webp"],
   ["orosei", "vanilla", "0030270", "800x800", 9, "800x800", "0030230_01.webp"],
+  ["pietra-viva", "aude-beige", "0012267", "800x800", 8, "1200x1200", "0012265_01.webp"],
   ["pietra-viva", "aude-beige", "0014519", "600x600", 4, "1200x1200", "0012911_01.webp"],
+  ["pietra-viva", "aude-grey", "0012266", "800x800", 8, "1200x1200", "0012262_01.webp"],
   ["pietra-viva", "aude-grey", "0014518", "600x600", 4, "1200x1200", "0012908_01.webp"],
+  ["pietra-viva", "camargue-beige", "0014325", "1200x600", 18, "600x1200", "0014186_01.webp"],
+  ["pietra-viva", "camargue-beige", "0016100", "800x800", 16, "800x800", "0014669_01.webp"],
+  ["pietra-viva", "camargue-ivory", "0016099", "1200x600", 18, "600x1200", "0014185_01.webp"],
+  ["pietra-viva", "camargue-ivory", "0016102", "800x800", 16, "800x800", "0014668_01.webp"],
+  ["pietra-viva", "limoges-sand", "0012293", "800x800", 12, "800x800", "0012331_01.webp"],
   ["storm", "grey", "0004280", "1200x600", 6, "600x1200", "0004280_01.webp"],
   ["storm", "grey", "0012102", "600x600", 12, "600x600", "0012102_01.webp"],
   ["storm", "sand", "0004281", "1200x600", 6, "600x1200", "0004281_01.webp"],
@@ -1551,6 +1574,8 @@ assert.deepEqual(outdoorCards, [
   ["Anima Grigio", ["60x120 R11", "80x80 R11"], 5],
   ["Camouflage Ecru Beton", ["60x120 R11", "60x60 R11"], 5],
   ["Camouflage Taupe Beton", ["60x120 R11", "60x60 R11"], 4],
+  ["Dorica Avorio", ["60x120 R11"], 5],
+  ["Dorica Crema", ["60x120 R11"], 5],
   ["Hermione Beige", ["30x120 R11"], 1],
   ["Hermione Miel", ["30x120 R11"], 1],
   ["Hermione Noisette", ["30x120 R11"], 1],
@@ -1566,14 +1591,36 @@ assert.deepEqual(outdoorCards, [
   ["Orosei Cream", ["80x80 R11", "60x60 R11"], 7],
   ["Orosei Rope", ["80x80 R11", "60x60 R11"], 7],
   ["Orosei Vanilla", ["80x80 R11", "60x60 R11"], 7],
-  ["Pietra Viva Aude Beige", ["60x60 R11"], 6],
-  ["Pietra Viva Aude Grey", ["60x60 R11"], 5],
+  ["Pietra Viva Aude Beige", ["80x80 R11", "60x60 R11"], 6],
+  ["Pietra Viva Aude Grey", ["80x80 R11", "60x60 R11"], 5],
+  ["Pietra Viva Camargue Beige", ["60x120 R11", "80x80 R11"], 6],
+  ["Pietra Viva Camargue Ivory", ["60x120 R11", "80x80 R11"], 7],
+  ["Pietra Viva Limoges Sand", ["80x80 R11"], 6],
   ["Storm Grey", ["60x120 R11", "60x60 R11"], 4],
   ["Storm Sand", ["60x120 R11", "60x60 R11"], 4],
 ]);
 // What the outdoor entries take from ABK's Plein Air pages: floor only, 20 mm, R11, outdoor; no configurator pattern ids; the layouts
-// of the colour's (for Antracite, the collection's) other tiles or planks; no blocker but the price.
+// of the colour's (for Antracite, the collection's) other tiles or planks, or of the July entry an item was split from; no blocker
+// but the price.
 const configuratorLayouts = new Set(["la-geoteca", "make", "pietra-viva"]);
+// The nine split on 13 Oct 2026 (J: split them; Dorica "60x120 and 60x120 R11"), by the July entry each was folded into.
+const splitFrom = new Map(
+  [
+    ["dorica-avorio-0010147-60x120", "196275-0", "0010588", "Gardenia Dorica Avorio 60x120"],
+    ["dorica-crema-0010148-60x120", "196276-0", "0010589", "Gardenia Dorica Crema 60x120"],
+    ["pietra-viva-aude-beige-0012267-80x80", "nat-90916-0", "0012265", "Gardenia Pietra Viva Aude Beige 80x80 Nat"],
+    ["pietra-viva-aude-grey-0012266-80x80", "nat-90915-0", "0012262", "Gardenia Pietra Viva Aude Grey 80x80 Nat"],
+    ["pietra-viva-camargue-beige-0014325-60x120", "nat-139972-0", "0014186", "Gardenia Pietra Viva Camargue Beige 60x120 Nat"],
+    ["pietra-viva-camargue-beige-0016100-80x80", "nat-139986-0", "0014669", "Gardenia Pietra Viva Camargue Beige 80x80 Nat"],
+    ["pietra-viva-camargue-ivory-0016099-60x120", "nat-139985-0", "0014185", "Gardenia Pietra Viva Camargue Ivory 60x120 Nat"],
+    ["pietra-viva-camargue-ivory-0016102-80x80", "nat-139987-0", "0014668", "Gardenia Pietra Viva Camargue Ivory 80x80 Nat"],
+    ["pietra-viva-limoges-sand-0012293-80x80", "nat-140000-0", "0012331", "Gardenia Pietra Viva Limoges Sand 80x80 Nat"],
+  ].map(([stem, julyTail, indoorItem, julyName]) => [
+    `gardenia-flooring-${stem}-r11`,
+    { julyId: `gardenia-flooring-${stem}-${julyTail}`, indoorItem, julyName },
+  ])
+);
+const yamlById = new Map(getAllSurfaceMaterialYamlEntries().map((entry) => [entry.surface_material.material_id, entry]));
 for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAirOutdoor)) {
   const id = entry.surface_material.material_id;
   const collection = outdoorRow(entry as never)[0] as string;
@@ -1586,20 +1633,23 @@ for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAirOutdoor)
   assert.ok(entry.classification.room_suitability.includes("balcony"), `${id} suits a balcony`);
   assert.ok(entry.import_governance.qa_flags.includes("gardenia_abk_site_import"), `${id} is imported from ABK's pages`);
   assert.equal(entry.rendering.source_pattern_ids, undefined, `${id} has no configurator pattern ids`);
+  const julyEntry = yamlById.get(splitFrom.get(id)?.julyId ?? "");
   assert.deepEqual(
     entry.rendering.available_pattern_layouts,
-    collection === "hermione"
-      ? ["random_stagger", "straight", "herringbone"]
-      : configuratorLayouts.has(collection)
-        ? ["straight", "vertical_brick"]
-        : ["straight", "brick", "vertical_brick"],
+    julyEntry
+      ? julyEntry.rendering.available_pattern_layouts
+      : collection === "hermione"
+        ? ["random_stagger", "straight", "herringbone"]
+        : configuratorLayouts.has(collection)
+          ? ["straight", "vertical_brick"]
+          : ["straight", "brick", "vertical_brick"],
     `${id} layouts`
   );
   assert.deepEqual(entry.import_governance.publish_blockers, ["confirm_price_per_sqm_or_quote_mode"], `${id} blockers`);
 }
 // The July import's entries that are only ABK's Plein Air R11 items (J, 13 Oct 2026: follow what ABK says) are named and described
 // as the outdoor sizes above: R11 in the name, 20 mm, R11, outdoor, and on floors a balcony. Entries the July import folded an indoor
-// item into (Dorica Avorio and Crema 60x120, Pietra Viva's seven) keep their names and facts. Trav Ivory Cross 80x80 is folded together
+// item into (Dorica Avorio and Crema 60x120, Pietra Viva's seven) were split instead (below). Trav Ivory Cross 80x80 is folded together
 // with Vein's 80x80 R11, also an outdoor item (an entry of its own since 13 Oct).
 const julyOutdoorCodes = ["0017583", "0017586", "0017767", "0017768", "pf60012083", "pf60012085", "pf60012086", "pf60013072",
   "pf60016026", "pf60016027", "pf60016183", "pf60021253", "pf60021254"];
@@ -1630,6 +1680,132 @@ for (const entry of julyOutdoor) {
     `${id}: no indoor item folded in`
   );
 }
+// The split (J, 13 Oct 2026): the July entry keeps its id, so saved designs keep their floor, and its name, and is now the indoor
+// item: 8.5 mm (Dorica's also R11, as the collection page lists its 60x120), not outdoor, no balcony, nothing folded in, no stand-in.
+// The outdoor item has an entry of its own on the same faces, named R11: Pietra Viva Aude's are stand-ins (ABK shows no picture of
+// them); Plein Air Dorica's pictures are Dorica's own 60x120 faces exported again (the masters' plein-air README, 13 Oct 2026).
+for (const [id, { julyId, indoorItem, julyName }] of splitFrom) {
+  const outdoorEntry = yamlById.get(id);
+  const julyEntry = yamlById.get(julyId);
+  assert.ok(outdoorEntry && julyEntry, `${id} and ${julyId} exist`);
+  assert.equal(julyEntry.surface_material.product_name, julyName, `${julyId} keeps its name`);
+  assert.equal(outdoorEntry.surface_material.product_name, `${julyName.replace(/ Nat$/, "")} R11`, `${id} is named R11`);
+  assert.deepEqual(
+    [julyEntry.physical_specs.total_thickness_mm, julyEntry.physical_specs.slip_rating, julyEntry.physical_specs.suitable_for_outdoor],
+    [8.5, id.includes("-dorica-") ? "R11" : null, null],
+    `${julyId} is the 8.5 mm indoor item`
+  );
+  assert.ok(!julyEntry.classification.room_suitability.includes("balcony"), `${julyId} lists no balcony`);
+  assert.ok(
+    julyEntry.source.notes?.some((note) => note.startsWith(`Gardenia tile item GARDENIA/${indoorItem}/`)),
+    `${julyId} stands for ${indoorItem}`
+  );
+  assert.deepEqual(
+    julyEntry.import_governance.qa_flags.filter((flag) =>
+      ["gardenia_equivalent_variant_collapsed", "stand_in_faces"].includes(flag)
+    ),
+    [],
+    `${julyId}: nothing folded in, its item's own faces`
+  );
+  assert.deepEqual(outdoorEntry.texture_assets.faces, julyEntry.texture_assets.faces, `${id} draws the July entry's faces`);
+  assert.equal(outdoorEntry.import_governance.qa_flags.includes("stand_in_faces"), /-aude-/.test(id), `${id}: stand-in only for Aude`);
+}
+
+// Outdoor knowledge (J, 13 Oct 2026: "Knowledge in the catalogue"; the manufacturer's words are in
+// lib/surface-material-outdoor-knowledge.ts). Every outdoor floor says where it goes; Plein Air Native also how it can be laid, the
+// four ways Gardenia's blog names for Native. The browser data carries both, with the same colour's indoor floor entries: the card's
+// other sizes. The Plein Air collection's ranges and La Geoteca Antracite have none in the catalogue.
+const outdoorFloors = new Set(
+  getAllSurfaceMaterialYamlEntries()
+    .filter((entry) => entry.physical_specs.suitable_for_outdoor === true && entry.surface_material.surface_category === "flooring")
+    .map((entry) => entry.surface_material.material_id)
+);
+assert.equal(outdoorFloors.size, 43 + 13 + 50, "outdoor sizes of catalogued collections, the July import's, Plein Air's own");
+const outdoorOnlyLaying = ["dry_lay_on_grass", "dry_lay_on_gravel_or_sand", "raised_installation"];
+for (const entry of getAllSurfaceMaterialYamlEntries()) {
+  const id = entry.surface_material.material_id;
+  assert.deepEqual(getSurfaceMaterialOutdoorFailures(entry), [], `${id}: outdoor fields`);
+  assert.deepEqual(
+    entry.classification.outdoor_uses,
+    outdoorFloors.has(id) ? ["terrace", "balcony", "patio", "garden", "path", "pool_edge"] : undefined,
+    `${id}: outdoor uses`
+  );
+  assert.deepEqual(
+    (entry.physical_specs.installation_method ?? []).filter((method) => outdoorOnlyLaying.includes(method)),
+    /^gardenia-flooring-plein-air-native-/.test(id) ? outdoorOnlyLaying : [],
+    `${id}: outdoor laying`
+  );
+}
+const outdoorFixture = JSON.parse(JSON.stringify(yamlById.get("gardenia-flooring-dorica-avorio-0010147-60x120-r11"))) as SurfaceMaterial;
+assert.deepEqual(getSurfaceMaterialOutdoorFailures(outdoorFixture), []);
+outdoorFixture.classification.outdoor_uses = ["terrace", "roof"];
+assert.match(getSurfaceMaterialOutdoorFailures(outdoorFixture).join(), /invalid value "roof"/);
+delete outdoorFixture.classification.outdoor_uses;
+assert.match(getSurfaceMaterialOutdoorFailures(outdoorFixture).join(), /an outdoor floor needs/);
+outdoorFixture.classification.outdoor_uses = ["terrace"];
+outdoorFixture.physical_specs.suitable_for_outdoor = null;
+outdoorFixture.physical_specs.installation_method = ["direct_stick", "raised_installation"];
+assert.equal(getSurfaceMaterialOutdoorFailures(outdoorFixture).length, 2, "uses and outdoor laying only on outdoor tiles");
+
+const metadataById = new Map(PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.map((metadata) => [metadata.material_id, metadata]));
+const joinedFloors = SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => material.surface_material.surface_category === "flooring").map(
+  (material) => {
+    const metadata = metadataById.get(material.surface_material.material_id);
+    assert.ok(metadata, `${material.surface_material.material_id} has browser data`);
+    return {
+      ...material,
+      surface_material: { ...material.surface_material, ...metadata.surface_material },
+      classification: { ...material.classification, ...metadata.classification },
+      physical_specs: { ...material.physical_specs, ...metadata.physical_specs },
+    };
+  }
+);
+assert.deepEqual(
+  PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.filter((metadata) => metadata.classification.outdoor).map((m) => m.material_id),
+  [...outdoorFloors].sort(),
+  "the browser data has an outdoor profile for each outdoor floor"
+);
+let outdoorWithTwins = 0;
+for (const group of buildSurfaceMaterialProductGroups(joinedFloors as never)) {
+  const indoorIds = group.variants
+    .filter((variant) => variant.physical_specs.suitable_for_outdoor !== true)
+    .map((variant) => variant.surface_material.material_id)
+    .sort();
+  for (const variant of group.variants.filter((v) => v.physical_specs.suitable_for_outdoor === true)) {
+    const id = variant.surface_material.material_id;
+    const profile = variant.classification.outdoor;
+    assert.ok(profile, `${id} has an outdoor profile`);
+    assert.deepEqual(profile.uses, yamlById.get(id)?.classification.outdoor_uses, `${id}: uses`);
+    assert.deepEqual(profile.laying, yamlById.get(id)?.physical_specs.installation_method, `${id}: laying`);
+    assert.deepEqual(profile.indoor_twin_ids, indoorIds, `${id}: its indoor twins are the card's other sizes`);
+    if (indoorIds.length > 0) outdoorWithTwins += 1;
+  }
+}
+assert.equal(outdoorWithTwins, 43 + 13 - 1, "every outdoor size of a catalogued colour has indoor twins (not La Geoteca Antracite)");
+
+// The knowledge module: every fact cites a source, every word maps to the vocabulary, and the pairings name catalogue cards.
+for (const source of Object.values(SURFACE_OUTDOOR_SOURCES)) {
+  assert.match(source.url, /^https:\/\/(www\.abkgroup\.it|blog\.gardenia\.it)\//, `${source.title}: the maker's own site`);
+}
+for (const fact of SURFACE_OUTDOOR_FACTS) {
+  assert.ok(fact.sources.length > 0 && fact.sources.every((source) => source in SURFACE_OUTDOOR_SOURCES), `${fact.topic}: sources`);
+}
+assert.deepEqual(Object.keys(SURFACE_OUTDOOR_USE_LABELS), [...SURFACE_MATERIAL_VOCABULARY.outdoor_use]);
+const installationVocabulary: readonly string[] = SURFACE_MATERIAL_VOCABULARY.installation_method;
+const roomVocabulary: readonly string[] = SURFACE_MATERIAL_VOCABULARY.room_suitability;
+assert.ok(Object.keys(SURFACE_OUTDOOR_LAYING_LABELS).every((method) => installationVocabulary.includes(method)));
+assert.ok(Object.values(ABK_ROOM_FILTER_TO_SURFACE_ROOM).every((room) => roomVocabulary.includes(room)));
+const floorCards = new Map(
+  buildSurfaceMaterialProductGroups(joinedFloors as never).map((group) => [
+    getSurfaceMaterialProductDisplayName(group.primary),
+    getSurfaceMaterialGroupSizeLabels(group),
+  ])
+);
+for (const { outdoor: outdoorItem, indoor } of SURFACE_OUTDOOR_PAIRINGS) {
+  assert.ok(floorCards.get(outdoorItem.card)?.includes(`${outdoorItem.size} R11`), `${outdoorItem.card} has the ${outdoorItem.size} R11`);
+  for (const item of indoor) assert.ok(floorCards.has(item.card), `${item.card} is a floor card`);
+}
+
 const pleinAirStandIns = [["0014519", "0012911"], ["0014518", "0012908"]] as const;
 
 // Gardenia Plein Air (downloaded 13 Oct 2026): the outdoor range's eleven ranges of its own, a collection of their own (J, 13 Oct
@@ -1837,7 +2013,8 @@ const sharedFaces = new Map([
 const wallOnly = new Map([
   ["0010804", 8], ["0017607", 8],
   ["0020757", 3], ["0020758", 3], ["0020759", 3], ["0020760", 3], ["0020765", 3], ["0020767", 3], ["0020768", 3],
-  // Pietra Viva's Nat P.tech 80x80 and Camargue 60x120 items are wall-only; their floor entries are R11.
+  // Pietra Viva's Nat P.tech 80x80 and Camargue 60x120 items: their floor entries carry the outdoor item's code in their ids (the
+  // July import filed them under it; split 13 Oct 2026), so by code they are wall-only.
   ["0012265", 8], ["0012262", 8], ["0014186", 18], ["0014185", 18], ["0014669", 16], ["0014668", 16], ["0012331", 12],
   // Gioia's plain colours, Martinica and Primavera are wall-only.
   ...["0008228", "0008230", "0008232", "0008233", "0008234", "0008235", "0009646", "0009647", "0009648", "0009655", "0010527"].map(
