@@ -53,6 +53,11 @@ entries' metadata is unchanged): `uses`, `laying` and `indoor_twin_ids`, built b
 (`lib/surface-material-outdoor.ts`). The surface search reads it; nothing else does yet. See
 `docs/architecture/surface-material-outdoor-tiles.md`.
 
+14 Oct 2026: ABK's technical sheets fill `total_thickness_mm` for 278 Gardenia entries, which the lazy metadata already carries
+(class B), and the outdoor profiles' lists grow (nine uses, four laying values); about 10 KB raw in all. The sheets' slip classes
+go to the YAML's `physical_specs.slip_rating`, which stays class C/E, out of both projections. See
+`docs/architecture/surface-material-abk-documents.md`.
+
 ## Runtime and loading contract
 
 `lib/surface-material-runtime.ts` synchronously decodes the compact render

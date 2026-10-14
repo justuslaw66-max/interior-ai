@@ -26,6 +26,7 @@ source:
     - "Collection page color availability for ROSSIGNOL: ROSSIGNOL 8,5 mm | 60x120 (24\"x48\")."
     - "Available configurator formats: 00202276 60x120 ENTRAMBE patterns pieno_01."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's technical sheet for Gioia (GIOIA - Datasheet.pdf, read 2026-10-14): 7 mm."
 classification:
   flooring_type: tile
   design_effect: plain
@@ -50,7 +51,7 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 1200
   tile_length_mm: 600
-  total_thickness_mm: null
+  total_thickness_mm: 7
   wear_layer_mm: null
   installation_method:
     - direct_stick

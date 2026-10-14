@@ -26,6 +26,7 @@ source:
     - "Collection page thicknesses: 6 mm, 8.5 mm."
     - "Collection page sizes: 120x280, 120x120, 80x80, 60x120."
     - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+    - "ABK's technical sheet for Concrea Plain (CONCREA PLAIN - Datasheet.pdf, read 2026-10-14): 8.5 mm; slip resistance R10 (DIN 51130), bare foot A+B (DIN 51097)."
 classification:
   flooring_type: tile
   design_effect: concrete
@@ -56,7 +57,7 @@ physical_specs:
   installation_method:
     - direct_stick
   waterproof: null
-  slip_rating: null
+  slip_rating: R10
   suitable_for_wet_area: null
   suitable_for_outdoor: null
   commercial_grade: null

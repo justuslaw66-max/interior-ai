@@ -7,7 +7,8 @@ import {
 // Outdoor floor tiles in the catalogue data (J, 13 Oct 2026: "Knowledge in the catalogue"). Each outdoor floor entry says where it
 // goes (classification.outdoor_uses) and how it can be laid (physical_specs.installation_method); the generator adds the same
 // colour's indoor floor entries and puts the three in the browser data as classification.outdoor. The manufacturer's words behind
-// them are in lib/surface-material-outdoor-knowledge.ts; docs/architecture/surface-material-outdoor-tiles.md describes the fields.
+// them are in lib/surface-material-outdoor-knowledge.ts and lib/surface-material-plein-air-system.ts (ABK's Plein Air catalogue);
+// docs/architecture/surface-material-outdoor-tiles.md describes the fields.
 
 /** The `outdoor_use` vocabulary in words: a card's search text and, later, the AI read these. */
 export const SURFACE_OUTDOOR_USE_LABELS: Readonly<Record<string, string>> = {
@@ -17,6 +18,9 @@ export const SURFACE_OUTDOOR_USE_LABELS: Readonly<Record<string, string>> = {
   garden: "Garden",
   path: "Paths",
   pool_edge: "Pool edge",
+  driveway: "Driveway",
+  steps: "Steps",
+  outdoor_shower: "Outdoor shower",
 };
 
 /** How an outdoor tile can be laid, in words. `direct_stick` is glued down; outdoors, on a screed. */
@@ -98,6 +102,10 @@ export function getSurfaceMaterialOutdoorFailures(entry: OutdoorEntry): string[]
   const outdoorLaying = (entry.physical_specs.installation_method ?? []).filter((method) => OUTDOOR_ONLY_LAYING.has(method));
   if (outdoorLaying.length > 0 && entry.physical_specs.suitable_for_outdoor !== true) {
     failures.push(`physical_specs.installation_method ${outdoorLaying.join(", ")} is only for outdoor tiles.`);
+  }
+  // ABK's Plein Air catalogue: the traditional (glued) installation is the one for floors vehicles drive over.
+  if (uses?.includes("driveway") && !entry.physical_specs.installation_method?.includes("direct_stick")) {
+    failures.push("classification.outdoor_uses driveway needs physical_specs.installation_method direct_stick.");
   }
   return failures;
 }
