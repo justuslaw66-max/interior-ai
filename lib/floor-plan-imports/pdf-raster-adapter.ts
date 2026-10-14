@@ -8,6 +8,7 @@ import { registerRasterOpeningSpans, sourceOpeningSpan } from "./raster-opening-
 import { mergeSemantics } from "./semantic-merge";
 import { sourceTextEvidenceFromLocalOcr } from "./local-ocr-rotation";
 import { applyVectorizerEvidence } from "./vectorizer-pass";
+import { ownLineworkClosesRooms, vectorizerCandidatePages, vectorizerReadingsLead } from "./vectorizer-pdf-pages";
 import {
   createDefaultFloorPlanVectorizerProvider,
   mergeVectorizerDimensionSpans,
@@ -1459,7 +1460,7 @@ function buildCanonicalCandidate(
   const sourceId = envelope.source.id;
   const pageNumber = page?.pageNumber ?? 1;
   const millimetresPerPixel = scale?.millimetresPerPixel ?? 1;
-  const geometryBasis = pageGeometryBasis(page, envelope.source.mimeType);
+  const geometryBasis = pageGeometryBasis(page, envelope.source.mimeType, rooms);
   const geometryEvidenceName =
     geometryBasis === "vector_traced"
       ? "deterministic PDF vector linework"
@@ -2181,13 +2182,12 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       this.localOcrProvider
     );
     const vectorizerDiagnostics = await applyVectorizerEvidence({
-      pages: rasterEvidence?.pages ?? [],
-      renderedPages,
-      context,
-      provider: this.vectorizerProvider,
+      pages: this.vectorizerProvider ? vectorizerCandidatePages(pages, rasterEvidence?.pages ?? [],
+        (page) => ownLineworkClosesRooms(page, registerSupportedPageTopology)) : [],
+      renderedPages, context, provider: this.vectorizerProvider,
       pageLimit: boundedEnvironmentInteger("FLOOR_PLAN_VECTORIZER_MAX_PAGES", 1, 4),
       rankPages: rankFloorPlanSemanticPages,
-      mergeSemantics: (deterministic, semantic) => mergeSemantics(deterministic, semantic, true),
+      mergeSemantics: (deterministic, semantic, page) => mergeSemantics(deterministic, semantic, vectorizerReadingsLead(page)),
     });
     if(rasterEvidence)await attachRasterSourceArtwork(rasterEvidence.pages,renderedPages,context);
     const semanticPages = rankFloorPlanSemanticPages(pages).slice(
