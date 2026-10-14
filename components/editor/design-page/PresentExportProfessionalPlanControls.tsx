@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import {
   PLAN_LAYER_PRESETS,
   type PlanLayerPresetId,
@@ -28,6 +30,15 @@ const LAYERS: ReadonlyArray<[keyof PlanLayers, string]> = [
   ["annotations", "Notes"],
 ];
 
+const PRESET_OPTIONS = (["presentation", "technical", "staging"] as const).map((value) => ({
+  value,
+  label: PLAN_LAYER_PRESETS[value].label,
+}));
+const THEME_OPTIONS = [
+  { value: "consumer", label: "Consumer theme" },
+  { value: "pro", label: "Pro theme" },
+] as const;
+
 export default function PresentExportProfessionalPlanControls({
   preset,
   layers,
@@ -36,59 +47,22 @@ export default function PresentExportProfessionalPlanControls({
   onThemeChange,
   onToggleLayer,
 }: PresentExportProfessionalPlanControlsProps) {
-  const controlClass = (active: boolean, compact = false) =>
-    active
-      ? `min-h-11 rounded-lg bg-neutral-900 ${compact ? "px-2" : "px-3"} py-2 text-xs font-semibold text-white outline-hidden focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2`
-      : `min-h-11 rounded-lg bg-gray-100 ${compact ? "px-2" : "px-3"} py-2 text-xs outline-hidden hover:bg-gray-200 focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2`;
-
   return (
     <div className="space-y-2" data-testid="professional-plan-controls">
       <div className="rounded-lg border border-gray-200/70 p-2">
         <div className="mb-2 text-xs text-gray-500">
           Layer presets
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {(["presentation", "technical", "staging"] as const).map(
-            (option) => (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={preset === option}
-                className={controlClass(preset === option, true)}
-                onClick={() => onPresetChange(option)}
-              >
-                {PLAN_LAYER_PRESETS[option].label}
-              </button>
-            )
-          )}
-        </div>
+        <SegmentedControl label="Layer presets" size="compact" fill value={preset} onChange={onPresetChange} options={PRESET_OPTIONS} />
       </div>
 
-      <div className="grid grid-cols-2 gap-2" aria-label="Plan theme">
-        {(["consumer", "pro"] as const).map((option) => (
-          <button
-            key={option}
-            type="button"
-            aria-pressed={theme === option}
-            className={controlClass(theme === option)}
-            onClick={() => onThemeChange(option)}
-          >
-            {option === "consumer" ? "Consumer theme" : "Pro theme"}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl label="Plan theme" size="compact" fill value={theme} onChange={onThemeChange} options={THEME_OPTIONS} />
 
-      <div className="grid grid-cols-2 gap-2" aria-label="Visible plan layers">
+      <div role="group" aria-label="Visible plan layers" className="grid grid-cols-2 gap-2">
         {LAYERS.map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            aria-pressed={layers[key]}
-            className={controlClass(layers[key])}
-            onClick={() => onToggleLayer(key)}
-          >
+          <Button key={key} size="compact" pressed={layers[key]} onClick={() => onToggleLayer(key)}>
             {label}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

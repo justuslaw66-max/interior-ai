@@ -82,17 +82,6 @@ export default function SelectedItemDetailsPanel({
 }: SelectedItemDetailsPanelProps) {
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
   const disabledButtonClass = "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
-  const actionToggleClass = (active: boolean, disabled = false) => {
-    const base =
-      "inline-flex min-h-11 items-center justify-start gap-2 rounded-lg border px-3 text-xs font-semibold transition-colors";
-    if (disabled) {
-      return `${base} cursor-not-allowed border-neutral-200 bg-neutral-50 text-neutral-400 opacity-80`;
-    }
-    if (active) {
-      return `${base} border-neutral-900 bg-neutral-900 text-white shadow-sm`;
-    }
-    return `${base} border-neutral-200 bg-white text-neutral-700 shadow-sm hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950`;
-  };
   const actionIconClass = "h-3.5 w-3.5 shrink-0";
   const panelClass = "mt-2 space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
   const compactPanelClass = "mt-2 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
@@ -116,20 +105,18 @@ export default function SelectedItemDetailsPanel({
     <div className="mt-2 space-y-1.5" data-testid="selected-item-details">
       <div className="pt-1">
         <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            className={actionToggleClass(showInspectorDetails)}
+          <Button
+            size="compact"
             aria-label={showInspectorDetails ? "Hide details" : "Show details"}
-            aria-pressed={showInspectorDetails}
+            pressed={showInspectorDetails}
             onClick={onToggleInspectorDetails}
             title={showInspectorDetails ? "Hide details" : "Show details"}
           >
             <Info className={actionIconClass} aria-hidden="true" />
             <span>Details</span>
-          </button>
-          <button
-            type="button"
-            className={actionToggleClass(showFullDimensions, !hasFullDimensions)}
+          </Button>
+          <Button
+            size="compact"
             aria-label={
               hasFullDimensions
                 ? showFullDimensions
@@ -138,7 +125,7 @@ export default function SelectedItemDetailsPanel({
                 : "Full dimensions unavailable"
             }
             disabled={!hasFullDimensions}
-            aria-pressed={showFullDimensions}
+            pressed={showFullDimensions}
             onClick={onToggleFullDimensions}
             title={
               hasFullDimensions
@@ -148,10 +135,9 @@ export default function SelectedItemDetailsPanel({
           >
             <Ruler className={actionIconClass} aria-hidden="true" />
             <span>Dimensions</span>
-          </button>
-          <button
-            type="button"
-            className={actionToggleClass(showDeliveryWarranty, !hasDeliveryWarranty)}
+          </Button>
+          <Button
+            size="compact"
             aria-label={
               hasDeliveryWarranty
                 ? showDeliveryWarranty
@@ -160,7 +146,7 @@ export default function SelectedItemDetailsPanel({
                 : "Delivery and warranty unavailable"
             }
             disabled={!hasDeliveryWarranty}
-            aria-pressed={showDeliveryWarranty}
+            pressed={showDeliveryWarranty}
             onClick={onToggleDeliveryWarranty}
             title={
               hasDeliveryWarranty
@@ -170,20 +156,19 @@ export default function SelectedItemDetailsPanel({
           >
             <Truck className={actionIconClass} aria-hidden="true" />
             <span>Delivery</span>
-          </button>
+          </Button>
           {item ? (
-            <button
-              type="button"
-              className={actionToggleClass(showAdvancedControls)}
+            <Button
+              size="compact"
               aria-expanded={showAdvancedControls}
-              aria-pressed={showAdvancedControls}
+              pressed={showAdvancedControls}
               data-testid="selected-item-advanced-controls-toggle"
               onClick={() => setShowAdvancedControls((value) => !value)}
               title={showAdvancedControls ? "Hide controls" : "Show controls"}
             >
               <SlidersHorizontal className={actionIconClass} aria-hidden="true" />
               <span>More controls</span>
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>

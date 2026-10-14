@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { PresentationTools } from "@/lib/design-page-presentation-tools";
 
 const PresentExportProfessionalPlanControls = dynamic(
@@ -34,32 +35,6 @@ export type PlanDisplaySectionProps = {
   >;
 };
 
-type ToggleOption<T extends string> = { value: T; label: string; testId?: string };
-
-function ToggleRow<T extends string>({ label, options, value, onChange }: {
-  label: string;
-  options: readonly ToggleOption<T>[];
-  value: T | null;
-  onChange: (next: T) => void;
-}) {
-  return (
-    <div role="group" aria-label={label} className="grid auto-cols-fr grid-flow-col gap-2">
-      {options.map((option) => (
-        <Button
-          key={option.value}
-          size="compact"
-          variant={value === option.value ? "primary" : "secondary"}
-          aria-pressed={value === option.value}
-          data-testid={option.testId}
-          onClick={() => onChange(option.value)}
-        >
-          {option.label}
-        </Button>
-      ))}
-    </div>
-  );
-}
-
 const DETAIL_OPTIONS = [
   { value: "simple", label: "Simple" },
   { value: "detailed", label: "Detailed" },
@@ -87,7 +62,9 @@ export function PlanDisplaySection({ state, actions }: PlanDisplaySectionProps) 
       <h3 id="plan-display-heading" className="text-sm font-semibold text-neutral-900">
         Plan display
       </h3>
-      <ToggleRow
+      <SegmentedControl
+        size="compact"
+        fill
         label="Plan detail"
         options={DETAIL_OPTIONS}
         value={detailed ? "detailed" : "simple"}
@@ -106,7 +83,9 @@ export function PlanDisplaySection({ state, actions }: PlanDisplaySectionProps) 
         <p className="text-xs text-neutral-600">Simple keeps the plan clean. Detailed adds layers, notes and the plan theme.</p>
       )}
       <DisplayUnitSelect value={state.planMeasurementUnit} onChange={actions.onMeasurementUnitChange} />
-      <ToggleRow
+      <SegmentedControl
+        size="compact"
+        fill
         label="Notes on the plan"
         options={detailed ? NOTE_OPTIONS : SIMPLE_NOTE_OPTIONS}
         value={state.annotationToolKind}
@@ -125,7 +104,7 @@ export function PlanDisplaySection({ state, actions }: PlanDisplaySectionProps) 
       {detailed ? (
         <>
           <p className="text-xs font-semibold text-neutral-700">Export style</p>
-          <ToggleRow label="Export style" options={EXPORT_STYLE_OPTIONS} value={state.exportStylePreset} onChange={actions.onExportStyleChange} />
+          <SegmentedControl size="compact" fill label="Export style" options={EXPORT_STYLE_OPTIONS} value={state.exportStylePreset} onChange={actions.onExportStyleChange} />
         </>
       ) : null}
     </section>
@@ -148,7 +127,7 @@ export function PlanNotesSection({ state, actions }: PlanNotesSectionProps) {
       <h3 id="plan-notes-heading" className="text-sm font-semibold text-neutral-900">
         Notes on the plan
       </h3>
-      <ToggleRow label="Note tools" options={SIMPLE_NOTE_OPTIONS} value={state.annotationToolKind} onChange={actions.onSelectAnnotationTool} />
+      <SegmentedControl size="compact" fill label="Note tools" options={SIMPLE_NOTE_OPTIONS} value={state.annotationToolKind} onChange={actions.onSelectAnnotationTool} />
       <Button size="compact" variant="danger" className="w-full" disabled={!state.selectedPlanOverlayId} onClick={actions.onDeleteSelectedPlanOverlay}>
         Delete selected
       </Button>

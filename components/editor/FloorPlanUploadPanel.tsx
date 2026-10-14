@@ -202,7 +202,6 @@ export default function FloorPlanUploadPanel({
   const cardClass = "rounded-xl border border-neutral-200 bg-white p-3";
   const titleClass = "text-sm font-semibold text-neutral-900";
   const subtleClass = "text-xs text-neutral-500";
-  const secondaryButtonClass = "rounded-lg border border-neutral-200 px-3 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
   const rangeClass = "h-2 w-full accent-neutral-900";
   const selectClass = "rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 disabled:opacity-50";
   const drawToolButtonClass = (mode: FloorPlanDrawRoomMode) => {
@@ -333,10 +332,9 @@ export default function FloorPlanUploadPanel({
                 A locked tracing guide, not editable walls or rooms.
               </div>
             </div>
-            <button
-              type="button"
+            <Button
               data-testid="floor-plan-source-reference-toggle"
-              className={secondaryButtonClass}
+              size="compact"
               disabled={disabled}
               aria-pressed={underlay.visible !== false}
               onClick={() =>
@@ -346,7 +344,7 @@ export default function FloorPlanUploadPanel({
               }
             >
               {underlay.visible === false ? "Show" : "Hide"}
-            </button>
+            </Button>
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between">

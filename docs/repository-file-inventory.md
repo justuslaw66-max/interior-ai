@@ -357,7 +357,6 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `components/editor/renderers/canonical-floor-plan/openingDrag.ts` — Defines `useCanonicalOpeningDrag`, `CanonicalOpeningDragMetricsV2`, `CanonicalOpeningDragMode` for opening Drag.
 - `components/editor/renderers/house-plan-3d/useWindowOpeningDrag.ts` — Owns R3F pointer capture and wall-plane projection for dragging a 3D window aperture.
 - `components/editor/renderers/house-plan-3d/windowOpeningDrag.ts` — Pure clamp-and-round geometry for horizontal and vertical window dragging that retains the grab point.
-- `components/editor/SceneAdjustmentToolbar.tsx` — Implements `SceneAdjustmentToolbar` for Scene Adjustment Toolbar.
 - `components/editor/SelectedItemRotationControls.tsx` — Implements `SelectedItemRotationControls` for Selected Item Rotation Controls.
 - `components/Measurements.tsx` — Implements `Measurements` for Measurements.
 - `components/scene/glb-scaled-model/createModelDiagnosticSnapshot.ts` — Defines `safeGLBResourceHash`, `createModelDiagnosticSnapshot` for create Model Diagnostic Snapshot.

@@ -31,6 +31,7 @@ import { useDesignPageRequestedDesignWorkspaceRegistration } from "@/lib/useDesi
 import { useDesignPagePresentationWorkspaceRegistration } from "@/lib/useDesignPagePresentationWorkspaceRegistration";
 import { useDesignPageWorkspaceDeferredPaywallRegistration } from "@/lib/useDesignPagePaywallRegistrationFacade";
 import { useDesignPageFloorPlanLifecycleRegistration } from "@/lib/useDesignPageFloorPlanLifecycleRegistration";
+import { Button } from "@/components/ui/Button";
 
 export function DesignPageWorkspace() {
   const coreShellRegistration = useDesignPageCoreShellRegistration({
@@ -466,10 +467,9 @@ export function DesignPageWorkspace() {
                 Locked tracing guide
               </div>
             </div>
-            <button
-              type="button"
+            <Button
               data-testid="floor-plan-source-reference-toggle"
-              className="rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+              size="compact"
               aria-pressed={sourceReferenceUnderlay.visible !== false}
               onClick={() =>
                 planUnderlay.actions.changeUnderlayOpacity(
@@ -480,7 +480,7 @@ export function DesignPageWorkspace() {
               }
             >
               {sourceReferenceUnderlay.visible === false ? "Show" : "Hide"}
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>

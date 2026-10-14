@@ -1,6 +1,8 @@
 "use client";
 
 import { ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { SurfaceBrowserTab, SurfaceTargetMode } from "./surfaceCatalog";
 
 export type SurfaceBrowserHeaderProps = {
@@ -17,7 +19,6 @@ export type SurfaceBrowserHeaderProps = {
     status: string;
     onToggle: () => void;
   };
-  secondaryActionClass: string;
   metaClass: string;
   onBack: () => void;
   onOpenSummary: () => void;
@@ -25,21 +26,16 @@ export type SurfaceBrowserHeaderProps = {
   onTabChange: (tab: SurfaceBrowserTab) => void;
 };
 
-const TARGETS: ReadonlyArray<{ id: SurfaceTargetMode; label: string }> = [
-  { id: "floor", label: "Floor" },
-  { id: "walls", label: "Walls" },
-  { id: "selected_wall", label: "Selected wall" },
-  { id: "ceiling", label: "Ceiling" },
+const TARGETS: ReadonlyArray<{ value: SurfaceTargetMode; label: string; testId: string }> = [
+  { value: "floor", label: "Floor", testId: "surface-target-floor" },
+  { value: "walls", label: "Walls", testId: "surface-target-walls" },
+  { value: "selected_wall", label: "Selected wall", testId: "surface-target-selected-wall" },
+  { value: "ceiling", label: "Ceiling", testId: "surface-target-ceiling" },
 ];
-const TABS: ReadonlyArray<{ id: SurfaceBrowserTab; label: string }> = [
-  { id: "tiles", label: "Materials" },
-  { id: "rooms", label: "Rooms" },
+const TABS: ReadonlyArray<{ value: SurfaceBrowserTab; label: string; testId: string }> = [
+  { value: "tiles", label: "Materials", testId: "surfaces-tab-tiles" },
+  { value: "rooms", label: "Rooms", testId: "surfaces-tab-rooms" },
 ];
-
-const segmentClass = (active: boolean) =>
-  active
-    ? "flex min-h-9 min-w-0 items-center justify-center rounded-md bg-neutral-950 px-1.5 text-center text-xs font-semibold leading-tight text-white touch:min-h-11"
-    : "flex min-h-9 min-w-0 items-center justify-center rounded-md px-1.5 text-center text-xs font-semibold leading-tight text-neutral-700 hover:bg-neutral-100 touch:min-h-11";
 
 function SurfaceBrowserTitle(props: SurfaceBrowserHeaderProps) {
   return (
@@ -64,19 +60,18 @@ function SurfaceBrowserTitle(props: SurfaceBrowserHeaderProps) {
       </div>
       {props.pro ? (
         <div className="flex shrink-0 flex-wrap justify-end gap-1">
-          <button
-            type="button"
+          <Button
             data-testid="surface-brush-toggle"
-            aria-pressed={props.brush.active}
-            className={props.brush.active ? "rounded-lg bg-neutral-900 px-2 py-1.5 text-xs font-semibold text-white" : props.secondaryActionClass}
+            size="compact"
+            pressed={props.brush.active}
             disabled={props.brush.disabled}
             onClick={props.brush.onToggle}
           >
             Brush
-          </button>
-          <button type="button" data-testid="surface-summary-open" className={props.secondaryActionClass} onClick={props.onOpenSummary}>
+          </Button>
+          <Button data-testid="surface-summary-open" size="compact" onClick={props.onOpenSummary}>
             Summary
-          </button>
+          </Button>
         </div>
       ) : null}
     </div>
@@ -87,38 +82,28 @@ function SurfaceBrowserTitle(props: SurfaceBrowserHeaderProps) {
 function SurfaceBrowserProControls(props: SurfaceBrowserHeaderProps) {
   return (
     <>
-      <div data-testid="surface-target-bar" className="mt-2 grid grid-cols-4 gap-1 rounded-lg border border-neutral-200/70 bg-white/70 p-1">
-        {TARGETS.map((target) => (
-          <button
-            key={target.id}
-            type="button"
-            data-testid={`surface-target-${target.id.replace("_", "-")}`}
-            aria-pressed={props.target === target.id}
-            className={`${segmentClass(props.target === target.id)} h-11`}
-            onClick={() => props.onTargetChange(target.id)}
-          >
-            <span className="block max-w-full whitespace-normal">{target.label}</span>
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        label="Surface"
+        testId="surface-target-bar"
+        className="mt-2"
+        size="compact"
+        fill
+        value={props.target}
+        onChange={props.onTargetChange}
+        options={TARGETS}
+      />
       {props.target === "selected_wall" && !props.selectedWallFaceId ? (
         <div className={props.metaClass}>Click a wall in 3D, or use Brush after choosing paint or a material.</div>
       ) : null}
       {props.brush.active ? <div className={props.metaClass}>Brush is on · {props.brush.status}</div> : null}
-      <div className="mt-2 grid grid-cols-2 gap-1 rounded-lg border border-neutral-200/70 bg-white/70 p-1">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            data-testid={`surfaces-tab-${tab.id}`}
-            aria-pressed={props.tab === tab.id}
-            className={segmentClass(props.tab === tab.id)}
-            onClick={() => props.onTabChange(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        label="Browse"
+        className="mt-2"
+        fill
+        value={props.tab}
+        onChange={props.onTabChange}
+        options={TABS}
+      />
     </>
   );
 }
