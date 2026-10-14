@@ -140,7 +140,6 @@ export function useDesignPageCoreShellRegistration({
     clientPreview
   );
   const baseBoundary = useClientPreviewBaseBoundary(baseRegistration, isClientPreview, [pathname, searchParams.get("designId") ?? "local", designId ?? "local", plan, isDesigner ? "pro" : "consumer"].join("|"));
-  const showDesignerTheme = false;
   const {
     state: {
       toast: ruleToast,
@@ -269,7 +268,6 @@ export function useDesignPageCoreShellRegistration({
         canUseDesigner,
         isDesigner,
         isClientPreview,
-        showDesignerTheme,
         liveCatalogReady,
         canEdit, canChangeProducts,
       },

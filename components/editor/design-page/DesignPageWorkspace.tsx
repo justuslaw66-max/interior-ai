@@ -58,7 +58,6 @@ export function DesignPageWorkspace() {
         wantsDesigner,
         canUseDesigner, isDesigner,
         isClientPreview,
-        showDesignerTheme,
       },
       paywall: {
         primaryUpgradeCtaLabel,
@@ -383,7 +382,7 @@ export function DesignPageWorkspace() {
     boundaries: { presentation: presentationQaWorkspace },
   }).regions.panel;
   const dialogLayerModel = buildDesignPageDialogLayerAdapter(buildDesignPageDialogLayerModel({
-    access: { isClientPreview, isAuthenticated: Boolean(session?.user), isDesigner, capabilities, designerTheme: showDesignerTheme },
+    access: { isClientPreview, isAuthenticated: Boolean(session?.user), isDesigner, capabilities },
     billing: {
       upgrade: { open: showUpgrade, variantLabel: upgradeCtaVariant, contentVariant: upgradeCtaVariant,
         description: upgradeDialogDescription, exportWorkflowBenefit: upgradeDialogExportWorkflowBenefit,
@@ -450,7 +449,7 @@ export function DesignPageWorkspace() {
     },
   }));
   return (
-    <DesignPageComposition configuration={{ designerTheme: showDesignerTheme }}>
+    <DesignPageComposition>
       <DesignPagePresentationQaLayer {...presentationQaLayerModel} />
       <div className={isClientPreview ? "absolute inset-0" : "absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"}>
         <CanvasBehindPage covered={panelRegionModel.state.shopping !== null}><DesignPageSceneRegion {...sceneRegionModel} /></CanvasBehindPage>
@@ -493,7 +492,6 @@ export function DesignPageWorkspace() {
       />
       <CloudSaveConflictDialog
         state={persistenceState.cloudSaveConflict}
-        dark={showDesignerTheme}
         onSaveAsNewCopy={persistenceActions.saveConflictAsNewCopy}
         onReloadCloudCopy={persistenceActions.reloadCloudAfterConflict}
       />

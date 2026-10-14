@@ -40,7 +40,6 @@ export interface SelectedCabinetPanelProps {
     canUseStudio: boolean;
     isDesigner: boolean;
     isClientPreview: boolean;
-    designerTheme: boolean;
   };
   actions: {
     center: () => void;
@@ -72,7 +71,6 @@ export function SelectedCabinetPanel({
     canUseStudio: canUseCabinetryStudio,
     isDesigner,
     isClientPreview,
-    designerTheme: showDesignerTheme,
   } = access;
 
   return (
@@ -84,38 +82,28 @@ export function SelectedCabinetPanel({
         >
           <div
             data-testid="selected-cabinet-panel" data-touch-area
-            className={
-              showDesignerTheme
-                ? "designer-panel designer-panel-strong w-full rounded-xl p-4"
-                : "w-full rounded-xl bg-white p-4 shadow"
-            }
+            className="w-full rounded-xl bg-white p-4 shadow"
           >
-            <div
-              className={
-                showDesignerTheme
-                  ? "designer-raised designer-divider sticky top-0 z-20 -mx-4 mb-3 border-b px-4 py-2 text-sm font-semibold"
-                  : "sticky top-0 z-20 -mx-4 mb-3 border-b border-neutral-200 bg-white/95 px-4 py-2 text-sm font-semibold text-neutral-900 backdrop-blur"
-              }
-            >
+            <div className="sticky top-0 z-20 -mx-4 mb-3 border-b border-neutral-200 bg-white/95 px-4 py-2 text-sm font-semibold text-neutral-900 backdrop-blur">
               Selected built-in
             </div>
-            <div className={showDesignerTheme ? "text-neutral-100" : "text-neutral-900"}>
+            <div className="text-neutral-900">
               <div className="text-sm font-semibold">
                 {selectedCabinetItem.name ?? selectedCabinetItem.cabinetDefinition.name}
               </div>
-              <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+              <div className="mt-1 text-xs text-neutral-500">
                 W {formatDisplayLength(selectedCabinetItem.cabinetDefinition.totalWidth, measurementUnit)} × H {formatDisplayLength(selectedCabinetItem.cabinetDefinition.height, measurementUnit)} × D {formatDisplayLength(selectedCabinetItem.cabinetDefinition.depth, measurementUnit)}
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                <div className={showDesignerTheme ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-neutral-50 p-2"}>
-                  <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Modules</div>
+                <div className="rounded-lg bg-neutral-50 p-2">
+                  <div className="text-neutral-500">Modules</div>
                   <div className="mt-1 font-semibold">
                     {selectedCabinetItem.cabinetDefinition.modules.length}
                   </div>
                 </div>
                 {isDesigner ? (
-                  <div className={showDesignerTheme ? "rounded-lg bg-white/5 p-2" : "rounded-lg bg-neutral-50 p-2"}>
-                    <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>BOM lines</div>
+                  <div className="rounded-lg bg-neutral-50 p-2">
+                    <div className="text-neutral-500">BOM lines</div>
                     <div className="mt-1 font-semibold">
                       {cabinet.bomLineCount}
                     </div>
@@ -142,12 +130,12 @@ export function SelectedCabinetPanel({
                 data-testid="selected-cabinet-placement-controls"
                 data-position={selectedCabinetItem.position.join(",")}
                 data-rotation-y={String(cabinet.rotationY)}
-                className={showDesignerTheme ? "mt-3 rounded-lg bg-white/5 p-3" : "mt-3 rounded-lg bg-neutral-50 p-3"}
+                className="mt-3 rounded-lg bg-neutral-50 p-3"
               >
-                <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-800"}>
+                <div className="text-xs font-semibold text-neutral-800">
                   Placement
                 </div>
-                <div className={showDesignerTheme ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+                <div className="mt-1 text-xs text-neutral-500">
                   {selectedCabinetPlanningDimensionsMm
                     ? `${formatDisplayLength(selectedCabinetPlanningDimensionsMm.w, measurementUnit)} × ${formatDisplayLength(selectedCabinetPlanningDimensionsMm.d, measurementUnit)} footprint`
                     : "Footprint unavailable"}
@@ -156,11 +144,7 @@ export function SelectedCabinetPanel({
                   <button
                     type="button"
                     data-testid="selected-cabinet-center"
-                    className={
-                      showDesignerTheme
-                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
-                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
-                    }
+                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={actions.center}
                   >
@@ -169,11 +153,7 @@ export function SelectedCabinetPanel({
                   <button
                     type="button"
                     data-testid="selected-cabinet-snap-wall"
-                    className={
-                      showDesignerTheme
-                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
-                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
-                    }
+                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={actions.snapToWall}
                   >
@@ -184,11 +164,7 @@ export function SelectedCabinetPanel({
                   <button
                     type="button"
                     data-testid="selected-cabinet-nudge-left"
-                    className={
-                      showDesignerTheme
-                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
-                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
-                    }
+                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.nudge(-0.05, 0)}
                   >
@@ -197,11 +173,7 @@ export function SelectedCabinetPanel({
                   <button
                     type="button"
                     data-testid="selected-cabinet-nudge-back"
-                    className={
-                      showDesignerTheme
-                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
-                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
-                    }
+                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.nudge(0, -0.05)}
                   >
@@ -210,11 +182,7 @@ export function SelectedCabinetPanel({
                   <button
                     type="button"
                     data-testid="selected-cabinet-nudge-front"
-                    className={
-                      showDesignerTheme
-                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
-                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
-                    }
+                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.nudge(0, 0.05)}
                   >
@@ -223,11 +191,7 @@ export function SelectedCabinetPanel({
                   <button
                     type="button"
                     data-testid="selected-cabinet-nudge-right"
-                    className={
-                      showDesignerTheme
-                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
-                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
-                    }
+                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.nudge(0.05, 0)}
                   >
@@ -238,11 +202,7 @@ export function SelectedCabinetPanel({
                   <button
                     type="button"
                     data-testid="selected-cabinet-rotate-quarter"
-                    className={
-                      showDesignerTheme
-                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
-                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
-                    }
+                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.rotateByDegrees(90)}
                   >
@@ -251,11 +211,7 @@ export function SelectedCabinetPanel({
                   <button
                     type="button"
                     data-testid="selected-cabinet-reset-rotation"
-                    className={
-                      showDesignerTheme
-                        ? "min-h-9 rounded-md border border-white/15 px-2 text-xs text-neutral-100 disabled:opacity-40"
-                        : "min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
-                    }
+                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={actions.resetRotation}
                   >
@@ -300,64 +256,64 @@ export function SelectedCabinetPanel({
                   data-generated-output-durable={
                     selectedCabinetAssetManifest?.generatedOutput.durable ? "true" : "false"
                   }
-                  className={showDesignerTheme ? "mt-3 rounded-lg bg-white/5 p-3" : "mt-3 rounded-lg bg-neutral-50 p-3"}
+                  className="mt-3 rounded-lg bg-neutral-50 p-3"
                 >
-                  <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-800"}>
+                  <div className="text-xs font-semibold text-neutral-800">
                     Design-to-build data
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Quote total</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Quote total</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.quoteSummary.currency}{" "}
                         {selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal.toLocaleString()}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>RFQ status</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">RFQ status</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.supplierReadiness.status.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Cut list</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Cut list</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.cutList.length} parts
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Edge banding</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Edge banding</div>
                       <div className="mt-1 font-semibold">
                         {formatDisplayLength(edgeBandingTotalM * 1000, measurementUnit)}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Release gates</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Release gates</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.releaseChecklist.length}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Release status</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Release status</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.status.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Built-in type</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Built-in type</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.assemblyProfile.label}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Complexity</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Complexity</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.assemblyProfile.fabricationComplexity}
                       </div>
                     </div>
                   </div>
                   <div className="mt-3 grid gap-2">
-                    <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-300" : "text-xs font-semibold text-neutral-700"}>
+                    <div className="text-xs font-semibold text-neutral-700">
                       Materials
                     </div>
                     <div className="grid max-h-28 gap-1 overflow-auto">
@@ -365,16 +321,16 @@ export function SelectedCabinetPanel({
                         <div
                           key={item.id}
                           data-testid="selected-cabinet-material-row"
-                          className={showDesignerTheme ? "flex justify-between gap-2 rounded-md bg-black/10 px-2 py-1 text-xs" : "flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"}
+                          className="flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"
                         >
                           <span className="truncate">{item.materialName}</span>
-                          <span className={showDesignerTheme ? "shrink-0 text-neutral-400" : "shrink-0 text-neutral-500"}>
+                          <span className="shrink-0 text-neutral-500">
                             {item.partCount} parts
                           </span>
                         </div>
                       ))}
                     </div>
-                    <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-300" : "text-xs font-semibold text-neutral-700"}>
+                    <div className="text-xs font-semibold text-neutral-700">
                       Hardware
                     </div>
                     <div className="grid max-h-24 gap-1 overflow-auto">
@@ -383,16 +339,16 @@ export function SelectedCabinetPanel({
                           <div
                             key={item.id}
                             data-testid="selected-cabinet-hardware-row"
-                            className={showDesignerTheme ? "flex justify-between gap-2 rounded-md bg-black/10 px-2 py-1 text-xs" : "flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"}
+                            className="flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"
                           >
                             <span className="truncate">{item.hardwareName}</span>
-                            <span className={showDesignerTheme ? "shrink-0 text-neutral-400" : "shrink-0 text-neutral-500"}>
+                            <span className="shrink-0 text-neutral-500">
                               {item.quantity} ea
                             </span>
                           </div>
                         ))
                       ) : (
-                        <div className={showDesignerTheme ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
+                        <div className="text-xs text-neutral-500">
                           No hardware scheduled.
                         </div>
                       )}
@@ -441,51 +397,51 @@ export function SelectedCabinetPanel({
                   data-can-issue-purchase-review={
                     projectCabinetHandoffPackage.canIssueForPurchaseReview ? "true" : "false"
                   }
-                  className={showDesignerTheme ? "mt-3 rounded-lg bg-white/5 p-3" : "mt-3 rounded-lg bg-neutral-50 p-3"}
+                  className="mt-3 rounded-lg bg-neutral-50 p-3"
                 >
-                  <div className={showDesignerTheme ? "text-xs font-semibold text-neutral-200" : "text-xs font-semibold text-neutral-800"}>
+                  <div className="text-xs font-semibold text-neutral-800">
                     Project readiness
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Handoff</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Handoff</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.handoffStatus.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Scope</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Scope</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.scopePackage.totals.familyCount} family /{" "}
                         {projectCabinetHandoffPackage.packages.scopePackage.totals.assemblyTypeCount} type
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Quote</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Quote</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.quotePackage.quoteStatus.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Purchase</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Purchase</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.purchaseReadinessPackage.purchaseReadiness.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Fabrication</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Fabrication</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.fabricationReleasePackage.status.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className={showDesignerTheme ? "rounded-md bg-black/10 p-2" : "rounded-md bg-white p-2"}>
-                      <div className={showDesignerTheme ? "text-neutral-400" : "text-neutral-500"}>Install</div>
+                    <div className="rounded-md bg-white p-2">
+                      <div className="text-neutral-500">Install</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.installationPlanPackage.installationReadiness.replace(/_/g, " ")}
                       </div>
                     </div>
                   </div>
-                  <div className={showDesignerTheme ? "mt-2 text-xs text-neutral-400" : "mt-2 text-xs text-neutral-500"}>
+                  <div className="mt-2 text-xs text-neutral-500">
                     {projectCabinetHandoffPackage.totals.requiredApprovalCount} approvals ·{" "}
                     {projectCabinetHandoffPackage.totals.fieldVerificationRequiredCount} field checks ·{" "}
                     {projectCabinetHandoffPackage.packages.procurementPackage.totals.customQuoteRequiredCount} quote rows
@@ -495,11 +451,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-placed-package"
-                className={
-                  showDesignerTheme
-                    ? "mt-3 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-3 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-3 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio}
                 onClick={() => actions.export("placed-package")}
               >
@@ -508,11 +460,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-installer-work-order"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio}
                 onClick={() => actions.export("installer-work-order")}
               >
@@ -521,11 +469,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-field-verification"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-field-verification")}
               >
@@ -534,11 +478,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-finish-schedule"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-finish-schedule")}
               >
@@ -547,11 +487,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-schedule"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-schedule")}
               >
@@ -560,11 +496,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-schedule-csv"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-schedule-csv")}
               >
@@ -573,11 +505,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-scope"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-scope")}
               >
@@ -586,11 +514,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-procurement"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-procurement")}
               >
@@ -599,11 +523,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-quote"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-quote")}
               >
@@ -612,11 +532,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-purchase-readiness"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-purchase-readiness")}
               >
@@ -625,11 +541,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-fabrication-release"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-fabrication-release")}
               >
@@ -638,11 +550,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-approval-package"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-approval")}
               >
@@ -651,11 +559,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-revision-package"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-revision")}
               >
@@ -664,11 +568,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-drawing-set"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-drawing-set")}
               >
@@ -677,11 +577,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-cut-list"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-cut-list")}
               >
@@ -690,11 +586,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-cnc-batch"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-cnc-batch")}
               >
@@ -703,11 +595,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-installation-plan"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-installation-plan")}
               >
@@ -716,11 +604,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-rfq"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-rfq")}
               >
@@ -729,11 +613,7 @@ export function SelectedCabinetPanel({
               <button
                 type="button"
                 data-testid="selected-cabinet-download-project-handoff"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg border border-white/15 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canUseCabinetryStudio || !project.hasAssets}
                 onClick={() => actions.export("project-handoff")}
               >
@@ -752,11 +632,7 @@ export function SelectedCabinetPanel({
               </button>
               <button
                 type="button"
-                className={
-                  showDesignerTheme
-                    ? "mt-2 min-h-10 w-full rounded-lg bg-white/10 px-3 text-sm font-semibold text-neutral-100 disabled:opacity-40"
-                    : "mt-2 min-h-10 w-full rounded-lg bg-neutral-100 px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
-                }
+                className="mt-2 min-h-10 w-full rounded-lg bg-neutral-100 px-3 text-sm font-semibold text-neutral-900 disabled:opacity-40"
                 disabled={!canEdit}
                 onClick={actions.delete}
               >

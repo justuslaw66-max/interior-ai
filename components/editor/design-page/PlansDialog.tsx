@@ -48,7 +48,6 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
       returnFocusIds={getPlansReturnFocusIds(state.openedFromUpgrade, state.openerId)}
       cancelFocusRestorationOnUnmount
       manageBackground
-      forceLight
       panelClassName="!max-w-[420px] max-h-[calc(100dvh-2rem)] !p-4"
       contentClassName="!mt-3 overflow-y-auto"
     >

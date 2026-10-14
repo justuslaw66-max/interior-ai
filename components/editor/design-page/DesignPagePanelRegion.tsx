@@ -27,7 +27,6 @@ export type DesignPagePanelRegionState = {
 };
 
 export type DesignPagePanelRegionConfiguration = {
-  designerTheme: boolean;
   isDesigner: boolean;
   isClientPreview: boolean;
 };

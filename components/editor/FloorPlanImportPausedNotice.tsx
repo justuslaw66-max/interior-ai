@@ -3,7 +3,6 @@
 import { requestFloorPlanUploadSignIn } from "@/lib/floor-plan-upload-request";
 
 type FloorPlanImportPausedNoticeProps = {
-  dark: boolean;
   subtle: string;
   control: string;
   message: string;
@@ -18,7 +17,6 @@ type FloorPlanImportPausedNoticeProps = {
  * touch target.
  */
 export function FloorPlanImportPausedNotice({
-  dark,
   subtle,
   control,
   message,
@@ -26,7 +24,7 @@ export function FloorPlanImportPausedNotice({
   resumableJobId,
 }: FloorPlanImportPausedNoticeProps) {
   return (
-    <div className={dark ? "designer-recessed rounded-lg border border-amber-400/20 p-3" : "rounded-lg border border-amber-200 bg-amber-50 p-3"} data-testid="floor-plan-import-error" data-floor-plan-workspace-state="failure">
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3" data-testid="floor-plan-import-error" data-floor-plan-workspace-state="failure">
       <div className="text-xs font-semibold">Auto-detection paused</div>
       <p className={`mt-1 text-xs leading-4 ${subtle}`}>{message}</p>
       {authenticationRequired ? (

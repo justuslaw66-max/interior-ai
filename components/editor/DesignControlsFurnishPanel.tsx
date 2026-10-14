@@ -18,7 +18,6 @@ type ImportedFamilyOption = {
 };
 
 type DesignControlsFurnishPanelProps = {
-  dark: boolean;
   canEdit: boolean;
   /** The product lists have loaded: adding a product waits for it; choosing a room doesn't. */
   canChangeProducts: boolean;
@@ -144,10 +143,10 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
  * and the way to Shop.
  */
 export default function DesignControlsFurnishPanel(props: DesignControlsFurnishPanelProps) {
-  const { dark, canEdit, isDesigner = false, activeRoomName, activeRoomShoppingItems } = props;
+  const { canEdit, isDesigner = false, activeRoomName, activeRoomShoppingItems } = props;
   const { placementAddMode, onPlacementAddModeChange } = props;
   const productCount = activeRoomShoppingItems.reduce((total, item) => total + item.quantity, 0);
-  const panelClass = dark ? "designer-dock rounded-2xl p-3" : "rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm";
+  const panelClass = "rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm";
 
   return (
     <div className="space-y-3">

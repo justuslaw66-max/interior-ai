@@ -35,7 +35,7 @@ assert.doesNotMatch(css.split("/* Fields use 16px text on phones")[1]?.split("ht
 
 // The touch areas: the phone's sheet, the menus, and the panels over the canvas.
 assert.match(
-  renderToStaticMarkup(<PhoneStepSheet dark={false} title="Plan" subtitle="x" collapsed={false}>{null}</PhoneStepSheet>),
+  renderToStaticMarkup(<PhoneStepSheet title="Plan" subtitle="x" collapsed={false}>{null}</PhoneStepSheet>),
   /^<section data-testid="design-controls-panel" data-touch-area="true"/
 );
 for (const [path, testId] of [

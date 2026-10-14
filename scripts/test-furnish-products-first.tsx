@@ -169,12 +169,12 @@ assert.doesNotMatch(
 );
 assert.doesNotMatch(read("components/editor/FurnishStepModes.tsx"), /editor-workflow-ai/, "One Suggest a layout entry, beside the search.");
 assert.equal(
-  renderToStaticMarkup(createElement(FurnishStepModes, { dark: false, mode: "furnish", onGoFurnish: noop })),
+  renderToStaticMarkup(createElement(FurnishStepModes, { mode: "furnish", onGoFurnish: noop })),
   "",
   "Without Built-ins, Furnish shows no mode row at all."
 );
 assert.match(
-  renderToStaticMarkup(createElement(FurnishStepModes, { dark: false, mode: "ai", onGoFurnish: noop })),
+  renderToStaticMarkup(createElement(FurnishStepModes, { mode: "ai", onGoFurnish: noop })),
   /data-testid="furnish-step-back-to-products"/
 );
 
@@ -188,7 +188,7 @@ assert.match(catalogPanel, /Math\.floor\(scrollTop \/ CATALOG_CARD_ROW_HEIGHT\)/
 // comes first, with no brief to fill in.
 const aiPanel = (activeRoomType: "living" | "bedroom", activeRoomName: string) =>
   renderToStaticMarkup(createElement(DesignControlsAiPanel, {
-    dark: false, style: "Modern", budget: "$$", activeRoomName, activeRoomType, activeRoomTypeLabel: activeRoomName,
+    style: "Modern", budget: "$$", activeRoomName, activeRoomType, activeRoomTypeLabel: activeRoomName,
     roomWidth: 4, roomDepth: 3.6, roomFloorAreaSqm: 14.4, measurementUnit: "cm", activeRoomItemCount: 0,
     aiLayoutProposal: null, onStyleChange: noop, onBudgetChange: noop, onRunAiLayout: noop,
     onApplyAiLayoutProposal: noop, onTryAiLayoutAgain: noop, onClearAiLayoutProposal: noop,

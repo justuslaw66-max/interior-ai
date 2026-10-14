@@ -7,7 +7,6 @@ export type EditorViewMode = "3d" | "2d";
 type EditorViewToggleProps = {
   value: EditorViewMode;
   onChange: (next: EditorViewMode) => void;
-  dark?: boolean;
   /** `canvas`: the canvas toolbar's 32px segments (UX 4c); `pill`: the phone's 44px segments over the canvas (UX 4d). */
   variant: "canvas" | "pill";
 };
@@ -17,21 +16,21 @@ const CANVAS_SEGMENT_CLASS =
 const PILL_SEGMENT_CLASS =
   "inline-flex h-11 w-12 items-center justify-center rounded-[9px] text-sm font-bold leading-none";
 
-function toggleClasses(dark: boolean, variant: "canvas" | "pill") {
+function toggleClasses(variant: "canvas" | "pill") {
   if (variant === "pill") return {
     shell: "grid grid-cols-2 gap-0.5",
-    inactive: `${PILL_SEGMENT_CLASS} ${dark ? "designer-work-control" : "text-neutral-700 hover:bg-neutral-100"}`,
-    active: `${PILL_SEGMENT_CLASS} ${dark ? "designer-work-control-active" : "bg-neutral-900 text-white"}`,
+    inactive: `${PILL_SEGMENT_CLASS} text-neutral-700 hover:bg-neutral-100`,
+    active: `${PILL_SEGMENT_CLASS} bg-neutral-900 text-white`,
   };
   return {
-    shell: dark ? "designer-work-surface grid grid-cols-2 gap-0.5 rounded-[9px] p-0.5" : "grid grid-cols-2 gap-0.5 rounded-[9px] bg-neutral-100 p-0.5",
-    inactive: `${CANVAS_SEGMENT_CLASS} ${dark ? "designer-work-control" : "text-neutral-700 hover:bg-white"}`,
-    active: `${CANVAS_SEGMENT_CLASS} ${dark ? "designer-work-control-active" : "bg-neutral-900 text-white"}`,
+    shell: "grid grid-cols-2 gap-0.5 rounded-[9px] bg-neutral-100 p-0.5",
+    inactive: `${CANVAS_SEGMENT_CLASS} text-neutral-700 hover:bg-white`,
+    active: `${CANVAS_SEGMENT_CLASS} bg-neutral-900 text-white`,
   };
 }
 
-export default function EditorViewToggle({ value, onChange, dark = false, variant }: EditorViewToggleProps) {
-  const { shell, inactive, active } = toggleClasses(dark, variant);
+export default function EditorViewToggle({ value, onChange, variant }: EditorViewToggleProps) {
+  const { shell, inactive, active } = toggleClasses(variant);
 
   return (
     <div

@@ -20,7 +20,6 @@ type MeasurementFieldProps = {
   stepMm?: number;
   keyboardStepMm?: number;
   disabled?: boolean;
-  dark?: boolean;
   compact?: boolean;
   touchFriendly?: boolean;
   hideLabel?: boolean;
@@ -75,7 +74,6 @@ export default function MeasurementField({
   stepMm = 1,
   keyboardStepMm = stepMm,
   disabled = false,
-  dark = false,
   compact = false,
   touchFriendly = false,
   hideLabel = false,
@@ -186,10 +184,10 @@ export default function MeasurementField({
       {!hideLabel ? (
         <label
           htmlFor={inputId}
-          className={dark ? "flex items-center justify-between text-xs font-semibold text-neutral-300" : "flex items-center justify-between text-xs font-semibold text-neutral-600"}
+          className="flex items-center justify-between text-xs font-semibold text-neutral-600"
         >
           <span>{label}</span>
-          <span className={dark ? "font-normal text-neutral-400" : "font-normal text-neutral-500"}>{metadata.indicator}</span>
+          <span className="font-normal text-neutral-500">{metadata.indicator}</span>
         </label>
       ) : null}
       <span className="relative block">
@@ -215,11 +213,7 @@ export default function MeasurementField({
               : ariaValues.value
           }
           className={`${touchFriendly ? "min-h-11 rounded-md px-2" : compact ? "h-9 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border pr-11 text-sm font-semibold outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-            dark
-              ? error
-                ? "border-red-400 bg-[#10131a] text-red-100 focus-visible:ring-red-400/20"
-                : "designer-control border text-neutral-100 focus-visible:border-blue-300 focus-visible:ring-blue-300/20"
-              : error
+            error
                 ? "border-red-400 bg-white text-red-900 focus-visible:ring-red-500/20"
                 : "border-neutral-200 bg-white text-neutral-900 focus-visible:border-blue-600 focus-visible:ring-blue-600/20"
           } ${inputClassName}`.trim()}
@@ -230,7 +224,7 @@ export default function MeasurementField({
           onBlur={(event) => commit(event.currentTarget.value)}
           onKeyDown={handleKeyDown}
         />
-        <span aria-hidden="true" className={dark ? "pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-xs text-neutral-400" : "pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-xs text-neutral-500"}>
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-xs text-neutral-500">
           {metadata.indicator}
         </span>
       </span>
@@ -238,7 +232,7 @@ export default function MeasurementField({
         {error ?? ""}
       </span>
       {hint ? (
-        <span id={hintId} className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
+        <span id={hintId} className="text-xs text-neutral-500">
           {hint}
         </span>
       ) : null}

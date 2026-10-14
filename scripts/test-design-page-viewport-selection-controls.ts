@@ -49,12 +49,6 @@ assert.match(
   "The viewport adapter should resolve selection-control policy at the viewport boundary."
 );
 assert.ok(
-  normalizedViewportAdapter.includes(
-    "selectionControls: { dark: configuration.dark }"
-  ),
-  "The viewport adapter should map the resolved theme into selection controls."
-);
-assert.ok(
   normalizedViewportWorkspace.includes(
     "floorStack: { switchFloor: documentRoom.actions.floor.handleSwitchFloor"
   ),
@@ -67,7 +61,7 @@ assert.match(
 );
 assert.ok(
   normalizedViewportOverlay.includes(
-    "<DesignPageViewportSelectionControls state={state.selectionControls} configuration={configuration.selectionControls} actions={actions.selectionControls} />"
+    "<DesignPageViewportSelectionControls state={state.selectionControls} actions={actions.selectionControls} />"
   ),
   "The viewport layer should render grouped selection controls without reinterpreting live policy."
 );
@@ -173,7 +167,6 @@ assert.match(
 
 for (const contractName of [
   "DesignPageViewportSelectionControlsState",
-  "DesignPageViewportSelectionControlsConfiguration",
   "DesignPageViewportSelectionControlsActions",
 ] as const) {
   assert.match(

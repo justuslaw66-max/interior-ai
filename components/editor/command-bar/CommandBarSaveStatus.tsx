@@ -4,14 +4,13 @@ import { Check } from "lucide-react";
 import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 
 /** "Saved" (to the account) is the one green line; the others are muted, and "Not saved" red. */
-function getSaveStatusClassName(saveStatus: EditorSaveStatus, dark: boolean) {
-  if (saveStatus.tone === "error") return dark ? "text-red-300" : "text-red-700";
-  if (saveStatus.tone === "saved" && saveStatus.source === "cloud") return dark ? "text-emerald-300" : "text-success";
-  return dark ? "text-neutral-300" : "text-ink-muted";
+function getSaveStatusClassName(saveStatus: EditorSaveStatus) {
+  if (saveStatus.tone === "error") return "text-red-700";
+  if (saveStatus.tone === "saved" && saveStatus.source === "cloud") return "text-success";
+  return "text-ink-muted";
 }
 
 type CommandBarSaveStatusProps = {
-  dark: boolean;
   saveStatus: EditorSaveStatus;
   onRetrySaveStatus: () => void | Promise<void>;
 };
@@ -23,7 +22,6 @@ type CommandBarSaveStatusProps = {
  * tooltip and part of what a screen reader hears; a design that hasn't saved yet says nothing.
  */
 export function CommandBarSaveStatus({
-  dark,
   saveStatus,
   onRetrySaveStatus,
 }: CommandBarSaveStatusProps) {
@@ -42,7 +40,7 @@ export function CommandBarSaveStatus({
       aria-live="polite"
       aria-label={saveStatus.label ? `${saveStatus.label}. ${saveStatus.detail}` : saveStatus.detail}
       title={saveStatus.detail}
-      className={`flex h-4 min-w-0 items-center gap-1 text-xs leading-none ${getSaveStatusClassName(saveStatus, dark)}`}
+      className={`flex h-4 min-w-0 items-center gap-1 text-xs leading-none ${getSaveStatusClassName(saveStatus)}`}
     >
       {savedToAccount ? <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> : null}
       <span className="min-w-0 truncate">{saveStatus.label}</span>

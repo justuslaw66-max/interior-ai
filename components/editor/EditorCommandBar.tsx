@@ -23,7 +23,6 @@ type EditorMode = "design" | "adjust" | "ai" | "buy";
 
 type EditorCommandBarProps = {
   isClientPreview: boolean;
-  dark?: boolean;
   editorMode: EditorMode;
   viewMode: EditorViewMode;
   isDesigner: boolean;
@@ -87,14 +86,10 @@ function commandBarSteps({ editorMode, millworkActive = false, onPlan, onFurnish
 }
 
 /** More's and Account's items and panels; the phone Menu opens from the left of the bar. */
-function commandBarMenuClasses(dark: boolean, wide: boolean) {
-  const menuButtonClass = dark
-    ? "designer-work-control flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold"
-    : "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-100";
+function commandBarMenuClasses(wide: boolean) {
+  const menuButtonClass = "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-100";
   // A menu taller than the screen (a short phone, a 44px row per item) scrolls inside itself.
-  const menuPanelClass = `absolute max-h-[calc(100dvh-4.5rem)] overflow-y-auto ${wide ? "right-0" : "left-0"} ${dark
-    ? "designer-work-surface top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl p-2 shadow-2xl"
-    : "top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl"}`;
+  const menuPanelClass = `absolute max-h-[calc(100dvh-4.5rem)] overflow-y-auto ${wide ? "right-0" : "left-0"} top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl`;
   return { menuButtonClass, menuPanelClass };
 }
 
@@ -105,7 +100,7 @@ function commandBarMenuClasses(dark: boolean, wide: boolean) {
  * status, Save and Share; the steps are a bar along the bottom.
  */
 export default function EditorCommandBar(props: EditorCommandBarProps) {
-  const { isClientPreview, dark = false, viewMode, isDesigner } = props;
+  const { isClientPreview, viewMode, isDesigner } = props;
   const { designSidebarCollapsed, onToggleDesignSidebar, onOpenMyDesigns, showLoadDesign } = props;
   const { saveStatus, onRetrySaveStatus, contextSlot, overflowSlot, lightingSettingsSlot } = props;
   const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
@@ -128,15 +123,14 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
   } });
 
   const { steps, focusFallbackStepId, sidebarToggleVisible } = commandBarSteps(props);
-  const { menuButtonClass, menuPanelClass } = commandBarMenuClasses(dark, wide);
+  const { menuButtonClass, menuPanelClass } = commandBarMenuClasses(wide);
   const account = {
-    dark, menuButtonClass, isAuthed: props.isAuthed, accountReady: props.accountReady, accountName: props.accountName,
+    menuButtonClass, isAuthed: props.isAuthed, accountReady: props.accountReady, accountName: props.accountName,
     planLabel: props.planLabel, canManageBilling: props.canManageBilling, isOpeningBillingPortal: props.isOpeningBillingPortal,
     onManageBilling: props.onManageBilling, onViewPlans: props.onViewPlans,
   };
   const moreMenu = (
     <CommandBarMoreMenu
-      dark={dark}
       phone={!wide}
       accountSlot={<AccountMenuItems {...account} onClose={() => setOverflowOpen(false)} />}
       containerRef={overflowRef}
@@ -167,19 +161,16 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
       inert={isClientPreview}
       aria-hidden={isClientPreview}
       onClickCapture={guardHiddenCommandAction}
-      className={`absolute left-0 right-0 top-0 z-50 flex h-(--editor-bar-h) items-center gap-1 overflow-visible border-b px-1 shadow-sm transition-opacity duration-300 md:gap-4 md:px-4 md:backdrop-blur ${
-        dark ? "designer-command-bar" : "border-neutral-200 bg-white/95 text-neutral-950"
-      } ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
+      className={`absolute left-0 right-0 top-0 z-50 flex h-(--editor-bar-h) items-center gap-1 overflow-visible border-b px-1 shadow-sm transition-opacity duration-300 md:gap-4 md:px-4 md:backdrop-blur border-neutral-200 bg-white/95 text-neutral-950 ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       <div className="flex min-w-0 flex-1 basis-0 items-center gap-1 md:gap-3">
         {wide ? null : moreMenu}
-        <CommandBarHomeLink dark={dark} myDesignsAvailable={showLoadDesign} onOpenMyDesigns={onOpenMyDesigns} />
+        <CommandBarHomeLink myDesignsAvailable={showLoadDesign} onOpenMyDesigns={onOpenMyDesigns} />
         <div className="ml-1.5 flex min-w-0 flex-1 flex-col justify-center gap-0.5 md:ml-0 md:flex-initial">
-          <CommandBarDesignTitle dark={dark} title={props.designTitle} onRename={props.onRenameDesign} />
-          <CommandBarSaveStatus dark={dark} saveStatus={saveStatus} onRetrySaveStatus={onRetrySaveStatus} />
+          <CommandBarDesignTitle title={props.designTitle} onRename={props.onRenameDesign} />
+          <CommandBarSaveStatus saveStatus={saveStatus} onRetrySaveStatus={onRetrySaveStatus} />
         </div>
         <CommandBarCanvasControls
-          dark={dark}
           isClientPreview={isClientPreview}
           sidebarToggleVisible={sidebarToggleVisible && wide}
           designSidebarCollapsed={designSidebarCollapsed}
@@ -192,13 +183,13 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
         {contextSlot ? <div data-testid="editor-command-context" hidden>{contextSlot}</div> : null}
       </div>
 
-      <CommandBarStepTabs dark={dark} steps={steps} focusFallbackStepId={focusFallbackStepId} />
+      <CommandBarStepTabs steps={steps} focusFallbackStepId={focusFallbackStepId} />
 
       <div className="flex shrink-0 items-center justify-end gap-1 md:min-w-max md:flex-1 md:basis-0 md:gap-2">
-        <CommandBarGetProButton dark={dark} accountReady={props.accountReady} canUpgrade={props.canUpgrade} onGetPro={props.onGetPro} />
-        <CommandBarSaveButton dark={dark} isSaving={props.isSaving ?? false} cloudBacked={saveStatus.cloudBacked} onSave={props.onSave} />
-        <CommandBarDownloadButton dark={dark} onDownload={props.onDownload} />
-        <CommandBarShareButton dark={dark} isSharing={props.isSharing ?? false} onShare={props.onShare} />
+        <CommandBarGetProButton accountReady={props.accountReady} canUpgrade={props.canUpgrade} onGetPro={props.onGetPro} />
+        <CommandBarSaveButton isSaving={props.isSaving ?? false} cloudBacked={saveStatus.cloudBacked} onSave={props.onSave} />
+        <CommandBarDownloadButton onDownload={props.onDownload} />
+        <CommandBarShareButton isSharing={props.isSharing ?? false} onShare={props.onShare} />
         {wide ? moreMenu : null}
         {wide ? (
           <CommandBarAccountMenu
@@ -218,7 +209,6 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
             !isClientPreview &&
             viewMode === "3d"
           }
-          dark={dark}
           onClose={closeLightingSettings}
         >
           {lightingSettingsSlot}

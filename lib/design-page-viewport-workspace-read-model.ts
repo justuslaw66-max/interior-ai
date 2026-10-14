@@ -226,11 +226,8 @@ function buildViewportConfiguration(
 ): ViewportConfiguration {
   const { coreShell, planWorkspace, viewportShell } = sources;
   const quality = planWorkspace.state.quality;
-  const dark = coreShell.derived.access.showDesignerTheme;
 
   return {
-    dark,
-    sceneBackgroundColor: planWorkspace.derived.sceneBackgroundColor,
     canEditPlanGeometry: sources.placement.derived.canEditPlanGeometry,
     proMode: coreShell.derived.access.isDesigner,
     selectionInspectorDockedWithRightRail:
@@ -240,7 +237,7 @@ function buildViewportConfiguration(
     selectionInspectorTopPx: planWorkspace.derived.selectionInspectorTopPx,
     selectionInspectorWidthPx: planWorkspace.derived.selectionInspectorWidthPx,
     planQualityReviewTopPx: quality.reviewPanelTopPx,
-    importedWallEditor: { dark, vectorExport: { underlay: viewportShell.state.floorPlan.floorPlanUnderlay,
+    importedWallEditor: { vectorExport: { underlay: viewportShell.state.floorPlan.floorPlanUnderlay,
       sourceJobId: coreShell.state.document.designSnapshot.floorPlan?.sourceJobId,
       furniture: { rooms: coreShell.state.document.designSnapshot.rooms,
         resolveDimensions: (item, product) => resolveVectorFurnitureDimensions(item, product, sources.selectionInspection.resolvers) } } },

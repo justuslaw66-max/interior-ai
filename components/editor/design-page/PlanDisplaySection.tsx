@@ -95,7 +95,6 @@ export function PlanDisplaySection({ state, actions }: PlanDisplaySectionProps) 
       />
       {detailed ? (
         <PresentExportProfessionalPlanControls
-          dark={false}
           preset={state.planLayerPreset}
           layers={state.planLayers}
           theme={state.planTheme}
@@ -106,7 +105,7 @@ export function PlanDisplaySection({ state, actions }: PlanDisplaySectionProps) 
       ) : (
         <p className="text-xs text-neutral-600">Simple keeps the plan clean. Detailed adds layers, notes and the plan theme.</p>
       )}
-      <DisplayUnitSelect value={state.planMeasurementUnit} dark={false} onChange={actions.onMeasurementUnitChange} />
+      <DisplayUnitSelect value={state.planMeasurementUnit} onChange={actions.onMeasurementUnitChange} />
       <ToggleRow
         label="Notes on the plan"
         options={detailed ? NOTE_OPTIONS : SIMPLE_NOTE_OPTIONS}

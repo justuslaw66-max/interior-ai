@@ -174,7 +174,6 @@ function RetailerConfirmationHarness({ fixture, generation }: { fixture: Retaile
         returnFocusId="retailer-fixture-newer-opener"
         cancelFocusRestorationOnUnmount
         manageBackground
-        forceLight
         testId="retailer-fixture-newer-dialog"
       >
         Newer dialog content

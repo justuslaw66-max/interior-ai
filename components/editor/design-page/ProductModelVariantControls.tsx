@@ -86,20 +86,11 @@ export type ProductModelVariantControlsActions = {
 type ProductModelVariantControlsProps = {
   state: ProductModelVariantControlsState;
   actions: ProductModelVariantControlsActions;
-  configuration: {
-    dark: boolean;
-  };
 };
 
-function sectionHeadingClass(dark: boolean): string {
-  return dark
-    ? "designer-text-primary text-sm font-semibold"
-    : "text-sm font-semibold text-neutral-900";
-}
+const sectionHeadingClass = "text-sm font-semibold text-neutral-900";
 
-function optionTextClass(dark: boolean): string {
-  return dark ? "designer-text-primary" : "text-neutral-900";
-}
+const optionTextClass = "text-neutral-900";
 
 type CastleryConfigurationFamily = "hamilton" | "dawson";
 type CastleryConfigurationGroupKey =
@@ -259,13 +250,11 @@ function CastleryConfigurationSelector({
   variantSection,
   orientationOptions,
   actions,
-  dark,
 }: {
   family: CastleryConfigurationFamily;
   variantSection: VariantSectionState;
   orientationOptions: ProductTargetOption[];
   actions: ProductModelVariantControlsActions;
-  dark: boolean;
 }) {
   const activeOption =
     variantSection.options.find((option) => option.active) ??
@@ -286,14 +275,8 @@ function CastleryConfigurationSelector({
   return (
     <div className="pt-3" data-testid={`${family}-configuration-selector`}>
       <div className="flex items-baseline justify-between gap-3">
-        <div className={sectionHeadingClass(dark)}>Configuration</div>
-        <div
-          className={
-            dark
-              ? "designer-text-secondary text-xs"
-              : "text-xs text-neutral-500"
-          }
-        >
+        <div className={sectionHeadingClass}>Configuration</div>
+        <div className="text-xs text-neutral-500">
           {variantSection.options.length} configurations
         </div>
       </div>
@@ -431,9 +414,7 @@ function CastleryConfigurationSelector({
 export function ProductModelVariantControls({
   state,
   actions,
-  configuration,
 }: ProductModelVariantControlsProps) {
-  const { dark } = configuration;
   const castleryConfigurationFamily = getCastleryConfigurationFamily(
     state.variantSection
   );
@@ -453,13 +434,13 @@ export function ProductModelVariantControls({
     <>
       {state.orientationOptions.length && !castleryVariantSection ? (
         <div className="pt-3">
-          <div className={sectionHeadingClass(dark)}>Orientation</div>
+          <div className={sectionHeadingClass}>Orientation</div>
 
           <div className="mt-2 grid grid-cols-2 gap-2">
             {state.orientationOptions.map((option) => (
               <button
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass(dark)} ${
+                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
                   option.active ? "designer-accent-border" : "border-neutral-200"
                 }`}
                 disabled={option.disabled}
@@ -478,7 +459,6 @@ export function ProductModelVariantControls({
       {state.jaronConfiguration ? (
         <JaronConfigurationSelector
           state={state.jaronConfiguration}
-          configuration={configuration}
           actions={actions.jaron}
         />
       ) : null}
@@ -486,20 +466,19 @@ export function ProductModelVariantControls({
       {state.auburnConfiguration ? (
         <AuburnConfigurationSelector
           state={state.auburnConfiguration}
-          configuration={configuration}
           actions={actions.auburn}
         />
       ) : null}
 
       {state.armStyleOptions.length ? (
         <div className="pt-3">
-          <div className={sectionHeadingClass(dark)}>Variant</div>
+          <div className={sectionHeadingClass}>Variant</div>
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.armStyleOptions.map((option) => (
               <button
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass(dark)} ${
+                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
                   option.active ? "designer-accent-border" : "border-neutral-200"
                 }`}
                 disabled={option.disabled}
@@ -521,11 +500,10 @@ export function ProductModelVariantControls({
           variantSection={castleryVariantSection}
           orientationOptions={state.orientationOptions}
           actions={actions}
-          dark={dark}
         />
       ) : state.variantSection ? (
         <div className="pt-2">
-          <div className={sectionHeadingClass(dark)}>{state.variantSection.label}</div>
+          <div className={sectionHeadingClass}>{state.variantSection.label}</div>
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.variantSection.options.map((option) => {
@@ -540,12 +518,10 @@ export function ProductModelVariantControls({
                   data-active={option.testId ? (option.active ? "true" : "false") : undefined}
                   className={
                     swatch
-                      ? `flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${optionTextClass(
-                          dark,
-                        )} ${
+                      ? `flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
                           option.active ? "designer-accent-border" : "border-neutral-200"
                         }`
-                      : `rounded-lg border px-3 py-2 text-sm ${optionTextClass(dark)} ${
+                      : `rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
                           option.active ? "designer-accent-border" : "border-neutral-200"
                         }`
                   }
@@ -591,13 +567,9 @@ export function ProductModelVariantControls({
 
       {state.sloaneBenchMaterial ? (
         <div className="pt-3" data-testid="selected-sloane-bench-material-section">
-          <div className={sectionHeadingClass(dark)}>Material</div>
+          <div className={sectionHeadingClass}>Material</div>
           <div
-            className={
-              dark
-                ? "designer-text-secondary mt-2 text-xs"
-                : "mt-2 text-xs text-neutral-600"
-            }
+            className="mt-2 text-xs text-neutral-600"
             data-testid="selected-sloane-bench-material-label"
           >
             Selected: {state.sloaneBenchMaterial.label}
@@ -622,13 +594,13 @@ export function ProductModelVariantControls({
 
       {state.lengthOptions.length ? (
         <div className="pt-3">
-          <div className={sectionHeadingClass(dark)}>Length</div>
+          <div className={sectionHeadingClass}>Length</div>
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.lengthOptions.map((option) => (
               <button
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass(dark)} ${
+                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
                   option.active ? "designer-accent-border" : "border-neutral-200"
                 }`}
                 disabled={option.disabled}
@@ -646,13 +618,13 @@ export function ProductModelVariantControls({
 
       {state.huggModelOptions.length ? (
         <div className="pt-3">
-          <div className={sectionHeadingClass(dark)}>Model</div>
+          <div className={sectionHeadingClass}>Model</div>
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.huggModelOptions.map((option) => (
               <button
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass(dark)} ${
+                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
                   option.active ? "designer-accent-border" : "border-neutral-200"
                 }`}
                 data-testid={`hugg-model-option-${option.key}`}
@@ -671,13 +643,13 @@ export function ProductModelVariantControls({
 
       {state.sebModelOptions.length ? (
         <div className="pt-3">
-          <div className={sectionHeadingClass(dark)}>Model</div>
+          <div className={sectionHeadingClass}>Model</div>
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.sebModelOptions.map((option) => (
               <button
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass(dark)} ${
+                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
                   option.active ? "designer-accent-border" : "border-neutral-200"
                 }`}
                 data-testid={`seb-model-option-${option.key}`}
@@ -698,13 +670,13 @@ export function ProductModelVariantControls({
       {state.layout &&
       (!castleryVariantSection || activeCastleryConfigurationGroup === "sleeper") ? (
         <div className="pt-3">
-          <div className={sectionHeadingClass(dark)}>{state.layout.label}</div>
+          <div className={sectionHeadingClass}>{state.layout.label}</div>
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.layout.options.map((option) => (
               <button
                 key={`config-${option.code}`}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass(dark)} ${
+                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
                   option.active ? "designer-accent-border" : "border-neutral-200"
                 }`}
                 disabled={option.disabled}
@@ -716,49 +688,25 @@ export function ProductModelVariantControls({
           </div>
 
           {state.layout.helperText ? (
-            <div
-              className={
-                dark
-                  ? "designer-text-secondary mt-2 text-xs"
-                  : "mt-2 text-xs text-neutral-600"
-              }
-            >
+            <div className="mt-2 text-xs text-neutral-600">
               {state.layout.helperText}
             </div>
           ) : null}
 
           {state.layout.recommendedPlanningSize ? (
-            <div
-              className={
-                dark
-                  ? "designer-text-secondary mt-2 text-xs"
-                  : "mt-2 text-xs text-neutral-600"
-              }
-            >
+            <div className="mt-2 text-xs text-neutral-600">
               Recommended planning size: {state.layout.recommendedPlanningSize}
             </div>
           ) : null}
 
           {state.layout.visualFootprint ? (
-            <div
-              className={
-                dark
-                  ? "designer-text-secondary mt-1 text-xs"
-                  : "mt-1 text-xs text-neutral-600"
-              }
-            >
+            <div className="mt-1 text-xs text-neutral-600">
               Visual footprint: {state.layout.visualFootprint}
             </div>
           ) : null}
 
           {state.layout.estimationNote ? (
-            <div
-              className={
-                dark
-                  ? "designer-text-secondary mt-2 text-xs"
-                  : "mt-2 text-xs text-neutral-600"
-              }
-            >
+            <div className="mt-2 text-xs text-neutral-600">
               {state.layout.estimationNote}
             </div>
           ) : null}

@@ -114,8 +114,6 @@ export type BuildDesignPageViewportRegionAdapterInput = {
     selectionControls: DesignPageViewportSelectionControlsInput;
   };
   configuration: {
-    dark: boolean;
-    sceneBackgroundColor: string;
     canEditPlanGeometry: boolean;
     proMode: boolean;
     selectionInspectorDockedWithRightRail: boolean;
@@ -284,16 +282,10 @@ export function buildDesignPageViewportRegionAdapter({
       ),
     },
     configuration: {
-      sceneLoading: {
-        dark: configuration.dark,
-        backgroundColor: configuration.sceneBackgroundColor,
-      },
       selectedOpening: {
-        dark: configuration.dark,
         canEdit: configuration.canEditPlanGeometry,
       },
       selectionInspector: {
-        dark: configuration.dark,
         canEditPlanGeometry: configuration.canEditPlanGeometry,
         proMode: configuration.proMode,
         dockWhenPortalAvailable:
@@ -303,24 +295,17 @@ export function buildDesignPageViewportRegionAdapter({
         floatingTopPx: configuration.selectionInspectorTopPx,
         floatingWidthPx: configuration.selectionInspectorWidthPx,
       },
-      planSummary: { dark: configuration.dark, measurementUnit: state.selectionInspector.measurementUnit },
+      planSummary: { measurementUnit: state.selectionInspector.measurementUnit },
       planQuality: {
-        dark: configuration.dark,
         dockedWidthPx: configuration.floatingOverlayStackWidthPx,
         floatingRightPx: configuration.selectionInspectorRightPx,
         floatingTopPx: configuration.planQualityReviewTopPx,
         floatingWidthPx: configuration.selectionInspectorWidthPx,
       },
-      aiLayoutPreview: { dark: configuration.dark },
-      navigator: {
-        dark: configuration.dark,
-      },
       floorProperties: {
-        dark: configuration.dark,
         canEdit: configuration.canEditPlanGeometry,
       },
       importedWallEditor: configuration.importedWallEditor,
-      selectionControls: { dark: configuration.dark },
     },
     references,
     actions: {

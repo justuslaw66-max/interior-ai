@@ -104,7 +104,7 @@ async function openCustomMillworkStudioFromWorkspace(
 }
 
 async function readThemeTokens(page: Page) {
-  return page.locator("[data-theme]").first().evaluate((element) => {
+  return page.locator("html").evaluate((element) => {
     const styles = getComputedStyle(element);
     const readColorToken = (name: string) => {
       const value = styles.getPropertyValue(name).trim().toLowerCase();
@@ -115,10 +115,7 @@ async function readThemeTokens(page: Page) {
     };
     return {
       canvas: readColorToken("--bg-canvas"),
-      canvas3d: readColorToken("--bg-canvas-3d"),
-      command: readColorToken("--bg-command"),
       panel: readColorToken("--bg-panel"),
-      raised: readColorToken("--bg-panel-raised"),
       hover: readColorToken("--bg-panel-hover"),
       primary: readColorToken("--text-primary"),
       secondary: readColorToken("--text-secondary"),
@@ -2122,7 +2119,6 @@ test.describe("Pro visual policy", () => {
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("editor-command-bar")).toBeVisible({ timeout: 30_000 });
 
-    await expect(page.locator('[data-theme="default"]')).toBeVisible();
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
     await expect(page.getByTestId("pro-mode-indicator")).toHaveAccessibleName("Pro tools on");
     const proTokens = await readThemeTokens(page);
@@ -2165,7 +2161,7 @@ test.describe("Pro visual policy", () => {
 
     await mockPlan(page, "free");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("editor-command-bar")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
     // Free asking for designer mode gets the upgrade prompt. On a slow dev server it can
     // open after dismissBlockingPrompt's one-time check, so wait for it and close it here.
@@ -2197,9 +2193,8 @@ test.describe("Pro visual policy", () => {
     test.setTimeout(300_000);
     await mockPlan(page, "pro");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("editor-command-bar")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
-    await expect(page.getByTestId("editor-command-bar")).toBeVisible();
     await openCustomMillworkStudioFromWorkspace(page, {
       accessLevel: "pro",
       activation: "pointer",

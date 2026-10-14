@@ -21,7 +21,6 @@ export type CanvasSavedViewsActions = {
 };
 
 export type CanvasSavedViewsProps = CanvasSavedViewsState & CanvasSavedViewsActions & {
-  dark: boolean;
   /** Phones: a 44px button in the view pill; from md, a compact one in the canvas toolbar. */
   size: "pill" | "toolbar";
 };
@@ -137,7 +136,7 @@ export function CanvasSavedViews(props: CanvasSavedViewsProps) {
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         className={`${buttonClass} ${
-          open ? "bg-neutral-900 text-white" : props.dark ? "designer-work-control" : "text-neutral-800 hover:bg-neutral-100"
+          open ? "bg-neutral-900 text-white" : "text-neutral-800 hover:bg-neutral-100"
         }`}
         onClick={() => setOpen((value) => !value)}
       >

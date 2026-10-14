@@ -173,7 +173,6 @@ export type UseDesignPagePlanPresentationModelInput = {
     };
     presentation: {
       lightingPreset: LightingPreset;
-      showDesignerTheme: boolean;
       simplePlanControls: boolean;
       planLayers: PlanLayers;
       planTheme: PlanTheme;
@@ -279,7 +278,7 @@ export function useDesignPagePlanPresentationModel({
     [exportReadinessItems]
   );
   const sceneBackgroundColor =
-    layout.viewMode === "3d" ? (presentation.showDesignerTheme ? "#dedfdf" : "#f4f2ed") : "#ffffff";
+    layout.viewMode === "3d" ? "#f4f2ed" : "#ffffff";
   const effectivePlanLayers = presentation.simplePlanControls
     ? simplePlanLayers
     : presentation.planLayers;
