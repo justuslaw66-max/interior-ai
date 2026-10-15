@@ -129,11 +129,11 @@
       "limit": 250
     },
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx": {
-      "lines": 438,
+      "lines": 434,
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
-      "lines": 293,
+      "lines": 283,
       "limit": 250
     },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
@@ -177,7 +177,7 @@
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
-      "lines": 621,
+      "lines": 617,
       "limit": 250
     },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
@@ -225,11 +225,11 @@
       "limit": 250
     },
     "components/editor/FloorPlanUploadPanel.tsx": {
-      "lines": 764,
+      "lines": 757,
       "limit": 250
     },
     "components/editor/FloorPropertiesPanel.tsx": {
-      "lines": 627,
+      "lines": 618,
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
@@ -273,7 +273,7 @@
       "limit": 250
     },
     "components/editor/SelectedItemDetailsPanel.tsx": {
-      "lines": 495,
+      "lines": 490,
       "limit": 250
     },
     "components/GoogleAddressAutocomplete.tsx": {
@@ -1515,7 +1515,7 @@
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 367
+        "maximum": 363
       },
       "complexFunctions": {
         "count": 1,
@@ -1531,7 +1531,7 @@
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 200
+        "maximum": 189
       },
       "complexFunctions": {
         "count": 1,
@@ -1691,13 +1691,13 @@
     "components/editor/design-page/PlanManualQuickActions.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 140
+        "maximum": 131
       }
     },
     "components/editor/design-page/PlanQualityReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 73
+        "maximum": 72
       }
     },
     "components/editor/design-page/PlanRoomSummaryCard.tsx": {
@@ -1751,7 +1751,7 @@
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 565
+        "maximum": 561
       },
       "complexFunctions": {
         "count": 1,
@@ -1984,16 +1984,10 @@
         "maximum": 92
       }
     },
-    "components/editor/FloorPlanToolStrip.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 64
-      }
-    },
     "components/editor/FloorPlanUploadPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 633
+        "maximum": 625
       },
       "complexFunctions": {
         "count": 1,
@@ -2003,7 +1997,7 @@
     "components/editor/FloorPropertiesPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 563
+        "maximum": 554
       },
       "complexFunctions": {
         "count": 1,
@@ -2137,7 +2131,7 @@
     "components/editor/SelectedItemDetailsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 423
+        "maximum": 418
       },
       "complexFunctions": {
         "count": 1,

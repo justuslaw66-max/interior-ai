@@ -347,42 +347,38 @@ export function CatalogPlacementConfirmPanel({
             >
               Centre
             </Button>
-            <button
-              type="button"
+            <Button
+              size="icon"
               data-testid="catalog-placement-nudge-left"
-              className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
               aria-label="Nudge placement left"
               onClick={() => actions.onNudge(-nudgeStepMeters, 0)}
             >
               ←
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="icon"
               data-testid="catalog-placement-nudge-up"
-              className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
               aria-label="Nudge placement back"
               onClick={() => actions.onNudge(0, -nudgeStepMeters)}
             >
               ↑
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="icon"
               data-testid="catalog-placement-nudge-down"
-              className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
               aria-label="Nudge placement front"
               onClick={() => actions.onNudge(0, nudgeStepMeters)}
             >
               ↓
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="icon"
               data-testid="catalog-placement-nudge-right"
-              className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
               aria-label="Nudge placement right"
               onClick={() => actions.onNudge(nudgeStepMeters, 0)}
             >
               →
-            </button>
+            </Button>
           </div>
         </div>
         <div className="sticky bottom-0 -mx-4 grid shrink-0 grid-cols-2 gap-2 border-t border-neutral-200 bg-white/95 px-4 pb-1 pt-3 backdrop-blur md:-mx-3 md:px-3 md:pb-0 md:pt-2">

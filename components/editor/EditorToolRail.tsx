@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 
+import { Button } from "@/components/ui/Button";
+
 export type EditorToolRailMode = "design" | "adjust" | "ai" | "buy";
 
 type EditorToolRailProps = {
@@ -23,16 +25,10 @@ type ToolButtonProps = {
   children: ReactNode;
 };
 
-function toolButtonClass(active: boolean): string {
-  if (active) {
-    return "bg-neutral-900 text-white";
-  }
-
-  return "text-neutral-700 hover:bg-neutral-100";
-}
-
+// The rail's shortcuts are quiet icon buttons; the step that's open is pressed, black (UX 5n, Q3).
+// Fit to screen is an action, so it has no pressed state.
 function ToolButton({
-  active = false,
+  active,
   label,
   testId,
   title,
@@ -40,16 +36,17 @@ function ToolButton({
   children,
 }: ToolButtonProps) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="quiet"
+      size="icon"
+      pressed={active}
       aria-label={label}
       data-testid={testId}
       title={title}
-      className={`flex h-9 w-9 items-center justify-center rounded-xl transition-colors ${toolButtonClass(active)}`}
       onClick={onClick}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -110,7 +107,7 @@ export default function EditorToolRail({
   return (
     <div
       data-testid="editor-tool-rail"
-      className="absolute left-4 top-bar-17 z-40 md:top-bar-6 flex w-12 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
+      className="absolute left-4 top-bar-17 z-40 md:top-bar-6 flex w-12 touch:w-14 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
       aria-label="Editor tools"
     >
       <ToolButton

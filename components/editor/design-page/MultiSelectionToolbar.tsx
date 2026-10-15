@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import type { ZoneMin } from "@/lib/room-types";
+import { Button } from "@/components/ui/Button";
 
 type MultiSelectionToolbarProps = {
   state: {
@@ -59,10 +60,10 @@ export function MultiSelectionToolbar({
           Align Z centre
         </button>
         {state.zoneTools ? <ZoneCreateControls state={state} actions={actions} buttonClass={buttonClass} /> : null}
-        <button type="button" className={`${buttonClass} grid h-8 w-8 place-items-center p-0 touch:h-11 touch:w-11`}
+        <Button variant="quiet" size="icon"
           aria-label={`Deselect ${state.count} products`} title={`Deselect ${state.count} products`} onClick={actions.clear}>
           <X className="h-4 w-4" aria-hidden="true" />
-        </button>
+        </Button>
       </div>
     </div>
   );

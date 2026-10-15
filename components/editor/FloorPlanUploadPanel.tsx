@@ -23,6 +23,7 @@ import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
 import { floorPlanUploadFileProblem, floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import type { RoomType } from "@/lib/room-types";
 import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 type TraceRoomTypeOption = {
   type: RoomType;
@@ -459,6 +460,7 @@ export default function FloorPlanUploadPanel({
                   type="button"
                   data-testid={`floor-plan-draw-mode-${tool.id}`}
                   className={drawToolButtonClass(tool.id)}
+                  aria-pressed={traceRoomMode && traceRoomDrawMode === tool.id}
                   disabled={disabled || !canTraceRooms}
                   onClick={() => startRoomDraw(tool.id)}
                 >
@@ -539,30 +541,20 @@ export default function FloorPlanUploadPanel({
                   <div className="rounded-lg bg-white p-2">
                     <div className={subtleClass}>Precision</div>
                     {showAngleLockControls && (
-                      <div className="mt-1.5 grid grid-cols-3 gap-1 rounded-lg bg-black/5 p-1">
-                        {ANGLE_LOCK_TOOLS.map((tool) => {
-                          const isActive = traceRoomAngleLockMode === tool.id;
-                          return (
-                            <button
-                              key={tool.id}
-                              type="button"
-                              data-testid={`floor-plan-angle-lock-${tool.id}`}
-                              className={
-                                [
-                                      "rounded-md px-2 py-1.5 text-xs font-semibold transition",
-                                      isActive
-                                        ? "bg-neutral-900 text-white"
-                                        : "text-neutral-600 hover:bg-white",
-                                    ].join(" ")
-                              }
-                              disabled={disabled}
-                              onClick={() => onTraceRoomAngleLockModeChange?.(tool.id)}
-                            >
-                              {tool.label}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <SegmentedControl
+                        label="Wall angles"
+                        size="compact"
+                        fill
+                        className="mt-1.5"
+                        value={traceRoomAngleLockMode}
+                        onChange={(mode) => onTraceRoomAngleLockModeChange?.(mode)}
+                        disabled={disabled}
+                        options={ANGLE_LOCK_TOOLS.map((tool) => ({
+                          value: tool.id,
+                          label: tool.label,
+                          testId: `floor-plan-angle-lock-${tool.id}`,
+                        }))}
+                      />
                     )}
                     {showExactWallLengthControls && (
                       <div className="mt-2">
@@ -615,6 +607,7 @@ export default function FloorPlanUploadPanel({
                         type="button"
                         data-testid={`floor-plan-draw-mode-${tool.id}`}
                         className={drawToolButtonClass(tool.id)}
+                        aria-pressed={traceRoomMode && traceRoomDrawMode === tool.id}
                         disabled={disabled || !canTraceRooms}
                         onClick={() => startRoomDraw(tool.id)}
                       >

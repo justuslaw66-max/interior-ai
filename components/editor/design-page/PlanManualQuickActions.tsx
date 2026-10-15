@@ -1,6 +1,7 @@
 "use client";
 
 import type { FloorPlanTool } from "@/components/editor/FloorPlanToolStrip";
+import { Button } from "@/components/ui/Button";
 
 type ManualPlanActionIconName =
   | "select"
@@ -31,14 +32,9 @@ type PlanManualQuickActionsProps = {
   actions: PlanManualQuickActionsActions;
 };
 
-const manualPlanQuickActionButtonClass = (active: boolean, disabled = false) =>
-  [
-    "group relative grid h-10 w-10 touch:h-11 touch:w-11 shrink-0 place-items-center rounded-lg border text-xs font-semibold transition focus:outline-hidden focus:ring-2 focus:ring-neutral-900/20",
-    active
-      ? "border-neutral-950 bg-neutral-950 text-white shadow-sm"
-      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50",
-    disabled ? "cursor-not-allowed opacity-45 hover:bg-white" : "",
-  ].join(" ");
+// Icon tool buttons (UX 5n): the tool that's on is pressed, black, as Q3 asks. The group and
+// relative place each tooltip over its button.
+const manualPlanQuickActionButtonClass = "group relative";
 
 const manualPlanQuickActionTooltipClass =
   "pointer-events-none absolute bottom-full left-1/2 z-40 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-xs font-semibold text-white shadow-lg group-hover:block group-focus:block group-focus-visible:block";
@@ -109,12 +105,12 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
       role="toolbar"
       aria-label="Manual plan actions"
     >
-      <button
-        type="button"
+      <Button
+        size="icon"
         data-testid="manual-plan-action-select"
-        className={manualPlanQuickActionButtonClass(state.activeTool === "select")}
+        className={manualPlanQuickActionButtonClass}
         aria-label="Select plan objects"
-        aria-pressed={state.activeTool === "select"}
+        pressed={state.activeTool === "select"}
         title="Select"
         onClick={actions.select}
       >
@@ -127,18 +123,15 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
         >
           Select
         </span>
-      </button>
+      </Button>
       {state.hasUnderlay && (
-        <button
-          type="button"
+        <Button
+          size="icon"
           data-testid="manual-plan-action-scale"
-          className={manualPlanQuickActionButtonClass(
-            state.calibrationActive,
-            !state.canScale
-          )}
+          className={manualPlanQuickActionButtonClass}
           disabled={!state.canScale}
           aria-label="Set scale"
-          aria-pressed={state.calibrationActive}
+          pressed={state.calibrationActive}
           title={state.canScale ? "Set scale" : "Scale is unavailable for this upload"}
           onClick={actions.scale}
         >
@@ -151,14 +144,14 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
           >
             {state.canScale ? "Set scale" : "Scale unavailable"}
           </span>
-        </button>
+        </Button>
       )}
-      <button
-        type="button"
+      <Button
+        size="icon"
         data-testid="manual-plan-action-draw"
-        className={manualPlanQuickActionButtonClass(state.activeTool === "draw_room")}
+        className={manualPlanQuickActionButtonClass}
         aria-label="Draw room"
-        aria-pressed={state.activeTool === "draw_room"}
+        pressed={state.activeTool === "draw_room"}
         title="Draw room"
         onClick={actions.drawRoom}
       >
@@ -171,17 +164,14 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
         >
           Draw room
         </span>
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        size="icon"
         data-testid="manual-plan-action-door"
-        className={manualPlanQuickActionButtonClass(
-          state.activeTool === "door",
-          roomsUnavailable
-        )}
+        className={manualPlanQuickActionButtonClass}
         disabled={roomsUnavailable}
         aria-label={roomsUnavailable ? "Draw a room first to add a door" : "Add door"}
-        aria-pressed={state.activeTool === "door"}
+        pressed={state.activeTool === "door"}
         title={roomsUnavailable ? "Draw a room first" : "Add door"}
         onClick={() => actions.addOpening("door")}
       >
@@ -194,17 +184,14 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
         >
           {roomsUnavailable ? "Draw room first" : "Add door"}
         </span>
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        size="icon"
         data-testid="manual-plan-action-window"
-        className={manualPlanQuickActionButtonClass(
-          state.activeTool === "window",
-          roomsUnavailable
-        )}
+        className={manualPlanQuickActionButtonClass}
         disabled={roomsUnavailable}
         aria-label={roomsUnavailable ? "Draw a room first to add a window" : "Add window"}
-        aria-pressed={state.activeTool === "window"}
+        pressed={state.activeTool === "window"}
         title={roomsUnavailable ? "Draw a room first" : "Add window"}
         onClick={() => actions.addOpening("window")}
       >
@@ -217,11 +204,11 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
         >
           {roomsUnavailable ? "Draw room first" : "Add window"}
         </span>
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        size="icon"
         data-testid="manual-plan-action-fit"
-        className={manualPlanQuickActionButtonClass(false)}
+        className={manualPlanQuickActionButtonClass}
         aria-label="Fit to screen"
         title="Fit to screen"
         onClick={actions.fit}
@@ -235,7 +222,7 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
         >
           Fit to screen
         </span>
-      </button>
+      </Button>
     </div>
   );
 }

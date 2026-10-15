@@ -28,15 +28,15 @@ export function SelectedItemPanelHeader({ title, isDesigner, canEdit, lockLabel,
             {lockLabel}
           </Button>
         ) : null}
-        <button
-          type="button"
+        <Button
+          variant="quiet"
+          size="icon"
           data-testid="selected-item-deselect"
           aria-label={`Deselect ${title}`}
           onClick={onDeselect}
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-neutral-700 hover:bg-neutral-100 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 md:h-8 md:w-8"
         >
           <X className="h-4 w-4" aria-hidden="true" />
-        </button>
+        </Button>
       </div>
     </div>
   );

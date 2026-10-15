@@ -70,7 +70,8 @@ const quickActions = renderToStaticMarkup(createElement(PlanManualQuickActions, 
 }));
 const quickButtons = quickActions.match(/<button [^>]*>/g) ?? [];
 assert.ok(quickButtons.length >= 5);
-for (const tag of quickButtons) assert.match(tag, /\bh-10 w-10 touch:h-11 touch:w-11\b/, tag);
+// The quick actions are icon Buttons (UX 5n): 36px, and 44px on touch screens.
+for (const tag of quickButtons) assert.match(tag, /\btouch:h-11 touch:w-11 h-9 w-9\b/, tag);
 const tips = (compact: boolean) =>
   renderToStaticMarkup(createElement(PlanGuidedActionsToggle, { state: { enabled: false, compact }, actions: { toggle: noop } }));
 assert.match(tips(false), /\btouch:min-h-11\b/);

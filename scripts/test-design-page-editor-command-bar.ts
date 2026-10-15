@@ -246,19 +246,20 @@ assert.match(
   /\(\["auto", "quality", "lite"\] as const\)\.map/,
   "Scene performance choices should retain auto, quality, lite order."
 );
+// One segmented control (UX 5n): the chosen mode is pressed, aria-pressed="true".
 assert.match(
   commandBarSource,
-  /data-testid=\{`scene-performance-\$\{option\}`\}[\s\S]*?data-active=\{active \? "true" : "false"\}/,
-  "Scene performance choices should retain stable test ids and active-state attributes."
+  /<SegmentedControl\s+label="Scene quality"[\s\S]*?value=\{state\.scenePerformance\.mode\}[\s\S]*?testId: `scene-performance-\$\{option\}`/,
+  "Scene performance choices should retain stable test ids and say which one is on."
 );
 assert.match(
   commandBarSource,
-  /option === "auto"[\s\S]*?state\.scenePerformance\.liteEnabled[\s\S]*?\? "Auto Lite"[\s\S]*?: "Auto"[\s\S]*?option === "quality"[\s\S]*?\? "Quality"[\s\S]*?: "Lite"/,
-  "Automatic scene mode should retain its effective Auto Lite label."
+  /option === "auto"[\s\S]*?state\.scenePerformance\.liteEnabled[\s\S]*?\? "Auto · Lite"[\s\S]*?: "Auto"[\s\S]*?option === "quality"[\s\S]*?\? "Quality"[\s\S]*?: "Lite"/,
+  "Automatic scene mode should retain its effective label, Auto · Lite while it runs as Lite."
 );
 assert.match(
   commandBarSource,
-  /onClick=\{\(\) => actions\.scenePerformance\.changeMode\(option\)\}/,
+  /onChange=\{actions\.scenePerformance\.changeMode\}/,
   "Scene performance choices should stay wired to the grouped mode action."
 );
 

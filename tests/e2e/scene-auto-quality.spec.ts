@@ -53,7 +53,7 @@ test("Auto preserves quality through idle and repeated finite resize interaction
   expect(await page.evaluate(() => localStorage.getItem("scene_performance_mode"))).toBe("auto");
   await page.getByTestId("editor-command-overflow").click();
   const auto = page.getByTestId("scene-performance-auto");
-  await expect(auto).toHaveAttribute("data-active", "true");
+  await expect(auto).toHaveAttribute("aria-pressed", "true");
   await expect(auto).toHaveText("Auto");
   await testInfo.attach("auto-idle-quality", {
     body: JSON.stringify({ mode: "auto", shadowsEnabled: true, observations }),

@@ -58,9 +58,10 @@ export default function PresentExportProfessionalPlanControls({
 
       <SegmentedControl label="Plan theme" size="compact" fill value={theme} onChange={onThemeChange} options={THEME_OPTIONS} />
 
-      <div role="group" aria-label="Visible plan layers" className="grid grid-cols-2 gap-2">
+      {/* The toggles share each line by label, so "Doors & windows" stays on one line. */}
+      <div role="group" aria-label="Visible plan layers" className="flex flex-wrap gap-2">
         {LAYERS.map(([key, label]) => (
-          <Button key={key} size="regular" pressed={layers[key]} onClick={() => onToggleLayer(key)}>
+          <Button key={key} size="compact" className="grow" pressed={layers[key]} onClick={() => onToggleLayer(key)}>
             {label}
           </Button>
         ))}
