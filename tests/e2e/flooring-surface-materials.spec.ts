@@ -194,27 +194,22 @@ test.describe("Flooring surface materials", () => {
     await expect(floorPanel).toBeVisible({ timeout: 30000 });
 
     await page.getByRole("button", { name: "2D", exact: true }).click();
-    const planReviewPanel = page.getByTestId("plan-quality-review-panel");
-    const selectionInspector = page.getByTestId("selection-inspector");
-    await expect(planReviewPanel).toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "2d");
+    const rightRail = page.getByTestId("plan-right-rail");
+    const levelsPanel = rightRail.getByTestId("coohom-floor-panel");
+    const selectionInspector = rightRail.getByTestId("selection-inspector");
+    await expect(levelsPanel).toBeVisible({ timeout: 30000 });
     await expect(selectionInspector).toBeVisible({ timeout: 30000 });
-    const rightRailMetrics = await page.evaluate(() => {
-      const review = document.querySelector<HTMLElement>('[data-testid="plan-quality-review-panel"]');
-      const inspector = document.querySelector<HTMLElement>('[data-testid="selection-inspector"]');
-      if (!review || !inspector) return null;
-      const reviewRect = review.getBoundingClientRect();
-      const inspectorRect = inspector.getBoundingClientRect();
-      return {
-        gap: Math.round(inspectorRect.top - reviewRect.bottom),
-        leftDelta: Math.round(Math.abs(inspectorRect.left - reviewRect.left)),
-        widthDelta: Math.round(Math.abs(inspectorRect.width - reviewRect.width)),
-      };
-    });
-    if (!rightRailMetrics) throw new Error("Unable to measure 2D right rail panels");
-    expect(rightRailMetrics.gap).toBeGreaterThanOrEqual(0);
-    expect(rightRailMetrics.gap).toBeLessThanOrEqual(10);
-    expect(rightRailMetrics.leftDelta).toBeLessThanOrEqual(1);
-    expect(rightRailMetrics.widthDelta).toBeLessThanOrEqual(1);
+    // The starter room has its door and window, so plan review finds no issue and shows no panel (eeb6c16b, UX audit ED4);
+    // the inspector docks directly under Levels.
+    await expect(page.getByTestId("plan-quality-review-panel")).toHaveCount(0);
+    const [levelsBox, inspectorBox] = await Promise.all([levelsPanel.boundingBox(), selectionInspector.boundingBox()]);
+    if (!levelsBox || !inspectorBox) throw new Error("Unable to measure 2D right rail panels");
+    const gap = Math.round(inspectorBox.y - (levelsBox.y + levelsBox.height));
+    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(gap).toBeLessThanOrEqual(10);
+    expect(Math.round(Math.abs(inspectorBox.x - levelsBox.x))).toBeLessThanOrEqual(1);
+    expect(Math.round(Math.abs(inspectorBox.width - levelsBox.width))).toBeLessThanOrEqual(1);
     await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "3d");
 
@@ -226,7 +221,7 @@ test.describe("Flooring surface materials", () => {
     await expect(surfaceControls).toHaveAttribute("data-surface-target", "floor");
     await surfaceControls.getByTestId("surfaces-search").fill("Dorica Crema");
 
-    const doricaCremaCard = surfaceControls.getByRole("button", { name: /Dorica Crema Marble .*5 sizes/i }).first();
+    const doricaCremaCard = surfaceControls.getByRole("button", { name: /Dorica Crema Marble .*6 sizes/i }).first();
     await expect(doricaCremaCard).toBeVisible({ timeout: 30000 });
     await doricaCremaCard.click();
     await floorPanel.getByTestId(`surface-size-option-${GARDENIA_DORICA_CREMA_120_ID}`).click();
