@@ -28,6 +28,7 @@ source:
     - "Available configurator formats: 0010005 120x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0010518 20x120 Nat ENTRAMBE patterns Spina_01,Sfals_random_1,pieno_01,pieno_02,pieno_05; 0010008 60x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0010147 60x120 PAVIMENTO patterns pieno_01,pieno_02,pieno_05; 0010588 60x120 PAVIMENTO patterns pieno_01,pieno_02,pieno_05; 0010818 60x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0009999 120x280 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
     - "ABK's technical sheet for Dorica (DORICA - Datasheet.pdf, read 2026-10-14): 8.5 mm; slip resistance R10 (DIN 51130), bare foot A+B (DIN 51097)."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: marble
@@ -120,18 +121,16 @@ rendering:
     - brick
     - vertical_brick
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_physical_dimensions
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant

@@ -1108,7 +1108,7 @@ for (const entry of abkSiteEntries) {
     isWoodPlank(entry) ? ["random_stagger", "straight", "herringbone"] : ["straight", "brick", "vertical_brick"],
     `${id} layouts`
   );
-  assert.deepEqual(entry.import_governance.publish_blockers, ["confirm_price_per_sqm_or_quote_mode"], `${id} blockers`);
+  assert.deepEqual(entry.import_governance.publish_blockers, [], `${id} blockers (published, quote on request)`);
 }
 // The July importer would reset every entry on faces and delete the collections it never had: a write run refuses.
 const lostToImport = findGardeniaEntriesAWriteRunWouldLose(path.join(process.cwd(), "catalog"));
@@ -1664,7 +1664,7 @@ for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAirOutdoor)
           : ["straight", "brick", "vertical_brick"],
     `${id} layouts`
   );
-  assert.deepEqual(entry.import_governance.publish_blockers, ["confirm_price_per_sqm_or_quote_mode"], `${id} blockers`);
+  assert.deepEqual(entry.import_governance.publish_blockers, [], `${id} blockers (published, quote on request)`);
 }
 // The July import's entries that are only ABK's Plein Air R11 items (J, 13 Oct 2026: follow what ABK says) are named and described
 // as the outdoor sizes above: R11 in the name, 20 mm, R11, outdoor, and on floors a balcony. Entries the July import folded an indoor
@@ -1981,7 +1981,7 @@ for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAir)) {
     /-plein-air-(legend|raye)-/.test(id) ? ["random_stagger", "straight", "herringbone"] : ["straight", "brick", "vertical_brick"],
     `${id} layouts`
   );
-  assert.deepEqual(entry.import_governance.publish_blockers, ["confirm_price_per_sqm_or_quote_mode"], `${id} blockers`);
+  assert.deepEqual(entry.import_governance.publish_blockers, [], `${id} blockers (published, quote on request)`);
 }
 
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
@@ -2284,6 +2284,34 @@ assert.deepEqual(
 assert.deepEqual([lookup("Gardenia Gioia Cielo 60x120", "Gioia")?.thickness_mm, lookup("Gardenia Gioia Cielo 60x120", "Gioia")?.shod_slip], [7, null]);
 assert.equal(lookup("Gardenia Epoque 2.0 Black 60x120 Lappato", "Epoque 2.0"), null, "no sheet lists Lappato");
 assert.deepEqual(splitCatalogueSize("Gardenia Tabulae Refined Fieno 23,4x148 Nat"), { size: "23,4x148", finishWords: "Nat" });
+
+// Gardenia published as quote on request (J, 15 Oct 2026: "put quote on request for now and publish"; the quote link is ABK's
+// contact form). Every entry on ABK's faces is published with no blocker and a thickness; the 52 still on configurator previews
+// (tileability unconfirmed: mosaics, chevrons, book-matched pairs, two Negresco sizes) stay drafts until they have faces.
+const gardeniaQuoteUrl = "https://www.abkgroup.it/en/gardeniaariana/contacts/";
+const gardeniaDrafts: string[] = [];
+for (const entry of gardeniaEntries) {
+  const id = entry.surface_material.material_id;
+  if (entry.texture_assets.tileable === "needs_confirmation") {
+    gardeniaDrafts.push(id);
+    assert.equal(entry.import_governance.publish_status, "draft", `${id}: a preview stays a draft`);
+    assert.ok(entry.import_governance.publish_blockers.includes("confirm_texture_tileability"), `${id}: tileability blocker`);
+    continue;
+  }
+  assert.equal(entry.import_governance.publish_status, "published", `${id}: published`);
+  assert.deepEqual(entry.import_governance.publish_blockers, [], `${id}: no blocker`);
+  assert.equal(entry.commerce.purchase_mode, "quote_or_sample", `${id}: quote on request`);
+  assert.equal(entry.commerce.sample_request_url, gardeniaQuoteUrl, `${id}: ABK's contact form`);
+  assert.equal(entry.commerce.price_per_sqm?.amount ?? null, null, `${id}: no price yet`);
+  assert.ok((entry.physical_specs.total_thickness_mm ?? 0) > 0, `${id}: a thickness`);
+  assert.ok(entry.source.notes?.some((note) => note.startsWith("Quote on request (J, 2026-10-15)")), `${id}: the quote note`);
+}
+assert.deepEqual([gardeniaEntries.length, gardeniaDrafts.length], [1366, 52], "1314 Gardenia entries published, 52 drafts");
+assert.equal(
+  gardeniaEntries.filter((entry) => entry.source.notes?.some((note) => note.startsWith("ABK's colour page https://"))).length,
+  102,
+  "the 102 thicknesses filled from ABK's colour pages on 15 Oct note the page"
+);
 
 // ABK's Plein Air catalogue (January 2026): every outdoor floor can be laid the catalogue's ways, its places are in the vocabulary,
 // every outdoor floor notes its packing, and the special pieces name catalogue cards.

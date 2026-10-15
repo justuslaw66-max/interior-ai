@@ -32,6 +32,7 @@ source:
     - "Laying and uses: ABK's Plein Air catalogue (January 2026, read 2026-10-14) gives every Plein Air tile five ways to be laid (glued, the one for floors vehicles drive over; dry on grass, on gravel or on sand; raised on pedestals 25 to 270 mm high) and names its places: driveways and parking areas, stepping stones and lawn walkways, courtyards, raised terraces, planters, pool areas, steps, external showers and pool walkways."
     - "Packing (ABK's Plein Air technical sheet, read 2026-10-14): 60x60 rectified, real size 596x596 mm, 2 tiles and 0.72 m² per box, 45.3 kg/m², 32.6 kg per box, 30 boxes per pallet."
     - "Special pieces in this colour (ABK's Plein Air catalogue, read 2026-10-14): grille, corner grilles, bullnose, L element, L element grip, step edge, curve; lib/surface-material-plein-air-system.ts lists their sizes and item codes."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: stone
@@ -158,17 +159,16 @@ rendering:
     - brick
     - vertical_brick
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_abk_site_import
     - gardenia_tile_item_variant
