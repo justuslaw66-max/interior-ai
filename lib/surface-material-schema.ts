@@ -267,8 +267,8 @@ export const SURFACE_MATERIAL_VOCABULARY = {
     "education",
   ],
   // Gardenia's outdoor tiles go "from the terrace to the balconies, from the paths to the gardens, from the patio to the pool"
-  // (blog.gardenia.it, read 13 Oct 2026).
-  outdoor_use: ["terrace", "balcony", "patio", "garden", "path", "pool_edge"],
+  // (blog.gardenia.it, read 13 Oct 2026); ABK's Plein Air catalogue adds driveways, steps and external showers (read 14 Oct 2026).
+  outdoor_use: ["terrace", "balcony", "patio", "garden", "path", "pool_edge", "driveway", "steps", "outdoor_shower"],
   installation_method: [
     "unknown",
     "click_lock",
@@ -277,7 +277,7 @@ export const SURFACE_MATERIAL_VOCABULARY = {
     "sheet_roll",
     "decking_clip",
     "direct_stick",
-    // Outdoor laying Gardenia names for its 20 mm outdoor tiles (Native), besides glue on a screed (direct_stick).
+    // Outdoor laying of the 20 mm Plein Air tiles (ABK's Plein Air catalogue, 2026), besides glue on a screed (direct_stick).
     "dry_lay_on_grass",
     "dry_lay_on_gravel_or_sand",
     "raised_installation",

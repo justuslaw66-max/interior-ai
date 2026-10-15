@@ -26,6 +26,7 @@ source:
     - "Collection page color availability for Pillole: Pillole 8,5 mm: 60x120 (24\"x48\")."
     - "Available configurator formats: PF60014511 60x120 Nat ENTRAMBE patterns pieno_01,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's technical sheet for I Pigmenti (I PIGMENTI - Datasheet.pdf, read 2026-10-14): 8.5 mm; slip resistance R10 (DIN 51130), bare foot A+B (DIN 51097)."
 classification:
   flooring_type: tile
   design_effect: concrete
@@ -56,7 +57,7 @@ physical_specs:
   installation_method:
     - direct_stick
   waterproof: null
-  slip_rating: null
+  slip_rating: R10
   suitable_for_wet_area: null
   suitable_for_outdoor: null
   commercial_grade: null

@@ -40,6 +40,23 @@ import {
   SURFACE_OUTDOOR_PAIRINGS,
   SURFACE_OUTDOOR_SOURCES,
 } from "../lib/surface-material-outdoor-knowledge";
+import { ABK_DATASHEETS } from "../lib/surface-material-abk-datasheets";
+import {
+  findAbkDatasheetMatch,
+  parseAbkDatasheetFormats,
+  splitCatalogueSize,
+} from "../lib/surface-material-abk-datasheet-lookup";
+import {
+  PLEIN_AIR_LAYING,
+  PLEIN_AIR_SPACES,
+  PLEIN_AIR_SPECIAL_PIECES,
+  PLEIN_AIR_SPECIAL_PIECE_CODES_PRINTED_TWICE,
+  PLEIN_AIR_SPECIAL_PIECE_KINDS,
+  PLEIN_AIR_WELLNESS,
+  getPleinAirPacking,
+  getPleinAirSpecialPieces,
+  type PleinAirSpecialPieceKind,
+} from "../lib/surface-material-plein-air-system";
 import type { SurfaceMaterialRenderTuple } from "../lib/surface-material-runtime-types";
 import { findGardeniaEntriesAWriteRunWouldLose } from "./gardenia-import-guard";
 
@@ -1692,7 +1709,8 @@ for (const [id, { julyId, indoorItem, julyName }] of splitFrom) {
   assert.equal(outdoorEntry.surface_material.product_name, `${julyName.replace(/ Nat$/, "")} R11`, `${id} is named R11`);
   assert.deepEqual(
     [julyEntry.physical_specs.total_thickness_mm, julyEntry.physical_specs.slip_rating, julyEntry.physical_specs.suitable_for_outdoor],
-    [8.5, id.includes("-dorica-") ? "R11" : null, null],
+    // Pietra Viva's 8.5 mm 80x80 Nat. P.Tech is R10 on ABK's technical sheet (read 14 Oct 2026); its 60x120 Nat isn't on it.
+    [8.5, id.includes("-dorica-") ? "R11" : / 80x80 /.test(julyName) ? "R10" : null, null],
     `${julyId} is the 8.5 mm indoor item`
   );
   assert.ok(!julyEntry.classification.room_suitability.includes("balcony"), `${julyId} lists no balcony`);
@@ -1712,9 +1730,10 @@ for (const [id, { julyId, indoorItem, julyName }] of splitFrom) {
 }
 
 // Outdoor knowledge (J, 13 Oct 2026: "Knowledge in the catalogue"; the manufacturer's words are in
-// lib/surface-material-outdoor-knowledge.ts). Every outdoor floor says where it goes; Plein Air Native also how it can be laid, the
-// four ways Gardenia's blog names for Native. The browser data carries both, with the same colour's indoor floor entries: the card's
-// other sizes. The Plein Air collection's ranges and La Geoteca Antracite have none in the catalogue.
+// lib/surface-material-outdoor-knowledge.ts and lib/surface-material-plein-air-system.ts). Every outdoor floor says where it goes
+// (the places Gardenia's blog names, and ABK's Plein Air catalogue's driveways, steps and outdoor showers) and how it can be laid
+// (the catalogue's ways for every Plein Air tile, 14 Oct 2026). The browser data carries both, with the same colour's indoor floor
+// entries: the card's other sizes. The Plein Air collection's ranges and La Geoteca Antracite have none in the catalogue.
 const outdoorFloors = new Set(
   getAllSurfaceMaterialYamlEntries()
     .filter((entry) => entry.physical_specs.suitable_for_outdoor === true && entry.surface_material.surface_category === "flooring")
@@ -1727,12 +1746,12 @@ for (const entry of getAllSurfaceMaterialYamlEntries()) {
   assert.deepEqual(getSurfaceMaterialOutdoorFailures(entry), [], `${id}: outdoor fields`);
   assert.deepEqual(
     entry.classification.outdoor_uses,
-    outdoorFloors.has(id) ? ["terrace", "balcony", "patio", "garden", "path", "pool_edge"] : undefined,
+    outdoorFloors.has(id) ? [...SURFACE_MATERIAL_VOCABULARY.outdoor_use] : undefined,
     `${id}: outdoor uses`
   );
   assert.deepEqual(
-    (entry.physical_specs.installation_method ?? []).filter((method) => outdoorOnlyLaying.includes(method)),
-    /^gardenia-flooring-plein-air-native-/.test(id) ? outdoorOnlyLaying : [],
+    entry.physical_specs.installation_method?.filter((method) => outdoorOnlyLaying.includes(method)) ?? [],
+    outdoorFloors.has(id) ? outdoorOnlyLaying : [],
     `${id}: outdoor laying`
   );
 }
@@ -1746,6 +1765,10 @@ outdoorFixture.classification.outdoor_uses = ["terrace"];
 outdoorFixture.physical_specs.suitable_for_outdoor = null;
 outdoorFixture.physical_specs.installation_method = ["direct_stick", "raised_installation"];
 assert.equal(getSurfaceMaterialOutdoorFailures(outdoorFixture).length, 2, "uses and outdoor laying only on outdoor tiles");
+outdoorFixture.physical_specs.suitable_for_outdoor = true;
+outdoorFixture.classification.outdoor_uses = ["driveway"];
+outdoorFixture.physical_specs.installation_method = ["raised_installation"];
+assert.match(getSurfaceMaterialOutdoorFailures(outdoorFixture).join(), /driveway needs .* direct_stick/, "a driveway is glued");
 
 const metadataById = new Map(PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.map((metadata) => [metadata.material_id, metadata]));
 const joinedFloors = SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => material.surface_material.surface_category === "flooring").map(
@@ -2153,5 +2176,143 @@ assert.equal(getSurfacePhysicalAssetFailures(template).length, 1);
 template.texture_assets.faces = null;
 template.texture_assets.image_physical_size_mm = { width: 0, height: 600 };
 assert.equal(getSurfacePhysicalAssetFailures(template).length, 1);
+
+// ABK's technical sheets (J, 14 Oct 2026: "Yes download all of them for my webapp and the ai to be smarter to have the knowledge to
+// design"; he chose the technical sheets). Every Gardenia entry a sheet line fits has the sheet's slip class and thickness, so the
+// catalogue can't drift from the sheets; lib/surface-material-abk-datasheets.ts keeps the sheets' words.
+const gardeniaEntries = getAllSurfaceMaterialYamlEntries().filter((entry) => entry.surface_material.supplier === "gardenia_orchidea");
+const catalogueCollections = new Set(gardeniaEntries.map((entry) => entry.surface_material.collection));
+assert.equal(ABK_DATASHEETS.length, 21, "ABK's download area lists 21 technical sheets (none for Block and Eterea)");
+for (const sheet of ABK_DATASHEETS) {
+  assert.ok(catalogueCollections.has(sheet.collection), `${sheet.collection} is a catalogue collection`);
+  assert.match(sheet.sha256, /^[0-9a-f]{64}$/, `${sheet.collection}: sha256`);
+  assert.ok(sheet.bytes > 0 && sheet.file.endsWith(" - Datasheet.pdf"), `${sheet.collection}: file`);
+  for (const part of sheet.sheets) {
+    const finishes = new Set(part.formats.flatMap(parseAbkDatasheetFormats).flatMap((format) => format.finishes));
+    for (const finish of [...Object.keys(part.shod_slip ?? {}), ...Object.keys(part.barefoot_slip ?? {})]) {
+      // Pietra Viva's Antique 3D Tech page labels its values Nat.; every other sheet gives values for the finishes it lists.
+      assert.ok(finishes.has(finish as never) || sheet.collection === "Pietra Viva", `${sheet.collection}: ${finish} is listed`);
+    }
+    assert.ok(Object.values(part.shod_slip ?? {}).every((value) => /^R(9|1[0-3])$/.test(value)), `${sheet.collection}: R classes`);
+  }
+}
+const slipBySheet = new Map<string, number>();
+for (const entry of gardeniaEntries) {
+  const id = entry.surface_material.material_id;
+  const match = findAbkDatasheetMatch({ ...entry.surface_material, ...entry.physical_specs });
+  if (match?.shod_slip) {
+    assert.equal(entry.physical_specs.slip_rating, match.shod_slip, `${id}: the sheet's slip class`);
+    const key = `${entry.surface_material.collection} ${match.shod_slip}`;
+    slipBySheet.set(key, (slipBySheet.get(key) ?? 0) + 1);
+  }
+  if (match?.thickness_mm != null) {
+    assert.equal(entry.physical_specs.total_thickness_mm, match.thickness_mm, `${id}: the sheet's thickness`);
+  }
+  // The note an entry got when the sheet filled its slip class or thickness says what the sheet says.
+  const sheetNote = entry.source.notes?.find((note) => note.startsWith("ABK's technical sheet for "));
+  if (sheetNote) {
+    assert.ok(match, `${id}: a noted sheet fits`);
+    const slip = [match.shod_slip && `${match.shod_slip} (DIN 51130)`, match.barefoot_slip && `bare foot ${match.barefoot_slip} (DIN 51097)`];
+    const facts = [match.thickness_mm != null && `${match.thickness_mm} mm`, slip.some(Boolean) && `slip resistance ${slip.filter(Boolean).join(", ")}`];
+    assert.equal(
+      sheetNote,
+      `ABK's technical sheet for ${match.datasheet.collection} (${match.datasheet.file}, read 2026-10-14): ${facts.filter(Boolean).join("; ")}.`,
+      `${id}: the sheet note`
+    );
+  }
+}
+assert.equal(
+  gardeniaEntries.filter((entry) => entry.source.notes?.some((note) => note.startsWith("ABK's technical sheet for "))).length,
+  729,
+  "the entries the sheets filled note them"
+);
+assert.equal(slipBySheet.get("Luce R9"), 28, "Luce's Natural is R9");
+assert.equal(slipBySheet.get("I Pigmenti R10"), 106, "every I Pigmenti size on the sheet is R10");
+assert.equal(
+  gardeniaEntries.filter((entry) => entry.physical_specs.slip_rating).length,
+  687,
+  "111 R11 entries before the sheets, 576 from them"
+);
+const lookup = (product_name: string, collection: string, total_thickness_mm: number | null = null) =>
+  findAbkDatasheetMatch({ product_name, collection, total_thickness_mm });
+assert.deepEqual(
+  [lookup("Gardenia Make Ash 80x80", "Make")?.shod_slip, lookup("Gardenia Make Ash 80x80", "Make")?.thickness_mm],
+  ["R10", 8.5],
+  "a name without a finish is the one finish the sheet lists for its size, besides R11"
+);
+assert.equal(lookup("Gardenia Anima Beige 60x60", "Anima")?.shod_slip, null, "Anima 60x60 comes in Nat (R10) and Grip (R11)");
+assert.equal(lookup("Gardenia Anima Beige 60x60", "Anima")?.thickness_mm, 8.5);
+assert.equal(lookup("Gardenia Orosei Rope 60x120", "Orosei"), null, "a sheet by thickness only needs the finish named");
+assert.deepEqual(
+  [lookup("Gardenia Orosei Rope 60x120 Nat", "Orosei")?.shod_slip, lookup("Gardenia Orosei Rope 60x120 Nat", "Orosei")?.thickness_mm],
+  ["R10", null],
+  "Orosei Nat is R10 at 6 and 8.5 mm"
+);
+assert.deepEqual([lookup("Gardenia Gioia Cielo 60x120", "Gioia")?.thickness_mm, lookup("Gardenia Gioia Cielo 60x120", "Gioia")?.shod_slip], [7, null]);
+assert.equal(lookup("Gardenia Epoque 2.0 Black 60x120 Lappato", "Epoque 2.0"), null, "no sheet lists Lappato");
+assert.deepEqual(splitCatalogueSize("Gardenia Tabulae Refined Fieno 23,4x148 Nat"), { size: "23,4x148", finishWords: "Nat" });
+
+// ABK's Plein Air catalogue (January 2026): every outdoor floor can be laid the catalogue's ways, its places are in the vocabulary,
+// every outdoor floor notes its packing, and the special pieces name catalogue cards.
+const outdoorUseVocabulary: readonly string[] = SURFACE_MATERIAL_VOCABULARY.outdoor_use;
+assert.deepEqual(
+  [...new Set(PLEIN_AIR_LAYING.map((laying) => laying.method))],
+  ["direct_stick", ...outdoorOnlyLaying],
+  "the catalogue's laying systems are the vocabulary's"
+);
+for (const place of [...PLEIN_AIR_SPACES, ...PLEIN_AIR_WELLNESS]) {
+  assert.ok(place.outdoor_use === null || outdoorUseVocabulary.includes(place.outdoor_use), `${place.name}: a vocabulary use`);
+}
+const outdoorCardIds = new Map<string, string[]>();
+for (const id of outdoorFloors) {
+  const entry = yamlById.get(id)!;
+  const name = entry.surface_material.product_name.replace(/^Gardenia\s+/, "");
+  const size = splitCatalogueSize(name)!.size;
+  const card = name.slice(0, name.lastIndexOf(` ${size}`));
+  outdoorCardIds.set(card, [...(outdoorCardIds.get(card) ?? []), id]);
+  const packing = getPleinAirPacking(size);
+  assert.ok(packing, `${id}: a Plein Air size`);
+  assert.ok(
+    entry.source.notes?.includes(
+      `Packing (ABK's Plein Air technical sheet, read 2026-10-14): ${packing.size} rectified, real size ` +
+        `${packing.work_size_mm[0]}x${packing.work_size_mm[1]} mm, ${packing.pieces_per_box === 1 ? "1 tile" : `${packing.pieces_per_box} tiles`} ` +
+        `and ${packing.sqm_per_box} m² per box, ${packing.kg_per_sqm} kg/m², ${packing.kg_per_box} kg per box, ` +
+        `${packing.boxes_per_pallet} boxes per pallet.`
+    ),
+    `${id}: notes its packing`
+  );
+  assert.equal(
+    entry.source.notes?.some((note) => note.startsWith("Special pieces in this colour (ABK's Plein Air catalogue")),
+    getPleinAirSpecialPieces(card).length > 0,
+    `${id}: notes its special pieces when the catalogue lists some`
+  );
+}
+assert.equal(PLEIN_AIR_SPECIAL_PIECES.length, 67, "the catalogue's 67 colours");
+assert.deepEqual(
+  PLEIN_AIR_SPECIAL_PIECES.filter((colour) => colour.card === null).map((colour) => colour.range),
+  Array(4).fill("Concept Stone"),
+  "only Concept Stone, which the catalogue leaves out, has no card"
+);
+assert.deepEqual(
+  [...outdoorCardIds.keys()].filter((card) => getPleinAirSpecialPieces(card).length === 0).sort(),
+  ["Orosei Cream", "Orosei Rope", "Orosei Vanilla"],
+  "every outdoor card but Orosei's has special pieces"
+);
+const pieceCodes = new Map<string, number>();
+for (const colour of PLEIN_AIR_SPECIAL_PIECES) {
+  assert.ok(colour.card === null || outdoorCardIds.has(colour.card), `${colour.range} ${colour.colour}: ${colour.card} is an outdoor card`);
+  for (const [key, code] of Object.entries(colour.pieces)) {
+    const [kind, size] = key.split(" ") as [PleinAirSpecialPieceKind, string];
+    assert.ok(PLEIN_AIR_SPECIAL_PIECE_KINDS[kind]?.sizes.includes(size), `${colour.card}: ${key} is a catalogue piece`);
+    assert.match(code, /^(\d{7}|G\d{7})$/, `${colour.card}: ${key} code`);
+    pieceCodes.set(code, (pieceCodes.get(code) ?? 0) + 1);
+  }
+}
+assert.equal([...pieceCodes.values()].reduce((sum, count) => sum + count, 0), 665, "the tables' 665 codes");
+assert.deepEqual(
+  [...pieceCodes].filter(([, count]) => count > 1).map(([code]) => code).sort(),
+  [...PLEIN_AIR_SPECIAL_PIECE_CODES_PRINTED_TWICE].sort(),
+  "the codes the tables print twice"
+);
 
 console.log("Surface material physical-scale sampling passed.");

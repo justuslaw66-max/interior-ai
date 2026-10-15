@@ -27,6 +27,7 @@ source:
     - "Collection page color availability for MONTBLANC: MONTBLANC 6 mm: 120x280 (48\"x110\") SOFT, LUX | 8,5 mm: 120X120 (48\"X48\") LUX, NAT P.TECH; 60X120 (24\"X48\") LUX, NAT P.TECH."
     - "Available configurator formats: 0006899 120x120 Lux ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0006902 120x120 ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0006900 60x120 Lux ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0006903 60x120 ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0008678 120x280 Soft ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0008689 120x280 Lux ENTRAMBE patterns pieno_01,pieno_02,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's technical sheet for La Marmoteca (LA MARMOTECA - Datasheet.pdf, read 2026-10-14): 8.5 mm; slip resistance R10 (DIN 51130), bare foot A+B (DIN 51097)."
 classification:
   flooring_type: tile
   design_effect: marble
@@ -59,7 +60,7 @@ physical_specs:
   installation_method:
     - direct_stick
   waterproof: null
-  slip_rating: null
+  slip_rating: R10
   suitable_for_wet_area: null
   suitable_for_outdoor: null
   commercial_grade: null

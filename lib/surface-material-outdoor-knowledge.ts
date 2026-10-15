@@ -1,7 +1,9 @@
 /**
  * What the manufacturer says about outdoor tiles, kept as data so the app (and, later, its AI) can read it. Every fact names its
- * sources and says, in short, what they say; quotes are their own words. Read on 13 Oct 2026 (J: "look at on their website on
- * the use case for outdoor tiles and teach it into the system"). The catalogue fields that carry it are described in
+ * sources and says, in short, what they say; quotes are their own words. Web pages read on 13 Oct 2026 (J: "look at on their
+ * website on the use case for outdoor tiles and teach it into the system"), ABK's Plein Air catalogue and technical sheet on 14 Oct
+ * (J: "Yes download all of them for my webapp and the ai to be smarter to have the knowledge to design"; their details are in
+ * lib/surface-material-plein-air-system.ts). The catalogue fields that carry it are described in
  * docs/architecture/surface-material-outdoor-tiles.md; lib/surface-material-outdoor.ts builds them and keeps their words
  * (SURFACE_OUTDOOR_USE_LABELS, SURFACE_OUTDOOR_LAYING_LABELS), which the Surfaces search reads. Nothing in the app reads this
  * file yet.
@@ -12,7 +14,9 @@ export type SurfaceOutdoorSourceId =
   | "abk-room-filter"
   | "gardenia-outdoor-collections"
   | "gardenia-outdoor-everything"
-  | "gardenia-outdoor-choosing";
+  | "gardenia-outdoor-choosing"
+  | "abk-plein-air-catalogue"
+  | "abk-plein-air-datasheet";
 
 export type SurfaceOutdoorSource = { title: string; url: string; read_on: string };
 
@@ -41,6 +45,16 @@ export const SURFACE_OUTDOOR_SOURCES: Readonly<Record<SurfaceOutdoorSourceId, Su
     title: "How to choose the right outdoor tiles (Gardenia blog)",
     url: "https://blog.gardenia.it/en/how-to-choose-the-right-outdoor-tiles-style-color-materials-and-dimensions",
     read_on: "2026-10-13",
+  },
+  "abk-plein-air-catalogue": {
+    title: "Plein Air catalogue (ABK Group, published January 2026)",
+    url: "https://www.abkgroup.it/en/gardeniaariana/download-area/dl/collection/catalogue/plein-air/download/",
+    read_on: "2026-10-14",
+  },
+  "abk-plein-air-datasheet": {
+    title: "Plein Air technical sheet (ABK Group)",
+    url: "https://www.abkgroup.it/en/gardeniaariana/download-area/dl/collection/datasheet/plein-air/download/",
+    read_on: "2026-10-14",
   },
 };
 
@@ -87,9 +101,34 @@ export const SURFACE_OUTDOOR_FACTS: readonly SurfaceOutdoorFact[] = [
   {
     topic: "laying",
     says:
-      "Gardenia names four ways to lay its Native outdoor tiles: glued on a screed, dry on grass, dry on gravel or sand, and raised. " +
-      "It doesn't say so for the other ranges; ABK's Plein Air datasheet (not read) may.",
-    sources: ["gardenia-outdoor-collections"],
+      "Every 20 mm Plein Air tile can be laid five ways: glued (\"ideal for floorings that will be driven over by vehicles\"), dry " +
+      "on grass (paths that blend in), dry on gravel (drains rainwater), dry on sand (beaches and beach bars), and raised on " +
+      "pedestals 25 to 270 mm high (no screed, open joints drain rain, the cavity houses pipes). Gardenia's blog names four of them " +
+      "for Native.",
+    sources: ["abk-plein-air-catalogue", "gardenia-outdoor-collections"],
+  },
+  {
+    topic: "spaces",
+    says:
+      "The range is \"a system designed for any external space\": driveways and parking areas, Japanese stepping stones and lawn " +
+      "walkways, courtyards and outdoor living areas, terraces with a raised laying system, street furniture and planters, pool " +
+      "areas and steps; and, as anti-slip surfaces for wellness, outdoor pools, external showers and indoor and outdoor pool " +
+      "walkways.",
+    sources: ["abk-plein-air-catalogue"],
+  },
+  {
+    topic: "special_pieces",
+    says:
+      "Most colours have special pieces in the same surface: pool-side grilles and corner grilles, bullnoses, L elements and step " +
+      "edges for steps and platforms, and curves. PLEIN_AIR_SPECIAL_PIECES lists them by colour, with ABK's item codes.",
+    sources: ["abk-plein-air-catalogue"],
+  },
+  {
+    topic: "weight_and_packing",
+    says:
+      "A 20 mm tile weighs 45.3 kg/m². Boxes hold 0.72 m² (60x60: 2 tiles, 60x120: 1, 30x120: 2), 0.54 m² (60x90: 1) or 0.64 m² " +
+      "(80x80: 1); real sizes are a few millimetres under the nominal ones (60x120 is 596x1194 mm).",
+    sources: ["abk-plein-air-datasheet"],
   },
   {
     topic: "colour",

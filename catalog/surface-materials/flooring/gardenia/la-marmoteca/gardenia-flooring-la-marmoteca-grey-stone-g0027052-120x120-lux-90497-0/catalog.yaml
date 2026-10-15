@@ -27,6 +27,7 @@ source:
     - "Collection page color availability for GREY STONE: GREY STONE 6 mm: 120x280 (48\"x110\") SOFT, LUX; 120X120 (48\"X48\") LUX; 60X120 (24\"X48\") LUX | 8,5 mm: 120X120 (48\"X48\") NAT P.TECH; 60X120 (24\"X48\") NAT P.TECH."
     - "Available configurator formats: G0027052 120x120 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60006319 120x120 Nat ENTRAMBE patterns pieno_01,pieno_05; G0027062 60x120 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60006322 60x120 Nat ENTRAMBE patterns pieno_01,pieno_05; PF60008677 120x280 Soft ENTRAMBE patterns pieno_01,pieno_05; PF60008688 120x280 Lux ENTRAMBE patterns pieno_01,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's technical sheet for La Marmoteca (LA MARMOTECA - Datasheet.pdf, read 2026-10-14): 6 mm."
 classification:
   flooring_type: tile
   design_effect: marble
@@ -57,7 +58,7 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 1200
   tile_length_mm: 1200
-  total_thickness_mm: null
+  total_thickness_mm: 6
   wear_layer_mm: null
   installation_method:
     - direct_stick

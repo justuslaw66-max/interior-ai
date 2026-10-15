@@ -28,6 +28,7 @@ source:
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
     - "Split (J, 2026-10-13): the configurator showed this item as one variant with GARDENIA/0012266/0/90915, ABK's 20 mm R11 outdoor item (Plein Air), and the July import filed both here under that item's code. The outdoor item has an entry of its own (gardenia-flooring-pietra-viva-aude-grey-0012266-80x80-r11); this entry keeps its id, so saved designs keep their floor, and stands for 0012262."
     - "Thickness 8.5 mm: the collection page's 80x80 Nat (above)."
+    - "ABK's technical sheet for Pietra Viva (PIETRA VIVA - Datasheet.pdf, read 2026-10-14): 8.5 mm; slip resistance R10 (DIN 51130), bare foot B (DIN 51097)."
 classification:
   flooring_type: tile
   design_effect: stone
@@ -64,7 +65,7 @@ physical_specs:
   installation_method:
     - direct_stick
   waterproof: null
-  slip_rating: null
+  slip_rating: R10
   suitable_for_wet_area: null
   suitable_for_outdoor: null
   commercial_grade: null

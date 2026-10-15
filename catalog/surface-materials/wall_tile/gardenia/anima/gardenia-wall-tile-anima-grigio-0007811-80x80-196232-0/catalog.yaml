@@ -27,6 +27,7 @@ source:
     - "Collection page color availability for Grigio: Grigio 6 mm: 120x280 (48”x112”) | 8,5 mm: 120x120 (48”x48”), 80x80 (32”x32”), 60x120 (24”x48”), 60x60 (24”x24”), 30x60 (12”x24”) | 20 mm: 60x120 (24”x48”), 80x80 (32”x32”)."
     - "Available configurator formats: 0006046 120x120 ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0006050 60x120 ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0007196 60x120 RIVESTIMENTO patterns pieno_01,pieno_02,pieno_05; 0008672 120x280 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0006058 60x60 ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0007811 80x80 ENTRAMBE patterns pieno_01,pieno_02,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's technical sheet for Anima (ANIMA - Datasheet.pdf, read 2026-10-14): 8.5 mm; slip resistance R10 (DIN 51130), bare foot A+B (DIN 51097)."
 classification:
   flooring_type: tile
   design_effect: stone
@@ -56,12 +57,12 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 800
   tile_length_mm: 800
-  total_thickness_mm: null
+  total_thickness_mm: 8.5
   wear_layer_mm: null
   installation_method:
     - direct_stick
   waterproof: null
-  slip_rating: null
+  slip_rating: R10
   suitable_for_wet_area: null
   suitable_for_outdoor: null
   commercial_grade: null

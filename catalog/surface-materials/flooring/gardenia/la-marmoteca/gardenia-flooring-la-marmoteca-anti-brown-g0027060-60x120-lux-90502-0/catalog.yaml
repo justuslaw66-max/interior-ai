@@ -26,6 +26,7 @@ source:
     - "Collection page sizes: 120x280, 120x120, 60x120."
     - "Available configurator formats: G0027050 120x120 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60010680 120x120 Soft ENTRAMBE patterns pieno_01,pieno_05; G0027060 60x120 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60010681 60x120 Soft ENTRAMBE patterns pieno_01,pieno_05; PF60009718 120x280 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60009726 120x280 Soft ENTRAMBE patterns pieno_01,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's technical sheet for La Marmoteca (LA MARMOTECA - Datasheet.pdf, read 2026-10-14): 6 mm."
 classification:
   flooring_type: tile
   design_effect: marble
@@ -55,7 +56,7 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 1200
   tile_length_mm: 600
-  total_thickness_mm: null
+  total_thickness_mm: 6
   wear_layer_mm: null
   installation_method:
     - direct_stick

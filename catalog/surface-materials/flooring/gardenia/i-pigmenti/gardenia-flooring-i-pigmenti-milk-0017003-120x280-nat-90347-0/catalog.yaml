@@ -26,6 +26,7 @@ source:
     - "Collection page color availability for Milk: Milk 6 mm: 120x280 (48\"x110\") | 8,5 mm: 120x120 (48\"x48\"), 60x120 (24\"x48\"), 60x60 (24\"x24\"), 10x60 (4\"x24\"), 5x120 (2\"x48\"), 20x120 (8\"x48\"), 30x30 (12\"x12\")."
     - "Available configurator formats: 0016962 120x120 Nat ENTRAMBE patterns pieno_01,pieno_05; 0016438 20x120 Nat ENTRAMBE patterns pieno_01,pieno_05; 0016428 60x120 Nat ENTRAMBE patterns pieno_01,pieno_05; 0017003 120x280 Nat ENTRAMBE patterns pieno_01,pieno_05; 0016604 30x30 Nat ENTRAMBE patterns pieno_01,pieno_05; 0016458 10x60 Nat ENTRAMBE patterns pieno_01,pieno_05; 0016448 60x60 Nat ENTRAMBE patterns pieno_01,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's technical sheet for I Pigmenti (I PIGMENTI - Datasheet.pdf, read 2026-10-14): 6 mm; slip resistance R10 (DIN 51130), bare foot A+B (DIN 51097)."
 classification:
   flooring_type: tile
   design_effect: concrete
@@ -58,7 +59,7 @@ physical_specs:
   installation_method:
     - direct_stick
   waterproof: null
-  slip_rating: null
+  slip_rating: R10
   suitable_for_wet_area: null
   suitable_for_outdoor: null
   commercial_grade: null
