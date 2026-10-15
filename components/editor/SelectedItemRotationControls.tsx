@@ -1,7 +1,14 @@
 "use client";
 import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 type RotationSnapPresetDegrees = 15 | 5 | 0;
+
+const SNAP_PRESET_OPTIONS: ReadonlyArray<{ value: RotationSnapPresetDegrees; label: string; testId: string; title: string }> = [
+  { value: 15, label: "Quick turns", testId: "rotation-snap-preset-15", title: "Snap to coarse 15° increments for quick positioning" },
+  { value: 5, label: "Precise angle", testId: "rotation-snap-preset-5", title: "Snap to fine 5° increments for precise angle control" },
+  { value: 0, label: "Free rotate", testId: "rotation-snap-preset-free", title: "Disable snap for unrestricted rotation" },
+];
 
 type SelectedItemRotationControlsProps = {
   isDesigner: boolean;
@@ -38,12 +45,6 @@ export default function SelectedItemRotationControls({
   const textSecondaryClass = "mt-1 text-xs text-neutral-600";
   const hintClass = "mt-2 text-xs text-neutral-500";
   const buttonClass = "min-h-11 rounded-lg border border-neutral-200 px-2 py-2 text-xs text-neutral-800";
-  const snapPresetClass = (preset: RotationSnapPresetDegrees) =>
-    `min-h-11 rounded-lg border px-2 py-1.5 text-xs ${
-      rotationSnapPresetDegrees === preset
-        ? "designer-accent-border"
-        : "border-neutral-200 text-neutral-800"
-    }`;
 
   return (
     <div className="pt-3">
@@ -64,35 +65,16 @@ export default function SelectedItemRotationControls({
             </div>
           ) : null}
 
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            <button
-              data-testid="rotation-snap-preset-15"
-              className={snapPresetClass(15)}
-              disabled={disabled}
-              title="Snap to coarse 15° increments for quick positioning"
-              onClick={() => onSnapPresetChange(15)}
-            >
-              Quick turns
-            </button>
-            <button
-              data-testid="rotation-snap-preset-5"
-              className={snapPresetClass(5)}
-              disabled={disabled}
-              title="Snap to fine 5° increments for precise angle control"
-              onClick={() => onSnapPresetChange(5)}
-            >
-              Precise angle
-            </button>
-            <button
-              data-testid="rotation-snap-preset-free"
-              className={snapPresetClass(0)}
-              disabled={disabled}
-              title="Disable snap for unrestricted rotation"
-              onClick={() => onSnapPresetChange(0)}
-            >
-              Free rotate
-            </button>
-          </div>
+          <SegmentedControl
+            label="Rotation snap"
+            className="mt-2"
+            size="compact"
+            fill
+            disabled={disabled}
+            value={rotationSnapPresetDegrees}
+            onChange={onSnapPresetChange}
+            options={SNAP_PRESET_OPTIONS}
+          />
 
           <div className="mt-2 grid grid-cols-4 gap-2">
             <button

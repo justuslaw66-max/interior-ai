@@ -298,19 +298,25 @@ test.describe("Flooring surface materials", () => {
     await dismissBlockingDialogs(page);
 
     const surfacesPanel = await openSurfacesPanelFromInspector(page);
-    const targetButtonMetrics = await surfacesPanel.getByTestId("surface-target-bar").evaluate((bar) =>
-      Array.from(bar.querySelectorAll("button")).map((button) => {
-        const rect = button.getBoundingClientRect();
-        return { width: Math.round(rect.width), height: Math.round(rect.height) };
-      })
-    );
-    expect(Math.max(...targetButtonMetrics.map((metric) => metric.height))).toBe(
-      Math.min(...targetButtonMetrics.map((metric) => metric.height))
-    );
-    expect(
-      Math.max(...targetButtonMetrics.map((metric) => metric.width)) -
-        Math.min(...targetButtonMetrics.map((metric) => metric.width))
-    ).toBeLessThanOrEqual(1);
+    // The targets are the shared segmented control (UX 5n, J's choice on 14 Oct): one height, and
+    // four segments share the bar by their labels, each on one line, so "Selected wall" is wider.
+    const targetBar = await surfacesPanel.getByTestId("surface-target-bar").evaluate((bar) => {
+      const barRect = bar.getBoundingClientRect();
+      const panelRect = (bar.parentElement ?? bar).getBoundingClientRect();
+      return {
+        insidePanel: barRect.left >= panelRect.left - 1 && barRect.right <= panelRect.right + 1,
+        overflows: bar.scrollWidth > bar.clientWidth + 1,
+        buttons: Array.from(bar.querySelectorAll("button")).map((button) => ({
+          height: Math.round(button.getBoundingClientRect().height),
+          clipped: button.scrollWidth > button.clientWidth + 1,
+        })),
+      };
+    });
+    expect(targetBar.buttons).toHaveLength(4);
+    expect(new Set(targetBar.buttons.map((button) => button.height)).size).toBe(1);
+    expect(targetBar.buttons.filter((button) => button.clipped)).toEqual([]);
+    expect(targetBar.overflows).toBe(false);
+    expect(targetBar.insidePanel).toBe(true);
 
     await surfacesPanel.getByTestId("surface-target-ceiling").click();
     await expect(surfacesPanel).toHaveAttribute("data-surface-target", "ceiling");

@@ -121,6 +121,12 @@ import type {
 } from "./design-controls-plan/DesignControlsPlanPanel.types";
 import { planPaletteOpeningSummary } from "@/lib/consumer-room-setup-copy";
 import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+
+const WALL_SURFACE_MODE_OPTIONS: ReadonlyArray<{ value: WallSurfaceMode; label: string; testId: string }> = [
+  { value: "paint", label: "Paint", testId: "wall-surface-mode-paint" },
+  { value: "materials", label: "Materials", testId: "wall-surface-mode-materials" },
+];
 
 export default function DesignControlsPlanPanel({
   floorPlanLifecycleIdentity,
@@ -1221,7 +1227,7 @@ export default function DesignControlsPlanPanel({
 
       <SurfaceBrowserHeader
         pro={isDesigner} targetLabel={activeSurfaceTargetLabel} displayName={activeSurfaceDisplayName} target={activeSurfaceTarget}
-        selectedWallFaceId={selectedWallFaceId} tab={surfaceTab} secondaryActionClass={progressSecondaryActionClass} metaClass={progressMetaClass}
+        selectedWallFaceId={selectedWallFaceId} tab={surfaceTab} metaClass={progressMetaClass}
         brush={{
           active: surfaceBrushActive,
           disabled: !canEdit || (!selectedSurfaceMaterialPrimaryId && !activeBrushPaintColorHex && !(activeSurfaceTarget !== "floor" && activeTargetSettings.paintColorHex)),
@@ -1239,26 +1245,14 @@ export default function DesignControlsPlanPanel({
       {surfaceTab === "tiles" ? (
         <>
           {activeSurfaceTarget !== "floor" && activeSurfaceTarget !== "ceiling" ? (
-            <div className="mt-2 grid grid-cols-2 gap-1 rounded-lg border border-neutral-200/70 bg-white/70 p-1">
-              {[
-                { id: "paint" as const, label: "Paint" },
-                { id: "materials" as const, label: "Materials" },
-              ].map((mode) => (
-                <button
-                  key={mode.id}
-                  type="button"
-                  data-testid={`wall-surface-mode-${mode.id}`}
-                  className={
-                    wallSurfaceMode === mode.id
-                      ? "rounded-md bg-neutral-950 px-2 py-1.5 text-xs font-semibold text-white"
-                      : "rounded-md px-2 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-100"
-                  }
-                  onClick={() => setWallSurfaceMode(mode.id)}
-                >
-                  {mode.label}
-                </button>
-              ))}
-            </div>
+            <SegmentedControl
+              label="Wall finish"
+              className="mt-2"
+              fill
+              value={wallSurfaceMode}
+              onChange={setWallSurfaceMode}
+              options={WALL_SURFACE_MODE_OPTIONS}
+            />
           ) : null}
           {activeSurfaceTarget !== "floor" &&
           (activeSurfaceTarget === "ceiling" || wallSurfaceMode === "paint") ? (
@@ -1288,30 +1282,22 @@ export default function DesignControlsPlanPanel({
             </button>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <button
-              type="button"
+            <Button
               data-testid="surfaces-recommended-filter"
-              className={
-                surfaceFilters.recommendedOnly
-                  ? "rounded-full bg-neutral-900 px-2 py-1 text-xs font-semibold text-white"
-                  : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-600"
-              }
+              size="compact"
+              pressed={surfaceFilters.recommendedOnly}
               onClick={toggleRecommendedSurfaceFilter}
             >
               Recommended
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               data-testid="surfaces-favorites-filter"
-              className={
-                surfaceFilters.favoritesOnly
-                  ? "rounded-full bg-neutral-900 px-2 py-1 text-xs font-semibold text-white"
-                  : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-600"
-              }
+              size="compact"
+              pressed={surfaceFilters.favoritesOnly}
               onClick={toggleFavoriteSurfaceFilter}
             >
               Favourites
-            </button>
+            </Button>
             <Button
               data-testid="surfaces-view-toggle"
               variant="secondary" size="compact"
@@ -2370,34 +2356,23 @@ export default function DesignControlsPlanPanel({
                   {simplePlanControls ? "Simple planning view." : "Detailed drafting view."}
                 </div>
               </div>
-              <div className="grid grid-cols-2 rounded-lg border border-neutral-200 bg-neutral-50 p-1">
-                <button
-                  type="button"
-                  className={
-                    simplePlanControls
-                      ? progressActionClass
-                      : "rounded-lg px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-white"
-                  }
-                  onClick={() => onSimplePlanControlsChange(true)}
-                >
-                  Simple
-                </button>
-                <button
-                  type="button"
-                  disabled={!isDesigner}
-                  title={!isDesigner ? "Open Pro tools to use the detailed drafting view" : undefined}
-                  className={
-                    !simplePlanControls
-                      ? progressActionClass
-                      : "rounded-lg px-2.5 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-white"
-                  }
-                  onClick={() => {
-                    if (isDesigner) onSimplePlanControlsChange(false);
-                  }}
-                >
-                  Detailed
-                </button>
-              </div>
+              <SegmentedControl
+                label="2D view"
+                value={simplePlanControls ? "simple" : "detailed"}
+                onChange={(next) => {
+                  if (next === "simple") onSimplePlanControlsChange(true);
+                  else if (isDesigner) onSimplePlanControlsChange(false);
+                }}
+                options={[
+                  { value: "simple", label: "Simple" },
+                  {
+                    value: "detailed",
+                    label: "Detailed",
+                    disabled: !isDesigner,
+                    title: !isDesigner ? "Open Pro tools to use the detailed drafting view" : undefined,
+                  },
+                ]}
+              />
             </div>
           </div>
           {isDesigner && (

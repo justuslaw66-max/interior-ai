@@ -11,6 +11,7 @@ import { aiLayoutReadinessChecks } from "@/lib/ai-layout-readiness";
 import { AiLayoutReadinessChecklist } from "./AiLayoutReadinessChecklist";
 import { AiLayoutRoomLimit } from "./AiLayoutRoomLimit";
 import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 type Budget = "$" | "$$" | "$$$";
 type AiLayoutGoal = "balanced" | "conversation" | "media" | "compact";
@@ -37,6 +38,12 @@ type DesignControlsAiPanelProps = {
   onTryAiLayoutAgain: (requestedRoles?: AiLayoutRole[]) => void;
   onClearAiLayoutProposal: () => void;
 };
+
+const BUDGET_OPTIONS: ReadonlyArray<{ value: Budget; label: string }> = [
+  { value: "$", label: "$" },
+  { value: "$$", label: "$$" },
+  { value: "$$$", label: "$$$" },
+];
 
 const AI_MUST_HAVE_OPTIONS: Array<{ label: string; role: AiLayoutRole }> = [
   { label: "Sofa", role: "sofa" },
@@ -245,19 +252,7 @@ export default function DesignControlsAiPanel({
           <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
             Step 3 · Budget
           </div>
-          <div className="flex gap-2">
-            {(["$", "$$", "$$$"] as const).map((candidate) => (
-              <button
-                key={candidate}
-                className={`rounded-lg px-3 py-1 text-sm ${
-                  budget === candidate ? selectedButtonClass : idleButtonClass
-                }`}
-                onClick={() => onBudgetChange(candidate)}
-              >
-                {candidate}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl label="Budget" size="compact" value={budget} onChange={onBudgetChange} options={BUDGET_OPTIONS} />
         </div>
 
         <div className="mt-4 text-xs font-semibold uppercase tracking-wide text-neutral-500">

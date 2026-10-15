@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { EditorDialogButton } from "../components/editor/design-system/EditorDialog";
 import { Button, buttonClassName } from "../components/ui/Button";
+import { SegmentedControl, segmentClassName } from "../components/ui/SegmentedControl";
 import { nextMenuItemIndex } from "../lib/useDismissibleMenu";
 
 // UX phase 4b's foundations (audit findings AX5, AX6, AX7 and AX10): one focus ring, readable
@@ -95,6 +96,44 @@ assert.equal(
   "w-full",
   "A caller's classes come last."
 );
+// An on/off toggle (UX 5n, J's choice on 14 Oct): pressed is the primary look, off its variant.
+const toggledOn = markup(<Button size="compact" pressed>Grid</Button>);
+assert.match(toggledOn, /^<button type="button" aria-pressed="true" class="[^"]*\bbg-neutral-900\b[^"]*\btext-white\b/);
+const toggledOff = markup(<Button size="compact" pressed={false}>Snap</Button>);
+assert.match(toggledOff, /aria-pressed="false"[^>]*\bborder-neutral-300\b[^"]*\bbg-white\b/);
+assert.doesNotMatch(primary, /aria-pressed/, "A plain button isn't a toggle.");
+
+// One segmented control (UX 5n, J's choice on 14 Oct): a labelled group of aria-pressed segments in
+// a grey track, the pressed one black, in the Button's heights; 44px segments on touch screens.
+const segmented = markup(
+  <SegmentedControl
+    label="Design view"
+    value="2d"
+    onChange={() => undefined}
+    testId="view"
+    options={[
+      { value: "2d", label: "2D", testId: "view-2d" },
+      { value: "3d", label: "3D", testId: "view-3d", disabled: true },
+    ]}
+  />
+);
+assert.match(segmented, /^<div role="group" aria-label="Design view" data-testid="view" class="inline-flex gap-0\.5 rounded-\[10px\] bg-neutral-100 p-0\.5">/);
+assert.equal(segmented.match(/<button type="button"/g)?.length, 2, "Each segment is a button.");
+assert.match(segmented, /aria-pressed="true" data-testid="view-2d" class="[^"]*\bh-8 touch:h-11\b[^"]*\bbg-neutral-900 text-white\b/);
+assert.match(segmented, /aria-pressed="false" data-testid="view-3d" disabled="" class="[^"]*\btext-neutral-700\b/);
+assert.doesNotMatch(segmented, /outline-hidden|focus-visible:ring/, "Segments show the shared focus ring.");
+const filled = markup(
+  <SegmentedControl label="Surface" value={1} onChange={() => undefined} size="compact" fill options={[1, 2, 3, 4].map((value) => ({ value, label: String(value) }))} />
+);
+assert.match(filled, /class="flex w-full gap-0\.5 rounded-lg bg-neutral-100 p-0\.5"/);
+assert.equal(filled.match(/\bh-\[26px\] touch:h-11\b[^"]*\bflex-1 basis-0\b/g)?.length, 4, "Filling, the segments share the width equally.");
+assert.doesNotMatch(filled, /\bmin-w-0\b/, "A label never shrinks below its own width: it stays on one line.");
+const bare = markup(
+  <SegmentedControl label="Pill" value="a" onChange={() => undefined} size="touch" track={false} options={[{ value: "a", label: "A" }]} />
+);
+assert.match(bare, /class="inline-flex gap-0\.5">/, "Without a track there's no grey.");
+assert.match(bare, /\bh-11 min-w-12\b/, "Without a track the segments are the full 44px.");
+assert.equal(segmentClassName({ pressed: false, className: "mt-2" }).split(" ").at(-1), "mt-2");
 
 // The 12px minimum (AX7, phase 5): text is at least 12px everywhere, set by a class (text-xs and
 // up), in a stylesheet, or inline, as the canvas labels set it.
@@ -152,7 +191,7 @@ const emojiButtons = sources
       ).length,
     0
   );
-const LIMITS = { rawButtons: 567, emojiButtons: 3 };
+const LIMITS = { rawButtons: 535, emojiButtons: 3 };
 const counts = { rawButtons, emojiButtons };
 for (const [name, limit] of Object.entries(LIMITS) as Array<[keyof typeof LIMITS, number]>) {
   assert.ok(counts[name] <= limit, `${name} rose to ${counts[name]} (limit ${limit}); it can only go down.`);

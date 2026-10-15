@@ -122,7 +122,7 @@ const header = (pro: boolean) =>
     createElement(SurfaceBrowserHeader, {
       pro, targetLabel: "Walls", displayName: "Spanish Red", target: "walls", selectedWallFaceId: null, tab: "tiles",
       brush: { active: false, disabled: false, status: "", onToggle: () => {} },
-      secondaryActionClass: "", metaClass: "", onBack: () => {}, onOpenSummary: () => {}, onTargetChange: () => {}, onTabChange: () => {},
+      metaClass: "", onBack: () => {}, onOpenSummary: () => {}, onTargetChange: () => {}, onTabChange: () => {},
     } satisfies SurfaceBrowserHeaderProps)
   );
 const consumerHeader = header(false);
@@ -138,7 +138,7 @@ assert.match(proHeader, /data-testid="surfaces-tab-tiles"[^>]*>Materials<\/butto
 const planPanel = read("components/editor/DesignControlsPlanPanel.tsx");
 assert.match(planPanel, /const openRoomSurface = \(target: RoomSurfaceTarget\) => \{\s+onSurfaceTargetChange\(target\); setSurfaceTab\("tiles"\); setWallSurfaceMode\("paint"\); setRoomFinishPanelOpen\(true\); setPlanSectionCollapsed\("selectedRoom", false\);/);
 assert.match(planPanel, /<SurfaceBrowserHeader\s+pro=\{isDesigner\}[\s\S]*?onBack=\{\(\) => setRoomFinishPanelOpen\(false\)\}/);
-assert.match(planPanel, /\{ id: "materials" as const, label: "Materials" \}/);
+assert.match(planPanel, /\{ value: "materials", label: "Materials", testId: "wall-surface-mode-materials" \}/);
 assert.doesNotMatch(planPanel, /data-testid="selected-room-floor-finish"|"Change floor"/);
 
 console.log("Surface inspector and Surfaces rows (ED5, ED8) checks passed");
