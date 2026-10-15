@@ -129,7 +129,7 @@
       "limit": 250
     },
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx": {
-      "lines": 434,
+      "lines": 421,
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
@@ -197,7 +197,7 @@
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
-      "lines": 531,
+      "lines": 529,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
@@ -269,7 +269,7 @@
       "limit": 400
     },
     "components/editor/RoomPanNavigator.tsx": {
-      "lines": 348,
+      "lines": 343,
       "limit": 250
     },
     "components/editor/SelectedItemDetailsPanel.tsx": {
@@ -1469,7 +1469,7 @@
     "components/editor/ConsumerRoomSetupCard.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 180
+        "maximum": 179
       }
     },
     "components/editor/design-controls-plan/PlanToolComponents.tsx": {
@@ -1515,11 +1515,11 @@
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 363
+        "maximum": 350
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 41
+        "maximum": 38
       }
     },
     "components/editor/design-page/CloudSaveConflictDialog.tsx": {
@@ -1657,7 +1657,7 @@
     "components/editor/design-page/LightingSettingsControls.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 286
+        "maximum": 285
       }
     },
     "components/editor/design-page/LocalBackupRecoveryDialog.tsx": {
@@ -1813,7 +1813,7 @@
     "components/editor/DraggableFloatingPanel.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 411
+        "maximum": 408
       }
     },
     "components/editor/EditorCommandBar.tsx": {
@@ -2115,7 +2115,7 @@
     "components/editor/RoomPanNavigator.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 271
+        "maximum": 265
       }
     },
     "components/editor/RoomPlanStatusBar.tsx": {
@@ -2141,7 +2141,7 @@
     "components/editor/SelectedItemRotationControls.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 163
+        "maximum": 149
       }
     },
     "components/editor/useConsumerFloorPlanImportSession.ts": {

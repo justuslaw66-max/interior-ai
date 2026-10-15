@@ -10,6 +10,7 @@ import type {
   DesignLightingSettings,
   LightingPreset,
 } from "@/lib/lightingPresets";
+import { Button } from "@/components/ui/Button";
 
 type LightingSettingsControlsProps = {
   settings: DesignLightingSettings;
@@ -316,14 +317,13 @@ export function LightingSettingsControls({
               </label>
             </div>
             {settings.location ? (
-              <button
-                type="button"
-                data-testid="lighting-location-clear"
-                className="mt-2 text-xs font-semibold underline opacity-65"
+              <Button
+                variant="link" size="inline" data-testid="lighting-location-clear"
+                className="mt-2 text-xs"
                 onClick={() => onSettingsChange({ location: undefined })}
               >
                 Use neutral reference location
-              </button>
+              </Button>
             ) : null}
           </div>
 

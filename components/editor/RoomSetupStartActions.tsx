@@ -1,11 +1,11 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import { FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID } from "@/lib/floor-plan-upload-dialog-focus";
 import { PLAN_START_TEMPLATE_ACTION_ID } from "@/lib/start-templates-request";
 
 type RoomSetupStartActionsProps = {
   canEdit: boolean;
-  secondaryActionClass: string;
   actions: {
     chooseTemplate: () => void;
     drawRoom: () => void;
@@ -17,48 +17,47 @@ type RoomSetupStartActionsProps = {
  * The other ways to start, under the room card: a template (Start a new design's, ST8), a measured
  * room, or a floor plan.
  * Upload floor plan is one visible line here, as in the Plan mockup (audit finding ST2); it was
- * a "Choose a file" tile in a section that started collapsed.
+ * a "Choose a file" tile in a section that started collapsed. The two actions are 44px Buttons that
+ * share each line by label (UX 5n), and Upload floor plan is the app's link, 44px tall.
  */
 export function RoomSetupStartActions({
   canEdit,
-  secondaryActionClass,
   actions,
 }: RoomSetupStartActionsProps) {
   return (
     <>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button
           id={PLAN_START_TEMPLATE_ACTION_ID}
-          type="button"
           data-testid="plan-start-template"
-          className={secondaryActionClass}
+          className="grow"
           disabled={!canEdit}
           onClick={actions.chooseTemplate}
         >
           Choose a template
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           data-testid="plan-start-draw"
-          className={secondaryActionClass}
+          className="grow"
           disabled={!canEdit}
           onClick={actions.drawRoom}
         >
           Draw measured room
-        </button>
+        </Button>
       </div>
       <p className="mt-2 text-center text-[13px] text-neutral-600">
         Have a floor plan?{" "}
-        <button
+        <Button
+          variant="link"
+          size="inline"
           id={FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID}
-          type="button"
           data-testid="plan-tool-import-2d"
-          className="inline-flex min-h-11 items-center font-bold text-blue-700 underline-offset-2 hover:underline focus-visible:underline disabled:opacity-50"
+          className="min-h-11"
           disabled={!canEdit}
           onClick={actions.uploadFloorPlan}
         >
           Upload floor plan
-        </button>
+        </Button>
       </p>
     </>
   );

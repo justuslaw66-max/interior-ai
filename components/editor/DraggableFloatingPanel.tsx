@@ -10,6 +10,7 @@ import {
   type PointerEvent,
   type ReactNode,
 } from "react";
+import { Button } from "@/components/ui/Button";
 
 type FloatingPanelPosition = {
   x: number;
@@ -78,7 +79,7 @@ function PresetIcon() {
 
 function RailTooltip({ label }: { label: string }) {
   return (
-    <span className="pointer-events-none absolute left-7 top-1/2 z-[80] hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-xs font-semibold text-white shadow-lg group-hover:block group-focus-visible:block">
+    <span className="pointer-events-none absolute left-full top-1/2 z-[80] ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-xs font-semibold text-white shadow-lg group-hover:block group-focus-visible:block">
       {label}
     </span>
   );
@@ -463,10 +464,9 @@ export default function DraggableFloatingPanel({
         onPointerCancel={handlePointerUp}
       >
         {!isMobilePanel && (
-          <div className="absolute -left-7 top-0 flex w-5 flex-col items-center gap-1">
-            <button
-              type="button"
-              className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500"
+          <div className="absolute -left-8 touch:-left-13 top-0 flex w-6 touch:w-11 flex-col items-center gap-1">
+            <Button
+              size="mini" className="group relative"
               aria-label="Dock panel to right"
               title="Dock to right"
               onClick={() => {
@@ -476,10 +476,9 @@ export default function DraggableFloatingPanel({
             >
               <DockIcon />
               <RailTooltip label="Dock right" />
-            </button>
-            <button
-              type="button"
-              className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500"
+            </Button>
+            <Button
+              size="mini" className="group relative"
               aria-label="Reset panel position"
               title="Reset panel position"
               onClick={() => {
@@ -489,11 +488,10 @@ export default function DraggableFloatingPanel({
             >
               <ResetIcon />
               <RailTooltip label="Reset" />
-            </button>
+            </Button>
             <div className="relative">
-              <button
-                type="button"
-                className="group relative grid h-5 w-5 place-items-center rounded-md bg-white/95 text-neutral-600 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500"
+              <Button
+                size="mini" className="group relative"
                 aria-label="Panel position presets"
                 title="Panel presets"
                 data-testid={`floating-panel-presets-${storageKey ?? panelId}`}
@@ -501,7 +499,7 @@ export default function DraggableFloatingPanel({
               >
                 <PresetIcon />
                 <RailTooltip label="Presets" />
-              </button>
+              </Button>
               {presetMenuOpen && (
                 <div
                   className="absolute left-7 top-0 z-[70] w-32 rounded-lg border border-neutral-200 bg-white p-1 text-xs shadow-xl"

@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import { DesignPageViewportOverlayLayer } from "@/components/editor/design-page/DesignPageViewportOverlayLayer";
+import { Button } from "@/components/ui/Button";
 import { DesignSceneCanvas } from "@/components/editor/design-page/DesignSceneCanvas";
 import { DesignSceneGuidanceLayer } from "@/components/editor/design-page/DesignSceneGuidanceLayer";
 import { DesignScenePreviewLayer } from "@/components/editor/design-page/DesignScenePreviewLayer";
@@ -188,11 +189,11 @@ export function DesignPageSceneRegion({
               ? `Focused: ${activeRoom?.name ?? "Active room"}`
               : "Entire home visible"}
           </span>
-          <button
-            type="button"
+          {/* Black in both states: the label says what it does, and the dot shows which is on (J, 16 Oct). */}
+          <Button
+            variant="primary" size="compact"
             data-testid="active-room-focus-toggle"
             aria-pressed={activeRoomFocusEnabled}
-            className="rounded-full bg-neutral-900 px-3 py-1.5 font-semibold text-white hover:bg-neutral-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500"
             onClick={() => {
               if (activeRoomFocusEnabled) {
                 setActiveRoomFocusEnabled(false);
@@ -206,7 +207,7 @@ export function DesignPageSceneRegion({
             }}
           >
             {activeRoomFocusEnabled ? "Show home" : "Focus room"}
-          </button>
+          </Button>
         </div>
       ) : null}
     </div>

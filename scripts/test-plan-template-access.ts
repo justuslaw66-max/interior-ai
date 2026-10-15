@@ -239,7 +239,7 @@ assert.match(
 );
 assert.match(
   fs.readFileSync(path.join(process.cwd(), "components", "editor", "RoomSetupStartActions.tsx"), "utf8"),
-  /id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*type="button"\s*data-testid="plan-start-template"/
+  /<Button\s+id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*data-testid="plan-start-template"/
 );
 assert.match(
   fs.readFileSync(path.join(process.cwd(), "components", "editor", "design-controls-plan", "EmptyFloorPlanSurfacesActions.tsx"), "utf8"),
