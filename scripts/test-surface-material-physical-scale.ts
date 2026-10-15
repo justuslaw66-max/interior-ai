@@ -843,8 +843,10 @@ assert.deepEqual(
 // Vanilla's picture 2 are true 600 mm pictures. Each Gioia colour is one picture of the whole 60x120
 // tile. Six of the seven decors stand upright with the long side horizontal, as Gioia is laid;
 // Primavera's picture stands upright with the long side vertical, so that entry lays the tile
-// 600 mm wide and 1200 mm tall (J, 9 Oct 2026).
-for (const [filter, label, count] of [[isOrosei, "Orosei", 78], [isGioia, "Gioia", 21]] as const) {
+// 600 mm wide and 1200 mm tall (J, 9 Oct 2026). ABK's Gioia page says the decors are porcelain stoneware and also suit
+// floors, so all seven have floor entries; Martinica's and Primavera's come from that page (J, 15 Oct 2026), not the
+// configurator, which lists them for walls only.
+for (const [filter, label, count] of [[isOrosei, "Orosei", 78], [isGioia, "Gioia", 23]] as const) {
   assert.equal(physicalMaterials.filter(filter).length, count, `every ${label} entry is on real faces`);
   assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
 }
@@ -860,7 +862,7 @@ for (const category of ["flooring", "wall_tile"]) {
     ["Orosei Vanilla Tessera", ["120x120", "60x120"]],
   ]);
 }
-const gioiaDecors = ["Majorelle", "Ombrelle", "Palma", "Papilio", "Rossignol"];
+const gioiaDecors = ["Majorelle", "Martinica", "Ombrelle", "Palma", "Papilio", "Primavera", "Rossignol"];
 assert.deepEqual(collectionCards(isGioia, "flooring"), gioiaDecors.map((name) => [`Gioia ${name}`, ["60x120"]]));
 assert.deepEqual(
   collectionCards(isGioia, "wall_tile"),
@@ -2039,8 +2041,8 @@ const wallOnly = new Map([
   // Pietra Viva's Nat P.tech 80x80 and Camargue 60x120 items: their floor entries carry the outdoor item's code in their ids (the
   // July import filed them under it; split 13 Oct 2026), so by code they are wall-only.
   ["0012265", 8], ["0012262", 8], ["0014186", 18], ["0014185", 18], ["0014669", 16], ["0014668", 16], ["0012331", 12],
-  // Gioia's plain colours, Martinica and Primavera are wall-only.
-  ...["0008228", "0008230", "0008232", "0008233", "0008234", "0008235", "0009646", "0009647", "0009648", "0009655", "0010527"].map(
+  // Gioia's plain colours are wall-only (white body wall tiles); its decors have floor entries too.
+  ...["0008228", "0008230", "0008232", "0008233", "0008234", "0008235", "0009646", "0009647", "0009648"].map(
     (code) => [code, 1] as const
   ),
   // La Marmoteca Sand Flower 60x120 Lux is wall-only; its floor entry is the Nat P.tech one, on the same faces.
@@ -2223,15 +2225,46 @@ for (const entry of gardeniaEntries) {
 }
 assert.equal(
   gardeniaEntries.filter((entry) => entry.source.notes?.some((note) => note.startsWith("ABK's technical sheet for "))).length,
-  729,
-  "the entries the sheets filled note them"
+  667,
+  "the entries the sheets filled note them (729 on 14 Oct; 15 Oct: 12 Gioia decors and 52 La Marmoteca entries follow ABK's pages, " +
+    "2 Marquinia Black Nat entries take the sheet's 8.5 mm and R10)"
 );
+// Where ABK's pages and a sheet disagree, the catalogue follows the pages (J, 15 Oct 2026: "The website: 8.5 mm"; Gioia's
+// decors "Keep floors, decors 8.5 mm"). The sheets keep their own words; these entries say which source they follow.
+const gioiaPageNote = (entry: (typeof gardeniaEntries)[number]) =>
+  entry.source.notes?.some((note) => note.startsWith("ABK's Gioia page (") && note.includes("porcelain stoneware, 8.5 mm"));
+const gioiaEntries = gardeniaEntries.filter((entry) => entry.surface_material.collection === "Gioia");
+const gioiaDecorWords = ["Majorelle", "Martinica", "Ombrelle", "Palma", "Papilio", "Primavera", "Rossignol"];
+const gioiaRows = gioiaEntries.map((entry) => {
+  const decor = gioiaDecorWords.some((word) => entry.surface_material.product_name.includes(` ${word} `));
+  const source = gioiaPageNote(entry) ? "ABK's page" : "the sheet";
+  return `${decor ? "decor" : "plain"} ${entry.surface_material.surface_category} ${entry.physical_specs.total_thickness_mm} mm, ${source}`;
+});
+assert.deepEqual(
+  [...new Set(gioiaRows)].sort().map((row) => [row, gioiaRows.filter((other) => other === row).length]),
+  [
+    ["decor flooring 8.5 mm, ABK's page", 7],
+    ["decor wall_tile 8.5 mm, ABK's page", 7],
+    ["plain wall_tile 7 mm, the sheet", 9],
+  ],
+  "Gioia: the seven decors are 8.5 mm porcelain for floors and walls (ABK's page); the nine plain colours 7 mm wall tiles (the sheet)"
+);
+const marmotecaPageNote = (entry: (typeof gardeniaEntries)[number]) =>
+  entry.source.notes?.some((note) => note.startsWith("ABK's La Marmoteca colour pages (read 2026-10-15) give 120x120 and 60x120 as 8.5 mm"));
+const marmotecaEntries = gardeniaEntries.filter((entry) => entry.surface_material.collection === "La Marmoteca");
+for (const entry of marmotecaEntries) {
+  const size = splitCatalogueSize(entry.surface_material.product_name)!.size;
+  const pageSize = size === "120x120" || size === "60x120";
+  assert.equal(entry.physical_specs.total_thickness_mm, pageSize ? 8.5 : 6, `${entry.surface_material.material_id}: thickness`);
+  assert.equal(marmotecaPageNote(entry), pageSize, `${entry.surface_material.material_id}: ABK's pages note`);
+}
+assert.equal(marmotecaEntries.filter(marmotecaPageNote).length, 125, "every La Marmoteca 120x120 and 60x120 entry follows ABK's pages");
 assert.equal(slipBySheet.get("Luce R9"), 28, "Luce's Natural is R9");
 assert.equal(slipBySheet.get("I Pigmenti R10"), 106, "every I Pigmenti size on the sheet is R10");
 assert.equal(
   gardeniaEntries.filter((entry) => entry.physical_specs.slip_rating).length,
-  687,
-  "111 R11 entries before the sheets, 576 from them"
+  689,
+  "111 R11 entries before the sheets, 576 from them on 14 Oct, and Marquinia Black 60x120 Nat's 2 on 15 Oct"
 );
 const lookup = (product_name: string, collection: string, total_thickness_mm: number | null = null) =>
   findAbkDatasheetMatch({ product_name, collection, total_thickness_mm });
