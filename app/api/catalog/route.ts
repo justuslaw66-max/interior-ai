@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { summarizeCatalogPublication } from "@/lib/catalog-publication";
+import { buildCatalogApiPayload } from "@/lib/catalog-api-payload";
 import { getAllCatalogYamlEntries } from "@/lib/catalog-yaml";
 import { getCatalogRegistry } from "@/lib/catalog-registry";
 
@@ -9,18 +9,14 @@ export async function GET(request: Request) {
     const includeDraftSurfaceMaterials =
       url.searchParams.get("includeDraftSurfaceMaterials") === "true" &&
       process.env.NODE_ENV !== "production";
-    const items = getAllCatalogYamlEntries();
     const registry = getCatalogRegistry({ includeDrafts: includeDraftSurfaceMaterials });
-    const publication = summarizeCatalogPublication(items);
-    return NextResponse.json({
-      total: items.length,
-      publication,
-      statusCounts: publication.statusCounts,
-      items,
-      registry,
-      products: registry.products,
-      surfaceMaterials: registry.surfaceMaterials,
-    });
+    return NextResponse.json(
+      buildCatalogApiPayload({
+        items: getAllCatalogYamlEntries(),
+        products: registry.products,
+        surfaceMaterials: registry.surfaceMaterials,
+      })
+    );
   } catch {
     return NextResponse.json({ error: "Catalog is temporarily unavailable." }, { status: 500 });
   }
