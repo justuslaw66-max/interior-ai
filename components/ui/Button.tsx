@@ -10,9 +10,15 @@ import { forwardRef, type ButtonHTMLAttributes } from "react";
  * variant in globals.css). `pressed` makes it an on/off toggle (Grid, Snap, Details): it sets
  * `aria-pressed` and takes the primary look while on, as Q3 asks of pressed toggles (UX 5n, J's
  * choice on 14 Oct). A choice between options is a `SegmentedControl` instead.
+ *
+ * Two more for 5n's last part (J, 16 Oct): `link` is the one link look, in the accent blue and
+ * underlined on hover and focus (Q3: blue is for links), with the `inline` size, which keeps the
+ * surrounding text's size and line; a link that stands alone adds its own target height. `mini` is
+ * a 24px square for controls docked to a map or a panel's edge (the room navigator, the floating
+ * panels' rail), 44px on touch screens like every other size.
  */
-export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger";
-export type ButtonSize = "touch" | "regular" | "compact" | "icon" | "round";
+export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger" | "link";
+export type ButtonSize = "touch" | "regular" | "compact" | "icon" | "round" | "mini" | "inline";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
@@ -29,6 +35,7 @@ const BUTTON_VARIANT_CLASS: Record<ButtonVariant, string> = {
   secondary: "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50",
   quiet: "border-transparent bg-transparent text-neutral-800 hover:bg-neutral-100",
   danger: "border-red-600 bg-red-600 text-white hover:bg-red-700",
+  link: "border-transparent bg-transparent text-accent underline-offset-2 hover:underline focus-visible:underline",
 };
 
 const BUTTON_SIZE_CLASS: Record<ButtonSize, string> = {
@@ -37,6 +44,8 @@ const BUTTON_SIZE_CLASS: Record<ButtonSize, string> = {
   compact: "touch:h-11 h-[30px] rounded-lg px-3 text-xs",
   icon: "touch:h-11 touch:w-11 h-9 w-9 shrink-0 rounded-lg p-0",
   round: "touch:h-11 touch:w-11 h-10 w-10 shrink-0 rounded-full p-0",
+  mini: "touch:h-11 touch:w-11 h-6 w-6 shrink-0 rounded-md p-0",
+  inline: "rounded-sm p-0",
 };
 
 /** The class list for a button that can't be a `<Button>` (a link styled as one, say). */

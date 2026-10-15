@@ -102,6 +102,11 @@ assert.match(toggledOn, /^<button type="button" aria-pressed="true" class="[^"]*
 const toggledOff = markup(<Button size="compact" pressed={false}>Snap</Button>);
 assert.match(toggledOff, /aria-pressed="false"[^>]*\bborder-neutral-300\b[^"]*\bbg-white\b/);
 assert.doesNotMatch(primary, /aria-pressed/, "A plain button isn't a toggle.");
+// The link look and the 24px docked size (UX 5n, J's choices on 16 Oct).
+const link = markup(<Button variant="link" size="inline">See pricing</Button>);
+assert.match(link, /\brounded-sm p-0 border-transparent bg-transparent text-accent\b[^"]*\bhover:underline\b[^"]*\bfocus-visible:underline\b/);
+assert.doesNotMatch(link, /\bmin-h-|\bh-\d|\btext-(?:xs|sm)\b/, "An inline link keeps the text's size and line.");
+assert.match(markup(<Button size="mini" aria-label="Zoom in">+</Button>), /\btouch:h-11 touch:w-11 h-6 w-6 shrink-0 rounded-md p-0 border-neutral-300\b/);
 
 // One segmented control (UX 5n, J's choice on 14 Oct): a labelled group of aria-pressed segments in
 // a grey track, the pressed one black, in the Button's heights; 44px segments on touch screens.
