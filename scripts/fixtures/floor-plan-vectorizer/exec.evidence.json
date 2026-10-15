@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.28.0",
+ "exporterVersion": "app-evidence-0.30.0",
  "page": {
   "widthPx": 1440,
   "heightPx": 1424,
@@ -41,7 +41,7 @@
  "semantics": {
   "planRegion": {
    "bbox": {
-    "leftRatio": 0.137983,
+    "leftRatio": 0.138032,
     "topRatio": 0.103968,
     "rightRatio": 0.927834,
     "bottomRatio": 0.888132
@@ -64,7 +64,7 @@
      "rightRatio": 0.571258,
      "bottomRatio": 0.233936
     },
-    "confidence": 0.85,
+    "confidence": 0.885,
     "evidenceKind": "vectorizer"
    },
    {
@@ -79,7 +79,7 @@
      "rightRatio": 0.732345,
      "bottomRatio": 0.233936
     },
-    "confidence": 0.92,
+    "confidence": 0.925,
     "evidenceKind": "vectorizer"
    },
    {
@@ -94,7 +94,7 @@
      "rightRatio": 0.298246,
      "bottomRatio": 0.383874
     },
-    "confidence": 0.87,
+    "confidence": 0.66,
     "evidenceKind": "vectorizer"
    },
    {
@@ -102,14 +102,14 @@
     "rawText": "MAIN BEDROOM",
     "roomType": "bedroom",
     "centerXRatio": 0.736196,
-    "centerYRatio": 0.420406,
+    "centerYRatio": 0.420933,
     "bbox": {
      "leftRatio": 0.706856,
-     "topRatio": 0.40446,
+     "topRatio": 0.405514,
      "rightRatio": 0.765537,
      "bottomRatio": 0.436352
     },
-    "confidence": 0.73,
+    "confidence": 0.755,
     "evidenceKind": "vectorizer"
    },
    {
@@ -124,19 +124,19 @@
      "rightRatio": 0.479052,
      "bottomRatio": 0.429008
     },
-    "confidence": 0.9,
+    "confidence": 0.91,
     "evidenceKind": "vectorizer"
    },
    {
     "label": "BATH/W.C. 1",
     "rawText": "BATH/W.C. 1",
     "roomType": "toilet",
-    "centerXRatio": 0.70254,
+    "centerXRatio": 0.701145,
     "centerYRatio": 0.529527,
     "bbox": {
      "leftRatio": 0.681693,
      "topRatio": 0.514012,
-     "rightRatio": 0.723387,
+     "rightRatio": 0.720596,
      "bottomRatio": 0.545042
     },
     "confidence": 0.77,
@@ -147,11 +147,11 @@
     "rawText": "LIVING/DINING",
     "roomType": "living",
     "centerXRatio": 0.482063,
-    "centerYRatio": 0.597026,
+    "centerYRatio": 0.597029,
     "bbox": {
-     "leftRatio": 0.462271,
-     "topRatio": 0.580791,
-     "rightRatio": 0.501855,
+     "leftRatio": 0.462619,
+     "topRatio": 0.580796,
+     "rightRatio": 0.501508,
      "bottomRatio": 0.613262
     },
     "confidence": 0.6,
@@ -162,14 +162,14 @@
     "rawText": "BATH/W.C. 2",
     "roomType": "toilet",
     "centerXRatio": 0.70255,
-    "centerYRatio": 0.617831,
+    "centerYRatio": 0.618187,
     "bbox": {
      "leftRatio": 0.682064,
-     "topRatio": 0.601709,
+     "topRatio": 0.602421,
      "rightRatio": 0.723036,
      "bottomRatio": 0.633954
     },
-    "confidence": 0.715,
+    "confidence": 0.725,
     "evidenceKind": "vectorizer"
    },
    {
@@ -184,7 +184,7 @@
      "rightRatio": 0.360839,
      "bottomRatio": 0.711127
     },
-    "confidence": 0.932,
+    "confidence": 0.938,
     "evidenceKind": "vectorizer"
    },
    {
@@ -199,7 +199,7 @@
      "rightRatio": 0.825144,
      "bottomRatio": 0.717764
     },
-    "confidence": 0.725,
+    "confidence": 0.785,
     "evidenceKind": "vectorizer"
    },
    {
@@ -214,7 +214,7 @@
      "rightRatio": 0.70302,
      "bottomRatio": 0.754018
     },
-    "confidence": 0.84,
+    "confidence": 0.76,
     "evidenceKind": "vectorizer"
    },
    {
@@ -229,7 +229,7 @@
      "rightRatio": 0.571376,
      "bottomRatio": 0.834592
     },
-    "confidence": 0.93,
+    "confidence": 0.91,
     "evidenceKind": "vectorizer"
    },
    {
@@ -244,7 +244,7 @@
      "rightRatio": 0.618885,
      "bottomRatio": 0.960645
     },
-    "confidence": 0.567,
+    "confidence": 0.573,
     "evidenceKind": "vectorizer"
    }
   ],
@@ -300,11 +300,11 @@
       "yRatio": 0.417732
      },
      {
-      "xRatio": 0.162427,
+      "xRatio": 0.162476,
       "yRatio": 0.417732
      },
      {
-      "xRatio": 0.162427,
+      "xRatio": 0.162476,
       "yRatio": 0.615344
      },
      {
@@ -380,7 +380,7 @@
    {
     "label": "MAIN BEDROOM",
     "roomType": "bedroom",
-    "confidence": 0.73,
+    "confidence": 0.755,
     "evidenceKind": "vectorizer",
     "points": [
      {
@@ -512,7 +512,7 @@
    {
     "label": "BEDROOM 3",
     "roomType": "bedroom",
-    "confidence": 0.85,
+    "confidence": 0.885,
     "evidenceKind": "vectorizer",
     "points": [
      {
@@ -568,7 +568,7 @@
    {
     "label": "KITCHEN",
     "roomType": "kitchen",
-    "confidence": 0.84,
+    "confidence": 0.76,
     "evidenceKind": "vectorizer",
     "points": [
      {
@@ -684,7 +684,7 @@
    {
     "label": "BALCONY",
     "roomType": "other",
-    "confidence": 0.87,
+    "confidence": 0.66,
     "evidenceKind": "vectorizer",
     "points": [
      {
@@ -692,11 +692,11 @@
       "yRatio": 0.332163
      },
      {
-      "xRatio": 0.162427,
+      "xRatio": 0.162476,
       "yRatio": 0.332163
      },
      {
-      "xRatio": 0.162427,
+      "xRatio": 0.162476,
       "yRatio": 0.417732
      },
      {
@@ -716,7 +716,7 @@
    {
     "label": "SERVICE BALCONY",
     "roomType": "service_yard",
-    "confidence": 0.725,
+    "confidence": 0.785,
     "evidenceKind": "vectorizer",
     "points": [
      {
@@ -836,7 +836,7 @@
    {
     "label": "BATH/W.C. 2",
     "roomType": "toilet",
-    "confidence": 0.715,
+    "confidence": 0.725,
     "evidenceKind": "vectorizer",
     "points": [
      {
@@ -920,38 +920,9 @@
   ],
   "dimensionLabels": [
    {
-    "valueMm": 1700,
-    "rawText": "1700",
-    "centerXRatio": 0.899285,
-    "centerYRatio": 0.539232,
-    "orientation": "vertical",
-    "extensionStart": {
-     "xRatio": 0.908139,
-     "yRatio": 0.496121
-    },
-    "extensionEnd": {
-     "xRatio": 0.908139,
-     "yRatio": 0.579891
-    },
-    "extensionEvidenceKind": "vectorizer",
-    "confidence": 0.9,
-    "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      1307.7206264091246,
-      706.4764695184437
-     ],
-     [
-      1307.7206264091246,
-      825.765320662088
-     ]
-    ],
-    "readingClean": true
-   },
-   {
     "valueMm": 1500,
     "rawText": "1500",
-    "centerXRatio": 0.408632,
+    "centerXRatio": 0.408455,
     "centerYRatio": 0.06457,
     "orientation": "horizontal",
     "extensionStart": {
@@ -967,12 +938,41 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      537.4864890851098,
-      105.9483718570923
+      537.4864890851087,
+      105.94837185709093
      ],
      [
-      642.7443095943937,
-      105.9483718570923
+      642.7443095943916,
+      105.94837185709093
+     ]
+    ],
+    "readingClean": true
+   },
+   {
+    "valueMm": 1700,
+    "rawText": "1700",
+    "centerXRatio": 0.899285,
+    "centerYRatio": 0.539062,
+    "orientation": "vertical",
+    "extensionStart": {
+     "xRatio": 0.908139,
+     "yRatio": 0.496121
+    },
+    "extensionEnd": {
+     "xRatio": 0.908139,
+     "yRatio": 0.579891
+    },
+    "extensionEvidenceKind": "vectorizer",
+    "confidence": 0.9,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      1307.7206264091242,
+      706.4764695184425
+     ],
+     [
+      1307.7206264091242,
+      825.7653206620874
      ]
     ],
     "readingClean": true
@@ -980,8 +980,8 @@
    {
     "valueMm": 13200,
     "rawText": "13200",
-    "centerXRatio": 0.067027,
-    "centerYRatio": 0.447339,
+    "centerXRatio": 0.067374,
+    "centerYRatio": 0.447164,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.075881,
@@ -996,12 +996,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      109.26909970299403,
-      173.26683440265242
+      109.26909970299243,
+      173.2668344026522
      ],
      [
-      109.26909970299403,
-      1099.459030420587
+      109.26909970299243,
+      1099.4590304205867
      ]
     ],
     "readingClean": true
@@ -1025,12 +1025,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      232.26909970299408,
-      105.9483718570923
+      232.26909970299243,
+      105.94837185709093
      ],
      [
-      537.4864890851098,
-      105.9483718570923
+      537.4864890851087,
+      105.94837185709093
      ]
     ],
     "readingClean": true
@@ -1038,7 +1038,7 @@
    {
     "valueMm": 2300,
     "rawText": "2300",
-    "centerXRatio": 0.332019,
+    "centerXRatio": 0.331845,
     "centerYRatio": 0.566112,
     "orientation": "horizontal",
     "extensionStart": {
@@ -1054,12 +1054,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      395.9299209816727,
-      818.9822395527052
+      395.9299209816752,
+      818.9822395527048
      ],
      [
-      557.3200790183207,
-      818.9822395527052
+      557.3200790183232,
+      818.9822395527048
      ]
     ],
     "readingClean": true
@@ -1067,7 +1067,7 @@
    {
     "valueMm": 14650,
     "rawText": "14650",
-    "centerXRatio": 0.516245,
+    "centerXRatio": 0.516415,
     "centerYRatio": 0.03016,
     "orientation": "horizontal",
     "extensionStart": {
@@ -1083,12 +1083,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      232.26909970299408,
-      55.4483718570923
+      232.26909970299243,
+      55.44837185709093
      ],
      [
-      1260.2206264091246,
-      55.4483718570923
+      1260.2206264091242,
+      55.44837185709093
      ]
     ],
     "readingClean": false
@@ -1096,7 +1096,7 @@
    {
     "valueMm": 1200,
     "rawText": "1200",
-    "centerXRatio": 0.576033,
+    "centerXRatio": 0.575857,
     "centerYRatio": 0.448038,
     "orientation": "horizontal",
     "extensionStart": {
@@ -1112,12 +1112,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      790.2159805245232,
-      650.7044938135251
+      790.2159805245203,
+      650.7044938135239
      ],
      [
-      874.3913492828985,
-      650.7044938135251
+      874.3913492828959,
+      650.7044938135239
      ]
     ],
     "readingClean": true
@@ -1125,7 +1125,7 @@
    {
     "valueMm": 2500,
     "rawText": "2500",
-    "centerXRatio": 0.667857,
+    "centerXRatio": 0.667682,
     "centerYRatio": 0.448038,
     "orientation": "horizontal",
     "extensionStart": {
@@ -1141,12 +1141,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      874.3913492828985,
-      650.7044938135251
+      874.3913492828959,
+      650.7044938135239
      ],
      [
-      1049.77089956666,
-      650.7044938135251
+      1049.7708995666574,
+      650.7044938135239
      ]
     ],
     "readingClean": false
@@ -1154,7 +1154,7 @@
    {
     "valueMm": 3300,
     "rawText": "3300",
-    "centerXRatio": 0.70255,
+    "centerXRatio": 0.702725,
     "centerYRatio": 0.06457,
     "orientation": "horizontal",
     "extensionStart": {
@@ -1170,12 +1170,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      895.3573138675988,
-      105.9483718570923
+      895.3573138675982,
+      105.94837185709093
      ],
      [
-      1126.9167140411967,
-      105.9483718570923
+      1126.9167140411955,
+      105.94837185709093
      ]
     ],
     "readingClean": true
@@ -1183,7 +1183,7 @@
    {
     "valueMm": 2600,
     "rawText": "2600",
-    "centerXRatio": 0.792213,
+    "centerXRatio": 0.792041,
     "centerYRatio": 0.448038,
     "orientation": "horizontal",
     "extensionStart": {
@@ -1195,24 +1195,24 @@
      "yRatio": 0.456955
     },
     "extensionEvidenceKind": "vectorizer",
-    "confidence": 0.9,
+    "confidence": 0.7,
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1049.77089956666,
-      650.7044938135251
+      1049.7708995666574,
+      650.7044938135239
      ],
      [
-      1232.1772179255136,
-      650.7044938135251
+      1232.1772179255129,
+      650.7044938135239
      ]
     ],
-    "readingClean": true
+    "readingClean": false
    },
    {
     "valueMm": 1500,
     "rawText": "1500",
-    "centerXRatio": 0.818528,
+    "centerXRatio": 0.8187,
     "centerYRatio": 0.06457,
     "orientation": "horizontal",
     "extensionStart": {
@@ -1228,12 +1228,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1126.9167140411967,
-      105.9483718570923
+      1126.9167140411955,
+      105.94837185709093
      ],
      [
-      1232.1772179255136,
-      105.9483718570923
+      1232.1772179255129,
+      105.94837185709093
      ]
     ],
     "readingClean": true
@@ -1257,12 +1257,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      158.01909970299403,
-      173.26683440265242
+      158.01909970299243,
+      173.2668344026522
      ],
      [
-      158.01909970299403,
-      467.92558654911875
+      158.01909970299243,
+      467.9255865491191
      ]
     ],
     "readingClean": true
@@ -1271,7 +1271,7 @@
     "valueMm": 3800,
     "rawText": "3800",
     "centerXRatio": 0.899285,
-    "centerYRatio": 0.23498,
+    "centerYRatio": 0.235155,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.908139,
@@ -1286,12 +1286,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1307.7206264091246,
-      201.27659189337027
+      1307.7206264091242,
+      201.27659189337191
      ],
      [
-      1307.7206264091246,
-      467.92558654911875
+      1307.7206264091242,
+      467.9255865491191
      ]
     ],
     "readingClean": true
@@ -1300,7 +1300,7 @@
     "valueMm": 3100,
     "rawText": "3100",
     "centerXRatio": 0.346112,
-    "centerYRatio": 0.433176,
+    "centerYRatio": 0.433351,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.355856,
@@ -1315,12 +1315,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      512.4322292437936,
-      495.9721150374244
+      512.432229243793,
+      495.9721150374245
      ],
      [
-      512.4322292437936,
-      713.4568777224506
+      512.432229243793,
+      713.4568777224507
      ]
     ],
     "readingClean": true
@@ -1328,7 +1328,7 @@
    {
     "valueMm": 4000,
     "rawText": "4000",
-    "centerXRatio": 0.100708,
+    "centerXRatio": 0.101055,
     "centerYRatio": 0.512693,
     "orientation": "vertical",
     "extensionStart": {
@@ -1340,25 +1340,25 @@
      "yRatio": 0.609472
     },
     "extensionEvidenceKind": "vectorizer",
-    "confidence": 0.7,
+    "confidence": 0.9,
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      158.01909970299403,
-      587.2140750423009
+      158.01909970299243,
+      587.2140750422996
      ],
      [
-      158.01909970299403,
-      867.888063112735
+      158.01909970299243,
+      867.8880631127332
      ]
     ],
-    "readingClean": false
+    "readingClean": true
    },
    {
     "valueMm": 2700,
     "rawText": "2700",
     "centerXRatio": 0.101055,
-    "centerYRatio": 0.676171,
+    "centerYRatio": 0.675997,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.109735,
@@ -1373,12 +1373,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      158.01909970299403,
-      867.888063112735
+      158.01909970299243,
+      867.8880631127332
      ],
      [
-      158.01909970299403,
-      1057.3506637817395
+      158.01909970299243,
+      1057.3506637817384
      ]
     ],
     "readingClean": true
@@ -1386,7 +1386,7 @@
    {
     "valueMm": 3600,
     "rawText": "3600",
-    "centerXRatio": 0.532401,
+    "centerXRatio": 0.532231,
     "centerYRatio": 0.06457,
     "orientation": "horizontal",
     "extensionStart": {
@@ -1402,12 +1402,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      642.7443095943937,
-      105.9483718570923
+      642.7443095943916,
+      105.94837185709093
      ],
      [
-      895.3573138675988,
-      105.9483718570923
+      895.3573138675982,
+      105.94837185709093
      ]
     ],
     "readingClean": false
@@ -1431,12 +1431,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1232.1772179255136,
-      105.9483718570923
+      1232.1772179255129,
+      105.94837185709093
      ],
      [
-      1260.2206264091246,
-      105.9483718570923
+      1260.2206264091242,
+      105.94837185709093
      ]
     ],
     "readingClean": false
@@ -1445,7 +1445,7 @@
     "valueMm": 1700,
     "rawText": "1700",
     "centerXRatio": 0.101055,
-    "centerYRatio": 0.370666,
+    "centerYRatio": 0.37049,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.109735,
@@ -1460,12 +1460,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      158.01909970299403,
-      467.92558654911875
+      158.01909970299243,
+      467.9255865491191
      ],
      [
-      158.01909970299403,
-      587.2140750423009
+      158.01909970299243,
+      587.2140750422996
      ]
     ],
     "readingClean": false
@@ -1474,7 +1474,7 @@
     "valueMm": 600,
     "rawText": "600",
     "centerXRatio": 0.101055,
-    "centerYRatio": 0.756963,
+    "centerYRatio": 0.757135,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.109735,
@@ -1489,12 +1489,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      158.01909970299403,
-      1057.3506637817395
+      158.01909970299243,
+      1057.3506637817384
      ],
      [
-      158.01909970299403,
-      1099.459030420587
+      158.01909970299243,
+      1099.4590304205867
      ]
     ],
     "readingClean": false
@@ -1503,7 +1503,7 @@
     "valueMm": 400,
     "rawText": "400",
     "centerXRatio": 0.346112,
-    "centerYRatio": 0.317392,
+    "centerYRatio": 0.317216,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.355856,
@@ -1518,12 +1518,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      512.4322292437936,
-      452.96455904591596
+      512.432229243793,
+      452.96455904591573
      ],
      [
-      512.4322292437936,
-      481.035440954085
+      512.432229243793,
+      481.03544095408466
      ]
     ],
     "readingClean": false
@@ -1532,7 +1532,7 @@
     "valueMm": 400,
     "rawText": "400",
     "centerXRatio": 0.899285,
-    "centerYRatio": 0.130576,
+    "centerYRatio": 0.130373,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.908139,
@@ -1547,12 +1547,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1307.7206264091246,
-      173.1983718570923
+      1307.7206264091242,
+      173.19837185709093
      ],
      [
-      1307.7206264091246,
-      201.27659189337027
+      1307.7206264091242,
+      201.27659189337191
      ]
     ],
     "readingClean": false
@@ -1561,7 +1561,7 @@
     "valueMm": 400,
     "rawText": "400",
     "centerXRatio": 0.899285,
-    "centerYRatio": 0.337985,
+    "centerYRatio": 0.338165,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.908139,
@@ -1576,12 +1576,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1307.7206264091246,
-      467.92558654911875
+      1307.7206264091242,
+      467.9255865491191
      ],
      [
-      1307.7206264091246,
-      495.9721150374244
+      1307.7206264091242,
+      495.9721150374245
      ]
     ],
     "readingClean": false
@@ -1590,7 +1590,7 @@
     "valueMm": 3000,
     "rawText": "3000",
     "centerXRatio": 0.899285,
-    "centerYRatio": 0.422336,
+    "centerYRatio": 0.422161,
     "orientation": "vertical",
     "extensionStart": {
      "xRatio": 0.908139,
@@ -1605,12 +1605,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1307.7206264091246,
-      495.9721150374244
+      1307.7206264091242,
+      495.9721150374245
      ],
      [
-      1307.7206264091246,
-      706.4764695184437
+      1307.7206264091242,
+      706.4764695184425
      ]
     ],
     "readingClean": false
@@ -1618,18 +1618,18 @@
    {
     "valueMm": 2400,
     "rawText": "2400",
-    "centerXRatio": 0.217091,
+    "centerXRatio": 0.217264,
     "centerYRatio": 0.566112,
     "orientation": "horizontal",
     "confidence": 0.55,
     "evidenceKind": "vectorizer",
     "readingClean": false,
     "extensionStart": {
-     "xRatio": 0.15862,
+     "xRatio": 0.158792,
      "yRatio": 0.575128
     },
     "extensionEnd": {
-     "xRatio": 0.275563,
+     "xRatio": 0.275735,
      "yRatio": 0.575128
     },
     "extensionEvidenceKind": "vectorizer"
@@ -1638,18 +1638,18 @@
     "valueMm": 1600,
     "rawText": "1600",
     "centerXRatio": 0.899285,
-    "centerYRatio": 0.620123,
+    "centerYRatio": 0.619948,
     "orientation": "vertical",
     "confidence": 0.55,
     "evidenceKind": "vectorizer",
     "readingClean": false,
     "extensionStart": {
      "xRatio": 0.908139,
-     "yRatio": 0.580704
+     "yRatio": 0.580529
     },
     "extensionEnd": {
      "xRatio": 0.908139,
-     "yRatio": 0.659542
+     "yRatio": 0.659367
     },
     "extensionEvidenceKind": "vectorizer"
    },
@@ -1657,18 +1657,18 @@
     "valueMm": 2300,
     "rawText": "2300",
     "centerXRatio": 0.567577,
-    "centerYRatio": 0.715283,
+    "centerYRatio": 0.715458,
     "orientation": "vertical",
     "confidence": 0.55,
     "evidenceKind": "vectorizer",
     "readingClean": false,
     "extensionStart": {
      "xRatio": 0.576209,
-     "yRatio": 0.658618
+     "yRatio": 0.658793
     },
     "extensionEnd": {
      "xRatio": 0.576209,
-     "yRatio": 0.771948
+     "yRatio": 0.772122
     },
     "extensionEvidenceKind": "vectorizer"
    }
@@ -2018,12 +2018,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      900.1511996981252,
-      935.3934385479512
+      900.1511996981246,
+      935.3934385479497
      ],
      [
-      929.9237538034998,
-      935.3934385479512
+      929.9237538034987,
+      935.3934385479497
      ]
     ],
     "widthMm": 424,
@@ -2051,12 +2051,12 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      957.6778296644421,
-      711.735119766822
+      957.6778296644408,
+      711.7351197668213
      ],
      [
-      986.9457642087087,
-      711.735119766822
+      986.9457642087068,
+      711.7351197668213
      ]
     ],
     "widthMm": 417,
@@ -2630,11 +2630,11 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1126.9167140411967,
+      1126.9167140411955,
       467.8444419198602
      ],
      [
-      1266.7206264091246,
+      1266.7206264091242,
       467.8444419198602
      ]
     ],
@@ -2663,11 +2663,11 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1053.5912194527793,
+      1053.5912194527766,
       753.5
      ],
      [
-      1053.5912194527793,
+      1053.5912194527766,
       796.5
      ]
     ],
@@ -2696,11 +2696,11 @@
     "evidenceKind": "vectorizer",
     "spanSourcePx": [
      [
-      1053.5912194527793,
+      1053.5912194527766,
       849.0
      ],
      [
-      1053.5912194527793,
+      1053.5912194527766,
       896.0
      ]
     ],
@@ -2998,7 +2998,7 @@
      711.9331160692594
     ],
     [
-     539.9117822891512,
+     539.9117822659039,
      711.9331160692594
     ]
    ],
@@ -3011,12 +3011,12 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     539.9117822891512,
+     539.9117822659039,
      711.9331160692594
     ],
     [
-     539.9117822891512,
-     594.850969072165
+     539.9117822659039,
+     594.8509591584159
     ]
    ],
    "thicknessPx": 7.68,
@@ -3028,12 +3028,12 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     539.9117822891512,
-     594.850969072165
+     539.9117822659039,
+     594.8509591584159
     ],
     [
      537.5,
-     594.850969072165
+     594.8509591584159
     ]
    ],
    "thicknessPx": 18.2,
@@ -3046,11 +3046,11 @@
    "sourcePx": [
     [
      537.5,
-     594.850969072165
+     594.8509591584159
     ],
     [
      244.0,
-     594.850969072165
+     594.8509591584159
     ]
    ],
    "thicknessPx": 18.2,
@@ -3078,11 +3078,11 @@
    "sourcePx": [
     [
      244.0,
-     594.850969072165
+     594.8509591584159
     ],
     [
-     232.35962371188185,
-     594.850969072165
+     232.32059036200351,
+     594.8509591584159
     ]
    ],
    "thicknessPx": 18.2,
@@ -3094,16 +3094,16 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     232.35962371188185,
-     594.850969072165
+     232.32059036200351,
+     594.8509591584159
     ],
     [
-     232.35962371188185,
-     875.5594156157697
+     232.32059036200351,
+     875.5593892576937
     ]
    ],
-   "thicknessPx": 9.0,
-   "thicknessMm": 128,
+   "thicknessPx": 8.5,
+   "thicknessMm": 121,
    "opening": null
   },
   {
@@ -3111,12 +3111,12 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     232.35962371188185,
-     875.5594156157697
+     232.32059036200351,
+     875.5593892576937
     ],
     [
-     549.5451813018785,
-     875.5594156157697
+     549.5064214042691,
+     875.5593892576937
     ]
    ],
    "thicknessPx": 16.12,
@@ -3128,16 +3128,16 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     549.5451813018785,
-     875.5594156157697
+     549.5064214042691,
+     875.5593892576937
     ],
     [
-     549.5451813018785,
+     549.5064214042691,
      914.0
     ]
    ],
-   "thicknessPx": 16.0,
-   "thicknessMm": 228,
+   "thicknessPx": 16.08,
+   "thicknessMm": 229,
    "opening": null
   },
   {
@@ -3145,16 +3145,16 @@
    "kind": "supported_opening_span",
    "sourcePx": [
     [
-     549.5451813018785,
+     549.5064214042691,
      914.0
     ],
     [
-     549.5451813018785,
+     549.5064214042691,
      963.5
     ]
    ],
-   "thicknessPx": 16.0,
-   "thicknessMm": 228,
+   "thicknessPx": 16.08,
+   "thicknessMm": 229,
    "opening": {
     "kind": "door",
     "operation": "swing",
@@ -3183,16 +3183,16 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     549.5451813018785,
+     549.5064214042691,
      963.5
     ],
     [
-     549.5451813018785,
+     549.5064214042691,
      1088.4435483870968
     ]
    ],
-   "thicknessPx": 16.0,
-   "thicknessMm": 228,
+   "thicknessPx": 16.08,
+   "thicknessMm": 229,
    "opening": null
   },
   {
@@ -3200,7 +3200,7 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     549.5451813018785,
+     549.5064214042691,
      1088.4435483870968
     ],
     [
@@ -3563,7 +3563,7 @@
      711.5631160692594
     ],
     [
-     957.6778296644421,
+     957.6778296644408,
      711.5631160692594
     ]
    ],
@@ -3576,11 +3576,11 @@
    "kind": "supported_opening_span",
    "sourcePx": [
     [
-     957.6778296644421,
+     957.6778296644408,
      711.5631160692594
     ],
     [
-     986.9457642087087,
+     986.9457642087068,
      711.5631160692594
     ]
    ],
@@ -3608,7 +3608,7 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     986.9457642087087,
+     986.9457642087068,
      711.5631160692594
     ],
     [
@@ -3943,15 +3943,15 @@
    "sourcePx": [
     [
      1095.0,
-     171.5615671641791
+     171.62313432835822
     ],
     [
      1062.0,
-     171.5615671641791
+     171.62313432835822
     ]
    ],
-   "thicknessPx": 14.12,
-   "thicknessMm": 201,
+   "thicknessPx": 14.25,
+   "thicknessMm": 203,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -4041,15 +4041,15 @@
    "sourcePx": [
     [
      940.5,
-     171.5615671641791
+     171.62313432835822
     ],
     [
      906.5,
-     171.5615671641791
+     171.62313432835822
     ]
    ],
-   "thicknessPx": 14.12,
-   "thicknessMm": 201,
+   "thicknessPx": 14.25,
+   "thicknessMm": 203,
    "opening": {
     "kind": "window",
     "operation": "fixed",
@@ -4290,7 +4290,7 @@
    "sourcePx": [
     [
      875.843896381919,
-     934.7593887074197
+     934.7593887074196
     ],
     [
      875.843896381919,
@@ -4485,7 +4485,7 @@
     ],
     [
      1065.8403284671533,
-     934.7593887074197
+     934.7593887074196
     ]
    ],
    "thicknessPx": 3.68,
@@ -4498,11 +4498,11 @@
    "sourcePx": [
     [
      1065.8403284671533,
-     934.7593887074197
+     934.7593887074196
     ],
     [
-     929.9237538034998,
-     934.7593887074197
+     929.9237538034987,
+     934.7593887074196
     ]
    ],
    "thicknessPx": 11.0,
@@ -4514,12 +4514,12 @@
    "kind": "supported_opening_span",
    "sourcePx": [
     [
-     929.9237538034998,
-     934.7593887074197
+     929.9237538034987,
+     934.7593887074196
     ],
     [
-     900.1511996981252,
-     934.7593887074197
+     900.1511996981246,
+     934.7593887074196
     ]
    ],
    "thicknessPx": 11.0,
@@ -4546,12 +4546,12 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     900.1511996981252,
-     934.7593887074197
+     900.1511996981246,
+     934.7593887074196
     ],
     [
      875.843896381919,
-     934.7593887074197
+     934.7593887074196
     ]
    ],
    "thicknessPx": 11.0,
@@ -4563,12 +4563,12 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     546.5292822891513,
+     546.5292822659038,
      482.8746876859012
     ],
     [
-     546.5292822891513,
-     594.850969072165
+     546.5292822659038,
+     594.8509591584159
     ]
    ],
    "thicknessPx": 20.91,
@@ -4580,12 +4580,12 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     546.5292822891513,
-     594.850969072165
+     546.5292822659038,
+     594.8509591584159
     ],
     [
-     539.9117822891512,
-     594.850969072165
+     539.9117822659039,
+     594.8509591584159
     ]
    ],
    "thicknessPx": 18.2,
@@ -4667,7 +4667,7 @@
      482.8746876859012
     ],
     [
-     546.5292822891513,
+     546.5292822659038,
      482.8746876859012
     ]
    ],
@@ -4680,11 +4680,11 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     546.5292822891513,
+     546.5292822659038,
      473.0
     ],
     [
-     232.35962371188185,
+     232.32059036200351,
      473.0
     ]
    ],
@@ -4697,16 +4697,16 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     232.35962371188185,
+     232.32059036200351,
      473.0
     ],
     [
-     232.35962371188185,
-     594.850969072165
+     232.32059036200351,
+     594.8509591584159
     ]
    ],
-   "thicknessPx": 22.5,
-   "thicknessMm": 321,
+   "thicknessPx": 23.0,
+   "thicknessMm": 328,
    "opening": null
   },
   {
@@ -4715,11 +4715,11 @@
    "sourcePx": [
     [
      537.5,
-     594.850969072165
+     594.8509591584159
     ],
     [
-     546.5292822891513,
-     594.850969072165
+     546.5292822659038,
+     594.8509591584159
     ]
    ],
    "thicknessPx": 18.2,
@@ -4731,11 +4731,11 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     546.5292822891513,
-     594.850969072165
+     546.5292822659038,
+     594.8509591584159
     ],
     [
-     546.5292822891513,
+     546.5292822659038,
      473.0
     ]
    ],
@@ -4804,7 +4804,7 @@
     ],
     [
      1274.9450543283915,
-     934.7593887074197
+     934.7593887074196
     ]
    ],
    "thicknessPx": 8.0,
@@ -4817,11 +4817,11 @@
    "sourcePx": [
     [
      1274.9450543283915,
-     934.7593887074197
+     934.7593887074196
     ],
     [
      1231.5,
-     934.7593887074197
+     934.7593887074196
     ]
    ],
    "thicknessPx": 11.0,
@@ -4834,11 +4834,11 @@
    "sourcePx": [
     [
      1231.5,
-     934.7593887074197
+     934.7593887074196
     ],
     [
      1121.0,
-     934.7593887074197
+     934.7593887074196
     ]
    ],
    "thicknessPx": 11.0,
@@ -4866,11 +4866,11 @@
    "sourcePx": [
     [
      1121.0,
-     934.7593887074197
+     934.7593887074196
     ],
     [
      1065.8403284671533,
-     934.7593887074197
+     934.7593887074196
     ]
    ],
    "thicknessPx": 11.0,
@@ -4883,7 +4883,7 @@
    "sourcePx": [
     [
      407.0,
-     875.5594156157697
+     875.5593892576937
     ],
     [
      407.0,
@@ -4903,7 +4903,7 @@
      1047.25
     ],
     [
-     549.5451813018785,
+     549.5064214042691,
      1047.25
     ]
    ],
@@ -4916,16 +4916,16 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     549.5451813018785,
+     549.5064214042691,
      1047.25
     ],
     [
-     549.5451813018785,
+     549.5064214042691,
      963.5
     ]
    ],
-   "thicknessPx": 16.0,
-   "thicknessMm": 228,
+   "thicknessPx": 16.08,
+   "thicknessMm": 229,
    "opening": null
   },
   {
@@ -4933,12 +4933,12 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     549.5451813018785,
-     875.5594156157697
+     549.5064214042691,
+     875.5593892576937
     ],
     [
      407.0,
-     875.5594156157697
+     875.5593892576937
     ]
    ],
    "thicknessPx": 16.12,
@@ -5054,7 +5054,7 @@
      711.5631160692594
     ],
     [
-     986.9457642087087,
+     986.9457642087068,
      711.5631160692594
     ]
    ],
@@ -5072,7 +5072,7 @@
     ],
     [
      875.843896381919,
-     934.7593887074197
+     934.7593887074196
     ]
    ],
    "thicknessPx": 11.0,
@@ -5084,12 +5084,12 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     929.9237538034998,
-     934.7593887074197
+     929.9237538034987,
+     934.7593887074196
     ],
     [
      1053.5912162162163,
-     934.7593887074197
+     934.7593887074196
     ]
    ],
    "thicknessPx": 11.0,
@@ -5102,7 +5102,7 @@
    "sourcePx": [
     [
      1053.5912162162163,
-     934.7593887074197
+     934.7593887074196
     ],
     [
      1053.5912162162163,
@@ -5277,8 +5277,8 @@
      1095.1935483870968
     ]
    ],
-   "thicknessPx": 6.75,
-   "thicknessMm": 96,
+   "thicknessPx": 5.4,
+   "thicknessMm": 77,
    "opening": null
   },
   {
@@ -5294,8 +5294,8 @@
      1088.4435483870968
     ]
    ],
-   "thicknessPx": 6.75,
-   "thicknessMm": 96,
+   "thicknessPx": 8.44,
+   "thicknessMm": 120,
    "opening": null
   },
   {
@@ -5342,11 +5342,11 @@
     ],
     [
      1095.0,
-     171.5615671641791
+     171.62313432835822
     ]
    ],
-   "thicknessPx": 12.19,
-   "thicknessMm": 174,
+   "thicknessPx": 14.25,
+   "thicknessMm": 203,
    "opening": null
   },
   {
@@ -5355,15 +5355,15 @@
    "sourcePx": [
     [
      1062.0,
-     171.5615671641791
+     171.62313432835822
     ],
     [
      1062.0,
      183.75
     ]
    ],
-   "thicknessPx": 12.19,
-   "thicknessMm": 174,
+   "thicknessPx": 14.25,
+   "thicknessMm": 203,
    "opening": null
   },
   {
@@ -5379,8 +5379,8 @@
      188.125
     ]
    ],
-   "thicknessPx": 4.38,
-   "thicknessMm": 62,
+   "thicknessPx": 5.47,
+   "thicknessMm": 78,
    "opening": null
   },
   {
@@ -5396,8 +5396,8 @@
      183.75
     ]
    ],
-   "thicknessPx": 4.38,
-   "thicknessMm": 62,
+   "thicknessPx": 5.47,
+   "thicknessMm": 78,
    "opening": null
   },
   {
@@ -5410,11 +5410,11 @@
     ],
     [
      940.5,
-     171.5615671641791
+     171.62313432835822
     ]
    ],
-   "thicknessPx": 12.19,
-   "thicknessMm": 174,
+   "thicknessPx": 14.25,
+   "thicknessMm": 203,
    "opening": null
   },
   {
@@ -5423,15 +5423,15 @@
    "sourcePx": [
     [
      906.5,
-     171.5615671641791
+     171.62313432835822
     ],
     [
      906.5,
      183.75
     ]
    ],
-   "thicknessPx": 12.19,
-   "thicknessMm": 174,
+   "thicknessPx": 14.25,
+   "thicknessMm": 203,
    "opening": null
   },
   {
@@ -5447,8 +5447,8 @@
      291.0
     ]
    ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 93,
+   "thicknessPx": 8.12,
+   "thicknessMm": 116,
    "opening": null
   },
   {
@@ -5464,8 +5464,8 @@
      411.5
     ]
    ],
-   "thicknessPx": 6.5,
-   "thicknessMm": 93,
+   "thicknessPx": 8.12,
+   "thicknessMm": 116,
    "opening": null
   },
   {
@@ -5481,8 +5481,8 @@
      491.94968768590127
     ]
    ],
-   "thicknessPx": 9.08,
-   "thicknessMm": 129,
+   "thicknessPx": 10.5,
+   "thicknessMm": 150,
    "opening": null
   },
   {
@@ -5498,8 +5498,8 @@
      482.8746876859012
     ]
    ],
-   "thicknessPx": 9.08,
-   "thicknessMm": 129,
+   "thicknessPx": 10.5,
+   "thicknessMm": 150,
    "opening": null
   },
   {
@@ -5508,7 +5508,7 @@
    "sourcePx": [
     [
      652.4560783488932,
-     152.43474600056132
+     152.46982879595845
     ],
     [
      652.4560783488932,
@@ -5525,11 +5525,11 @@
    "sourcePx": [
     [
      664.0,
-     152.43474600056132
+     152.46982879595845
     ],
     [
      664.0,
-     201.5
+     202.21723266909908
     ]
    ],
    "thicknessPx": 20.0,
@@ -5541,7 +5541,7 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
-     630.5,
+     630.9289924221162,
      155.75
     ],
     [
@@ -5614,7 +5614,7 @@
     ],
     [
      712.0,
-     201.5
+     202.21723266909908
     ]
    ],
    "thicknessPx": 10.0,
@@ -5631,7 +5631,7 @@
     ],
     [
      821.5,
-     201.5
+     202.21723266909908
     ]
    ],
    "thicknessPx": 10.0,
@@ -5647,7 +5647,7 @@
      463.0
     ],
     [
-     243.614931237721,
+     243.82542801010382,
      463.0
     ]
    ],
@@ -5795,43 +5795,43 @@
      "y": 711.9331160692594
     },
     {
-     "x": 539.9117822891512,
+     "x": 539.9117822659039,
      "y": 711.9331160692594
     },
     {
-     "x": 539.9117822891512,
-     "y": 594.850969072165
+     "x": 539.9117822659039,
+     "y": 594.8509591584159
     },
     {
      "x": 537.5,
-     "y": 594.850969072165
+     "y": 594.8509591584159
     },
     {
      "x": 244.0,
-     "y": 594.850969072165
+     "y": 594.8509591584159
     },
     {
-     "x": 232.35962371188185,
-     "y": 594.850969072165
+     "x": 232.32059036200351,
+     "y": 594.8509591584159
     },
     {
-     "x": 232.35962371188185,
-     "y": 875.5594156157697
+     "x": 232.32059036200351,
+     "y": 875.5593892576937
     },
     {
-     "x": 549.5451813018785,
-     "y": 875.5594156157697
+     "x": 549.5064214042691,
+     "y": 875.5593892576937
     },
     {
-     "x": 549.5451813018785,
+     "x": 549.5064214042691,
      "y": 914.0
     },
     {
-     "x": 549.5451813018785,
+     "x": 549.5064214042691,
      "y": 963.5
     },
     {
-     "x": 549.5451813018785,
+     "x": 549.5064214042691,
      "y": 1088.4435483870968
     },
     {
@@ -5939,7 +5939,7 @@
    "label": "MAIN BEDROOM",
    "roomType": "bedroom",
    "registrationKind": "assembled_wall_topology",
-   "confidence": 0.73,
+   "confidence": 0.755,
    "sourcePoints": [
     {
      "x": 875.843896381919,
@@ -5958,11 +5958,11 @@
      "y": 711.5631160692594
     },
     {
-     "x": 957.6778296644421,
+     "x": 957.6778296644408,
      "y": 711.5631160692594
     },
     {
-     "x": 986.9457642087087,
+     "x": 986.9457642087068,
      "y": 711.5631160692594
     },
     {
@@ -6073,11 +6073,11 @@
     },
     {
      "x": 1095.0,
-     "y": 171.5615671641791
+     "y": 171.62313432835822
     },
     {
      "x": 1062.0,
-     "y": 171.5615671641791
+     "y": 171.62313432835822
     },
     {
      "x": 1062.0,
@@ -6105,11 +6105,11 @@
     },
     {
      "x": 940.5,
-     "y": 171.5615671641791
+     "y": 171.62313432835822
     },
     {
      "x": 906.5,
-     "y": 171.5615671641791
+     "y": 171.62313432835822
     },
     {
      "x": 906.5,
@@ -6154,7 +6154,7 @@
    "label": "BEDROOM 3",
    "roomType": "bedroom",
    "registrationKind": "assembled_wall_topology",
-   "confidence": 0.85,
+   "confidence": 0.885,
    "sourcePoints": [
     {
      "x": 652.4560783488932,
@@ -6239,11 +6239,11 @@
    "label": "KITCHEN",
    "roomType": "kitchen",
    "registrationKind": "assembled_wall_topology",
-   "confidence": 0.84,
+   "confidence": 0.76,
    "sourcePoints": [
     {
      "x": 875.843896381919,
-     "y": 934.7593887074197
+     "y": 934.7593887074196
     },
     {
      "x": 875.843896381919,
@@ -6291,15 +6291,15 @@
     },
     {
      "x": 1065.8403284671533,
-     "y": 934.7593887074197
+     "y": 934.7593887074196
     },
     {
-     "x": 929.9237538034998,
-     "y": 934.7593887074197
+     "x": 929.9237538034987,
+     "y": 934.7593887074196
     },
     {
-     "x": 900.1511996981252,
-     "y": 934.7593887074197
+     "x": 900.1511996981246,
+     "y": 934.7593887074196
     }
    ],
    "edgeIds": [
@@ -6332,19 +6332,19 @@
    "confidence": 0.9,
    "sourcePoints": [
     {
-     "x": 546.5292822891513,
+     "x": 546.5292822659038,
      "y": 482.8746876859012
     },
     {
-     "x": 546.5292822891513,
-     "y": 594.850969072165
+     "x": 546.5292822659038,
+     "y": 594.8509591584159
     },
     {
-     "x": 539.9117822891512,
-     "y": 594.850969072165
+     "x": 539.9117822659039,
+     "y": 594.8509591584159
     },
     {
-     "x": 539.9117822891512,
+     "x": 539.9117822659039,
      "y": 711.9331160692594
     },
     {
@@ -6404,31 +6404,31 @@
    "label": "BALCONY",
    "roomType": "other",
    "registrationKind": "assembled_wall_topology",
-   "confidence": 0.87,
+   "confidence": 0.66,
    "sourcePoints": [
     {
-     "x": 546.5292822891513,
+     "x": 546.5292822659038,
      "y": 473.0
     },
     {
-     "x": 232.35962371188185,
+     "x": 232.32059036200351,
      "y": 473.0
     },
     {
-     "x": 232.35962371188185,
-     "y": 594.850969072165
+     "x": 232.32059036200351,
+     "y": 594.8509591584159
     },
     {
      "x": 244.0,
-     "y": 594.850969072165
+     "y": 594.8509591584159
     },
     {
      "x": 537.5,
-     "y": 594.850969072165
+     "y": 594.8509591584159
     },
     {
-     "x": 546.5292822891513,
-     "y": 594.850969072165
+     "x": 546.5292822659038,
+     "y": 594.8509591584159
     }
    ],
    "edgeIds": [
@@ -6449,7 +6449,7 @@
    "label": "SERVICE BALCONY",
    "roomType": "service_yard",
    "registrationKind": "assembled_wall_topology",
-   "confidence": 0.725,
+   "confidence": 0.785,
    "sourcePoints": [
     {
      "x": 1065.8403284671533,
@@ -6469,19 +6469,19 @@
     },
     {
      "x": 1274.9450543283915,
-     "y": 934.7593887074197
+     "y": 934.7593887074196
     },
     {
      "x": 1231.5,
-     "y": 934.7593887074197
+     "y": 934.7593887074196
     },
     {
      "x": 1121.0,
-     "y": 934.7593887074197
+     "y": 934.7593887074196
     },
     {
      "x": 1065.8403284671533,
-     "y": 934.7593887074197
+     "y": 934.7593887074196
     },
     {
      "x": 1065.8403284671533,
@@ -6518,27 +6518,27 @@
    "sourcePoints": [
     {
      "x": 407.0,
-     "y": 875.5594156157697
+     "y": 875.5593892576937
     },
     {
      "x": 407.0,
      "y": 1047.25
     },
     {
-     "x": 549.5451813018785,
+     "x": 549.5064214042691,
      "y": 1047.25
     },
     {
-     "x": 549.5451813018785,
+     "x": 549.5064214042691,
      "y": 963.5
     },
     {
-     "x": 549.5451813018785,
+     "x": 549.5064214042691,
      "y": 914.0
     },
     {
-     "x": 549.5451813018785,
-     "y": 875.5594156157697
+     "x": 549.5064214042691,
+     "y": 875.5593892576937
     }
    ],
    "edgeIds": [
@@ -6586,11 +6586,11 @@
      "y": 711.5631160692594
     },
     {
-     "x": 986.9457642087087,
+     "x": 986.9457642087068,
      "y": 711.5631160692594
     },
     {
-     "x": 957.6778296644421,
+     "x": 957.6778296644408,
      "y": 711.5631160692594
     }
    ],
@@ -6614,7 +6614,7 @@
    "label": "BATH/W.C. 2",
    "roomType": "toilet",
    "registrationKind": "assembled_wall_topology",
-   "confidence": 0.715,
+   "confidence": 0.725,
    "sourcePoints": [
     {
      "x": 875.843896381919,
@@ -6622,19 +6622,19 @@
     },
     {
      "x": 875.843896381919,
-     "y": 934.7593887074197
+     "y": 934.7593887074196
     },
     {
-     "x": 900.1511996981252,
-     "y": 934.7593887074197
+     "x": 900.1511996981246,
+     "y": 934.7593887074196
     },
     {
-     "x": 929.9237538034998,
-     "y": 934.7593887074197
+     "x": 929.9237538034987,
+     "y": 934.7593887074196
     },
     {
      "x": 1053.5912162162163,
-     "y": 934.7593887074197
+     "y": 934.7593887074196
     },
     {
      "x": 1053.5912162162163,
@@ -6761,7 +6761,7 @@
   "gapsAcrossSlantedWallsDropped": 5,
   "openingsInSlantedWalls": 0,
   "slantedSidesWelded": 1,
-  "slopedStrokes": 74,
+  "slopedStrokes": 69,
   "curvedWalls": 0,
   "curvedSides": 0,
   "panelPartitionsAsSlidingDoors": 0,
@@ -6788,8 +6788,8 @@
   "cornersStraightened": 0,
   "cutCornersSquared": 0,
   "sidesCutAtDuctJogs": 0,
-  "unsupportedWallPx": 49749,
-  "thickAxisWallPx": 2983,
+  "unsupportedWallPx": 49750,
+  "thickAxisWallPx": 2984,
   "slantedWallPx": 44398,
   "otherWallPx": 2368,
   "workScale": 2,
@@ -6802,6 +6802,8 @@
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 83,
   "standaloneWallsAdded": 15,
+  "jogsThicknessChosen": 1,
+  "standaloneFacesOnTheWalls": 0,
   "itemsLeftOutForTheAppsLimits": 0
  }
 }
