@@ -160,42 +160,38 @@ export function SelectedCabinetPanel({
                   </Button>
                 </div>
                 <div className="mt-2 grid grid-cols-4 gap-2">
-                  <button
-                    type="button"
+                  <Button
+                    size="compact"
                     data-testid="selected-cabinet-nudge-left"
-                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.nudge(-0.05, 0)}
                   >
                     Left
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    size="compact"
                     data-testid="selected-cabinet-nudge-back"
-                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.nudge(0, -0.05)}
                   >
                     Back
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    size="compact"
                     data-testid="selected-cabinet-nudge-front"
-                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.nudge(0, 0.05)}
                   >
                     Front
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    size="compact"
                     data-testid="selected-cabinet-nudge-right"
-                    className="min-h-9 rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-800 disabled:opacity-40"
                     disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
                     onClick={() => actions.nudge(0.05, 0)}
                   >
                     Right
-                  </button>
+                  </Button>
                 </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   <Button

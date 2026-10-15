@@ -133,7 +133,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
-      "lines": 293,
+      "lines": 283,
       "limit": 250
     },
     "components/editor/design-page/DesignPageQaMarkers.tsx": {
@@ -177,7 +177,7 @@
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
-      "lines": 621,
+      "lines": 617,
       "limit": 250
     },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
@@ -229,7 +229,7 @@
       "limit": 250
     },
     "components/editor/FloorPropertiesPanel.tsx": {
-      "lines": 626,
+      "lines": 618,
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
@@ -273,7 +273,7 @@
       "limit": 250
     },
     "components/editor/SelectedItemDetailsPanel.tsx": {
-      "lines": 495,
+      "lines": 490,
       "limit": 250
     },
     "components/GoogleAddressAutocomplete.tsx": {
@@ -1531,7 +1531,7 @@
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 200
+        "maximum": 189
       },
       "complexFunctions": {
         "count": 1,
@@ -1751,7 +1751,7 @@
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 565
+        "maximum": 561
       },
       "complexFunctions": {
         "count": 1,
@@ -1997,7 +1997,7 @@
     "components/editor/FloorPropertiesPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 562
+        "maximum": 554
       },
       "complexFunctions": {
         "count": 1,
@@ -2131,7 +2131,7 @@
     "components/editor/SelectedItemDetailsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 423
+        "maximum": 418
       },
       "complexFunctions": {
         "count": 1,

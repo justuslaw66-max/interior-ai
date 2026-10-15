@@ -2,6 +2,7 @@
 
 import type { KeyboardEvent } from "react";
 import SurfacePatternPreview from "@/components/editor/design-page/SurfacePatternPreview";
+import { Button } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { RoomFloorPattern } from "@/lib/room-types";
 
@@ -37,11 +38,6 @@ export type SurfacePatternActions = SurfaceGroutActions & {
 };
 
 const LABEL = "text-xs font-semibold text-neutral-700";
-const CHOICE = "min-h-8 rounded-lg px-2 py-1 text-xs font-semibold touch:min-h-11";
-const choiceClass = (selected: boolean) =>
-  selected
-    ? `${CHOICE} bg-neutral-900 text-white`
-    : `${CHOICE} border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100`;
 
 type GroutProps = { grout: SurfaceGroutState; actions: SurfaceGroutActions; testIdPrefix: "surface" | "wall-surface" };
 
@@ -200,10 +196,10 @@ function PatternMove({ pattern, actions }: PatternProps) {
       <div className={LABEL}>Move pattern</div>
       <div className="mt-1 grid grid-cols-4 gap-1">
         {MOVES.map((move) => (
-          <button key={move.label} type="button" data-testid={`surface-offset-${move.label.toLowerCase()}`} className={choiceClass(false)}
+          <Button key={move.label} size="compact" data-testid={`surface-offset-${move.label.toLowerCase()}`}
             disabled={pattern.disabled} onClick={() => actions.onMovePattern(move.x, move.y)}>
             {move.label}
-          </button>
+          </Button>
         ))}
       </div>
       <div className="mt-1 text-xs text-neutral-600">
@@ -226,12 +222,12 @@ export function SurfacePatternControls({ pattern, actions }: PatternProps) {
       <SurfaceGroutControls grout={pattern} actions={actions} testIdPrefix="surface" />
       <PatternMove pattern={pattern} actions={actions} />
       <div className="mt-2 grid grid-cols-2 gap-1.5">
-        <button type="button" className={choiceClass(false)} disabled={pattern.disabled} onClick={actions.onResetPattern}>
+        <Button size="compact" disabled={pattern.disabled} onClick={actions.onResetPattern}>
           Reset pattern
-        </button>
-        <button type="button" className={choiceClass(false)} disabled={pattern.disabled} onClick={actions.onResetSurface}>
+        </Button>
+        <Button size="compact" disabled={pattern.disabled} onClick={actions.onResetSurface}>
           Reset surface
-        </button>
+        </Button>
       </div>
     </div>
   );

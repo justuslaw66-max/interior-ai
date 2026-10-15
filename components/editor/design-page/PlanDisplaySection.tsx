@@ -92,10 +92,11 @@ export function PlanDisplaySection({ state, actions }: PlanDisplaySectionProps) 
         onChange={actions.onSelectAnnotationTool}
       />
       {detailed ? (
-        <div className="grid grid-cols-3 gap-2">
-          <Button size="compact" onClick={() => actions.onAddOpening("door")}>Add door</Button>
-          <Button size="compact" onClick={() => actions.onAddOpening("window")}>Add window</Button>
-          <Button size="compact" onClick={actions.onAddBuiltIn}>Add built-in</Button>
+        // Each label on one line: three columns cut "Add window" and "Add built-in" in two.
+        <div className="flex flex-wrap gap-2">
+          <Button size="compact" className="grow" onClick={() => actions.onAddOpening("door")}>Add door</Button>
+          <Button size="compact" className="grow" onClick={() => actions.onAddOpening("window")}>Add window</Button>
+          <Button size="compact" className="grow" onClick={actions.onAddBuiltIn}>Add built-in</Button>
         </div>
       ) : null}
       <Button size="compact" variant="danger" className="w-full" disabled={!state.selectedPlanOverlayId} onClick={actions.onDeleteSelectedPlanOverlay}>

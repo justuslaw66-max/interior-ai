@@ -54,10 +54,13 @@ assert.match(
   /handle\.shape === "edge-z" \? 64[\s\S]*handle\.shape === "edge-x" \? 28 : 44/,
   "2D room resize handles should keep enlarged touch heights"
 );
-assert.match(
-  selectedPanel,
-  /data-testid="selected-item-nudge-left"[\s\S]*min-h-1[01]/,
-  "selected item nudge buttons should keep larger touch targets"
-);
+// Compact Buttons (UX 5n): 30px with a mouse, 44px on phones and touch screens.
+for (const direction of ["left", "back", "front", "right"]) {
+  assert.match(
+    selectedPanel,
+    new RegExp(`<Button\\s+size="compact"\\s+data-testid="selected-item-nudge-${direction}"`),
+    "selected item nudge buttons should keep larger touch targets"
+  );
+}
 
 console.log("Touch placement polish checks passed");

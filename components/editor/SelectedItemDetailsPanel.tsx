@@ -81,7 +81,6 @@ export default function SelectedItemDetailsPanel({
   onApplyStyleAlternative,
 }: SelectedItemDetailsPanelProps) {
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
-  const disabledButtonClass = "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
   const actionIconClass = "h-3.5 w-3.5 shrink-0";
   const panelClass = "mt-2 space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
   const compactPanelClass = "mt-2 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
@@ -280,46 +279,42 @@ export default function SelectedItemDetailsPanel({
               />
             </div>
             <div className="mt-2 grid grid-cols-4 gap-2">
-              <button
-                type="button"
+              <Button
+                size="compact"
                 data-testid="selected-item-nudge-left"
-                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item left by 5 centimetres"
                 onClick={() => onNudge(-0.05, 0)}
               >
                 Left
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="compact"
                 data-testid="selected-item-nudge-back"
-                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item back by 5 centimetres"
                 onClick={() => onNudge(0, -0.05)}
               >
                 Back
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="compact"
                 data-testid="selected-item-nudge-front"
-                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item forward by 5 centimetres"
                 onClick={() => onNudge(0, 0.05)}
               >
                 Front
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="compact"
                 data-testid="selected-item-nudge-right"
-                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item right by 5 centimetres"
                 onClick={() => onNudge(0.05, 0)}
               >
                 Right
-              </button>
+              </Button>
             </div>
           </div>
           <div className={labelClass}>

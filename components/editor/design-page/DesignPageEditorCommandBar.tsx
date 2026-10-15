@@ -10,6 +10,7 @@ import type {
 } from "@/lib/lightingPresets";
 import type { ScenePerformanceMode } from "@/lib/useDesignPageScenePerformance";
 import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 type EditorCommandBarProps = ComponentProps<typeof EditorCommandBar>;
 type RoomPlanStatusBarProps = ComponentProps<typeof RoomPlanStatusBar>;
@@ -231,36 +232,25 @@ export function DesignPageEditorCommandBar({
           <div className="mb-2 px-1 text-xs font-semibold text-neutral-600">
             Scene quality
           </div>
-          <div className="grid grid-cols-3 gap-1">
-            {(["auto", "quality", "lite"] as const).map((option) => {
-              const active = state.scenePerformance.mode === option;
-              const label =
+          <SegmentedControl
+            label="Scene quality"
+            size="compact"
+            fill
+            value={state.scenePerformance.mode}
+            onChange={actions.scenePerformance.changeMode}
+            options={(["auto", "quality", "lite"] as const).map((option) => ({
+              value: option,
+              label:
                 option === "auto"
                   ? state.scenePerformance.liteEnabled
-                    ? "Auto Lite"
+                    ? "Auto · Lite"
                     : "Auto"
                   : option === "quality"
                     ? "Quality"
-                    : "Lite";
-
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  data-testid={`scene-performance-${option}`}
-                  data-active={active ? "true" : "false"}
-                  className={
-                    active
-                      ? "rounded-lg bg-neutral-950 px-2 py-1.5 text-xs font-semibold text-white"
-                      : "rounded-lg px-2 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-white"
-                  }
-                  onClick={() => actions.scenePerformance.changeMode(option)}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+                    : "Lite",
+              testId: `scene-performance-${option}`,
+            }))}
+          />
         </div>
       ) : null}
     </div>

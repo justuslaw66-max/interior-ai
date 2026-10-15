@@ -65,12 +65,12 @@ export function registerStartAndFloorTests() {
     await commandOverflow.click();
     await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
     await expect(page.getByTestId("editor-overflow-scene-quality")).toBeVisible();
-    await expect(page.getByTestId("scene-performance-auto")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("scene-performance-auto")).toHaveAttribute("aria-pressed", "true");
 
     await page.getByTestId("scene-performance-lite").evaluate((button) => {
       (button as HTMLButtonElement).click();
     });
-    await expect(page.getByTestId("scene-performance-lite")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("scene-performance-lite")).toHaveAttribute("aria-pressed", "true");
     await expect
       .poll(() => page.evaluate(() => window.localStorage.getItem("scene_performance_mode")))
       .toBe("lite");
@@ -78,7 +78,7 @@ export function registerStartAndFloorTests() {
     await page.getByTestId("scene-performance-quality").evaluate((button) => {
       (button as HTMLButtonElement).click();
     });
-    await expect(page.getByTestId("scene-performance-quality")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("scene-performance-quality")).toHaveAttribute("aria-pressed", "true");
     await expect
       .poll(() => page.evaluate(() => window.localStorage.getItem("scene_performance_mode")))
       .toBe("quality");

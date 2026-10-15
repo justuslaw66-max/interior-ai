@@ -37,9 +37,11 @@ const TABS: ReadonlyArray<{ value: SurfaceBrowserTab; label: string; testId: str
   { value: "rooms", label: "Rooms", testId: "surfaces-tab-rooms" },
 ];
 
+// When Pro's Brush and Summary leave the title too little room, they move under it, so what's
+// being changed reads on one line.
 function SurfaceBrowserTitle(props: SurfaceBrowserHeaderProps) {
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
       <div className="flex min-w-0 items-start gap-1">
         <Button
           variant="quiet"
@@ -59,7 +61,7 @@ function SurfaceBrowserTitle(props: SurfaceBrowserHeaderProps) {
         </div>
       </div>
       {props.pro ? (
-        <div className="flex shrink-0 flex-wrap justify-end gap-1">
+        <div className="ml-auto flex shrink-0 justify-end gap-1">
           <Button
             data-testid="surface-brush-toggle"
             size="compact"

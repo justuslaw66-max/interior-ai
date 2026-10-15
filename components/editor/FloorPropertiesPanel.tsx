@@ -110,7 +110,6 @@ export default function FloorPropertiesPanel({
   const titleClass = "text-sm font-semibold text-neutral-800";
   const metaClass = "mt-0.5 text-xs text-neutral-500";
   const panelClass = "relative w-[16.5rem] max-[520px]:w-full rounded-lg border border-neutral-200 bg-white/95 p-2 text-neutral-900 shadow-xl backdrop-blur";
-  const secondaryButtonClass = "rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
   const floorPanelButtonClass = "flex w-full items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-left text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50";
   const fieldLabelClass = "text-xs font-semibold text-neutral-700";
   const floorListButtonClass = (isActive: boolean) => {
@@ -178,15 +177,10 @@ export default function FloorPropertiesPanel({
         </div>
         <div className="flex items-center gap-1">
           {!isCollapsed && (
-            <button
-              type="button"
-              className={`${secondaryButtonClass} inline-flex items-center gap-1`}
-              disabled={!canEdit || !canRedo}
-              onClick={onRedo}
-            >
+            <Button size="compact" disabled={!canEdit || !canRedo} onClick={onRedo}>
               <Redo2 className="h-3.5 w-3.5" aria-hidden="true" />
               Redo
-            </button>
+            </Button>
           )}
           <Button
             size="icon"
@@ -482,27 +476,25 @@ export default function FloorPropertiesPanel({
           Advanced
         </summary>
         <div className="mt-2 grid grid-cols-3 gap-1.5">
-          <button
-            type="button"
-            className={secondaryButtonClass}
+          <Button
+            size="compact"
             data-testid="floor-rename-open"
             disabled={!canEdit}
             onClick={openRenameDialog}
           >
             Rename
-          </button>
-          <button type="button" className={secondaryButtonClass} disabled={!canEdit} onClick={onDuplicateFloor}>
+          </Button>
+          <Button size="compact" disabled={!canEdit} onClick={onDuplicateFloor}>
             Duplicate
-          </button>
-          <button
-            type="button"
-            className={secondaryButtonClass}
+          </Button>
+          <Button
+            size="compact"
             data-testid="floor-delete-open"
             disabled={!canEdit || floorOptions.length <= 1}
             onClick={openDeleteDialog}
           >
             Delete
-          </button>
+          </Button>
         </div>
         {renameOpen && (
           <div
