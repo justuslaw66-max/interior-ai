@@ -105,7 +105,8 @@ const GARDENIA_PATTERN_LAYOUT_BY_ID: Record<string, SurfacePatternLayout> = {
   pieno_05: "vertical_brick",
   spina_01: "herringbone",
   sfals_random_1: "random_stagger",
-  cplx: "straight",
+  // The configurator's CPLX is the chevron: only Tabulae's chevron pieces use it (16 Oct 2026).
+  cplx: "chevron",
 };
 
 function parseArgs() {

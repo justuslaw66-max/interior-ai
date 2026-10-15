@@ -12,7 +12,7 @@ Some surface materials are drawn from the manufacturer's own pictures of whole t
 | Gardenia (ABK Group) | Oxide, five colours | 38 entries (19 floor, 19 wall) | 136 | `catalog/surface-materials/flooring/gardenia/oxide/gardenia-oxide-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Falaise, six colours | 44 entries (23 floor, 21 wall) | 305 | `catalog/surface-materials/flooring/gardenia/falaise/gardenia-falaise-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Make, six colours | 48 of its 60 entries (24 floor, 24 wall); the 12 T36 mosaics keep their previews | 92 | `catalog/surface-materials/flooring/gardenia/make/gardenia-make-<colour>-faces.manifest.json` |
-| Gardenia (ABK Group) | Tabulae, four woods and four decors | 46 of its 54 entries (24 floor, 22 wall); the 8 chevron entries keep their previews | 336 | `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-tabulae-<colour>-faces.manifest.json` |
+| Gardenia (ABK Group) | Tabulae, four woods, four chevrons and four decors | 54 entries (28 floor, 26 wall) | 454 | `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-tabulae-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Bon Ton, four marbles and three decors | 53 entries (23 floor, 30 wall) | 284 | `catalog/surface-materials/flooring/gardenia/bon-ton/gardenia-bon-ton-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | Pietra Viva, seven colours | 86 entries (43 floor, 43 wall) | 226 | `catalog/surface-materials/flooring/gardenia/pietra-viva/gardenia-pietra-viva-<colour>-faces.manifest.json` |
 | Gardenia (ABK Group) | La Geoteca, ten colours and three Plissè decors | 88 of its 92 entries (46 floor, 42 wall); Negresco 120x280 and 80x80 keep their previews | 286 | `catalog/surface-materials/flooring/gardenia/la-geoteca/gardenia-la-geoteca-<colour>-faces.manifest.json` |
@@ -54,6 +54,35 @@ In `texture_assets` of its `catalog.yaml`:
 - The sampling rule is in `lib/surface-material-physical-sampling.ts`; the drawing is in `components/editor/renderers/surfaceTilePainter.ts`.
 - **Faces win over the decor-sheet path.** Gardenia products whose names mark them as decors (Gioia, `3d`, `art`, `degrade`, `network`, `sticks` and so on; `shouldUseContinuousPatternSourceForTest` in `useSurfaceMaterialTexture.ts`) were drawn by stretching one preview over each tile, without turning it. Since 9 Oct, a product with whole-tile faces goes to the tile painter instead, like every other product: each face is turned to the tile, drawn at its real size and varied from tile to tile. Before that, Dorica Degradé and Falaise Art Beige and Art Grey (on faces since #101 and #106) showed their first face squeezed into landscape tiles.
 - `scripts/test-surface-material-physical-scale.ts` checks the rule and the Florim, Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage, Block and Eterea entries, Plein Air's outdoor sizes of them, and the Plein Air collection.
+
+## The chevron layout (16 Oct 2026)
+
+A chevron is laid from parallelogram pieces with both ends cut on a slant. The pieces lie in bands: each band's pieces lean
+the opposite way to the next band's, and the two meet end to end along straight band lines. A material that lists
+`chevron` in `rendering.available_pattern_layouts` is laid that way; Tabulae's chevrons list nothing else, so that is the
+layout they get on floors and walls (walls are laid straight unless the material can't be).
+
+```yaml
+physical_specs:
+  tile_width_mm: 150
+  tile_length_mm: 850          # tip to tip
+  chevron_end_offset_mm: 70.7  # how far each end's cut runs along the piece
+```
+
+- **Geometry** (`lib/surface-chevron-layout.ts`). With width w, length L tip to tip and end offset d, the pieces lean off the
+  band crossing by atan(d / w), bands are (L - d) w / √(w² + d²) apart, and pieces are √(w² + d²) apart along a band line
+  (the length of a cut). Tabulae: 25 degrees, 705 mm and 166 mm. `getChevronLayout` makes the layout; `getChevronPieceLocal`
+  places any point in its piece and in that piece's face, and the painter and the tests both use it.
+- **Faces** show one piece upright in its bounding box, with the top cut rising to the right. Every other band shows them
+  mirrored, which is the other hand of the piece. ABK's left-hand pictures are mirrored to that hand when the faces are made,
+  and the white beyond the cuts is filled with the piece's edge pixels, so nothing white is drawn at a joint.
+- **Which face:** each band runs through its own shuffled order of the faces, so neighbours along a band never repeat.
+- **Drawing** is pixel by pixel, as for herringbone (`components/editor/renderers/surfaceChevronPainter.ts`, beside
+  `surfaceHerringbonePainter.ts`). Without a catalogued end offset the ends are cut at 45 degrees.
+- **Checks:** the generator refuses a chevron without an end offset, or an end offset on a material that isn't a chevron
+  (`getSurfaceMaterialChevronFailures`). `scripts/test-surface-material-schema.ts` pins the geometry, the face order and the
+  painting; `scripts/test-surface-material-physical-scale.ts` pins Tabulae's entries.
+- The pattern controls offer Chevron only to materials that list it (`lib/surface-settings.ts`), with its own preview.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 
@@ -129,7 +158,7 @@ Size guide for Anima (all 182 faces): about 11 MB at 0.6 px per mm, about 32 MB 
 - As for the collections before: one copy of each face, every site picture (890) matched to its ZIP file by sha256, and each colour's sizes checked against each other with the crop test.
 - **Every size is true to its label where it can be checked.** Tabulae's 10x60 and 5x120 planks match the 20x120 and 30x120 pictures best at the labelled scale (r 0.66 to 1.00), and 20x120 sits in 30x120 the same way (r 0.83 to 0.99). The 23,4x148 planks are a graphic of their own, so they are taken as labelled. Bon Ton's 5x120, 60x120, 120x120 and 120x280 match each other best at the labelled scale (r 0.81 to 1.00).
 - **Byte-identical pictures:** Tabulae's 20x120 R11 items show the Natural item's 30 pictures; Bon Ton's 120x280 Soft items show the Lux item's 3 (Biancone, Botticino, Perlino); Carrara's and Perlino's 120x120 Antique items show the Nat item's 9. Those entries use the other item's faces. The 60x120 Antique and Nat items share only some pictures and keep their own.
-- **Tabulae's chevrons** (15x85, `par-dx-sx`) keep their previews: ABK's pictures are single parallelogram pieces with slanted ends, and the renderer lays rectangular tiles in a straight grid. They need a chevron layout first.
+- **Tabulae's chevrons** (15x85, `par-dx-sx`; on faces since 16 Oct 2026): each of ABK's 118 pictures is one parallelogram piece with both ends cut on a slant, and ABK shows both hands. The faces are one hand: the pictures whose top cut rises to the left are mirrored left to right, and the white beyond the cuts is filled with the piece's own edge pixels. Each face covers the piece's 150x850 mm bounding box, tip to tip. Every picture's cuts run 317 of its 3809 px along the piece, so `physical_specs.chevron_end_offset_mm` is 70.7 and the entries are laid only as a chevron (see "The chevron layout" below). Thickness 9.5 mm, from ABK's colour pages. The swatches are 600x600 mm of the laid chevron, painted with the app's own layout.
 - **Decors** come in one size each, so there is nothing to match them against; each picture is the whole tile. Bon Ton Network, Octagon and Tricot have a single face each. Tabulae Sticks' 6 pictures are 4% narrower than 600x1200 mm and are drawn at the tile's width.
 - **Planks:** the 30x120 R11 planks (0021253, 0021254) are on ABK's Plein Air pages, not Tabulae's. Bon Ton's 120x280 pictures are 1% wider than 1200x2800 mm (under the 3% tolerance, not cut).
 - The catalogue names Carrara 0020758 "120x280 Soft"; ABK's page lists 0020758 as Lux (and 0020766, not in the catalogue, as Soft). The entry uses 0020758's own pictures.
@@ -298,8 +327,8 @@ the surface panel's "Request sample / quote" opens. Each entry notes it ("Quote 
 - The surface browser shows published entries to everyone; drafts only to designers and outside production.
 - A published entry needs a thickness. 102 had none (the sheets didn't settle them); each took the one thickness ABK's colour page
   gives for its format, and notes the page (see `surface-material-abk-documents.md`).
-- The 52 entries still on configurator previews (I Pigmenti's and Make's mosaics, Tabulae's chevrons, La Marmoteca's book-matched
-  pairs, two Negresco sizes) stay drafts: their tileability is unconfirmed.
+- The 44 entries still on configurator previews (I Pigmenti's and Make's mosaics, La Marmoteca's book-matched pairs, two Negresco
+  sizes) stay drafts: their tileability is unconfirmed. Tabulae's 8 chevrons were published on 16 Oct, once on faces.
 - `scripts/test-surface-material-physical-scale.ts` pins all of it; the other suppliers' entries stay drafts.
 
 ## Sizes with no picture of their own
@@ -309,5 +338,5 @@ A record of the catalogue's sizes with no picture of their own on ABK's download
 | Kind | What the app shows | Entries |
 | --- | --- | --- |
 | **Stand-in** (`stand_in_faces`) | Another item's faces of the same colour, cut to the tile at true scale. Each entry's notes name the item. | Block: the 60x60 Nat 3D and R11 of all four colours, and Burro, Creta and Tabacco 60x120 (11 items, 22 entries). Earlier: La Marmoteca's Soft 120x120 and 60x120 of Antique Brown, Frozen, Golden Carbon, Pure Onyx and Sahara White, Grey Wonder 120x120 Soft 3D, and the 40x120 of Calacatta Elegance and Statuario Premium (13 items, 26 entries); Pietra Viva Aude Beige 120x120 Antique 3D, Aude Beige and Grey 80x80 R11, Aude Grey 60x120 Nat P.tech (4 items, 6 entries); La Geoteca Brennero and Serena 60x120 Nat P.tech (2 items, 4 entries). Plein Air: Pietra Viva Aude Beige and Grey 60x60 R11, on the colour's 120x120 Nat P.tech faces (2 items, 2 floor entries). |
-| **Configurator preview** (`configurator_preview_asset`) | The July import's preview, one picture repeated. | Make's T36 mosaics, Tabulae's chevrons, La Geoteca Negresco 120x280 and 80x80, I Pigmenti's Mos Confet mosaics, La Marmoteca's book-matched A+B pairs (26 items, 52 entries). |
+| **Configurator preview** (`configurator_preview_asset`) | The July import's preview, one picture repeated. | Make's T36 mosaics, La Geoteca Negresco 120x280 and 80x80, I Pigmenti's Mos Confet mosaics, La Marmoteca's book-matched A+B pairs (22 items, 44 entries). Tabulae's chevrons left it on 16 Oct 2026. |
 | **Left out** | Not in the catalogue. | Just Nature Beige Scuro 30x120 (ABK shows Beige Medio's pictures for it); Block Tabacco 120x280 (no picture, and too large for the 120x120 faces). Plein Air: La Geoteca Ceppo di Gre 60x120 R11 0002933 (its pictures are the CENERE export of the Natural item 0002949, not the Ceppo di Gre faces the colour's other sizes use; the other 60x120 R11 item, 0014525, is listed; J, 13 Oct 2026); Hermione Beige and Miel 60x60 R11 (ABK's pictures are far lighter and pinker than the colour's planks: mean RGB 246/218/192 against 195/161/130, 244/202/145 against 173/137/107; left out until ABK has pictures, J, 13 Oct 2026); Concept Stone's four colours (no pictures and no ZIP; the twelfth of Plein Air's ranges, the other eleven are the Plein Air collection). |

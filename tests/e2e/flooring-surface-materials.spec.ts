@@ -12,6 +12,7 @@ const EXPORT_FLOORING_ID = "goodrich-geff-novaclick-gnv-001-ivory-oak";
 const EXPORT_WALL_ID = "goodrich-geff-novaclick-gnv-002-silver-oak";
 const GARDENIA_DORICA_CREMA_120_ID = "gardenia-flooring-dorica-crema-0010006-120x120-nat-196270-0";
 const GARDENIA_DORICA_CREMA_20X120_ID = "gardenia-flooring-dorica-crema-0010519-20x120-nat-196278-0";
+const GARDENIA_TABULAE_CHEVRON_SABBIA_ID = "gardenia-flooring-tabulae-chevron-sabbia-pf60021110-15x85-nat-92341-par-dx-sx";
 
 function resolveDatabaseUrl() {
   if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
@@ -261,6 +262,34 @@ test.describe("Flooring surface materials", () => {
     await expect(floorPanel).toHaveAttribute("data-floor-material-id", GARDENIA_DORICA_CREMA_120_ID);
     await expect(floorPanel.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(3);
     await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("straight");
+  });
+
+  test("a Tabulae chevron is laid as a chevron", async ({ page }) => {
+    test.setTimeout(90000);
+
+    await mockProPlan(page);
+    await page.goto("/design?mode=designer");
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible({ timeout: 30000 });
+    await dismissBlockingDialogs(page);
+
+    const floorPanel = page.getByTestId("selection-inspector-floor-settings");
+    await expect(floorPanel).toBeVisible({ timeout: 30000 });
+    await page.getByTestId("plan-change-floor-finish").click();
+    const surfaceControls = page.getByTestId("floor-finish-panel").getByTestId("room-surfaces-floor-panel");
+    await expect(surfaceControls).toBeVisible({ timeout: 30000 });
+    await surfaceControls.getByTestId("surfaces-search").fill("Tabulae Chevron Sabbia");
+
+    const chevronCard = surfaceControls.getByRole("button", { name: /Tabulae Chevron Sabbia/i }).first();
+    await expect(chevronCard).toBeVisible({ timeout: 30000 });
+    await chevronCard.click();
+    await expect(floorPanel).toHaveAttribute("data-floor-material-id", GARDENIA_TABULAE_CHEVRON_SABBIA_ID);
+    // Its pieces are cut for a chevron, so that is the one layout it offers, and it is applied with it.
+    await expect(floorPanel.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(1);
+    await expect(floorPanel.getByTestId("surface-pattern-option-chevron")).toHaveAttribute("aria-pressed", "true");
+    await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("chevron");
+    await surfaceControls.getByTestId("surface-summary-open").click();
+    await expect(surfaceControls.getByTestId("surface-summary-panel")).toContainText("Chevron");
   });
 
   test("apply all uses the selected wall paint instead of the custom default", async ({ page }) => {

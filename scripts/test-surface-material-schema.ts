@@ -37,11 +37,17 @@ import {
   DEFAULT_FLOOR_JOINT_COLOR,
   DEFAULT_FLOOR_JOINT_SIZE_MM,
   DEFAULT_FLOOR_PATTERN_OFFSET,
+  getFloorPatternLabel,
   getWallFaceSurfaceSettings,
   getWallPanelSurfaceSettings,
+  normalizeFloorPattern,
   normalizeFloorSurfaceSettings,
   replaceAllWallSurfaceSettings,
 } from "../lib/surface-settings";
+import {
+  getCompatibleFloorPatternForMaterial,
+  getFlooringInspectorPatternOptions,
+} from "../lib/design-page-surface-inspector";
 import {
   NIPPON_WALL_PAINT_COLOUR_COUNT,
   WALL_PAINT_SWATCHES,
@@ -72,6 +78,15 @@ import {
   getHerringbonePlankSizeForTest,
   getHerringboneTileLocalForTest,
   getHerringbonePlankVariationSeedForTest,
+} from "../components/editor/renderers/surfaceHerringbonePainter";
+import {
+  getChevronFaceIndex,
+  getChevronLayout,
+  getChevronPieceLocal,
+  getSurfaceMaterialChevronFailures,
+  paintChevronPixels,
+} from "../lib/surface-chevron-layout";
+import {
   getContinuousPatternRepeatSizeForTest,
   getContinuousPatternSourceRectForTest,
   getSurfaceJointSizePxForTest,
@@ -232,6 +247,126 @@ assert.notEqual(
     seedBase: 123,
   }),
   "Gardenia herringbone should vary texture crops between neighboring planks"
+);
+
+// Chevron (16 Oct 2026, Tabulae's 15x85 pieces): parallelogram pieces with slanted end cuts, laid in bands that lean
+// alternately and meet end to end on straight band lines. Units are millimetres here.
+const tabulaeChevron = getChevronLayout({ pieceWidth: 150, pieceLength: 850, endOffset: 70.7 });
+assert.ok(tabulaeChevron, "Tabulae's piece makes a chevron layout");
+assert.deepEqual(
+  [Math.round(tabulaeChevron.bandHeight * 10) / 10, Math.round(tabulaeChevron.pitch * 10) / 10, Math.round(Math.atan(tabulaeChevron.lean) * 1800 / Math.PI) / 10],
+  [704.9, 165.8, 25.2],
+  "Tabulae's chevron: bands 705 mm apart, pieces 166 mm apart along a band line, leaning 25 degrees"
+);
+assert.equal(getChevronLayout({ pieceWidth: 150, pieceLength: 850, endOffset: 0 }), null, "a chevron needs slanted ends");
+assert.equal(getChevronLayout({ pieceWidth: 150, pieceLength: 60, endOffset: 70.7 }), null, "the end cuts must fit the piece");
+const roundLocal = (x: number, y: number) => {
+  const local = getChevronPieceLocal(tabulaeChevron, x, y);
+  return [local.band, local.piece, Math.round(local.across * 10) / 10, Math.round(local.along * 10) / 10, Math.round(local.edgeDistance * 10) / 10];
+};
+const chevronShift = tabulaeChevron.bandHeight * tabulaeChevron.lean;
+const tiny = 1e-6;
+assert.deepEqual(roundLocal(tiny, tiny), [0, 0, 150, 0, 0], "a band line's piece corner is the face's top-right corner");
+assert.deepEqual(
+  roundLocal(tabulaeChevron.pitch - tiny, tiny).slice(0, 4),
+  [0, 0, 0, 70.7],
+  "along the band line the cut runs to the face's left edge, 70.7 mm down"
+);
+assert.deepEqual(
+  roundLocal(chevronShift + tiny, tabulaeChevron.bandHeight - tiny).slice(0, 4),
+  [0, 0, 150, 779.3],
+  "the far band line meets the face's long right edge at its end"
+);
+assert.deepEqual(
+  roundLocal(chevronShift + tabulaeChevron.pitch - tiny, tabulaeChevron.bandHeight - tiny).slice(0, 4),
+  [0, 0, 0, 850],
+  "and the far tip"
+);
+assert.deepEqual(
+  [roundLocal(400, 704.8).slice(0, 2), roundLocal(400, 705.0).slice(0, 2)],
+  [[0, 0], [1, 0]],
+  "neighbouring bands meet end to end: the same piece number on both sides of the band line"
+);
+assert.equal(getChevronPieceLocal(tabulaeChevron, 400, 704.8).along > 779, true, "piece ends meet at the band line");
+assert.equal(getChevronPieceLocal(tabulaeChevron, 400, 705.0).along > 779, true, "from both bands");
+assert.deepEqual(roundLocal(80, 300)[4], Math.round(Math.min(roundLocal(80, 300)[2], 150 - roundLocal(80, 300)[2], 300, 404.9) * 10) / 10, "edge distance");
+const chevronFacesAlongBand = Array.from({ length: 30 }, (_, piece) => getChevronFaceIndex({ seed: 9, band: 2, piece, faceCount: 30 }));
+assert.equal(new Set(chevronFacesAlongBand).size, 30, "a band runs through every face before repeating one");
+assert.equal(getChevronFaceIndex({ seed: 9, band: 2, piece: 31, faceCount: 30 }), chevronFacesAlongBand[1], "then repeats its order");
+assert.notDeepEqual(
+  chevronFacesAlongBand,
+  Array.from({ length: 30 }, (_, piece) => getChevronFaceIndex({ seed: 9, band: 3, piece, faceCount: 30 })),
+  "each band has its own order"
+);
+{
+  // Two faces, red and blue, painted 10 px per piece width with a 1 px joint each side: every piece shows one face,
+  // the joint colour runs along every edge, and the band line's both sides are pieces, not gaps.
+  const layout = getChevronLayout({ pieceWidth: 10, pieceLength: 56.7, endOffset: 4.71 })!;
+  const face = (rgb: [number, number, number]) => ({ data: new Uint8ClampedArray(Array.from({ length: 4 * 4 }, (_, i) => (i % 4 === 3 ? 255 : rgb[i % 4]))), width: 2, height: 2 });
+  const output = new Uint8ClampedArray(120 * 100 * 4);
+  paintChevronPixels({ output, width: 120, height: 100, layout, faces: [face([255, 0, 0]), face([0, 0, 255])], jointInset: 1, jointRgb: [9, 9, 9], seed: 1 });
+  const colours = new Map<string, number>();
+  for (let index = 0; index < output.length; index += 4) {
+    const key = `${output[index]},${output[index + 1]},${output[index + 2]}`;
+    colours.set(key, (colours.get(key) ?? 0) + 1);
+  }
+  assert.deepEqual([...colours.keys()].sort(), ["0,0,255", "255,0,0", "9,9,9"], "pixels are a face's or the joint's");
+  assert.ok((colours.get("9,9,9") ?? 0) / (120 * 100) < 0.3, "joints stay thin");
+  const pixelAt = (x: number, y: number) => {
+    const local = getChevronPieceLocal(layout, x + 0.5, y + 0.5);
+    const index = (y * 120 + x) * 4;
+    return { inJoint: local.edgeDistance < 1, rgb: [output[index], output[index + 1], output[index + 2]].join() };
+  };
+  for (let y = 0; y < 100; y += 7) {
+    for (let x = 0; x < 120; x += 5) {
+      const pixel = pixelAt(x, y);
+      assert.equal(pixel.rgb === "9,9,9", pixel.inJoint, `chevron pixel ${x},${y} is a joint exactly where it is near an edge`);
+    }
+  }
+}
+assert.deepEqual(
+  getSurfaceMaterialChevronFailures({
+    surface_material: { material_id: "x" } as SurfaceMaterial["surface_material"],
+    physical_specs: { tile_width_mm: 150, tile_length_mm: 850, chevron_end_offset_mm: 70.7 },
+    rendering: { available_pattern_layouts: ["chevron"] } as SurfaceMaterial["rendering"],
+  }),
+  [],
+  "a chevron with its end offset is valid"
+);
+assert.equal(
+  getSurfaceMaterialChevronFailures({
+    surface_material: { material_id: "x" } as SurfaceMaterial["surface_material"],
+    physical_specs: { tile_width_mm: 150, tile_length_mm: 850 },
+    rendering: { available_pattern_layouts: ["chevron"] } as SurfaceMaterial["rendering"],
+  }).length,
+  1,
+  "a chevron without its end offset fails"
+);
+assert.equal(
+  getSurfaceMaterialChevronFailures({
+    surface_material: { material_id: "x" } as SurfaceMaterial["surface_material"],
+    physical_specs: { tile_width_mm: 150, tile_length_mm: 850, chevron_end_offset_mm: 70.7 },
+    rendering: { available_pattern_layouts: ["straight"] } as SurfaceMaterial["rendering"],
+  }).length,
+  1,
+  "an end offset without the chevron layout fails"
+);
+assert.deepEqual(
+  getFlooringInspectorPatternOptions(
+    SURFACE_MATERIAL_RENDER_REGISTRY.find((material) => material.rendering.available_pattern_layouts?.includes("chevron")) ?? null
+  ),
+  [{ id: "chevron", label: "Chevron" }],
+  "a chevron material offers only the chevron layout"
+);
+assert.equal(normalizeFloorPattern("chevron"), "chevron", "chevron is a known pattern");
+assert.equal(getFloorPatternLabel("chevron"), "Chevron");
+assert.equal(
+  getCompatibleFloorPatternForMaterial(
+    SURFACE_MATERIAL_RENDER_REGISTRY.find((material) => material.rendering.available_pattern_layouts?.includes("chevron")) ?? null,
+    "straight"
+  ),
+  "chevron",
+  "walls lay a chevron-only material as a chevron (they ask for straight, which it can't be)"
 );
 assert.equal(
   shouldRotateTileSourceQuarterTurnForTest({

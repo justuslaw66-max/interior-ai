@@ -6,6 +6,7 @@ import {
   buildSurfaceMaterialOutdoorProfiles,
   getSurfaceMaterialOutdoorFailures,
 } from "../lib/surface-material-outdoor";
+import { getSurfaceMaterialChevronFailures } from "../lib/surface-chevron-layout";
 import { getSurfacePhysicalAssetFailures } from "../lib/surface-material-physical-sampling";
 import type { SurfaceMaterial, SurfaceMaterialOutdoorProfile } from "../lib/surface-material-schema";
 import type {
@@ -74,6 +75,7 @@ function readSurfaceMaterial(filePath: string): SurfaceMaterialYamlEntry {
     ...audit.failures,
     ...getSurfacePhysicalAssetFailures(entry),
     ...getSurfaceMaterialOutdoorFailures(entry),
+    ...getSurfaceMaterialChevronFailures(entry),
   ];
   if (failures.length > 0) {
     throw new Error(
@@ -105,9 +107,12 @@ function toRenderTuple(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderTu
   const base = toBaseRenderTuple(entry);
   const imagePhysicalSizeMm = entry.texture_assets.image_physical_size_mm ?? null;
   const faces = entry.texture_assets.faces ?? null;
+  const chevronEndOffsetMm = entry.physical_specs.chevron_end_offset_mm ?? null;
   // Trailing fields are emitted only when present, so existing tuples stay byte-identical.
   // Numbered faces of one size are written as a run, which the runtime expands to the same list.
-  if (faces) return [...base, imagePhysicalSizeMm, compactSurfaceTextureFaces(faces) ?? faces];
+  const facesData = faces ? compactSurfaceTextureFaces(faces) ?? faces : null;
+  if (chevronEndOffsetMm) return [...base, imagePhysicalSizeMm, facesData, chevronEndOffsetMm];
+  if (faces) return [...base, imagePhysicalSizeMm, facesData];
   if (imagePhysicalSizeMm) return [...base, imagePhysicalSizeMm];
   return base;
 }
@@ -166,6 +171,7 @@ function toRenderRecord(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderR
       plank_length_mm: tuple[10],
       tile_width_mm: tuple[11],
       tile_length_mm: tuple[12],
+      ...(tuple[33] ? { chevron_end_offset_mm: tuple[33] } : {}),
     },
     texture_assets: {
       swatch_url: tuple[13],

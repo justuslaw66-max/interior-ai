@@ -34,12 +34,11 @@ export const GARDENIA_DEFAULT_TILE_PATTERN_OPTIONS: FloorPatternOption[] = [
   { id: "vertical_brick", label: "1/2 vertical" },
 ];
 
+/** Offered only for materials that list it: chevron pieces are cut for it (see lib/surface-chevron-layout.ts). */
+const CHEVRON_PATTERN_OPTION: FloorPatternOption = { id: "chevron", label: "Chevron" };
 const ALL_FLOOR_PATTERN_OPTIONS: FloorPatternOption[] = [
   ...new Map(
-    [...FLOOR_PATTERN_OPTIONS, ...GARDENIA_TILE_PATTERN_OPTIONS].map((option) => [
-      option.id,
-      option,
-    ])
+    [...FLOOR_PATTERN_OPTIONS, ...GARDENIA_TILE_PATTERN_OPTIONS, CHEVRON_PATTERN_OPTION].map((option) => [option.id, option])
   ).values(),
 ];
 

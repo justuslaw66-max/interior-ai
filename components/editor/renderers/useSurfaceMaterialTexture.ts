@@ -18,8 +18,9 @@ import {
   getSurfacePhysicalSourceKey,
   seededSurfaceRandom as seededRandom,
 } from "@/lib/surface-material-physical-sampling";
+import { paintChevronSurface } from "./surfaceChevronPainter";
+import { paintHerringboneSurface } from "./surfaceHerringbonePainter";
 import {
-  createHerringbonePlankSampler,
   createSurfaceTilePainter,
   getImageSize,
   loadSurfaceTextureInputs,
@@ -77,29 +78,6 @@ function hashString(input: string) {
     hash = Math.imul(hash, 16777619);
   }
   return hash >>> 0;
-}
-
-function positiveModulo(value: number, modulo: number) {
-  return ((value % modulo) + modulo) % modulo;
-}
-
-function getHerringbonePlankVariationSeed({
-  seedBase,
-  originXUnit,
-  originYUnit,
-  orientation,
-}: {
-  seedBase: number;
-  originXUnit: number;
-  originYUnit: number;
-  orientation: "horizontal" | "vertical";
-}) {
-  return (
-    seedBase +
-    Math.imul(Math.round(originXUnit), 73856093) +
-    Math.imul(Math.round(originYUnit), 19349663) +
-    (orientation === "vertical" ? 83492791 : 0)
-  ) >>> 0;
 }
 
 function getSurfaceTileSizeMeters(material: SurfaceMaterialRenderInfo) {
@@ -182,110 +160,6 @@ export function getSurfacePatternColumnOffsetForTest({
 }) {
   if (pattern === "vertical_brick") return column % 2 === 0 ? 0 : tileHeightPx / 2;
   return 0;
-}
-
-export function getHerringbonePlankSizeForTest({
-  tileWidthPx,
-  tileHeightPx,
-}: {
-  tileWidthPx: number;
-  tileHeightPx: number;
-}) {
-  const shorterSide = Math.max(8, Math.min(tileWidthPx, tileHeightPx));
-  const longerSide = Math.max(shorterSide, Math.max(tileWidthPx, tileHeightPx));
-  const isNearSquare = longerSide / shorterSide < 1.35;
-  const width = isNearSquare ? shorterSide / 2 : shorterSide;
-  const length = isNearSquare ? longerSide : Math.max(longerSide, width * 1.8);
-
-  return {
-    width: Math.max(8, width),
-    length: Math.max(16, length),
-  };
-}
-
-export function getHerringboneBasisVectorsForTest({
-  plankWidthPx,
-  plankLengthPx,
-}: {
-  plankWidthPx: number;
-  plankLengthPx: number;
-}) {
-  return {
-    x: { x: plankWidthPx, y: -plankLengthPx },
-    y: { x: plankWidthPx, y: plankLengthPx },
-  };
-}
-
-export function getHerringboneTileLocalForTest({
-  xPx,
-  yPx,
-  plankWidthPx,
-  plankLengthPx,
-}: {
-  xPx: number;
-  yPx: number;
-  plankWidthPx: number;
-  plankLengthPx: number;
-}) {
-  const safePlankWidth = Math.max(1, plankWidthPx);
-  const aspectRatio = Math.max(1, plankLengthPx / safePlankWidth);
-  const unitX = xPx / safePlankWidth;
-  const unitY = yPx / safePlankWidth;
-  let localX = positiveModulo(unitX - Math.floor(unitY), aspectRatio * 2);
-  let localY = positiveModulo(unitY, 1);
-  let orientation: "horizontal" | "vertical" = "horizontal";
-
-  if (localX >= aspectRatio) {
-    const wrappedX = localX;
-    const wrappedY = localY;
-    localY = positiveModulo(wrappedX, 1);
-    localX = 2 * aspectRatio - Math.ceil(wrappedX) + wrappedY;
-    orientation = "vertical";
-  }
-
-  return {
-    localX: localX * safePlankWidth,
-    localY: localY * safePlankWidth,
-    orientation,
-    aspectRatio,
-  };
-}
-
-export function getHerringbonePlankVariationSeedForTest({
-  xPx,
-  yPx,
-  plankWidthPx,
-  plankLengthPx,
-  seedBase = 0,
-}: {
-  xPx: number;
-  yPx: number;
-  plankWidthPx: number;
-  plankLengthPx: number;
-  seedBase?: number;
-}) {
-  const safePlankWidth = Math.max(1, plankWidthPx);
-  const aspectRatio = Math.max(1, plankLengthPx / safePlankWidth);
-  const unitX = xPx / safePlankWidth;
-  const unitY = yPx / safePlankWidth;
-  let localXUnit = positiveModulo(unitX - Math.floor(unitY), aspectRatio * 2);
-  let localYUnit = positiveModulo(unitY, 1);
-  let orientation: "horizontal" | "vertical" = "horizontal";
-
-  if (localXUnit >= aspectRatio) {
-    const wrappedX = localXUnit;
-    const wrappedY = localYUnit;
-    localYUnit = positiveModulo(wrappedX, 1);
-    localXUnit = 2 * aspectRatio - Math.ceil(wrappedX) + wrappedY;
-    orientation = "vertical";
-  }
-
-  return getHerringbonePlankVariationSeed({
-    seedBase,
-    originXUnit: orientation === "horizontal" ? unitX - localXUnit : unitX - localYUnit,
-    originYUnit: orientation === "horizontal" ? unitY - localYUnit : unitY - localXUnit,
-    orientation,
-  });
 }
 
 export function shouldRotateTileSourceQuarterTurnForTest({
@@ -740,107 +614,15 @@ function createPatternedSurfaceTexture({
   context.fillStyle = jointColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  if (normalizedPattern === "herringbone") {
-    const plankSize = getHerringbonePlankSizeForTest({ tileWidthPx, tileHeightPx });
-    const plankLength = plankSize.length;
-    const plankWidth = plankSize.width;
-    const canvasPxPerMm = tileWidthPx / (tileSize.width * 1000);
-    const samplePlank = createHerringbonePlankSampler({
-      image,
-      physicalSources,
-      plankWidthMm: plankWidth / canvasPxPerMm,
-      plankLengthMm: plankLength / canvasPxPerMm,
-      canvasPxPerMm,
-      targetAspect: Math.max(0.05, Math.min(1, plankWidth / Math.max(1, plankLength))),
-    });
-    if (!samplePlank) return null;
-
-    const aspectRatio = Math.max(1, plankLength / Math.max(1, plankWidth));
-    const jointInset = Math.min(Math.max(0, jointSizePx / 2), Math.max(0, plankWidth / 2 - 0.25));
-    const jointRgb = parseRgbColor(jointColor);
-    const outputImageData = context.createImageData(canvas.width, canvas.height);
-    const outputData = outputImageData.data;
-
-    for (let pixelY = 0; pixelY < canvas.height; pixelY += 1) {
-      const unitY = pixelY / plankWidth;
-      const rowIndex = Math.floor(unitY);
-      const baseLocalY = positiveModulo(unitY, 1);
-
-      for (let pixelX = 0; pixelX < canvas.width; pixelX += 1) {
-        const unitX = pixelX / plankWidth;
-        let localXUnit = positiveModulo(unitX - rowIndex, aspectRatio * 2);
-        let localYUnit = baseLocalY;
-        let orientation: "horizontal" | "vertical" = "horizontal";
-
-        if (localXUnit >= aspectRatio) {
-          const wrappedX = localXUnit;
-          const wrappedY = localYUnit;
-          localYUnit = positiveModulo(wrappedX, 1);
-          localXUnit = 2 * aspectRatio - Math.ceil(wrappedX) + wrappedY;
-          orientation = "vertical";
-        }
-
-        const localX = localXUnit * plankWidth;
-        const localY = localYUnit * plankWidth;
-        const outputIndex = (pixelY * canvas.width + pixelX) * 4;
-        const inJoint =
-          jointInset > 0 &&
-          (localX < jointInset ||
-            localX > plankLength - jointInset ||
-            localY < jointInset ||
-            localY > plankWidth - jointInset);
-
-        if (inJoint) {
-          outputData[outputIndex] = jointRgb[0];
-          outputData[outputIndex + 1] = jointRgb[1];
-          outputData[outputIndex + 2] = jointRgb[2];
-          outputData[outputIndex + 3] = 255;
-          continue;
-        }
-
-        const variationSeed = getHerringbonePlankVariationSeed({
-          seedBase,
-          originXUnit: orientation === "horizontal" ? unitX - localXUnit : unitX - localYUnit,
-          originYUnit: orientation === "horizontal" ? unitY - localYUnit : unitY - localXUnit,
-          orientation,
-        });
-        const textureVariation = samplePlank(variationSeed, orientation === "horizontal");
-        const sourceData = textureVariation.data;
-        const sourceWidth = textureVariation.dataWidth;
-        const sourceHeight = textureVariation.dataHeight;
-
-        let sourceWidthRatio = localY / Math.max(1, plankWidth);
-        let sourceLengthRatio = localX / Math.max(1, plankLength);
-        if (textureVariation.flipWidth) sourceWidthRatio = 1 - sourceWidthRatio;
-        if (textureVariation.flipLength) sourceLengthRatio = 1 - sourceLengthRatio;
-
-        const sampleX = Math.min(
-          sourceWidth - 1,
-          Math.max(
-            0,
-            Math.floor(textureVariation.sourceX + sourceWidthRatio * Math.max(0, textureVariation.sourceWidth - 1))
-          )
-        );
-        const sampleY = Math.min(
-          sourceHeight - 1,
-          Math.max(
-            0,
-            Math.floor(textureVariation.sourceY + sourceLengthRatio * Math.max(0, textureVariation.sourceHeight - 1))
-          )
-        );
-        const sourceIndex = (sampleY * sourceWidth + sampleX) * 4;
-        const tintAlpha = Math.abs(textureVariation.tint) * 0.08;
-        const tintTarget = textureVariation.tint > 0 ? 255 : 0;
-        outputData[outputIndex] = sourceData[sourceIndex] + (tintTarget - sourceData[sourceIndex]) * tintAlpha;
-        outputData[outputIndex + 1] =
-          sourceData[sourceIndex + 1] + (tintTarget - sourceData[sourceIndex + 1]) * tintAlpha;
-        outputData[outputIndex + 2] =
-          sourceData[sourceIndex + 2] + (tintTarget - sourceData[sourceIndex + 2]) * tintAlpha;
-        outputData[outputIndex + 3] = sourceData[sourceIndex + 3] || 255;
-      }
-    }
-
-    context.putImageData(outputImageData, 0, 0);
+  // Herringbone and chevron are painted pixel by pixel, one face per plank or piece.
+  if (normalizedPattern === "herringbone" || normalizedPattern === "chevron") {
+    const pixelPattern = { context, width: canvas.width, height: canvas.height, image, physicalSources, tileWidthPx, tileHeightPx,
+      jointSizePx, jointRgb: parseRgbColor(jointColor), seedBase };
+    const painted = normalizedPattern === "herringbone"
+      ? paintHerringboneSurface({ ...pixelPattern, tileWidthMm: tileSize.width * 1000 })
+      : paintChevronSurface({ ...pixelPattern, tileSizeMm: { width: tileSize.width * 1000, height: tileSize.height * 1000 },
+        endOffsetMm: material.physical_specs.chevron_end_offset_mm });
+    if (!painted) return null;
     enhanceGeneratedStoneTexture(context, canvas.width, canvas.height, seedBase, detailStrength * 0.65);
     return new THREE.CanvasTexture(canvas);
   }

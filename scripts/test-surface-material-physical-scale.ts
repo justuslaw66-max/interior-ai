@@ -41,6 +41,7 @@ import {
   SURFACE_OUTDOOR_SOURCES,
 } from "../lib/surface-material-outdoor-knowledge";
 import { ABK_DATASHEETS } from "../lib/surface-material-abk-datasheets";
+import { getSurfaceMaterialChevronFailures } from "../lib/surface-chevron-layout";
 import {
   findAbkDatasheetMatch,
   parseAbkDatasheetFormats,
@@ -588,25 +589,71 @@ assert.equal(makeSqueezed.length, 24, "all 24 of Make's 80x80 pictures are decla
 
 // Gardenia Tabulae and Bon Ton (downloaded 9 Oct 2026). Every size is true to its label (image
 // matching between sizes); the single-size decors are taken as labelled, and Tabulae Sticks'
-// pictures, 4% narrower than 600x1200 mm, are drawn at the tile's width. Tabulae's chevrons are
-// single slanted pieces that need a chevron layout, so they keep their previews. Byte-identical
+// pictures, 4% narrower than 600x1200 mm, are drawn at the tile's width. Byte-identical
 // pictures: Tabulae 20x120 R11 = Natural, Bon Ton 120x280 Soft = Lux (all but Carrara), Carrara and
 // Perlino 120x120 Antique = Nat; those entries use the other item's faces.
-for (const [filter, label, faced, count] of [[isTabulae, "Tabulae", 46, 54], [isBonTon, "Bon Ton", 53, 53]] as const) {
+for (const [filter, label, faced, count] of [[isTabulae, "Tabulae", 54, 54], [isBonTon, "Bon Ton", 53, 53]] as const) {
   assert.equal(physicalMaterials.filter(filter).length, faced, `${label} entries on real faces`);
   assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
 }
-assert.ok(
-  SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => isTabulae(material) && !physicalMaterials.includes(material)).every(
-    (material) => material.surface_material.material_id.includes("-chevron-")
-  ),
-  "only Tabulae's chevrons keep their previews"
+// Tabulae's chevrons (16 Oct 2026): each ABK picture is one slanted piece, and ABK shows both hands. The faces are one hand
+// (the left-hand pictures mirrored), each covering the piece's 150x850 mm bounding box, and the entries are laid only as a
+// chevron, with each end cut 70.7 mm along the piece (317 of 3809 px in every picture).
+const tabulaeChevrons = SURFACE_MATERIAL_RENDER_REGISTRY.filter(
+  (material) => isTabulae(material) && material.surface_material.material_id.includes("-chevron-")
 );
+assert.deepEqual(
+  tabulaeChevrons.map((material) => [
+    material.surface_material.material_id.replace(/^gardenia-(flooring|wall-tile)-tabulae-chevron-(\w+)-pf6(\d+)-.*$/, "$1 $2 $3"),
+    material.texture_assets.faces?.length,
+    material.texture_assets.swatch_url?.split("/").pop(),
+  ]),
+  [
+    ["flooring fieno 0021112", 29, "0021112_swatch.webp"],
+    ["flooring havana 0021111", 30, "0021111_swatch.webp"],
+    ["flooring miele 0021113", 30, "0021113_swatch.webp"],
+    ["flooring sabbia 0021110", 29, "0021110_swatch.webp"],
+    ["wall-tile fieno 0021112", 29, "0021112_swatch.webp"],
+    ["wall-tile havana 0021111", 30, "0021111_swatch.webp"],
+    ["wall-tile miele 0021113", 30, "0021113_swatch.webp"],
+    ["wall-tile sabbia 0021110", 29, "0021110_swatch.webp"],
+  ],
+  "the 8 chevron entries on their colour's faces (Sabbia's page lists one picture twice)"
+);
+for (const material of tabulaeChevrons) {
+  const id = material.surface_material.material_id;
+  assert.deepEqual(material.rendering.available_pattern_layouts, ["chevron"], `${id}: laid only as a chevron`);
+  assert.equal(material.physical_specs.chevron_end_offset_mm, 70.7, `${id}: the end cuts`);
+  assert.deepEqual([material.physical_specs.tile_width_mm, material.physical_specs.tile_length_mm], [150, 850], `${id}: 15x85`);
+  assert.ok(material.texture_assets.faces?.every((face) => face.width_mm === 150 && face.height_mm === 850), `${id}: face size`);
+  assert.deepEqual(getSurfaceMaterialChevronFailures(material), [], `${id}: a valid chevron`);
+}
+for (const [colour, mirrored, dropped] of [
+  ["chevron-genuine-sabbia", 14, [15]],
+  ["chevron-genuine-havana", 15, undefined],
+  ["chevron-refined-fieno", 14, undefined],
+  ["chevron-refined-miele", 15, undefined],
+] as const) {
+  const manifest = JSON.parse(
+    readFileSync(path.join(process.cwd(), `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-tabulae-${colour}-faces.manifest.json`), "utf8")
+  );
+  const [format] = manifest.formats;
+  assert.equal(manifest.chevron.end_offset_mm, 70.7, `${colour}: the manifest records the end cuts`);
+  assert.equal(format.mirrored_faces.length, mirrored, `${colour}: the left-hand pictures are mirrored`);
+  assert.deepEqual(format.duplicates_dropped_site_positions, dropped, `${colour}: repeats left out`);
+  const yamlFaces = tabulaeChevrons.find((material) => material.surface_material.material_id.includes(`pf6${format.item_code}`))
+    ?.texture_assets.faces?.map((face) => face.url.split("/").pop());
+  assert.deepEqual(format.faces.map((face: { file: string }) => face.file), yamlFaces, `${colour}: the manifest lists the faces`);
+}
 // The 30x120 R11 planks (on ABK's Plein Air pages) are floor-only.
 const tabulaeCards = (r11: string[]) => {
   const genuine = ["23,4x148 Nat", "20x120", "20x120 Nat", "10x60 Nat"];
   const refined = [...genuine, "5x120 Nat"];
   return [
+    ["Tabulae Chevron Fieno", ["15x85 Nat"]],
+    ["Tabulae Chevron Havana", ["15x85 Nat"]],
+    ["Tabulae Chevron Miele", ["15x85 Nat"]],
+    ["Tabulae Chevron Sabbia", ["15x85 Nat"]],
     ["Tabulae Genuine Combo 3D", ["60x60 Nat"]],
     ["Tabulae Genuine Hav", [...r11, ...genuine]],
     ["Tabulae Genuine Sab Nat", genuine],
@@ -632,6 +679,10 @@ assert.deepEqual(collectionCards(isBonTon, "wall_tile"), [
   ["Bon Ton Perlino", [...bonTonSlabs, ...bonTonMarble]], ["Bon Ton Tricot", ["60x120"]],
 ]);
 assert.deepEqual(collectionFaceRows(isTabulae), [
+  ["chevron-fieno", "150x850", 29, "150x850", "0021112_01.webp"],
+  ["chevron-havana", "150x850", 30, "150x850", "0021111_01.webp"],
+  ["chevron-miele", "150x850", 30, "150x850", "0021113_01.webp"],
+  ["chevron-sabbia", "150x850", 29, "150x850", "0021110_01.webp"],
   ["genuine-combo", "600x600", 6, "600x600", "0021151_01.webp"],
   ["genuine-hav", "1200x200", 30, "200x1200", "0021141_01.webp"],
   ["genuine-hav", "1200x200", 30, "200x1200", "0021141_01.webp"],
@@ -2105,8 +2156,9 @@ for (const entry of listedStandIns) {
 }
 assert.deepEqual(
   [listedStandIns.length, noOwnPictures.filter((entry) => entry.source === "configurator_preview").length],
-  [60, 52],
-  "29 stand-in items for floor and wall, Aude's two outdoor 60x60 for floors, and 26 items on the configurator's preview"
+  [60, 44],
+  "29 stand-in items for floor and wall, Aude's two outdoor 60x60 for floors, and 22 items on the configurator's preview " +
+    "(Tabulae's 4 chevrons left it on 16 Oct)"
 );
 
 // Runtime tuples: the trailing fields round-trip, and tuples without them decode without the keys.
@@ -2286,8 +2338,9 @@ assert.equal(lookup("Gardenia Epoque 2.0 Black 60x120 Lappato", "Epoque 2.0"), n
 assert.deepEqual(splitCatalogueSize("Gardenia Tabulae Refined Fieno 23,4x148 Nat"), { size: "23,4x148", finishWords: "Nat" });
 
 // Gardenia published as quote on request (J, 15 Oct 2026: "put quote on request for now and publish"; the quote link is ABK's
-// contact form). Every entry on ABK's faces is published with no blocker and a thickness; the 52 still on configurator previews
-// (tileability unconfirmed: mosaics, chevrons, book-matched pairs, two Negresco sizes) stay drafts until they have faces.
+// contact form). Every entry on ABK's faces is published with no blocker and a thickness; the 44 still on configurator previews
+// (tileability unconfirmed: mosaics, book-matched pairs, two Negresco sizes) stay drafts until they have faces. Tabulae's 8
+// chevrons followed on 16 Oct, on faces with the chevron layout.
 const gardeniaQuoteUrl = "https://www.abkgroup.it/en/gardeniaariana/contacts/";
 const gardeniaDrafts: string[] = [];
 for (const entry of gardeniaEntries) {
@@ -2306,11 +2359,11 @@ for (const entry of gardeniaEntries) {
   assert.ok((entry.physical_specs.total_thickness_mm ?? 0) > 0, `${id}: a thickness`);
   assert.ok(entry.source.notes?.some((note) => note.startsWith("Quote on request (J, 2026-10-15)")), `${id}: the quote note`);
 }
-assert.deepEqual([gardeniaEntries.length, gardeniaDrafts.length], [1366, 52], "1314 Gardenia entries published, 52 drafts");
+assert.deepEqual([gardeniaEntries.length, gardeniaDrafts.length], [1366, 44], "1322 Gardenia entries published, 44 drafts");
 assert.equal(
   gardeniaEntries.filter((entry) => entry.source.notes?.some((note) => note.startsWith("ABK's colour page https://"))).length,
-  102,
-  "the 102 thicknesses filled from ABK's colour pages on 15 Oct note the page"
+  110,
+  "the thicknesses filled from ABK's colour pages note the page (102 on 15 Oct, the 8 chevrons' 9.5 mm on 16 Oct)"
 );
 
 // ABK's Plein Air catalogue (January 2026): every outdoor floor can be laid the catalogue's ways, its places are in the vocabulary,
