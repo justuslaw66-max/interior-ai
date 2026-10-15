@@ -1,6 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
+import { Button } from "@/components/ui/Button";
 import type {
   FloorPlanQualityAction,
   FloorPlanQualityIssue,
@@ -72,17 +73,16 @@ export function PlanQualityReviewPanel({
           <span className="rounded-full bg-neutral-100 px-2 py-1 font-semibold text-neutral-700">
             {state.report.issues.length}
           </span>
-          <button
-            type="button"
+          <Button
+            size="icon"
             data-testid="plan-quality-review-collapse"
             aria-expanded={!state.collapsed}
             aria-label={state.collapsed ? "Expand plan review" : "Collapse plan review"}
             title={state.collapsed ? "Expand" : "Collapse"}
-            className="grid h-7 w-7 place-items-center rounded-full border border-neutral-200 bg-white text-[13px] font-semibold text-neutral-600 hover:bg-neutral-50"
             onClick={actions.toggleCollapsed}
           >
             {state.collapsed ? "+" : "-"}
-          </button>
+          </Button>
         </div>
       </div>
       {!state.collapsed ? (

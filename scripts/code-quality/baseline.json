@@ -129,7 +129,7 @@
       "limit": 250
     },
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx": {
-      "lines": 438,
+      "lines": 434,
       "limit": 250
     },
     "components/editor/design-page/DesignPageEditorCommandBar.tsx": {
@@ -229,7 +229,7 @@
       "limit": 250
     },
     "components/editor/FloorPropertiesPanel.tsx": {
-      "lines": 627,
+      "lines": 626,
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
@@ -1515,7 +1515,7 @@
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 367
+        "maximum": 363
       },
       "complexFunctions": {
         "count": 1,
@@ -1697,7 +1697,7 @@
     "components/editor/design-page/PlanQualityReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 73
+        "maximum": 72
       }
     },
     "components/editor/design-page/PlanRoomSummaryCard.tsx": {
@@ -1997,7 +1997,7 @@
     "components/editor/FloorPropertiesPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 563
+        "maximum": 562
       },
       "complexFunctions": {
         "count": 1,

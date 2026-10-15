@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Redo2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Redo2, X } from "lucide-react";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayArea } from "@/lib/display-units";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
@@ -188,9 +188,8 @@ export default function FloorPropertiesPanel({
               Redo
             </button>
           )}
-          <button
-            type="button"
-            className={`${secondaryButtonClass} grid h-8 w-8 place-items-center p-0`}
+          <Button
+            size="icon"
             aria-label={isCollapsed ? "Expand Levels" : "Collapse Levels"}
             title={isCollapsed ? "Expand" : "Collapse"}
             onClick={() => setIsCollapsed((value) => !value)}
@@ -200,7 +199,7 @@ export default function FloorPropertiesPanel({
             ) : (
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -253,14 +252,14 @@ export default function FloorPropertiesPanel({
                 Choose what to copy into the new level.
               </div>
             </div>
-            <button
-              type="button"
-              className="h-6 w-6 rounded-md text-xs font-semibold text-neutral-500 hover:bg-neutral-100"
+            <Button
+              variant="quiet"
+              size="icon"
               aria-label="Close the new level menu"
               onClick={() => setPendingAddDirection(null)}
             >
-              x
-            </button>
+              <X className="h-4 w-4" aria-hidden="true" />
+            </Button>
           </div>
           <div className="mt-2 grid gap-1.5">
             {floorCreationOptions.map((option) => (

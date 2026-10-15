@@ -41,16 +41,16 @@ function SurfaceBrowserTitle(props: SurfaceBrowserHeaderProps) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 items-start gap-1">
-        <button
-          type="button"
+        <Button
+          variant="quiet"
+          size="icon"
           data-testid="surfaces-back"
           aria-label="Back to the room"
           title="Back to the room"
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-neutral-800 hover:bg-neutral-100 touch:h-11 touch:w-11"
           onClick={props.onBack}
         >
           <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-        </button>
+        </Button>
         <div className="min-w-0">
           <div className="text-xs font-semibold text-neutral-900">Surfaces</div>
           <div className={props.metaClass}>

@@ -36,11 +36,14 @@ assert.match(
   /sticky bottom-0[\s\S]*data-testid="catalog-placement-confirm"/,
   "placement action row should stay reachable while sheet scrolls"
 );
-assert.match(
-  confirmPanel,
-  /data-testid="catalog-placement-nudge-left"[\s\S]*h-11 w-11/,
-  "placement nudge buttons should keep finger-sized targets"
-);
+// The nudges are icon Buttons (UX 5n): 36px, and 44px on phones and touch screens.
+for (const direction of ["left", "up", "down", "right"]) {
+  assert.match(
+    confirmPanel,
+    new RegExp(`<Button\\s+size="icon"\\s+data-testid="catalog-placement-nudge-${direction}"`),
+    "placement nudge buttons should keep finger-sized targets"
+  );
+}
 assert.match(
   roomRenderer,
   /handle\.shape === "edge-z" \? 28[\s\S]*handle\.shape === "edge-x" \? 64 : 44/,
