@@ -26,6 +26,7 @@ source:
     - "Collection page sizes: 10x60, 5x120, 23.4x148, 20x120, 15x85, 60x120, 60x60, 30x120."
     - "Available configurator formats: PF60021153 60x120 Nat ENTRAMBE patterns pieno_01."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/tabulae/sticks/ (read 2026-10-15): 60X120, Natural, 8.5 mm; the catalogue takes the thickness from it (J, 2026-10-15: fill thickness from ABK, then publish)."
 classification:
   flooring_type: tile
   design_effect: wood
@@ -55,7 +56,7 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 1200
   tile_length_mm: 600
-  total_thickness_mm: null
+  total_thickness_mm: 8.5
   wear_layer_mm: null
   installation_method:
     - direct_stick
