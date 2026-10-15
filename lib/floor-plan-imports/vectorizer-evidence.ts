@@ -10,6 +10,7 @@ import {
 } from "./deterministic-evidence";
 import type { RasterDimensionAssociation } from "./raster-dimension-spans";
 import type { FloorPlanVectorizerEvidence } from "./vectorizer-evidence-schema";
+import { registeredVectorizerDrawing, type RegisteredVectorizerDrawing } from "./vectorizer-drawing";
 
 /**
  * Local floor-plan vectorizer evidence.
@@ -51,6 +52,8 @@ export type RegisteredVectorizerEvidence = {
   wallEdges: FloorPlanVectorizerEvidence["wallEdges"];
   rooms: FloorPlanVectorizerEvidence["rooms"];
   diagnostics: FloorPlanVectorizerEvidence["diagnostics"];
+  /** The vectorizer's own clean drawing of the page, for the clean traced drawing (exporter 0.28.1+). */
+  drawing?: RegisteredVectorizerDrawing;
 };
 
 
@@ -142,6 +145,7 @@ function registeredVectorizerEvidence(
       sourcePoints: room.sourcePoints.map((value) => ({ x: value.x * sx, y: value.y * sy })),
     })),
     diagnostics: evidence.diagnostics,
+    ...(evidence.drawing ? { drawing: registeredVectorizerDrawing(evidence.drawing, sx, sy) } : {}),
   };
 }
 

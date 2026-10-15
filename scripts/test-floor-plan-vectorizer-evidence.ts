@@ -60,6 +60,26 @@ assert.deepEqual(swingAgainstWall({ x: 0, y: 0 }, { x: 10, y: 0 }, { double: tru
 // Evidence that is not the exporter's shape is refused at the process boundary.
 assert.throws(() => parseFloorPlanVectorizerEvidence({ kind: "something_else" }));
 
+// The vectorizer's own clean drawing (exporter 0.28.1+) passes the schema and is registered to the rendered page, for
+// the clean traced drawing; a drawing whose commands are not the app's path commands is refused.
+{
+  const raw = JSON.parse(readFileSync(path.join(fixtureDirectory, "room4.evidence.json"), "utf8"));
+  const drawing = { version: "stage1-svg-1", textBoxes: [[10, 10, 30, 20]], items: [
+    { kind: "wall", fill: true, strokeWidthPx: 0, commands: ["L", "L", "Z"], points: [[0, 0], [10, 0], [10, 10]] },
+    { kind: "line", fill: false, strokeWidthPx: 1.5, commands: ["L"], points: [[0, 0]] },
+  ] };
+  const evidence = parseFloorPlanVectorizerEvidence({ ...raw, drawing });
+  const page = { pageNumber: 1, widthPx: evidence.page.widthPx, heightPx: evidence.page.heightPx, vectorSegments: [],
+    vectorPaths: [], text: [], semantics: { roomLabels: [], dimensionLabels: [], openingSymbols: [], notes: [] } } as RegisteredPageEvidence;
+  registerVectorizerEvidence(page, evidence, Buffer.from(JSON.stringify({ ...raw, drawing })));
+  assert.deepEqual(page.vectorizer?.drawing?.items.map((item) => item.kind), ["wall"], "A drawing item with too few points is left out");
+  assert.deepEqual(page.vectorizer?.drawing?.items[0].points[2], { x: 10, y: 10 });
+  assert.deepEqual(page.vectorizer?.drawing?.textBoxes[0], { left: 10, top: 10, right: 30, bottom: 20 });
+  const bad = { ...drawing, items: [{ ...drawing.items[0], commands: ["Q"] }] };
+  assert.throws(() => parseFloorPlanVectorizerEvidence({ ...raw, drawing: bad }));
+  assert.equal(parseFloorPlanVectorizerEvidence(raw).drawing, undefined, "Evidence before 0.28.1 has no drawing");
+}
+
 async function importFixture(name: string, guessedOpenings: SemanticOpeningSymbol[] = [], linework: "walls" | "walls+bar" = "walls") {
   const bytes = readFileSync(path.join(fixtureDirectory, `${name}.evidence.json`));
   const evidence = parseFloorPlanVectorizerEvidence(JSON.parse(bytes.toString("utf8")));

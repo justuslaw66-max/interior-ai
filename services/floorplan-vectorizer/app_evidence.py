@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Vectorizer model  ->  evidence for the Interior AI floor-plan import pipeline.
 
-    python3 app_evidence.py model.json out.evidence.json [--check check.png] [--source plan.png]
+    python3 app_evidence.py model.json out.evidence.json [--check check.png] [--source plan.png] [--svg=model.svg]
 
 Reads the model JSON written by floorplan_vectorize.py and writes ONE JSON whose parts follow the app's own types
 (lib/floor-plan-imports/deterministic-evidence.ts): PageSemanticEvidence (room labels, dimension labels with their two
@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.28.0"
+VERSION = "app-evidence-0.28.1"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -7584,6 +7584,26 @@ def check_picture(m, out, dbg, path, source=None):
     cv2.imwrite(path, cv2.resize(img, None, fx=s, fy=s, interpolation=cv2.INTER_AREA) if s < 1 else img)
 
 
+# The clean drawing (0.28.1; J, 15 Oct: "trace and reproduce a clean 2d vector floor plan"): stage 1's own drawing of the
+# page - its <plan>.svg, every wall it read whether or not it closes a room, doors, windows, fixtures and lines - as the
+# evidence's `drawing`, in source pixels, for the app's clean traced drawing (app_drawing.py).  0 = no drawing; the rest
+# of the evidence is the same either way.
+DRAWING = os.environ.get("AE_DRAWING", "1") != "0"
+
+
+def add_drawing(out, m, svg_path):
+    """the evidence's `drawing` from stage 1's SVG beside the model (app_drawing.py); none without the SVG"""
+    if not DRAWING or not svg_path or not os.path.exists(svg_path):
+        return
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import app_drawing
+    d, why = app_drawing.drawing(m, open(svg_path).read(), ToSource(m))
+    if d is None:
+        out["semantics"]["notes"] = (out["semantics"]["notes"] + ["No clean drawing: " + why])[:30]
+    else:
+        out["drawing"] = d
+
+
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     opt = {a.split("=")[0]: (a.split("=", 1)[1] if "=" in a else True) for a in sys.argv[1:] if a.startswith("--")}
@@ -7591,6 +7611,7 @@ if __name__ == "__main__":
     work = opt.get("--work") or (args[0][:-5] + ".work.png" if args[0].endswith(".json") else None)
     gray = cv2.imread(work, 0) if work and os.path.exists(work) else None
     out, dbg = build_best(m, gray)
+    add_drawing(out, m, opt.get("--svg") or (args[0][:-5] + ".svg" if args[0].endswith(".json") else None))
     json.dump(out, open(args[1], "w"), indent=1)
     if opt.get("--check"):
         check_picture(m, out, dbg, opt["--check"], opt.get("--source"))

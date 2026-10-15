@@ -26,8 +26,8 @@ export async function previewSourceTrace(input:Input) {
   if(!page)throw new Error("Select a retained source page.");
   const store=new PrismaFloorPlanSourceStore(),asset=await store.readDerivative(page.assetKey);
   if(!asset)throw new Error("The source image is unavailable.");
-  const textRegions=await retainedTextRegions(job,page,store);
-  const trace=await extractSourceArtwork(asset.bytes,{widthPx:page.widthPx,heightPx:page.heightPx,signal:input.signal,textRegions});
+  const {textRegions,clean}=await retainedPageEvidence(job,page,store);
+  const trace=await extractSourceArtwork(asset.bytes,{widthPx:page.widthPx,heightPx:page.heightPx,signal:input.signal,textRegions,clean});
   const pack:TracePack={jobId:job.id,candidateVersion:job.candidateVersion,sourceSha256:job.sourceAsset.sha256,
     pageAssetKey:page.assetKey,imageSha256:hash(asset.bytes),pageNumber:page.pageNumber,trace};
   return prisma.$transaction(async tx=>{
@@ -39,15 +39,18 @@ export async function previewSourceTrace(input:Input) {
   });
 }
 
-async function retainedTextRegions(job:Job,page:ReturnType<typeof parseRenderedPages>[number],store:PrismaFloorPlanSourceStore) {
+/** The page's OCR text boxes and the vectorizer's clean drawing (v3 trace), when the review extraction kept them. */
+async function retainedPageEvidence(job:Job,page:ReturnType<typeof parseRenderedPages>[number],store:PrismaFloorPlanSourceStore) {
+  const none={textRegions:[],clean:undefined};
   const manifest=job.sourceManifestJson as Record<string,unknown>|null,assetId=manifest?.reviewExtractionAssetId;
-  if(typeof assetId!=="string")return [];
+  if(typeof assetId!=="string")return none;
   const owned=await prisma.floorPlanDerivedAsset.findFirst({where:{id:assetId,jobId:job.id,contentDeletedAt:null},select:{id:true}});
   const asset=owned?await store.readDerivative(assetId):null;
-  if(!asset||asset.mimeType!=="application/json")return [];
+  if(!asset||asset.mimeType!=="application/json")return none;
   const evidence=asEnvelope(JSON.parse(new TextDecoder().decode(asset.bytes))).pages.find(p=>p.pageNumber===page.pageNumber);
-  // Never use text boxes registered to a different source frame.
-  return evidence?.widthPx===page.widthPx&&evidence.heightPx===page.heightPx?evidence.text:[];
+  // Never use text boxes or a drawing registered to a different source frame.
+  if(evidence?.widthPx!==page.widthPx||evidence.heightPx!==page.heightPx)return none;
+  return {textRegions:evidence.text,clean:evidence.vectorizer?.drawing};
 }
 
 const privacy=(job:Job)=>({trainingBenchmarkOptIn:job.trainingBenchmarkOptIn,trainingBenchmarkOptInAt:job.trainingBenchmarkOptInAt,
