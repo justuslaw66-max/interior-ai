@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { Button } from "@/components/ui/Button";
+
 import {
   PlanToolIcon,
   type PlanToolIconName,
@@ -22,7 +24,6 @@ export function CollapsiblePlanHeader({
   collapsed,
   titleClassName,
   metaClassName,
-  toggleClassName,
   onToggle,
 }: {
   section: CollapsiblePlanSection;
@@ -32,7 +33,6 @@ export function CollapsiblePlanHeader({
   collapsed: boolean;
   titleClassName: string;
   metaClassName: string;
-  toggleClassName: string;
   onToggle: () => void;
 }) {
   return (
@@ -43,16 +43,15 @@ export function CollapsiblePlanHeader({
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {accessory}
-        <button
-          type="button"
+        <Button
+          size="compact"
           data-testid={`plan-section-toggle-${section}`}
-          className={toggleClassName}
           aria-label={`${collapsed ? "Expand" : "Collapse"} ${title.toLowerCase()}`}
           aria-expanded={!collapsed}
           onClick={onToggle}
         >
           {collapsed ? "Expand" : "Collapse"}
-        </button>
+        </Button>
       </div>
     </div>
   );

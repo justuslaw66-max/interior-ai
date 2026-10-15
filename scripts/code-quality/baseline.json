@@ -121,7 +121,7 @@
       "limit": 250
     },
     "components/editor/design-controls-plan/WallPaintPicker.tsx": {
-      "lines": 298,
+      "lines": 294,
       "limit": 250
     },
     "components/editor/design-page/AuburnConfigurationSelector.tsx": {
@@ -141,7 +141,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
-      "lines": 289,
+      "lines": 288,
       "limit": 250
     },
     "components/editor/design-page/DesignPageViewportOverlayLayer.tsx": {
@@ -193,7 +193,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 2918,
+      "lines": 2900,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -1491,13 +1491,13 @@
     "components/editor/design-controls-plan/WallPaintPicker.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 279
+        "maximum": 275
       }
     },
     "components/editor/design-page/AiNotesDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 95
+        "maximum": 94
       }
     },
     "components/editor/design-page/AuburnConfigurationSelector.tsx": {
@@ -1553,7 +1553,7 @@
     "components/editor/design-page/DesignPageSelectionInspector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 213
+        "maximum": 212
       },
       "complexFunctions": {
         "count": 1,
@@ -1709,7 +1709,7 @@
     "components/editor/design-page/PlansDialog.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 146
+        "maximum": 124
       }
     },
     "components/editor/design-page/PlanTemplateChoiceDialog.tsx": {
@@ -1803,7 +1803,7 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 2788
+        "maximum": 2770
       },
       "complexFunctions": {
         "count": 2,

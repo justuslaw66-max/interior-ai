@@ -111,12 +111,12 @@ assert.doesNotMatch(guest, /Choose a file|floor-plan-upload-drop-zone/);
 // "Auto-detection paused" always has a way on.
 const paused = (overrides: Partial<Parameters<typeof FloorPlanImportPausedNotice>[0]>) =>
   renderToStaticMarkup(createElement(FloorPlanImportPausedNotice, {
-    subtle: "", control: "", message: "Sign in to privately detect, review, and save this plan.",
+    subtle: "", message: "Sign in to privately detect, review, and save this plan.",
     authenticationRequired: false, resumableJobId: null, ...overrides,
   }));
 assert.match(
   paused({ authenticationRequired: true, resumableJobId: "job" }),
-  /data-testid="floor-plan-import-sign-in" class="[^"]*\bmin-h-11\b[^"]*">Sign in and continue</
+  /class="[^"]*\bmin-h-11\b[^"]*" data-floor-plan-workspace-focus="primary" data-testid="floor-plan-import-sign-in">Sign in and continue</
 );
 assert.doesNotMatch(paused({ authenticationRequired: true }), /Resume processing/);
 assert.match(paused({ resumableJobId: "job" }), />Resume processing</);
