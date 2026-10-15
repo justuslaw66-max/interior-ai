@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
+
 export type FloorPlanTool = "select" | "draw_room" | "door" | "window";
 
 type FloorPlanToolStripProps = {
@@ -43,12 +45,6 @@ export default function FloorPlanToolStrip({
   const shellClass = "mt-2 rounded-lg border border-neutral-200 bg-white p-2.5 text-neutral-900";
   const headerClass = "text-sm font-semibold text-neutral-800";
   const toolsClass = "mt-2 grid grid-cols-2 gap-1.5";
-  const buttonBaseClass =
-    "min-h-10 rounded-lg px-2.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45";
-  const activeClass = "bg-neutral-900 text-white";
-  const idleClass = "border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100";
-  const getButtonClass = (tool: FloorPlanTool) =>
-    `${buttonBaseClass} ${activeTool === tool ? activeClass : idleClass}`;
 
   return (
     <div data-testid="floor-plan-tool-strip" className={shellClass} aria-label="Plan tools">
@@ -67,17 +63,17 @@ export default function FloorPlanToolStrip({
                   : onAddWindow;
 
           return (
-            <button
+            <Button
               key={tool.id}
-              type="button"
+              size="regular"
+              pressed={activeTool === tool.id}
               data-testid={`floor-plan-tool-${tool.id}`}
-              className={getButtonClass(tool.id)}
               disabled={isDisabled}
               title={tool.title}
               onClick={onClick}
             >
               {tool.label}
-            </button>
+            </Button>
           );
         })}
       </div>

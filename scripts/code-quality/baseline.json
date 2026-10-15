@@ -225,7 +225,7 @@
       "limit": 250
     },
     "components/editor/FloorPlanUploadPanel.tsx": {
-      "lines": 764,
+      "lines": 757,
       "limit": 250
     },
     "components/editor/FloorPropertiesPanel.tsx": {
@@ -1691,7 +1691,7 @@
     "components/editor/design-page/PlanManualQuickActions.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 140
+        "maximum": 131
       }
     },
     "components/editor/design-page/PlanQualityReviewPanel.tsx": {
@@ -1984,16 +1984,10 @@
         "maximum": 92
       }
     },
-    "components/editor/FloorPlanToolStrip.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 64
-      }
-    },
     "components/editor/FloorPlanUploadPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 633
+        "maximum": 625
       },
       "complexFunctions": {
         "count": 1,
