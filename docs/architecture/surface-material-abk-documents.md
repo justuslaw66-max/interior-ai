@@ -52,9 +52,10 @@ other sizes than the catalogue's.
 
 - **Slip classes:** 576 Gardenia entries get their sheet's DIN 51130 class in `physical_specs.slip_rating`: R10 for 548 natural
   finishes, R9 for Luce's 28 Natural entries. The 111 entries that had one (all R11) agree with their sheets.
-- **Thickness:** 278 entries without `total_thickness_mm` get their sheet's: 129 at 8.5 mm, 128 at 6 mm, Gioia's 21 at 7 mm. The
-  surface browser shows it ("8.5 mm thick").
-- Each entry the sheets filled (729) notes the sheet, for example "ABK's technical sheet for Make (MAKE - Datasheet.pdf, read
+- **Thickness:** 278 entries without `total_thickness_mm` got their sheet's on 14 Oct: 129 at 8.5 mm, 128 at 6 mm, Gioia's 21 at
+  7 mm. On 15 Oct Gioia's 12 decor entries and 52 of La Marmoteca's 6 mm fills went to 8.5 mm, as ABK's pages say (below). The
+  surface browser shows the thickness ("8.5 mm thick").
+- Each entry the sheets filled notes the sheet (667 since 15 Oct; 729 on 14 Oct), for example "ABK's technical sheet for Make (MAKE - Datasheet.pdf, read
   2026-10-14): 8.5 mm; slip resistance R10 (DIN 51130), bare foot B (DIN 51097)." The bare-foot class has no field; it's in the
   note and the data.
 - **How an entry fits a sheet line:** its collection, its size (either way round), its thickness (any, when it has none) and its
@@ -71,13 +72,25 @@ every outdoor floor's packing note, and the special pieces' cards, kinds, sizes 
 The browser data grows by the filled thicknesses and the outdoor profiles' longer lists (about 10 KB raw in the lazy catalogue
 chunk). Slip classes stay in the YAML, as before (`surface-material-runtime-boundary.md`).
 
-## Where the documents and the catalogue disagree (J's call)
+## Where ABK's pages and a sheet differ: the catalogue follows the pages (J, 15 Oct 2026)
 
-- **Gioia** is a white body wall tile (BIII, water absorption over 10%, no frost value), but the catalogue lists its 60x120 for
-  floors too: 5 floor entries.
-- **La Marmoteca Lux** 120x120 and 60x120 of Calacatta, Emerald Green, Montblanc, Port Noir and Sand Flower are 8.5 mm in the
-  catalogue (from the configurator); the sheet lists Lux only at 6 mm (19 entries, floor and wall; Sand Flower 60x120 is wall
-  only). Marquinia Black 60x120 Nat is 6 mm in the catalogue; the sheet's Nat is 8.5 mm (2 entries). Left as they are.
+The sheets in `datasheets.json` keep their own words. Where ABK's colour pages (read 15 Oct 2026) say otherwise, the entries
+follow the pages and say so in a note; `scripts/test-surface-material-physical-scale.ts` pins both cases.
+
+- **Gioia.** The sheet covers the nine plain colours: white body wall tiles, BIII, water absorption over 10%, no frost value,
+  7 mm. ABK's Gioia page says the seven decors (Majorelle, Martinica, Ombrelle, Palma, Papilio, Primavera, Rossignol) are
+  porcelain stoneware, 8.5 mm, and "also suitable for floor installation". So the 12 decor entries are 8.5 mm (the sheet had
+  filled 7 mm on 14 Oct), the plain colours stay 7 mm and wall only, and every decor has a floor entry: Martinica's and
+  Primavera's were added from ABK's page (J: "Add both floor entries"), on their wall entries' faces; Gardenia's configurator lists
+  those two for walls only. 23 entries: 7 floor, 16 wall.
+- **La Marmoteca.** Every colour page gives 120x120 and 60x120 as 8.5 mm in every finish it lists, with the note "Current 6 mm
+  thickness available while stocks last; to be replaced by the 8.5 mm version." The sheet still lists Lux and Soft at 6 mm (Nat at
+  8.5 mm), and ABK uses one item code for both thicknesses. All 125 entries in those sizes are 8.5 mm and note the pages (J: "The
+  website: 8.5 mm"): 76 changed from 6 mm, and the sheet's 6 mm note left the 52 it had filled. Marquinia Black 60x120 Nat (2
+  entries) was 6 mm from the configurator; at 8.5 mm it fits the sheet's Nat line and takes its R10 and note, like the other Nat
+  entries. The 120x280 slabs and the 40x120 Lux (no page) stay 6 mm.
+
+## Where the documents and the catalogue disagree
 - Camouflage Plissé White Beton 60x120 (8 mm, 2 entries) isn't on the Camouflage sheet.
 - The Plein Air catalogue (January 2026) doesn't list Orosei's six R11 outdoor items (ABK's site does), prints Pietra Viva Aude
   Grey 60x60 under Aude Beige's code 0014519 (the catalogue entry is 0014518), and prints four special-piece codes twice

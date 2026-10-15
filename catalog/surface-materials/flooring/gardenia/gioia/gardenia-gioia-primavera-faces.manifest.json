@@ -20,7 +20,7 @@
    },
    "swatch": "0010527_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "wall gardenia-wall-tile-gioia-primavera-pf60010527-60x120-90243-0",
+   "used_by": "floor gardenia-flooring-gioia-primavera-pf60010527-60x120-90243-0; wall gardenia-wall-tile-gioia-primavera-pf60010527-60x120-90243-0",
    "faces": [
     {
      "file": "0010527_01.webp",
