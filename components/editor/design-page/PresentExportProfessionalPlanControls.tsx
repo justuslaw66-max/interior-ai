@@ -60,7 +60,7 @@ export default function PresentExportProfessionalPlanControls({
 
       <div role="group" aria-label="Visible plan layers" className="grid grid-cols-2 gap-2">
         {LAYERS.map(([key, label]) => (
-          <Button key={key} size="compact" pressed={layers[key]} onClick={() => onToggleLayer(key)}>
+          <Button key={key} size="regular" pressed={layers[key]} onClick={() => onToggleLayer(key)}>
             {label}
           </Button>
         ))}

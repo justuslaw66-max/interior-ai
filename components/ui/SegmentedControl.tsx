@@ -11,7 +11,8 @@ import type { ReactNode } from "react";
  * is a 44px target (the touch: variant in globals.css). `track={false}` drops the grey track for a
  * control that sits in a floating pill of its own (the phone's 2D | 3D); its segments are then the
  * full height. `fill` spreads the control across its container in equal segments; a segment whose
- * label needs more room takes it from the others, so every label stays on one line.
+ * label needs more room takes it from the others, so every label stays on one line. Compact
+ * segments keep 6px each side, so four Pro surface targets fit the 246px Surfaces card.
  *
  * On/off toggles that aren't a choice between options (Grid, Snap, Details) are a `Button` with
  * `pressed` instead.
@@ -52,7 +53,7 @@ const TRACK_CLASS: Record<SegmentedControlSize, string> = {
 };
 
 const SEGMENT_SIZE_CLASS: Record<SegmentedControlSize, string> = {
-  compact: "h-[26px] touch:h-11 rounded-md px-2 text-xs",
+  compact: "h-[26px] touch:h-11 rounded-md px-1.5 text-xs",
   regular: "h-8 touch:h-11 rounded-lg px-3.5 text-sm",
   touch: "h-10 touch:h-11 rounded-[10px] px-4 text-sm",
 };
