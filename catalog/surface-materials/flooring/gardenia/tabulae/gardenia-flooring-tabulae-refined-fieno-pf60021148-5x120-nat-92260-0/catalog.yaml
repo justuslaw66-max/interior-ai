@@ -27,6 +27,7 @@ source:
     - "Collection page color availability for Refined Fieno: Refined Fieno 8,5mm: 23,4x148 (9\"x58\") NAT; 20x120 (8\"x48\") NAT, R11; 5x120 (2\"x48\") NAT; 10x60 (4\"x24\") NAT; 15x85 (6\"x33\") Chevron NAT."
     - "Available configurator formats: PF60021142 20x120 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021157 20x120 ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021148 5x120 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021108 23,4x148 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021146 10x60 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: wood
@@ -141,17 +142,16 @@ rendering:
     - straight
     - herringbone
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant

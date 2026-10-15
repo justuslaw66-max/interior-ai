@@ -90,6 +90,15 @@ follow the pages and say so in a note; `scripts/test-surface-material-physical-s
   entries) was 6 mm from the configurator; at 8.5 mm it fits the sheet's Nat line and takes its R10 and note, like the other Nat
   entries. The 120x280 slabs and the 40x120 Lux (no page) stay 6 mm.
 
+## Thicknesses from ABK's colour pages (15 Oct 2026)
+
+Publishing needs a thickness (J, 15 Oct 2026: "Fill thickness from ABK, then publish"). 102 Gardenia entries had none, because their
+sheet doesn't list their format or lists it at more than one thickness: Falaise 80x80 Nat (6), Orosei (32), Pietra Viva (42) and
+Tabulae's small sizes (22). Each took the one thickness ABK's colour page gives for its format (8.5 mm, the Pietra Viva 120x280 slabs
+6 mm) and notes the page. The colour is the entry's own (ABK's Aude Beige and Ivory 120x280 pages are swapped, so the faces note
+links the other). Orosei's 18 Nat entries now fit the sheet's 8.5 mm line, and their sheet notes say so; no thickness or slip
+class disagrees with a sheet.
+
 ## Where the documents and the catalogue disagree
 - Camouflage Plissé White Beton 60x120 (8 mm, 2 entries) isn't on the Camouflage sheet.
 - The Plein Air catalogue (January 2026) doesn't list Orosei's six R11 outdoor items (ABK's site does), prints Pietra Viva Aude

@@ -646,7 +646,16 @@ const testFixtureRuntimeIds = TEST_FIXTURE_SURFACE_MATERIAL_RENDER_REGISTRY.map(
 assert.ok(goodrichEntries.length >= 4, "expected at least four draft Goodrich surface material fixtures");
 assert.equal(result.duplicateMaterialIds.size, 0, "surface material material_id values must be unique");
 assert.equal(result.duplicateSlugs.size, 0, "surface material slug values must be unique");
-assert.equal(getPublishedFlooringMaterials().length, 0, "draft Goodrich fixtures must not publish to consumer flooring registry");
+const publishedFloors = getPublishedFlooringMaterials();
+assert.ok(
+  publishedFloors.every((material) => material.surface_material.supplier !== "goodrich_global"),
+  "draft Goodrich fixtures must not publish to consumer flooring registry"
+);
+// J, 15 Oct 2026: "put quote on request for now and publish": Gardenia's entries on ABK's faces are the published floors.
+assert.ok(
+  publishedFloors.length > 0 && publishedFloors.every((material) => material.surface_material.supplier === "gardenia_orchidea"),
+  "the consumer flooring registry holds Gardenia's published quote-on-request entries only"
+);
 assert.equal(
   productionRuntimeIds.length,
   entries.length,

@@ -27,6 +27,7 @@ source:
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
     - "Equivalent Gardenia configurator item codes represented by this visible variant: GARDENIA/PF60016184/0/90450."
     - "Outdoor size (J, 2026-10-13: follow what ABK says): ABK lists item 0016183 on its Plein Air pages, colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/dorica-travertino-ivory-cross/80x80/: DORICA TRAVERTINO IVORY CROSS 80X80, finish R11, thickness 20 mm, porcelain stoneware. The July configurator import had not named its finish; it is named and described as the outdoor sizes added on 13 Oct."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: stone
@@ -112,18 +113,16 @@ rendering:
     - straight
     - vertical_brick
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_physical_dimensions
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
