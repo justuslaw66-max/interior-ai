@@ -6,6 +6,7 @@ import { isEditorShortcutTargetBlocked } from "@/lib/editor-shortcut-guard";
 import { TABLET_MEDIA_QUERY, toggleStepPanel, useTabletPanelPolicy } from "@/lib/tablet-panel-policy";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import { PhoneStepSheet, type StepPanelColumn } from "./PhoneStepSheet";
+import { Button } from "@/components/ui/Button";
 
 type DesignControlsPanelFrameProps = {
   isDesigner: boolean;
@@ -175,17 +176,16 @@ function PanelColumnHeader({ title, subtitle, temporarilyRevealed, onKeepOpen }:
           <div className="mt-1 text-xs text-neutral-500">{subtitle}</div>
         </div>
         {temporarilyRevealed ? (
-          <button
-            type="button"
+          <Button
+            size="compact"
             data-testid="design-controls-sidebar-toggle"
             aria-label="Keep design tools open"
             title="Keep sidebar open"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
             onClick={onKeepOpen}
           >
             <Pin className="h-3.5 w-3.5" aria-hidden="true" />
             Keep open
-          </button>
+          </Button>
         ) : null}
       </div>
     </div>

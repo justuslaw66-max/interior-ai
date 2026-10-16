@@ -287,7 +287,7 @@ const consumerState = resolveDesignPageViewportSelectionControlsState({
 assert.deepEqual(consumerState.multiSelection, { count: 2, zoneType: "seating", zoneTools: false });
 assert.equal(consumerState.selectedZone, null);
 const multiSelectionToolbar = readSource("components/editor/design-page/MultiSelectionToolbar.tsx");
-assert.match(multiSelectionToolbar, /Align Z centre\s*<\/button>\s*\{state\.zoneTools \? <ZoneCreateControls /);
+assert.match(multiSelectionToolbar, /Align Z centre\s*<\/Button>\s*\{state\.zoneTools \? <ZoneCreateControls /);
 assert.match(multiSelectionToolbar, /function ZoneCreateControls\([\s\S]*?Create zone/);
 
 console.log("Design-page viewport selection-control ownership checks passed.");

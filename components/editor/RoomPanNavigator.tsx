@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Minus, Plus, RotateCcw } from "lucide-react"
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { useLiveCameraView, type LiveCameraViewStore } from "@/lib/useDesignPageLiveCameraView";
 import RoomPanActiveRoom, { describeNavigatorRoom } from "./RoomPanActiveRoom";
+import { Button } from "@/components/ui/Button";
 
 type RoomPanNavigatorProps = {
   rooms: HousePlanRoom2D[];
@@ -121,8 +122,6 @@ export default function RoomPanNavigator({
   const targetX = clamp(toMapX(cameraTarget[0]), TARGET_HANDLE_PADDING, MAP_WIDTH - TARGET_HANDLE_PADDING);
   const targetY = clamp(toMapY(cameraTarget[2]), TARGET_HANDLE_PADDING, MAP_HEIGHT - TARGET_HANDLE_PADDING);
   const cameraAimDeg = Math.atan2(targetY - cameraY, targetX - cameraX) * (180 / Math.PI);
-  const navigatorButtonClass = "grid h-6 w-6 place-items-center rounded border border-neutral-200 bg-white text-neutral-700 shadow-sm disabled:opacity-40";
-
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (disabled || !mapRef.current) return;
 
@@ -188,45 +187,41 @@ export default function RoomPanNavigator({
         <div className="flex items-center gap-1" aria-label="Navigator controls">
           {!isCollapsed ? (
             <>
-              <button
-                type="button"
+              <Button
+                size="mini"
                 data-testid="room-pan-reset-view"
                 disabled={disabled}
                 onClick={onResetView}
-                className={navigatorButtonClass}
                 aria-label="Fit to screen"
                 title="Fit to screen"
               >
                 <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="mini"
                 data-testid="room-pan-zoom-out"
                 disabled={disabled}
                 onClick={() => onZoom("out")}
-                className={navigatorButtonClass}
                 aria-label="Zoom out"
                 title="Zoom out"
               >
                 <Minus className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="mini"
                 data-testid="room-pan-zoom-in"
                 disabled={disabled}
                 onClick={() => onZoom("in")}
-                className={navigatorButtonClass}
                 aria-label="Zoom in"
                 title="Zoom in"
               >
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
+              </Button>
             </>
           ) : null}
-          <button
-            type="button"
+          <Button
+            size="mini"
             onClick={() => setIsCollapsed((value) => !value)}
-            className={navigatorButtonClass}
             aria-label={isCollapsed ? "Expand navigator" : "Collapse navigator"}
             title={isCollapsed ? "Expand" : "Collapse"}
           >
@@ -235,7 +230,7 @@ export default function RoomPanNavigator({
             ) : (
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             )}
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -109,17 +109,18 @@ function FreeLimitsNote({ onClose, onSeePricing }: DownloadDialogProps) {
       className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600"
     >
       <span>Free downloads are one view with a small watermark. Pro gives clean files and more views.</span>
-      <button
-        type="button"
+      <EditorDialogButton
+        variant="link"
+        size="inline"
         data-testid="download-see-pricing"
-        className="min-h-11 shrink-0 font-semibold underline underline-offset-2"
+        className="min-h-11 shrink-0 underline"
         onClick={() => {
           onClose();
           onSeePricing();
         }}
       >
         See pricing
-      </button>
+      </EditorDialogButton>
     </div>
   );
 }

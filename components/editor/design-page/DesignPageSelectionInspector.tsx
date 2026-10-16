@@ -103,16 +103,15 @@ export function DesignPageSelectionInspector({
             {state.summary.detail}
           </div>
         </div>
-        <button
-          type="button"
+        <Button
+          size={frame.clearSize}
           data-testid="selection-inspector-clear"
-          className={frame.clearClassName}
           aria-label={placement.inSheet ? undefined : `Deselect ${state.summary.title}`}
           title={placement.inSheet ? undefined : `Deselect ${state.summary.title}`}
           onClick={actions.clearSelection}
         >
           {placement.inSheet ? "Done" : <X className="h-4 w-4" aria-hidden="true" />}
-        </button>
+        </Button>
       </div>
 
       {state.selectedOpening ? (

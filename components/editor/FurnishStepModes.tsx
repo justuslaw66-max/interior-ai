@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 type FurnishStepModesProps = {
   mode: "furnish" | "ai";
@@ -18,28 +19,26 @@ export function FurnishStepModes({
   onOpenBuiltIns,
 }: FurnishStepModesProps) {
   if (mode === "furnish" && !onOpenBuiltIns) return null;
-  const buttonClass = "inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 text-sm font-semibold text-neutral-800 shadow-sm hover:bg-neutral-50";
   return (
     <div data-testid="furnish-step-modes" className="flex flex-wrap items-center gap-1.5">
       {mode === "ai" ? (
-        <button type="button" data-testid="furnish-step-back-to-products" className={buttonClass} onClick={onGoFurnish}>
+        <Button size="regular" data-testid="furnish-step-back-to-products" onClick={onGoFurnish}>
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Back to products
-        </button>
+        </Button>
       ) : null}
       {onOpenBuiltIns ? (
-        <button
-          type="button"
+        <Button
+          size="regular"
           data-testid="editor-workflow-millwork"
           aria-label="Built-ins"
           title="Built-ins"
-          className={buttonClass}
           onClick={onOpenBuiltIns}
         >
           <span data-testid="open-custom-millwork-studio">
             <span data-testid="open-cabinetry-studio">Built-ins</span>
           </span>
-        </button>
+        </Button>
       ) : null}
     </div>
   );

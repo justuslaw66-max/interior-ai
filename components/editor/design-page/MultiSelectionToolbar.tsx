@@ -21,7 +21,7 @@ type MultiSelectionToolbarProps = {
 };
 
 /** Pro's zone type and Create zone (UX 4g, FU6); consumers align a group but make no zones. */
-function ZoneCreateControls({ state, actions, buttonClass }: MultiSelectionToolbarProps & { buttonClass: string }) {
+function ZoneCreateControls({ state, actions }: MultiSelectionToolbarProps) {
   return (
     <>
       <select
@@ -34,9 +34,9 @@ function ZoneCreateControls({ state, actions, buttonClass }: MultiSelectionToolb
         <option value="tv">TV</option>
         <option value="dining">Dining</option>
       </select>
-      <button className={buttonClass} onClick={actions.createZone}>
+      <Button size="compact" onClick={actions.createZone}>
         Create zone
-      </button>
+      </Button>
     </>
   );
 }
@@ -45,21 +45,19 @@ export function MultiSelectionToolbar({
   state,
   actions,
 }: MultiSelectionToolbarProps) {
-  const buttonClass = "rounded-full border border-neutral-200 px-2 py-1 text-xs text-neutral-900";
-
   return (
     <div className="absolute left-1/2 top-4 z-30 -translate-x-1/2 md:top-bar-16">
       <div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow">
         <div className="text-xs font-semibold text-neutral-900">
           Group ({state.count})
         </div>
-        <button className={buttonClass} onClick={actions.alignX}>
+        <Button size="compact" onClick={actions.alignX}>
           Align X centre
-        </button>
-        <button className={buttonClass} onClick={actions.alignZ}>
+        </Button>
+        <Button size="compact" onClick={actions.alignZ}>
           Align Z centre
-        </button>
-        {state.zoneTools ? <ZoneCreateControls state={state} actions={actions} buttonClass={buttonClass} /> : null}
+        </Button>
+        {state.zoneTools ? <ZoneCreateControls state={state} actions={actions} /> : null}
         <Button variant="quiet" size="icon"
           aria-label={`Deselect ${state.count} products`} title={`Deselect ${state.count} products`} onClick={actions.clear}>
           <X className="h-4 w-4" aria-hidden="true" />

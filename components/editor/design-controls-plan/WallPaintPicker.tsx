@@ -35,8 +35,6 @@ export function WallPaintPicker({
   setWallPaintSearch,
   setWallPaintVisibleLimit,
   hiddenNipponWallPaintCount,
-  progressActionClass,
-  progressSecondaryActionClass,
   applyWallPaintToActiveTarget,
   applyWallPaintToAllRooms,
   onResetActiveCeilingSurface,
@@ -59,8 +57,6 @@ export function WallPaintPicker({
   setWallPaintSearch: Dispatch<SetStateAction<string>>;
   setWallPaintVisibleLimit: Dispatch<SetStateAction<number>>;
   hiddenNipponWallPaintCount: number;
-  progressActionClass: string;
-  progressSecondaryActionClass: string;
   applyWallPaintToActiveTarget: (
     colorHex: string,
     name?: string | null,
@@ -236,14 +232,14 @@ export function WallPaintPicker({
             </div>
           )}
           {hiddenNipponWallPaintCount > 0 ? (
-            <button
-              type="button"
+            <Button
+              size="regular"
               data-testid="wall-paint-show-more"
-              className={`${progressSecondaryActionClass} min-h-9 w-full`}
+              className="w-full"
               onClick={() => setWallPaintVisibleLimit((limit) => limit + WALL_PAINT_VISIBLE_INCREMENT)}
             >
               Show more ({hiddenNipponWallPaintCount.toLocaleString()})
-            </button>
+            </Button>
           ) : null}
         </div>
 
@@ -262,37 +258,37 @@ export function WallPaintPicker({
               className="mt-1 h-9 w-14 rounded-md border border-black/10 bg-transparent p-0"
             />
           </label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="primary" size="regular"
               data-testid="wall-paint-apply-custom"
-              className={progressActionClass}
+              className="grow"
               disabled={!canEdit || !canApplyActiveSurfaceTarget}
               onClick={() => applyWallPaintToActiveTarget(normalizedCustomPaintHex, wallPaintApplyName, "custom")}
             >
               Apply target
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="regular"
               data-testid="wall-paint-apply-all"
-              className={progressSecondaryActionClass}
+              className="grow"
               disabled={!canEdit}
               onClick={() => applyWallPaintToAllRooms(normalizedCustomPaintHex, wallPaintApplyName, "custom")}
             >
               Apply all
-            </button>
+            </Button>
           </div>
         </div>
 
-        <button
-          type="button"
+        <Button
+          size="regular"
           data-testid="wall-paint-reset"
-          className={`${progressSecondaryActionClass} mt-2 min-h-9 w-full`}
+          className="mt-2 w-full"
           disabled={!canEdit || !canApplyActiveSurfaceTarget}
           onClick={activeSurfaceTarget === "ceiling" ? onResetActiveCeilingSurface : onResetActiveWallSurface}
         >
           Reset {paintTargetNoun} finish
-        </button>
+        </Button>
       </div>
     );
 }

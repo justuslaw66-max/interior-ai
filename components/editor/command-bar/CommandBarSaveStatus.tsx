@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 
 /** "Saved" (to the account) is the one green line; the others are muted, and "Not saved" red. */
@@ -45,14 +46,15 @@ export function CommandBarSaveStatus({
       {savedToAccount ? <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> : null}
       <span className="min-w-0 truncate">{saveStatus.label}</span>
       {saveStatus.canRetry ? (
-        <button
-          type="button"
+        <Button
+          variant="link"
+          size="inline"
           data-testid="save-status-retry"
-          className="shrink-0 font-semibold underline underline-offset-2 hover:no-underline"
+          className="shrink-0 underline"
           onClick={onRetrySaveStatus}
         >
           Retry
-        </button>
+        </Button>
       ) : null}
     </div>
   );
