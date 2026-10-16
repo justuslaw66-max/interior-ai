@@ -11,6 +11,7 @@ import {
 import type { RasterDimensionAssociation } from "./raster-dimension-spans";
 import type { FloorPlanVectorizerEvidence } from "./vectorizer-evidence-schema";
 import { registeredVectorizerDrawing, type RegisteredVectorizerDrawing } from "./vectorizer-drawing";
+import { alignVectorizerFaces, vectorizerThicknessMm } from "./vectorizer-face-millimetres";
 
 /**
  * Local floor-plan vectorizer evidence.
@@ -287,7 +288,7 @@ function registeredOpening(edge: VectorizerWallEdge, millimetresPerPixel: number
 
 /** A wall edge with its measured thickness, converted with the adapter's accepted scale. */
 function registeredSourceEdge(edge: VectorizerWallEdge, millimetresPerPixel: number): RegisteredSourceEdge {
-  const thicknessMm = Math.max(40, Math.min(600, Math.round((edge.thicknessPx * millimetresPerPixel) / 5) * 5));
+  const thicknessMm = vectorizerThicknessMm(edge.sourcePx, edge.thicknessPx, millimetresPerPixel);
   return {
     evidenceId: `vectorizer:${edge.id}`,
     kind: edge.kind,
@@ -308,8 +309,8 @@ export function vectorizerRoomBoundaries(
   page: RegisteredPageEvidence,
   millimetresPerPixel: number
 ): RegisteredRoomBoundary[] {
-  const registered = page.vectorizer;
-  if (!registered) return [];
+  if (!page.vectorizer) return [];
+  const registered = alignVectorizerFaces(page.vectorizer, millimetresPerPixel);
   const edgeById = new Map(registered.wallEdges.map((edge) => [edge.id, edge]));
   return registered.rooms.flatMap((room, index): RegisteredRoomBoundary[] => {
     if (room.edgeIds.length !== room.sourcePoints.length) return [];

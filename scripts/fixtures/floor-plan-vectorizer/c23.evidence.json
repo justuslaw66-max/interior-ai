@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.28.0",
+ "exporterVersion": "app-evidence-0.30.0",
  "page": {
   "widthPx": 776,
   "heightPx": 1400,
@@ -33,14 +33,14 @@
     "rawText": "KITCHEN",
     "roomType": "kitchen",
     "centerXRatio": 0.278028,
-    "centerYRatio": 0.102857,
+    "centerYRatio": 0.103036,
     "bbox": {
      "leftRatio": 0.24549,
      "topRatio": 0.099643,
      "rightRatio": 0.310567,
-     "bottomRatio": 0.106071
+     "bottomRatio": 0.106429
     },
-    "confidence": 0.95,
+    "confidence": 0.96,
     "evidenceKind": "vectorizer"
    },
    {
@@ -100,7 +100,7 @@
      "rightRatio": 0.335696,
      "bottomRatio": 0.255
     },
-    "confidence": 0.95,
+    "confidence": 0.92,
     "evidenceKind": "vectorizer"
    },
    {
@@ -119,18 +119,18 @@
     "evidenceKind": "vectorizer"
    },
    {
-    "label": "BEDROOM 3",
-    "rawText": "BEDROOM 3",
+    "label": "BEDROOM",
+    "rawText": "BEDROOM",
     "roomType": "bedroom",
-    "centerXRatio": 0.124356,
+    "centerXRatio": 0.124034,
     "centerYRatio": 0.348571,
     "bbox": {
      "leftRatio": 0.07732,
      "topRatio": 0.345,
-     "rightRatio": 0.171392,
+     "rightRatio": 0.170747,
      "bottomRatio": 0.352143
     },
-    "confidence": 0.9,
+    "confidence": 0.95,
     "evidenceKind": "vectorizer"
    },
    {
@@ -145,7 +145,7 @@
      "rightRatio": 0.833763,
      "bottomRatio": 0.371429
     },
-    "confidence": 0.96,
+    "confidence": 0.955,
     "evidenceKind": "vectorizer"
    },
    {
@@ -160,7 +160,7 @@
      "rightRatio": 0.630155,
      "bottomRatio": 0.376429
     },
-    "confidence": 0.96,
+    "confidence": 0.955,
     "evidenceKind": "vectorizer"
    },
    {
@@ -175,7 +175,7 @@
      "rightRatio": 0.167526,
      "bottomRatio": 0.433571
     },
-    "confidence": 0.77,
+    "confidence": 0.87,
     "evidenceKind": "vectorizer"
    },
    {
@@ -205,7 +205,7 @@
      "rightRatio": 0.768686,
      "bottomRatio": 0.513571
     },
-    "confidence": 0.92,
+    "confidence": 0.928,
     "evidenceKind": "vectorizer"
    },
    {
@@ -220,7 +220,7 @@
      "rightRatio": 0.329897,
      "bottomRatio": 0.519643
     },
-    "confidence": 0.892,
+    "confidence": 0.886,
     "evidenceKind": "vectorizer"
    },
    {
@@ -235,7 +235,7 @@
      "rightRatio": 0.768041,
      "bottomRatio": 0.534643
     },
-    "confidence": 0.462,
+    "confidence": 0.426,
     "evidenceKind": "vectorizer"
    },
    {
@@ -250,7 +250,7 @@
      "rightRatio": 0.801546,
      "bottomRatio": 0.591429
     },
-    "confidence": 0.556,
+    "confidence": 0.56,
     "evidenceKind": "vectorizer"
    },
    {
@@ -265,7 +265,7 @@
      "rightRatio": 0.871134,
      "bottomRatio": 0.873571
     },
-    "confidence": 0.546,
+    "confidence": 0.552,
     "evidenceKind": "vectorizer"
    },
    {
@@ -295,7 +295,7 @@
      "rightRatio": 0.725515,
      "bottomRatio": 0.966429
     },
-    "confidence": 0.57,
+    "confidence": 0.564,
     "evidenceKind": "vectorizer"
    }
   ],
@@ -469,7 +469,7 @@
     ]
    },
    {
-    "label": "BEDROOM 3",
+    "label": "BEDROOM",
     "roomType": "bedroom",
     "confidence": 0.9,
     "evidenceKind": "vectorizer",
@@ -727,7 +727,7 @@
    {
     "label": "AC LEDGE",
     "roomType": "other",
-    "confidence": 0.77,
+    "confidence": 0.87,
     "evidenceKind": "vectorizer",
     "points": [
      {
@@ -3320,8 +3320,8 @@
      64.5
     ]
    ],
-   "thicknessPx": 3.88,
-   "thicknessMm": 66,
+   "thicknessPx": 4.84,
+   "thicknessMm": 82,
    "opening": null
   },
   {
@@ -3337,8 +3337,8 @@
      68.375
     ]
    ],
-   "thicknessPx": 3.88,
-   "thicknessMm": 66,
+   "thicknessPx": 4.84,
+   "thicknessMm": 82,
    "opening": null
   },
   {
@@ -3354,8 +3354,8 @@
      344.0
     ]
    ],
-   "thicknessPx": 3.62,
-   "thicknessMm": 62,
+   "thicknessPx": 4.53,
+   "thicknessMm": 77,
    "opening": null
   },
   {
@@ -3371,8 +3371,8 @@
      262.5
     ]
    ],
-   "thicknessPx": 1.38,
-   "thicknessMm": 23,
+   "thicknessPx": 1.72,
+   "thicknessMm": 29,
    "opening": null
   },
   {
@@ -3418,7 +3418,7 @@
      411.75
     ],
     [
-     527.9645476772616,
+     528.0233214218545,
      411.75
     ]
    ],
@@ -3713,7 +3713,7 @@
   },
   {
    "key": "room-3",
-   "label": "BEDROOM 3",
+   "label": "BEDROOM",
    "roomType": "bedroom",
    "registrationKind": "assembled_wall_topology",
    "confidence": 0.9,
@@ -3778,7 +3778,7 @@
    ],
    "areaM2": 10.17,
    "sourceLabels": [
-    "BEDROOM 3"
+    "BEDROOM"
    ]
   },
   {
@@ -4076,7 +4076,7 @@
    "label": "AC LEDGE",
    "roomType": "other",
    "registrationKind": "assembled_wall_topology",
-   "confidence": 0.77,
+   "confidence": 0.87,
    "sourcePoints": [
     {
      "x": 85.25,
@@ -4256,6 +4256,8 @@
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 50,
   "standaloneWallsAdded": 6,
+  "jogsThicknessChosen": 0,
+  "standaloneFacesOnTheWalls": 0,
   "itemsLeftOutForTheAppsLimits": 0
  }
 }
