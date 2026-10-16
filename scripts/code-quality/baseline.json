@@ -124,10 +124,6 @@
       "lines": 294,
       "limit": 250
     },
-    "components/editor/design-page/AuburnConfigurationSelector.tsx": {
-      "lines": 262,
-      "limit": 250
-    },
     "components/editor/design-page/CatalogPlacementConfirmPanel.tsx": {
       "lines": 421,
       "limit": 250
@@ -165,11 +161,11 @@
       "limit": 250
     },
     "components/editor/design-page/ProductFinishControls.tsx": {
-      "lines": 463,
+      "lines": 461,
       "limit": 250
     },
     "components/editor/design-page/ProductModelVariantControls.tsx": {
-      "lines": 717,
+      "lines": 660,
       "limit": 250
     },
     "components/editor/design-page/SceneItemsLayer.tsx": {
@@ -185,7 +181,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsAiPanel.tsx": {
-      "lines": 384,
+      "lines": 375,
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
@@ -1502,8 +1498,8 @@
     },
     "components/editor/design-page/AuburnConfigurationSelector.tsx": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 122
+        "count": 1,
+        "maximum": 93
       }
     },
     "components/editor/design-page/BetaStartPanel.tsx": {
@@ -1635,7 +1631,7 @@
     "components/editor/design-page/JaronConfigurationSelector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 108
+        "maximum": 87
       }
     },
     "components/editor/design-page/lighting/lightingPresets.ts": {
@@ -1721,17 +1717,17 @@
     "components/editor/design-page/ProductFinishControls.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 335
+        "maximum": 297
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 20
+        "maximum": 19
       }
     },
     "components/editor/design-page/ProductModelVariantControls.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 304
+        "maximum": 291
       },
       "complexFunctions": {
         "count": 2,
@@ -1783,7 +1779,7 @@
     "components/editor/DesignControlsAiPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 291
+        "maximum": 281
       },
       "complexFunctions": {
         "count": 1,

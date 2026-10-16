@@ -364,10 +364,10 @@ assert.match(
   /getCastleryConfigurationIconDescriptor\(productId\)[\s\S]*<img[\s\S]*src=\{descriptor\.src\}/,
   "Hamilton and Dawson diagrams should render typed local icon descriptors.",
 );
-assert.match(
+assert.doesNotMatch(
   modelVariantControlsSource,
-  /filter:\s*active\s*\?\s*"brightness\(0\) invert\(1\)"/,
-  "Selected configuration artwork should be recoloured white.",
+  /brightness\(0\) invert\(1\)/,
+  "Configuration artwork keeps its own colours on the chosen tile's white (UX 5n, J, 16 Oct).",
 );
 assert.doesNotMatch(
   modelVariantControlsSource,
@@ -381,7 +381,7 @@ assert.match(
 );
 assert.match(
   modelVariantControlsSource,
-  /className=\{`flex h-12 min-w-0/,
+  /className="flex h-12 min-w-0/,
   "Castlery configuration cards should retain the compact 48px height.",
 );
 assert.match(
