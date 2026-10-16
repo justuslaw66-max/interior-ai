@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.28.0",
+ "exporterVersion": "app-evidence-0.30.0",
  "page": {
   "widthPx": 2774,
   "heightPx": 1786,
@@ -85,7 +85,7 @@
      "rightRatio": 0.710887,
      "bottomRatio": 0.472564
     },
-    "confidence": 0.92,
+    "confidence": 0.91,
     "evidenceKind": "vectorizer"
    },
    {
@@ -145,7 +145,7 @@
      "rightRatio": 0.309661,
      "bottomRatio": 0.755879
     },
-    "confidence": 0.935,
+    "confidence": 0.94,
     "evidenceKind": "vectorizer"
    },
    {
@@ -879,6 +879,35 @@
     "readingClean": true
    },
    {
+    "valueMm": 630,
+    "rawText": "630",
+    "centerXRatio": 0.380678,
+    "centerYRatio": 0.965566,
+    "orientation": "horizontal",
+    "extensionStart": {
+     "xRatio": 0.363735,
+     "yRatio": 0.973124
+    },
+    "extensionEnd": {
+     "xRatio": 0.397621,
+     "yRatio": 0.973124
+    },
+    "extensionEvidenceKind": "vectorizer",
+    "confidence": 0.95,
+    "evidenceKind": "vectorizer",
+    "spanSourcePx": [
+     [
+      1009.0,
+      1738.0
+     ],
+     [
+      1103.0,
+      1738.0
+     ]
+    ],
+    "readingClean": true
+   },
+   {
     "valueMm": 2390,
     "rawText": "2390",
     "centerXRatio": 0.927722,
@@ -961,35 +990,6 @@
      [
       2430.5,
       1619.0
-     ]
-    ],
-    "readingClean": true
-   },
-   {
-    "valueMm": 630,
-    "rawText": "630",
-    "centerXRatio": 0.380678,
-    "centerYRatio": 0.965566,
-    "orientation": "horizontal",
-    "extensionStart": {
-     "xRatio": 0.363735,
-     "yRatio": 0.973124
-    },
-    "extensionEnd": {
-     "xRatio": 0.397621,
-     "yRatio": 0.973124
-    },
-    "extensionEvidenceKind": "vectorizer",
-    "confidence": 0.95,
-    "evidenceKind": "vectorizer",
-    "spanSourcePx": [
-     [
-      1009.0,
-      1738.0
-     ],
-     [
-      1103.0,
-      1738.0
      ]
     ],
     "readingClean": true
@@ -3366,8 +3366,8 @@
      1234.9759682101057
     ]
    ],
-   "thicknessPx": 5.86,
-   "thicknessMm": 38,
+   "thicknessPx": 7.33,
+   "thicknessMm": 47,
    "opening": null
   },
   {
@@ -3383,8 +3383,8 @@
      1240.8367590713324
     ]
    ],
-   "thicknessPx": 5.86,
-   "thicknessMm": 38,
+   "thicknessPx": 7.33,
+   "thicknessMm": 47,
    "opening": null
   },
   {
@@ -3502,8 +3502,8 @@
      1246.5
     ]
    ],
-   "thicknessPx": 17.5,
-   "thicknessMm": 113,
+   "thicknessPx": 14.0,
+   "thicknessMm": 91,
    "opening": null
   },
   {
@@ -4362,6 +4362,8 @@
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 62,
   "standaloneWallsAdded": 5,
+  "jogsThicknessChosen": 1,
+  "standaloneFacesOnTheWalls": 0,
   "itemsLeftOutForTheAppsLimits": 0
  }
 }

@@ -12,6 +12,7 @@ import {
   type RegisteredPageEvidence,
   type RegisteredRoomBoundary,
 } from "./deterministic-evidence";
+import { alignVectorizerFaces, vectorizerThicknessMm } from "./vectorizer-face-millimetres";
 
 type StandaloneWallInput = {
   page: RegisteredPageEvidence | undefined;
@@ -49,7 +50,7 @@ const SAME_FACE_MM = 3.5;
  * face or free end that the app's rounding has put beside a neighbour's, facing the same way, is lined up with it.
  */
 export function addVectorizerStandaloneWalls(input: StandaloneWallInput) {
-  const registered = input.page?.vectorizer;
+  const registered = input.page?.vectorizer && alignVectorizerFaces(input.page.vectorizer, input.millimetresPerPixel);
   const vectorizerRooms = input.rooms.length > 0
     && input.rooms.every((room) => room.registrationKind === "vectorizer_wall_topology");
   if (!registered || !vectorizerRooms) return 0;
@@ -69,7 +70,7 @@ export function addVectorizerStandaloneWalls(input: StandaloneWallInput) {
     const candidate: Placed = {
       start: input.getVertex(from[0], from[1], STANDALONE_CONFIDENCE),
       end: input.getVertex(to[0], to[1], STANDALONE_CONFIDENCE),
-      thicknessMm: Math.max(40, Math.min(600, Math.round((edge.thicknessPx * input.millimetresPerPixel) / 5) * 5)),
+      thicknessMm: vectorizerThicknessMm(edge.sourcePx, edge.thicknessPx, input.millimetresPerPixel),
     };
     if (candidate.start.id === candidate.end.id || !placeClear(candidate, placed, used)) continue;
     const middle = { x: (from[0] + to[0]) / 2, y: (from[1] + to[1]) / 2 };

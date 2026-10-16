@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.28.1"
+VERSION = "app-evidence-0.30.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -5096,7 +5096,11 @@ def build(m, gray=None):
         out["diagnostics"]["wallThicknessUnified"] = unify_wall_thickness(out, (scale_work / k_len) if (scale_work and k_len) else None)
     out["diagnostics"]["jogFacesFlushed"] = flush_jog_faces(out, FLUSH_JOGS) if FLUSH_JOGS > 0 else 0
     out["diagnostics"]["facesFitToTheDrawing"] = fit_drawn_faces(out, gray, S, T * k_len, FIT_FACES) if FIT_FACES > 0 else 0
+    jogs = out.pop("_jogs", [])
+    chosen = choose_jog_thickness(out, jogs)                 # (before the standalone walls, which fit the walls as built)
     out["diagnostics"]["standaloneWallsAdded"] = leftover_walls(out, m, S, T, gray) if LEFTOVER else 0
+    out["diagnostics"]["jogsThicknessChosen"] = len(chosen | choose_jog_thickness(out, jogs))
+    out["diagnostics"]["standaloneFacesOnTheWalls"] = standalone_faces_on_walls(out, out["diagnostics"]["standaloneWallsAdded"])
     if SCHEMA_CAPS:
         out["diagnostics"]["itemsLeftOutForTheAppsLimits"] = fit_app_limits(out)
     dbg = {"k": k, "closed": closed, "bars": bars, "blobs": blobs, "gaps": gaps, "openings": openings, "rooms": rooms, "labels": labels}
@@ -5319,6 +5323,21 @@ def flush_jog_faces(out, tol):
 # outline double back, gives the app a geometry problem it did not have, or fails, is put back exactly as it was.
 FIT_FACES = float(os.environ.get("AE_FIT_FACES", "1.5"))
 FIT_FACES_LOG = os.environ.get("AE_FIT_FACES_LOG")
+# Round 37 - the line-up round (J, 14 Oct: "proceed with the next round"; faces the drawing has straight come out
+# straight in the app, "it should be 0mm").  Measured with the app check counting steps sideways (a corner point on a
+# straight face is none), round 35's fitting made about half the steps left: each piece took its own drawn band, and
+# pieces a fraction of a pixel apart in one straight drawn face came out as steps.  So a wall line's new faces are kept
+# only when they add no step the drawing does not have (_guard_after: the walls seen from above, rasterised, before and
+# after; the drawing's ink judges a new step) - or when they close a gap between walls or cover more drawn wall.  A
+# jog round 35 puts in is a quarter thicker than long (the app squares a wall shorter than its thickness and mitres one
+# as long, and a millimetre of rounding chose which), or a fifth thinner where that leaves fewer steps beside it
+# (choose_jog_thickness).  And the app now puts each wall's faces on whole millimetres
+# (lib/floor-plan-imports/vectorizer-face-millimetres.ts), so a piece's end lined up with a face goes there.
+# 0 = round 36 exactly.
+LINE_UP = os.environ.get("AE_LINE_UP", "1") != "0"
+STEP_GUARD = LINE_UP                                         # (_guard_after)
+APP_FACES = LINE_UP                                          # (_app_face_ends: the app's faces on whole millimetres)
+JOG_T = 1.25 if LINE_UP else 1.0                             # (a jog's thickness over its length)
 
 
 def _from_source(S, X, Y, _cache={}):
@@ -5745,10 +5764,12 @@ def fit_drawn_faces(out, gray, S, T, tol):
         if len(P) < 2:
             continue
         saved = _snapshot(E, rooms)
+        guard = None
         try:
             plan = _line_plan(P, nb, key, tol_)
             if not plan:
                 continue
+            guard = _quietly(_guard_before, E, P, gray, S) if STEP_GUARD else None
             res = _apply_face_plan(out, pcs, plan, nb, key, next_id, {p["e"]["id"] for p in P})
         except Exception as ex:                              # a refinement: the line stays as traced, the export goes on
             plan, res = {}, "it failed: %s: %s" % (type(ex).__name__, ex)
@@ -5758,6 +5779,10 @@ def fit_drawn_faces(out, gray, S, T, tol):
             res, ok = "a side would lean", False
         if ok and _spikes(out) > spike0:
             res, ok = "an outline would double back (h1 low-res: a window moved past the corner its jog meets)", False
+        if ok and guard is not None:
+            why = _quietly(_guard_after, guard, E, gray, S)
+            if why:
+                res, ok = why, False
         after = {repr(p_) for p_ in app_geometry_problems(outlines())} if ok else None
         if not ok or after - before:
             _restore(E, rooms, saved)
@@ -5771,6 +5796,327 @@ def fit_drawn_faces(out, gray, S, T, tol):
                 i, pcs[i]["c"], c2, pcs[i]["t"], t2) for i, (c2, t2) in sorted(plan.items()))), file=sys.stderr)
     out.setdefault("diagnostics", {})["faceLinesThatFailed"] = failed
     return moved
+
+
+# Round 37 - no step beside a jog (J, 15 Oct, on the review of round 37's new steps: "all of those step shouldbe
+# removed").  The app squares a wall shorter than its thickness (a plain rectangle between its centre-line ends) and runs
+# a longer one on past a square corner by half the wall it meets; which of the two leaves a step beside a jog depends on
+# its neighbours (h1: a short, thick piece beside the jog, whose end then shows; s016: beside a column, where the run-on
+# stands out).  So each jog takes, of a quarter thicker than long (squared) and a fifth thinner (run on), the thickness
+# that leaves fewer steps beside it as the app joins the walls, replayed by app_footprints.py; on a tie it keeps the
+# one it has.  Once before the standalone walls are fitted (they are fitted to the walls as built) and once after.
+JOG_CHOICE = LINE_UP
+JOG_RUN_ON = 0.8
+
+
+def choose_jog_thickness(out, jogs):
+    """Round 37 (see above): `jogs` [(jog edge, piece id, other piece id)] as the face fitting made them (a jog of a line
+    put back, or closed up, is no longer among the edges, and its id may since be another's).  Returns the ids of the
+    jogs whose thickness changed."""
+    changed = set()
+    if not JOG_CHOICE or not jogs or not (out.get("scale") or {}).get("millimetresPerPixel"):
+        return changed
+    import app_footprints
+    E = out["wallEdges"]
+    by_id, live, mm_px = {e["id"]: e for e in E}, {id(e) for e in E}, float(out["scale"]["millimetresPerPixel"])
+    for _ in range(2):                                       # (two jogs side by side: the second pass sees the first)
+        for j, pid, oid in jogs:
+            p, o, jid = by_id.get(pid), by_id.get(oid), j["id"]
+            if id(j) not in live or p is None or o is None:
+                continue                                     # (a line put back, or a jog closed up)
+            (ax, ay), (bx, by) = j["sourcePx"][:2]
+            L, cap = math.hypot(bx - ax, by - ay), min(p["thicknessPx"], o["thicknessPx"])
+            if L <= 0:
+                continue
+            centre = ((ax + bx) / 2.0, (ay + by) / 2.0)
+            radius = max(3.0, L / 2 + max(p["thicknessPx"], o["thicknessPx"]) / 2 + 2)
+            options = []
+            for t in (j["thicknessPx"], round(min(cap, max(1.0, JOG_T * L)), 2), round(min(cap, max(1.0, JOG_RUN_ON * L)), 2)):
+                if all(abs(t - u) > 1e-3 for u, _ in options):
+                    try:
+                        n = len(app_footprints.local_steps(E, centre, radius, mm_px, override={jid: t}))
+                    except Exception:                        # (a refinement: an odd neighbourhood keeps the jog as it is)
+                        n = None
+                    if n is None:
+                        break
+                    options.append((t, n))
+            best = min(options, key=lambda tn: tn[1]) if options else None    # (the first, as it is, on a tie)
+            if best is not None and abs(best[0] - j["thicknessPx"]) > 1e-6:
+                j["thicknessPx"] = best[0]
+                if j.get("thicknessMm") is not None:
+                    j["thicknessMm"] = int(round(best[0] * mm_px))
+                changed.add(jid)
+    return changed
+
+
+# Round 37 - a standalone wall's faces on the walls it stands against (s056: a column standing on a wall, its side a
+# pixel short of the wall's end as the app builds it, a step).  The standalone walls (round 36) are fitted to the walls
+# the app will build as leftover_walls pictures them, and the app runs a wall's end on past a square corner, so the
+# picture can be a pixel out.  Each face of a level or plumb standalone wall with two free ends may move onto a face of
+# a wall it stands against, as the app builds it (app_footprints.py), up to SA_FACE_PX, when that leaves fewer steps
+# beside it; never thinner than the app's 40 mm.
+SA_FACES = LINE_UP
+SA_FACE_PX = 1.5
+
+
+def standalone_faces_on_walls(out, added):
+    """Round 37 (see above): the last `added` wall edges are the standalone walls.  Returns the number moved."""
+    if not SA_FACES or not added or not (out.get("scale") or {}).get("millimetresPerPixel"):
+        return 0
+    import app_footprints
+    E, mm_px = out["wallEdges"], float(out["scale"]["millimetresPerPixel"])
+    count = {}
+    for e in E:
+        for q in e["sourcePx"][:2]:
+            count[(round(q[0], 3), round(q[1], 3))] = count.get((round(q[0], 3), round(q[1], 3)), 0) + 1
+    moved = 0
+    for e in E[len(E) - added:]:
+        try:
+            moved += _standalone_faces(e, E, mm_px, count, app_footprints)
+        except Exception:                                    # (a refinement: an odd neighbourhood keeps the wall as it is)
+            continue
+    return moved
+
+
+def _standalone_faces(e, E, mm_px, count, app_footprints):
+    """one standalone wall's faces (see standalone_faces_on_walls): 1 when they moved, else 0"""
+    (ax, ay), (bx, by) = e["sourcePx"][:2]
+    level = abs(ay - by) < 1e-9 < abs(ax - bx)
+    if not level and not abs(ax - bx) < 1e-9 < abs(ay - by):
+        return 0
+    if any(count.get((round(q[0], 3), round(q[1], 3)), 0) != 1 for q in e["sourcePx"][:2]):
+        return 0                                             # (an end on a corner stays where the corner is)
+    t, c = float(e["thicknessPx"]), (ay if level else ax)
+    centre, radius = ((ax + bx) / 2.0, (ay + by) / 2.0), math.hypot(bx - ax, by - ay) / 2 + 2 * t + 4
+
+    def steps_with(lo, hi):
+        c2 = (lo + hi) / 2
+        sp = [[ax, c2], [bx, c2]] if level else [[c2, ay], [c2, by]]
+        return len(app_footprints.local_steps(E, centre, radius, mm_px, override={e["id"]: {"sourcePx": sp, "thicknessPx": hi - lo}}))
+
+    lo0, hi0 = c - t / 2, c + t / 2
+    best = (lo0, hi0, steps_with(lo0, hi0))
+    if best[2] == 0:
+        return 0
+    k = 1 if level else 0
+    faces = sorted({round(q[k], 3) for w in app_footprints.local_walls(E, centre, radius + 40.0, mm_px)
+                    if w.id != e["id"] for q in w.fp.values()})
+    options = lambda f: [f] + [g for g in faces if 0.05 < abs(g - f) <= SA_FACE_PX]
+    for lo in options(lo0):
+        for hi in options(hi0):
+            if (lo, hi) != (lo0, hi0) and hi - lo >= 40.0 / mm_px:
+                n = steps_with(lo, hi)
+                if n < best[2]:
+                    best = (lo, hi, n)
+    if (best[0], best[1]) == (lo0, hi0):
+        return 0
+    c2 = round((best[0] + best[1]) / 2, 3)
+    e["sourcePx"] = [[ax, c2], [bx, c2]] if level else [[c2, ay], [c2, by]]
+    e["thicknessPx"] = round(best[1] - best[0], 2)
+    if e.get("thicknessMm") is not None:
+        e["thicknessMm"] = int(round((best[1] - best[0]) * mm_px))
+    return 1
+
+
+def _quietly(fn, *args):
+    """the guard is a check on a refinement: should it fail, the line goes on as round 35 had it"""
+    try:
+        return fn(*args)
+    except Exception:                                        # (numpy / OpenCV on an odd region)
+        return None
+
+
+def _plan_joints(E):
+    """{end (source px, 2 places): {direction N E S W: thickness}} of the level / plumb edges leaving each end"""
+    J = {}
+    for e in E:
+        (x0, y0), (x1, y1) = e["sourcePx"][:2]
+        t = float(e.get("thicknessPx") or 0)
+        for (x, y), (ox, oy) in (((x0, y0), (x1, y1)), ((x1, y1), (x0, y0))):
+            d = J.setdefault((round(x, 2), round(y, 2)), {})
+            if abs(oy - y) <= 1e-6 and abs(ox - x) > 1e-6:
+                k_ = "E" if ox > x else "W"
+            elif abs(ox - x) <= 1e-6 and abs(oy - y) > 1e-6:
+                k_ = "S" if oy > y else "N"
+            else:
+                continue
+            d[k_] = max(t, d.get(k_, 0.0))
+    return J
+
+
+def _top_view(E, region):
+    """the walls seen from above inside region (source px), as the app joins them - each level / plumb edge a rectangle,
+    its ends carried to the faces of the walls meeting it across - rasterised at up to 10 per source px: (mask, x0, y0,
+    zoom), or None where a slanted wall lies in the region (its stairs would read as steps)"""
+    x0, y0, x1, y1 = region
+    z = min(10.0, math.sqrt(12e6 / max((x1 - x0) * (y1 - y0), 1.0)))
+    J = _plan_joints(E)
+    W_, H_ = int(math.ceil((x1 - x0) * z)) + 1, int(math.ceil((y1 - y0) * z)) + 1
+    mask = np.zeros((H_, W_), np.uint8)
+    for e in E:
+        (ax, ay), (bx, by) = e["sourcePx"][:2]
+        t = float(e.get("thicknessPx") or 0)
+        if t <= 0 or max(ax, bx) + t < x0 or min(ax, bx) - t > x1 or max(ay, by) + t < y0 or min(ay, by) - t > y1:
+            continue
+        lv, pl = abs(ay - by) <= 1e-6 < abs(ax - bx), abs(ax - bx) <= 1e-6 < abs(ay - by)
+        if not (lv or pl):
+            if math.hypot(bx - ax, by - ay) > 1e-6:
+                return None
+            continue
+        ext = [max(J.get((round(q[0], 2), round(q[1], 2)), {}).get(d_, 0.0) for d_ in (("N", "S") if lv else ("E", "W"))) / 2.0
+               for q in ((ax, ay), (bx, by))]
+        if lv:
+            (lo, elo), (hi, ehi) = sorted(((ax, ext[0]), (bx, ext[1])))
+            r_ = (lo - elo, ay - t / 2.0, hi + ehi, ay + t / 2.0)
+        else:
+            (lo, elo), (hi, ehi) = sorted(((ay, ext[0]), (by, ext[1])))
+            r_ = (ax - t / 2.0, lo - elo, ax + t / 2.0, hi + ehi)
+        pts = np.array([[r_[0], r_[1]], [r_[2], r_[1]], [r_[2], r_[3]], [r_[0], r_[3]]]) - (x0, y0)
+        cv2.fillPoly(mask, [np.round(pts * z * 16).astype(np.int32)], 255, shift=4)
+    return mask, x0, y0, z
+
+
+def _view_steps(view):
+    """the steps in a top view's outline: [(x, y, size, A, B, C, D, n)] in source px - a jog of 0.1 to 2 px between two
+    sides of 2 px or more running on the same way (as the app check counts them), n the outward normal of the sides.
+    Read off the pixel edges between wall and paper: a run of them ending where a parallel run, facing the same way,
+    starts a little across"""
+    mask, x0, y0, z = view
+    m = mask > 0
+    found = []
+    for flip in (False, True):                               # (level faces, then plumb ones on the transposed view)
+        mm_ = m.T if flip else m
+        H_, W_ = mm_.shape
+        for face, out_ in (((mm_[:-1] & ~mm_[1:]), 1.0), ((~mm_[:-1] & mm_[1:]), -1.0)):
+            ends, starts = {}, {}
+            for y in np.nonzero(face.any(axis=1))[0]:
+                row = np.concatenate(([0], face[y].astype(np.int8), [0]))
+                d_ = np.diff(row)
+                for xs_, xe_ in zip(np.nonzero(d_ == 1)[0], np.nonzero(d_ == -1)[0]):
+                    if xs_ == 0 or xe_ >= W_ - 1 or xe_ - xs_ < 2 * z:
+                        continue                             # (cut by the region's edge, or shorter than 2 px)
+                    ends.setdefault(int(xe_), []).append((int(y), int(xs_)))
+                    starts.setdefault(int(xs_), []).append((int(y), int(xe_)))
+            for e_, rs in ends.items():
+                for y1, s1 in rs:
+                    for y2, e2 in starts.get(e_, ()):
+                        k = abs(y2 - y1)
+                        if not (0.1 * z - 0.5 <= k < 2 * z) or k == 0:
+                            continue
+                        A, B, C, D = (s1, y1 + 1), (e_, y1 + 1), (e_, y2 + 1), (e2, y2 + 1)
+                        pts = [((q[1], q[0]) if flip else q) for q in (A, B, C, D)]
+                        src = [(x0 + q[0] / z, y0 + q[1] / z) for q in pts]
+                        n_ = (out_, 0.0) if flip else (0.0, out_)
+                        found.append(((src[1][0] + src[2][0]) / 2.0, (src[1][1] + src[2][1]) / 2.0, k / z) + tuple(src) + (n_,))
+    return found
+
+
+def _drawn_edge(gray, S, p, n):
+    """the drawing's dark-to-light edge nearest p along the outward normal n (source px), as an offset, or None"""
+    offs = np.arange(-2.5, 2.5001, 0.1)
+    v = np.array([_sample(gray, *_from_source(S, p[0] + o * n[0], p[1] + o * n[1])) for o in offs])
+    paper, dark = float(np.percentile(v, 90)), float(v.min())
+    if paper - dark < 40.0:
+        return None
+    lev = (paper + dark) / 2.0
+    best = None
+    for i in range(len(v) - 1):
+        if v[i] <= lev < v[i + 1]:
+            t_ = offs[i] + (lev - v[i]) / (v[i + 1] - v[i]) * (offs[i + 1] - offs[i])
+            if best is None or abs(t_) < abs(best):
+                best = t_
+    return best
+
+
+def _drawn_jog(gray, S, st):
+    """does the drawing have this step: its edge on either side, 1.5 to 4 px from the corner, a jog as large (within
+    0.35 px)?"""
+    _, _, size, A, B, C, D, n = st
+    app = (C[0] - B[0]) * n[0] + (C[1] - B[1]) * n[1]
+    sides = []
+    for corner, far in ((B, A), (C, D)):
+        dx, dy = far[0] - corner[0], far[1] - corner[1]
+        L = math.hypot(dx, dy)
+        got = [e_ for s_ in (1.5, 2.25, 3.0, 4.0) if s_ <= L - 0.5
+               for e_ in [_drawn_edge(gray, S, (corner[0] + dx / L * s_, corner[1] + dy / L * s_), n)] if e_ is not None]
+        sides.append(float(np.median(got)) if got else None)
+    if None in sides:
+        return False
+    drawn = app + sides[1] - sides[0]                        # (the drawing's own jog there, along n)
+    return abs(drawn - app) <= 0.35 and abs(drawn) > 0.35
+
+
+def _guard_before(E, P, gray, S):
+    """the steps round the line before its change: (region, steps the drawing does not have), or None (no guard here)"""
+    xs = [q[0] for p in P for q in p["e"]["sourcePx"][:2]]
+    ys = [q[1] for p in P for q in p["e"]["sourcePx"][:2]]
+    pad = 2.0 * max(p["t"] for p in P) + 4.0
+    region = (min(xs) - pad, min(ys) - pad, max(xs) + pad, max(ys) + pad)
+    view = _top_view(E, region)
+    if view is None:
+        return None
+    t = max(p["t"] for p in P)
+    return region, _view_steps(view), t, _view_gaps(view, t), _view_ink_left(view, gray, S)
+
+
+def _view_ink_left(view, gray, S):
+    """the drawing's ink in the top view's region that no wall covers (source px^2), at up to 4 per source px"""
+    mask, x0, y0, z = view
+    f = min(1.0, 4.0 / z)
+    small = cv2.resize(mask, None, fx=f, fy=f, interpolation=cv2.INTER_AREA) if f < 1.0 else mask
+    zz = z * f
+    H_, W_ = small.shape
+    X, Y = np.meshgrid(x0 + (np.arange(W_) + 0.5) / zz, y0 + (np.arange(H_) + 0.5) / zz)
+    x, y = X * S.pre, Y * S.pre
+    if S.Hi is not None:
+        Hm = np.linalg.inv(S.Hi)
+        w_ = Hm[2, 0] * x + Hm[2, 1] * y + Hm[2, 2]
+        x, y = (Hm[0, 0] * x + Hm[0, 1] * y + Hm[0, 2]) / w_, (Hm[1, 0] * x + Hm[1, 1] * y + Hm[1, 2]) / w_
+    else:
+        dx, dy = x - S.cx, y - S.cy
+        x, y = S.cx + S.a * dx + S.b * dy, S.cy - S.b * dx + S.a * dy
+    g = cv2.remap(gray, ((x - S.ox) * S.ws).astype(np.float32), ((y - S.oy) * S.ws).astype(np.float32), cv2.INTER_LINEAR,
+                  borderValue=255)
+    return float(((g < 160) & (small < 128)).sum()) / (zz * zz)
+
+
+def _view_gaps(view, t):
+    """the floor between walls a square of 1.5 wall thicknesses closes over, in the top view (source px^2): a slot or
+    a notch, as the app check counts them (room floors are wider and stay open)"""
+    mask, _, _, z = view
+    f = min(1.0, 2.0 / z)                                    # (at 2 per source px: a pixel square is 4 of them)
+    if f < 1.0:
+        mask = (cv2.resize(mask, None, fx=f, fy=f, interpolation=cv2.INTER_AREA) >= 128).astype(np.uint8) * 255
+        z *= f
+    k = max(3, int(round(1.5 * t * z)) | 1)
+    closed = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (k, k)))
+    return float(((closed > 0) & (mask == 0)).sum()) / (z * z)
+
+
+def _guard_after(guard, E, gray, S):
+    """Round 37: a line whose new faces add steps the drawing does not have - more than they take away - is put back
+    (round 35 fitted each piece to its own drawn band, and pieces a fraction of a pixel apart in one straight drawn face
+    came out as steps: half the steps the app check counted).  A step where one was before, no larger, is not added; a
+    new or larger one the drawing has (a thin window flush with one face of its columns, J's BEDROOM 3) is no reason,
+    and a line that closes a gap between walls (a pixel square or more), or covers more of the drawn wall (half a wall
+    thickness squared or more), keeps its faces whatever its steps."""
+    region, st0, t, gap0, ink0 = guard
+    view = _top_view(E, region)
+    if view is None:
+        return None
+    if _view_gaps(view, t) < gap0 - 1.0:
+        return None                                          # (it closes a slot or a notch: worth more than a step, c23)
+    if _view_ink_left(view, gray, S) < ink0 - 0.5 * t * t:
+        return None                                          # (it covers half a wall's square of ink more: the drawing's
+                                                             # wall, which round 35 is for)
+    st1 = _view_steps(view)
+    at = lambda s_, t_: abs(s_[0] - t_[0]) <= 0.5 and abs(s_[1] - t_[1]) <= 0.5
+    new = [s_ for s_ in st1 if not any(at(s_, t_) and s_[2] <= t_[2] + 0.12 for t_ in st0) and not _drawn_jog(gray, S, s_)]
+    gone = [t_ for t_ in st0 if not any(at(s_, t_) for s_ in st1)]
+    if len(new) > len(gone):
+        return "it would add %d step(s) the drawing does not have (at %s), taking away %d" % (
+            len(new), ", ".join("%.1f,%.1f" % s_[:2] for s_ in new[:3]), len(gone))
+    return None
 
 
 def _spikes(out):
@@ -5882,10 +6228,14 @@ def _apply_face_plan(out, pcs, plan, nb, key, next_id, line_ids):
             return "a jog under a pixel at %s" % (q,)
         jid = "e%d" % next_id[0]; next_id[0] += 1
         # the jog is as thick as it is long (at least a pixel), never thicker than either piece: a thicker jog would stand
-        # out past a short neighbour's end, across the wall it meets (BALCONY / BEDROOM 3 on J's plan)
-        tj = min(plan.get(pid, (p["c"], p["t"]))[1], plan.get(oid, (o["c"], o["t"]))[1], max(1.0, abs(dp - do)))
+        # out past a short neighbour's end, across the wall it meets (BALCONY / BEDROOM 3 on J's plan).  Round 37: a
+        # quarter thicker than long - the app squares the ends of a wall shorter than its thickness (a joint between two
+        # rooms' walls) and mitres one as long as it is thick, out past the walls it joins; exactly as thick as long, a
+        # millimetre of rounding chose which, and the mitre showed as a step (s016)
+        tj = min(plan.get(pid, (p["c"], p["t"]))[1], plan.get(oid, (o["c"], o["t"]))[1], max(1.0, JOG_T * abs(dp - do)))
         E.append({"id": jid, "kind": "wall_centerline", "sourcePx": [list(qp), list(qo)], "thicknessPx": round(tj, 2),
                   "thicknessMm": int(round(tj * mm_px)) if mm_px else None, "opening": None})
+        out.setdefault("_jogs", []).append((E[-1], pid, oid))  # (choose_jog_thickness; taken out before the evidence leaves)
         for e in (p["e"], o["e"]):
             for v in e["sourcePx"]:
                 if key(v) == k_:
@@ -6289,7 +6639,7 @@ def _app_face_ends(out, S, rect, pa, pb, mm, free, head_on=False, own=None, acro
                 continue                                     # (not next to the piece; head on: not across most of it)
             tm = max(40, min(600, rnd(t * mm / 5.0) * 5))
             for sign in ((-out_sign,) if head_on else (out_sign,)):
-                f = (rnd(c * mm) + sign * tm / 2.0) / mm
+                f = (rnd((c + sign * t / 2.0) * mm) if APP_FACES else rnd(c * mm) + sign * tm / 2.0) / mm
                 if abs(f - pt[k]) <= 0.75 and (best is None or abs(f - pt[k]) < abs(best - pt[k])):
                     best = f
         for e in out["wallEdges"] if head_on else ():         # (head on, a wall of the same line ending there: end on
