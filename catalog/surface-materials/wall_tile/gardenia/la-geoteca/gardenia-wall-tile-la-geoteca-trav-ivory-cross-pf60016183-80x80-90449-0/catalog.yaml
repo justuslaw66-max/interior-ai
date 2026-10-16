@@ -4,7 +4,7 @@ surface_material:
   brand: Gardenia & Ariana
   collection: La Geoteca
   material_id: gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016183-80x80-90449-0
-  product_name: Gardenia La Geoteca Trav Ivory Cross 80x80
+  product_name: Gardenia La Geoteca Trav Ivory Cross 80x80 R11
   slug: gardenia-wall-tile-la-geoteca-trav-ivory-cross-pf60016183-80x80-90449-0
   surface_category: wall_tile
   material_family: tile
@@ -26,6 +26,8 @@ source:
     - "Available configurator formats: PF60016136 120x120 Nat ENTRAMBE patterns pieno_01,pieno_05; PF60016138 60x120 Nat ENTRAMBE patterns pieno_01,pieno_05; PF60016135 120x280 Nat ENTRAMBE patterns pieno_01,pieno_05; PF60016144 80x80 Nat ENTRAMBE patterns pieno_01,pieno_05; PF60016183 80x80 ENTRAMBE patterns pieno_01,pieno_05; PF60016184 80x80 ENTRAMBE patterns pieno_01,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
     - "Equivalent Gardenia configurator item codes represented by this visible variant: GARDENIA/PF60016184/0/90450."
+    - "Outdoor size (J, 2026-10-13: follow what ABK says): ABK lists item 0016183 on its Plein Air pages, colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/dorica-travertino-ivory-cross/80x80/: DORICA TRAVERTINO IVORY CROSS 80X80, finish R11, thickness 20 mm, porcelain stoneware. The July configurator import had not named its finish; it is named and described as the outdoor sizes added on 13 Oct."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: stone
@@ -55,14 +57,14 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 800
   tile_length_mm: 800
-  total_thickness_mm: null
+  total_thickness_mm: 20
   wear_layer_mm: null
   installation_method:
     - direct_stick
   waterproof: null
-  slip_rating: null
+  slip_rating: R11
   suitable_for_wet_area: null
-  suitable_for_outdoor: null
+  suitable_for_outdoor: true
   commercial_grade: null
 texture_assets:
   swatch_url: /assets/catalog/surface-materials/gardenia/la-geoteca/0016183_swatch.webp
@@ -111,18 +113,16 @@ rendering:
     - straight
     - vertical_brick
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_physical_dimensions
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant

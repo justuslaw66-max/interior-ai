@@ -19,14 +19,45 @@ import {
   expandSurfaceTextureFaces,
 } from "../lib/surface-texture-face-run";
 import { PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES } from "../lib/generated/surface-material-render.generated";
+import { PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA } from "../lib/generated/surface-material-catalog.generated";
 import {
   buildSurfaceMaterialProductGroups,
   getSurfaceMaterialGroupSizeLabels,
   getSurfaceMaterialProductDisplayName,
+  getSurfaceMaterialSizeOptionLabel,
 } from "../components/editor/design-controls-plan/surfaceCatalog";
 import { getAllSurfaceMaterialYamlEntries } from "../lib/surface-material-yaml";
 import { collectNoOwnPictures } from "../lib/surface-material-picture-source";
-import type { SurfaceMaterial } from "../lib/surface-material-schema";
+import { SURFACE_MATERIAL_VOCABULARY, type SurfaceMaterial } from "../lib/surface-material-schema";
+import {
+  SURFACE_OUTDOOR_LAYING_LABELS,
+  SURFACE_OUTDOOR_USE_LABELS,
+  getSurfaceMaterialOutdoorFailures,
+} from "../lib/surface-material-outdoor";
+import {
+  ABK_ROOM_FILTER_TO_SURFACE_ROOM,
+  SURFACE_OUTDOOR_FACTS,
+  SURFACE_OUTDOOR_PAIRINGS,
+  SURFACE_OUTDOOR_SOURCES,
+} from "../lib/surface-material-outdoor-knowledge";
+import { ABK_DATASHEETS } from "../lib/surface-material-abk-datasheets";
+import { getSurfaceMaterialChevronFailures } from "../lib/surface-chevron-layout";
+import {
+  findAbkDatasheetMatch,
+  parseAbkDatasheetFormats,
+  splitCatalogueSize,
+} from "../lib/surface-material-abk-datasheet-lookup";
+import {
+  PLEIN_AIR_LAYING,
+  PLEIN_AIR_SPACES,
+  PLEIN_AIR_SPECIAL_PIECES,
+  PLEIN_AIR_SPECIAL_PIECE_CODES_PRINTED_TWICE,
+  PLEIN_AIR_SPECIAL_PIECE_KINDS,
+  PLEIN_AIR_WELLNESS,
+  getPleinAirPacking,
+  getPleinAirSpecialPieces,
+  type PleinAirSpecialPieceKind,
+} from "../lib/surface-material-plein-air-system";
 import type { SurfaceMaterialRenderTuple } from "../lib/surface-material-runtime-types";
 import { findGardeniaEntriesAWriteRunWouldLose } from "./gardenia-import-guard";
 
@@ -177,10 +208,20 @@ assert.equal(getSurfacePhysicalSourceKey(null), "");
 const physicalMaterials = SURFACE_MATERIAL_RENDER_REGISTRY.filter(
   (material) => getSurfacePhysicalImageSources(material.texture_assets).length > 0
 );
+// Plein Air's outdoor sizes of catalogued collections (13 Oct 2026) join their colours' cards as R11 sizes. The collection blocks
+// below check each collection as it was imported; the outdoor entries have a block of their own, after Eterea's.
+const pleinAirOutdoorIds = new Set(
+  getAllSurfaceMaterialYamlEntries()
+    .filter((entry) => entry.import_governance.qa_flags.includes("gardenia_plein_air_outdoor_size"))
+    .map((entry) => entry.surface_material.material_id)
+);
+const isPleinAirOutdoor = (material: { surface_material: { material_id: string } }) =>
+  pleinAirOutdoorIds.has(material.surface_material.material_id);
 const isAnima = (material: { surface_material: { material_id: string } }) =>
-  /^gardenia-(flooring|wall-tile)-anima-/.test(material.surface_material.material_id);
+  /^gardenia-(flooring|wall-tile)-anima-/.test(material.surface_material.material_id) && !isPleinAirOutdoor(material);
 const isGardeniaCollection = (collection: string) => (material: { surface_material: { material_id: string } }) =>
-  new RegExp(`^gardenia-(flooring|wall-tile)-${collection}-`).test(material.surface_material.material_id);
+  new RegExp(`^gardenia-(flooring|wall-tile)-${collection}-`).test(material.surface_material.material_id) &&
+  !isPleinAirOutdoor(material);
 const isDorica = isGardeniaCollection("dorica");
 const isOxide = isGardeniaCollection("oxide");
 const isFalaise = isGardeniaCollection("falaise");
@@ -201,17 +242,20 @@ const isStorm = isGardeniaCollection("storm");
 const isEpoque = isGardeniaCollection("epoque-20");
 const isCamouflage = isGardeniaCollection("camouflage");
 const isBlock = isGardeniaCollection("block");
+const isEterea = isGardeniaCollection("eterea");
+const isPleinAir = isGardeniaCollection("plein-air");
 const onAbkFaces = [
   isAnima, isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-  isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock,
+  isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock, isEterea,
+  isPleinAirOutdoor, isPleinAir,
 ];
 assert.ok(
   physicalMaterials.every(
     (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
   ),
   "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
-    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage and Block " +
-    "declare physical-scale data"
+    "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage, Block, Eterea " +
+    "(with Plein Air's outdoor sizes of them) and Plein Air declare physical-scale data"
 );
 assert.equal(
   physicalMaterials.filter(isAnima).length,
@@ -227,11 +271,12 @@ for (const material of physicalMaterials) {
   // ABK supplies three faces for some sizes (Oxide's 120x280 slabs, a few Make sizes once repeats
   // are dropped) and two for most Pietra Viva and La Geoteca 120x280 slabs and Concrea Plain's and Luce's; Bon Ton's decors (Network,
   // Octagon, Tricot), La Geoteca's Plissè decors, every Gioia colour, and I Pigmenti's 120x280 slabs and
-  // decors (Crocini, Pillole, Rattan), and Block's Righe decors have a single face; Camouflage's 120x280 slabs have two.
-  const singleFace = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-|-i-pigmenti-(crocini|pillole|rattan|.+-120x280)-|-block-righe-/;
+  // decors (Crocini, Pillole, Rattan), and Block's and Eterea's Righe decors have a single face; Camouflage's 120x280 slabs, and Plein
+  // Air's Raye planks and Warehouse Tan, have two.
+  const singleFace = /-bon-ton-(network|octagon|tricot)-|-la-geoteca-dec-|-gioia-|-i-pigmenti-(crocini|pillole|rattan|.+-120x280)-|-(block|eterea)-righe-/;
   const minimumFaces = singleFace.test(id)
     ? 1
-    : /-(pietra-viva|la-geoteca|concrea-plain|luce|camouflage)-.+-120x280-/.test(id)
+    : /-(pietra-viva|la-geoteca|concrea-plain|luce|camouflage)-.+-120x280-|-plein-air-(raye|warehouse-tan)-/.test(id)
       ? 2
       : 3;
   assert.ok(sources.length >= minimumFaces, `${id} has at least ${minimumFaces} faces`);
@@ -360,7 +405,8 @@ for (const material of animaById.values()) {
 // item's pictures, found by image matching (see the colour manifests):
 //  - Dorica 20x120 planks use the 120x120 faces turned a quarter (veins along the plank), stored as
 //    0010518_nn / 0010519_nn: ABK's plank pictures are that graphic at 0.75 scale;
-//  - Dorica 0010147 / 0010148 use 0010008's / 0010009's faces (the same visible variant as R11);
+//  - the entries with Dorica 0010147 / 0010148 in their ids use 0010008's / 0010009's faces: the 8.5 mm R11 items
+//    0010588 / 0010589 (whose pictures those are) and, since 13 Oct 2026, the Plein Air items themselves (below);
 //  - Oxide Iron 80x80 uses the 120x120 faces: its 80x80 pictures are the 120x120 pictures.
 // Oxide Aluminum's and Brass's 80x80 pictures are their 120x120 graphic squeezed to 800 mm and are
 // declared 1200x1200 mm (re-checked 8 Oct 2026; 6 Oct had found three of Aluminum's).
@@ -388,7 +434,7 @@ assert.deepEqual(collectionCards(isDorica, "wall_tile"), [
 const oxideSizes = ["120x280", "120x120", "60x120", "80x80"];
 for (const category of ["flooring", "wall_tile"]) {
   assert.deepEqual(collectionCards(isOxide, category), [
-    ["Oxide Alluminum", oxideSizes],
+    ["Oxide Aluminum", oxideSizes],
     ["Oxide Brass", oxideSizes],
     ["Oxide Green", oxideSizes],
     ["Oxide Iron", oxideSizes],
@@ -399,7 +445,7 @@ const collectionFaceRows = (filter: (material: { surface_material: { material_id
   physicalMaterials
     .filter((material) => filter(material) && material.surface_material.surface_category === "flooring")
     .map((material) => [
-      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce|storm|epoque-20|camouflage|block)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
+      /-(?:dorica|oxide|falaise|make|tabulae|bon-ton|pietra-viva|la-geoteca|orosei|gioia|i-pigmenti|la-marmoteca|hermione|concrea-plain|just-nature|luce|storm|epoque-20|camouflage|block|eterea|plein-air)-([a-z-]+?)-(?:g\d|pf|\d)/.exec(
         material.surface_material.material_id
       )?.[1],
       `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
@@ -423,6 +469,7 @@ assert.deepEqual(collectionFaceRows(isDorica), [
   ["greige", "1200x1200", 8, "1200x1200", "0010004_01.webp"],
   ["greige", "1200x600", 16, "600x1200", "0010007_01.webp"],
 ]);
+// Oxide Aluminum's ids keep the July import's "alluminum"; its names follow ABK (J, 13 Oct 2026).
 assert.deepEqual(collectionFaceRows(isOxide), [
   ["alluminum", "1200x1200", 7, "1200x1200", "g69310_01.webp"],
   ["alluminum", "1200x600", 14, "600x1200", "g69320_01.webp"],
@@ -459,10 +506,12 @@ assert.ok(
   ),
   "only Make's mosaics keep their previews"
 );
+// Beige's and Mint's 60x120 and 60x60 R11 (ABK's Plein Air items, named R11 on 13 Oct 2026) are floor-only.
+const falaiseOutdoor = ["120x120 Nat", "60x120 Nat", "60x120 R11", "80x80 Nat", "60x60 Nat", "60x60 R11"];
 assert.deepEqual(collectionCards(isFalaise, "flooring"), [
-  ["Falaise Beige", ["120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60", "60x60 Nat"]],
+  ["Falaise Beige", falaiseOutdoor],
   ["Falaise Grey", ["120x120 Nat", "60x120 Nat", "80x80 Nat", "60x60 Nat"]],
-  ["Falaise Mint", ["120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60", "60x60 Nat"]],
+  ["Falaise Mint", falaiseOutdoor],
   ["Falaise White", ["120x280 Nat", "120x120", "120x120 Nat", "60x120", "60x120 Nat", "80x80 Nat", "60x60 Nat"]],
 ]);
 const falaiseNat = ["120x120 Nat", "60x120 Nat", "80x80 Nat", "60x60 Nat"];
@@ -540,25 +589,71 @@ assert.equal(makeSqueezed.length, 24, "all 24 of Make's 80x80 pictures are decla
 
 // Gardenia Tabulae and Bon Ton (downloaded 9 Oct 2026). Every size is true to its label (image
 // matching between sizes); the single-size decors are taken as labelled, and Tabulae Sticks'
-// pictures, 4% narrower than 600x1200 mm, are drawn at the tile's width. Tabulae's chevrons are
-// single slanted pieces that need a chevron layout, so they keep their previews. Byte-identical
+// pictures, 4% narrower than 600x1200 mm, are drawn at the tile's width. Byte-identical
 // pictures: Tabulae 20x120 R11 = Natural, Bon Ton 120x280 Soft = Lux (all but Carrara), Carrara and
 // Perlino 120x120 Antique = Nat; those entries use the other item's faces.
-for (const [filter, label, faced, count] of [[isTabulae, "Tabulae", 46, 54], [isBonTon, "Bon Ton", 53, 53]] as const) {
+for (const [filter, label, faced, count] of [[isTabulae, "Tabulae", 54, 54], [isBonTon, "Bon Ton", 53, 53]] as const) {
   assert.equal(physicalMaterials.filter(filter).length, faced, `${label} entries on real faces`);
   assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
 }
-assert.ok(
-  SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => isTabulae(material) && !physicalMaterials.includes(material)).every(
-    (material) => material.surface_material.material_id.includes("-chevron-")
-  ),
-  "only Tabulae's chevrons keep their previews"
+// Tabulae's chevrons (16 Oct 2026): each ABK picture is one slanted piece, and ABK shows both hands. The faces are one hand
+// (the left-hand pictures mirrored), each covering the piece's 150x850 mm bounding box, and the entries are laid only as a
+// chevron, with each end cut 70.7 mm along the piece (317 of 3809 px in every picture).
+const tabulaeChevrons = SURFACE_MATERIAL_RENDER_REGISTRY.filter(
+  (material) => isTabulae(material) && material.surface_material.material_id.includes("-chevron-")
 );
+assert.deepEqual(
+  tabulaeChevrons.map((material) => [
+    material.surface_material.material_id.replace(/^gardenia-(flooring|wall-tile)-tabulae-chevron-(\w+)-pf6(\d+)-.*$/, "$1 $2 $3"),
+    material.texture_assets.faces?.length,
+    material.texture_assets.swatch_url?.split("/").pop(),
+  ]),
+  [
+    ["flooring fieno 0021112", 29, "0021112_swatch.webp"],
+    ["flooring havana 0021111", 30, "0021111_swatch.webp"],
+    ["flooring miele 0021113", 30, "0021113_swatch.webp"],
+    ["flooring sabbia 0021110", 29, "0021110_swatch.webp"],
+    ["wall-tile fieno 0021112", 29, "0021112_swatch.webp"],
+    ["wall-tile havana 0021111", 30, "0021111_swatch.webp"],
+    ["wall-tile miele 0021113", 30, "0021113_swatch.webp"],
+    ["wall-tile sabbia 0021110", 29, "0021110_swatch.webp"],
+  ],
+  "the 8 chevron entries on their colour's faces (Sabbia's page lists one picture twice)"
+);
+for (const material of tabulaeChevrons) {
+  const id = material.surface_material.material_id;
+  assert.deepEqual(material.rendering.available_pattern_layouts, ["chevron"], `${id}: laid only as a chevron`);
+  assert.equal(material.physical_specs.chevron_end_offset_mm, 70.7, `${id}: the end cuts`);
+  assert.deepEqual([material.physical_specs.tile_width_mm, material.physical_specs.tile_length_mm], [150, 850], `${id}: 15x85`);
+  assert.ok(material.texture_assets.faces?.every((face) => face.width_mm === 150 && face.height_mm === 850), `${id}: face size`);
+  assert.deepEqual(getSurfaceMaterialChevronFailures(material), [], `${id}: a valid chevron`);
+}
+for (const [colour, mirrored, dropped] of [
+  ["chevron-genuine-sabbia", 14, [15]],
+  ["chevron-genuine-havana", 15, undefined],
+  ["chevron-refined-fieno", 14, undefined],
+  ["chevron-refined-miele", 15, undefined],
+] as const) {
+  const manifest = JSON.parse(
+    readFileSync(path.join(process.cwd(), `catalog/surface-materials/flooring/gardenia/tabulae/gardenia-tabulae-${colour}-faces.manifest.json`), "utf8")
+  );
+  const [format] = manifest.formats;
+  assert.equal(manifest.chevron.end_offset_mm, 70.7, `${colour}: the manifest records the end cuts`);
+  assert.equal(format.mirrored_faces.length, mirrored, `${colour}: the left-hand pictures are mirrored`);
+  assert.deepEqual(format.duplicates_dropped_site_positions, dropped, `${colour}: repeats left out`);
+  const yamlFaces = tabulaeChevrons.find((material) => material.surface_material.material_id.includes(`pf6${format.item_code}`))
+    ?.texture_assets.faces?.map((face) => face.url.split("/").pop());
+  assert.deepEqual(format.faces.map((face: { file: string }) => face.file), yamlFaces, `${colour}: the manifest lists the faces`);
+}
 // The 30x120 R11 planks (on ABK's Plein Air pages) are floor-only.
 const tabulaeCards = (r11: string[]) => {
   const genuine = ["23,4x148 Nat", "20x120", "20x120 Nat", "10x60 Nat"];
   const refined = [...genuine, "5x120 Nat"];
   return [
+    ["Tabulae Chevron Fieno", ["15x85 Nat"]],
+    ["Tabulae Chevron Havana", ["15x85 Nat"]],
+    ["Tabulae Chevron Miele", ["15x85 Nat"]],
+    ["Tabulae Chevron Sabbia", ["15x85 Nat"]],
     ["Tabulae Genuine Combo 3D", ["60x60 Nat"]],
     ["Tabulae Genuine Hav", [...r11, ...genuine]],
     ["Tabulae Genuine Sab Nat", genuine],
@@ -569,7 +664,7 @@ const tabulaeCards = (r11: string[]) => {
     ["Tabulae Refined Miele Nat", [...r11, ...refined]],
   ];
 };
-assert.deepEqual(collectionCards(isTabulae, "flooring"), tabulaeCards(["30x120"]));
+assert.deepEqual(collectionCards(isTabulae, "flooring"), tabulaeCards(["30x120 R11"]));
 assert.deepEqual(collectionCards(isTabulae, "wall_tile"), tabulaeCards([]));
 const bonTonMarble = ["120x120", "120x120 Nat", "60x120", "60x120 Nat", "5x120"];
 const bonTonDecors = [["Bon Ton Network", ["60x120"]], ["Bon Ton Octagon", ["60x120"]]];
@@ -584,6 +679,10 @@ assert.deepEqual(collectionCards(isBonTon, "wall_tile"), [
   ["Bon Ton Perlino", [...bonTonSlabs, ...bonTonMarble]], ["Bon Ton Tricot", ["60x120"]],
 ]);
 assert.deepEqual(collectionFaceRows(isTabulae), [
+  ["chevron-fieno", "150x850", 29, "150x850", "0021112_01.webp"],
+  ["chevron-havana", "150x850", 30, "150x850", "0021111_01.webp"],
+  ["chevron-miele", "150x850", 30, "150x850", "0021113_01.webp"],
+  ["chevron-sabbia", "150x850", 29, "150x850", "0021110_01.webp"],
   ["genuine-combo", "600x600", 6, "600x600", "0021151_01.webp"],
   ["genuine-hav", "1200x200", 30, "200x1200", "0021141_01.webp"],
   ["genuine-hav", "1200x200", 30, "200x1200", "0021141_01.webp"],
@@ -659,13 +758,13 @@ for (const category of ["flooring", "wall_tile"]) {
     ["Pietra Viva Limoges White", camargueLimoges(["120x280 Nat"])],
   ]);
 }
-// The 80x80 R11 entries (no "Nat") are floor-only, as is Ceppo di Gre's 80x80.
+// The 80x80 R11 entries (named R11 on 13 Oct 2026) are floor-only, as is Ceppo di Gre's 80x80; Bourgogne's are on walls too.
 const geoteca = (floor: boolean, r11: boolean, nat80 = true) =>
-  ["120x280 Nat", "120x120 Nat", "60x120 Nat", ...(r11 && floor ? ["80x80"] : []), ...(nat80 ? ["80x80 Nat"] : [])];
+  ["120x280 Nat", "120x120 Nat", "60x120 Nat", ...(nat80 ? ["80x80 Nat"] : []), ...(r11 && floor ? ["80x80 R11"] : [])];
 for (const [category, floor] of [["flooring", true], ["wall_tile", false]] as const) {
   assert.deepEqual(collectionCards(isLaGeoteca, category), [
-    ["La Geoteca Bourgogne Beige", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80", "80x80 Nat"]],
-    ["La Geoteca Bourgogne Silver", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80", "80x80 Nat"]],
+    ["La Geoteca Bourgogne Beige", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80 Nat", "80x80 R11"]],
+    ["La Geoteca Bourgogne Silver", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80 Nat", "80x80 R11"]],
     ["La Geoteca Brennero", geoteca(floor, true)],
     ["La Geoteca Ceppo Di Gre'", geoteca(floor, true, false)],
     ["La Geoteca Dec Plis Bou Bei", ["60x120 Nat"]],
@@ -675,7 +774,7 @@ for (const [category, floor] of [["flooring", true], ["wall_tile", false]] as co
     ["La Geoteca Marfil", geoteca(floor, false)],
     ["La Geoteca Negresco", ["120x120 Nat", "60x120 Nat"]],
     ["La Geoteca Serena", geoteca(floor, true)],
-    ["La Geoteca Trav Ivory Cross", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80", "80x80 Nat"]],
+    ["La Geoteca Trav Ivory Cross", ["120x280 Nat", "120x120 Nat", "60x120 Nat", "80x80 Nat", "80x80 R11"]],
     ["La Geoteca Trav Ivory Vein", ["120x280 Nat", "120x120 Nat", "60x120 Nat"]],
   ]);
 }
@@ -795,8 +894,10 @@ assert.deepEqual(
 // Vanilla's picture 2 are true 600 mm pictures. Each Gioia colour is one picture of the whole 60x120
 // tile. Six of the seven decors stand upright with the long side horizontal, as Gioia is laid;
 // Primavera's picture stands upright with the long side vertical, so that entry lays the tile
-// 600 mm wide and 1200 mm tall (J, 9 Oct 2026).
-for (const [filter, label, count] of [[isOrosei, "Orosei", 78], [isGioia, "Gioia", 21]] as const) {
+// 600 mm wide and 1200 mm tall (J, 9 Oct 2026). ABK's Gioia page says the decors are porcelain stoneware and also suit
+// floors, so all seven have floor entries; Martinica's and Primavera's come from that page (J, 15 Oct 2026), not the
+// configurator, which lists them for walls only.
+for (const [filter, label, count] of [[isOrosei, "Orosei", 78], [isGioia, "Gioia", 23]] as const) {
   assert.equal(physicalMaterials.filter(filter).length, count, `every ${label} entry is on real faces`);
   assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(filter).length, count, `${label} entries in the catalogue`);
 }
@@ -812,7 +913,7 @@ for (const category of ["flooring", "wall_tile"]) {
     ["Orosei Vanilla Tessera", ["120x120", "60x120"]],
   ]);
 }
-const gioiaDecors = ["Majorelle", "Ombrelle", "Palma", "Papilio", "Rossignol"];
+const gioiaDecors = ["Majorelle", "Martinica", "Ombrelle", "Palma", "Papilio", "Primavera", "Rossignol"];
 assert.deepEqual(collectionCards(isGioia, "flooring"), gioiaDecors.map((name) => [`Gioia ${name}`, ["60x120"]]));
 assert.deepEqual(
   collectionCards(isGioia, "wall_tile"),
@@ -1036,13 +1137,13 @@ assert.deepEqual(collectionFaceRows(isConcreaPlain), [
 // What the entries take from ABK's pages: thickness per format (6 mm slabs, 8.5 mm otherwise), no configurator
 // pattern ids, the layouts J chose (planks for the wood collections), and no blocker but the price.
 const isFromAbkPages = (entry: { surface_material: { material_id: string } }) =>
-  [isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock].some((filter) => filter(entry));
+  [isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock, isEterea].some((filter) => filter(entry));
 const isWoodPlank = (entry: { surface_material: { material_id: string } }) => isHermione(entry) || isJustNature(entry);
 const abkSiteEntries = getAllSurfaceMaterialYamlEntries().filter(isFromAbkPages);
 assert.equal(
   abkSiteEntries.length,
-  252,
-  "Hermione 3, Concrea Plain 11, Just Nature 11, Luce 14, Storm 16, Epoque 2.0 21, Camouflage 23 and Block 27 items, each for floor and wall"
+  316,
+  "Hermione 3, Concrea Plain 11, Just Nature 11, Luce 14, Storm 16, Epoque 2.0 21, Camouflage 23, Block 27 and Eterea 32 items, each for floor and wall"
 );
 for (const entry of abkSiteEntries) {
   const id = entry.surface_material.material_id;
@@ -1058,7 +1159,7 @@ for (const entry of abkSiteEntries) {
     isWoodPlank(entry) ? ["random_stagger", "straight", "herringbone"] : ["straight", "brick", "vertical_brick"],
     `${id} layouts`
   );
-  assert.deepEqual(entry.import_governance.publish_blockers, ["confirm_price_per_sqm_or_quote_mode"], `${id} blockers`);
+  assert.deepEqual(entry.import_governance.publish_blockers, [], `${id} blockers (published, quote on request)`);
 }
 // The July importer would reset every entry on faces and delete the collections it never had: a write run refuses.
 const lostToImport = findGardeniaEntriesAWriteRunWouldLose(path.join(process.cwd(), "catalog"));
@@ -1068,10 +1169,11 @@ assert.equal(
   "the import guard finds every Gardenia entry on faces"
 );
 assert.deepEqual(
-  ["hermione", "concrea-plain", "just-nature", "luce", "storm", "epoque-20", "camouflage", "block"].map((collection) =>
-    lostToImport.get(collection)
+  ["hermione", "concrea-plain", "just-nature", "luce", "storm", "epoque-20", "camouflage", "block", "eterea", "plein-air"].map(
+    (collection) => lostToImport.get(collection)
   ),
-  [6, 22, 22, 28, 32, 42, 46, 54]
+  // Hermione, Storm and Camouflage with their outdoor sizes (3, 4 and 4 floor entries, 13 Oct 2026); Plein Air's own 50 floor entries.
+  [9, 22, 22, 28, 36, 42, 50, 54, 64, 50]
 );
 
 // Gardenia Just Nature and Luce (downloaded 10 Oct 2026), from ABK's pages like Hermione and Concrea Plain, with
@@ -1374,6 +1476,565 @@ assert.deepEqual(
   ]
 );
 
+// Gardenia Eterea (downloaded 12 Oct 2026), from ABK's pages like the eight above. Ice, Jade, Powder and Sand come in Lux at
+// 120x120 and in Lux and Soft at 120x280 and 60x120; ABK's Soft pages list the Lux pictures, so both finishes draw the Lux faces
+// (J, 12 Oct 2026: both, sharing faces). Ice Raw, Jade Raw, Powder Raw and Sand Raw (Natural, 120x120 and 60x120) are colours of
+// their own with pictures of their own (J, 12 Oct 2026: as ABK), and the four Righe are a fluted 60x120 decor with one picture
+// each (J, 12 Oct 2026: include them). Every size is true to its label. Ice's 60x120 page lists each picture twice and Jade's one
+// picture twice, byte for byte; each face is used once.
+assert.equal(physicalMaterials.filter(isEterea).length, 64, "every Eterea entry is on real faces");
+assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(isEterea).length, 64, "Eterea entries in the catalogue");
+const etereaLux = ["120x280 Lux", "120x280 Soft", "120x120 Lux", "60x120 Lux", "60x120 Soft"];
+const etereaRaw = ["120x120 Nat", "60x120 Nat"];
+for (const category of ["flooring", "wall_tile"]) {
+  assert.deepEqual(
+    collectionCards(isEterea, category),
+    ["Ice", "Jade", "Powder", "Righe", "Sand"].flatMap((name) =>
+      name === "Righe"
+        ? ["Ambra", "Blu Pavone", "Borgogna", "Gesso"].map((colour) => [`Eterea Righe ${colour}`, ["60x120 Nat"]])
+        : [[`Eterea ${name}`, etereaLux], [`Eterea ${name} Raw`, etereaRaw]]
+    )
+  );
+}
+// Each Lux colour: 120x120 on its own faces; 120x280 and 60x120 Lux and Soft on the Lux item's faces. Each Raw colour: 120x120
+// and 60x120 on their own faces.
+const etereaRows = (colour: string, [big, slab, long]: readonly string[], [bigN, longN]: readonly number[]) => [
+  [colour, "1200x1200", bigN, "1200x1200", `${big}_01.webp`],
+  [colour, "1200x600", longN, "600x1200", `${long}_01.webp`],
+  [colour, "1200x600", longN, "600x1200", `${long}_01.webp`],
+  [colour, "2800x1200", 3, "1200x2800", `${slab}_01.webp`],
+  [colour, "2800x1200", 3, "1200x2800", `${slab}_01.webp`],
+];
+const etereaRawRows = (colour: string, big: string, long: string) => [
+  [colour, "1200x1200", 9, "1200x1200", `${big}_01.webp`],
+  [colour, "1200x600", 18, "600x1200", `${long}_01.webp`],
+];
+assert.deepEqual(collectionFaceRows(isEterea), [
+  ...etereaRows("ice", ["0030732", "0030726", "0030738"], [8, 18]),
+  ...etereaRawRows("ice-raw", "0030751", "0030757"),
+  ...etereaRows("jade", ["0030737", "0030731", "0030743"], [9, 17]),
+  ...etereaRawRows("jade-raw", "0030756", "0030762"),
+  ...etereaRows("powder", ["0030735", "0030729", "0030741"], [9, 18]),
+  ...etereaRawRows("powder-raw", "0030754", "0030760"),
+  ["righe-ambra", "1200x600", 1, "600x1200", "0030967_01.webp"],
+  ["righe-blu-pavone", "1200x600", 1, "600x1200", "0030969_01.webp"],
+  ["righe-borgogna", "1200x600", 1, "600x1200", "0030968_01.webp"],
+  ["righe-gesso", "1200x600", 1, "600x1200", "0030966_01.webp"],
+  ...etereaRows("sand", ["0030733", "0030727", "0030739"], [9, 18]),
+  ...etereaRawRows("sand-raw", "0030752", "0030758"),
+]);
+// Ice's 60x120 page lists its 18 pictures twice, byte for byte, and Jade's lists one picture twice: the manifests name the
+// repeats left out.
+for (const [colour, dropped] of [["ice", [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36]], ["jade", [17]]] as const) {
+  const manifest = JSON.parse(
+    readFileSync(
+      path.join(process.cwd(), `catalog/surface-materials/flooring/gardenia/eterea/gardenia-eterea-${colour}-faces.manifest.json`),
+      "utf8"
+    )
+  ) as { formats: { format: string; duplicates_dropped_site_positions?: number[] }[] };
+  assert.deepEqual(
+    manifest.formats.find((format) => format.format === "60x120")?.duplicates_dropped_site_positions,
+    [...dropped],
+    `Eterea ${colour} 60x120 repeats`
+  );
+}
+// Colour and look as ABK describes them: every colour marble-effect, the Righe decors too; Jade green, Powder pink, Righe
+// Borgogna red and Blu Pavone blue are "mixed", as the July importer files green, red and blue.
+assert.deepEqual(
+  [...new Set(physicalMaterials.filter(isEterea).map((material) =>
+    `${/-eterea-([a-z-]+?)-\d/.exec(material.surface_material.material_id)?.[1]}: ` +
+    `${material.classification?.design_effect} ${material.classification?.color_family}`
+  ))].sort(),
+  [
+    "ice-raw: marble white", "ice: marble white", "jade-raw: marble mixed", "jade: marble mixed", "powder-raw: marble mixed",
+    "powder: marble mixed", "righe-ambra: marble beige", "righe-blu-pavone: marble mixed", "righe-borgogna: marble mixed",
+    "righe-gesso: marble white", "sand-raw: marble beige", "sand: marble beige",
+  ]
+);
+
+// Gardenia Plein Air's outdoor sizes (downloaded 13 Oct 2026). Plein Air is ABK's outdoor range, the 20 mm R11 versions of its
+// collections; its sizes of collections the catalogue has join their colour's card as R11 sizes, for floors only (J, 13 Oct 2026:
+// split, floor only). Most of these R11 pages show pictures the colour's other items already have, byte for byte, so those entries
+// draw that item's faces. Anima Fango 80x80, Hermione 30x120, La Geoteca Antracite (a colour La Geoteca doesn't otherwise have),
+// Travertino Ivory Vein 80x80, Make 80x80 and Storm have pictures of their own; Make's are its Natural 80x80 faces exported again,
+// the same 1000 mm graphic. Pietra Viva Aude Beige and Grey 60x60 have no pictures and draw the colour's 120x120 Nat P.tech faces
+// (J, 13 Oct 2026: cut from 120x120). Left out: Ceppo di Gre's second 60x120 R11 item (0002933, the CENERE export) and
+// Hermione Beige and Miel 60x60 (pictures far lighter and pinker than the colour's planks; J, 13 Oct 2026: both left out).
+// Nine more were split on 13 Oct 2026 from July entries that had folded them together with an indoor item (below).
+const outdoor = physicalMaterials.filter(isPleinAirOutdoor);
+assert.equal(pleinAirOutdoorIds.size, 43, "43 outdoor sizes of catalogued collections");
+assert.equal(outdoor.length, 43, "every outdoor entry is on real faces");
+const outdoorRow = (material: (typeof outdoor)[number]) => {
+  const [, collection, colour] =
+    /^gardenia-flooring-(anima|camouflage|dorica|hermione|la-geoteca|make|orosei|pietra-viva|storm)-([a-z-]+?)-g?\d/.exec(
+      material.surface_material.material_id
+    ) ?? [];
+  return [
+    collection,
+    colour,
+    itemCode(material.surface_material.material_id),
+    `${material.physical_specs.tile_width_mm}x${material.physical_specs.tile_length_mm}`,
+    material.texture_assets.faces?.length,
+    [...new Set(material.texture_assets.faces?.map((face) => `${face.width_mm}x${face.height_mm}`))].join("+"),
+    material.texture_assets.faces?.[0]?.url.split("/").pop(),
+  ];
+};
+assert.deepEqual(outdoor.map(outdoorRow).sort(), [
+  ["anima", "beige", "0006354", "1200x600", 14, "600x1200", "0006048_01.webp"],
+  ["anima", "beige", "0012159", "800x800", 7, "800x800", "0007809_01.webp"],
+  ["anima", "fango", "0006355", "1200x600", 14, "600x1200", "0006049_01.webp"],
+  ["anima", "fango", "0012097", "800x800", 7, "800x800", "0012097_01.webp"],
+  ["anima", "grigio", "0006356", "1200x600", 14, "600x1200", "0006050_01.webp"],
+  ["anima", "grigio", "0012098", "800x800", 7, "800x800", "0007811_01.webp"],
+  ["camouflage", "ecru-beton", "0016317", "1200x600", 12, "600x1200", "0016237_01.webp"],
+  ["camouflage", "ecru-beton", "0016318", "600x600", 24, "600x600", "0018160_01.webp"],
+  ["camouflage", "taupe-beton", "0014333", "1200x600", 12, "600x1200", "0014255_01.webp"],
+  ["camouflage", "taupe-beton", "0014883", "600x600", 24, "600x600", "0018158_01.webp"],
+  ["dorica", "avorio", "0010147", "1200x600", 16, "600x1200", "0010008_01.webp"],
+  ["dorica", "crema", "0010148", "1200x600", 16, "600x1200", "0010009_01.webp"],
+  ["hermione", "beige", "0202268", "1200x300", 22, "300x1200", "0202268_01.webp"],
+  ["hermione", "miel", "0202269", "1200x300", 22, "300x1200", "0202269_01.webp"],
+  ["hermione", "noisette", "0202270", "1200x300", 22, "300x1200", "0202270_01.webp"],
+  ["la-geoteca", "antracite", "0002934", "1200x600", 8, "600x1200", "0002934_01.webp"],
+  ["la-geoteca", "brennero", "0014522", "1200x600", 12, "600x1200", "0014522_01.webp"],
+  ["la-geoteca", "ceppo-di-gre", "0014525", "1200x600", 10, "600x1200", "0013117_01.webp"],
+  ["la-geoteca", "limestone", "0014523", "1200x600", 7, "600x1200", "0010539_01.webp"],
+  ["la-geoteca", "serena", "0014520", "1200x600", 12, "600x1200", "0014520_01.webp"],
+  ["la-geoteca", "trav-ivory-vein", "0016184", "800x800", 6, "800x800", "0016184_01.webp"],
+  ["make", "antr-corten", "g73054", "800x800", 4, "1000x1000", "g73054_01.webp"],
+  ["make", "ash", "g73052", "800x800", 4, "1000x1000", "g73052_01.webp"],
+  ["make", "grigio-corten", "g73055", "800x800", 4, "1000x1000", "g73055_01.webp"],
+  ["orosei", "cream", "0030260", "600x600", 9, "1200x1200", "0030225_01.webp"],
+  ["orosei", "cream", "0030271", "800x800", 9, "800x800", "0030231_01.webp"],
+  ["orosei", "rope", "0030261", "600x600", 9, "1200x1200", "0030226_01.webp"],
+  ["orosei", "rope", "0030272", "800x800", 9, "800x800", "0030232_01.webp"],
+  ["orosei", "vanilla", "0030259", "600x600", 9, "1200x1200+600x600", "0030224_01.webp"],
+  ["orosei", "vanilla", "0030270", "800x800", 9, "800x800", "0030230_01.webp"],
+  ["pietra-viva", "aude-beige", "0012267", "800x800", 8, "1200x1200", "0012265_01.webp"],
+  ["pietra-viva", "aude-beige", "0014519", "600x600", 4, "1200x1200", "0012911_01.webp"],
+  ["pietra-viva", "aude-grey", "0012266", "800x800", 8, "1200x1200", "0012262_01.webp"],
+  ["pietra-viva", "aude-grey", "0014518", "600x600", 4, "1200x1200", "0012908_01.webp"],
+  ["pietra-viva", "camargue-beige", "0014325", "1200x600", 18, "600x1200", "0014186_01.webp"],
+  ["pietra-viva", "camargue-beige", "0016100", "800x800", 16, "800x800", "0014669_01.webp"],
+  ["pietra-viva", "camargue-ivory", "0016099", "1200x600", 18, "600x1200", "0014185_01.webp"],
+  ["pietra-viva", "camargue-ivory", "0016102", "800x800", 16, "800x800", "0014668_01.webp"],
+  ["pietra-viva", "limoges-sand", "0012293", "800x800", 12, "800x800", "0012331_01.webp"],
+  ["storm", "grey", "0004280", "1200x600", 6, "600x1200", "0004280_01.webp"],
+  ["storm", "grey", "0012102", "600x600", 12, "600x600", "0012102_01.webp"],
+  ["storm", "sand", "0004281", "1200x600", 6, "600x1200", "0004281_01.webp"],
+  ["storm", "sand", "0012101", "600x600", 12, "600x600", "0012101_01.webp"],
+]);
+// Each joins its colour's floor card as an R11 size (the card groups by name, look and colour family), but La Geoteca Antracite,
+// a card of its own.
+const outdoorCards = buildSurfaceMaterialProductGroups(
+  physicalMaterials.filter(
+    (material) =>
+      material.surface_material.supplier === "gardenia_orchidea" && material.surface_material.surface_category === "flooring"
+  ) as never
+)
+  .filter((group) => group.variants.some(isPleinAirOutdoor))
+  .map((group) => [
+    getSurfaceMaterialProductDisplayName(group.primary),
+    group.variants.filter(isPleinAirOutdoor).map(getSurfaceMaterialSizeOptionLabel),
+    group.variants.filter((variant) => !isPleinAirOutdoor(variant)).length,
+  ]);
+assert.deepEqual(outdoorCards, [
+  ["Anima Beige", ["60x120 R11", "80x80 R11"], 4],
+  ["Anima Fango", ["60x120 R11", "80x80 R11"], 2],
+  ["Anima Grigio", ["60x120 R11", "80x80 R11"], 5],
+  ["Camouflage Ecru Beton", ["60x120 R11", "60x60 R11"], 5],
+  ["Camouflage Taupe Beton", ["60x120 R11", "60x60 R11"], 4],
+  ["Dorica Avorio", ["60x120 R11"], 5],
+  ["Dorica Crema", ["60x120 R11"], 5],
+  ["Hermione Beige", ["30x120 R11"], 1],
+  ["Hermione Miel", ["30x120 R11"], 1],
+  ["Hermione Noisette", ["30x120 R11"], 1],
+  ["La Geoteca Antracite", ["60x120 R11"], 0],
+  ["La Geoteca Brennero", ["60x120 R11"], 5],
+  ["La Geoteca Ceppo Di Gre'", ["60x120 R11"], 4],
+  ["La Geoteca Limestone", ["60x120 R11"], 5],
+  ["La Geoteca Serena", ["60x120 R11"], 5],
+  ["La Geoteca Trav Ivory Vein", ["80x80 R11"], 3],
+  ["Make Antr Corten", ["80x80 R11"], 4],
+  ["Make Ash", ["80x80 R11"], 4],
+  ["Make Grigio Corten", ["80x80 R11"], 4],
+  ["Orosei Cream", ["80x80 R11", "60x60 R11"], 7],
+  ["Orosei Rope", ["80x80 R11", "60x60 R11"], 7],
+  ["Orosei Vanilla", ["80x80 R11", "60x60 R11"], 7],
+  ["Pietra Viva Aude Beige", ["80x80 R11", "60x60 R11"], 6],
+  ["Pietra Viva Aude Grey", ["80x80 R11", "60x60 R11"], 5],
+  ["Pietra Viva Camargue Beige", ["60x120 R11", "80x80 R11"], 6],
+  ["Pietra Viva Camargue Ivory", ["60x120 R11", "80x80 R11"], 7],
+  ["Pietra Viva Limoges Sand", ["80x80 R11"], 6],
+  ["Storm Grey", ["60x120 R11", "60x60 R11"], 4],
+  ["Storm Sand", ["60x120 R11", "60x60 R11"], 4],
+]);
+// What the outdoor entries take from ABK's Plein Air pages: floor only, 20 mm, R11, outdoor; no configurator pattern ids; the layouts
+// of the colour's (for Antracite, the collection's) other tiles or planks, or of the July entry an item was split from; no blocker
+// but the price.
+const configuratorLayouts = new Set(["la-geoteca", "make", "pietra-viva"]);
+// The nine split on 13 Oct 2026 (J: split them; Dorica "60x120 and 60x120 R11"), by the July entry each was folded into.
+const splitFrom = new Map(
+  [
+    ["dorica-avorio-0010147-60x120", "196275-0", "0010588", "Gardenia Dorica Avorio 60x120"],
+    ["dorica-crema-0010148-60x120", "196276-0", "0010589", "Gardenia Dorica Crema 60x120"],
+    ["pietra-viva-aude-beige-0012267-80x80", "nat-90916-0", "0012265", "Gardenia Pietra Viva Aude Beige 80x80 Nat"],
+    ["pietra-viva-aude-grey-0012266-80x80", "nat-90915-0", "0012262", "Gardenia Pietra Viva Aude Grey 80x80 Nat"],
+    ["pietra-viva-camargue-beige-0014325-60x120", "nat-139972-0", "0014186", "Gardenia Pietra Viva Camargue Beige 60x120 Nat"],
+    ["pietra-viva-camargue-beige-0016100-80x80", "nat-139986-0", "0014669", "Gardenia Pietra Viva Camargue Beige 80x80 Nat"],
+    ["pietra-viva-camargue-ivory-0016099-60x120", "nat-139985-0", "0014185", "Gardenia Pietra Viva Camargue Ivory 60x120 Nat"],
+    ["pietra-viva-camargue-ivory-0016102-80x80", "nat-139987-0", "0014668", "Gardenia Pietra Viva Camargue Ivory 80x80 Nat"],
+    ["pietra-viva-limoges-sand-0012293-80x80", "nat-140000-0", "0012331", "Gardenia Pietra Viva Limoges Sand 80x80 Nat"],
+  ].map(([stem, julyTail, indoorItem, julyName]) => [
+    `gardenia-flooring-${stem}-r11`,
+    { julyId: `gardenia-flooring-${stem}-${julyTail}`, indoorItem, julyName },
+  ])
+);
+const yamlById = new Map(getAllSurfaceMaterialYamlEntries().map((entry) => [entry.surface_material.material_id, entry]));
+for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAirOutdoor)) {
+  const id = entry.surface_material.material_id;
+  const collection = outdoorRow(entry as never)[0] as string;
+  assert.equal(entry.surface_material.surface_category, "flooring", `${id} is for floors`);
+  assert.deepEqual(
+    [entry.physical_specs.total_thickness_mm, entry.physical_specs.slip_rating, entry.physical_specs.suitable_for_outdoor],
+    [20, "R11", true],
+    `${id}: 20 mm, R11, outdoor`
+  );
+  assert.ok(entry.classification.room_suitability.includes("balcony"), `${id} suits a balcony`);
+  assert.ok(entry.import_governance.qa_flags.includes("gardenia_abk_site_import"), `${id} is imported from ABK's pages`);
+  assert.equal(entry.rendering.source_pattern_ids, undefined, `${id} has no configurator pattern ids`);
+  const julyEntry = yamlById.get(splitFrom.get(id)?.julyId ?? "");
+  assert.deepEqual(
+    entry.rendering.available_pattern_layouts,
+    julyEntry
+      ? julyEntry.rendering.available_pattern_layouts
+      : collection === "hermione"
+        ? ["random_stagger", "straight", "herringbone"]
+        : configuratorLayouts.has(collection)
+          ? ["straight", "vertical_brick"]
+          : ["straight", "brick", "vertical_brick"],
+    `${id} layouts`
+  );
+  assert.deepEqual(entry.import_governance.publish_blockers, [], `${id} blockers (published, quote on request)`);
+}
+// The July import's entries that are only ABK's Plein Air R11 items (J, 13 Oct 2026: follow what ABK says) are named and described
+// as the outdoor sizes above: R11 in the name, 20 mm, R11, outdoor, and on floors a balcony. Entries the July import folded an indoor
+// item into (Dorica Avorio and Crema 60x120, Pietra Viva's seven) were split instead (below). Trav Ivory Cross 80x80 is folded together
+// with Vein's 80x80 R11, also an outdoor item (an entry of its own since 13 Oct).
+const julyOutdoorCodes = ["0017583", "0017586", "0017767", "0017768", "pf60012083", "pf60012085", "pf60012086", "pf60013072",
+  "pf60016026", "pf60016027", "pf60016183", "pf60021253", "pf60021254"];
+const julyOutdoor = getAllSurfaceMaterialYamlEntries().filter((entry) =>
+  julyOutdoorCodes.some((code) => entry.surface_material.material_id.includes(`-${code}-`))
+);
+assert.deepEqual(
+  julyOutdoor.map((entry) => entry.surface_material.surface_category).sort().join(),
+  [...Array(13).fill("flooring"), "wall_tile", "wall_tile", "wall_tile"].join(),
+  "13 floor entries and the wall entries of Bourgogne Beige, Bourgogne Silver and Trav Ivory Cross"
+);
+for (const entry of julyOutdoor) {
+  const id = entry.surface_material.material_id;
+  assert.match(entry.surface_material.product_name, / R11$/, `${id} is named R11`);
+  assert.deepEqual(
+    [entry.physical_specs.total_thickness_mm, entry.physical_specs.slip_rating, entry.physical_specs.suitable_for_outdoor],
+    [20, "R11", true],
+    `${id}: 20 mm, R11, outdoor`
+  );
+  assert.equal(
+    entry.classification.room_suitability.includes("balcony"),
+    entry.surface_material.surface_category === "flooring",
+    `${id}: a balcony on floors`
+  );
+  assert.equal(
+    entry.import_governance.qa_flags.includes("gardenia_equivalent_variant_collapsed"),
+    id.includes("-pf60016183-"),
+    `${id}: no indoor item folded in`
+  );
+}
+// The split (J, 13 Oct 2026): the July entry keeps its id, so saved designs keep their floor, and its name, and is now the indoor
+// item: 8.5 mm (Dorica's also R11, as the collection page lists its 60x120), not outdoor, no balcony, nothing folded in, no stand-in.
+// The outdoor item has an entry of its own on the same faces, named R11: Pietra Viva Aude's are stand-ins (ABK shows no picture of
+// them); Plein Air Dorica's pictures are Dorica's own 60x120 faces exported again (the masters' plein-air README, 13 Oct 2026).
+for (const [id, { julyId, indoorItem, julyName }] of splitFrom) {
+  const outdoorEntry = yamlById.get(id);
+  const julyEntry = yamlById.get(julyId);
+  assert.ok(outdoorEntry && julyEntry, `${id} and ${julyId} exist`);
+  assert.equal(julyEntry.surface_material.product_name, julyName, `${julyId} keeps its name`);
+  assert.equal(outdoorEntry.surface_material.product_name, `${julyName.replace(/ Nat$/, "")} R11`, `${id} is named R11`);
+  assert.deepEqual(
+    [julyEntry.physical_specs.total_thickness_mm, julyEntry.physical_specs.slip_rating, julyEntry.physical_specs.suitable_for_outdoor],
+    // Pietra Viva's 8.5 mm 80x80 Nat. P.Tech is R10 on ABK's technical sheet (read 14 Oct 2026); its 60x120 Nat isn't on it.
+    [8.5, id.includes("-dorica-") ? "R11" : / 80x80 /.test(julyName) ? "R10" : null, null],
+    `${julyId} is the 8.5 mm indoor item`
+  );
+  assert.ok(!julyEntry.classification.room_suitability.includes("balcony"), `${julyId} lists no balcony`);
+  assert.ok(
+    julyEntry.source.notes?.some((note) => note.startsWith(`Gardenia tile item GARDENIA/${indoorItem}/`)),
+    `${julyId} stands for ${indoorItem}`
+  );
+  assert.deepEqual(
+    julyEntry.import_governance.qa_flags.filter((flag) =>
+      ["gardenia_equivalent_variant_collapsed", "stand_in_faces"].includes(flag)
+    ),
+    [],
+    `${julyId}: nothing folded in, its item's own faces`
+  );
+  assert.deepEqual(outdoorEntry.texture_assets.faces, julyEntry.texture_assets.faces, `${id} draws the July entry's faces`);
+  assert.equal(outdoorEntry.import_governance.qa_flags.includes("stand_in_faces"), /-aude-/.test(id), `${id}: stand-in only for Aude`);
+}
+
+// Outdoor knowledge (J, 13 Oct 2026: "Knowledge in the catalogue"; the manufacturer's words are in
+// lib/surface-material-outdoor-knowledge.ts and lib/surface-material-plein-air-system.ts). Every outdoor floor says where it goes
+// (the places Gardenia's blog names, and ABK's Plein Air catalogue's driveways, steps and outdoor showers) and how it can be laid
+// (the catalogue's ways for every Plein Air tile, 14 Oct 2026). The browser data carries both, with the same colour's indoor floor
+// entries: the card's other sizes. The Plein Air collection's ranges and La Geoteca Antracite have none in the catalogue.
+const outdoorFloors = new Set(
+  getAllSurfaceMaterialYamlEntries()
+    .filter((entry) => entry.physical_specs.suitable_for_outdoor === true && entry.surface_material.surface_category === "flooring")
+    .map((entry) => entry.surface_material.material_id)
+);
+assert.equal(outdoorFloors.size, 43 + 13 + 50, "outdoor sizes of catalogued collections, the July import's, Plein Air's own");
+const outdoorOnlyLaying = ["dry_lay_on_grass", "dry_lay_on_gravel_or_sand", "raised_installation"];
+for (const entry of getAllSurfaceMaterialYamlEntries()) {
+  const id = entry.surface_material.material_id;
+  assert.deepEqual(getSurfaceMaterialOutdoorFailures(entry), [], `${id}: outdoor fields`);
+  assert.deepEqual(
+    entry.classification.outdoor_uses,
+    outdoorFloors.has(id) ? [...SURFACE_MATERIAL_VOCABULARY.outdoor_use] : undefined,
+    `${id}: outdoor uses`
+  );
+  assert.deepEqual(
+    entry.physical_specs.installation_method?.filter((method) => outdoorOnlyLaying.includes(method)) ?? [],
+    outdoorFloors.has(id) ? outdoorOnlyLaying : [],
+    `${id}: outdoor laying`
+  );
+}
+const outdoorFixture = JSON.parse(JSON.stringify(yamlById.get("gardenia-flooring-dorica-avorio-0010147-60x120-r11"))) as SurfaceMaterial;
+assert.deepEqual(getSurfaceMaterialOutdoorFailures(outdoorFixture), []);
+outdoorFixture.classification.outdoor_uses = ["terrace", "roof"];
+assert.match(getSurfaceMaterialOutdoorFailures(outdoorFixture).join(), /invalid value "roof"/);
+delete outdoorFixture.classification.outdoor_uses;
+assert.match(getSurfaceMaterialOutdoorFailures(outdoorFixture).join(), /an outdoor floor needs/);
+outdoorFixture.classification.outdoor_uses = ["terrace"];
+outdoorFixture.physical_specs.suitable_for_outdoor = null;
+outdoorFixture.physical_specs.installation_method = ["direct_stick", "raised_installation"];
+assert.equal(getSurfaceMaterialOutdoorFailures(outdoorFixture).length, 2, "uses and outdoor laying only on outdoor tiles");
+outdoorFixture.physical_specs.suitable_for_outdoor = true;
+outdoorFixture.classification.outdoor_uses = ["driveway"];
+outdoorFixture.physical_specs.installation_method = ["raised_installation"];
+assert.match(getSurfaceMaterialOutdoorFailures(outdoorFixture).join(), /driveway needs .* direct_stick/, "a driveway is glued");
+
+const metadataById = new Map(PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.map((metadata) => [metadata.material_id, metadata]));
+const joinedFloors = SURFACE_MATERIAL_RENDER_REGISTRY.filter((material) => material.surface_material.surface_category === "flooring").map(
+  (material) => {
+    const metadata = metadataById.get(material.surface_material.material_id);
+    assert.ok(metadata, `${material.surface_material.material_id} has browser data`);
+    return {
+      ...material,
+      surface_material: { ...material.surface_material, ...metadata.surface_material },
+      classification: { ...material.classification, ...metadata.classification },
+      physical_specs: { ...material.physical_specs, ...metadata.physical_specs },
+    };
+  }
+);
+assert.deepEqual(
+  PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.filter((metadata) => metadata.classification.outdoor).map((m) => m.material_id),
+  [...outdoorFloors].sort(),
+  "the browser data has an outdoor profile for each outdoor floor"
+);
+let outdoorWithTwins = 0;
+for (const group of buildSurfaceMaterialProductGroups(joinedFloors as never)) {
+  const indoorIds = group.variants
+    .filter((variant) => variant.physical_specs.suitable_for_outdoor !== true)
+    .map((variant) => variant.surface_material.material_id)
+    .sort();
+  for (const variant of group.variants.filter((v) => v.physical_specs.suitable_for_outdoor === true)) {
+    const id = variant.surface_material.material_id;
+    const profile = variant.classification.outdoor;
+    assert.ok(profile, `${id} has an outdoor profile`);
+    assert.deepEqual(profile.uses, yamlById.get(id)?.classification.outdoor_uses, `${id}: uses`);
+    assert.deepEqual(profile.laying, yamlById.get(id)?.physical_specs.installation_method, `${id}: laying`);
+    assert.deepEqual(profile.indoor_twin_ids, indoorIds, `${id}: its indoor twins are the card's other sizes`);
+    if (indoorIds.length > 0) outdoorWithTwins += 1;
+  }
+}
+assert.equal(outdoorWithTwins, 43 + 13 - 1, "every outdoor size of a catalogued colour has indoor twins (not La Geoteca Antracite)");
+
+// The knowledge module: every fact cites a source, every word maps to the vocabulary, and the pairings name catalogue cards.
+for (const source of Object.values(SURFACE_OUTDOOR_SOURCES)) {
+  assert.match(source.url, /^https:\/\/(www\.abkgroup\.it|blog\.gardenia\.it)\//, `${source.title}: the maker's own site`);
+}
+for (const fact of SURFACE_OUTDOOR_FACTS) {
+  assert.ok(fact.sources.length > 0 && fact.sources.every((source) => source in SURFACE_OUTDOOR_SOURCES), `${fact.topic}: sources`);
+}
+assert.deepEqual(Object.keys(SURFACE_OUTDOOR_USE_LABELS), [...SURFACE_MATERIAL_VOCABULARY.outdoor_use]);
+const installationVocabulary: readonly string[] = SURFACE_MATERIAL_VOCABULARY.installation_method;
+const roomVocabulary: readonly string[] = SURFACE_MATERIAL_VOCABULARY.room_suitability;
+assert.ok(Object.keys(SURFACE_OUTDOOR_LAYING_LABELS).every((method) => installationVocabulary.includes(method)));
+assert.ok(Object.values(ABK_ROOM_FILTER_TO_SURFACE_ROOM).every((room) => roomVocabulary.includes(room)));
+const floorCards = new Map(
+  buildSurfaceMaterialProductGroups(joinedFloors as never).map((group) => [
+    getSurfaceMaterialProductDisplayName(group.primary),
+    getSurfaceMaterialGroupSizeLabels(group),
+  ])
+);
+for (const { outdoor: outdoorItem, indoor } of SURFACE_OUTDOOR_PAIRINGS) {
+  assert.ok(floorCards.get(outdoorItem.card)?.includes(`${outdoorItem.size} R11`), `${outdoorItem.card} has the ${outdoorItem.size} R11`);
+  for (const item of indoor) assert.ok(floorCards.has(item.card), `${item.card} is a floor card`);
+}
+
+const pleinAirStandIns = [["0014519", "0012911"], ["0014518", "0012908"]] as const;
+
+// Gardenia Plein Air (downloaded 13 Oct 2026): the outdoor range's eleven ranges of its own, a collection of their own (J, 13 Oct
+// 2026: split, floor only), from ABK's pages like the collections above: 50 floor entries, 20 mm, R11, outdoor. Concept Stone, the
+// twelfth range, has no pictures and is left out. Every size that can be checked is true to its label (crop test) but Urban Sand
+// 60x60, whose pictures are the colour's 800x800 mm graphic squeezed to 600 mm (declared 800x800). Mineral's pages show each face
+// again as another range's export (OUT.20 MONOLITH) and Greige's a lower-resolution cut (GREIGE): only the FUSION pictures are used.
+// Repeats are used once: Salento's pages list each picture three times, Urban's 60x60 twice, byte for byte; Travertine Honey Vein's
+// 60x90 picture 6 (NAVONA) is picture 7 exported again.
+assert.equal(physicalMaterials.filter(isPleinAir).length, 50, "every Plein Air entry is on real faces");
+assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.filter(isPleinAir).length, 50, "Plein Air entries in the catalogue");
+assert.deepEqual(collectionCards(isPleinAir, "wall_tile"), [], "Plein Air is for floors only");
+assert.deepEqual(
+  collectionCards(isPleinAir, "flooring"),
+  [
+    ...["Belgian Stone Black", "Belgian Stone Grey", "Belgian Stone Sand"].map((c) => [c, ["80x80 R11", "60x60 R11"]]),
+    ...["Legend Havana", "Legend Sand"].map((c) => [c, ["30x120 R11"]]),
+    ...["Livingstone Cream", "Livingstone Light Grey", "Livingstone Sand"].map((c) => [c, ["80x80 R11"]]),
+    ["Mineral Fog", ["60x120 R11", "60x60 R11"]],
+    ["Mineral Graphite", ["60x120 R11"]],
+    ...["Mineral Greige", "Mineral Sand"].map((c) => [c, ["60x120 R11", "60x60 R11"]]),
+    ["Native Concrete", ["80x80 R11"]],
+    ...["Native Mud", "Native Sand", "Native Silver"].map((c) => [c, ["80x80 R11", "60x60 R11"]]),
+    ...["Nimbus Fog", "Nimbus Rope"].map((c) => [c, ["60x90 R11"]]),
+    ...["Raye Honey", "Raye Sand"].map((c) => [c, ["30x120 R11"]]),
+    ...["Salento Gris", "Salento Ivoire", "Salento Ocre"].map((c) => [c, ["60x120 R11", "80x80 R11", "60x60 R11"]]),
+    ["Travertine Honey Cross", ["80x80 R11", "60x90 R11", "60x60 R11"]],
+    ["Travertine Honey Vein", ["60x90 R11", "60x60 R11"]],
+    ...["Urban Ash", "Urban Sand"].map((c) => [c, ["80x80 R11", "60x60 R11"]]),
+    ...["Warehouse Ash", "Warehouse Graphite", "Warehouse Tan"].map((c) => [c, ["80x80 R11"]]),
+  ].map(([colour, sizes]) => [`Plein Air ${colour}`, sizes])
+);
+const pleinAirRow = (colour: string, tile: string, n: number, code: string, face = tile) => {
+  const [w, h] = tile.split("x").map(Number);
+  return [colour, w >= h ? tile : `${h}x${w}`, n, face, `${code}_01.webp`];
+};
+assert.deepEqual(collectionFaceRows(isPleinAir), [
+  pleinAirRow("belgian-stone-black", "600x600", 7, "0015169"),
+  pleinAirRow("belgian-stone-black", "800x800", 7, "0012112"),
+  pleinAirRow("belgian-stone-grey", "600x600", 7, "0014528"),
+  pleinAirRow("belgian-stone-grey", "800x800", 7, "0012111"),
+  pleinAirRow("belgian-stone-sand", "600x600", 7, "0014527"),
+  pleinAirRow("belgian-stone-sand", "800x800", 7, "0012110"),
+  pleinAirRow("legend-havana", "300x1200", 12, "0003691"),
+  pleinAirRow("legend-sand", "300x1200", 12, "0003690"),
+  pleinAirRow("livingstone-cream", "800x800", 5, "0020645"),
+  pleinAirRow("livingstone-light-grey", "800x800", 5, "0020646"),
+  pleinAirRow("livingstone-sand", "800x800", 5, "0020647"),
+  pleinAirRow("mineral-fog", "600x1200", 6, "0001821"),
+  pleinAirRow("mineral-fog", "600x600", 11, "0013511"),
+  pleinAirRow("mineral-graphite", "600x1200", 6, "0001822"),
+  pleinAirRow("mineral-greige", "600x1200", 6, "0001820"),
+  pleinAirRow("mineral-greige", "600x600", 12, "0013512"),
+  pleinAirRow("mineral-sand", "600x1200", 6, "0013514"),
+  pleinAirRow("mineral-sand", "600x600", 12, "0013513"),
+  pleinAirRow("native-concrete", "800x800", 3, "g56793"),
+  pleinAirRow("native-mud", "600x600", 4, "0013509"),
+  pleinAirRow("native-mud", "800x800", 4, "g56792"),
+  pleinAirRow("native-sand", "600x600", 4, "0013508"),
+  pleinAirRow("native-sand", "800x800", 4, "g56790"),
+  pleinAirRow("native-silver", "600x600", 4, "0013507"),
+  pleinAirRow("native-silver", "800x800", 4, "g56791"),
+  pleinAirRow("nimbus-fog", "600x900", 9, "0007178"),
+  pleinAirRow("nimbus-rope", "600x900", 9, "0007177"),
+  pleinAirRow("raye-honey", "300x1200", 2, "0014949"),
+  pleinAirRow("raye-sand", "300x1200", 2, "0014329"),
+  pleinAirRow("salento-gris", "600x1200", 16, "0202335"),
+  pleinAirRow("salento-gris", "600x600", 16, "0202323"),
+  pleinAirRow("salento-gris", "800x800", 8, "0202326"),
+  pleinAirRow("salento-ivoire", "600x1200", 16, "0202333"),
+  pleinAirRow("salento-ivoire", "600x600", 16, "0202321"),
+  pleinAirRow("salento-ivoire", "800x800", 8, "0202324"),
+  pleinAirRow("salento-ocre", "600x1200", 15, "0202334"),
+  pleinAirRow("salento-ocre", "600x600", 15, "0202322"),
+  pleinAirRow("salento-ocre", "800x800", 8, "0202325"),
+  pleinAirRow("travertine-honey-cross", "600x600", 9, "0012103"),
+  pleinAirRow("travertine-honey-cross", "800x800", 6, "0012106"),
+  pleinAirRow("travertine-honey-cross", "600x900", 9, "0007181"),
+  pleinAirRow("travertine-honey-vein", "600x600", 8, "0012104"),
+  pleinAirRow("travertine-honey-vein", "600x900", 9, "0007180"),
+  pleinAirRow("urban-ash", "600x600", 12, "0012163"),
+  pleinAirRow("urban-ash", "800x800", 8, "0012161"),
+  pleinAirRow("urban-sand", "600x600", 12, "0012164", "800x800"),
+  pleinAirRow("urban-sand", "800x800", 12, "0012162"),
+  pleinAirRow("warehouse-ash", "800x800", 7, "0012107"),
+  pleinAirRow("warehouse-graphite", "800x800", 7, "0012109"),
+  pleinAirRow("warehouse-tan", "800x800", 2, "0012108"),
+]);
+// The repeats left out, as the manifests record them: Salento's pages list each picture three times (Ocre 60x120 one picture a
+// fourth time too), Urban's 60x60 pages twice, Native Concrete's and Mineral Fog's 60x60 one picture twice, byte for byte; Travertine
+// Honey Vein's 60x90 picture 6 is picture 7 exported again.
+const pleinAirManifest = (colour: string) =>
+  JSON.parse(
+    readFileSync(
+      path.join(process.cwd(), `catalog/surface-materials/flooring/gardenia/plein-air/gardenia-plein-air-${colour}-faces.manifest.json`),
+      "utf8"
+    )
+  ) as { formats: { format: string; duplicates_dropped_site_positions?: number[]; duplicates_note?: string }[] };
+const pleinAirDropped = (colour: string, format: string) =>
+  pleinAirManifest(colour).formats.find((entry) => entry.format === format)?.duplicates_dropped_site_positions?.length ?? 0;
+assert.deepEqual(
+  [
+    ["salento-gris", "60x120"], ["salento-gris", "80x80"], ["salento-ivoire", "60x120"], ["salento-ivoire", "80x80"],
+    ["salento-ocre", "60x120"], ["salento-ocre", "60x60"], ["salento-ocre", "80x80"], ["urban-ash", "60x60"], ["urban-sand", "60x60"],
+    ["native-concrete", "80x80"], ["mineral-fog", "60x60"], ["travertine-honey-vein", "60x90"],
+  ].map(([colour, format]) => pleinAirDropped(colour, format)),
+  [16, 16, 32, 16, 33, 1, 16, 12, 12, 1, 2, 1]
+);
+assert.match(
+  pleinAirManifest("travertine-honey-vein").formats.find((entry) => entry.format === "60x90")?.duplicates_note ?? "",
+  /picture 6 \(NAVONA\) is picture 7/
+);
+// Colour and look as ABK describes them; Mineral Sand (white and beige) and Native Mud (grey and beige) are filed by their pictures.
+assert.deepEqual(
+  [...new Set(physicalMaterials.filter(isPleinAir).map((material) =>
+    `${/-plein-air-([a-z-]+?)-g?\d/.exec(material.surface_material.material_id)?.[1]}: ` +
+    `${material.classification?.design_effect} ${material.classification?.color_family}`
+  ))].sort(),
+  [
+    "belgian-stone-black: stone black", "belgian-stone-grey: stone grey", "belgian-stone-sand: stone beige",
+    "legend-havana: wood beige", "legend-sand: wood beige",
+    "livingstone-cream: stone beige", "livingstone-light-grey: stone grey", "livingstone-sand: stone beige",
+    "mineral-fog: stone grey", "mineral-graphite: stone grey", "mineral-greige: stone grey", "mineral-sand: stone beige",
+    "native-concrete: concrete grey", "native-mud: concrete grey", "native-sand: concrete beige", "native-silver: concrete grey",
+    "nimbus-fog: stone grey", "nimbus-rope: stone beige", "raye-honey: wood beige", "raye-sand: wood beige",
+    "salento-gris: stone grey", "salento-ivoire: stone white", "salento-ocre: stone beige",
+    "travertine-honey-cross: stone beige", "travertine-honey-vein: stone beige",
+    "urban-ash: concrete beige", "urban-sand: concrete beige",
+    "warehouse-ash: concrete beige", "warehouse-graphite: concrete grey", "warehouse-tan: concrete beige",
+  ]
+);
+// What the entries take from ABK's Plein Air pages: floor only, 20 mm, R11, outdoor (balcony among the rooms); no configurator pattern
+// ids; planks for the wood ranges (Legend, Raye), tiles otherwise; no blocker but the price.
+for (const entry of getAllSurfaceMaterialYamlEntries().filter(isPleinAir)) {
+  const id = entry.surface_material.material_id;
+  assert.equal(entry.surface_material.surface_category, "flooring", `${id} is for floors`);
+  assert.deepEqual(
+    [entry.physical_specs.total_thickness_mm, entry.physical_specs.slip_rating, entry.physical_specs.suitable_for_outdoor],
+    [20, "R11", true],
+    `${id}: 20 mm, R11, outdoor`
+  );
+  assert.ok(entry.classification.room_suitability.includes("balcony"), `${id} suits a balcony`);
+  assert.ok(entry.import_governance.qa_flags.includes("gardenia_abk_site_import"), `${id} is imported from ABK's pages`);
+  assert.ok(!entry.import_governance.qa_flags.includes("gardenia_plein_air_outdoor_size"), `${id} is not an outdoor size of another collection`);
+  assert.equal(entry.rendering.source_pattern_ids, undefined, `${id} has no configurator pattern ids`);
+  assert.deepEqual(
+    entry.rendering.available_pattern_layouts,
+    /-plein-air-(legend|raye)-/.test(id) ? ["random_stagger", "straight", "herringbone"] : ["straight", "brick", "vertical_brick"],
+    `${id} layouts`
+  );
+  assert.deepEqual(entry.import_governance.publish_blockers, [], `${id} blockers (published, quote on request)`);
+}
+
 // Floor entries share pictures only where declared above; every wall entry uses the faces of the
 // floor entry with the same item code (Falaise Art Beige and Art Grey, and Bon Ton's 120x280 slabs,
 // are wall-only).
@@ -1419,14 +2080,20 @@ const sharedFaces = new Map([
   // Block: R11 items on the Nat 3D item's faces, and the stand-ins on the colour's 120x120 Nat 3D faces.
   ["0031402", "0031174"], ["0031401", "0031173"], ["0031403", "0031175"], ["0031404", "0031176"],
   ...blockStandIns,
+  // Eterea: Soft items on the Lux item's faces.
+  ["0031333", "0030726"], ["0031341", "0030738"], ["0031336", "0030731"], ["0031344", "0030743"],
+  ["0031335", "0030729"], ["0031343", "0030741"], ["0031334", "0030727"], ["0031342", "0030739"],
+  // Pietra Viva Aude's outdoor 60x60 (Plein Air): the stand-ins on the colour's 120x120 Nat P.tech faces.
+  ...pleinAirStandIns,
 ]);
 const wallOnly = new Map([
   ["0010804", 8], ["0017607", 8],
   ["0020757", 3], ["0020758", 3], ["0020759", 3], ["0020760", 3], ["0020765", 3], ["0020767", 3], ["0020768", 3],
-  // Pietra Viva's Nat P.tech 80x80 and Camargue 60x120 items are wall-only; their floor entries are R11.
+  // Pietra Viva's Nat P.tech 80x80 and Camargue 60x120 items: their floor entries carry the outdoor item's code in their ids (the
+  // July import filed them under it; split 13 Oct 2026), so by code they are wall-only.
   ["0012265", 8], ["0012262", 8], ["0014186", 18], ["0014185", 18], ["0014669", 16], ["0014668", 16], ["0012331", 12],
-  // Gioia's plain colours, Martinica and Primavera are wall-only.
-  ...["0008228", "0008230", "0008232", "0008233", "0008234", "0008235", "0009646", "0009647", "0009648", "0009655", "0010527"].map(
+  // Gioia's plain colours are wall-only (white body wall tiles); its decors have floor entries too.
+  ...["0008228", "0008230", "0008232", "0008233", "0008234", "0008235", "0009646", "0009647", "0009648"].map(
     (code) => [code, 1] as const
   ),
   // La Marmoteca Sand Flower 60x120 Lux is wall-only; its floor entry is the Nat P.tech one, on the same faces.
@@ -1437,7 +2104,8 @@ const collectionById = new Map(
     .filter((material) =>
       [
         isDorica, isOxide, isFalaise, isMake, isTabulae, isBonTon, isPietraViva, isLaGeoteca, isOrosei, isGioia, isIPigmenti,
-        isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock,
+        isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock, isEterea,
+        isPleinAir,
       ].some((filter) => filter(material))
     )
     .map((material) => [material.surface_material.material_id, material])
@@ -1480,7 +2148,7 @@ const noOwnPictures = [...collectNoOwnPictures(getAllSurfaceMaterialYamlEntries(
 const listedStandIns = noOwnPictures.filter((entry) => entry.source === "stand_in");
 assert.deepEqual(
   [...new Set(listedStandIns.map((entry) => entry.code))].sort(),
-  [...earlierStandIns, ...blockStandIns.map(([code]) => code)].sort(),
+  [...earlierStandIns, ...blockStandIns.map(([code]) => code), ...pleinAirStandIns.map(([code]) => code)].sort(),
   "every stand-in carries stand_in_faces"
 );
 for (const entry of listedStandIns) {
@@ -1488,8 +2156,9 @@ for (const entry of listedStandIns) {
 }
 assert.deepEqual(
   [listedStandIns.length, noOwnPictures.filter((entry) => entry.source === "configurator_preview").length],
-  [58, 52],
-  "30 stand-in items and 26 items on the configurator's preview, for floor and wall"
+  [60, 44],
+  "29 stand-in items for floor and wall, Aude's two outdoor 60x60 for floors, and 22 items on the configurator's preview " +
+    "(Tabulae's 4 chevrons left it on 16 Oct)"
 );
 
 // Runtime tuples: the trailing fields round-trip, and tuples without them decode without the keys.
@@ -1561,5 +2230,203 @@ assert.equal(getSurfacePhysicalAssetFailures(template).length, 1);
 template.texture_assets.faces = null;
 template.texture_assets.image_physical_size_mm = { width: 0, height: 600 };
 assert.equal(getSurfacePhysicalAssetFailures(template).length, 1);
+
+// ABK's technical sheets (J, 14 Oct 2026: "Yes download all of them for my webapp and the ai to be smarter to have the knowledge to
+// design"; he chose the technical sheets). Every Gardenia entry a sheet line fits has the sheet's slip class and thickness, so the
+// catalogue can't drift from the sheets; lib/surface-material-abk-datasheets.ts keeps the sheets' words.
+const gardeniaEntries = getAllSurfaceMaterialYamlEntries().filter((entry) => entry.surface_material.supplier === "gardenia_orchidea");
+const catalogueCollections = new Set(gardeniaEntries.map((entry) => entry.surface_material.collection));
+assert.equal(ABK_DATASHEETS.length, 21, "ABK's download area lists 21 technical sheets (none for Block and Eterea)");
+for (const sheet of ABK_DATASHEETS) {
+  assert.ok(catalogueCollections.has(sheet.collection), `${sheet.collection} is a catalogue collection`);
+  assert.match(sheet.sha256, /^[0-9a-f]{64}$/, `${sheet.collection}: sha256`);
+  assert.ok(sheet.bytes > 0 && sheet.file.endsWith(" - Datasheet.pdf"), `${sheet.collection}: file`);
+  for (const part of sheet.sheets) {
+    const finishes = new Set(part.formats.flatMap(parseAbkDatasheetFormats).flatMap((format) => format.finishes));
+    for (const finish of [...Object.keys(part.shod_slip ?? {}), ...Object.keys(part.barefoot_slip ?? {})]) {
+      // Pietra Viva's Antique 3D Tech page labels its values Nat.; every other sheet gives values for the finishes it lists.
+      assert.ok(finishes.has(finish as never) || sheet.collection === "Pietra Viva", `${sheet.collection}: ${finish} is listed`);
+    }
+    assert.ok(Object.values(part.shod_slip ?? {}).every((value) => /^R(9|1[0-3])$/.test(value)), `${sheet.collection}: R classes`);
+  }
+}
+const slipBySheet = new Map<string, number>();
+for (const entry of gardeniaEntries) {
+  const id = entry.surface_material.material_id;
+  const match = findAbkDatasheetMatch({ ...entry.surface_material, ...entry.physical_specs });
+  if (match?.shod_slip) {
+    assert.equal(entry.physical_specs.slip_rating, match.shod_slip, `${id}: the sheet's slip class`);
+    const key = `${entry.surface_material.collection} ${match.shod_slip}`;
+    slipBySheet.set(key, (slipBySheet.get(key) ?? 0) + 1);
+  }
+  if (match?.thickness_mm != null) {
+    assert.equal(entry.physical_specs.total_thickness_mm, match.thickness_mm, `${id}: the sheet's thickness`);
+  }
+  // The note an entry got when the sheet filled its slip class or thickness says what the sheet says.
+  const sheetNote = entry.source.notes?.find((note) => note.startsWith("ABK's technical sheet for "));
+  if (sheetNote) {
+    assert.ok(match, `${id}: a noted sheet fits`);
+    const slip = [match.shod_slip && `${match.shod_slip} (DIN 51130)`, match.barefoot_slip && `bare foot ${match.barefoot_slip} (DIN 51097)`];
+    const facts = [match.thickness_mm != null && `${match.thickness_mm} mm`, slip.some(Boolean) && `slip resistance ${slip.filter(Boolean).join(", ")}`];
+    assert.equal(
+      sheetNote,
+      `ABK's technical sheet for ${match.datasheet.collection} (${match.datasheet.file}, read 2026-10-14): ${facts.filter(Boolean).join("; ")}.`,
+      `${id}: the sheet note`
+    );
+  }
+}
+assert.equal(
+  gardeniaEntries.filter((entry) => entry.source.notes?.some((note) => note.startsWith("ABK's technical sheet for "))).length,
+  667,
+  "the entries the sheets filled note them (729 on 14 Oct; 15 Oct: 12 Gioia decors and 52 La Marmoteca entries follow ABK's pages, " +
+    "2 Marquinia Black Nat entries take the sheet's 8.5 mm and R10)"
+);
+// Where ABK's pages and a sheet disagree, the catalogue follows the pages (J, 15 Oct 2026: "The website: 8.5 mm"; Gioia's
+// decors "Keep floors, decors 8.5 mm"). The sheets keep their own words; these entries say which source they follow.
+const gioiaPageNote = (entry: (typeof gardeniaEntries)[number]) =>
+  entry.source.notes?.some((note) => note.startsWith("ABK's Gioia page (") && note.includes("porcelain stoneware, 8.5 mm"));
+const gioiaEntries = gardeniaEntries.filter((entry) => entry.surface_material.collection === "Gioia");
+const gioiaDecorWords = ["Majorelle", "Martinica", "Ombrelle", "Palma", "Papilio", "Primavera", "Rossignol"];
+const gioiaRows = gioiaEntries.map((entry) => {
+  const decor = gioiaDecorWords.some((word) => entry.surface_material.product_name.includes(` ${word} `));
+  const source = gioiaPageNote(entry) ? "ABK's page" : "the sheet";
+  return `${decor ? "decor" : "plain"} ${entry.surface_material.surface_category} ${entry.physical_specs.total_thickness_mm} mm, ${source}`;
+});
+assert.deepEqual(
+  [...new Set(gioiaRows)].sort().map((row) => [row, gioiaRows.filter((other) => other === row).length]),
+  [
+    ["decor flooring 8.5 mm, ABK's page", 7],
+    ["decor wall_tile 8.5 mm, ABK's page", 7],
+    ["plain wall_tile 7 mm, the sheet", 9],
+  ],
+  "Gioia: the seven decors are 8.5 mm porcelain for floors and walls (ABK's page); the nine plain colours 7 mm wall tiles (the sheet)"
+);
+const marmotecaPageNote = (entry: (typeof gardeniaEntries)[number]) =>
+  entry.source.notes?.some((note) => note.startsWith("ABK's La Marmoteca colour pages (read 2026-10-15) give 120x120 and 60x120 as 8.5 mm"));
+const marmotecaEntries = gardeniaEntries.filter((entry) => entry.surface_material.collection === "La Marmoteca");
+for (const entry of marmotecaEntries) {
+  const size = splitCatalogueSize(entry.surface_material.product_name)!.size;
+  const pageSize = size === "120x120" || size === "60x120";
+  assert.equal(entry.physical_specs.total_thickness_mm, pageSize ? 8.5 : 6, `${entry.surface_material.material_id}: thickness`);
+  assert.equal(marmotecaPageNote(entry), pageSize, `${entry.surface_material.material_id}: ABK's pages note`);
+}
+assert.equal(marmotecaEntries.filter(marmotecaPageNote).length, 125, "every La Marmoteca 120x120 and 60x120 entry follows ABK's pages");
+assert.equal(slipBySheet.get("Luce R9"), 28, "Luce's Natural is R9");
+assert.equal(slipBySheet.get("I Pigmenti R10"), 106, "every I Pigmenti size on the sheet is R10");
+assert.equal(
+  gardeniaEntries.filter((entry) => entry.physical_specs.slip_rating).length,
+  689,
+  "111 R11 entries before the sheets, 576 from them on 14 Oct, and Marquinia Black 60x120 Nat's 2 on 15 Oct"
+);
+const lookup = (product_name: string, collection: string, total_thickness_mm: number | null = null) =>
+  findAbkDatasheetMatch({ product_name, collection, total_thickness_mm });
+assert.deepEqual(
+  [lookup("Gardenia Make Ash 80x80", "Make")?.shod_slip, lookup("Gardenia Make Ash 80x80", "Make")?.thickness_mm],
+  ["R10", 8.5],
+  "a name without a finish is the one finish the sheet lists for its size, besides R11"
+);
+assert.equal(lookup("Gardenia Anima Beige 60x60", "Anima")?.shod_slip, null, "Anima 60x60 comes in Nat (R10) and Grip (R11)");
+assert.equal(lookup("Gardenia Anima Beige 60x60", "Anima")?.thickness_mm, 8.5);
+assert.equal(lookup("Gardenia Orosei Rope 60x120", "Orosei"), null, "a sheet by thickness only needs the finish named");
+assert.deepEqual(
+  [lookup("Gardenia Orosei Rope 60x120 Nat", "Orosei")?.shod_slip, lookup("Gardenia Orosei Rope 60x120 Nat", "Orosei")?.thickness_mm],
+  ["R10", null],
+  "Orosei Nat is R10 at 6 and 8.5 mm"
+);
+assert.deepEqual([lookup("Gardenia Gioia Cielo 60x120", "Gioia")?.thickness_mm, lookup("Gardenia Gioia Cielo 60x120", "Gioia")?.shod_slip], [7, null]);
+assert.equal(lookup("Gardenia Epoque 2.0 Black 60x120 Lappato", "Epoque 2.0"), null, "no sheet lists Lappato");
+assert.deepEqual(splitCatalogueSize("Gardenia Tabulae Refined Fieno 23,4x148 Nat"), { size: "23,4x148", finishWords: "Nat" });
+
+// Gardenia published as quote on request (J, 15 Oct 2026: "put quote on request for now and publish"; the quote link is ABK's
+// contact form). Every entry on ABK's faces is published with no blocker and a thickness; the 44 still on configurator previews
+// (tileability unconfirmed: mosaics, book-matched pairs, two Negresco sizes) stay drafts until they have faces. Tabulae's 8
+// chevrons followed on 16 Oct, on faces with the chevron layout.
+const gardeniaQuoteUrl = "https://www.abkgroup.it/en/gardeniaariana/contacts/";
+const gardeniaDrafts: string[] = [];
+for (const entry of gardeniaEntries) {
+  const id = entry.surface_material.material_id;
+  if (entry.texture_assets.tileable === "needs_confirmation") {
+    gardeniaDrafts.push(id);
+    assert.equal(entry.import_governance.publish_status, "draft", `${id}: a preview stays a draft`);
+    assert.ok(entry.import_governance.publish_blockers.includes("confirm_texture_tileability"), `${id}: tileability blocker`);
+    continue;
+  }
+  assert.equal(entry.import_governance.publish_status, "published", `${id}: published`);
+  assert.deepEqual(entry.import_governance.publish_blockers, [], `${id}: no blocker`);
+  assert.equal(entry.commerce.purchase_mode, "quote_or_sample", `${id}: quote on request`);
+  assert.equal(entry.commerce.sample_request_url, gardeniaQuoteUrl, `${id}: ABK's contact form`);
+  assert.equal(entry.commerce.price_per_sqm?.amount ?? null, null, `${id}: no price yet`);
+  assert.ok((entry.physical_specs.total_thickness_mm ?? 0) > 0, `${id}: a thickness`);
+  assert.ok(entry.source.notes?.some((note) => note.startsWith("Quote on request (J, 2026-10-15)")), `${id}: the quote note`);
+}
+assert.deepEqual([gardeniaEntries.length, gardeniaDrafts.length], [1366, 44], "1322 Gardenia entries published, 44 drafts");
+assert.equal(
+  gardeniaEntries.filter((entry) => entry.source.notes?.some((note) => note.startsWith("ABK's colour page https://"))).length,
+  110,
+  "the thicknesses filled from ABK's colour pages note the page (102 on 15 Oct, the 8 chevrons' 9.5 mm on 16 Oct)"
+);
+
+// ABK's Plein Air catalogue (January 2026): every outdoor floor can be laid the catalogue's ways, its places are in the vocabulary,
+// every outdoor floor notes its packing, and the special pieces name catalogue cards.
+const outdoorUseVocabulary: readonly string[] = SURFACE_MATERIAL_VOCABULARY.outdoor_use;
+assert.deepEqual(
+  [...new Set(PLEIN_AIR_LAYING.map((laying) => laying.method))],
+  ["direct_stick", ...outdoorOnlyLaying],
+  "the catalogue's laying systems are the vocabulary's"
+);
+for (const place of [...PLEIN_AIR_SPACES, ...PLEIN_AIR_WELLNESS]) {
+  assert.ok(place.outdoor_use === null || outdoorUseVocabulary.includes(place.outdoor_use), `${place.name}: a vocabulary use`);
+}
+const outdoorCardIds = new Map<string, string[]>();
+for (const id of outdoorFloors) {
+  const entry = yamlById.get(id)!;
+  const name = entry.surface_material.product_name.replace(/^Gardenia\s+/, "");
+  const size = splitCatalogueSize(name)!.size;
+  const card = name.slice(0, name.lastIndexOf(` ${size}`));
+  outdoorCardIds.set(card, [...(outdoorCardIds.get(card) ?? []), id]);
+  const packing = getPleinAirPacking(size);
+  assert.ok(packing, `${id}: a Plein Air size`);
+  assert.ok(
+    entry.source.notes?.includes(
+      `Packing (ABK's Plein Air technical sheet, read 2026-10-14): ${packing.size} rectified, real size ` +
+        `${packing.work_size_mm[0]}x${packing.work_size_mm[1]} mm, ${packing.pieces_per_box === 1 ? "1 tile" : `${packing.pieces_per_box} tiles`} ` +
+        `and ${packing.sqm_per_box} m² per box, ${packing.kg_per_sqm} kg/m², ${packing.kg_per_box} kg per box, ` +
+        `${packing.boxes_per_pallet} boxes per pallet.`
+    ),
+    `${id}: notes its packing`
+  );
+  assert.equal(
+    entry.source.notes?.some((note) => note.startsWith("Special pieces in this colour (ABK's Plein Air catalogue")),
+    getPleinAirSpecialPieces(card).length > 0,
+    `${id}: notes its special pieces when the catalogue lists some`
+  );
+}
+assert.equal(PLEIN_AIR_SPECIAL_PIECES.length, 67, "the catalogue's 67 colours");
+assert.deepEqual(
+  PLEIN_AIR_SPECIAL_PIECES.filter((colour) => colour.card === null).map((colour) => colour.range),
+  Array(4).fill("Concept Stone"),
+  "only Concept Stone, which the catalogue leaves out, has no card"
+);
+assert.deepEqual(
+  [...outdoorCardIds.keys()].filter((card) => getPleinAirSpecialPieces(card).length === 0).sort(),
+  ["Orosei Cream", "Orosei Rope", "Orosei Vanilla"],
+  "every outdoor card but Orosei's has special pieces"
+);
+const pieceCodes = new Map<string, number>();
+for (const colour of PLEIN_AIR_SPECIAL_PIECES) {
+  assert.ok(colour.card === null || outdoorCardIds.has(colour.card), `${colour.range} ${colour.colour}: ${colour.card} is an outdoor card`);
+  for (const [key, code] of Object.entries(colour.pieces)) {
+    const [kind, size] = key.split(" ") as [PleinAirSpecialPieceKind, string];
+    assert.ok(PLEIN_AIR_SPECIAL_PIECE_KINDS[kind]?.sizes.includes(size), `${colour.card}: ${key} is a catalogue piece`);
+    assert.match(code, /^(\d{7}|G\d{7})$/, `${colour.card}: ${key} code`);
+    pieceCodes.set(code, (pieceCodes.get(code) ?? 0) + 1);
+  }
+}
+assert.equal([...pieceCodes.values()].reduce((sum, count) => sum + count, 0), 665, "the tables' 665 codes");
+assert.deepEqual(
+  [...pieceCodes].filter(([, count]) => count > 1).map(([code]) => code).sort(),
+  [...PLEIN_AIR_SPECIAL_PIECE_CODES_PRINTED_TWICE].sort(),
+  "the codes the tables print twice"
+);
 
 console.log("Surface material physical-scale sampling passed.");

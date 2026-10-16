@@ -86,7 +86,7 @@ assert.deepEqual(floorPlanUploadRequestOf(new Event("x")), { source: "plan_panel
 const choose = (overrides: Partial<Parameters<typeof FloorPlanUploadChooseStep>[0]> = {}) =>
   renderToStaticMarkup(createElement(FloorPlanUploadChooseStep, {
     signedIn: true, formats: free, fileProblem: null, onFileDropped: noop,
-    dark: false, disabled: false, onChooseFile: noop, ...overrides,
+    disabled: false, onChooseFile: noop, ...overrides,
   }));
 const member = choose();
 assert.match(member, /data-testid="floor-plan-import-dialog-empty-state" data-floor-plan-workspace-state="empty"/);
@@ -111,33 +111,32 @@ assert.doesNotMatch(guest, /Choose a file|floor-plan-upload-drop-zone/);
 // "Auto-detection paused" always has a way on.
 const paused = (overrides: Partial<Parameters<typeof FloorPlanImportPausedNotice>[0]>) =>
   renderToStaticMarkup(createElement(FloorPlanImportPausedNotice, {
-    dark: false, subtle: "", control: "", message: "Sign in to privately detect, review, and save this plan.",
+    subtle: "", message: "Sign in to privately detect, review, and save this plan.",
     authenticationRequired: false, resumableJobId: null, ...overrides,
   }));
 assert.match(
   paused({ authenticationRequired: true, resumableJobId: "job" }),
-  /data-testid="floor-plan-import-sign-in" class="[^"]*\bmin-h-11\b[^"]*">Sign in and continue</
+  /class="[^"]*\bmin-h-11\b[^"]*" data-floor-plan-workspace-focus="primary" data-testid="floor-plan-import-sign-in">Sign in and continue</
 );
 assert.doesNotMatch(paused({ authenticationRequired: true }), /Resume processing/);
 assert.match(paused({ resumableJobId: "job" }), />Resume processing</);
 assert.doesNotMatch(paused({}), /<button/);
 
-// The upload window is light for everyone: Pro uses the standard theme, so its dark variant was never
-// shown. Its close button is a 44px target.
+// The upload window is light for everyone. Its close button is a 44px target.
 const windowSource = read("components/editor/FloorPlanUploadWorkspaceDialog.tsx");
-assert.match(windowSource, /<FloorPlanImportWorkspace [^>]*dark=\{false\}/);
-assert.doesNotMatch(windowSource, /bg-neutral-950|designer-|dark \?/);
+assert.match(windowSource, /<FloorPlanImportWorkspace /);
+assert.doesNotMatch(windowSource, /bg-neutral-950|designer-|dark \?|dark=/);
 assert.match(windowSource, /aria-label="Close floor plan upload"\s+className="flex h-11 w-11 /);
 assert.doesNotMatch(read("components/editor/FloorPlanUploadPanel.tsx"), /<FloorPlanUploadWorkspaceDialog[^>]*\bdark=/);
 
 // One visible Upload floor plan under the room card (ST2).
 const startActions = renderToStaticMarkup(createElement(RoomSetupStartActions, {
-  dark: false, canEdit: true, secondaryActionClass: "",
+  canEdit: true,
   actions: { chooseTemplate: noop, drawRoom: noop, uploadFloorPlan: noop },
 }));
 assert.match(
   startActions,
-  new RegExp(`Have a floor plan\\?[^<]*<button id="${FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID}" type="button" data-testid="plan-tool-import-2d"[^>]*>Upload floor plan</button>`)
+  new RegExp(`Have a floor plan\\?[^<]*<button type="button" class="[^"]*\\btext-accent\\b[^"]*" id="${FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID}" data-testid="plan-tool-import-2d"[^>]*>Upload floor plan</button>`)
 );
 assert.ok(startActions.indexOf("plan-start-template") < startActions.indexOf("plan-tool-import-2d"));
 
@@ -154,7 +153,7 @@ assert.match(read("components/editor/FloorPlanImportAssistant.tsx"), /Opens in P
 const arrival = read("components/editor/FloorPlanImportArrivalNote.tsx");
 assert.match(arrival, /useSearchParams\(\)\.get\("floorPlanImport"\)/);
 assert.match(arrival, /url\.searchParams\.delete\("floorPlanImport"\);\s*window\.history\.replaceState\(null, "", url\);/);
-assert.match(read("components/editor/DesignControlsPlanPanel.tsx"), /<FloorPlanImportArrivalNote dark=\{dark\} \/>/);
+assert.match(read("components/editor/DesignControlsPlanPanel.tsx"), /<FloorPlanImportArrivalNote \/>/);
 const urlView = read("lib/useUrlViewMode.ts");
 assert.match(urlView, /if \(urlView !== followedView\) \{\s*setFollowedView\(urlView\);\s*if \(urlView === "2d" \|\| urlView === "3d"\) setViewMode\(urlView\);/);
 assert.match(read("lib/useDesignPageCoreShellBaseRegistration.ts"), /const \[viewMode, setViewMode\] = useUrlViewMode\(urlView\);/);

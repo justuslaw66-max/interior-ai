@@ -1,0 +1,537 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/urban-ash/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - URBAN ASH - minimali.zip (13533069 bytes, sha256 57bd2ed9d88bf1d5788e18d29655710c43cb19d3b8863ceb1264be7390be6311).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0012161",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/urban-ash/pf60012161-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012161_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-urban-ash-0012161-80x80-r11",
+   "faces": [
+    {
+     "file": "0012161_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4122,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN ASH - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6c8e4aa89f20fae3a664c0415e11ba00b971ff44eb759557da8275715f0f9399",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1",
+      "name": "URBAN ASH 80X80 R11_20MM_08",
+      "id": "48d59b4f-9921-46a8-bff2-cc0b33af9356",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012161_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4270,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN ASH - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0b419f32ad4563a714f1db502feb42c7f86c6db07febd95d058860809c9c1e2a",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "URBAN ASH 80X80 R11_20MM_06",
+      "id": "fb83ae54-7241-4482-b8ee-412271aaf465",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012161_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4266,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN ASH - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a6c045eb724a062419494d36ef4752d22caf98f6233400e945e5e0389293ce00",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "URBAN ASH 80X80 R11_20MM_02",
+      "id": "66f68f1c-15ae-4c83-aeb1-4a3a6cb987e6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012161_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 3546,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN ASH - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5e5040514a92528d502e5a848608fcf1776ff85c83649958d2873826301a2da2",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "URBAN ASH 80X80 R11_20MM_07",
+      "id": "284190d3-a46a-4b45-938e-3b7ac12ac343",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012161_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2398,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN ASH - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2336469aa05ff19b0a77085494ce0152eb7acc253e2e2c454c4b6eea9ec9ab12",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "URBAN ASH 80X80 R11_20MM_01",
+      "id": "2057da13-5df6-4138-a000-9967959c1fd8",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012161_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4116,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN ASH - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d0949a5630c5a8d5297a6e761c5b610ccf6f0e6bcef5b2915a8300044618c9ec",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 6",
+      "name": "URBAN ASH 80X80 R11_20MM_04",
+      "id": "725a61d6-69a2-4323-a84a-955f8f423b23",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012161_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 2444,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN ASH - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d8024a68e7d02cbd68fb412d4bba814f3c27ea17b1842545420fe5f524990b0f",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 7",
+      "name": "URBAN ASH 80X80 R11_20MM_05",
+      "id": "fe5efbba-8f53-4d2a-9d26-5d94bd4a9e89",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012161_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 4694,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN ASH - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "230831ac438113753032e207b030208ddb6c5eb29a8793e3fb86ee4c813e943b",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 8",
+      "name": "URBAN ASH 80X80 R11_20MM_03",
+      "id": "9356c6b3-6b14-4a3f-9050-88d640acecbf",
+      "site_position": 8
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0012163",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/urban-ash/pf60012163-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0012163_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22,
+    24
+   ],
+   "used_by": "floor gardenia-flooring-plein-air-urban-ash-0012163-60x60-r11",
+   "faces": [
+    {
+     "file": "0012163_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1560,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "6bc2e7467e67db77ea0ff5b1ee9952d40dc90687939978e4b05613eabb1ecfe7",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "OUT.20 LAB325 ASH 20 MM 60X60_01",
+      "id": "7d93ba21-22cd-4ae0-b2d1-9788959330ba",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012163_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2010,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "ee6bd672d9fc3ca5a1c00449796c0614a0acafe5ef80518c8a9928b2a8c95005",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3 (view_02)",
+      "name": "OUT.20 LAB325 ASH 20 MM 60X60_02",
+      "id": "ee303c1c-1872-4ca1-80b0-ec59961fe7c9",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012163_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 2048,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "7290f5fc37b0c76399958084c164fa36e54de3ef3bc2f976ae5b998369cc1b14",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5 (view_03)",
+      "name": "OUT.20 LAB325 ASH 20 MM 60X60_03",
+      "id": "27dfbf40-c07e-4226-b26a-006f4139c281",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012163_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1874,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "8cf1cec30f5e402cb22bb0eda05be67d28de208033fe8e4fdd99f2d598a344b5",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 7 (view_04)",
+      "name": "OUT.20 LAB325 ASH 20 MM 60X60_04",
+      "id": "6d3bf7a1-efe5-4c96-b2ba-58e4fd59f8d7",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012163_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1958,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "66bc2b7fa0c1200b9b4c1a7f8ae6d06a4ab1b3a925b5633c10f4c4d39e7d22cf",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 9 (view_05)",
+      "name": "OUT.20 LAB325 ASH 20 MM 60X60_05",
+      "id": "9adac1de-a0fd-4510-afbf-73ce5db0b516",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012163_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1496,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "89e1982eee8a140d05392b045fe4e946139aad59e06880c1fda661cb60c4bc69",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 11 (view_06)",
+      "name": "OUT.20 LAB325 ASH 20 MM 60X60_06",
+      "id": "2a5a3998-fa65-4251-8054-09c43d3f7243",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0012163_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1852,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "977a0d66fcae8326c657f88bfafb2c00b6a92325441330930d093344ff6a6726",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 13 (view_07)",
+      "name": "MESH UP ASH 20 MM 60X60_07",
+      "id": "77697a99-1b81-42cf-924f-7cfc74949219",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0012163_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1288,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "ad7860677ad84b626544b46b8febc29367b59848a47176ddb4d869e43e28a47a",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 15 (view_08)",
+      "name": "MESH UP ASH 20 MM 60X60_08",
+      "id": "355b36b2-f596-44c8-843a-e0b241f06acb",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0012163_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1614,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "0cc9cf356d09eb1d56f4079e3f87995ef0515d8ba9cd3831c2617ea7c8dc28e7",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 17 (view_09)",
+      "name": "MESH UP ASH 20 MM 60X60_09",
+      "id": "f7461ef2-f1f2-4837-be57-9c479489714a",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0012163_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1642,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_10.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "03de814eedc55e0a4701b72362bdcd2928e93a2872dd5e66f8d6d30ba8e33b22",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 19 (view_10)",
+      "name": "MESH UP ASH 20 MM 60X60_10",
+      "id": "7b41e1cf-f632-4a32-a55c-0f77ab9c61e4",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0012163_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1226,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_11.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "3a561c8df990a8346795a87b4692219da2b1b1e5f0460d311c9f8120334d2d5c",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 21 (view_11)",
+      "name": "OUT.20 LAB325 ASH 20 MM 60X60_11",
+      "id": "80545561-4a97-478d-8798-c8207f382a06",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0012163_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 1644,
+     "source_zip": "PLEIN AIR - URBAN ASH - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN ASH - 60X60 - R11 - view_12.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "0176cec6793a2536321b3eae51116bbf1077a343d13ed407ff35fdf7723b961c",
+     "source_px_per_mm": 2.667,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 23 (view_12)",
+      "name": "OUT.20 LAB325 ASH 20 MM 60X60_12",
+      "id": "426275ea-6829-4dd3-9c17-f6c1cfbc00d2",
+      "site_position": 23
+     }
+    }
+   ]
+  }
+ ]
+}

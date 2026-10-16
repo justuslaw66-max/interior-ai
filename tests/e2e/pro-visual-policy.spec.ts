@@ -104,7 +104,7 @@ async function openCustomMillworkStudioFromWorkspace(
 }
 
 async function readThemeTokens(page: Page) {
-  return page.locator("[data-theme]").first().evaluate((element) => {
+  return page.locator("html").evaluate((element) => {
     const styles = getComputedStyle(element);
     const readColorToken = (name: string) => {
       const value = styles.getPropertyValue(name).trim().toLowerCase();
@@ -115,10 +115,7 @@ async function readThemeTokens(page: Page) {
     };
     return {
       canvas: readColorToken("--bg-canvas"),
-      canvas3d: readColorToken("--bg-canvas-3d"),
-      command: readColorToken("--bg-command"),
       panel: readColorToken("--bg-panel"),
-      raised: readColorToken("--bg-panel-raised"),
       hover: readColorToken("--bg-panel-hover"),
       primary: readColorToken("--text-primary"),
       secondary: readColorToken("--text-secondary"),
@@ -2122,7 +2119,6 @@ test.describe("Pro visual policy", () => {
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("editor-command-bar")).toBeVisible({ timeout: 30_000 });
 
-    await expect(page.locator('[data-theme="default"]')).toBeVisible();
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
     await expect(page.getByTestId("pro-mode-indicator")).toHaveAccessibleName("Pro tools on");
     const proTokens = await readThemeTokens(page);
@@ -2165,7 +2161,7 @@ test.describe("Pro visual policy", () => {
 
     await mockPlan(page, "free");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("editor-command-bar")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
     // Free asking for designer mode gets the upgrade prompt. On a slow dev server it can
     // open after dismissBlockingPrompt's one-time check, so wait for it and close it here.
@@ -2197,9 +2193,8 @@ test.describe("Pro visual policy", () => {
     test.setTimeout(300_000);
     await mockPlan(page, "pro");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
-    await expect(page.locator('[data-theme="default"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("editor-command-bar")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
-    await expect(page.getByTestId("editor-command-bar")).toBeVisible();
     await openCustomMillworkStudioFromWorkspace(page, {
       accessLevel: "pro",
       activation: "pointer",
@@ -2520,7 +2515,12 @@ test.describe("Pro visual policy", () => {
     await mockPlan(page, "free");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("editor-command-bar")).toBeVisible();
-    await dismissBlockingPrompt(page);
+    // Free asking for designer mode gets the upgrade prompt once the plan is known, which on a slow
+    // dev server can be after a one-time check. The command bar behind it is inert (AX5), so wait
+    // for it and close it first.
+    await expect(page.getByTestId("upgrade-dialog")).toBeVisible({ timeout: FIRST_LOAD_TIMEOUT_MS });
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("upgrade-dialog")).toHaveCount(0);
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
     await page.getByTestId("editor-command-overflow").focus();
     await page.keyboard.press("p");
@@ -2624,7 +2624,12 @@ test.describe("Pro visual policy", () => {
     expect(await page.evaluate(() => performance.timeOrigin)).toBe(previewDocument);
     await expect(page.getByTestId("client-preview-exit")).toHaveCount(0);
     await expect(page.getByTestId("pro-mode-indicator")).toHaveCount(0);
-    await expectEditingCommandBarActive(page);
+    // Free now, so designer mode asks to upgrade. The prompt is modal: the command bar behind it
+    // is hidden and inert until it closes (AX5).
+    const upgrade = page.getByTestId("upgrade-dialog");
+    await expect(upgrade).toBeVisible();
+    await expect(page.getByTestId("upgrade-see-plans")).toBeFocused();
+    await expect(page.getByRole("button", { name: /^(?:More|Menu)$/ })).toHaveCount(0);
     await commandBar.evaluate((element) =>
       Promise.allSettled(element.getAnimations().map((animation) => animation.finished))
     );
@@ -2637,6 +2642,10 @@ test.describe("Pro visual policy", () => {
       }
     );
     await stopClientPreviewFocusRecorder(page);
+    // Its buttons follow the paywall's A/B variant (Maybe later or Close), so Escape closes it.
+    await page.keyboard.press("Escape");
+    await expect(upgrade).toHaveCount(0);
+    await expectEditingCommandBarActive(page);
   });
 
   test("uses the same Client Preview focus contract from Download's pictures", async ({

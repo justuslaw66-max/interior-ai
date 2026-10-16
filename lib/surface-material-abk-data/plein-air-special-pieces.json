@@ -1,0 +1,1139 @@
+{
+  "source": "PLEIN AIR - Catalogue.pdf, pages 62 to 65 (Special pieces R11)",
+  "colours": [
+    {
+      "range": "Anima",
+      "colour": "Fango",
+      "card": "Anima Fango",
+      "pieces": {
+        "grille 15x60": "0006361",
+        "grille 15x80": "0015932",
+        "corner_grille_right 15x60": "0006367",
+        "corner_grille_right 15x80": "0015938",
+        "corner_grille_left 15x60": "0006364",
+        "corner_grille_left 15x80": "0015935",
+        "bullnose 30x80": "0015972",
+        "bullnose 30x120": "0012943",
+        "l_element 15x80x5": "0015954",
+        "l_element 15x60x5": "0006358",
+        "l_element_grip 15x80x5": "0015957",
+        "l_element_grip 15x60x5": "0007072",
+        "step_edge 30x80": "0015975",
+        "step_edge 30x120": "0015880",
+        "curve 60x60": "0015920",
+        "curve 80x80": "0015989"
+      }
+    },
+    {
+      "range": "Anima",
+      "colour": "Grigio",
+      "card": "Anima Grigio",
+      "pieces": {
+        "grille 15x60": "0006362",
+        "grille 15x80": "0015933",
+        "corner_grille_right 15x60": "0006368",
+        "corner_grille_right 15x80": "0015939",
+        "corner_grille_left 15x60": "0006365",
+        "corner_grille_left 15x80": "0015936",
+        "bullnose 30x80": "0015973",
+        "bullnose 30x120": "0012944",
+        "l_element 15x80x5": "0015955",
+        "l_element 15x60x5": "0006359",
+        "l_element_grip 15x80x5": "0015958",
+        "l_element_grip 15x60x5": "0007073",
+        "step_edge 30x80": "0015976",
+        "step_edge 30x120": "0015881",
+        "curve 60x60": "0015921",
+        "curve 80x80": "0015990"
+      }
+    },
+    {
+      "range": "Anima",
+      "colour": "Beige",
+      "card": "Anima Beige",
+      "pieces": {
+        "grille 15x60": "0006360",
+        "grille 15x80": "0015931",
+        "corner_grille_right 15x60": "0006366",
+        "corner_grille_right 15x80": "0015937",
+        "corner_grille_left 15x60": "0006363",
+        "corner_grille_left 15x80": "0015934",
+        "bullnose 30x80": "0015971",
+        "bullnose 30x120": "0012942",
+        "l_element 15x80x5": "0015953",
+        "l_element 15x60x5": "0006357",
+        "l_element_grip 15x80x5": "0015956",
+        "l_element_grip 15x60x5": "0011103",
+        "step_edge 30x80": "0015974",
+        "step_edge 30x120": "0015879",
+        "curve 60x60": "0015919",
+        "curve 80x80": "0015988"
+      }
+    },
+    {
+      "range": "Travertine",
+      "colour": "Honey Vein",
+      "card": "Plein Air Travertine Honey Vein",
+      "pieces": {
+        "grille 15x60": "0006351",
+        "corner_grille_right 15x60": "0006353",
+        "corner_grille_left 15x60": "0006352",
+        "bullnose 30x60": "0013047",
+        "l_element 15x60x5": "0006350",
+        "l_element_grip 15x60x5": "0007104",
+        "step_edge 30x60": "0015636",
+        "curve 60x60": "0015700"
+      }
+    },
+    {
+      "range": "Travertine",
+      "colour": "Honey Cross",
+      "card": "Plein Air Travertine Honey Cross",
+      "pieces": {
+        "grille 15x60": "0007186",
+        "corner_grille_right 15x60": "0007188",
+        "corner_grille_left 15x60": "0007187",
+        "bullnose 30x60": "0013048",
+        "l_element 15x60x5": "0007184",
+        "l_element_grip 15x60x5": "0007185",
+        "step_edge 30x60": "0015637",
+        "curve 60x60": "0015701"
+      }
+    },
+    {
+      "range": "Belgian Stone",
+      "colour": "Grey",
+      "card": "Plein Air Belgian Stone Grey",
+      "pieces": {
+        "grille 15x60": "0015579",
+        "grille 15x80": "0013002",
+        "corner_grille_right 15x60": "0015581",
+        "corner_grille_right 15x80": "0013005",
+        "corner_grille_left 15x60": "0015583",
+        "corner_grille_left 15x80": "0013008",
+        "bullnose 30x60": "0015623",
+        "bullnose 30x80": "0013021",
+        "l_element 15x80x5": "0013011",
+        "l_element 15x60x5": "0015601",
+        "l_element_grip 15x80x5": "0013014",
+        "l_element_grip 15x60x5": "0015860",
+        "step_edge 30x80": "0015482",
+        "step_edge 30x60": "0015625",
+        "curve 60x60": "0015691",
+        "curve 80x80": "0015536"
+      }
+    },
+    {
+      "range": "Belgian Stone",
+      "colour": "Black",
+      "card": "Plein Air Belgian Stone Black",
+      "pieces": {
+        "grille 15x60": "0015851",
+        "grille 15x80": "0013003",
+        "corner_grille_right 15x60": "0015854",
+        "corner_grille_right 15x80": "0013006",
+        "corner_grille_left 15x60": "0015855",
+        "corner_grille_left 15x80": "0013009",
+        "bullnose 30x60": "0015863",
+        "bullnose 30x80": "0013022",
+        "l_element 15x80x5": "0013012",
+        "l_element 15x60x5": "0015856",
+        "l_element_grip 15x80x5": "0013015",
+        "l_element_grip 15x60x5": "0015862",
+        "step_edge 30x80": "0015849",
+        "step_edge 30x60": "0015864",
+        "curve 60x60": "0015907",
+        "curve 80x80": "0015850"
+      }
+    },
+    {
+      "range": "Belgian Stone",
+      "colour": "Sand",
+      "card": "Plein Air Belgian Stone Sand",
+      "pieces": {
+        "grille 15x60": "0015580",
+        "grille 15x80": "0013001",
+        "corner_grille_right 15x60": "0015852",
+        "corner_grille_right 15x80": "0013004",
+        "corner_grille_left 15x60": "0015584",
+        "corner_grille_left 15x80": "0013007",
+        "bullnose 30x60": "0015624",
+        "bullnose 30x80": "0013020",
+        "l_element 15x80x5": "0013010",
+        "l_element 15x60x5": "0015602",
+        "l_element_grip 15x80x5": "0013013",
+        "l_element_grip 15x60x5": "0015861",
+        "step_edge 30x80": "0015483",
+        "step_edge 30x60": "0015626",
+        "curve 60x60": "0015692",
+        "curve 80x80": "0015537"
+      }
+    },
+    {
+      "range": "Concept Stone",
+      "colour": "Grigio",
+      "card": null,
+      "pieces": {
+        "grille 15x80": "0015353",
+        "corner_grille_right 15x80": "0015357",
+        "corner_grille_left 15x80": "0015361",
+        "bullnose 30x80": "0015446",
+        "l_element 15x80x5": "0015422",
+        "l_element_grip 15x80x5": "0030066",
+        "step_edge 30x80": "0015484",
+        "curve 80x80": "0015538"
+      }
+    },
+    {
+      "range": "Concept Stone",
+      "colour": "Antracite",
+      "card": null,
+      "pieces": {
+        "grille 15x80": "0015354",
+        "corner_grille_right 15x80": "0015358",
+        "corner_grille_left 15x80": "0015362",
+        "bullnose 30x80": "0015447",
+        "l_element 15x80x5": "0015423",
+        "l_element_grip 15x80x5": "0030068",
+        "step_edge 30x80": "0015485",
+        "curve 80x80": "0015539"
+      }
+    },
+    {
+      "range": "Concept Stone",
+      "colour": "Sabbia",
+      "card": null,
+      "pieces": {
+        "grille 15x80": "0015355",
+        "corner_grille_right 15x80": "0015359",
+        "corner_grille_left 15x80": "0015363",
+        "bullnose 30x80": "0015448",
+        "l_element 15x80x5": "0015424",
+        "l_element_grip 15x80x5": "0030069",
+        "step_edge 30x80": "0015486",
+        "curve 80x80": "0015540"
+      }
+    },
+    {
+      "range": "Concept Stone",
+      "colour": "Bruno medio",
+      "card": null,
+      "pieces": {
+        "grille 15x80": "0015356",
+        "corner_grille_right 15x80": "0015360",
+        "corner_grille_left 15x80": "0015364",
+        "bullnose 30x80": "0015449",
+        "l_element 15x80x5": "0015425",
+        "l_element_grip 15x80x5": "0030067",
+        "step_edge 30x80": "0015487",
+        "curve 80x80": "0015541"
+      }
+    },
+    {
+      "range": "Dorica",
+      "colour": "Avorio",
+      "card": "Dorica Avorio",
+      "pieces": {
+        "grille 15x60": "0010504",
+        "corner_grille_right 15x60": "0010508",
+        "corner_grille_left 15x60": "0010506",
+        "bullnose 30x120": "0012907",
+        "l_element 15x60x5": "0010500",
+        "l_element_grip 15x60x5": "0010502",
+        "step_edge 30x120": "0015873",
+        "curve 60x60": "0015908"
+      }
+    },
+    {
+      "range": "Dorica",
+      "colour": "Crema",
+      "card": "Dorica Crema",
+      "pieces": {
+        "grille 15x60": "0010505",
+        "corner_grille_right 15x60": "0010509",
+        "corner_grille_left 15x60": "0010507",
+        "bullnose 30x120": "0012931",
+        "l_element 15x60x5": "0010501",
+        "l_element_grip 15x60x5": "0010503",
+        "step_edge 30x120": "0015874",
+        "curve 60x60": "0015909"
+      }
+    },
+    {
+      "range": "Dorica",
+      "colour": "Traverino Ivory Vein",
+      "card": "La Geoteca Trav Ivory Vein",
+      "pieces": {
+        "grille 15x80": "0016185",
+        "corner_grille_right 15x80": "0016187",
+        "corner_grille_left 15x80": "0016189",
+        "bullnose 30x80": "0016193",
+        "l_element 15x80x5": "0016195",
+        "l_element_grip 15x80x5": "0016191",
+        "l_element_grip 30x120x5": "0016197",
+        "curve 60x60": "0016199"
+      }
+    },
+    {
+      "range": "Dorica",
+      "colour": "Traverino Ivory Cross",
+      "card": "La Geoteca Trav Ivory Cross",
+      "pieces": {
+        "grille 15x80": "0016186",
+        "corner_grille_right 15x80": "0016188",
+        "corner_grille_left 15x80": "0016190",
+        "bullnose 30x80": "0016194",
+        "l_element 15x80x5": "0016196",
+        "l_element_grip 15x80x5": "0016192",
+        "l_element_grip 30x120x5": "0016198",
+        "curve 60x60": "0016200"
+      }
+    },
+    {
+      "range": "Falaise",
+      "colour": "Beige",
+      "card": "Falaise Beige",
+      "pieces": {
+        "grille 15x120": "0017805",
+        "corner_grille_right 15x120": "0017807",
+        "corner_grille_left 15x120": "0017809",
+        "bullnose 30x120": "0017815",
+        "l_element 15x120x5": "0017811",
+        "l_element_grip 15x120x5": "0017813",
+        "step_edge 30x120": "0017817",
+        "curve 60x60": "0017819"
+      }
+    },
+    {
+      "range": "Falaise",
+      "colour": "Mint",
+      "card": "Falaise Mint",
+      "pieces": {
+        "grille 15x120": "0017806",
+        "corner_grille_right 15x120": "0017808",
+        "corner_grille_left 15x120": "0017810",
+        "bullnose 30x120": "0017816",
+        "l_element 15x120x5": "0017812",
+        "l_element_grip 15x120x5": "0017814",
+        "step_edge 30x120": "0017818",
+        "curve 60x60": "0017820"
+      }
+    },
+    {
+      "range": "Mineral",
+      "colour": "Greige",
+      "card": "Plein Air Mineral Greige",
+      "pieces": {
+        "grille 15x60": "0002395",
+        "corner_grille_right 15x60": "0002401",
+        "corner_grille_left 15x60": "0002398",
+        "bullnose 30x120": "0012934",
+        "l_element 15x60x5": "0002392",
+        "l_element_grip 15x60x5": "0007062",
+        "step_edge 30x60": "0015633",
+        "curve 60x60": "0015697"
+      }
+    },
+    {
+      "range": "Mineral",
+      "colour": "Fog",
+      "card": "Plein Air Mineral Fog",
+      "pieces": {
+        "grille 15x60": "0002396",
+        "corner_grille_right 15x60": "0002402",
+        "corner_grille_left 15x60": "0002399",
+        "bullnose 30x120": "0012935",
+        "l_element 15x60x5": "0002393",
+        "l_element_grip 15x60x5": "0007063",
+        "step_edge 30x60": "0015634",
+        "curve 60x60": "0015698"
+      }
+    },
+    {
+      "range": "Mineral",
+      "colour": "Graphite",
+      "card": "Plein Air Mineral Graphite",
+      "pieces": {
+        "grille 15x60": "0002397",
+        "corner_grille_right 15x60": "0002403",
+        "corner_grille_left 15x60": "0002400",
+        "bullnose 30x120": "0012936",
+        "l_element 15x60x5": "0002394",
+        "l_element_grip 15x60x5": "0007064",
+        "step_edge 30x60": "0015635",
+        "curve 60x60": "0015699"
+      }
+    },
+    {
+      "range": "Mineral",
+      "colour": "Sand",
+      "card": "Plein Air Mineral Sand",
+      "pieces": {
+        "grille 15x60": "0015300",
+        "corner_grille_right 15x60": "0015301",
+        "corner_grille_left 15x60": "0015302",
+        "bullnose 30x120": "0015305",
+        "l_element 15x60x5": "0015303",
+        "l_element_grip 15x60x5": "0015304",
+        "step_edge 30x60": "0015865",
+        "curve 60x60": "0015946"
+      }
+    },
+    {
+      "range": "La Geoteca",
+      "colour": "Serena",
+      "card": "La Geoteca Serena",
+      "pieces": {
+        "grille 15x60": "0015558",
+        "corner_grille_right 15x60": "0015563",
+        "corner_grille_left 15x60": "0015568",
+        "bullnose 30x60": "0015606",
+        "l_element 15x60x5": "0015594",
+        "l_element_grip 15x60x5": "0030070",
+        "step_edge 30x60": "0015613",
+        "curve 60x60": "0015683"
+      }
+    },
+    {
+      "range": "La Geoteca",
+      "colour": "Brennero",
+      "card": "La Geoteca Brennero",
+      "pieces": {
+        "grille 15x60": "0015559",
+        "corner_grille_right 15x60": "0015564",
+        "corner_grille_left 15x60": "0015569",
+        "bullnose 30x60": "0015607",
+        "l_element 15x60x5": "0015595",
+        "l_element_grip 15x60x5": "0030071",
+        "step_edge 30x60": "0015614",
+        "curve 60x60": "0015684"
+      }
+    },
+    {
+      "range": "La Geoteca",
+      "colour": "Limestone",
+      "card": "La Geoteca Limestone",
+      "pieces": {
+        "grille 15x60": "0015561",
+        "corner_grille_right 15x60": "0015566",
+        "corner_grille_left 15x60": "0015571",
+        "bullnose 30x60": "0015609",
+        "l_element 15x60x5": "0015597",
+        "l_element_grip 15x60x5": "0030072",
+        "step_edge 30x60": "0015616",
+        "curve 60x60": "0015686"
+      }
+    },
+    {
+      "range": "La Geoteca",
+      "colour": "Ceppo di gre",
+      "card": "La Geoteca Ceppo Di Gre'",
+      "pieces": {
+        "grille 15x60": "0002937",
+        "corner_grille_right 15x60": "0002941",
+        "corner_grille_left 15x60": "0002939",
+        "bullnose 30x60": "0015611",
+        "l_element 15x60x5": "0002935",
+        "l_element_grip 15x60x5": "0010503",
+        "step_edge 30x60": "0015618",
+        "curve 60x60": "0015688"
+      }
+    },
+    {
+      "range": "La Geoteca",
+      "colour": "Antracite",
+      "card": "La Geoteca Antracite",
+      "pieces": {
+        "grille 15x60": "0002938",
+        "corner_grille_right 15x60": "0002942",
+        "corner_grille_left 15x60": "0002940",
+        "bullnose 30x120": "0012933",
+        "l_element 15x60x5": "0002936",
+        "l_element_grip 15x60x5": "0007066",
+        "step_edge 30x120": "0015876",
+        "curve 60x60": "0015911"
+      }
+    },
+    {
+      "range": "La Geoteca",
+      "colour": "Bourgogne beige",
+      "card": "La Geoteca Bourgogne Beige",
+      "pieces": {
+        "grille 15x80": "0016028",
+        "corner_grille_right 15x80": "0016030",
+        "corner_grille_left 15x80": "0016032",
+        "bullnose 30x80": "0016036",
+        "l_element 15x80x5": "0016034",
+        "l_element_grip 15x60x5": "0030073",
+        "step_edge 30x80": "0016040",
+        "curve 80x80": "0016042"
+      }
+    },
+    {
+      "range": "La Geoteca",
+      "colour": "Bourgogne silver",
+      "card": "La Geoteca Bourgogne Silver",
+      "pieces": {
+        "grille 15x80": "0016029",
+        "corner_grille_right 15x80": "0016031",
+        "corner_grille_left 15x80": "0016033",
+        "bullnose 30x80": "0016037",
+        "l_element 15x80x5": "0016035",
+        "l_element_grip 15x60x5": "0030074",
+        "step_edge 30x80": "0016041",
+        "curve 80x80": "0016043"
+      }
+    },
+    {
+      "range": "Pietra Viva",
+      "colour": "Limoges Sand",
+      "card": "Pietra Viva Limoges Sand",
+      "pieces": {
+        "grille 15x80": "0012986",
+        "corner_grille_right 15x80": "0012988",
+        "corner_grille_left 15x80": "0012990",
+        "bullnose 30x80": "0013023",
+        "l_element 15x80x5": "0013016",
+        "l_element_grip 15x80x5": "0013018",
+        "step_edge 30x80": "0015969",
+        "curve 80x80": "0015985"
+      }
+    },
+    {
+      "range": "Pietra Viva",
+      "colour": "Camargue Beige",
+      "card": "Pietra Viva Camargue Beige",
+      "pieces": {
+        "grille 15x80": "0016103",
+        "grille 15x120": "0016022",
+        "corner_grille_right 15x80": "0016108",
+        "corner_grille_right 15x120": "0016025",
+        "corner_grille_left 15x80": "0016106",
+        "corner_grille_left 15x120": "0016024",
+        "bullnose 30x80": "0016118",
+        "bullnose 30x120": "0015877",
+        "l_element 15x80x5": "0016111",
+        "l_element 15x120x5": "0016020",
+        "l_element_grip 15x80x5": "0016115",
+        "l_element_grip 15x120x5": "0016021",
+        "step_edge 30x80": "0016121",
+        "step_edge 30x120": "0015878",
+        "curve 60x60": "0015987",
+        "curve 80x80": "0016124"
+      }
+    },
+    {
+      "range": "Pietra Viva",
+      "colour": "Camargue Ivory",
+      "card": "Pietra Viva Camargue Ivory",
+      "pieces": {
+        "grille 15x80": "0016104",
+        "grille 15x120": "0016105",
+        "corner_grille_right 15x80": "0016109",
+        "corner_grille_right 15x120": "0016113",
+        "corner_grille_left 15x80": "0016107",
+        "corner_grille_left 15x120": "0016110",
+        "bullnose 30x80": "0016119",
+        "bullnose 30x120": "0016120",
+        "l_element 15x80x5": "0016112",
+        "l_element 15x120x5": "0016114",
+        "l_element_grip 15x80x5": "0016116",
+        "l_element_grip 15x120x5": "0016117",
+        "step_edge 30x80": "0016122",
+        "step_edge 30x120": "0015879",
+        "curve 60x60": "0016126",
+        "curve 80x80": "0016125"
+      }
+    },
+    {
+      "range": "Pietra Viva",
+      "colour": "Aude Grey",
+      "card": "Pietra Viva Aude Grey",
+      "pieces": {
+        "grille 15x60": "0015573",
+        "grille 15x80": "0015346",
+        "corner_grille_right 15x60": "0015575",
+        "corner_grille_right 15x80": "0015348",
+        "corner_grille_left 15x60": "0015577",
+        "corner_grille_left 15x80": "0015350",
+        "bullnose 30x60": "0015619",
+        "bullnose 30x80": "0015443",
+        "l_element 15x80x5": "0015420",
+        "l_element 15x60x5": "0015599",
+        "l_element_grip 15x80x5": "0030077",
+        "l_element_grip 15x60x5": "0030075",
+        "step_edge 30x80": "0015480",
+        "step_edge 30x60": "0015621",
+        "curve 60x60": "0015689",
+        "curve 80x80": "0015534"
+      }
+    },
+    {
+      "range": "Pietra Viva",
+      "colour": "Aude Beige",
+      "card": "Pietra Viva Aude Beige",
+      "pieces": {
+        "grille 15x60": "0015574",
+        "grille 15x80": "0015347",
+        "corner_grille_right 15x60": "0015576",
+        "corner_grille_right 15x80": "0015349",
+        "corner_grille_left 15x60": "0015578",
+        "corner_grille_left 15x80": "0015352",
+        "bullnose 30x60": "0015620",
+        "bullnose 30x80": "0015445",
+        "l_element 15x80x5": "0015421",
+        "l_element 15x60x5": "0015600",
+        "l_element_grip 15x80x5": "0030078",
+        "l_element_grip 15x60x5": "0030076",
+        "step_edge 30x80": "0015481",
+        "step_edge 30x60": "0015622",
+        "curve 60x60": "0015690",
+        "curve 80x80": "0015535"
+      }
+    },
+    {
+      "range": "Nimbus",
+      "colour": "Rope",
+      "card": "Plein Air Nimbus Rope",
+      "pieces": {
+        "grille 15x60": "0006032",
+        "corner_grille_right 15x60": "0006036",
+        "corner_grille_left 15x60": "0006034",
+        "bullnose 30x60": "0013046",
+        "l_element 15x60x5": "0006030",
+        "l_element_grip 15x60x5": "0007101",
+        "step_edge 30x60": "0015867",
+        "curve 60x60": "0015913"
+      }
+    },
+    {
+      "range": "Nimbus",
+      "colour": "Fog",
+      "card": "Plein Air Nimbus Fog",
+      "pieces": {
+        "grille 15x60": "0006033",
+        "corner_grille_right 15x60": "0006037",
+        "corner_grille_left 15x60": "0006035",
+        "bullnose 30x60": "0013045",
+        "l_element 15x60x5": "0006031",
+        "l_element_grip 15x60x5": "0007102",
+        "step_edge 30x60": "0015866",
+        "curve 60x60": "0015912"
+      }
+    },
+    {
+      "range": "Salento",
+      "colour": "Ivoire",
+      "card": "Plein Air Salento Ivoire",
+      "pieces": {
+        "grille 15x60": "0012948",
+        "grille 15x80": "0015922",
+        "corner_grille_right 15x60": "0012954",
+        "corner_grille_right 15x80": "0015925",
+        "corner_grille_left 15x60": "0012957",
+        "corner_grille_left 15x80": "0015928",
+        "bullnose 30x80": "0015963",
+        "bullnose 30x120": "0012937",
+        "l_element 15x80x5": "0015947",
+        "l_element 15x60x5": "0012960",
+        "l_element_grip 15x80x5": "0015950",
+        "l_element_grip 15x60x5": "0012963",
+        "step_edge 30x80": "0015966",
+        "step_edge 30x60": "0015868",
+        "curve 60x60": "0015914",
+        "curve 80x80": "0015982"
+      }
+    },
+    {
+      "range": "Salento",
+      "colour": "Ocre",
+      "card": "Plein Air Salento Ocre",
+      "pieces": {
+        "grille 15x60": "0012949",
+        "grille 15x80": "0015923",
+        "corner_grille_right 15x60": "0012955",
+        "corner_grille_right 15x80": "0015926",
+        "corner_grille_left 15x60": "0012958",
+        "corner_grille_left 15x80": "0015929",
+        "bullnose 30x80": "0015964",
+        "bullnose 30x120": "0012938",
+        "l_element 15x80x5": "0015948",
+        "l_element 15x60x5": "0012961",
+        "l_element_grip 15x80x5": "0015951",
+        "l_element_grip 15x60x5": "0012964",
+        "step_edge 30x80": "0015967",
+        "step_edge 30x60": "0015869",
+        "curve 60x60": "0015915",
+        "curve 80x80": "0015983"
+      }
+    },
+    {
+      "range": "Salento",
+      "colour": "Gris",
+      "card": "Plein Air Salento Gris",
+      "pieces": {
+        "grille 15x60": "0012953",
+        "grille 15x80": "0015924",
+        "corner_grille_right 15x60": "0012956",
+        "corner_grille_right 15x80": "0015927",
+        "corner_grille_left 15x60": "0012959",
+        "corner_grille_left 15x80": "0015930",
+        "bullnose 30x80": "0015965",
+        "bullnose 30x120": "0012939",
+        "l_element 15x80x5": "0015949",
+        "l_element 15x60x5": "0012962",
+        "l_element_grip 15x80x5": "0015952",
+        "l_element_grip 15x60x5": "0012965",
+        "step_edge 30x80": "0015968",
+        "step_edge 30x60": "0015870",
+        "curve 60x60": "0015916",
+        "curve 80x80": "0015984"
+      }
+    },
+    {
+      "range": "Storm",
+      "colour": "Sand",
+      "card": "Storm Sand",
+      "pieces": {
+        "grille 15x60": "0004285",
+        "corner_grille_right 15x60": "0004289",
+        "corner_grille_left 15x60": "0004287",
+        "bullnose 30x120": "0012906",
+        "l_element 15x60x5": "0004283",
+        "l_element_grip 15x60x5": "0007071",
+        "step_edge 30x60": "0015872",
+        "curve 60x60": "0015918"
+      }
+    },
+    {
+      "range": "Storm",
+      "colour": "Grey",
+      "card": "Storm Grey",
+      "pieces": {
+        "grille 15x60": "0004284",
+        "corner_grille_right 15x60": "0004288",
+        "corner_grille_left 15x60": "0004286",
+        "bullnose 30x120": "0012905",
+        "l_element 15x60x5": "0004282",
+        "l_element_grip 15x60x5": "0007070",
+        "step_edge 30x60": "0015871",
+        "curve 60x60": "0015917"
+      }
+    },
+    {
+      "range": "Camouflage",
+      "colour": "Ecru",
+      "card": "Camouflage Ecru Beton",
+      "pieces": {
+        "grille 15x120": "0016320",
+        "corner_grille_right 15x120": "0016322",
+        "corner_grille_left 15x120": "0016324",
+        "bullnose 30x120": "0016331",
+        "l_element 15x120x5": "0016326",
+        "l_element_grip 15x120x5": "0016329",
+        "step_edge 30x120": "0016333",
+        "curve 60x60": "0016335"
+      }
+    },
+    {
+      "range": "Camouflage",
+      "colour": "Taupe",
+      "card": "Camouflage Taupe Beton",
+      "pieces": {
+        "grille 15x120": "0016319",
+        "corner_grille_right 15x120": "0016321",
+        "corner_grille_left 15x120": "0016323",
+        "bullnose 30x120": "0016330",
+        "l_element 15x120x5": "0016325",
+        "l_element_grip 15x120x5": "0016328",
+        "step_edge 30x120": "0016332",
+        "curve 60x60": "0016334"
+      }
+    },
+    {
+      "range": "Make",
+      "colour": "Ash",
+      "card": "Make Ash",
+      "pieces": {
+        "grille 15x80": "0015381",
+        "corner_grille_right 15x80": "0015385",
+        "corner_grille_left 15x80": "0015389",
+        "bullnose 30x80": "0015454",
+        "l_element 15x80x5": "0015431",
+        "l_element_grip 15x80x5": "0030079",
+        "step_edge 30x80": "0015492",
+        "curve 80x80": "0015546"
+      }
+    },
+    {
+      "range": "Make",
+      "colour": "Antracite Corten",
+      "card": "Make Antr Corten",
+      "pieces": {
+        "grille 15x80": "0015383",
+        "corner_grille_right 15x80": "0015387",
+        "corner_grille_left 15x80": "0015391",
+        "bullnose 30x80": "0015456",
+        "l_element 15x80x5": "0015433",
+        "l_element_grip 15x80x5": "0030080",
+        "step_edge 30x80": "0015494",
+        "curve 80x80": "0015548"
+      }
+    },
+    {
+      "range": "Make",
+      "colour": "Grigio Corten",
+      "card": "Make Grigio Corten",
+      "pieces": {
+        "grille 15x80": "0015382",
+        "corner_grille_right 15x80": "0015386",
+        "corner_grille_left 15x80": "0015390",
+        "bullnose 30x80": "0015455",
+        "l_element 15x80x5": "0015432",
+        "l_element_grip 15x80x5": "0030081",
+        "step_edge 30x80": "0015493",
+        "curve 80x80": "0015547"
+      }
+    },
+    {
+      "range": "Urban",
+      "colour": "Ash",
+      "card": "Plein Air Urban Ash",
+      "pieces": {
+        "grille 15x60": "0002709",
+        "grille 15x80": "0015940",
+        "corner_grille_right 15x60": "0002711",
+        "corner_grille_right 15x80": "0015944",
+        "corner_grille_left 15x60": "0002713",
+        "corner_grille_left 15x80": "0015942",
+        "bullnose 30x60": "0013049",
+        "bullnose 30x80": "0015977",
+        "l_element 15x80x5": "0015959",
+        "l_element 15x60x5": "0002707",
+        "l_element_grip 15x80x5": "0015961",
+        "l_element_grip 15x60x5": "0006999",
+        "step_edge 30x80": "0015979",
+        "step_edge 30x60": "0015638",
+        "curve 60x60": "0015702",
+        "curve 80x80": "0015991"
+      }
+    },
+    {
+      "range": "Urban",
+      "colour": "Sand",
+      "card": "Plein Air Urban Sand",
+      "pieces": {
+        "grille 15x60": "0008927",
+        "grille 15x80": "0015941",
+        "corner_grille_right 15x60": "0008928",
+        "corner_grille_right 15x80": "0015945",
+        "corner_grille_left 15x60": "0008929",
+        "corner_grille_left 15x80": "0015943",
+        "bullnose 30x60": "0013050",
+        "bullnose 30x80": "0015978",
+        "l_element 15x80x5": "0015960",
+        "l_element 15x60x5": "0008925",
+        "l_element_grip 15x80x5": "0015962",
+        "l_element_grip 15x60x5": "0008926",
+        "step_edge 30x80": "0015980",
+        "step_edge 30x60": "0015639",
+        "curve 60x60": "0015703",
+        "curve 80x80": "0015992"
+      }
+    },
+    {
+      "range": "Native",
+      "colour": "Sand",
+      "card": "Plein Air Native Sand",
+      "pieces": {
+        "grille 15x60": "0015585",
+        "grille 15x80": "0015393",
+        "corner_grille_right 15x60": "0015588",
+        "corner_grille_right 15x80": "0015397",
+        "corner_grille_left 15x60": "0015591",
+        "corner_grille_left 15x80": "0015401",
+        "bullnose 30x60": "0015627",
+        "bullnose 30x80": "0015462",
+        "l_element 15x80x5": "0015435",
+        "l_element 15x60x5": "0015603",
+        "l_element_grip 15x80x5": "0030085",
+        "l_element_grip 15x60x5": "0030082",
+        "step_edge 30x80": "0015496",
+        "step_edge 30x60": "0015630",
+        "curve 60x60": "0015694",
+        "curve 80x80": "0015550"
+      }
+    },
+    {
+      "range": "Native",
+      "colour": "Mud",
+      "card": "Plein Air Native Mud",
+      "pieces": {
+        "grille 15x60": "0015586",
+        "grille 15x80": "0015394",
+        "corner_grille_right 15x60": "0015589",
+        "corner_grille_right 15x80": "0015398",
+        "corner_grille_left 15x60": "0015592",
+        "corner_grille_left 15x80": "0015402",
+        "bullnose 30x60": "0015628",
+        "bullnose 30x80": "0015463",
+        "l_element 15x80x5": "0015436",
+        "l_element 15x60x5": "0015604",
+        "l_element_grip 15x80x5": "0030086",
+        "l_element_grip 15x60x5": "0030083",
+        "step_edge 30x80": "0015497",
+        "step_edge 30x60": "0015631",
+        "curve 60x60": "0015695",
+        "curve 80x80": "0015551"
+      }
+    },
+    {
+      "range": "Native",
+      "colour": "Silver",
+      "card": "Plein Air Native Silver",
+      "pieces": {
+        "grille 15x60": "0015587",
+        "grille 15x80": "0015395",
+        "corner_grille_right 15x60": "0015590",
+        "corner_grille_right 15x80": "0015399",
+        "corner_grille_left 15x60": "0015593",
+        "corner_grille_left 15x80": "0015403",
+        "bullnose 30x60": "0015629",
+        "bullnose 30x80": "0015464",
+        "l_element 15x80x5": "0015437",
+        "l_element 15x60x5": "0015605",
+        "l_element_grip 15x80x5": "0030087",
+        "l_element_grip 15x60x5": "0030084",
+        "step_edge 30x80": "0015498",
+        "step_edge 30x60": "0015632",
+        "curve 60x60": "0015696",
+        "curve 80x80": "0015552"
+      }
+    },
+    {
+      "range": "Native",
+      "colour": "Concrete",
+      "card": "Plein Air Native Concrete",
+      "pieces": {
+        "grille 15x80": "0015396",
+        "corner_grille_right 15x80": "0015400",
+        "corner_grille_left 15x80": "0015404",
+        "bullnose 30x80": "0015465",
+        "l_element 15x80x5": "0015438",
+        "l_element_grip 15x80x5": "0030088",
+        "step_edge 30x80": "0015499",
+        "curve 80x80": "0015553"
+      }
+    },
+    {
+      "range": "Livingstone",
+      "colour": "Cream",
+      "card": "Plein Air Livingstone Cream",
+      "pieces": {
+        "grille 15x80": "0030036",
+        "corner_grille_right 15x80": "0030042",
+        "corner_grille_left 15x80": "0030039",
+        "bullnose 30x80": "0030056",
+        "l_element 15x80x5": "0030045",
+        "l_element_grip 15x80x5": "0030048",
+        "step_edge 30x80": "0030059",
+        "curve 80x80": "0030062"
+      }
+    },
+    {
+      "range": "Livingstone",
+      "colour": "Light Grey",
+      "card": "Plein Air Livingstone Light Grey",
+      "pieces": {
+        "grille 15x80": "0030037",
+        "corner_grille_right 15x80": "0030043",
+        "corner_grille_left 15x80": "0030040",
+        "bullnose 30x80": "0030057",
+        "l_element 15x80x5": "0030046",
+        "l_element_grip 15x80x5": "0030049",
+        "step_edge 30x80": "0030060",
+        "curve 80x80": "0030063"
+      }
+    },
+    {
+      "range": "Livingstone",
+      "colour": "Sand",
+      "card": "Plein Air Livingstone Sand",
+      "pieces": {
+        "grille 15x80": "0030038",
+        "corner_grille_right 15x80": "0030044",
+        "corner_grille_left 15x80": "0030041",
+        "bullnose 30x80": "0030058",
+        "l_element 15x80x5": "0030047",
+        "l_element_grip 15x80x5": "0030050",
+        "step_edge 30x80": "0030061",
+        "curve 80x80": "0030064"
+      }
+    },
+    {
+      "range": "Warehouse",
+      "colour": "Ash",
+      "card": "Plein Air Warehouse Ash",
+      "pieces": {
+        "grille 15x80": "0012992",
+        "corner_grille_right 15x80": "0012998",
+        "corner_grille_left 15x80": "0012995",
+        "bullnose 30x80": "0013025",
+        "l_element 15x80x5": "0013028",
+        "l_element_grip 15x80x5": "0013031"
+      }
+    },
+    {
+      "range": "Warehouse",
+      "colour": "Tan",
+      "card": "Plein Air Warehouse Tan",
+      "pieces": {
+        "grille 15x80": "0012993",
+        "corner_grille_right 15x80": "0012999",
+        "corner_grille_left 15x80": "0012996",
+        "bullnose 30x80": "0013026",
+        "l_element 15x80x5": "0013029",
+        "l_element_grip 15x80x5": "0013032"
+      }
+    },
+    {
+      "range": "Warehouse",
+      "colour": "Graphite",
+      "card": "Plein Air Warehouse Graphite",
+      "pieces": {
+        "grille 15x80": "0012994",
+        "corner_grille_right 15x80": "0013000",
+        "corner_grille_left 15x80": "0012997",
+        "bullnose 30x80": "0013027",
+        "l_element 15x80x5": "0013030",
+        "l_element_grip 15x80x5": "0013033"
+      }
+    },
+    {
+      "range": "Legend",
+      "colour": "Havana",
+      "card": "Plein Air Legend Havana",
+      "pieces": {
+        "grille 15x120": "0015720",
+        "corner_grille_right 15x120": "0015726",
+        "corner_grille_left 15x120": "0015723",
+        "bullnose 30x120": "0015672",
+        "l_element 15x120x5": "0015741",
+        "l_element_grip 30x120x5": "0015883",
+        "step_edge 30x120": "0015675"
+      }
+    },
+    {
+      "range": "Legend",
+      "colour": "Sand",
+      "card": "Plein Air Legend Sand",
+      "pieces": {
+        "grille 15x120": "0015719",
+        "corner_grille_right 15x120": "0015725",
+        "corner_grille_left 15x120": "0015722",
+        "bullnose 30x120": "0015671",
+        "l_element 15x120x5": "0015740",
+        "l_element_grip 30x120x5": "0015882",
+        "step_edge 30x120": "0015674"
+      }
+    },
+    {
+      "range": "Rayé",
+      "colour": "Honey",
+      "card": "Plein Air Raye Honey",
+      "pieces": {
+        "grille 15x120": "0016005",
+        "corner_grille_right 15x120": "0016008",
+        "corner_grille_left 15x120": "0016011",
+        "bullnose 30x120": "0015901",
+        "l_element 15x120x5": "0016018",
+        "l_element_grip 30x120x5": "0015898",
+        "step_edge 30x120": "0015904"
+      }
+    },
+    {
+      "range": "Rayé",
+      "colour": "Sand",
+      "card": "Plein Air Raye Sand",
+      "pieces": {
+        "grille 15x120": "0016004",
+        "corner_grille_right 15x120": "0016007",
+        "corner_grille_left 15x120": "0016010",
+        "bullnose 30x120": "0015900",
+        "l_element 15x120x5": "0016017",
+        "l_element_grip 30x120x5": "0015897",
+        "step_edge 30x120": "0015903"
+      }
+    },
+    {
+      "range": "Tabulae",
+      "colour": "Genuine Havana",
+      "card": "Tabulae Genuine Hav",
+      "pieces": {
+        "grille 15x120": "0021531",
+        "corner_grille_right 15x120": "0021535",
+        "corner_grille_left 15x120": "0021533",
+        "bullnose 30x120": "0021540",
+        "l_element 15x120x5": "0021537",
+        "l_element_grip 15x120x5": "0030089",
+        "step_edge 30x120": "0021544"
+      }
+    },
+    {
+      "range": "Tabulae",
+      "colour": "Refined Miele",
+      "card": "Tabulae Refined Miele Nat",
+      "pieces": {
+        "grille 15x120": "0021532",
+        "corner_grille_right 15x120": "0021536",
+        "corner_grille_left 15x120": "0021534",
+        "bullnose 30x120": "0021541",
+        "l_element 15x120x5": "0021538",
+        "l_element_grip 15x120x5": "0030090",
+        "step_edge 30x120": "0021545"
+      }
+    },
+    {
+      "range": "Hermione",
+      "colour": "Miel",
+      "card": "Hermione Miel",
+      "pieces": {
+        "grille 15x120": "0015728",
+        "corner_grille_right 15x120": "0015734",
+        "corner_grille_left 15x120": "0015731",
+        "bullnose 30x120": "0015677",
+        "l_element 15x120x5": "0015743",
+        "l_element_grip 15x120x5": "0015885",
+        "step_edge 30x120": "0015680"
+      }
+    },
+    {
+      "range": "Hermione",
+      "colour": "Beige",
+      "card": "Hermione Beige",
+      "pieces": {
+        "grille 15x120": "0015729",
+        "corner_grille_right 15x120": "0015735",
+        "corner_grille_left 15x120": "0015732",
+        "bullnose 30x120": "0015678",
+        "l_element 15x120x5": "0015744",
+        "l_element_grip 15x120x5": "0015886",
+        "step_edge 30x120": "0015681"
+      }
+    },
+    {
+      "range": "Hermione",
+      "colour": "Noisette",
+      "card": "Hermione Noisette",
+      "pieces": {
+        "grille 15x120": "0015730",
+        "corner_grille_right 15x120": "0015733",
+        "corner_grille_left 15x120": "0015736",
+        "bullnose 30x120": "0015679",
+        "l_element 15x120x5": "0015741",
+        "l_element_grip 15x120x5": "0015887",
+        "step_edge 30x120": "0015675"
+      }
+    }
+  ]
+}

@@ -26,6 +26,8 @@ source:
     - "Collection page color availability for LIMOGES SAND: LIMOGES SAND 8,5mm ANT3D, NAT: 120x120 (48\"x48\"), 60x120 (24\"x48\") | 8,5mm NAT: 80x80 (32\"x32\"), 80X160 (32\"X64\") | 20mm NAT R11: 80x80 (32\"x32\")."
     - "Available configurator formats: 0012921 120x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0012322 120x120 ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0012926 60x120 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0012318 60x120 ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0014672 80x160 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0012331 80x80 Nat ENTRAMBE patterns pieno_01,pieno_02,pieno_05; 0012293 80x80 Nat PAVIMENTO patterns pieno_01,pieno_02,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/pietra-viva/limoges-sand/ (read 2026-10-15): 80X160, Nat P.tech, 8.5 mm; the catalogue takes the thickness from it (J, 2026-10-15: fill thickness from ABK, then publish)."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: stone
@@ -57,7 +59,7 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 1600
   tile_length_mm: 800
-  total_thickness_mm: null
+  total_thickness_mm: 8.5
   wear_layer_mm: null
   installation_method:
     - direct_stick
@@ -121,18 +123,16 @@ rendering:
     - brick
     - vertical_brick
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_physical_dimensions
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant

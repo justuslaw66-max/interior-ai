@@ -1,0 +1,634 @@
+[
+  {
+    "collection": "Anima",
+    "slug": "anima",
+    "file": "ANIMA - Datasheet.pdf",
+    "bytes": 81653,
+    "sha256": "02dfc1e7e768b20e94134772716e4fe7fceae7ece8879c8ea6ab9a981f952fdc",
+    "body": "Full body porcelain; the 20 mm X20 items full body coloured porcelain",
+    "en14411_group": "BIa UGL (X20: BIa GL)",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 nat",
+          "8.5 mm: 120x120 nat | 60x120 nat | 80x80 nat | 60x60 nat, grip | 30x60 nat | 10x60 nat",
+          "20 mm: 60x120 r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "grip": "R11",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "A+B",
+          "grip": "A+B+C",
+          "r11": "A+B+C"
+        },
+        "shade_variation": "V2",
+        "notes": [
+          "B.C.R.A. > 0.40; ASTM C1028 > 0.60 wet; ANSI A137.1:2012 DCOF > 0.42.",
+          "AS/NZS 4586:2013: P3 wet (P.Tech), P4 wet (Grip, X20). BS 7976-2:2002: 36+ wet."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Bon Ton",
+    "slug": "bon-ton",
+    "file": "BON TON - Datasheet.pdf",
+    "bytes": 532533,
+    "sha256": "b5b9e4b2fc3855cc2cfea026462496ed1c647084ea109981c79c2820d50a5574",
+    "body": "Dry-pressed ceramic tiles (ISO 13006:2018, EN 14411:2016)",
+    "water_absorption": "Ev ≤ 0.3%",
+    "frost_resistant": true,
+    "fire_reaction": "A1fl / A1",
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 lux_3d, soft_3d",
+          "8.5 mm: 120x120 antique_3d, nat_3d | 60x120 antique_3d, nat_3d"
+        ],
+        "shod_slip": null,
+        "notes": [
+          "No slip class and no shade variation given."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Camouflage",
+    "slug": "camouflage",
+    "file": "CAMOUFLAGE - Datasheet.pdf",
+    "bytes": 75363,
+    "sha256": "b64c452b2349a5bd82b5cbe36328167c0d53ac1d5efc0355252f854b371b0275",
+    "body": "Full body coloured porcelain",
+    "en14411_group": "BIa GL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 nat",
+          "8.5 mm: 120x120 nat | 60x120 nat | 80x80 nat",
+          "20 mm: 60x120 r11 | 60x60 r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "B",
+          "r11": "C"
+        },
+        "shade_variation": "V2",
+        "notes": [
+          "Its natural finish is Nat. P.Tech."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Concrea Plain",
+    "slug": "concrea-plain",
+    "file": "CONCREA PLAIN - Datasheet.pdf",
+    "bytes": 74559,
+    "sha256": "58965281b1b7e2e37973a2c182b8cd535439c98848841a2599d44c309bd69762",
+    "body": "Full body coloured porcelain",
+    "en14411_group": "BIa GL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 nat",
+          "8.5 mm: 120x120 nat | 60x120 nat | 80x80 nat"
+        ],
+        "shod_slip": {
+          "nat": "R10"
+        },
+        "barefoot_slip": {
+          "nat": "A+B"
+        },
+        "shade_variation": "V2"
+      }
+    ]
+  },
+  {
+    "collection": "Dorica",
+    "slug": "dorica",
+    "file": "DORICA - Datasheet.pdf",
+    "bytes": 78752,
+    "sha256": "0e8df6b38ab4d9923972d4fd6aa46dc98860853522776beb1863a7a356f4cc22",
+    "body": "Full body porcelain; the 20 mm X20 items full body coloured porcelain",
+    "en14411_group": "BIa UGL (X20: BIa GL)",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 nat",
+          "8.5 mm: 120x120 nat | 60x120 nat, antique_3d, r11 | 20x120 nat",
+          "20 mm: 60x120 r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "A+B",
+          "r11": "A+B+C"
+        },
+        "shade_variation": "V2",
+        "notes": [
+          "No slip class for Antique 3D.",
+          "AS/NZS 4586:2013: P3 wet (8.5 mm P.Tech), P4 wet (R11). BS 7976-2:2002: 36+ wet."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Epoque 2.0",
+    "slug": "epoque-20",
+    "file": "EPOQUE 2.0 - Datasheet.pdf",
+    "bytes": 74001,
+    "sha256": "3a79d2bb693ad8c8d46db18f637e80a3d305e2fdac67591a68f17f7ce53401b4",
+    "body": "Full body coloured porcelain",
+    "en14411_group": "BIa UGL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "8.5 mm: 60x120 antique_3d | 80x80 nat | 60x60 antique_3d | 10x60 antique_3d"
+        ],
+        "shod_slip": {
+          "nat": "R10"
+        },
+        "barefoot_slip": {
+          "nat": "A+B"
+        },
+        "shade_variation": "V2",
+        "notes": [
+          "The sheet is headed EPOQUE 21. It lists other sizes than the catalogue's Epoque 2.0 (Natural and Lappato 60x120 and 60x60, Antique 3D 60x120) and gives the slip classes for Natural only; 80x80 has no finish word."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Falaise",
+    "slug": "falaise",
+    "file": "FALAISE - Datasheet.pdf",
+    "bytes": 145582,
+    "sha256": "e99967a2105a613016478adb8785c9603554e4f36ca308143718d23874cca5fb",
+    "body": "Dry-pressed ceramic tiles",
+    "water_absorption": "Ev ≤ 0.3%",
+    "frost_resistant": true,
+    "fire_reaction": "A1fl / A1",
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 nat",
+          "8.5 mm: 120x120 nat | 60x120 nat | 60x60 nat"
+        ],
+        "shod_slip": null,
+        "notes": [
+          "Slip resistance: NPD (no performance determined). No shade variation given."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Gioia",
+    "slug": "gioia",
+    "file": "GIOIA - Datasheet.pdf",
+    "bytes": 378821,
+    "sha256": "4ab957e8c4251f2baa50e5ecf0b075126a52dd4401ced2a9bfc207b4facd0d80",
+    "body": "White body wall tiles",
+    "en14411_group": "BIII",
+    "water_absorption": "> 10%",
+    "frost_resistant": null,
+    "sheets": [
+      {
+        "formats": [
+          "7 mm: 60x120 unstated"
+        ],
+        "shod_slip": null,
+        "notes": [
+          "A wall tile: no frost resistance, slip class or shade variation given."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Hermione",
+    "slug": "hermione",
+    "file": "HERMIONE - Datasheet.pdf",
+    "bytes": 74580,
+    "sha256": "b0ba4aaea0045e31f3a5815943c53f476a58e17eea9e1b2bc3ecf38d355218d2",
+    "body": "Full body coloured porcelain",
+    "en14411_group": "BIa UGL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "8.5 mm: 20x120 nat",
+          "20 mm: 30x120 r11 | 60x60 r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "A",
+          "r11": "A+B+C"
+        },
+        "shade_variation": "V2",
+        "notes": [
+          "The sheet prints the 8.5 mm size as 420x120 (8\"x48\"), that is 20x120."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "I Pigmenti",
+    "slug": "i-pigmenti",
+    "file": "I PIGMENTI - Datasheet.pdf",
+    "bytes": 756529,
+    "sha256": "9fec47945feaaffb7824ef5461ba9cae29ec1e61ff5094ec2bc585fcca23ecd3",
+    "body": "Full body porcelain",
+    "en14411_group": "BIa UGL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 nat",
+          "8.5 mm: 120x120 nat | 60x120 nat | 60x60 nat | 20x120 nat"
+        ],
+        "shod_slip": {
+          "nat": "R10"
+        },
+        "barefoot_slip": {
+          "nat": "A+B"
+        },
+        "shade_variation": "V2"
+      }
+    ]
+  },
+  {
+    "collection": "Just Nature",
+    "slug": "just-nature",
+    "file": "JUST NATURE - Datasheet.pdf",
+    "bytes": 418864,
+    "sha256": "3f3d01c64764769cda4cad3f06f8d11dc80f860d5e752740eea53a5fd6d51d3f",
+    "body": "Dry-pressed fine porcelain stoneware",
+    "en14411_group": "BIa GL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "8.5 mm: 20x120 nat, r11 | 30x120 nat"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "A+B",
+          "r11": "A+B+C"
+        },
+        "shade_variation": "V3"
+      }
+    ]
+  },
+  {
+    "collection": "La Geoteca",
+    "slug": "la-geoteca",
+    "file": "LA GEOTECA - Datasheet.pdf",
+    "bytes": 455109,
+    "sha256": "cb93b1918a89d01e46db33ce66bbe33f23a8356b17d07a1c7d11a2810157998b",
+    "body": "Full body porcelain",
+    "en14411_group": "BIa UGL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 nat | 120x120 nat | 60x120 nat | 40x120 nat",
+          "8.5 mm: 80x80 nat",
+          "20 mm: 80x80 r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "B",
+          "r11": "C"
+        },
+        "shade_variation": "V3",
+        "notes": [
+          "BS 7976-2:2002: 36+ wet."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "La Marmoteca",
+    "slug": "la-marmoteca",
+    "file": "LA MARMOTECA - Datasheet.pdf",
+    "bytes": 463264,
+    "sha256": "f61cc6fcf26879a66d104b24ca5470c1a8680432df054dc79ce65b91e35b56be",
+    "body": "Full body porcelain",
+    "en14411_group": "Natural BIa UGL; Lux and Soft BIa GL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "8.5 mm: 120x120 nat | 60x120 nat"
+        ],
+        "shod_slip": {
+          "nat": "R10"
+        },
+        "barefoot_slip": {
+          "nat": "A+B"
+        },
+        "shade_variation": "V3"
+      },
+      {
+        "formats": [
+          "6 mm: 120x280 soft, lux | 120x120 soft, lux | 60x120 soft, lux | 40x120 soft, lux"
+        ],
+        "shod_slip": null,
+        "shade_variation": "V3",
+        "notes": [
+          "No slip class for Lux and Soft."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Luce",
+    "slug": "luce",
+    "file": "LUCE - Datasheet.pdf",
+    "bytes": 73691,
+    "sha256": "fe8cefb34784c428fffbf4d2b03477ea489f02de53a0c753263e84b29ce84f93",
+    "body": "Full body porcelain",
+    "en14411_group": "BIa UGL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 nat",
+          "8 mm: 5x25 glossy, satin",
+          "8.5 mm: 120x120 nat | 60x120 nat | 80x80 nat, grip"
+        ],
+        "shod_slip": {
+          "nat": "R9",
+          "grip": "R11"
+        },
+        "barefoot_slip": {
+          "grip": "A+B"
+        },
+        "shade_variation": "V2"
+      }
+    ]
+  },
+  {
+    "collection": "Make",
+    "slug": "make",
+    "file": "MAKE - Datasheet.pdf",
+    "bytes": 597929,
+    "sha256": "6b5369a452690ffe3e663a79e9970167d987bd9deabc0ff6cd3798487cb281a7",
+    "body": "Full body porcelain",
+    "en14411_group": "BIa UGL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "8.5 mm: 100x100 nat | 60x120 nat | 60x60 nat | 30x60 nat | 80x80 nat, r11 | 40x80 nat",
+          "20 mm: 80x80 r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "B",
+          "r11": "C"
+        },
+        "shade_variation": "V3",
+        "notes": [
+          "Shade variation V4 for Antracite Corten and Nero Corten."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Orosei",
+    "slug": "orosei",
+    "file": "OROSEI - Datasheet.pdf",
+    "bytes": 241734,
+    "sha256": "2e7f3422efaa2657bf7c3d8f59de02ab850027850618be460377f0b53d59f783",
+    "body": "Porcelain tiles",
+    "en14411_group": "BIa GL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: * nat"
+        ],
+        "shod_slip": {
+          "nat": "R10"
+        },
+        "shade_variation": "V3",
+        "notes": [
+          "The sheet gives its values by thickness, not by size. No bare-foot class for 6 mm."
+        ]
+      },
+      {
+        "formats": [
+          "8.5 mm: * nat, r11",
+          "20 mm: * r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "A+B",
+          "r11": "A+B+C"
+        },
+        "shade_variation": "V3",
+        "notes": [
+          "No values for Antique 3D.",
+          "AS/NZS 4586:2013: P4 wet (20 mm R11). BS 7976-2:2002: 36+ wet (R11)."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Oxide",
+    "slug": "oxide",
+    "file": "OXIDE - Datasheet.pdf",
+    "bytes": 536036,
+    "sha256": "5bd827e45d5996971f4f34f091cb56b56ca2bfbd8a755d4e53ac5173e71be4e1",
+    "body": "Full body porcelain",
+    "en14411_group": "BIa UGL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "6 mm: 120x280 nat",
+          "8.5 mm: 120x120 nat | 60x120 nat | 80x80 nat, r11",
+          "20 mm: 160x320 r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "B",
+          "r11": "C"
+        },
+        "shade_variation": "V3"
+      }
+    ]
+  },
+  {
+    "collection": "Pietra Viva",
+    "slug": "pietra-viva",
+    "file": "PIETRA VIVA - Datasheet.pdf",
+    "bytes": 593442,
+    "sha256": "f31beee58474d2fac36ee112a9f07bd28ca9a311b712c2465db8007422739ba8",
+    "body": "Dry-pressed fine porcelain stoneware",
+    "en14411_group": "BIa GL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "8.5 mm: 120x120 antique_3d | 60x120 antique_3d"
+        ],
+        "shod_slip": {
+          "nat": "R10"
+        },
+        "barefoot_slip": {
+          "nat": "A+B"
+        },
+        "shade_variation": "V2",
+        "notes": [
+          "This page lists only Antique 3D Tech sizes but labels its slip values Nat."
+        ]
+      },
+      {
+        "formats": [
+          "8.5 mm: 80x80 nat",
+          "20 mm: 80x80 r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "B",
+          "r11": "C"
+        },
+        "shade_variation": "V2",
+        "notes": [
+          "Its natural finish is Nat. P.Tech. BS 7976-2:2002: 36+ wet."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Plein Air",
+    "slug": "plein-air",
+    "file": "PLEIN AIR - Datasheet.pdf",
+    "bytes": 211641,
+    "sha256": "900fba540a11e2efd3d78d2b0ece03d11da88cc4a162ef14292e24e1b48aad67",
+    "body": "Porcelain stoneware, rectified",
+    "en14411_group": "BIa UGL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "20 mm: 60x60 r11 | 60x90 r11 | 60x120 r11 | 80x80 r11 | 30x120 r11"
+        ],
+        "shod_slip": null,
+        "notes": [
+          "No slip test values; the finish is R11. Packing and real sizes: lib/surface-material-plein-air-system.ts.",
+          "Bending strength ≥ 35 N/mm²; deep abrasion ≤ 175 mm³."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Storm",
+    "slug": "storm",
+    "file": "STORM - Datasheet.pdf",
+    "bytes": 73856,
+    "sha256": "36f0a883b78b45d72ab03c714def7180afc78f43978285a5388eee5de6e71c23",
+    "body": "Full body coloured porcelain",
+    "en14411_group": "BIa GL",
+    "water_absorption": "≤ 0.5%",
+    "frost_resistant": true,
+    "sheets": [
+      {
+        "formats": [
+          "8.5 mm: 120x120 nat | 60x120 nat | 80x80 nat | 60x60 nat, grip | 30x60 nat, grip",
+          "20 mm: 60x120 r11 | 60x60 r11"
+        ],
+        "shod_slip": {
+          "nat": "R10",
+          "grip": "R11",
+          "r11": "R11"
+        },
+        "barefoot_slip": {
+          "nat": "A+B",
+          "r11": "A+B+C"
+        },
+        "shade_variation": "V2",
+        "notes": [
+          "The sheet lists the grip finish as grip R11."
+        ]
+      }
+    ]
+  },
+  {
+    "collection": "Tabulae",
+    "slug": "tabulae",
+    "file": "TABULAE - Datasheet.pdf",
+    "bytes": 660168,
+    "sha256": "279fde5d09490ce6326586d21af4cd92263359c7b9a22ad5f93fa4979b1eece6",
+    "body": "Dry-pressed ceramic tiles",
+    "water_absorption": "Ev ≤ 0.3%",
+    "frost_resistant": true,
+    "fire_reaction": "A1fl / A1",
+    "sheets": [
+      {
+        "formats": [
+          "8.5 mm: 20x120 nat"
+        ],
+        "shod_slip": {
+          "nat": "R10"
+        },
+        "shade_variation": "V2",
+        "notes": [
+          "The sheet covers Tabulae Nat. 20x120 8.5 mm only. No bare-foot class.",
+          "B.C.R.A. > 0.40 dry and wet; ANSI A137.1:2012 DCOF ≥ 0.42."
+        ]
+      }
+    ]
+  }
+]

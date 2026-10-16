@@ -1,0 +1,244 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/nimbus-rope/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - NIMBUS ROPE - minimali.zip (10864117 bytes, sha256 922fc2a02319c030db5ee26cb443bbbdb07a4a9010eb215e9e8ac6a8e4c0fabf).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x90",
+   "item_code": "0007177",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/nimbus-rope/pf60007177-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 900
+   },
+   "swatch": "0007177_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-nimbus-rope-0007177-60x90-r11",
+   "faces": [
+    {
+     "file": "0007177_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 36440,
+     "source_zip": "PLEIN AIR - NIMBUS ROPE - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - NIMBUS ROPE - 60X90 - R11 - view_1 (2).jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "4ace3eb33c666d57428c4391e9178ab529b78252c899ee55adcb63cb6b098cbc",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 1 (view_01)",
+      "name": "NIMBUS ROPE 60X90 R11_20 MM_01",
+      "id": "23ecb93d-8baf-418a-a64b-2f9c188ff6a4",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0007177_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 37442,
+     "source_zip": "PLEIN AIR - NIMBUS ROPE - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - NIMBUS ROPE - 60X90 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "0911dd1e8ef01fae85213ab553bc36dc1757fa8daa3efc0b20821fc1c0f16a32",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 2",
+      "name": "NIMBUS ROPE 60X90 R11_20 MM_02",
+      "id": "ccd0c51a-6e77-475f-8c3d-95f9592d377c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0007177_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 48742,
+     "source_zip": "PLEIN AIR - NIMBUS ROPE - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - NIMBUS ROPE - 60X90 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "2e2ceebed80a4a7723ab56cd4496cd6ba10e500334fcb1ab806b8b91448d7592",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 3",
+      "name": "NIMBUS ROPE 60X90 R11_20 MM_03",
+      "id": "f15ab86f-bc08-4d2f-ae94-c1c9a66ce443",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0007177_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 40090,
+     "source_zip": "PLEIN AIR - NIMBUS ROPE - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - NIMBUS ROPE - 60X90 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "e4cb1b5eacc96f249d29f976790fe6f48ea44058e6835e3b1b4ce6ddf498e03d",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 4",
+      "name": "NIMBUS ROPE 60X90 R11_20 MM_09",
+      "id": "9ba9a0d8-20f7-4626-b53d-7e2fb58ace75",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0007177_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 40598,
+     "source_zip": "PLEIN AIR - NIMBUS ROPE - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - NIMBUS ROPE - 60X90 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "47225d3935607fbb0cf73f85aba1326bc6b0b3f5a9f2da015469888077e0fcca",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 5",
+      "name": "NIMBUS ROPE 60X90 R11_20 MM_04",
+      "id": "83255b1f-5000-44ba-9bc6-4b5648e36ea7",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0007177_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 40396,
+     "source_zip": "PLEIN AIR - NIMBUS ROPE - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - NIMBUS ROPE - 60X90 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "73cbceef4da1c20148ceff164bb7772c284f3605b6e21f49c0fbea763d1ac3b9",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 6",
+      "name": "NIMBUS ROPE 60X90 R11_20 MM_05",
+      "id": "b3386c15-1a6b-466d-8f1e-0fe06abec849",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0007177_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 45500,
+     "source_zip": "PLEIN AIR - NIMBUS ROPE - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - NIMBUS ROPE - 60X90 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "1488a57bf2ba049d6235fc2ccf4d87b08ed021cc028660a0bb3026f564eb474b",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 7",
+      "name": "NIMBUS ROPE 60X90 R11_20 MM_07",
+      "id": "2f3f5504-3c2c-435a-b8d5-a83e8bfa7744",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0007177_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 48310,
+     "source_zip": "PLEIN AIR - NIMBUS ROPE - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - NIMBUS ROPE - 60X90 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "0f2f039725cb2e56ea1b54596800b26424712186ef6785ab6271fd95a9b4a353",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 8",
+      "name": "NIMBUS ROPE 60X90 R11_20 MM_08",
+      "id": "753609ce-b994-41dc-97e5-a35037f08636",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0007177_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 900,
+     "width_px": 360,
+     "height_px": 540,
+     "bytes": 31350,
+     "source_zip": "PLEIN AIR - NIMBUS ROPE - minimali.zip",
+     "source_file": "60X90-R11/PLEIN AIR - NIMBUS ROPE - 60X90 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      2434
+     ],
+     "source_sha256": "e74656d2568d8610abbc97ec8c0a0aeb68619db8d3fe76b6ef3245093aa38c55",
+     "source_px_per_mm": 2.704,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X90 · R11 · Faccia 9",
+      "name": "NIMBUS ROPE 60X90 R11_20 MM_06",
+      "id": "a008eafd-7436-4d79-a303-4c2feca1f876",
+      "site_position": 9
+     }
+    }
+   ]
+  }
+ ]
+}

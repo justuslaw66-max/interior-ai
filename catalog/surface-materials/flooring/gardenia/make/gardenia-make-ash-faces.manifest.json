@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/make/ash/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - ASH - minimali.zip (18625064 bytes, sha256 d880127f9823420ee116d2f909795a77f4012c8512b543c3e4d3d5bc88b9d405).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-08: MAKE - ASH - minimali.zip (18625064 bytes, sha256 d880127f9823420ee116d2f909795a77f4012c8512b543c3e4d3d5bc88b9d405); and on 2026-10-13: PLEIN AIR - MAKE ASH - minimali.zip (4555119 bytes, sha256 62f6bdfed95179769aa47f272bfef8e979a59bbd4d062bc4a9a670af23b3dd1c).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -226,6 +226,117 @@
       "label": "Faccia 4 (view_04)",
       "name": "MAKE_ASH_100X100_4",
       "id": "ade9e84b-236f-4ca3-be17-de2acdcf9991",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "80x80",
+   "item_code": "g73052",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/make-ash/g0073052-v102/",
+   "face_mm": {
+    "width": 1000,
+    "height": 1000
+   },
+   "swatch": "g73052_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-make-ash-g73052-80x80-r11",
+   "faces": [
+    {
+     "file": "g73052_01.webp",
+     "face": 1,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 9864,
+     "source_zip": "PLEIN AIR - MAKE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE ASH - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f1acdf150aa44c08af6fa14e7e5f80a585e84390c029c1e5e563510c7425d258",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "MAKE ASH 80X80 R11_20 MM_01",
+      "id": "78006ca4-70f0-4792-84c9-2f570fe0816d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g73052_02.webp",
+     "face": 2,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 10560,
+     "source_zip": "PLEIN AIR - MAKE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE ASH - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f24ba69bf93f4a22945fccf01c8aa17973982f9c439050e2ede5500b5721c3b5",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "MAKE ASH 80X80 R11_20 MM_03",
+      "id": "c531a7de-4bea-4f0b-97b7-d0c55a3bfbfa",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g73052_03.webp",
+     "face": 3,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 9154,
+     "source_zip": "PLEIN AIR - MAKE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE ASH - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8e8d270414b49e6134a7f8eec47d75cad29403d6dbc960262bc3d6063a484697",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "MAKE ASH 80X80 R11_20 MM_02",
+      "id": "e7051fda-f3e7-425f-a6a4-b76696c417ee",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g73052_04.webp",
+     "face": 4,
+     "width_mm": 1000,
+     "height_mm": 1000,
+     "width_px": 600,
+     "height_px": 600,
+     "bytes": 9154,
+     "source_zip": "PLEIN AIR - MAKE ASH - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - MAKE ASH - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c81912f6f2840dcb011d7272ac63f3ef69eccb4b5127d8b3c6a335a529c0dc61",
+     "source_px_per_mm": 2.56,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "MAKE ASH 80X80 R11_20 MM_04",
+      "id": "eff2f7ac-62bc-41fb-98f0-2ff4d45c4a21",
       "site_position": 4
      }
     }

@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/Button";
 
 type EmptyPlanCanvasPromptProps = {
   actions: {
@@ -16,13 +17,12 @@ export function EmptyPlanCanvasPrompt({ actions }: EmptyPlanCanvasPromptProps) {
       <div className="mt-1 text-sm text-neutral-500">
         Start with a room size, then add doors, windows, and furniture.
       </div>
-      <button
-        type="button"
-        className="mt-4 min-h-11 rounded-xl bg-neutral-950 px-4 text-sm font-semibold text-white hover:bg-neutral-800"
+      <Button
+        variant="primary" size="touch" className="mt-4"
         onClick={actions.startRoom}
       >
         Start room
-      </button>
+      </Button>
     </div>
   );
 }

@@ -20,7 +20,7 @@
    },
    "swatch": "0009655_swatch.webp",
    "swatch_note": "the centre 600 x 600 mm of face 01",
-   "used_by": "wall gardenia-wall-tile-gioia-martinica-pf60009655-60x120-90240-0",
+   "used_by": "floor gardenia-flooring-gioia-martinica-pf60009655-60x120-90240-0; wall gardenia-wall-tile-gioia-martinica-pf60009655-60x120-90240-0",
    "faces": [
     {
      "file": "0009655_01.webp",

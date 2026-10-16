@@ -1,0 +1,691 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/sand-raw/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: ETEREA - SAND RAW - minimali.zip (41282678 bytes, sha256 8f28a1213403dcbc712f8945acde87cb4f6c9cc33b22659b868c1e93bfa2851c).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/eterea/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0030752",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/sand-raw/pf60030752-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030752_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-sand-raw-0030752-120x120-nat; wall gardenia-wall-tile-eterea-sand-raw-0030752-120x120-nat",
+   "faces": [
+    {
+     "file": "0030752_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 30028,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - SAND RAW - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f7ffe53fef8f322765af21725d307eceb665302e088251499a6249a74def24d5",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "ETEREA SAND RAW 120x120 NAT_05",
+      "id": "05f42b2b-4c76-462c-b2f4-2b47768b855b",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030752_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 28190,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - SAND RAW - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d748e62f0d505526511978162af951a6b7523c79c0d30486c1ecb86302668dda",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "ETEREA SAND RAW 120x120 NAT_06",
+      "id": "35963555-f69f-470f-9e0c-8319f201d796",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030752_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 30628,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - SAND RAW - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4e106f34b0488d1e4bfd5d91a781420b08858533e5ab9a8b33b8358353befd34",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "ETEREA SAND RAW 120x120 NAT_07",
+      "id": "3cc527d5-f49d-4758-be75-ca50594f7367",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030752_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 34518,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - SAND RAW - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1eb817ed800df5fd4e4a30bcab1c463dfdaa69b385d14588abc250805b6a81f7",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "ETEREA SAND RAW 120x120 NAT_08",
+      "id": "60c15635-853f-4652-a5ee-1c402a14c893",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030752_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 33372,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - SAND RAW - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2764153ec0446837bad2ba788f87ef0da892ce39b4c20afe83b7848fa7636733",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "ETEREA SAND RAW 120x120 NAT_01",
+      "id": "6dde5000-bf80-4f16-8626-86b20ed396e1",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030752_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 29430,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - SAND RAW - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "610e152f4f4f89f08a8ef7240a9012eb2c8e7bf24d6ec2108200f6fac3f8dfc8",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "ETEREA SAND RAW 120x120 NAT_04",
+      "id": "97d1ae66-ece7-4bc5-a8d3-56099b89c007",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030752_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 34992,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - SAND RAW - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9b3225032a47bd5427e8bf2b98e9dafa6d60bc902a8ecaca35fc45eb7c2ad9fd",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "ETEREA SAND RAW 120x120 NAT_02",
+      "id": "a6439eaa-7be7-4bcd-9e0c-6185f10db2b2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030752_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 36690,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - SAND RAW - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bb8f92d2ea4b389faac6662fe6456f2c01146ac4195a16c66ffaab6a47bbf33f",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "ETEREA SAND RAW 120x120 NAT_09",
+      "id": "b89a24ed-e1ab-4af7-b780-1686693de65f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030752_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 57092,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - SAND RAW - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      1134,
+      1134
+     ],
+     "source_sha256": "3bcb3724ecc7a4380dbe837583dea8583770c9871c49995a8e59d5ce210ec421",
+     "source_px_per_mm": 0.945,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "ETEREA SAND RAW 120x120 NAT_03",
+      "id": "ca5e7b29-6f12-4331-8909-c9befed15b0d",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0030758",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/sand-raw/pf60030758-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030758_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-sand-raw-0030758-60x120-nat; wall gardenia-wall-tile-eterea-sand-raw-0030758-60x120-nat",
+   "faces": [
+    {
+     "file": "0030758_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17210,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c4d492a052fc7b813100715464daa9508d00f83246e28f33081c39f6547919e9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "ETEREA SAND RAW 60x120 NAT_04",
+      "id": "2744bdff-6494-410c-a29c-cb93d3326b85",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030758_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18580,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "485c217c15c4520297b267c281d508c0aefd997fa11f8a8ba08a271ef04b2fd9",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "ETEREA SAND RAW 60x120 NAT_05",
+      "id": "2f6693c0-c2bb-4e81-8106-150bdb097703",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030758_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16860,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5ecba549ce2c671a853f91c58965f0cddbbb92a37235cb87d4429cafbc698464",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "ETEREA SAND RAW 60x120 NAT_13",
+      "id": "3174a0e6-4ed9-46c7-9fb2-d59d7595a7b1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030758_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15050,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a7471253089e8a90e7a6ef8723e5b19983dc8551c699357e4dcf16425b110167",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "ETEREA SAND RAW 60x120 NAT_12",
+      "id": "4e084dd2-20c1-4f48-abf7-fb2f76b09852",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030758_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14870,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "41d5db02ef8302dd4eafdaad0c819d78997223f243478191e42b641c0748c07a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "ETEREA SAND RAW 60x120 NAT_08",
+      "id": "4ecfa584-bdbb-445f-9855-67eb33e544bd",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030758_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15380,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "205cbdf2eefca3292cef0c19ebb43035cd71d10a9ecdb6f2e7b64cd540599af0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "ETEREA SAND RAW 60x120 NAT_14",
+      "id": "528b66da-de7c-4557-8425-e6de6a4bd9b7",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030758_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13540,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "aa8721f2224240252ce4b305c42f1e6f1f960902438949a8865f1038643b1046",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "ETEREA SAND RAW 60x120 NAT_11",
+      "id": "7cd75e94-8701-421b-86bc-d8e2858e5729",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030758_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15364,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "cc9652a5008a88879a5a10bab1c1db7b899cbbdfc2137d9c7bcf4a88d8218a78",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "ETEREA SAND RAW 60x120 NAT_10",
+      "id": "85006715-d961-4802-a7e4-fb50b0ea87e3",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030758_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17622,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3621b2bf04155ac1a545662a9cdb0d0c5c7a9f2e5e3a9fbdcaa84b4625a38bc5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "ETEREA SAND RAW 60x120 NAT_01",
+      "id": "b63b5f11-e159-499b-a49d-5516dabc7ba3",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0030758_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17994,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "115f250ca737cacf4e14c54c58a21dc60624edd4d60f5c8372a6321422c742fe",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "ETEREA SAND RAW 60x120 NAT_06",
+      "id": "be7c7c52-9554-4c00-8a66-4d28d3cd1420",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0030758_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 18402,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "34acb99bbd50a38feb6b1e851cc36334e3ede9f6ba280341e249912984114466",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "ETEREA SAND RAW 60x120 NAT_03",
+      "id": "c8f0828d-da55-48ff-bf4a-669f8ddd48fe",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0030758_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 20376,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "52a41b9d1715f21e5a8697d1f03c5b9aa09455ee75c44ce1a7d1843afb0e0d21",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "ETEREA SAND RAW 60x120 NAT_18",
+      "id": "d05c697d-f63f-47ad-9536-7b90994c58af",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0030758_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17100,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1d4d005f06805eafa8f230289bfb5fb7e069e373c730adb13783a21ba478410f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 13",
+      "name": "ETEREA SAND RAW 60x120 NAT_15",
+      "id": "d09da932-9655-4eb7-a3e5-8d0dc3b3a82f",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0030758_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 15178,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a189e4a34febb1ab56c06946061159db75c5eb8fbc1cd409bd77f6eb355c0588",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 14",
+      "name": "ETEREA SAND RAW 60x120 NAT_02",
+      "id": "d48bdadf-b589-4165-92f6-e0745fcc4c7e",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0030758_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 16384,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0db9158af929c972bbaa399f220f70139f3ca5ea37a5691d3ce7c78ff707d4fb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 15",
+      "name": "ETEREA SAND RAW 60x120 NAT_17",
+      "id": "d52eb376-ea38-4a60-97bb-647c4f603571",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0030758_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 17878,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "12a5eb979a73b9464d001bed118d669e9a86f742e460bba3f8cb0e26970454b7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 16",
+      "name": "ETEREA SAND RAW 60x120 NAT_16",
+      "id": "f27411f7-8af1-405a-97e1-8abf56cd6a41",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0030758_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14680,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "0ffde8e9d4f3b5830d7d5d06f4d2b91798e7d5079c67faf93e12c3571f031930",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 17",
+      "name": "ETEREA SAND RAW 60x120 NAT_09",
+      "id": "f8fdef87-420f-442a-8ad9-1adfa2b7f832",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0030758_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 14804,
+     "source_zip": "ETEREA - SAND RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - SAND RAW - 60X120 - Natural - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "bb79087c363d0bd5ba3c47fabec5f15a2ca521e2fffc4eae6d989a76aba94827",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 18",
+      "name": "ETEREA SAND RAW 60x120 NAT_07",
+      "id": "f9762334-aa3f-4883-b0bb-209c97a3203c",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

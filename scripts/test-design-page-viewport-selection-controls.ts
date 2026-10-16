@@ -49,12 +49,6 @@ assert.match(
   "The viewport adapter should resolve selection-control policy at the viewport boundary."
 );
 assert.ok(
-  normalizedViewportAdapter.includes(
-    "selectionControls: { dark: configuration.dark }"
-  ),
-  "The viewport adapter should map the resolved theme into selection controls."
-);
-assert.ok(
   normalizedViewportWorkspace.includes(
     "floorStack: { switchFloor: documentRoom.actions.floor.handleSwitchFloor"
   ),
@@ -67,7 +61,7 @@ assert.match(
 );
 assert.ok(
   normalizedViewportOverlay.includes(
-    "<DesignPageViewportSelectionControls state={state.selectionControls} configuration={configuration.selectionControls} actions={actions.selectionControls} />"
+    "<DesignPageViewportSelectionControls state={state.selectionControls} actions={actions.selectionControls} />"
   ),
   "The viewport layer should render grouped selection controls without reinterpreting live policy."
 );
@@ -173,7 +167,6 @@ assert.match(
 
 for (const contractName of [
   "DesignPageViewportSelectionControlsState",
-  "DesignPageViewportSelectionControlsConfiguration",
   "DesignPageViewportSelectionControlsActions",
 ] as const) {
   assert.match(
@@ -294,7 +287,7 @@ const consumerState = resolveDesignPageViewportSelectionControlsState({
 assert.deepEqual(consumerState.multiSelection, { count: 2, zoneType: "seating", zoneTools: false });
 assert.equal(consumerState.selectedZone, null);
 const multiSelectionToolbar = readSource("components/editor/design-page/MultiSelectionToolbar.tsx");
-assert.match(multiSelectionToolbar, /Align Z centre\s*<\/button>\s*\{state\.zoneTools \? <ZoneCreateControls /);
+assert.match(multiSelectionToolbar, /Align Z centre\s*<\/Button>\s*\{state\.zoneTools \? <ZoneCreateControls /);
 assert.match(multiSelectionToolbar, /function ZoneCreateControls\([\s\S]*?Create zone/);
 
 console.log("Design-page viewport selection-control ownership checks passed.");

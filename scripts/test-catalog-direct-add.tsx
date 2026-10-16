@@ -51,13 +51,13 @@ assert.match(
 const furnishPanel = read("components/editor/DesignControlsFurnishPanel.tsx");
 assert.match(furnishPanel, /<PlacementAddModeToggle visible=\{isDesigner\} mode=\{placementAddMode\} onChange=\{onPlacementAddModeChange\} \/>/);
 assert.match(furnishPanel, /onAddToRoom=\{onAddCatalogItemToRoom\} directAdd=\{!isDesigner\}/);
-assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsFurnishPanel\s+dark=\{dark\}\s+canEdit=\{canEdit\} canChangeProducts=\{canChangeProducts\} isDesigner=\{isDesigner\}/);
+assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsFurnishPanel\s+canEdit=\{canEdit\} canChangeProducts=\{canChangeProducts\} isDesigner=\{isDesigner\}/);
 const catalogPanel = read("components/catalog/CatalogPanel.tsx");
 assert.match(catalogPanel, /placesDirectly=\{directAdd\} addDisabled=\{!canEdit\} onChooseSpot=\{onAutoPlaceInRoom\}/);
 assert.equal(renderToStaticMarkup(createElement(PlacementAddModeToggle, { visible: false, mode: "auto", onChange: noop })), "");
 const toggle = renderToStaticMarkup(createElement(PlacementAddModeToggle, { visible: true, mode: "preview", onChange: noop }));
-assert.match(toggle, /data-testid="placement-add-mode-preview" data-active="true"[^>]*>Preview add</);
-assert.match(toggle, /data-testid="placement-add-mode-auto" data-active="false"[^>]*>Auto add</);
+assert.match(toggle, /aria-pressed="true" data-testid="placement-add-mode-preview"[^>]*>Preview add</);
+assert.match(toggle, /aria-pressed="false" data-testid="placement-add-mode-auto"[^>]*>Auto add</);
 
 // The drawer: consumers add in one step, or choose where it goes; Pro previews first.
 const drawer = (placesDirectly: boolean, onChooseSpot?: () => void, addDisabled?: boolean) =>

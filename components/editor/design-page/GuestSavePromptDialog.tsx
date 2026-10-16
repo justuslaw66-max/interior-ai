@@ -58,7 +58,6 @@ export function GuestSavePromptDialog({
       returnFocusIds={reason ? getGuestPromptReturnFocusIds(reason) : undefined}
       cancelFocusRestorationOnUnmount
       manageBackground
-      forceLight
       panelClassName="max-h-[calc(100dvh-2rem)] overflow-y-auto"
       footer={
         <EditorDialogActions>

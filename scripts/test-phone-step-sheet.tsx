@@ -116,7 +116,7 @@ assert.match(read("components/editor/renderers/RoomRenderer2D.tsx"), /if \(planZ
 // that's hidden while the sheet only peeks.
 const sheet = (collapsed: boolean) =>
   renderToStaticMarkup(
-    <PhoneStepSheet dark={false} title="Furnish" subtitle="Add real purchasable furniture." collapsed={collapsed} onCollapsedChange={noop}>
+    <PhoneStepSheet title="Furnish" subtitle="Add real purchasable furniture." collapsed={collapsed} onCollapsedChange={noop}>
       <p>Products</p>
     </PhoneStepSheet>
   );
@@ -158,7 +158,8 @@ const placementSource = read("components/editor/design-page/selectionInspectorPl
 assert.match(placementSource, /const takesOver = isPhoneSheetInspectorSelection\(state\);\s*const inSheet = !wide && Boolean\(sheet\.slot\) && takesOver;/);
 assert.match(placementSource, /if \(inSheet\) return \{ shown: true, inSheet, portalTarget: sheet\.slot \};/, "In the sheet, it goes into the slot.");
 assert.match(inspectorSource, /const placement = useInspectorPlacement\(state, configuration\);/);
-assert.match(placementSource, /const clearClassName = placement\.inSheet \? `\$\{clear\} min-h-11 px-2 py-1` : `\$\{clear\} grid h-8 w-8 shrink-0 place-items-center touch:h-11 touch:w-11`;/, "Done is a 44px target; × Deselect 32px, 44px on touch.");
+assert.match(placementSource, /if \(placement\.inSheet\) return \{ className: surface, clearSize: "touch" as const,[\s\S]*?clearSize: "icon" as const, style \};/, "Done is a 44px target; × Deselect 36px, 44px on touch (UX 5n).");
+assert.match(inspectorSource, /<Button\s+size=\{frame\.clearSize\}\s+data-testid="selection-inspector-clear"/);
 assert.match(inspectorSource, /aria-label=\{placement\.inSheet \? undefined : `Deselect \$\{state\.summary\.title\}`\}[\s\S]*?\{placement\.inSheet \? "Done" : <X className="h-4 w-4" aria-hidden="true" \/>\}/, "Done deselects, in the sheet; elsewhere × Deselect <name> (UX 4f, ED7).");
 assert.match(inspectorSource, /if \(!placement\.shown\) return null;\s*return placement\.portalTarget \? createPortal\(inspector, placement\.portalTarget\) : inspector;/);
 assert.match(read("components/editor/design-page/SelectedPlanOpeningActions.tsx"), /absolute left-1\/2 top-bar-28 z-30 hidden [^"]*md:flex"/, "The phone's door and window bar goes.");
@@ -170,9 +171,9 @@ assert.match(frame, /const wide = useMediaQuery\(CANVAS_TOOLBAR_MEDIA_QUERY\);[\
 // One component draws the sheet and the column (UX 4d), so crossing md (a phone turned sideways,
 // hydrating on a desktop) keeps the step's content mounted: an open product's details survived.
 assert.equal(frame.match(/<PhoneStepSheet /g)?.length, 1, "The frame renders one PhoneStepSheet, for both.");
-assert.match(frame, /<PhoneStepSheet dark=\{dark\} title=\{title\} subtitle=\{subtitle\} collapsed=\{props\.collapsed\} onCollapsedChange=\{onCollapsedChange\} column=\{column\}>/);
+assert.match(frame, /<PhoneStepSheet title=\{title\} subtitle=\{subtitle\} collapsed=\{props\.collapsed\} onCollapsedChange=\{onCollapsedChange\} column=\{column\}>/);
 const columnPanel = renderToStaticMarkup(
-  <PhoneStepSheet dark={false} title="Furnish" subtitle="x" collapsed={false}
+  <PhoneStepSheet title="Furnish" subtitle="x" collapsed={false}
     column={{ className: "absolute top-bar-2 z-20", temporarilyRevealed: false, header: <div>Furnish</div>, onMouseEnter: noop, onMouseLeave: noop }}>
     <p>Products</p>
   </PhoneStepSheet>
@@ -182,7 +183,7 @@ assert.equal(
   '<section data-testid="design-controls-panel" data-temporary-reveal="false" class="absolute top-bar-2 z-20"><div>Furnish</div><div class="space-y-3"><div data-testid="phone-sheet-inspector" hidden=""></div><div class="space-y-3"><p>Products</p></div></div></section>',
   "The column: its header, then the same body as the sheet's, with the step's content in the same place."
 );
-assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsPanelFrame\s+dark=\{dark\}/);
+assert.match(read("components/editor/DesignControlsPanel.tsx"), /<DesignControlsPanelFrame/);
 const model = read("lib/useDesignPagePlanPresentationModel.ts");
 assert.match(model, /const phoneSheetHeightPx = usePhoneSheetState\(\)\.heightPx;/);
 assert.match(model, /plan2DSafeAreaTopPx: phoneInsets\.topPx,\s*plan2DSafeAreaBottomPx: phoneInsets\.bottomPx,/);

@@ -2,8 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
 import { auditSurfaceMaterialEntry } from "../lib/surface-material-audit";
+import {
+  buildSurfaceMaterialOutdoorProfiles,
+  getSurfaceMaterialOutdoorFailures,
+} from "../lib/surface-material-outdoor";
+import { getSurfaceMaterialChevronFailures } from "../lib/surface-chevron-layout";
 import { getSurfacePhysicalAssetFailures } from "../lib/surface-material-physical-sampling";
-import type { SurfaceMaterial } from "../lib/surface-material-schema";
+import type { SurfaceMaterial, SurfaceMaterialOutdoorProfile } from "../lib/surface-material-schema";
 import type {
   SurfaceMaterialCatalogMetadata,
   SurfaceMaterialRenderBaseTuple,
@@ -66,7 +71,12 @@ function findCatalogFiles(rootDir: string): string[] {
 function readSurfaceMaterial(filePath: string): SurfaceMaterialYamlEntry {
   const entry = parse(fs.readFileSync(filePath, "utf8")) as SurfaceMaterial;
   const audit = auditSurfaceMaterialEntry(entry, filePath);
-  const failures = [...audit.failures, ...getSurfacePhysicalAssetFailures(entry)];
+  const failures = [
+    ...audit.failures,
+    ...getSurfacePhysicalAssetFailures(entry),
+    ...getSurfaceMaterialOutdoorFailures(entry),
+    ...getSurfaceMaterialChevronFailures(entry),
+  ];
   if (failures.length > 0) {
     throw new Error(
       `Invalid surface material ${path.relative(process.cwd(), filePath)}:\n${failures.join("\n")}`
@@ -97,9 +107,12 @@ function toRenderTuple(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderTu
   const base = toBaseRenderTuple(entry);
   const imagePhysicalSizeMm = entry.texture_assets.image_physical_size_mm ?? null;
   const faces = entry.texture_assets.faces ?? null;
+  const chevronEndOffsetMm = entry.physical_specs.chevron_end_offset_mm ?? null;
   // Trailing fields are emitted only when present, so existing tuples stay byte-identical.
   // Numbered faces of one size are written as a run, which the runtime expands to the same list.
-  if (faces) return [...base, imagePhysicalSizeMm, compactSurfaceTextureFaces(faces) ?? faces];
+  const facesData = faces ? compactSurfaceTextureFaces(faces) ?? faces : null;
+  if (chevronEndOffsetMm) return [...base, imagePhysicalSizeMm, facesData, chevronEndOffsetMm];
+  if (faces) return [...base, imagePhysicalSizeMm, facesData];
   if (imagePhysicalSizeMm) return [...base, imagePhysicalSizeMm];
   return base;
 }
@@ -158,6 +171,7 @@ function toRenderRecord(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderR
       plank_length_mm: tuple[10],
       tile_width_mm: tuple[11],
       tile_length_mm: tuple[12],
+      ...(tuple[33] ? { chevron_end_offset_mm: tuple[33] } : {}),
     },
     texture_assets: {
       swatch_url: tuple[13],
@@ -185,7 +199,10 @@ function toRenderRecord(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderR
   };
 }
 
-function toCatalogMetadata(entry: SurfaceMaterialYamlEntry): SurfaceMaterialCatalogMetadata {
+function toCatalogMetadata(
+  entry: SurfaceMaterialYamlEntry,
+  outdoor: SurfaceMaterialOutdoorProfile | undefined
+): SurfaceMaterialCatalogMetadata {
   return {
     material_id: entry.surface_material.material_id,
     surface_material: { collection: entry.surface_material.collection ?? null },
@@ -198,6 +215,8 @@ function toCatalogMetadata(entry: SurfaceMaterialYamlEntry): SurfaceMaterialCata
       tone: entry.classification.tone,
       style_cluster: entry.classification.style_cluster,
       room_suitability: entry.classification.room_suitability,
+      // Only outdoor floors carry it, so the other entries' data stays as it was.
+      ...(outdoor ? { outdoor } : {}),
     },
     physical_specs: {
       total_thickness_mm: entry.physical_specs.total_thickness_mm ?? null,
@@ -248,7 +267,10 @@ function buildRenderFile(entries: SurfaceMaterialYamlEntry[]): string {
 }
 
 function buildCatalogFile(entries: SurfaceMaterialYamlEntry[]): string {
-  const metadata = sortMaterials(entries).map(toCatalogMetadata);
+  const outdoorProfiles = buildSurfaceMaterialOutdoorProfiles(entries);
+  const metadata = sortMaterials(entries).map((entry) =>
+    toCatalogMetadata(entry, outdoorProfiles.get(entry.surface_material.material_id))
+  );
   return `${[
     ...generatedHeader(),
     'import type { SurfaceMaterialCatalogMetadata } from "../surface-material-runtime-types";',

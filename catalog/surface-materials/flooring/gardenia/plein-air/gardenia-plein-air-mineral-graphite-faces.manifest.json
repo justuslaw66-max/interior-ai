@@ -1,0 +1,172 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-graphite/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - MINERAL GRAPHITE - minimali.zip (2152992 bytes, sha256 c1f2edb401a629be1ab48efb7bd477a52dcfcf00fd528167f7d20a4e45d0085d).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0001822",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-graphite/pf60001822-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0001822_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-mineral-graphite-0001822-60x120-r11",
+   "faces": [
+    {
+     "file": "0001822_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 60092,
+     "source_zip": "PLEIN AIR - MINERAL GRAPHITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GRAPHITE - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      1535,
+      768
+     ],
+     "source_sha256": "c4f131f039ecfe409eaf4ed2ed8e9ba6218ea2fa35f35a57e73074223bc7a9a5",
+     "source_px_per_mm": 1.279,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 1 (view_01)",
+      "name": "GRAPHITE 60X120_01",
+      "id": "a3f5a3c7-6401-4dce-aa9a-9b463e31b699",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0001822_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 65514,
+     "source_zip": "PLEIN AIR - MINERAL GRAPHITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GRAPHITE - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      1535,
+      768
+     ],
+     "source_sha256": "df356ea97b16034cf5248e235f4286a9f4e55f789be07d3739ed33ad55e0fbb1",
+     "source_px_per_mm": 1.279,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 2 (view_02)",
+      "name": "GRAPHITE 60X120_02",
+      "id": "3a5dac11-2b06-4906-8728-3deec23502b9",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0001822_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 68278,
+     "source_zip": "PLEIN AIR - MINERAL GRAPHITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GRAPHITE - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      1535,
+      768
+     ],
+     "source_sha256": "c69878cb22afb57be211cdd26f8c403cfc5472aa1c598c81123fba5faaf00ca1",
+     "source_px_per_mm": 1.279,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 3 (view_03)",
+      "name": "GRAPHITE 60X120_03",
+      "id": "d8803314-8297-4db1-afd1-40b717c163ff",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0001822_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 67750,
+     "source_zip": "PLEIN AIR - MINERAL GRAPHITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GRAPHITE - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      1535,
+      768
+     ],
+     "source_sha256": "24869413814f89327efb1ef8c35ad61c54c06e53e2ac639d98dc38cc372c5598",
+     "source_px_per_mm": 1.279,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 4 (view_04)",
+      "name": "GRAPHITE 60X120_04",
+      "id": "b7776afe-d34c-4542-b089-047e012444b4",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0001822_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 74884,
+     "source_zip": "PLEIN AIR - MINERAL GRAPHITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GRAPHITE - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      1535,
+      768
+     ],
+     "source_sha256": "b80400da8cf2fb049490b04066f70381a0667bb4925e9c28153617477827ed1a",
+     "source_px_per_mm": 1.279,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 5 (view_05)",
+      "name": "GRAPHITE 60X120_05",
+      "id": "7f057df0-0db6-42ae-a878-5e7879e4cf9f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0001822_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 72750,
+     "source_zip": "PLEIN AIR - MINERAL GRAPHITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL GRAPHITE - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      1535,
+      768
+     ],
+     "source_sha256": "11fdeaaeabb69c457525379b3c7109b89c8bbc03a531384cc49f2fce95a5a7ef",
+     "source_px_per_mm": 1.279,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 6 (view_06)",
+      "name": "GRAPHITE 60X120_06",
+      "id": "2b353da0-af82-40fc-9810-596e78278e83",
+      "site_position": 6
+     }
+    }
+   ]
+  }
+ ]
+}

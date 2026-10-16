@@ -6,10 +6,10 @@ import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayArea } from "@/lib/display-units";
 
 import { floorPlanOrientationLabel } from "./FloorPlanSelectionContext";
+import { Button } from "@/components/ui/Button";
 type ResultGroup = { projectName: string; plans: FloorPlanCatalogSearchResult[] };
 
 type FloorPlanCatalogResultListProps = {
-  dark: boolean;
   canEdit: boolean;
   groups: ResultGroup[];
   resultListId?: string;
@@ -21,7 +21,6 @@ type FloorPlanCatalogResultListProps = {
 };
 
 export default function FloorPlanCatalogResultList({
-  dark,
   canEdit,
   groups,
   resultListId,
@@ -31,7 +30,7 @@ export default function FloorPlanCatalogResultList({
   onUse,
   measurementUnit,
 }: FloorPlanCatalogResultListProps) {
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
+  const subtle = "text-neutral-600";
   return (
     <div id={resultListId} className="mt-2 grid gap-4" data-testid={testId}>
       {groups.map((group) => (
@@ -47,11 +46,9 @@ export default function FloorPlanCatalogResultList({
                 <article
                   key={result.id}
                   data-testid={`floor-plan-library-result-${result.layoutId}`}
-                  className={`ph-no-capture ${dark
-                    ? "designer-control overflow-hidden rounded-lg border border-white/10"
-                    : "overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm"}`}
+                  className="ph-no-capture overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm"
                 >
-                  <div className={dark ? "bg-white" : "bg-neutral-50"}>
+                  <div className="bg-neutral-50">
                     {result.previewUrl ? (
                       <Image
                         src={result.previewUrl}
@@ -91,28 +88,22 @@ export default function FloorPlanCatalogResultList({
                     <p data-testid="floor-plan-orientation" className={`mt-1 text-xs ${subtle}`}>{floorPlanOrientationLabel(result)} Preview shows the published source when available.</p>
                     <p className={`mt-1 text-xs leading-4 ${subtle}`}>{result.verificationNote}</p>
                     <div className="mt-3 grid gap-2">
-                      <button
-                        type="button"
+                      <Button
                         data-testid={`apply-address-floor-plan-${result.layoutId}`}
                         disabled={!canEdit || applyingResultId !== null}
                         aria-busy={isApplying}
                         onClick={() => onUse(result, true)}
-                        className={dark
-                          ? "rounded-md bg-emerald-300 px-3 py-2 text-xs font-semibold text-emerald-950 hover:bg-emerald-200 disabled:opacity-50"
-                          : "rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50"}
+                        variant="primary" size="compact"
                       >
                         {isApplying ? "Opening…" : "Start a new design"}
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
                         disabled={!canEdit || applyingResultId !== null}
                         onClick={() => onUse(result, false)}
-                        className={dark
-                          ? "designer-control rounded-md border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
-                          : "rounded-md border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"}
+                        variant="secondary" size="compact"
                       >
                         Replace current design…
-                      </button>
+                      </Button>
                     </div>
                     <div className="mt-2 flex flex-wrap gap-3">
                       {result.sourceUrl && result.sourcePage !== null ? (

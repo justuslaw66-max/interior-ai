@@ -51,7 +51,7 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-assert.equal(records.length, 1246, "the browser must join all 1246 render and catalog identities");
+assert.equal(records.length, 1405, "the browser must join all 1405 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);
@@ -75,8 +75,8 @@ assert.equal(
 );
 assert.equal(
   getSurfaceMaterialGroupSizeLabels(doricaGroup).length,
-  5,
-  "the Dorica Crema browser group must retain all five size variants"
+  6,
+  "the Dorica Crema browser group must retain all six size variants (the outdoor 60x120 R11 since 13 Oct 2026)"
 );
 
 const dorica120 = doricaGroup.variants.find(
@@ -111,10 +111,10 @@ const allOptions = buildSurfaceFilterOptions(records, undefined);
 assert.deepEqual(allOptions.brand, ["Florim", "Gardenia & Ariana", "Goodrich Global"]);
 assert.ok(allOptions.collection.includes("Ardoise") && allOptions.collection.includes("Dorica"));
 const gardeniaOptions = buildSurfaceFilterOptions(records, "Gardenia & Ariana");
-assert.equal(gardeniaOptions.collection.length, 21, "Gardenia & Ariana's 21 collections");
+assert.equal(gardeniaOptions.collection.length, 23, "Gardenia & Ariana's 23 collections");
 assert.ok(gardeniaOptions.collection.includes("Dorica") && !gardeniaOptions.collection.includes("Ardoise"));
 assert.ok(
-  ["Hermione", "Concrea Plain", "Just Nature", "Luce", "Storm", "Epoque 2.0", "Camouflage", "Block"].every((name) =>
+  ["Hermione", "Concrea Plain", "Just Nature", "Luce", "Storm", "Epoque 2.0", "Camouflage", "Block", "Eterea", "Plein Air"].every((name) =>
     gardeniaOptions.collection.includes(name)
   )
 );
@@ -239,6 +239,22 @@ for (const [field, query] of [
     runProductionSurfaceFilter({ search: query, productGroups: searchFixtureGroups }).length,
     1,
     `surface search must retain product, ID, supplier, collection, and suitability terms (case: ${field})`
+  );
+}
+
+// Outdoor floors are found by where they go (13 Oct 2026) and how they're laid (14 Oct 2026, ABK's Plein Air catalogue): "terrace",
+// "patio", "pool", "outdoor", "driveway", "steps", "shower", "grass", "gravel" and "raised" find every card with an outdoor size
+// and no other card. ("garden" is part of every Gardenia name, so it isn't a test of this.)
+const outdoorGroupIds = groups
+  .filter((group) => group.variants.some((variant) => variant.classification.outdoor))
+  .map((group) => group.id)
+  .sort();
+assert.equal(outdoorGroupIds.length, 66, "cards with an outdoor size: 36 of catalogued colours, 30 of Plein Air's own");
+for (const query of ["terrace", "Patio", "pool", "outdoor", "driveway", "steps", "shower", "grass", "Gravel", "raised"]) {
+  assert.deepEqual(
+    runProductionSurfaceFilter({ search: query }).map((group) => group.id).sort(),
+    outdoorGroupIds,
+    `a search for "${query}" finds the cards with an outdoor size`
   );
 }
 

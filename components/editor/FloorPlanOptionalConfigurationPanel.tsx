@@ -8,6 +8,7 @@ import {
   type FloorPlanAuthoredConfigurationVariant,
 } from "@/lib/floor-plan-optional-configurations";
 import type { PublicFloorPlanAuthoredVariantGroup } from "@/lib/floor-plan-authored-variant-links";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanOptionalConfigurationPanelProps = {
   document: FloorPlanDocumentV2;
@@ -20,7 +21,6 @@ type FloorPlanOptionalConfigurationPanelProps = {
     option: PublicFloorPlanAuthoredVariantGroup["options"][number]
   ) => void;
   disabled?: boolean;
-  dark?: boolean;
   compact?: boolean;
 };
 
@@ -32,7 +32,6 @@ export default function FloorPlanOptionalConfigurationPanel({
   selectedRevisionId,
   onChoosePublicVariant,
   disabled = false,
-  dark = false,
   compact = false,
 }: FloorPlanOptionalConfigurationPanelProps) {
   const suggestions = useMemo(
@@ -41,14 +40,12 @@ export default function FloorPlanOptionalConfigurationPanel({
   );
   if (!suggestions.length && !publicGroups.length) return null;
 
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
+  const subtle = "text-neutral-600";
   return (
     <section
       aria-label="Source-supported floor-plan options"
       data-testid="floor-plan-optional-configurations"
-      className={dark
-        ? "mt-3 rounded-lg border border-sky-300/20 bg-sky-300/5 p-3"
-        : "mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3"}
+      className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3"
     >
       <div className="text-xs font-semibold">Options shown in the source</div>
       <p className={`mt-1 text-xs leading-4 ${subtle}`}>
@@ -60,9 +57,7 @@ export default function FloorPlanOptionalConfigurationPanel({
           {publicGroups.map((group) => (
             <fieldset
               key={group.groupId}
-              className={dark
-                ? "rounded-md border border-white/10 bg-white/5 p-2"
-                : "rounded-md border border-sky-100 bg-white p-2"}
+              className="rounded-md border border-sky-100 bg-white p-2"
             >
               <legend className="px-1 text-xs font-semibold">{group.label}</legend>
               <div className="mt-1 grid gap-1.5">
@@ -99,9 +94,7 @@ export default function FloorPlanOptionalConfigurationPanel({
           return (
             <div
               key={`${suggestion.floorId}:${suggestion.annotationId}`}
-              className={dark
-                ? "rounded-md border border-white/10 bg-white/5 p-2"
-                : "rounded-md border border-sky-100 bg-white p-2"}
+              className="rounded-md border border-sky-100 bg-white p-2"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
@@ -125,14 +118,13 @@ export default function FloorPlanOptionalConfigurationPanel({
                 </span>
               </div>
               {hasSelectableVariant ? (
-                <button
-                  type="button"
-                  className="mt-2 w-full rounded-md bg-sky-700 px-2 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                <Button
+                  variant="primary" size="compact" className="mt-2 w-full"
                   disabled={disabled}
                   onClick={() => onChooseVariant!(suggestion.variant!)}
                 >
                   Use reviewed {suggestion.variant!.label}
-                </button>
+                </Button>
               ) : (
                 <p className={`mt-1 text-xs leading-4 ${subtle}`}>
                   {suggestion.status === "authored_variant_available"

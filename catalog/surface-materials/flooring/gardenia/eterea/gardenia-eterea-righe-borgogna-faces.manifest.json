@@ -1,0 +1,52 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/righe-borgogna/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: ETEREA - RIGHE BORGOGNA - minimali.zip (149822 bytes, sha256 619dce13d7aa93d1cc94d1b5252b286984453fa2df5d12b9dc3463b0248fee06).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/eterea/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0030968",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/righe-borgogna/pf60030968-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030968_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-righe-borgogna-0030968-60x120-nat; wall gardenia-wall-tile-eterea-righe-borgogna-0030968-60x120-nat",
+   "faces": [
+    {
+     "file": "0030968_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4248,
+     "source_zip": "ETEREA - RIGHE BORGOGNA - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - RIGHE BORGOGNA - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      1282
+     ],
+     "source_sha256": "6de570df011f8c6ef78f3ff17d84f4f7b85e63e2ebe96f3a439ee79e3ca5c0ab",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "ETEREA RIGHE BORGOGNA 60X120 NAT",
+      "id": "2d457525-8333-4f6a-8856-e82eed953590",
+      "site_position": 1
+     }
+    }
+   ]
+  }
+ ]
+}

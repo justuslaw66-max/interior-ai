@@ -2,6 +2,8 @@
 
 import type { KeyboardEvent } from "react";
 import SurfacePatternPreview from "@/components/editor/design-page/SurfacePatternPreview";
+import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { RoomFloorPattern } from "@/lib/room-types";
 
 export type SurfaceGroutState = {
@@ -36,11 +38,6 @@ export type SurfacePatternActions = SurfaceGroutActions & {
 };
 
 const LABEL = "text-xs font-semibold text-neutral-700";
-const CHOICE = "min-h-8 rounded-lg px-2 py-1 text-xs font-semibold touch:min-h-11";
-const choiceClass = (selected: boolean) =>
-  selected
-    ? `${CHOICE} bg-neutral-900 text-white`
-    : `${CHOICE} border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100`;
 
 type GroutProps = { grout: SurfaceGroutState; actions: SurfaceGroutActions; testIdPrefix: "surface" | "wall-surface" };
 
@@ -78,14 +75,9 @@ export function SurfaceGroutControls({ grout, actions, testIdPrefix }: GroutProp
       <div className="mt-1 grid grid-cols-[1fr_auto] gap-2">
         <div className={`block ${LABEL}`}>
           Grout size
-          <div className="mt-1 grid grid-cols-3 gap-1">
-            {grout.groutSizes.map((size) => (
-              <button key={size.valueMm} type="button" data-testid={size.testId} aria-pressed={size.selected} disabled={grout.disabled}
-                className={choiceClass(size.selected)} onClick={() => actions.onSelectGroutSize(size.valueMm)}>
-                {size.valueMm} mm
-              </button>
-            ))}
-          </div>
+          <SegmentedControl label="Grout size" className="mt-1" size="compact" fill disabled={grout.disabled}
+            value={grout.groutSizes.find((size) => size.selected)?.valueMm ?? null} onChange={actions.onSelectGroutSize}
+            options={grout.groutSizes.map((size) => ({ value: size.valueMm, label: `${size.valueMm} mm`, testId: size.testId }))} />
         </div>
         <div className={`block ${LABEL}`}>
           Colour
@@ -158,7 +150,7 @@ function PatternChoices({ pattern, actions }: PatternProps) {
             }
             onClick={() => actions.onSelectPattern(option.id)}
           >
-            <SurfacePatternPreview pattern={option.id} dark={false} />
+            <SurfacePatternPreview pattern={option.id} />
             <span className="sr-only">{option.label}</span>
           </button>
         ))}
@@ -171,14 +163,9 @@ function PatternRotationAndSize({ pattern, actions }: PatternProps) {
   return (
     <>
       <div className={`mt-2 ${LABEL}`}>Rotation</div>
-      <div className="mt-1 grid grid-cols-4 gap-1">
-        {pattern.rotations.map((rotation) => (
-          <button key={rotation.value} type="button" data-testid={`surface-rotation-${rotation.value}`} aria-pressed={rotation.selected}
-            className={choiceClass(rotation.selected)} disabled={pattern.disabled} onClick={() => actions.onSelectRotation(rotation.value)}>
-            {rotation.value}°
-          </button>
-        ))}
-      </div>
+      <SegmentedControl label="Rotation" className="mt-1" size="compact" fill disabled={pattern.disabled}
+        value={pattern.rotations.find((rotation) => rotation.selected)?.value ?? null} onChange={actions.onSelectRotation}
+        options={pattern.rotations.map((rotation) => ({ value: rotation.value, label: `${rotation.value}°`, testId: `surface-rotation-${rotation.value}` }))} />
       <label className={`mt-2 block ${LABEL}`}>
         Pattern size · {pattern.scale.toFixed(2)}x
         <input
@@ -209,10 +196,10 @@ function PatternMove({ pattern, actions }: PatternProps) {
       <div className={LABEL}>Move pattern</div>
       <div className="mt-1 grid grid-cols-4 gap-1">
         {MOVES.map((move) => (
-          <button key={move.label} type="button" data-testid={`surface-offset-${move.label.toLowerCase()}`} className={choiceClass(false)}
+          <Button key={move.label} size="compact" data-testid={`surface-offset-${move.label.toLowerCase()}`}
             disabled={pattern.disabled} onClick={() => actions.onMovePattern(move.x, move.y)}>
             {move.label}
-          </button>
+          </Button>
         ))}
       </div>
       <div className="mt-1 text-xs text-neutral-600">
@@ -235,12 +222,12 @@ export function SurfacePatternControls({ pattern, actions }: PatternProps) {
       <SurfaceGroutControls grout={pattern} actions={actions} testIdPrefix="surface" />
       <PatternMove pattern={pattern} actions={actions} />
       <div className="mt-2 grid grid-cols-2 gap-1.5">
-        <button type="button" className={choiceClass(false)} disabled={pattern.disabled} onClick={actions.onResetPattern}>
+        <Button size="compact" disabled={pattern.disabled} onClick={actions.onResetPattern}>
           Reset pattern
-        </button>
-        <button type="button" className={choiceClass(false)} disabled={pattern.disabled} onClick={actions.onResetSurface}>
+        </Button>
+        <Button size="compact" disabled={pattern.disabled} onClick={actions.onResetSurface}>
           Reset surface
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ surface_material:
   brand: Gardenia & Ariana
   collection: Tabulae
   material_id: gardenia-flooring-tabulae-refined-miele-nat-pf60021254-30x120-92271-0
-  product_name: Gardenia Tabulae Refined Miele Nat 30x120
+  product_name: Gardenia Tabulae Refined Miele Nat 30x120 R11
   slug: gardenia-flooring-tabulae-refined-miele-nat-pf60021254-30x120-92271-0
   surface_category: flooring
   material_family: tile
@@ -26,6 +26,11 @@ source:
     - "Collection page sizes: 10x60, 5x120, 23.4x148, 20x120, 15x85, 60x120, 60x60, 30x120."
     - "Available configurator formats: PF60021143 20x120 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021158 20x120 ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021254 30x120 PAVIMENTO patterns Sfals_random_1,pieno_01,Spina_01; PF60021149 5x120 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021109 23,4x148 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01; PF60021147 10x60 Nat ENTRAMBE patterns Sfals_random_1,pieno_01,Spina_01."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "Outdoor size (J, 2026-10-13: follow what ABK says): ABK lists item 0021254 on its Plein Air pages, colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/tabulae-refined-miele/30x120/: TABULAE REFINED MIELE 30X120, finish R11, thickness 20 mm, porcelain stoneware. The July configurator import had not named its finish; it is named and described as the outdoor sizes added on 13 Oct. Balcony is among its rooms."
+    - "Laying and uses: ABK's Plein Air catalogue (January 2026, read 2026-10-14) gives every Plein Air tile five ways to be laid (glued, the one for floors vehicles drive over; dry on grass, on gravel or on sand; raised on pedestals 25 to 270 mm high) and names its places: driveways and parking areas, stepping stones and lawn walkways, courtyards, raised terraces, planters, pool areas, steps, external showers and pool walkways."
+    - "Packing (ABK's Plein Air technical sheet, read 2026-10-14): 30x120 rectified, real size 296x1195.5 mm, 2 tiles and 0.72 m² per box, 45.3 kg/m², 32.6 kg per box, 30 boxes per pallet."
+    - "Special pieces in this colour (ABK's Plein Air catalogue, read 2026-10-14): grille, corner grilles, bullnose, L element, L element grip, step edge; lib/surface-material-plein-air-system.ts lists their sizes and item codes."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: wood
@@ -47,22 +52,36 @@ classification:
     - kitchen
     - bathroom
     - hallway
+    - balcony
     - commercial
     - hospitality
+  outdoor_uses:
+    - terrace
+    - balcony
+    - patio
+    - garden
+    - path
+    - pool_edge
+    - driveway
+    - steps
+    - outdoor_shower
 physical_specs:
   plank_or_tile_format: tile
   plank_width_mm: null
   plank_length_mm: null
   tile_width_mm: 1200
   tile_length_mm: 300
-  total_thickness_mm: null
+  total_thickness_mm: 20
   wear_layer_mm: null
   installation_method:
     - direct_stick
+    - dry_lay_on_grass
+    - dry_lay_on_gravel_or_sand
+    - raised_installation
   waterproof: null
-  slip_rating: null
+  slip_rating: R11
   suitable_for_wet_area: null
-  suitable_for_outdoor: null
+  suitable_for_outdoor: true
   commercial_grade: null
 texture_assets:
   swatch_url: /assets/catalog/surface-materials/gardenia/tabulae/0021254_swatch.webp
@@ -155,18 +174,16 @@ rendering:
     - straight
     - herringbone
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_physical_dimensions
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant

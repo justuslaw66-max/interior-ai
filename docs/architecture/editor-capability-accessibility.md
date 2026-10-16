@@ -46,6 +46,12 @@ export and design persistence routes retain those independent checks.
 - Visual themes named `consumer` and `pro` are plan-rendering styles, not access
   decisions; renderer checks against those theme values are intentionally not
   subscription checks.
+- Pro and Consumer share one appearance. The Pro "designer theme" (a graphite
+  command bar over light panels, behind `showDesignerTheme`, `dark` props and
+  `[data-theme="designer"]` rules) was never switched on and went in UX 5l
+  (13 Oct 2026). Dark mode returns as semantic colour tokens that follow the
+  device's setting, not as per-component `dark` flags;
+  `scripts/test-designer-theme-contrast.ts` keeps the flags from coming back.
 
 ## Client Preview command-bar contract
 

@@ -1,0 +1,316 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/legend-havana/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - LEGEND HAVANA - minimali.zip (19746414 bytes, sha256 fd2cfe06af3f462476f4c7bbace7639c9ad56e208846897bbd4d0c4cfc18122f).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "0003691",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/legend-havana/pf60003691-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "0003691_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-plein-air-legend-havana-0003691-30x120-r11",
+   "faces": [
+    {
+     "file": "0003691_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 31402,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_1.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "587021565dfd86f8dce69c2fd44262d20a3ea5c2dae64c154869a0bd20355fb7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 1 (view_01)",
+      "name": "WOODLAND HAVANA 30X120_01",
+      "id": "79f75318-c649-4711-b3c7-3e85a4585f56",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003691_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 30314,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_2.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "dda3ddcf44d1116a1ee5aa82501ddf5b76315e8a73a1a041b410b04459b145c3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 2 (view_02)",
+      "name": "WOODLAND HAVANA 30X120_02",
+      "id": "6cc174ae-e1c7-4c32-b6a1-9915b76d2038",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003691_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 23678,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_3.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "c809f72e5e3d2a125010e86b6e7d0982f31c23d19276cde7b758f96f2b434c47",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 3 (view_03)",
+      "name": "WOODLAND HAVANA 30X120_03",
+      "id": "785e77dd-97f5-4c42-bdcc-1b210163ab37",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003691_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20334,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_4.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "4590e7cf49b4ab7899ceb0356625b93e592b708986c058aefc8f2db2ddca8b05",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 4 (view_04)",
+      "name": "WOODLAND HAVANA 30X120_04",
+      "id": "61992e98-57c3-449a-9d4a-551d080d2958",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003691_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 15432,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_5.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "dc874e470eaa8d7f588eaba78b147fe27a6e240d5d3b43123406c2c5a733ad1b",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 5 (view_05)",
+      "name": "WOODLAND HAVANA 30X120_05",
+      "id": "93957a59-0fdd-432f-8457-011939263709",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003691_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19764,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_6.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "1cdcc9fb4dd66b60229fa3dcac8944c35fbc4befa6a53f29711afac5442cfeac",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 6 (view_06)",
+      "name": "WOODLAND HAVANA 30X120_06",
+      "id": "6c57f2dd-69a3-4f3c-a300-53ac528f0b79",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003691_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17216,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_7.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "1c36b669be36faceafc228aeca714f3df64c9e63542d76746d0bb6e7ecfdaaa1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 7 (view_07)",
+      "name": "WOODLAND HAVANA 30X120_07",
+      "id": "dfa0a9b1-0dd4-4db3-bad8-5692515a91f4",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003691_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 24792,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_8.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "a7b41106ad30778be5c22332667375b0c27f009f4c9a4e2d79bdb0fea944ef67",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 8 (view_08)",
+      "name": "WOODLAND HAVANA 30X120_08",
+      "id": "15a06baa-a165-497f-81fd-def26bd70553",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003691_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 27470,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_9.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "18225517b479e70eefd3fe3e5b0f8e1e86dbb0fdee02655e8e6bda9c50cc183c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 9 (view_09)",
+      "name": "WOODLAND HAVANA 30X120_09",
+      "id": "aed23660-4a07-4c4a-a2c7-336040725638",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0003691_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 21126,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_10.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "6a1f999c032142a9d8226c7e7c8b4f2ed25420fd5ca9cbb4be94e30ec50d5f69",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 10 (view_10)",
+      "name": "WOODLAND HAVANA 30X120_10",
+      "id": "6b1de750-7784-46f7-ba30-500305f7075f",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0003691_11.webp",
+     "face": 11,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 25016,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_11.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "b3653282c24fc8b17bbe98b5f64d706f45ff369c3e7593c7c714cc54d42701e0",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 11 (view_11)",
+      "name": "WOODLAND HAVANA 30X120_11",
+      "id": "8698ff13-2de5-4ad3-a986-a39a46f34be7",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0003691_12.webp",
+     "face": 12,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 24018,
+     "source_zip": "PLEIN AIR - LEGEND HAVANA - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND HAVANA - 30X120 - R11 - view_12.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "7de6ddb05f2b0334fee8abcc81cb6296cdd46f807f6fafa8189b12befdd4d70d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 12 (view_12)",
+      "name": "WOODLAND HAVANA 30X120_12",
+      "id": "04994642-59ee-4b23-aaae-1adc2d9237c2",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

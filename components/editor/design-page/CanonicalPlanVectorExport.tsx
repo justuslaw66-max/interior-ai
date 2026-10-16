@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PlanVectorExportOptions } from "@/lib/floor-plan-vector-export";
 import { useCanonicalPlanVectorExport, type CanonicalPlanVectorExportProps } from "./useCanonicalPlanVectorExport";
+import { Button } from "@/components/ui/Button";
 
 export function CanonicalPlanVectorExport(props: CanonicalPlanVectorExportProps) {
   const [options, setOptions] = useState<PlanVectorExportOptions>({ paper: "A4", orientation: "landscape", scale: 100 });
@@ -26,7 +27,7 @@ export function CanonicalPlanVectorExport(props: CanonicalPlanVectorExportProps)
     {available ? <label className="my-2 flex items-center gap-1"><input type="checkbox" checked={includeUnderlay} onChange={(event) => setIncludedUnderlayId(event.target.checked ? available.id : null)} />Floor plan image</label> : null}
     {includeUnderlay ? <p className="mb-2">Includes the source image as separate raster artwork behind the vectors, at its current placement and opacity. Visible names and old markings in the image will be included; they are historical reference, not proposed geometry.</p> : null}
     </fieldset>
-    <div className="flex flex-wrap gap-2">{([['PDF', 'pdf'], ['SVG', 'svg'], ['View proposed', 'proposed'], ...(props.original ? [['View original', 'original'] as const] : [])] as const).map(([label, format]) => <button key={format} type="button" className="rounded border border-neutral-400 px-2 py-1.5 disabled:opacity-40" disabled={busy} onClick={() => void run(format)}>{label}</button>)}</div>
+    <div className="flex flex-wrap gap-2">{([['PDF', 'pdf'], ['SVG', 'svg'], ['View proposed', 'proposed'], ...(props.original ? [['View original', 'original'] as const] : [])] as const).map(([label, format]) => <Button key={format} variant="secondary" size="compact" disabled={busy} onClick={() => void run(format)}>{label}</Button>)}</div>
     <p role="status" className="my-2">{message}</p>
     {preview ? <object aria-label="Plan comparison drawing" type="image/svg+xml" data={preview} className="w-full bg-white" /> : null}
   </details>;

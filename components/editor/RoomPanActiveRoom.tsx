@@ -8,19 +8,18 @@ export function describeNavigatorRoom(name: string, productCount: number) {
 type RoomPanActiveRoomProps = {
   room: HousePlanRoom2D | undefined;
   productCount: number;
-  dark: boolean;
 };
 
 /**
  * The room navigator's header names the selected room and counts its products at 12px. The map's
  * room boxes are too small for 12px names, so they name their rooms in tooltips only (J, 12 Oct).
  */
-export default function RoomPanActiveRoom({ room, productCount, dark }: RoomPanActiveRoomProps) {
-  if (!room) return <span className={dark ? "designer-text-secondary" : "text-neutral-600"}>Rooms</span>;
+export default function RoomPanActiveRoom({ room, productCount }: RoomPanActiveRoomProps) {
+  if (!room) return <span className="text-neutral-600">Rooms</span>;
   return (
     <span
       data-testid="room-pan-active-room"
-      className={`flex min-w-0 items-center gap-1.5 ${dark ? "designer-text-secondary" : "text-neutral-700"}`}
+      className="flex min-w-0 items-center gap-1.5 text-neutral-700"
       title={describeNavigatorRoom(room.name, productCount)}
     >
       <span className="truncate">{room.name}</span>

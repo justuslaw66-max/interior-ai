@@ -1,0 +1,161 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Plein Air
+  material_id: gardenia-flooring-plein-air-travertine-honey-cross-0007181-60x90-r11
+  product_name: Gardenia Plein Air Travertine Honey Cross 60x90 R11
+  slug: gardenia-flooring-plein-air-travertine-honey-cross-0007181-60x90-r11
+  surface_category: flooring
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: 9 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/travertine-honey-cross/pf60007181-v102/), downloaded signed in on 2026-10-13, stored at 0.6 px per mm; the originals are sharper, see gardenia-plein-air-travertine-honey-cross-faces.manifest.json. Each covers 600x900 mm."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-13: Plein Air is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item 0007181 (pf60007181) for floor use: 60X90 R11, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/travertine-honey-cross/pf60007181-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/plein-air/travertine-honey-cross/60x90/: finish R11, thickness 20 mm, porcelain stoneware."
+    - "Floor only: Plein Air is ABK's outdoor range, the 20 mm R11 (anti-slip) versions of its collections; its entries are listed for floors only (J, 2026-10-13)."
+    - "Layouts: straight, brick and vertical brick, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Colour: ABK describes Travertine Honey Cross as beige (colour page pictures)."
+    - "Look: ABK describes Travertine Honey Cross as a stone effect (the colour page's picture descriptions), so it is filed as stone."
+    - "Collection page technology: Porcelain stoneware."
+    - "Collection page description: The Plein Air collection transfers the material sensations of Gardenia&Ariana’s main ceramic tile collections to exterior spaces. The collection combines the high technical performance of extra-thick products with a sophisticated aesthetic inspired by the timeless appeal of stone and the natural warmth of wood. Available in a range of sizes and complemented by coordinated finishing elements, the Plein Air collection caters for all stylistic and design needs in outdoor spaces."
+    - "Collection page thicknesses: 20 mm."
+    - "Collection page sizes: 80x80, 60x120, 60x90, 60x60, 30x120."
+    - "Slip rating and outdoor use: ABK's colour pages give every Plein Air format as R11 (anti-slip), 20 mm, and the collection page describes it for exterior spaces."
+    - "ABK's pages did not expose price or seamless texture QA data; the packing is in ABK's Plein Air technical sheet (below)."
+    - "Laying and uses: ABK's Plein Air catalogue (January 2026, read 2026-10-14) gives every Plein Air tile five ways to be laid (glued, the one for floors vehicles drive over; dry on grass, on gravel or on sand; raised on pedestals 25 to 270 mm high) and names its places: driveways and parking areas, stepping stones and lawn walkways, courtyards, raised terraces, planters, pool areas, steps, external showers and pool walkways."
+    - "Packing (ABK's Plein Air technical sheet, read 2026-10-14): 60x90 rectified, real size 596x895 mm, 1 tile and 0.54 m² per box, 45.3 kg/m², 24.5 kg per box, 32 boxes per pallet."
+    - "Special pieces in this colour (ABK's Plein Air catalogue, read 2026-10-14): grille, corner grilles, bullnose, L element, L element grip, step edge, curve; lib/surface-material-plein-air-system.ts lists their sizes and item codes."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
+classification:
+  flooring_type: tile
+  design_effect: stone
+  color_family: beige
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - warm
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - japandi
+    - commercial
+  room_suitability:
+    - living_room
+    - dining_room
+    - kitchen
+    - bathroom
+    - hallway
+    - balcony
+    - commercial
+    - hospitality
+  outdoor_uses:
+    - terrace
+    - balcony
+    - patio
+    - garden
+    - path
+    - pool_edge
+    - driveway
+    - steps
+    - outdoor_shower
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 900
+  tile_length_mm: 600
+  total_thickness_mm: 20
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+    - dry_lay_on_grass
+    - dry_lay_on_gravel_or_sand
+    - raised_installation
+  waterproof: null
+  slip_rating: R11
+  suitable_for_wet_area: null
+  suitable_for_outdoor: true
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 90
+    height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 900
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_01.webp
+      width_mm: 600
+      height_mm: 900
+    - url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_02.webp
+      width_mm: 600
+      height_mm: 900
+    - url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_03.webp
+      width_mm: 600
+      height_mm: 900
+    - url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_04.webp
+      width_mm: 600
+      height_mm: 900
+    - url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_05.webp
+      width_mm: 600
+      height_mm: 900
+    - url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_06.webp
+      width_mm: 600
+      height_mm: 900
+    - url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_07.webp
+      width_mm: 600
+      height_mm: 900
+    - url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_08.webp
+      width_mm: 600
+      height_mm: 900
+    - url: /assets/catalog/surface-materials/gardenia/plein-air/0007181_09.webp
+      width_mm: 600
+      height_mm: 900
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.62
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: quote_or_sample
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
+  direct_checkout: false
+import_governance:
+  publish_status: published
+  publish_blockers: []
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

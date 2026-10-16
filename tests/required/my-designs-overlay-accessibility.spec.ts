@@ -483,7 +483,7 @@ test("delete asks first, Escape keeps the design, and confirming deletes once an
     await openMyDesignsPage(page, seed);
     const middle = card(page, middleId);
     await chooseFromCardMenu(page, middle.actions, "Delete");
-    let confirm = page.getByRole("dialog", { name: "Delete Middle?" });
+    let confirm = page.getByRole("alertdialog", { name: "Delete Middle?" });
     await expect(confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
     await expectModal(page, confirm);
     await page.keyboard.press("Escape");
@@ -493,7 +493,7 @@ test("delete asks first, Escape keeps the design, and confirming deletes once an
     expect(deleteCalls).toBe(0);
 
     await chooseFromCardMenu(page, middle.actions, "Delete");
-    confirm = page.getByRole("dialog", { name: "Delete Middle?" });
+    confirm = page.getByRole("alertdialog", { name: "Delete Middle?" });
     await confirm.getByRole("button", { name: "Delete", exact: true }).click();
     await expect(confirm).toHaveCount(0);
     await expect(middle.root).toHaveCount(0);
@@ -519,7 +519,7 @@ test("a failed delete calls once, keeps the card, says why, and returns focus to
     await openMyDesignsPage(page, seed);
     const target = card(page, designId);
     await chooseFromCardMenu(page, target.actions, "Delete");
-    const confirm = page.getByRole("dialog", { name: "Delete Failure Target?" });
+    const confirm = page.getByRole("alertdialog", { name: "Delete Failure Target?" });
     await confirm.getByRole("button", { name: "Delete", exact: true }).click();
     await expect(confirm).toHaveCount(0);
     await expect(page.getByTestId("my-designs-error")).toHaveText("Deleting is unavailable right now.");
@@ -607,7 +607,7 @@ test("on a phone the page fits, and the card menu and Delete dialog stay on scre
     const menuBox = await menu.boundingBox();
     expect(menuBox && menuBox.x >= 0 && menuBox.x + menuBox.width <= MOBILE.width).toBe(true);
     await menu.getByRole("menuitem", { name: "Delete" }).click();
-    const confirm = page.getByRole("dialog", { name: "Delete Phone First?" });
+    const confirm = page.getByRole("alertdialog", { name: "Delete Phone First?" });
     await expect(confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
     const panel = await confirm.evaluate((element) => {
       const box = (element.firstElementChild as HTMLElement).getBoundingClientRect();

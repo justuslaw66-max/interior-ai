@@ -596,7 +596,7 @@ test.describe("00. Beta Smoke Gate", () => {
       await page.getByTestId("scene-performance-lite").evaluate((button) => {
         (button as HTMLButtonElement).click();
       });
-      await expect(page.getByTestId("scene-performance-lite")).toHaveAttribute("data-active", "true");
+      await expect(page.getByTestId("scene-performance-lite")).toHaveAttribute("aria-pressed", "true");
       await expect
         .poll(() => page.evaluate(() => window.localStorage.getItem("scene_performance_mode")))
         .toBe("lite");

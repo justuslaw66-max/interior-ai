@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Minus, Plus, RotateCcw } from "lucide-react"
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { useLiveCameraView, type LiveCameraViewStore } from "@/lib/useDesignPageLiveCameraView";
 import RoomPanActiveRoom, { describeNavigatorRoom } from "./RoomPanActiveRoom";
+import { Button } from "@/components/ui/Button";
 
 type RoomPanNavigatorProps = {
   rooms: HousePlanRoom2D[];
@@ -14,7 +15,6 @@ type RoomPanNavigatorProps = {
   targetRoomId?: string | null;
   targetRoomValid?: boolean;
   disabled?: boolean;
-  dark?: boolean;
   onMoveCamera: (x: number, z: number) => void;
   onMoveTarget: (x: number, z: number) => void;
   onFocusRoom: (roomId: string) => void;
@@ -84,7 +84,6 @@ export default function RoomPanNavigator({
   targetRoomId = null,
   targetRoomValid = true,
   disabled = false,
-  dark = false,
   onMoveCamera,
   onMoveTarget,
   onFocusRoom,
@@ -123,10 +122,6 @@ export default function RoomPanNavigator({
   const targetX = clamp(toMapX(cameraTarget[0]), TARGET_HANDLE_PADDING, MAP_WIDTH - TARGET_HANDLE_PADDING);
   const targetY = clamp(toMapY(cameraTarget[2]), TARGET_HANDLE_PADDING, MAP_HEIGHT - TARGET_HANDLE_PADDING);
   const cameraAimDeg = Math.atan2(targetY - cameraY, targetX - cameraX) * (180 / Math.PI);
-  const navigatorButtonClass = dark
-    ? "designer-control grid h-6 w-6 place-items-center rounded border shadow-sm disabled:opacity-40"
-    : "grid h-6 w-6 place-items-center rounded border border-neutral-200 bg-white text-neutral-700 shadow-sm disabled:opacity-40";
-
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (disabled || !mapRef.current) return;
 
@@ -178,70 +173,55 @@ export default function RoomPanNavigator({
   return (
     <section
       data-testid="room-pan-navigator"
-      className={
-        dark
-          ? "designer-dock w-[264px] max-[520px]:w-full overflow-hidden rounded-lg"
-          : "w-[264px] max-[520px]:w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg"
-      }
+      className="w-[264px] max-[520px]:w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg"
       aria-label="Room navigator"
     >
-      <div
-        className={
-          dark
-            ? "designer-divider flex items-center justify-between border-b px-2 py-1"
-            : "flex items-center justify-between border-b border-neutral-200 px-2 py-1"
-        }
-      >
+      <div className="flex items-center justify-between border-b border-neutral-200 px-2 py-1">
         <div className="flex min-w-0 items-center gap-2.5 text-xs font-semibold">
-          <span className={dark ? "designer-text-primary" : "text-blue-600"}>2D</span>
+          <span className="text-blue-600">2D</span>
           <RoomPanActiveRoom
             room={rooms.find((room) => room.id === activeRoomId)}
             productCount={itemCountsByRoomId[activeRoomId] ?? 0}
-            dark={dark}
           />
         </div>
         <div className="flex items-center gap-1" aria-label="Navigator controls">
           {!isCollapsed ? (
             <>
-              <button
-                type="button"
+              <Button
+                size="mini"
                 data-testid="room-pan-reset-view"
                 disabled={disabled}
                 onClick={onResetView}
-                className={navigatorButtonClass}
                 aria-label="Fit to screen"
                 title="Fit to screen"
               >
                 <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="mini"
                 data-testid="room-pan-zoom-out"
                 disabled={disabled}
                 onClick={() => onZoom("out")}
-                className={navigatorButtonClass}
                 aria-label="Zoom out"
                 title="Zoom out"
               >
                 <Minus className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="mini"
                 data-testid="room-pan-zoom-in"
                 disabled={disabled}
                 onClick={() => onZoom("in")}
-                className={navigatorButtonClass}
                 aria-label="Zoom in"
                 title="Zoom in"
               >
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
+              </Button>
             </>
           ) : null}
-          <button
-            type="button"
+          <Button
+            size="mini"
             onClick={() => setIsCollapsed((value) => !value)}
-            className={navigatorButtonClass}
             aria-label={isCollapsed ? "Expand navigator" : "Collapse navigator"}
             title={isCollapsed ? "Expand" : "Collapse"}
           >
@@ -250,7 +230,7 @@ export default function RoomPanNavigator({
             ) : (
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -258,11 +238,7 @@ export default function RoomPanNavigator({
         <div
         ref={mapRef}
         data-testid="room-pan-map"
-        className={
-          dark
-            ? "designer-recessed relative touch-none cursor-crosshair"
-            : "relative touch-none cursor-crosshair bg-[linear-gradient(to_right,rgba(148,163,184,0.24)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.24)_1px,transparent_1px)] bg-[size:8px_8px] bg-slate-50"
-        }
+        className="relative touch-none cursor-crosshair bg-[linear-gradient(to_right,rgba(148,163,184,0.24)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.24)_1px,transparent_1px)] bg-[size:8px_8px] bg-slate-50"
         style={{ width: MAP_WIDTH, height: MAP_HEIGHT }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -279,7 +255,7 @@ export default function RoomPanNavigator({
               y1={cameraY}
               x2={targetX}
               y2={targetY}
-              stroke={dark ? "#d1d5db" : "#111827"}
+              stroke="#111827"
               strokeWidth="1.5"
               strokeDasharray="5 5"
             />

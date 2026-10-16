@@ -1,0 +1,778 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/powder/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: ETEREA - POWDER - minimali.zip (17255050 bytes, sha256 6a9c8ad69cc91633b54b2059827bc3f4e655b1aaaf917694fcd2b1c3124745bb).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/eterea/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x280",
+   "item_code": "0030729",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/powder/pf60030729-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 2800
+   },
+   "swatch": "0030729_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-powder-0030729-120x280-lux; floor gardenia-flooring-eterea-powder-0031335-120x280-soft (uses 0030729's faces: ABK's 3 Soft pictures are 0030729's 3 Lux pictures, byte for byte); wall gardenia-wall-tile-eterea-powder-0030729-120x280-lux; wall gardenia-wall-tile-eterea-powder-0031335-120x280-soft (uses 0030729's faces: ABK's 3 Soft pictures are 0030729's 3 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0030729_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 24318,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X280-Soft/ETEREA - POWDER - 120X280 - Soft - view_1.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "fc30b85c115f6c6f7113fd1f04d7c92fe2d009e6c089bd81ebf7287dc30993db",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 1",
+      "name": "ETEREA POWDER 120x280 LUX_02",
+      "id": "0054dbed-188b-44c7-935a-69dc7c4b55bc",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030729_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 23958,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X280-Soft/ETEREA - POWDER - 120X280 - Soft - view_2.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "eb4843001df4acf16ea4fe33ce74d3dddff82f91d1780a7532916998c5d33ad6",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 2",
+      "name": "ETEREA POWDER 120x280 LUX_03",
+      "id": "4fa2581c-3fb3-493e-bf9e-9565e5ca8426",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030729_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 2800,
+     "width_px": 720,
+     "height_px": 1680,
+     "bytes": 24524,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X280-Soft/ETEREA - POWDER - 120X280 - Soft - view_3.jpg",
+     "source_px": [
+      1775,
+      4096
+     ],
+     "source_sha256": "477faedd6289d8662d3655eb0e7c02dc842f4ade8ae18be15d7793ba2d9b6a22",
+     "source_px_per_mm": 1.463,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X280 · Lux · Faccia 3",
+      "name": "ETEREA POWDER 120x280 LUX_01",
+      "id": "ad1ed5cd-3f67-4eb2-849a-58c64ec882ab",
+      "site_position": 3
+     }
+    }
+   ]
+  },
+  {
+   "format": "120x120",
+   "item_code": "0030735",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/powder/pf60030735-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030735_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-powder-0030735-120x120-lux; wall gardenia-wall-tile-eterea-powder-0030735-120x120-lux",
+   "faces": [
+    {
+     "file": "0030735_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10698,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - POWDER - 120X120 - Lux - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "35309e0edeab299fef40979c7a25eb1dcf86944f8bea1d3692ecb80b7e901074",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 1",
+      "name": "ETEREA POWDER 120x120 LUX_09",
+      "id": "09634558-d596-4190-8166-8dd7d073b6c5",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030735_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10242,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - POWDER - 120X120 - Lux - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3ed7611027093dedf83826c403c12fb282afb7eeb68ba0f66c249dca65a17902",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 2",
+      "name": "ETEREA POWDER 120x120 LUX_05",
+      "id": "1a47ad3a-33b8-4ad9-b254-9d901f216e03",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030735_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9066,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - POWDER - 120X120 - Lux - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e63b80e14fb7b06b007972f4b001012e8adbb7805ea5fe59ed9f73bf5f42ea94",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 3",
+      "name": "ETEREA POWDER 120x120 LUX_06",
+      "id": "25d57cc0-5262-4a58-935b-88a7029bbe0f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030735_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9140,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - POWDER - 120X120 - Lux - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "416cfa6ae27389a127905725d127d0b5d4cbd7bf75fe76af84464f1b03337b33",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 4",
+      "name": "ETEREA POWDER 120x120 LUX_08",
+      "id": "2f6e5d87-70b7-428e-9ef2-cee0c88dabbe",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030735_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11554,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - POWDER - 120X120 - Lux - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "ebe378493d36570bc60a86a38e4c69bc1372cc52983e72257fd4753abcd242c3",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 5",
+      "name": "ETEREA POWDER 120x120 LUX_01",
+      "id": "47cae5c2-4996-435e-abeb-845347ce912f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030735_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10932,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - POWDER - 120X120 - Lux - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5b160b50dcb38be1fc9846e1b32c32b2943ff0ce69c2fb89db8246979f6701dc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 6",
+      "name": "ETEREA POWDER 120x120 LUX_02",
+      "id": "90048820-31c6-41d1-9818-e0d2a5334069",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030735_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 9986,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - POWDER - 120X120 - Lux - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e43c7d69f8fa94157ef9720a9c1121e7dbedf6371987263db5336271e67a44ea",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 7",
+      "name": "ETEREA POWDER 120x120 LUX_03",
+      "id": "af401e4f-f675-4106-bede-3ff55c5980d1",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030735_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 10628,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - POWDER - 120X120 - Lux - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5adffc7eac953988e1178c24ff83f53a77121b28731fe1539a8be3764fd3c627",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 8",
+      "name": "ETEREA POWDER 120x120 LUX_07",
+      "id": "c0a6d5a0-f081-4971-bfd2-b7526c706eeb",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030735_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 11132,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "120X120-Lux/ETEREA - POWDER - 120X120 - Lux - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "90aeaca6a13c3b232826547e3a6e21d23f8a78051185dc300c5f492d5b5c1cd0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Lux · Faccia 9",
+      "name": "ETEREA POWDER 120x120 LUX_04",
+      "id": "e15c6de1-74e0-464a-bc35-49b219ff27d0",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0030741",
+   "finish": "Lux",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/powder/pf60030741-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030741_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-powder-0030741-60x120-lux; floor gardenia-flooring-eterea-powder-0031343-60x120-soft (uses 0030741's faces: ABK's 18 Soft pictures are 0030741's 18 Lux pictures, byte for byte); wall gardenia-wall-tile-eterea-powder-0030741-60x120-lux; wall gardenia-wall-tile-eterea-powder-0031343-60x120-soft (uses 0030741's faces: ABK's 18 Soft pictures are 0030741's 18 Lux pictures, byte for byte)",
+   "faces": [
+    {
+     "file": "0030741_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4886,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "35ac616683d4006b2a91c6ec10bc19a8ab65a3d8c138dafc64440e98ee2d1cbb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 1",
+      "name": "ETEREA POWDER 60x120 LUX_02",
+      "id": "0556dc53-33a2-4ce0-8916-07d15aafa979",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030741_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5764,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "841a400cdc7eef5ccc94f8b385183980797c53fce08989f4b851e3f009ceb2ab",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 2",
+      "name": "ETEREA POWDER 60x120 LUX_04",
+      "id": "53e3f65c-f6f1-479a-ab9b-1b4d2ce8e2d1",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030741_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4292,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "80cab222e117fcbbd92a4118652334ff9fe53839acbcef677c6d67f10dd94532",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 3",
+      "name": "ETEREA POWDER 60x120 LUX_12",
+      "id": "5dbe0f6c-9920-49b9-bcb3-e22b8cc86572",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030741_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4702,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b40d43978cb88da7071a46265440e8dbd40dec70da8ef2dd0678b456a70c9740",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 4",
+      "name": "ETEREA POWDER 60x120 LUX_09",
+      "id": "5e9478d6-62a2-4da5-aba1-e39335c1674c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030741_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4534,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b1691bec6e6e3f04cabc6c506996e4f0802fe05af3ce8bc1f45e6e7803757b34",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 5",
+      "name": "ETEREA POWDER 60x120 LUX_15",
+      "id": "5e996fc6-7774-420c-bd61-25b715c364b1",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030741_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4870,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "49d3208bb98b6db7adaf33f435298324a2f824d269fa813124cb6042a1ac9fd5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 6",
+      "name": "ETEREA POWDER 60x120 LUX_07",
+      "id": "65b446d4-ba66-4443-a93b-056c91fde8b1",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030741_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5212,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d4eb7fc854eeb727525f6a96fe86aeff364c2d425df7f3e8bf6b16d629f78d7e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 7",
+      "name": "ETEREA POWDER 60x120 LUX_06",
+      "id": "6e50dc66-95ef-44df-ab40-8762f418ec70",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030741_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6142,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5cf5fb0ad74e22cfb3101b5dfaf938d540379c1263cbdac027772dacca9eb208",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 8",
+      "name": "ETEREA POWDER 60x120 LUX_13",
+      "id": "71999414-e673-41a7-b9f9-1af0419717d7",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030741_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5062,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ca85df9bb585e56ecff18824102e2bec226260753d2b2ab67a4d1dfc7c6936f8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 9",
+      "name": "ETEREA POWDER 60x120 LUX_11",
+      "id": "8d5b7775-9215-48b1-878a-fbb327d874de",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0030741_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6642,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "90e34c75cbbf11c23320b9344d733caa37504cc1c8adbf4c4d7a55d78483dbe6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 10",
+      "name": "ETEREA POWDER 60x120 LUX_08",
+      "id": "978d2c08-d6bc-4386-bdcc-2c296db886f6",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0030741_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5244,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3213acf5b1217fa716f7c2bd2ba66f8151389e2a096da0573d1b4f4145089d1a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 11",
+      "name": "ETEREA POWDER 60x120 LUX_03",
+      "id": "9d3a0140-6604-4f9b-8752-22351fcc14fc",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0030741_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4974,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "34d08e3d062f443a9210aadbceea20d7603d789e2cf2ad5e754253322bb057f6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 12",
+      "name": "ETEREA POWDER 60x120 LUX_05",
+      "id": "b007ae23-ed0a-4c18-ac45-a87a2cbc142d",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0030741_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4790,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b3758013a786f00a118e3e58d0d5f3de96f52d516a3f220a97bfc9078ae4ed09",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 13",
+      "name": "ETEREA POWDER 60x120 LUX_14",
+      "id": "bb92b490-32fe-4e50-858c-11585f185cbe",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0030741_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4540,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "8342e1e5f83569d3cdeed2aead3a55224f2795b91cc158a84a836fbeb37883f1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 14",
+      "name": "ETEREA POWDER 60x120 LUX_16",
+      "id": "bc719b8c-de0a-4855-9d19-863b15c56df7",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0030741_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 5976,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "516deb20c254f03802f09426ad05d91802f397222bd8be54e5288216363a3f0f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 15",
+      "name": "ETEREA POWDER 60x120 LUX_10",
+      "id": "c1ca2376-19f0-483a-9b44-27567735ae96",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0030741_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 4404,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "b9b6b3fae1284dcbdfd4dbdeae8bf0a682366ee253a9b69d053c8ad6c90e4e26",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 16",
+      "name": "ETEREA POWDER 60x120 LUX_17",
+      "id": "cb2e0886-2eb6-4c0b-ac0b-60f1f92f03b0",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0030741_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6978,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "4f95f888a6788f016769523707c0aaa05a69cbddb129879c4541af0cdc6cf426",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 17",
+      "name": "ETEREA POWDER 60x120 LUX_18",
+      "id": "f8c8ac92-3838-403a-972d-04632f22eb21",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0030741_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 6750,
+     "source_zip": "ETEREA - POWDER - minimali.zip",
+     "source_file": "60X120-Soft/ETEREA - POWDER - 60X120 - Soft - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "9fe4380b757056fd5cad7acdaa2138fde2bd8fbed181846d468ff916a3406080",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Lux · Faccia 18",
+      "name": "ETEREA POWDER 60x120 LUX_01",
+      "id": "fcc74f9a-a3a2-48eb-a0e2-25c002257bdc",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -7,13 +7,15 @@ import {
   compileFloorPlanDocumentV2,
   validateFloorPlanDocumentV2,
 } from "@/lib/floor-plan-compiler-v2";
-import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanDocumentV2, FloorPlanVertexV2, FloorPlanWallV2 } from "@/lib/floor-plan-document-v2";
 import type {
   RegisteredPageEvidence,
   SemanticOpeningSymbol,
 } from "@/lib/floor-plan-imports/deterministic-evidence";
 import { PdfRasterFloorPlanSourceAdapter } from "@/lib/floor-plan-imports/pdf-raster-adapter";
 import { applyVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-pass";
+import { alignVectorizerFaces, vectorizerThicknessMm } from "@/lib/floor-plan-imports/vectorizer-face-millimetres";
+import { addVectorizerStandaloneWalls } from "@/lib/floor-plan-imports/vectorizer-standalone-walls";
 import type { FloorPlanAdapterContext } from "@/lib/floor-plan-imports/source-adapter";
 import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
 import { closedSpacesProduced, isFloorPlanVoidRoom, voidRoomCrossDashes, voidRoomCrossSegments } from "@/lib/floor-plan-void-rooms";
@@ -58,6 +60,26 @@ assert.deepEqual(swingAgainstWall({ x: 0, y: 0 }, { x: 10, y: 0 }, { double: tru
 
 // Evidence that is not the exporter's shape is refused at the process boundary.
 assert.throws(() => parseFloorPlanVectorizerEvidence({ kind: "something_else" }));
+
+// The vectorizer's own clean drawing (exporter 0.28.1+) passes the schema and is registered to the rendered page, for
+// the clean traced drawing; a drawing whose commands are not the app's path commands is refused.
+{
+  const raw = JSON.parse(readFileSync(path.join(fixtureDirectory, "room4.evidence.json"), "utf8"));
+  const drawing = { version: "stage1-svg-1", textBoxes: [[10, 10, 30, 20]], items: [
+    { kind: "wall", fill: true, strokeWidthPx: 0, commands: ["L", "L", "Z"], points: [[0, 0], [10, 0], [10, 10]] },
+    { kind: "line", fill: false, strokeWidthPx: 1.5, commands: ["L"], points: [[0, 0]] },
+  ] };
+  const evidence = parseFloorPlanVectorizerEvidence({ ...raw, drawing });
+  const page = { pageNumber: 1, widthPx: evidence.page.widthPx, heightPx: evidence.page.heightPx, vectorSegments: [],
+    vectorPaths: [], text: [], semantics: { roomLabels: [], dimensionLabels: [], openingSymbols: [], notes: [] } } as RegisteredPageEvidence;
+  registerVectorizerEvidence(page, evidence, Buffer.from(JSON.stringify({ ...raw, drawing })));
+  assert.deepEqual(page.vectorizer?.drawing?.items.map((item) => item.kind), ["wall"], "A drawing item with too few points is left out");
+  assert.deepEqual(page.vectorizer?.drawing?.items[0].points[2], { x: 10, y: 10 });
+  assert.deepEqual(page.vectorizer?.drawing?.textBoxes[0], { left: 10, top: 10, right: 30, bottom: 20 });
+  const bad = { ...drawing, items: [{ ...drawing.items[0], commands: ["Q"] }] };
+  assert.throws(() => parseFloorPlanVectorizerEvidence({ ...raw, drawing: bad }));
+  assert.equal(parseFloorPlanVectorizerEvidence(raw).drawing, undefined, "Evidence before 0.28.1 has no drawing");
+}
 
 async function importFixture(name: string, guessedOpenings: SemanticOpeningSymbol[] = [], linework: "walls" | "walls+bar" = "walls") {
   const bytes = readFileSync(path.join(fixtureDirectory, `${name}.evidence.json`));
@@ -142,8 +164,154 @@ async function failSoftPass(config: ConstructorParameters<typeof PythonFloorPlan
   return result;
 }
 
+/** Standalone walls on a 1000 mm square room (1 mm per px): kept clear of the compiler's crossing rule. */
+function testStandaloneWalls() {
+  const vertices: FloorPlanVertexV2[] = [];
+  const provenance = () => ({ sourceId: "s", pageNumber: 1, confidence: 0.7, basis: "raster_traced", note: "" }) as never;
+  const getVertex = (x: number, y: number) => {
+    const found = vertices.find((vertex) => vertex.xMm === Math.round(x) && vertex.zMm === Math.round(y));
+    if (found) return found;
+    const vertex = { id: `v${vertices.length + 1}`, xMm: Math.round(x), zMm: Math.round(y), provenance: provenance() };
+    vertices.push(vertex);
+    return vertex;
+  };
+  const corners: Array<[number, number]> = [[0, 0], [1000, 0], [1000, 1000], [0, 1000]];
+  const walls: FloorPlanWallV2[] = corners.map((corner, index) => ({
+    id: `w${index + 1}`,
+    path: { kind: "line", startVertexId: getVertex(...corner).id, endVertexId: getVertex(...corners[(index + 1) % 4]).id },
+    thicknessMm: 100, classification: "exterior", adjacentRoomIds: ["room-1"], provenance: provenance(),
+  }));
+  const edge = (id: string, from: [number, number], to: [number, number]) =>
+    ({ id, kind: "wall_centerline" as const, sourcePx: [from, to] as [[number, number], [number, number]], thicknessPx: 120, opening: null });
+  const page = {
+    pageNumber: 1, widthPx: 2000, heightPx: 2000, vectorSegments: [], vectorPaths: [], text: [],
+    semantics: { roomLabels: [], dimensionLabels: [], openingSymbols: [], notes: [] },
+    vectorizer: {
+      exporterVersion: "app-evidence-0.28.0", imageSha256: "0", scaleHint: {} as never, dimensionSpans: [], diagnostics: {},
+      rooms: [{ key: "r1", label: "STUDY", roomType: "study" as const, confidence: 0.9,
+        sourcePoints: corners.map(([x, y]) => ({ x, y })), edgeIds: ["e1", "e2", "e3", "e4"] }],
+      wallEdges: [
+        ...corners.map((corner, index) => edge(`e${index + 1}`, corner, corners[(index + 1) % 4])),
+        edge("e5", [300, 400], [700, 400]),        // inside the room, clear of every wall: interior
+        edge("e6", [1000, 0], [1000, -200]),       // a column past a corner, on from the corner's own vertex: exterior
+        edge("e7", [500, -100], [500, 100]),       // across a room wall without a shared end: left out
+        edge("e8", [200, 0], [600, 0]),            // along a room wall: left out
+      ],
+    },
+  } as unknown as RegisteredPageEvidence;
+  const rooms = [{ registrationKind: "vectorizer_wall_topology" }] as never;
+  const added = addVectorizerStandaloneWalls({ page, rooms, millimetresPerPixel: 1, vertices, walls, getVertex, provenance });
+  assert.equal(added, 2, "the inside wall and the column; the crossing and the overlapping edge are left out");
+  const [inside, column] = walls.slice(4);
+  assert.deepEqual([inside.classification, inside.adjacentRoomIds, inside.thicknessMm], ["interior", [], 120]);
+  assert.equal(column.classification, "exterior");
+  const deterministic = [{ registrationKind: "assembled_wall_topology" }] as never;
+  assert.equal(addVectorizerStandaloneWalls({ page, rooms: deterministic, millimetresPerPixel: 1, vertices, walls, getVertex, provenance }), 0,
+    "nothing on a page whose rooms the deterministic topology built");
+}
+
+/** s056's column as J's Mac traced it (22.9977 mm per px): faces and ends the drawing has on one line stay on it after the
+ * app rounds vertices to whole millimetres and thicknesses to 5 mm; a piece that runs into a wall keeps its overlap. */
+function testStandaloneWallsLineUp() {
+  const mm = 22.9977;
+  const vertices: FloorPlanVertexV2[] = [];
+  const provenance = () => ({ sourceId: "s", pageNumber: 1, confidence: 0.7, basis: "raster_traced", note: "" }) as never;
+  const getVertex = (x: number, y: number) => {
+    const at = { xMm: Math.round(x * mm), zMm: Math.round(y * mm) };
+    const found = vertices.find((vertex) => vertex.xMm === at.xMm && vertex.zMm === at.zMm);
+    if (found) return found;
+    const vertex = { id: `v${vertices.length + 1}`, ...at, provenance: provenance() };
+    vertices.push(vertex);
+    return vertex;
+  };
+  const corners: Array<[number, number]> = [[0, 0], [100, 0], [100, 100], [0, 100]];
+  const walls: FloorPlanWallV2[] = corners.map((corner, index) => ({
+    id: `w${index + 1}`,
+    path: { kind: "line", startVertexId: getVertex(...corner).id, endVertexId: getVertex(...corners[(index + 1) % 4]).id },
+    thicknessMm: 100, classification: "exterior", adjacentRoomIds: ["room-1"], provenance: provenance(),
+  }));
+  const edge = (id: string, from: [number, number], to: [number, number], thicknessPx: number) =>
+    ({ id, kind: "wall_centerline" as const, sourcePx: [from, to] as [[number, number], [number, number]], thicknessPx, opening: null });
+  const page = {
+    pageNumber: 1, widthPx: 800, heightPx: 400, vectorSegments: [], vectorPaths: [], text: [],
+    semantics: { roomLabels: [], dimensionLabels: [], openingSymbols: [], notes: [] },
+    vectorizer: {
+      exporterVersion: "app-evidence-0.28.0", imageSha256: "0", scaleHint: {} as never, dimensionSpans: [], diagnostics: {},
+      rooms: [{ key: "r1", label: "STORE", roomType: "store" as const, confidence: 0.9,
+        sourcePoints: corners.map(([x, y]) => ({ x, y })), edgeIds: ["e1", "e2", "e3", "e4"] }],
+      wallEdges: [
+        ...corners.map((corner, index) => edge(`e${index + 1}`, corner, corners[(index + 1) % 4], 4)),
+        edge("e82", [523, 195.5], [523, 222.5], 10),
+        edge("e83", [520, 188], [520, 221.5], 4),          // its left face is e82's: 11914 mm as rounded, 11913 lined up
+        edge("e92", [525, 188], [525, 196], 4),
+        edge("e93", [523, 187.99673], [523, 195.5], 2.5),  // its top end 4323 mm as rounded, e83's and e92's 4324
+        edge("e94", [560, 210], [12141 / mm, 210], 3),     // runs 2 mm into e82 past its near face: stays there
+      ],
+    },
+  } as unknown as RegisteredPageEvidence;
+  const rooms = [{ registrationKind: "vectorizer_wall_topology" }] as never;
+  assert.equal(addVectorizerStandaloneWalls({ page, rooms, millimetresPerPixel: mm, vertices, walls, getVertex, provenance }), 5);
+  const vertex = (id: string) => {
+    const found = vertices.find((candidate) => candidate.id === id);
+    assert.ok(found, `vertex ${id}`);
+    return found;
+  };
+  const ends = (wall: FloorPlanWallV2) => {
+    assert.ok(wall.path.kind === "line", `${wall.id} is a line wall`);
+    return [vertex(wall.path.startVertexId), vertex(wall.path.endVertexId)];
+  };
+  const [e82, e83, e92, e93, e94] = walls.slice(4);
+  assert.equal(ends(e83)[0].xMm - e83.thicknessMm / 2, ends(e82)[0].xMm - e82.thicknessMm / 2, "one left face for the column");
+  assert.deepEqual([ends(e93)[0].zMm, ends(e92)[0].zMm], [ends(e83)[0].zMm, ends(e83)[0].zMm], "one top face for the column");
+  assert.equal(ends(e94)[1].xMm, 12141, "an end inside a wall is not pulled onto its near face (the two would only touch)");
+}
+
+/**
+ * Faces first (round 37): a wall and a thinner window flush with its outer face, joined by a jog, keep that face on
+ * one whole millimetre; centre-lines and thicknesses are whole millimetres, and the window's odd thickness gives way
+ * on the face no neighbour shares.
+ */
+function testFaceMillimetres() {
+  const mm = 23.0004;
+  const edge = (id: string, from: [number, number], to: [number, number], thicknessPx: number) =>
+    ({ id, kind: "wall_centerline" as const, sourcePx: [from, to] as [[number, number], [number, number]], thicknessPx, opening: null });
+  const points = [{ x: 100, y: 0 }, { x: 100, y: 50 }, { x: 101.85, y: 50 }, { x: 101.85, y: 90 }];
+  const aligned = alignVectorizerFaces({
+    wallEdges: [
+      edge("e1", [100, 0], [100, 50], 10),             // faces 95 and 105 px
+      edge("e3", [100, 50], [101.85, 50], 1.85),       // the jog
+      edge("e2", [101.85, 50], [101.85, 90], 6.3),     // faces 98.7 and 105 px: flush with e1 outside
+      edge("e4", [101.85, 90], [100, 0], 3),           // slanted: left as measured
+    ],
+    rooms: [{ key: "r1", label: "", roomType: "other", confidence: 0.9, sourcePoints: points, edgeIds: ["e1", "e3", "e2", "e4"] }],
+  } as unknown as Parameters<typeof alignVectorizerFaces>[0], mm);
+  const plumb = (id: string) => {
+    const found = aligned.wallEdges.find((candidate) => candidate.id === id);
+    assert.ok(found, id);
+    const centre = found.sourcePx[0][0] * mm;
+    const thickness = found.thicknessPx * mm;
+    for (const value of [centre, thickness]) assert.ok(Math.abs(value - Math.round(value)) < 1e-6, `${id}: whole millimetres`);
+    return { low: centre - thickness / 2, high: centre + thickness / 2, thickness };
+  };
+  const wall = plumb("e1");
+  const window_ = plumb("e2");
+  assert.ok(Math.abs(wall.high - window_.high) < 1e-6, "one outer face for the wall and the window, to the millimetre");
+  assert.ok(Math.abs(window_.thickness - 6.3 * mm) <= 1.5, "the window keeps its drawn thickness within a millimetre and a half");
+  assert.equal(Math.round(window_.thickness) % 2, 0, "an even thickness: the centre-line on a whole millimetre");
+  assert.deepEqual(aligned.wallEdges.find((candidate) => candidate.id === "e4")?.sourcePx, [[101.85, 90], [100, 0]]);
+  const [, corner] = aligned.rooms[0].sourcePoints;
+  assert.ok(Math.abs(corner.x * mm - (wall.low + wall.high) / 2) < 1e-6, "the room's corner on the wall's new centre-line");
+  // A level or plumb wall keeps its whole-millimetre thickness; a slanted one keeps 5 mm steps (nothing lines its
+  // faces up, and a millimetre's change there only moved the corners of p03's photographed copy).
+  assert.equal(vectorizerThicknessMm([[0, 0], [0, 10]], 113 / mm, mm), 113);
+  assert.equal(vectorizerThicknessMm([[0, 0], [3, 10]], 113 / mm, mm), 115);
+}
+
 async function main() {
   const summary: string[] = [];
+  testStandaloneWalls();
+  testStandaloneWallsLineUp();
+  testFaceMillimetres();
   for (const name of ["room4", "h1", "d12", "exec"]) {
     const { evidence, page, scale, document, issues } = await importFixture(name);
     assert.ok(scale, `${name}: the adapter's cross-checked solver accepts a scale from the vectorizer spans`);
@@ -192,6 +360,12 @@ async function main() {
     );
     assert.ok(floor.openings.some((opening) => opening.kind === "window"));
     assert.ok(floor.walls.some((wall) => wall.adjacentRoomIds.length === 2), `${name}: rooms share walls`);
+    // Wall edges no room uses (exporter 0.28.0+: columns standing out, walls with one room on both sides) are walls of
+    // their own, and the document above still validated with them.
+    const roomEdges = new Set(evidence.rooms.flatMap((room) => room.edgeIds));
+    const standalone = evidence.wallEdges.filter((edge) => !roomEdges.has(edge.id) && !edge.opening).length;
+    const placed = floor.walls.filter((wall) => wall.adjacentRoomIds.length === 0).length;
+    assert.ok(placed <= standalone && (standalone === 0 || placed > 0), `${name}: ${placed} of ${standalone} standalone walls placed`);
     assert.ok(issues.some((issue) => issue.code === "rooms_confirmation"));
     assert.equal(document.verification.tier, "needs_review");
     summary.push(

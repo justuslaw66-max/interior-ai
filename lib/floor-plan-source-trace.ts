@@ -4,13 +4,21 @@ import { sourceDrawingGeometryError } from "./floor-plan-source-drawing";
 export const SOURCE_TRACE_CONFIGURATION = "source-artwork-trace-v1";
 export const isFinalSourceTrace = (a:FloorPlanAnnotationV2) => a.configurationId === SOURCE_TRACE_CONFIGURATION;
 
+/** What a traced path is. The clean traced drawing (v3) redraws the vectorizer's own reading of the page as sharp
+ * shapes (`clean-`), and traces lettering and small marks finely at their own weight (`letter-`, `mark-`). */
+function traceNote(trace:SourceArtworkTrace,groupId:string) {
+  if(groupId.startsWith("clean-"))return "The vectorizer's own drawing of this source view, redrawn as a sharp shape (walls solid). Not measured building geometry.";
+  const fine=groupId.startsWith("letter-")||groupId.startsWith("mark-")?" Lettering and small marks traced finely at the source's own weight.":"";
+  return `Direct grayscale trace; fitting bound ${trace.settings.fitErrorPx}px in this source view.${fine} OCR replacements and semantic proposals excluded.`;
+}
+
 export function sourceTraceAnnotations(trace:SourceArtworkTrace,sourceId:string,pageNumber:number):FloorPlanAnnotationV2[] {
   return trace.paths.map((path,i)=>({id:`source-trace:${pageNumber}:${i}`,kind:"note",text:"Automatically traced source artwork; no building meaning or metric scale inferred.",
     scope:"reference",configurationId:SOURCE_TRACE_CONFIGURATION,
     geometry:{kind:"source_drawing",sourceId,pageNumber,widthPx:trace.widthPx,heightPx:trace.heightPx,command:"path",
       points:path.points,pathCommands:path.commands,strokeWidthPx:path.strokeWidthPx,fill:path.fill,groupId:path.groupId},
     provenance:{confidence:0,extractionVersion:trace.version,reviewHistory:[],evidence:[{sourceId,pageNumber,basis:"raster_traced",confidence:0,
-      extractorVersion:trace.version,note:`Direct grayscale trace; fitting bound ${trace.settings.fitErrorPx}px in this source view. OCR replacements and semantic proposals excluded.`}]}}));
+      extractorVersion:trace.version,note:traceNote(trace,path.groupId)}]}}));
 }
 
 /** Reuse source artwork; raw candidates stay independently inspectable. Consumer-edited marks survive. */

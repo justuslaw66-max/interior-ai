@@ -27,6 +27,7 @@ source:
     - "Collection page color availability for COSMIC IVORY: COSMIC IVORY 6 mm: 120x280 (48\"x110\") LUX; 120X120 (48\"X48\") LUX; 60X120 (24\"X48\") LUX."
     - "Available configurator formats: G0027011 120x120 Lux ENTRAMBE patterns pieno_01,pieno_05; G0027021 60x120 Lux ENTRAMBE patterns pieno_01,pieno_05; G27001 120x280 Lux ENTRAMBE patterns pieno_01,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: marble
@@ -105,17 +106,16 @@ rendering:
     - straight
     - vertical_brick
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant

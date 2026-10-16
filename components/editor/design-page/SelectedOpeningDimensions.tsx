@@ -51,7 +51,6 @@ type SelectedOpeningDimensionsProps = {
     measurementUnit: PlanMeasurementUnit;
   };
   configuration: {
-    dark: boolean;
     canEdit: boolean;
     proMode: boolean;
   };
@@ -67,7 +66,7 @@ function OpeningOffsetField({ state, configuration, onCommit }: Pick<SelectedOpe
       minMm={-state.maxOffsetMm} maxMm={state.maxOffsetMm}
       disabled={!configuration.canEdit || state.hostNeedsRepair}
       testId="selection-inspector-opening-offset" unit={state.measurementUnit}
-      stepMm={50} keyboardStepMm={50} dark={configuration.dark} compact touchFriendly
+      stepMm={50} keyboardStepMm={50} compact touchFriendly
       onCommit={onCommit}
     />
   );
@@ -75,12 +74,12 @@ function OpeningOffsetField({ state, configuration, onCommit }: Pick<SelectedOpe
 
 function OpeningMeasuredField({
   label, valueMm, minMm, maxMm, disabled, testId, evidenceTestId, evidence,
-  measurementUnit, dark, onCommit,
+  measurementUnit, onCommit,
 }: {
   label: string; valueMm: number; minMm: number; maxMm: number;
   disabled: boolean; testId: string; evidenceTestId?: string;
   evidence: FloorPlanPropertyEvidenceV2;
-  measurementUnit: PlanMeasurementUnit; dark: boolean;
+  measurementUnit: PlanMeasurementUnit;
   onCommit: CommitMeasuredMm;
 }) {
   return (
@@ -88,11 +87,11 @@ function OpeningMeasuredField({
       <MeasurementField
         label={label} valueMm={valueMm} minMm={minMm} maxMm={maxMm}
         disabled={disabled} testId={testId} unit={measurementUnit}
-        stepMm={1} keyboardStepMm={50} dark={dark} compact touchFriendly
+        stepMm={1} keyboardStepMm={50} compact touchFriendly
         onCommit={onCommit}
       />
       <FloorPlanPropertyEvidenceControl
-        evidence={evidence} dark={dark} disabled={disabled}
+        evidence={evidence} disabled={disabled}
         testId={evidenceTestId ?? `${testId}-evidence`}
         assumedLabel="Estimated"
         assumedHelpText="This measurement was not read from your floor plan."
@@ -104,10 +103,8 @@ function OpeningMeasuredField({
 
 function OpeningDimensionWarning({
   state,
-  dark,
 }: {
   state: SelectedOpeningDimensionsProps["state"];
-  dark: boolean;
 }) {
   const visible = [state.heightStatus, state.bottomStatus]
     .some((status) => status === "constrained" || status === "invalid");
@@ -116,9 +113,7 @@ function OpeningDimensionWarning({
   return (
     <div
       data-testid="selection-inspector-opening-dimension-warning"
-      className={dark
-        ? "col-span-2 rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-xs text-amber-100"
-        : "col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"}
+      className="col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"
     >
       Stored {length(state.heightMm)} at {length(state.bottomMm)}; effective render {length(state.effectiveHeightMm)} at {length(state.effectiveBottomMm)}.
       {state.dimensionIssues.map((issue) => <div key={issue} className="mt-0.5">{issue}</div>)}
@@ -135,17 +130,13 @@ function OpeningHostRepair({
   return (
     <div
       data-testid="selection-inspector-opening-host-warning"
-      className={configuration.dark
-        ? "col-span-2 rounded-lg border border-amber-400/40 bg-amber-400/10 p-2 text-xs text-amber-100"
-        : "col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"}
+      className="col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"
     >
       <div className="font-semibold">{state.kind === "door" ? "Door" : "Window"} needs wall repair</div>
       <div className="mt-0.5">Choose a wall that contains the requested position.</div>
       <select
         data-testid="selection-inspector-opening-wall-repair"
-        className={configuration.dark
-          ? "designer-control mt-2 w-full rounded-md border px-2 py-2 text-xs text-neutral-100"
-          : "mt-2 w-full rounded-md border border-amber-300 bg-white px-2 py-2 text-xs text-gray-900"}
+        className="mt-2 w-full rounded-md border border-amber-300 bg-white px-2 py-2 text-xs text-gray-900"
         value={state.wall}
         disabled={!configuration.canEdit}
         onChange={(event) => commitWall(event.currentTarget.value as typeof state.wall)}
@@ -161,7 +152,7 @@ function OpeningHostRepair({
 export function SelectedOpeningDimensions({ state, configuration, actions }: SelectedOpeningDimensionsProps) {
   return (
     <div data-testid="selection-inspector-opening-dimensions" className="mt-3 grid grid-cols-2 gap-2">
-      <OpeningDimensionWarning state={state} dark={configuration.dark} />
+      <OpeningDimensionWarning state={state} />
       <OpeningHostRepair state={state} configuration={configuration} commitWall={actions.commitWall} />
       <OpeningKindControl
         opening={{
@@ -176,7 +167,6 @@ export function SelectedOpeningDimensions({ state, configuration, actions }: Sel
             sillHeight: state.sillEvidence,
           },
         }}
-        dark={configuration.dark}
         canEdit={configuration.canEdit}
         proMode={configuration.proMode}
         testId="selection-inspector-opening-kind"
@@ -187,7 +177,7 @@ export function SelectedOpeningDimensions({ state, configuration, actions }: Sel
         maxMm={state.maxWidthMm}
         disabled={!configuration.canEdit || !state.widthEditable}
         testId="selection-inspector-opening-width" evidence={state.widthEvidence}
-        measurementUnit={state.measurementUnit} dark={configuration.dark}
+        measurementUnit={state.measurementUnit}
         onCommit={actions.commitWidthMm}
       />
       <OpeningMeasuredField
@@ -195,7 +185,7 @@ export function SelectedOpeningDimensions({ state, configuration, actions }: Sel
         maxMm={Math.max(1, state.maxHeightMm - state.bottomMm)}
         disabled={!configuration.canEdit || !state.heightEditable}
         testId="selection-inspector-opening-height" evidence={state.heightEvidence}
-        measurementUnit={state.measurementUnit} dark={configuration.dark}
+        measurementUnit={state.measurementUnit}
         onCommit={actions.commitHeightMm}
       />
       {state.kind === "window" ? (
@@ -205,7 +195,7 @@ export function SelectedOpeningDimensions({ state, configuration, actions }: Sel
           disabled={!configuration.canEdit || !state.sillEditable}
           testId="selection-inspector-opening-bottom" evidence={state.sillEvidence}
           evidenceTestId="selection-inspector-opening-sill-evidence"
-          measurementUnit={state.measurementUnit} dark={configuration.dark}
+          measurementUnit={state.measurementUnit}
           onCommit={actions.commitBottomMm}
         />
       ) : null}

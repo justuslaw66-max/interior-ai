@@ -1,0 +1,235 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - NATIVE SAND - minimali.zip (16179547 bytes, sha256 72cefc9028ffc739250bbf9c9c27a3e600ec36312d9294393f9092f7d6159a87).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g56790",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-sand/g0056790-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "g56790_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-native-sand-g56790-80x80-r11",
+   "faces": [
+    {
+     "file": "g56790_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31922,
+     "source_zip": "PLEIN AIR - NATIVE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE SAND - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "964e8788eabf0a6fd6155d729e488d2536c6ad76499f74cd75971b41eace53d4",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "NATIVE SAND 80X80 R11 20 MM_01",
+      "id": "0d578130-1ff9-4d6b-8b74-b11c792069fd",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g56790_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 30798,
+     "source_zip": "PLEIN AIR - NATIVE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE SAND - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cf29fe34fd203301af25973b3b207d2c5d8f2b3af23128947ec4841727fb6c64",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "NATIVE SAND 80X80 R11 20 MM_04",
+      "id": "698a6219-cc22-48ad-8306-56a9e564ccaa",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g56790_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34312,
+     "source_zip": "PLEIN AIR - NATIVE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE SAND - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8b5b7456d129f53d5af9b34e0a5ba8b823b02f710eed01f300cc71a554b09ae5",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "NATIVE SAND 80X80 R11 20 MM_03",
+      "id": "d34ad8b3-87bd-421e-89e3-8adb1e03964f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g56790_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28034,
+     "source_zip": "PLEIN AIR - NATIVE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE SAND - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4225bcaca551b3116d3e460b2c5be8548ce8978a5858846506dab5a46ffdd216",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "NATIVE SAND 80X80 R11 20 MM_02",
+      "id": "05d5b23c-a32c-4957-8b4b-fe0a2061b64e",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0013508",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-sand/pf60013508-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0013508_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-native-sand-0013508-60x60-r11",
+   "faces": [
+    {
+     "file": "0013508_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17696,
+     "source_zip": "PLEIN AIR - NATIVE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE SAND - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8064766392a53c7eda7a647d8b0c1fc045243617eb2bd874f6f9129f76c6a7ba",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "NATIVE SAND 60X60 R11 20 MM_01",
+      "id": "9a992378-3c9c-4918-9577-21b56b23fc78",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0013508_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17942,
+     "source_zip": "PLEIN AIR - NATIVE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE SAND - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cd30cc1fcd930a496b9944402ad8a9b3931b5fd87d191d3f7f34ea96004b82d9",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2",
+      "name": "NATIVE SAND 60X60 R11 20 MM_02",
+      "id": "133ef66d-b0c0-49fa-9a10-fbcdd4616d62",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0013508_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 17342,
+     "source_zip": "PLEIN AIR - NATIVE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE SAND - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "080a56d6bb7bd091e4cfe370feb7027503e8684f747b8293db24240a06a070f8",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3",
+      "name": "NATIVE SAND 60X60 R11 20 MM_03",
+      "id": "ddb68959-efee-4fd4-8028-1d97f4b36fe6",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0013508_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 19176,
+     "source_zip": "PLEIN AIR - NATIVE SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE SAND - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "58359ba79bf2a81cdb536b97eea78c35502ac04f63774e2642a5b29c756902f3",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4",
+      "name": "NATIVE SAND 60X60 R11 20 MM_04",
+      "id": "cffd2879-afe9-422d-894a-fd35053913f3",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

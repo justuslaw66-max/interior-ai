@@ -1,0 +1,316 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/legend-sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - LEGEND SAND - minimali.zip (17733253 bytes, sha256 aab0bb54549c7a98eb24a403e916f27a8fb86a54d3e1d56dffea2d81e5d564e2).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "30x120",
+   "item_code": "0003690",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/legend-sand/pf60003690-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "0003690_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "used_by": "floor gardenia-flooring-plein-air-legend-sand-0003690-30x120-r11",
+   "faces": [
+    {
+     "file": "0003690_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 21126,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_1.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "4814dc2d5400959de2c3fbb0bef8da99b44c920b38fb33cd7b6665041f54f146",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 1 (view_01)",
+      "name": "WOODLAND SAND 30X120_01",
+      "id": "36cb7fef-1cca-4227-9d90-c6653254c168",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0003690_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 24332,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_2.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "cfb0a7cc8de6d6bb1a8956703ced6796abb0fc2344cf518258c259a1935b67a5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 2 (view_02)",
+      "name": "WOODLAND SAND 30X120_02",
+      "id": "08d1f9bd-d0e8-446a-9bb3-00853ae5f4cc",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0003690_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 25526,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_3.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "f76991edc83182303d3c5b91a220a90fd68a0a6f11ddcb179134abcd911651f5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 3 (view_03)",
+      "name": "WOODLAND SAND 30X120_03",
+      "id": "ef15ce46-8e18-4cce-9fd4-448a36ab96cc",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0003690_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 24432,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_4.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "a8b7e451f454bc93050305e420f863d4c12bd61cfe30c677e29a496eeeec0590",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 4 (view_04)",
+      "name": "WOODLAND SAND 30X120_04",
+      "id": "7f2697cc-f526-46f8-a461-90aa27b82963",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0003690_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 27974,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_5.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "f0a61a8951c252277d8a79457a9c204b689783971cb44bf90850a3d023578f6f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 5 (view_05)",
+      "name": "WOODLAND SAND 30X120_05",
+      "id": "ac2702b5-3d19-480f-8669-3004394130c0",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0003690_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 25006,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_6.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "d297e7a6a470b7cd41d56fbcfb26cdd0b86d0354dd5a14bcd464d1baf457ba0c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 6 (view_06)",
+      "name": "WOODLAND SAND 30X120_06",
+      "id": "1e5a560c-d1db-4648-bdac-bfe07130643f",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0003690_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 30156,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_7.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "01aede27c74d68970822235ddd25de3d1043776b48fa896a7676dc23d82b80e7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 7 (view_07)",
+      "name": "WOODLAND SAND 30X120_07",
+      "id": "e16ce205-c76f-495e-863d-388a5f536f74",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0003690_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 29192,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_8.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "7c27723c1b73310e2ade0b9736c4507bb4b9e58358f06a961a8caaa36cc8603d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 8 (view_08)",
+      "name": "WOODLAND SAND 30X120_08",
+      "id": "b598d800-cd7b-464e-91ce-665ea62cfc2b",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0003690_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 26802,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_9.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "17e3340cfa80d4f6107a8b290068897299eeb983da08e72c8b68d20b0c7f3611",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 9 (view_09)",
+      "name": "WOODLAND SAND 30X120_09",
+      "id": "426558c4-56bc-4eb4-849d-48caf8a33be5",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0003690_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 25400,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_10.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "6cb62642c9f3eba7646baf3aaad7484e14f48349255a59ee657e967b85242ce6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 10 (view_10)",
+      "name": "WOODLAND SAND 30X120_10",
+      "id": "d610675d-e179-4c04-8ec7-058f2701ac07",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0003690_11.webp",
+     "face": 11,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20662,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_11.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "770bee1e825c9db49b2e937e7c92da58902ce2dc2058416678226de158492f0a",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 11 (view_11)",
+      "name": "WOODLAND SAND 30X120_11",
+      "id": "3a1b6fbc-3e21-4adc-84b2-7c6cb2f1d11c",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0003690_12.webp",
+     "face": 12,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 22356,
+     "source_zip": "PLEIN AIR - LEGEND SAND - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - LEGEND SAND - 30X120 - R11 - view_12.jpg",
+     "source_px": [
+      1024,
+      4096
+     ],
+     "source_sha256": "b27fb7978a9fb6b1cce843867c74d7f37f72244fb169a15ff46e681ea3f342c6",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 12 (view_12)",
+      "name": "WOODLAND SAND 30X120_12",
+      "id": "1a591df4-9463-4b1f-a672-1c47f3671678",
+      "site_position": 12
+     }
+    }
+   ]
+  }
+ ]
+}

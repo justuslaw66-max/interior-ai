@@ -50,7 +50,7 @@ const floor: SelectedSurfaceInspectorState = {
   blockers: null,
 };
 const render = (state: SelectedSurfaceInspectorState, pro: boolean) =>
-  renderToStaticMarkup(createElement(SelectedSurfaceInspector, { state, configuration: { dark: false, pro }, actions }));
+  renderToStaticMarkup(createElement(SelectedSurfaceInspector, { state, configuration: { pro }, actions }));
 
 const consumerFloor = render(floor, false);
 assert.match(consumerFloor, /<h3 data-testid="surface-inspector-heading"[^>]*>Floor<\/h3>/);
@@ -89,7 +89,7 @@ const picked = render({ ...floor, picker: { title: "Floor materials", options: [
 assert.match(picked, /data-testid="selection-inspector-floor-picker"[\s\S]*Floor materials[\s\S]*selection-inspector-floor-picker-close[\s\S]*No other materials\./);
 
 // The inspector hands Pro to the surface inspector; the extracted parts carry the controls.
-assert.match(read("components/editor/design-page/DesignPageSelectionInspector.tsx"), /configuration=\{\{ dark: configuration\.dark, pro: configuration\.proMode \}\}/);
+assert.match(read("components/editor/design-page/DesignPageSelectionInspector.tsx"), /configuration=\{\{ pro: configuration\.proMode \}\}/);
 assert.match(read("lib/useDesignPageSurfaceInspector.ts"), /const headerLabel = surfaceInspectorIsWall\s+\? getWallFaceLabel\(wallInspectorFaceId\)\s+: surfaceInspectorIsCeiling\s+\? "Ceiling"\s+: "Floor";/);
 for (const file of ["SelectedSurfaceInspector", "SurfacePatternControls", "SurfaceMaterialPicker"]) {
   const lines = read(`components/editor/design-page/${file}.tsx`).split("\n").length;
@@ -122,7 +122,7 @@ const header = (pro: boolean) =>
     createElement(SurfaceBrowserHeader, {
       pro, targetLabel: "Walls", displayName: "Spanish Red", target: "walls", selectedWallFaceId: null, tab: "tiles",
       brush: { active: false, disabled: false, status: "", onToggle: () => {} },
-      secondaryActionClass: "", metaClass: "", onBack: () => {}, onOpenSummary: () => {}, onTargetChange: () => {}, onTabChange: () => {},
+      metaClass: "", onBack: () => {}, onOpenSummary: () => {}, onTargetChange: () => {}, onTabChange: () => {},
     } satisfies SurfaceBrowserHeaderProps)
   );
 const consumerHeader = header(false);
@@ -138,7 +138,7 @@ assert.match(proHeader, /data-testid="surfaces-tab-tiles"[^>]*>Materials<\/butto
 const planPanel = read("components/editor/DesignControlsPlanPanel.tsx");
 assert.match(planPanel, /const openRoomSurface = \(target: RoomSurfaceTarget\) => \{\s+onSurfaceTargetChange\(target\); setSurfaceTab\("tiles"\); setWallSurfaceMode\("paint"\); setRoomFinishPanelOpen\(true\); setPlanSectionCollapsed\("selectedRoom", false\);/);
 assert.match(planPanel, /<SurfaceBrowserHeader\s+pro=\{isDesigner\}[\s\S]*?onBack=\{\(\) => setRoomFinishPanelOpen\(false\)\}/);
-assert.match(planPanel, /\{ id: "materials" as const, label: "Materials" \}/);
+assert.match(planPanel, /\{ value: "materials", label: "Materials", testId: "wall-surface-mode-materials" \}/);
 assert.doesNotMatch(planPanel, /data-testid="selected-room-floor-finish"|"Change floor"/);
 
 console.log("Surface inspector and Surfaces rows (ED5, ED8) checks passed");

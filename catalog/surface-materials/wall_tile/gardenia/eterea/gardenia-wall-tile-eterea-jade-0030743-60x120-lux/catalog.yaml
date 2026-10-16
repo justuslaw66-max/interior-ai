@@ -1,0 +1,163 @@
+schema_version: 1
+surface_material:
+  supplier: gardenia_orchidea
+  brand: Gardenia & Ariana
+  collection: Eterea
+  material_id: gardenia-wall-tile-eterea-jade-0030743-60x120-lux
+  product_name: Gardenia Eterea Jade 60x120 Lux
+  slug: gardenia-wall-tile-eterea-jade-0030743-60x120-lux
+  surface_category: wall_tile
+  material_family: tile
+source:
+  supplier_region: international
+  source_url: https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/eterea/
+  sample_request_url: null
+  currency: EUR
+  license_status: confirmed
+  notes:
+    - "Tile faces: 17 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/jade/pf60030743-v102/), downloaded signed in on 2026-10-12, stored at 0.6 px per mm; the originals are sharper, see gardenia-eterea-jade-faces.manifest.json. Each covers 600x1200 mm."
+    - "Imported from ABK Group's Gardenia&Ariana pages with user-confirmed permission on 2026-10-12: Eterea is not in Gardenia's RealityRemod configurator, which the July import read."
+    - "ABK item 0030743 (pf60030743) for wall use: 60X120 Lux, download area page https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/jade/pf60030743-v102/."
+    - "Colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/eterea/jade/60x120/: finish Lux, thickness 8,5 mm, porcelain stoneware."
+    - "Finishes: ABK makes this colour and size in Lux and Soft; both are listed, and ABK's Soft pages show the Lux pictures (J, 2026-10-12: both, sharing faces)."
+    - "Floor and wall: ABK's pages don't say which sizes are for floors or walls; every size is listed for both (J, 2026-10-10)."
+    - "Layouts: straight, brick and vertical brick, as for similar Gardenia tiles (J, 2026-10-10)."
+    - "Colour: ABK describes Jade as green (colour page pictures)."
+    - "Collection page technology: Full body colored porcelain - GL."
+    - "Collection page description: ETEREA brings together two distinct design languages. The natural depth of onyx meets the precise rhythm of the fluted surface: organic markings and geometry, softness and structure, movement and order. The carefully balanced contrast gives the collection a distinctive identity without it becoming overpowering."
+    - "Collection page thicknesses: 6 mm, 8.5 mm."
+    - "Collection page sizes: 120x280, 120x120, 60x120."
+    - "ABK's pages did not expose slip rating, package quantity, price, or seamless texture QA data."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
+classification:
+  flooring_type: tile
+  design_effect: marble
+  color_family: mixed
+  tone:
+    - neutral
+    - durable
+    - clean
+    - natural
+    - textured
+  style_cluster:
+    - contemporary
+    - modern
+    - hospitality
+    - commercial
+  room_suitability:
+    - kitchen
+    - bathroom
+    - living_room
+    - commercial
+    - hospitality
+physical_specs:
+  plank_or_tile_format: tile
+  plank_width_mm: null
+  plank_length_mm: null
+  tile_width_mm: 1200
+  tile_length_mm: 600
+  total_thickness_mm: 8.5
+  wear_layer_mm: null
+  installation_method:
+    - direct_stick
+  waterproof: null
+  slip_rating: null
+  suitable_for_wet_area: null
+  suitable_for_outdoor: null
+  commercial_grade: null
+texture_assets:
+  swatch_url: /assets/catalog/surface-materials/gardenia/eterea/0030743_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/eterea/0030743_01.webp
+  normal_url: null
+  roughness_url: null
+  ao_url: null
+  preview_room_url: null
+  tileable: false
+  texture_repeat_size_cm:
+    width: 120
+    height: 60
+  image_physical_size_mm:
+    width: 600
+    height: 1200
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_01.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_02.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_03.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_04.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_05.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_06.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_07.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_08.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_09.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_10.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_11.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_12.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_13.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_14.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_15.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_16.webp
+      width_mm: 600
+      height_mm: 1200
+    - url: /assets/catalog/surface-materials/gardenia/eterea/0030743_17.webp
+      width_mm: 600
+      height_mm: 1200
+rendering:
+  default_rotation_deg: 0
+  roughness: 0.48
+  metalness: 0
+  normal_strength: 0.15
+  scale_mode: physical_repeat
+  seam_strategy: repeat_texture
+  available_pattern_layouts:
+    - straight
+    - brick
+    - vertical_brick
+commerce:
+  purchase_mode: quote_or_sample
+  price_per_sqm:
+    currency: EUR
+    amount: null
+  sample_available: unknown
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
+  direct_checkout: false
+import_governance:
+  publish_status: published
+  publish_blockers: []
+  qa_flags:
+    - gardenia_abk_site_import
+    - gardenia_tile_item_variant
+    - user_confirmed_permission
+    - physical_scale_faces
+    - abk_download_area_face_pictures
+    - gardenia_collection_page_enriched
+    - surface_target_specific_entry

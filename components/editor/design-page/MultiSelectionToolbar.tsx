@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import type { ZoneMin } from "@/lib/room-types";
+import { Button } from "@/components/ui/Button";
 
 type MultiSelectionToolbarProps = {
   state: {
@@ -9,9 +10,6 @@ type MultiSelectionToolbarProps = {
     zoneType: ZoneMin["type"];
     /** Pro only (UX 4g, FU6): zone type and Create zone. */
     zoneTools?: boolean;
-  };
-  configuration: {
-    dark: boolean;
   };
   actions: {
     alignX: () => void;
@@ -23,15 +21,11 @@ type MultiSelectionToolbarProps = {
 };
 
 /** Pro's zone type and Create zone (UX 4g, FU6); consumers align a group but make no zones. */
-function ZoneCreateControls({ state, configuration, actions, buttonClass }: MultiSelectionToolbarProps & { buttonClass: string }) {
+function ZoneCreateControls({ state, actions }: MultiSelectionToolbarProps) {
   return (
     <>
       <select
-        className={
-          configuration.dark
-            ? "rounded-full border bg-transparent px-2 py-1 text-xs"
-            : "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900"
-        }
+        className="rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900"
         value={state.zoneType}
         onChange={(event) => actions.changeZoneType(event.currentTarget.value as ZoneMin["type"])}
       >
@@ -40,51 +34,34 @@ function ZoneCreateControls({ state, configuration, actions, buttonClass }: Mult
         <option value="tv">TV</option>
         <option value="dining">Dining</option>
       </select>
-      <button className={buttonClass} onClick={actions.createZone}>
+      <Button size="compact" onClick={actions.createZone}>
         Create zone
-      </button>
+      </Button>
     </>
   );
 }
 
 export function MultiSelectionToolbar({
   state,
-  configuration,
   actions,
 }: MultiSelectionToolbarProps) {
-  const buttonClass = configuration.dark
-    ? "rounded-full border px-2 py-1 text-xs"
-    : "rounded-full border border-neutral-200 px-2 py-1 text-xs text-neutral-900";
-
   return (
     <div className="absolute left-1/2 top-4 z-30 -translate-x-1/2 md:top-bar-16">
-      <div
-        className={
-          configuration.dark
-            ? "designer-panel flex items-center gap-2 rounded-full px-3 py-2"
-            : "flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow"
-        }
-      >
-        <div
-          className={
-            configuration.dark
-              ? "designer-text-primary text-xs font-semibold"
-              : "text-xs font-semibold text-neutral-900"
-          }
-        >
+      <div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow">
+        <div className="text-xs font-semibold text-neutral-900">
           Group ({state.count})
         </div>
-        <button className={buttonClass} onClick={actions.alignX}>
+        <Button size="compact" onClick={actions.alignX}>
           Align X centre
-        </button>
-        <button className={buttonClass} onClick={actions.alignZ}>
+        </Button>
+        <Button size="compact" onClick={actions.alignZ}>
           Align Z centre
-        </button>
-        {state.zoneTools ? <ZoneCreateControls state={state} configuration={configuration} actions={actions} buttonClass={buttonClass} /> : null}
-        <button type="button" className={`${buttonClass} grid h-8 w-8 place-items-center p-0 touch:h-11 touch:w-11`}
+        </Button>
+        {state.zoneTools ? <ZoneCreateControls state={state} actions={actions} /> : null}
+        <Button variant="quiet" size="icon"
           aria-label={`Deselect ${state.count} products`} title={`Deselect ${state.count} products`} onClick={actions.clear}>
           <X className="h-4 w-4" aria-hidden="true" />
-        </button>
+        </Button>
       </div>
     </div>
   );

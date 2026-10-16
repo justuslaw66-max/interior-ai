@@ -23,7 +23,6 @@ export type StepPanelColumn = {
 };
 
 type PhoneStepSheetProps = {
-  dark: boolean;
   title: string;
   subtitle: string;
   /** Collapsed is the sheet's peek: only its title shows (Ctrl/⌘ B, or dragging it down). */
@@ -100,15 +99,14 @@ function useSheetDrag(heightPx: number, viewportHeight: number, settle: (snap: P
   return { sheetRef, consumeDragClick, handlers: { onPointerDown, onPointerMove, onPointerUp: onPointerEnd, onPointerCancel: onPointerEnd } };
 }
 
-function SheetTop({ dark, title, subtitle, inspecting, handle }: {
-  dark: boolean; title: string; subtitle: string; inspecting: boolean; handle: ReactNode;
+function SheetTop({ title, subtitle, inspecting, handle }: { title: string; subtitle: string; inspecting: boolean; handle: ReactNode;
 }) {
   return (
     <>
       <div className="flex shrink-0 justify-center">{handle}</div>
       <div hidden={inspecting} className="-mt-1.5 shrink-0 px-4 pb-2">
         <h2 className="text-lg font-bold leading-6">{title}</h2>
-        <p className={`truncate text-xs ${dark ? "designer-text-secondary" : "text-neutral-600"}`}>{subtitle}</p>
+        <p className="truncate text-xs text-neutral-600">{subtitle}</p>
       </div>
     </>
   );
@@ -120,7 +118,7 @@ function SheetTop({ dark, title, subtitle, inspecting, handle }: {
  * and brings it back, or drags it; it reports its height, so the plan is framed above it. With
  * `column`, the same panel from md, beside the canvas.
  */
-export function PhoneStepSheet({ dark, title, subtitle, collapsed, onCollapsedChange, column = null, children }: PhoneStepSheetProps) {
+export function PhoneStepSheet({ title, subtitle, collapsed, onCollapsedChange, column = null, children }: PhoneStepSheetProps) {
   const sheet = !column;
   const [expanded, setExpanded] = useState<Exclude<PhoneSheetSnap, "peek">>("half");
   const snap: PhoneSheetSnap = collapsed ? "peek" : expanded;
@@ -152,8 +150,8 @@ export function PhoneStepSheet({ dark, title, subtitle, collapsed, onCollapsedCh
 
   // The same elements for the sheet and the column: the step's content keeps its place in the tree.
   return (
-    <section ref={sheet ? sheetRef : undefined} data-testid="design-controls-panel" {...panelShellProps(column, { dark, title, snap, heightPx })}>
-      {column ? column.header : <SheetTop dark={dark} title={title} subtitle={subtitle} inspecting={inspecting} handle={handle} />}
+    <section ref={sheet ? sheetRef : undefined} data-testid="design-controls-panel" {...panelShellProps(column, { title, snap, heightPx })}>
+      {column ? column.header : <SheetTop title={title} subtitle={subtitle} inspecting={inspecting} handle={handle} />}
       <StepPanelBody sheet={sheet} peek={snap === "peek"} inspecting={inspecting}>
         {children}
       </StepPanelBody>
@@ -162,7 +160,7 @@ export function PhoneStepSheet({ dark, title, subtitle, collapsed, onCollapsedCh
 }
 
 /** The column's place and look, or the sheet's: its snap, name, height and look. */
-function panelShellProps(column: StepPanelColumn | null, sheet: { dark: boolean; title: string; snap: PhoneSheetSnap; heightPx: number }) {
+function panelShellProps(column: StepPanelColumn | null, sheet: { title: string; snap: PhoneSheetSnap; heightPx: number }) {
   if (column) {
     return {
       "data-temporary-reveal": column.temporarilyRevealed ? "true" : "false",
@@ -177,9 +175,7 @@ function panelShellProps(column: StepPanelColumn | null, sheet: { dark: boolean;
     "data-sheet-snap": sheet.snap,
     "aria-label": sheet.title,
     style: { height: sheet.heightPx },
-    className: `absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 flex flex-col rounded-t-[20px] shadow-[0_-6px_24px_rgba(23,23,23,0.12)] transition-[height] duration-200 data-[dragging=true]:transition-none motion-reduce:transition-none ${
-      sheet.dark ? "designer-dock" : "bg-white text-neutral-900"
-    }`,
+    className: "absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 flex flex-col rounded-t-[20px] shadow-[0_-6px_24px_rgba(23,23,23,0.12)] transition-[height] duration-200 data-[dragging=true]:transition-none motion-reduce:transition-none bg-white text-neutral-900",
   };
 }
 

@@ -1,0 +1,691 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/ice-raw/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-12: ETEREA - ICE RAW - minimali.zip (30463368 bytes, sha256 89960ff05f44d51dc220b993808d1d3853c2beaae98e48176a3983455ce47bf6).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/eterea/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "120x120",
+   "item_code": "0030751",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/ice-raw/pf60030751-v102/",
+   "face_mm": {
+    "width": 1200,
+    "height": 1200
+   },
+   "swatch": "0030751_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-ice-raw-0030751-120x120-nat; wall gardenia-wall-tile-eterea-ice-raw-0030751-120x120-nat",
+   "faces": [
+    {
+     "file": "0030751_01.webp",
+     "face": 1,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 19718,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - ICE RAW - 120X120 - Natural - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "d39b081f7aa70b4366cfbf035dd64f8a154cf76733396566fe835cadce1a1551",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 1",
+      "name": "ETEREA ICE RAW 120X120 NAT_02",
+      "id": "14ecc67a-68d8-4107-b222-fa6fad8d1767",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030751_02.webp",
+     "face": 2,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 21314,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - ICE RAW - 120X120 - Natural - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8f452cc370e0ca39be49611abe8f856403de66305722e8ba411b07106586ba2e",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 2",
+      "name": "ETEREA ICE RAW 120x120 NAT_09",
+      "id": "1cf46d4b-3f86-46a6-adaf-d00ccc2beca4",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030751_03.webp",
+     "face": 3,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 20218,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - ICE RAW - 120X120 - Natural - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f4d5ac85d356085571b25dbd93d2dc469a9e6e1bb3a2fb74d481fa3fe0b31bfc",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 3",
+      "name": "ETEREA ICE RAW 120X120 NAT_01",
+      "id": "3714594e-be07-482f-b283-be069e00de4c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030751_04.webp",
+     "face": 4,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 17248,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - ICE RAW - 120X120 - Natural - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "edcde765a42cb312966ee12f90738697fea5b8d8ec0291edfe672d9ba88a86a2",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 4",
+      "name": "ETEREA ICE RAW 120x120 NAT_05",
+      "id": "3dd56321-b3cf-42d0-b47b-7c4ac04d3175",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030751_05.webp",
+     "face": 5,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 20790,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - ICE RAW - 120X120 - Natural - view_5.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6e362a0e0362cf36da4a3d6685c672eb8fe6dce06729d0bdb52da741bd842cd0",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 5",
+      "name": "ETEREA ICE RAW 120X120 NAT_03",
+      "id": "4404f8ed-0600-4120-8d95-0239af65a2e3",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030751_06.webp",
+     "face": 6,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 19072,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - ICE RAW - 120X120 - Natural - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a39f183ead8dbc49c408000c30697947ffb9aa134d2e9d769ede92cf79fca056",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 6",
+      "name": "ETEREA ICE RAW 120x120 NAT_07",
+      "id": "6dfb9d34-fa41-4edf-9dad-8fd9efb90a95",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030751_07.webp",
+     "face": 7,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 20068,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - ICE RAW - 120X120 - Natural - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fa61da7218adcfa793a33f055bbbd13b1c9d7e82d19cb947572e4b4cd351d089",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 7",
+      "name": "ETEREA ICE RAW 120x120 NAT_08",
+      "id": "a39c281b-3353-4cd9-b526-22323062d406",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030751_08.webp",
+     "face": 8,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 17378,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - ICE RAW - 120X120 - Natural - view_8.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "28b064596cd81a79d579ad9909f165f3f0c95060c986c6e50e8ab0eea9c32283",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 8",
+      "name": "ETEREA ICE RAW 120x120 NAT_06",
+      "id": "b316d966-a522-49e2-9ef8-0d2d69b0f210",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030751_09.webp",
+     "face": 9,
+     "width_mm": 1200,
+     "height_mm": 1200,
+     "width_px": 720,
+     "height_px": 720,
+     "bytes": 17128,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "120X120-Natural/ETEREA - ICE RAW - 120X120 - Natural - view_9.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "731fc0168e2cf82dee2cd2df01ff152046e1fd8119a74eb2be3109dadc6c2909",
+     "source_px_per_mm": 2.133,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "120X120 · Natural · Faccia 9",
+      "name": "ETEREA ICE RAW 120X120 NAT_04",
+      "id": "b3eda379-8d41-4f77-867f-97bcaff027d8",
+      "site_position": 9
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x120",
+   "item_code": "0030757",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/eterea/ice-raw/pf60030757-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0030757_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-eterea-ice-raw-0030757-60x120-nat; wall gardenia-wall-tile-eterea-ice-raw-0030757-60x120-nat",
+   "faces": [
+    {
+     "file": "0030757_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8750,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_1.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "c84e244143573b58ca8dc418792d83789de9da8d2d10a9ffdee8d1d1499687d3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 1",
+      "name": "ETEREA ICE RAW 60x120 NAT_14",
+      "id": "0106b5e4-0a97-4ac5-82cc-e59547421d64",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0030757_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 13420,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_2.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a2377ac8b818ca35ef098b26eed24df929b21e1f424d9d467d04923370a43ae1",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 2",
+      "name": "ETEREA ICE RAW 60x120 NAT_18",
+      "id": "09d58dc1-4df5-4311-99ab-53a91aab3db2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0030757_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10046,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "71fce0285148763d472ee70c2fb576699ce9c1f5e081bd50c39f5c2af5949db8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 3",
+      "name": "ETEREA ICE RAW 60X120 NAT_04",
+      "id": "3f3532ea-ba59-4c9f-b0d4-b45758a6dec7",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0030757_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8620,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "632c7543ac2ac0d981c0b583f3c00035369a0553dbd9d64dced76ef83962a720",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 4",
+      "name": "ETEREA ICE RAW 60x120 NAT_09",
+      "id": "40a5fa9c-3395-43f7-9e8b-32407ab61670",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0030757_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10038,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5edd5dec6ccd104661bf442c3003bdcbe5a410116b0c12d4be76b090df9468a7",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 5",
+      "name": "ETEREA ICE RAW 60x120 NAT_15",
+      "id": "42dd2b8d-5e88-49ad-a228-dfd7d5c9db69",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0030757_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11200,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "1227a2ea443e49e141d75536baee75b1eb5fa2a4a56ea012da207bfbb166cd9f",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 6",
+      "name": "ETEREA ICE RAW 60X120 NAT_01",
+      "id": "4df0178f-3cec-48db-8e62-5ae233f19780",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0030757_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9828,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_7.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "5a36091ec9f13bd9ba72f07fedc1ea4ef8cc34f272238388efaf7a567554f6c3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 7",
+      "name": "ETEREA ICE RAW 60x120 NAT_17",
+      "id": "768dabd4-0af9-4571-8fe4-4f4a8aa6d5d2",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0030757_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10086,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_8.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "eb4a8ebbe15ad6c2ee6ccaa0c818020f0cd27a8edec828026e9a29864a37eb28",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 8",
+      "name": "ETEREA ICE RAW 60x120 NAT_13",
+      "id": "787ca1dc-dabb-4b93-ae6b-74a151633f0e",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0030757_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8976,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_9.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "d6409462d5630c5ebea0d1bbffc215b71fdc551d3ecfebe6f7b07ba9ad91beda",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 9",
+      "name": "ETEREA ICE RAW 60X120 NAT_08",
+      "id": "887e48af-3d43-409b-98db-9f7ae45ff568",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0030757_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8512,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_10.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "6a022cdbb9f0518ab4e6fbb053285253050f72baae492b617b8a6b363cb0d637",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 10",
+      "name": "ETEREA ICE RAW 60x120 NAT_11",
+      "id": "93df0648-dfe3-4150-85f3-88f4dda1eb41",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0030757_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 8826,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_11.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "93f24213d02bf6f068aaf7a9c772a0a60f76ac9568b5a1cf51f04dd2748786fa",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 11",
+      "name": "ETEREA ICE RAW 60X120 NAT_07",
+      "id": "94d0fcf8-c0c7-43ab-aced-b11c323e1630",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0030757_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 11366,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_12.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3f5dafe93590cea80cb3bfe9b34eb57d1537c5e54d05d7bcd60c415df877209c",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 12",
+      "name": "ETEREA ICE RAW 60X120 NAT_05",
+      "id": "b0f7f27e-2fe0-4584-9009-e4901356bb3f",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0030757_13.webp",
+     "face": 13,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10840,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_13.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "a2f063f62c05e88f002bdec6a96a532616728372a8d13ff6c1c53e07320e4d86",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 13",
+      "name": "ETEREA ICE RAW 60x120 NAT_16",
+      "id": "bff74e74-e24a-4fea-9045-505b08ad55a0",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0030757_14.webp",
+     "face": 14,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9302,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_14.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "f8685c246d563acd231525dd6567222fb2d5433f6f7bfdafddaf3e7bbda5ca12",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 14",
+      "name": "ETEREA ICE RAW 60X120 NAT_02",
+      "id": "d0179096-b56b-4b27-ab6e-88d97d85f8e0",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0030757_15.webp",
+     "face": 15,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10540,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_15.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "24b6fa92484f18c2d5a6f7a3fd6cd1b42e1b6c29c94fd1f8fd91ab03a4c4acd5",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 15",
+      "name": "ETEREA ICE RAW 60X120 NAT_03",
+      "id": "d9d065fe-94a5-4313-b1c0-2f4a0b47fe8a",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0030757_16.webp",
+     "face": 16,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9560,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_16.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "ee5962b85f0754a1b2e24b8d3d3070072708bf58deb6ec5dd6a94869ebaf55b8",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 16",
+      "name": "ETEREA ICE RAW 60x120 NAT_12",
+      "id": "e2e185f5-f803-4eec-9ed9-56ecdc4a8021",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0030757_17.webp",
+     "face": 17,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 10240,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_17.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "30a39afe3783c199d334f6925aa1bf19439daac054a7849c40112d51c0148349",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 17",
+      "name": "ETEREA ICE RAW 60X120 NAT_06",
+      "id": "e3b46531-ca2a-4ada-9206-038d8ea40aac",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0030757_18.webp",
+     "face": 18,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 9304,
+     "source_zip": "ETEREA - ICE RAW - minimali.zip",
+     "source_file": "60X120-Natural/ETEREA - ICE RAW - 60X120 - Natural - view_18.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "3e8fa59331e5d26f3ba0752de51d7a6bb08181e0d33b0d1bbecbe85da6af8bd3",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · Natural · Faccia 18",
+      "name": "ETEREA ICE RAW 60x120 NAT_10",
+      "id": "f9008ce2-c68a-45d6-aabe-35df76873854",
+      "site_position": 18
+     }
+    }
+   ]
+  }
+ ]
+}

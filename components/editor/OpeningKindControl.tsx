@@ -7,13 +7,13 @@ import {
   type DesignPageOpeningMetricsPatch,
 } from "@/lib/design-page-opening-metrics";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import { Button } from "@/components/ui/Button";
 
 type OpeningKindControlProps = {
   opening: Pick<
     RoomOpening2D,
     "id" | "kind" | "widthMm" | "heightMm" | "bottomMm" | "evidence"
   >;
-  dark: boolean;
   canEdit: boolean;
   proMode: boolean;
   testId: string;
@@ -21,30 +21,25 @@ type OpeningKindControlProps = {
 };
 
 function BlockedKindPlan({
-  plan, dark, proMode, testId, approve,
+  plan, proMode, testId, approve,
 }: {
-  plan: DesignPageOpeningKindMutationPlan; dark: boolean; proMode: boolean;
+  plan: DesignPageOpeningKindMutationPlan; proMode: boolean;
   testId: string; approve: (patch: DesignPageOpeningMetricsPatch) => void;
 }) {
   return (
     <div
       data-testid={`${testId}-blocked`}
-      className={dark
-        ? "mt-2 rounded-md border border-amber-400/40 bg-amber-400/10 p-2 text-xs text-amber-100"
-        : "mt-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"}
+      className="mt-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"
     >
       <div>{plan.explanation}</div>
       {proMode && plan.approvedOverridePatch ? (
-        <button
-          type="button"
+        <Button
           data-testid={`${testId}-approve-override`}
-          className={dark
-            ? "mt-2 rounded-md bg-amber-200 px-2 py-1 font-semibold text-neutral-950"
-            : "mt-2 rounded-md bg-amber-900 px-2 py-1 font-semibold text-white"}
+          variant="primary" size="compact" className="mt-2"
           onClick={() => approve(plan.approvedOverridePatch!)}
         >
           Approve reviewed override
-        </button>
+        </Button>
       ) : <div className="mt-1">Open Pro tools to review an evidence override.</div>}
     </div>
   );
@@ -52,7 +47,6 @@ function BlockedKindPlan({
 
 export function OpeningKindControl({
   opening,
-  dark,
   canEdit,
   proMode,
   testId,
@@ -60,12 +54,8 @@ export function OpeningKindControl({
 }: OpeningKindControlProps) {
   const [blockedPlan, setBlockedPlan] =
     useState<DesignPageOpeningKindMutationPlan | null>(null);
-  const labelClass = dark
-    ? "text-xs font-medium text-neutral-300"
-    : "text-xs font-medium text-gray-600";
-  const controlClass = dark
-    ? "designer-control mt-1 w-full rounded-md border px-2 py-2 text-xs text-neutral-100 focus:border-blue-300"
-    : "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 focus:border-teal-500";
+  const labelClass = "text-xs font-medium text-gray-600";
+  const controlClass = "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 focus:border-teal-500";
 
   const selectKind = (newKind: RoomOpening2D["kind"]) => {
     const plan = planDesignPageOpeningKindMutation(opening, newKind);
@@ -94,7 +84,7 @@ export function OpeningKindControl({
         <option value="window">Window</option>
       </select>
       {blockedPlan ? <BlockedKindPlan
-        plan={blockedPlan} dark={dark} proMode={proMode} testId={testId}
+        plan={blockedPlan} proMode={proMode} testId={testId}
         approve={(patch) => { onChange(patch); setBlockedPlan(null); }}
       /> : null}
     </div>

@@ -477,7 +477,7 @@ export function useDesignPageSurfaceActions({
         normalizeFloorRotationDeg,
         clampFloorPatternScale,
         {
-          pattern: "straight",
+          pattern: getCompatibleFloorPatternForMaterial(getRuntimeSurfaceMaterialById(materialId), "straight"),
           rotationDeg: 0,
           scale: DEFAULT_FLOOR_PATTERN_SCALE,
           offset: DEFAULT_FLOOR_PATTERN_OFFSET,

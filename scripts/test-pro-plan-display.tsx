@@ -118,7 +118,7 @@ assert.match(read("components/editor/design-page/DesignPageWorkspace.tsx"), /<De
 assert.match(read("components/editor/design-page/DesignControlsPanelAdapter.tsx"), /\.\.\.actions,\s+stepFooter,\s+furnishFooter,\s+\};/);
 const controlsPanel = read("components/editor/DesignControlsPanel.tsx");
 assert.match(controlsPanel, /<ProGridSnapToggles [^\n]*\/>\}\n\s+\{stepFooter\}\n\s+<\/div>/);
-assert.match(controlsPanel, /<DesignControlsFurnishPanel\s+dark=\{dark\}\s+canEdit=\{canEdit\} canChangeProducts=\{canChangeProducts\} isDesigner=\{isDesigner\} footer=\{furnishFooter\}/);
+assert.match(controlsPanel, /<DesignControlsFurnishPanel\s+canEdit=\{canEdit\} canChangeProducts=\{canChangeProducts\} isDesigner=\{isDesigner\} footer=\{furnishFooter\}/);
 assert.match(read("components/editor/DesignControlsFurnishPanel.tsx"), /<FurnishImportedModels[\s\S]*?\/>\n\s+\{props\.footer\}\n\s+<FurnishFooter/, "Above Furnish's own foot.");
 
 // Layout versions: save, compare, restore and delete, as their own section.
@@ -155,6 +155,6 @@ assert.equal(existsSync(join(root, "components/editor/design-page/PresentExportD
 assert.match(read("components/editor/design-page/DownloadDialog.tsx"), /data-testid="presentation-lighting-status"/);
 assert.equal(existsSync(join(root, "components/LightingPresetsUI.tsx")), false, "Lighting has one home: the Lighting drawer.");
 assert.doesNotMatch(read("components/editor/design-page/LightingSettingsControls.tsx"), /lighting-quality-select|Presentation quality|onPerformanceModeChange/);
-assert.match(read("components/editor/design-page/DesignPageEditorCommandBar.tsx"), /data-testid=\{`scene-performance-\$\{option\}`\}/);
+assert.match(read("components/editor/design-page/DesignPageEditorCommandBar.tsx"), /testId: `scene-performance-\$\{option\}`/);
 
 console.log("Plan display (Pro), plan notes (Free), layout versions and lighting homes checks passed");

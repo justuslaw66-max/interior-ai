@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components/ui/Button";
 
 export interface BetaStartPanelProps {
   state: {
@@ -34,13 +35,12 @@ export function BetaStartPanel({ state, actions }: BetaStartPanelProps) {
             Choose a template, draw in measured 2D, upload a floor plan, or let AI suggest a furniture layout.
           </p>
         </div>
-        <button
-          type="button"
-          className="self-start rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+        <Button
+          variant="secondary" size="compact" className="self-start"
           onClick={actions.dismiss}
         >
           Dismiss
-        </button>
+        </Button>
       </div>
 
       <div

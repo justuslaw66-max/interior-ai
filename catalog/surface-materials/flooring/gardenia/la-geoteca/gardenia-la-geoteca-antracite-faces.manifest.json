@@ -1,0 +1,220 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/la-geoteca-antracite/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - LA GEOTECA ANTRACITE - minimali.zip (7849692 bytes, sha256 f8ec0a75ac6f5aaa7b0ae92b5c3fab7d067e7a3b7795d5d717e7a3f9f5efa135).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/la-geoteca/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0002934",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/la-geoteca-antracite/pf60002934-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0002934_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-la-geoteca-antracite-0002934-60x120-r11",
+   "faces": [
+    {
+     "file": "0002934_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 87276,
+     "source_zip": "PLEIN AIR - LA GEOTECA ANTRACITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA ANTRACITE - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "18ee2f7e4394d2b688e2f571dbba80c70bfc248a8f23be1029c9c0834f4a0454",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 1 (view_01)",
+      "name": "ANTRACITE 60X120_01",
+      "id": "5d2c1749-c322-482b-9966-118e422f021d",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0002934_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 88122,
+     "source_zip": "PLEIN AIR - LA GEOTECA ANTRACITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA ANTRACITE - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "ac57cf46ba4f23a211a6e884856b33ee3df3e0c14d417ce885a9161ef6f4116a",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 2 (view_02)",
+      "name": "ANTRACITE 60X120_02",
+      "id": "ee6d44a3-cbd2-4f7f-93a4-e59305f499ef",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0002934_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 86344,
+     "source_zip": "PLEIN AIR - LA GEOTECA ANTRACITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA ANTRACITE - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "1af38a8648da3202811c01091a07febcdce55c8117c24d95ef791e3f639dd376",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 3 (view_03)",
+      "name": "ANTRACITE 60X120_03",
+      "id": "87a8c0ff-0d01-4bb8-8fb2-986feaa3b130",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0002934_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 86678,
+     "source_zip": "PLEIN AIR - LA GEOTECA ANTRACITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA ANTRACITE - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "af0ef1eba121ba077ae16f8d78ff59bcd2637832402efb78178d68217c0c8ade",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 4 (view_04)",
+      "name": "ANTRACITE 60X120_04",
+      "id": "36f9e0d1-5af6-40f6-be43-7b4311b2b647",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0002934_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 87900,
+     "source_zip": "PLEIN AIR - LA GEOTECA ANTRACITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA ANTRACITE - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "62f674ffdfa40dcd2ac50530f1a54008283f7975c6357e50bf57d988d73690a6",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 5 (view_05)",
+      "name": "ANTRACITE 60X120_05",
+      "id": "5a32320e-ee8c-44bf-87b5-b38bde2be26f",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0002934_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 86806,
+     "source_zip": "PLEIN AIR - LA GEOTECA ANTRACITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA ANTRACITE - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "16526de32006f61180a54e0aa27be79042f689525e7f8298aa7ad5472e14671e",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 6 (view_06)",
+      "name": "ANTRACITE 60X120_06",
+      "id": "3c52587c-289f-4b04-891a-fa0bf7baef35",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0002934_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 91110,
+     "source_zip": "PLEIN AIR - LA GEOTECA ANTRACITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA ANTRACITE - 60X120 - R11 - view_7.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "d15907488755a4e8219441e27fa943eb8a480dcf9fc02f9a2bec83e467b46e70",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 7 (view_07)",
+      "name": "ANTRACITE 60X120_07",
+      "id": "de5139d3-df74-475b-8edc-317fca318712",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0002934_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 86914,
+     "source_zip": "PLEIN AIR - LA GEOTECA ANTRACITE - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - LA GEOTECA ANTRACITE - 60X120 - R11 - view_8.jpg",
+     "source_px": [
+      2399,
+      1200
+     ],
+     "source_sha256": "7060be754111beccc64dde77bd471fbc1f38a911bc5f4036d87c178e77d044b5",
+     "source_px_per_mm": 1.999,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 8 (view_08)",
+      "name": "ANTRACITE 60X120_08",
+      "id": "42350f38-6378-4bee-a8ee-b1c98d8236ab",
+      "site_position": 8
+     }
+    }
+   ]
+  }
+ ]
+}

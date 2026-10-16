@@ -11,6 +11,7 @@ import type {
   ImportedWallEditingActions,
   ImportedWallEditingState,
 } from "@/lib/useDesignPageImportedWallEditingController";
+import { Button } from "@/components/ui/Button";
 
 const CLASSIFICATIONS: FloorPlanWallClassificationV2[] = [
   "exterior",
@@ -22,7 +23,7 @@ const CLASSIFICATIONS: FloorPlanWallClassificationV2[] = [
 
 export type ImportedFloorPlanWallEditorProps = {
   state: ImportedWallEditingState;
-  configuration: { dark: boolean; vectorExport?: CanonicalPlanVectorExportSource };
+  configuration: { vectorExport?: CanonicalPlanVectorExportSource };
   actions: ImportedWallEditingActions;
 };
 
@@ -74,21 +75,9 @@ export function ImportedFloorPlanWallEditor({
   const vertexZ = currentVertexDraft.zMm;
 
   if (!state.available || !document || !floor || !wall) return null;
-
-  const dark = configuration.dark;
-  const shell = dark
-    ? "designer-work-surface rounded-lg border p-3 text-xs"
-    : "rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-lg backdrop-blur";
-  const control = dark
-    ? "designer-control rounded-md border px-2 py-1.5"
-    : "rounded-md border border-neutral-300 bg-white px-2 py-1.5";
-  const secondaryButton = dark
-    ? "designer-work-control rounded-md px-2.5 py-1.5 font-semibold"
-    : "rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 font-semibold hover:bg-neutral-50";
-  const primaryButton = dark
-    ? "designer-work-control-active rounded-md px-2.5 py-1.5 font-semibold disabled:opacity-40"
-    : "rounded-md bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800 disabled:opacity-40";
-  const subtle = dark ? "text-neutral-400" : "text-neutral-500";
+  const shell = "rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-lg backdrop-blur";
+  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5";
+  const subtle = "text-neutral-500";
   const straightWall = wall.path.kind === "line";
   const updateChanged =
     thicknessMm !== wall.thicknessMm || classification !== wall.classification;
@@ -109,28 +98,26 @@ export function ImportedFloorPlanWallEditor({
             <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-amber-950">
               <p>{CONSUMER_WALL_EDIT_CONFIRMATION_COPY}</p>
               <div className="mt-2 flex gap-2">
-                <button type="button" className={secondaryButton} onClick={actions.cancelEditingRequest}>
+                <Button variant="secondary" size="compact" onClick={actions.cancelEditingRequest}>
                   Keep locked
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
                   data-testid="confirm-edit-local-floor-plan"
-                  className={primaryButton}
+                  variant="primary" size="compact"
                   onClick={actions.confirmEditing}
                 >
                   Edit local copy
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
-            <button
-              type="button"
+            <Button
               data-testid="request-edit-imported-walls"
-              className={`${secondaryButton} mt-2 w-full`}
+              variant="secondary" size="compact" className="mt-2 w-full"
               onClick={actions.requestEditing}
             >
               {state.isLocalFork ? "Continue editing local copy" : "Edit imported walls"}
-            </button>
+            </Button>
           )}
         </div>
       ) : (
@@ -175,9 +162,8 @@ export function ImportedFloorPlanWallEditor({
           <div className="grid grid-cols-2 gap-2">
             <NumberField label="Move X (mm)" value={deltaXMm} className={control} subtle={subtle} onChange={setDeltaXMm} />
             <NumberField label="Move Z (mm)" value={deltaZMm} className={control} subtle={subtle} onChange={setDeltaZMm} />
-            <button
-              type="button"
-              className={`${secondaryButton} col-span-2`}
+            <Button
+              variant="secondary" size="compact" className="col-span-2"
               disabled={!straightWall || (deltaXMm === 0 && deltaZMm === 0) || !Number.isSafeInteger(deltaXMm) || !Number.isSafeInteger(deltaZMm)}
               onClick={() => {
                 if (actions.moveWall({ floorId: floor.id, wallId: wall.id, deltaXMm, deltaZMm })) {
@@ -187,7 +173,7 @@ export function ImportedFloorPlanWallEditor({
               }}
             >
               Move wall
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-2 border-t border-neutral-200 pt-3">
@@ -198,16 +184,16 @@ export function ImportedFloorPlanWallEditor({
                 {CLASSIFICATIONS.map((value) => <option key={value} value={value}>{value}</option>)}
               </select>
             </label>
-            <button type="button" className={`${secondaryButton} col-span-2`} disabled={!updateChanged || !Number.isSafeInteger(thicknessMm) || thicknessMm < 1} onClick={() => actions.updateWall({ floorId: floor.id, wallId: wall.id, thicknessMm, classification })}>
+            <Button variant="secondary" size="compact" className="col-span-2" disabled={!updateChanged || !Number.isSafeInteger(thicknessMm) || thicknessMm < 1} onClick={() => actions.updateWall({ floorId: floor.id, wallId: wall.id, thicknessMm, classification })}>
               Update wall type
-            </button>
+            </Button>
           </div>
 
           <div className="grid gap-2 border-t border-neutral-200 pt-3">
             <NumberField label={`Split position (mm${wallLengthMm ? ` of ${Math.round(wallLengthMm)}` : ""})`} value={splitOffsetMm} min={1} className={control} subtle={subtle} onChange={(value) => setWallDraft({ ...currentWallDraft, splitOffsetMm: value })} />
-            <button type="button" className={secondaryButton} disabled={!straightWall || !Number.isSafeInteger(splitOffsetMm) || splitOffsetMm <= 0 || (wallLengthMm !== null && splitOffsetMm >= wallLengthMm)} onClick={() => actions.splitWall({ floorId: floor.id, wallId: wall.id, offsetMm: splitOffsetMm })}>
+            <Button variant="secondary" size="compact" disabled={!straightWall || !Number.isSafeInteger(splitOffsetMm) || splitOffsetMm <= 0 || (wallLengthMm !== null && splitOffsetMm >= wallLengthMm)} onClick={() => actions.splitWall({ floorId: floor.id, wallId: wall.id, offsetMm: splitOffsetMm })}>
               Split wall
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-2 border-t border-neutral-200 pt-3">
@@ -219,14 +205,14 @@ export function ImportedFloorPlanWallEditor({
             </label>
             <NumberField label="Endpoint X" value={vertexX} className={control} subtle={subtle} onChange={(value) => setVertexDraft({ ...currentVertexDraft, xMm: value })} />
             <NumberField label="Endpoint Z" value={vertexZ} className={control} subtle={subtle} onChange={(value) => setVertexDraft({ ...currentVertexDraft, zMm: value })} />
-            <button type="button" className={`${secondaryButton} col-span-2`} disabled={!straightWall || !vertex || !vertexChanged || !Number.isSafeInteger(vertexX) || !Number.isSafeInteger(vertexZ)} onClick={() => actions.moveVertex({ floorId: floor.id, vertexId: selectedVertexId, xMm: vertexX, zMm: vertexZ })}>
+            <Button variant="secondary" size="compact" className="col-span-2" disabled={!straightWall || !vertex || !vertexChanged || !Number.isSafeInteger(vertexX) || !Number.isSafeInteger(vertexZ)} onClick={() => actions.moveVertex({ floorId: floor.id, vertexId: selectedVertexId, xMm: vertexX, zMm: vertexZ })}>
               Move endpoint
-            </button>
+            </Button>
           </div>
           {!straightWall ? <p className="text-xs text-amber-700">Arc geometry is review-only here. Wall type and thickness remain editable.</p> : null}
           <CanonicalPlanRemodelTools floor={floor} wall={wall} commit={actions.applyProposalMutation} proposal={state.proposal} recover={actions.recoverLayout} />
           {state.proposal?.reviewIssues.map((issue) => <p key={issue} className="text-amber-700">{issue}</p>)}
-          <button type="button" className={secondaryButton} onClick={actions.stopEditing}>Stop editing walls</button>
+          <Button variant="secondary" size="compact" onClick={actions.stopEditing}>Stop editing walls</Button>
         </div>
       )}
       <CanonicalPlanVectorExport document={document} floorId={floor.id} original={state.proposal?.originalDocument} {...configuration.vectorExport} />

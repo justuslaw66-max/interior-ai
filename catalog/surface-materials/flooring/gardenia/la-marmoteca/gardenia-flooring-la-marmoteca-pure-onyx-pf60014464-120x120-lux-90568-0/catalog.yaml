@@ -27,6 +27,8 @@ source:
     - "Collection page color availability for PURE ONYX: PURE ONYX 6 mm: 120x280 (48\"x110\") SOFT, LUX; 120X120 (48\"X48\") SOFT, LUX; 60X120 (24\"X48\") SOFT, LUX."
     - "Available configurator formats: PF60014464 120x120 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60014467 120x120 Soft ENTRAMBE patterns pieno_01,pieno_05; PF60014472 60x120 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60014475 60x120 Soft ENTRAMBE patterns pieno_01,pieno_05; PF60014454 120x280 Lux ENTRAMBE patterns pieno_01,pieno_05; PF60014457 120x280 Soft ENTRAMBE patterns pieno_01,pieno_05."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "ABK's La Marmoteca colour pages (read 2026-10-15) give 120x120 and 60x120 as 8.5 mm: the current 6 mm thickness is available while stocks last, to be replaced by the 8.5 mm version. ABK's technical sheet (LA MARMOTECA - Datasheet.pdf) still lists Lux and Soft at 6 mm; the catalogue follows the pages (J, 2026-10-15)."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: marble
@@ -56,7 +58,7 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 1200
   tile_length_mm: 1200
-  total_thickness_mm: 6
+  total_thickness_mm: 8.5
   wear_layer_mm: null
   installation_method:
     - direct_stick
@@ -118,17 +120,16 @@ rendering:
     - straight
     - vertical_brick
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant

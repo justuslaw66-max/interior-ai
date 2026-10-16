@@ -4,7 +4,6 @@ import type { ReactNode, RefObject } from "react";
 import { CommandBarMenuTrigger } from "./CommandBarMenuTrigger";
 
 type CommandBarMoreMenuProps = {
-  dark: boolean;
   /** Phones: the Menu at the start of the bar, ending with the account's items (UX 4d). */
   phone: boolean;
   accountSlot?: ReactNode;
@@ -37,10 +36,10 @@ type CommandBarMoreMenuProps = {
 
 /** The command bar's More button and menu; on phones, the Menu (UX 4d). */
 export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
-  const { dark, phone, containerRef, buttonRef, open, onToggle, lightingSettingsOpen } = props;
+  const { phone, containerRef, buttonRef, open, onToggle, lightingSettingsOpen } = props;
   return (
     <div ref={containerRef} className="relative shrink-0">
-      <CommandBarMenuTrigger dark={dark} phone={phone} buttonRef={buttonRef} open={open}
+      <CommandBarMenuTrigger phone={phone} buttonRef={buttonRef} open={open}
         lightingSettingsOpen={lightingSettingsOpen} onToggle={onToggle} />
       {open && (
         <div

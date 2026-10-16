@@ -8,7 +8,6 @@ import { EDITOR_DOWNLOAD_RETURN_FOCUS_IDS } from "@/lib/editor-download-focus";
 
 export type DownloadDialogProps = {
   open: boolean;
-  dark: boolean;
   signedIn: boolean;
   /** Free downloads are one view with a watermark; Pro removes both limits. */
   freeLimits: boolean;
@@ -30,7 +29,7 @@ export type DownloadDialogProps = {
  * this over from Present & export).
  */
 export function DownloadDialog(props: DownloadDialogProps) {
-  const { open, dark, onClose } = props;
+  const { open, onClose } = props;
   return (
     <EditorDialog
       open={open}
@@ -43,9 +42,7 @@ export function DownloadDialog(props: DownloadDialogProps) {
       returnFocusIds={EDITOR_DOWNLOAD_RETURN_FOCUS_IDS}
       cancelFocusRestorationOnUnmount
       manageBackground
-      dark={dark}
-      forceLight={!dark}
-      panelClassName={`${dark ? "designer-panel " : ""}max-h-[calc(100dvh-2rem)] overflow-y-auto`}
+      panelClassName="max-h-[calc(100dvh-2rem)] overflow-y-auto"
       contentClassName="space-y-3"
     >
       <DownloadChoices {...props} />
@@ -63,13 +60,13 @@ export function DownloadDialog(props: DownloadDialogProps) {
  * closing it afterwards returns focus to Download.
  */
 function DownloadChoices({
-  dark, signedIn, sceneReady, hasItems, exportingImages, exportingPdf,
+  signedIn, sceneReady, hasItems, exportingImages, exportingPdf,
   onClose, onDownloadImages, onDownloadPdf, onSignIn,
 }: DownloadDialogProps) {
   const busy = exportingImages || exportingPdf;
   // While one file is on its way, both buttons wait for it.
   const waitClass = "aria-disabled:cursor-wait aria-disabled:opacity-60";
-  const secondaryClass = `${dark ? "designer-control " : ""}${waitClass}`;
+  const secondaryClass = `${waitClass}`;
   const start = (download: () => Promise<void>) => async () => {
     if (busy) return;
     await download();
@@ -79,7 +76,7 @@ function DownloadChoices({
     <div className="grid gap-2">
       <EditorDialogButton
         data-testid="download-images" variant="primary" aria-disabled={busy}
-        className={`${dark ? "designer-primary-action " : ""}${waitClass}`}
+        className={`${waitClass}`}
         disabled={!sceneReady} onClick={start(onDownloadImages)}
       >
         {exportingImages ? "Preparing pictures…" : "Pictures (PNG)"}
@@ -105,28 +102,25 @@ function DownloadChoices({
   );
 }
 
-function FreeLimitsNote({ dark, onClose, onSeePricing }: DownloadDialogProps) {
+function FreeLimitsNote({ onClose, onSeePricing }: DownloadDialogProps) {
   return (
     <div
       data-testid="download-free-note"
-      className={
-        dark
-          ? "designer-recessed flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-xs"
-          : "flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600"
-      }
+      className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600"
     >
       <span>Free downloads are one view with a small watermark. Pro gives clean files and more views.</span>
-      <button
-        type="button"
+      <EditorDialogButton
+        variant="link"
+        size="inline"
         data-testid="download-see-pricing"
-        className="min-h-11 shrink-0 font-semibold underline underline-offset-2"
+        className="min-h-11 shrink-0 underline"
         onClick={() => {
           onClose();
           onSeePricing();
         }}
       >
         See pricing
-      </button>
+      </EditorDialogButton>
     </div>
   );
 }

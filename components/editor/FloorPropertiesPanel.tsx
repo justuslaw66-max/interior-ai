@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Redo2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Redo2, X } from "lucide-react";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayArea } from "@/lib/display-units";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import MeasurementField from "./MeasurementField";
 import FloorPlanPropertyEvidenceControl from "./FloorPlanPropertyEvidenceControl";
+import { Button } from "@/components/ui/Button";
 
 export type FloorCreationMode = "blank" | "layout" | "walls";
 
 export type FloorPropertiesPanelProps = {
-  dark: boolean;
   canEdit: boolean;
   /** The active room's polygon-aware floor area (lib/room-floor-area). */
   activeRoomFloorAreaSqm: number;
@@ -63,7 +63,6 @@ export type FloorPropertiesPanelProps = {
 };
 
 export default function FloorPropertiesPanel({
-  dark,
   canEdit,
   activeRoomFloorAreaSqm,
   floorOptions,
@@ -108,27 +107,12 @@ export default function FloorPropertiesPanel({
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const titleClass = dark
-    ? "designer-text-primary text-sm font-semibold"
-    : "text-sm font-semibold text-neutral-800";
-  const metaClass = dark ? "designer-text-muted mt-0.5 text-xs" : "mt-0.5 text-xs text-neutral-500";
-  const panelClass = dark
-    ? "designer-dock relative w-[16.5rem] max-[520px]:w-full rounded-lg p-2 backdrop-blur"
-    : "relative w-[16.5rem] max-[520px]:w-full rounded-lg border border-neutral-200 bg-white/95 p-2 text-neutral-900 shadow-xl backdrop-blur";
-  const secondaryButtonClass = dark
-    ? "designer-work-control rounded-lg px-2 py-1.5 text-xs font-semibold disabled:opacity-50"
-    : "rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
-  const floorPanelButtonClass = dark
-    ? "designer-work-control flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
-    : "flex w-full items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-left text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50";
-  const fieldLabelClass = dark ? "designer-text-secondary text-xs font-semibold" : "text-xs font-semibold text-neutral-700";
+  const titleClass = "text-sm font-semibold text-neutral-800";
+  const metaClass = "mt-0.5 text-xs text-neutral-500";
+  const panelClass = "relative w-[16.5rem] max-[520px]:w-full rounded-lg border border-neutral-200 bg-white/95 p-2 text-neutral-900 shadow-xl backdrop-blur";
+  const floorPanelButtonClass = "flex w-full items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-left text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50";
+  const fieldLabelClass = "text-xs font-semibold text-neutral-700";
   const floorListButtonClass = (isActive: boolean) => {
-    if (dark) {
-      return [
-        "grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left text-xs transition disabled:cursor-not-allowed disabled:opacity-50",
-        isActive ? "designer-work-control-active" : "designer-work-control",
-      ].join(" ");
-    }
 
     return [
       "grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left text-xs transition disabled:cursor-not-allowed disabled:opacity-50",
@@ -137,9 +121,7 @@ export default function FloorPropertiesPanel({
         : "border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100",
     ].join(" ");
   };
-  const inputClass = dark
-    ? "designer-control h-8 w-full rounded-lg border px-2 text-right text-sm text-neutral-100"
-    : "h-8 w-full rounded-lg border border-neutral-200 bg-white px-2 text-right text-sm text-neutral-900";
+  const inputClass = "h-8 w-full rounded-lg border border-neutral-200 bg-white px-2 text-right text-sm text-neutral-900";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "Level 1";
   const hiddenFloorLevelSet = new Set(hiddenFloorLevels);
@@ -195,19 +177,13 @@ export default function FloorPropertiesPanel({
         </div>
         <div className="flex items-center gap-1">
           {!isCollapsed && (
-            <button
-              type="button"
-              className={`${secondaryButtonClass} inline-flex items-center gap-1`}
-              disabled={!canEdit || !canRedo}
-              onClick={onRedo}
-            >
+            <Button size="compact" disabled={!canEdit || !canRedo} onClick={onRedo}>
               <Redo2 className="h-3.5 w-3.5" aria-hidden="true" />
               Redo
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
-            className={`${secondaryButtonClass} grid h-8 w-8 place-items-center p-0`}
+          <Button
+            size="icon"
             aria-label={isCollapsed ? "Expand Levels" : "Collapse Levels"}
             title={isCollapsed ? "Expand" : "Collapse"}
             onClick={() => setIsCollapsed((value) => !value)}
@@ -217,7 +193,7 @@ export default function FloorPropertiesPanel({
             ) : (
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
             )}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -225,7 +201,7 @@ export default function FloorPropertiesPanel({
         <>
 
       <details className="mt-3">
-        <summary className={dark ? "cursor-pointer text-xs font-semibold text-neutral-200" : "cursor-pointer text-xs font-semibold text-neutral-700"}>
+        <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
           Add level
         </summary>
         <div className="mt-2 grid gap-2">
@@ -258,34 +234,26 @@ export default function FloorPropertiesPanel({
 
       {pendingAddDirection && (
         <div
-          className={
-            dark
-              ? "designer-raised absolute inset-x-2 top-16 z-20 rounded-xl border border-white/10 p-2 shadow-2xl"
-              : "absolute inset-x-2 top-16 z-20 rounded-xl border border-neutral-200 bg-white p-2 shadow-2xl"
-          }
+          className="absolute inset-x-2 top-16 z-20 rounded-xl border border-neutral-200 bg-white p-2 shadow-2xl"
           data-testid="floor-add-mode-menu"
         >
           <div className="flex items-start justify-between gap-2">
             <div>
-              <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-neutral-900"}>
+              <div className="text-xs font-semibold text-neutral-900">
                 {pendingAddDirection === "upper" ? "New level above" : "New level below"}
               </div>
-              <div className={dark ? "mt-0.5 text-xs text-neutral-400" : "mt-0.5 text-xs text-neutral-500"}>
+              <div className="mt-0.5 text-xs text-neutral-500">
                 Choose what to copy into the new level.
               </div>
             </div>
-            <button
-              type="button"
-              className={
-                dark
-                  ? "h-6 w-6 rounded-md text-xs font-semibold text-neutral-300 hover:bg-white/10"
-                  : "h-6 w-6 rounded-md text-xs font-semibold text-neutral-500 hover:bg-neutral-100"
-              }
+            <Button
+              variant="quiet"
+              size="icon"
               aria-label="Close the new level menu"
               onClick={() => setPendingAddDirection(null)}
             >
-              x
-            </button>
+              <X className="h-4 w-4" aria-hidden="true" />
+            </Button>
           </div>
           <div className="mt-2 grid gap-1.5">
             {floorCreationOptions.map((option) => (
@@ -293,15 +261,11 @@ export default function FloorPropertiesPanel({
                 key={option.mode}
                 type="button"
                 data-testid={`floor-add-mode-${option.mode}`}
-                className={
-                  dark
-                    ? "rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-left text-xs text-neutral-100 hover:bg-white/10"
-                    : "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 text-left text-xs text-neutral-800 hover:bg-neutral-100"
-                }
+                className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 text-left text-xs text-neutral-800 hover:bg-neutral-100"
                 onClick={() => commitFloorCreation(option.mode)}
               >
                 <span className="block font-semibold">{option.label}</span>
-                <span className={dark ? "block text-xs text-neutral-400" : "block text-xs text-neutral-500"}>
+                <span className="block text-xs text-neutral-500">
                   {option.description}
                 </span>
               </button>
@@ -356,18 +320,14 @@ export default function FloorPropertiesPanel({
                       />
                       <span className="min-w-0">
                         <span className="block truncate font-semibold">{option.label}</span>
-                        <span className={dark ? "block text-xs text-neutral-400" : "block text-xs text-neutral-500"}>
+                        <span className="block text-xs text-neutral-500">
                           {option.roomCount} room{option.roomCount === 1 ? "" : "s"}
                         </span>
                       </span>
                     </button>
                     <button
                       type="button"
-                      className={
-                        dark
-                          ? "h-7 w-7 rounded-md text-xs font-semibold text-neutral-300 hover:bg-white/10 disabled:opacity-40"
-                          : "h-7 w-7 rounded-md text-xs font-semibold text-neutral-500 hover:bg-white disabled:opacity-40"
-                      }
+                      className="h-7 w-7 rounded-md text-xs font-semibold text-neutral-500 hover:bg-white disabled:opacity-40"
                       disabled={!canEdit || isActive || !onToggleFloorVisibility}
                       aria-label={`${isHidden ? "Show" : "Hide"} ${option.label}`}
                       title={isActive ? "The level you're on stays visible" : isHidden ? "Show level" : "Hide level"}
@@ -381,15 +341,15 @@ export default function FloorPropertiesPanel({
           </div>
 
           {hiddenFloorLevels.length > 0 ? (
-            <div className={dark ? "mt-1 text-xs text-neutral-400" : "mt-1 text-xs text-neutral-500"}>
+            <div className="mt-1 text-xs text-neutral-500">
               Hidden levels stay out of stacked 3D until shown again.
             </div>
           ) : null}
         </>
       ) : null}
 
-      <details className="mt-2 border-t border-neutral-200/60 pt-2 dark:border-white/10">
-        <summary className={dark ? "cursor-pointer text-sm font-semibold text-neutral-100" : "cursor-pointer text-sm font-semibold text-neutral-800"}>
+      <details className="mt-2 border-t border-neutral-200/60 pt-2">
+        <summary className="cursor-pointer text-sm font-semibold text-neutral-800">
           Basic
         </summary>
         <div className="mt-2 grid gap-1.5">
@@ -406,7 +366,6 @@ export default function FloorPropertiesPanel({
             stepMm={10}
             keyboardStepMm={50}
             disabled={!canEditActiveRoomWallHeight}
-            dark={dark}
             compact
             testId="floor-properties-wall-height-input"
             hint={`Applies to ${activeFloorRoomCount} room${activeFloorRoomCount === 1 ? "" : "s"} on ${activeFloorLabel}.`}
@@ -414,7 +373,6 @@ export default function FloorPropertiesPanel({
           />
           <FloorPlanPropertyEvidenceControl
             evidence={activeRoomWallHeightEvidence}
-            dark={dark}
             disabled={!canEditActiveRoomWallHeight}
             testId="floor-properties-wall-height-evidence"
             onConfirm={(evidence, measurementNote) =>
@@ -434,7 +392,6 @@ export default function FloorPropertiesPanel({
             stepMm={5}
             keyboardStepMm={5}
             disabled={!canEdit}
-            dark={dark}
             compact
             testId="floor-properties-wall-thickness-input"
             onCommit={onActiveRoomWallThicknessMmChange}
@@ -448,14 +405,12 @@ export default function FloorPropertiesPanel({
             stepMm={5}
             keyboardStepMm={5}
             disabled={!canEditActiveRoomSlabThickness}
-            dark={dark}
             compact
             testId="floor-properties-slab-thickness-input"
             onCommit={onActiveRoomSlabThicknessMmChange}
           />
           <FloorPlanPropertyEvidenceControl
             evidence={activeRoomSlabThicknessEvidence}
-            dark={dark}
             disabled={!canEditActiveRoomSlabThickness}
             testId="floor-properties-slab-thickness-evidence"
             onConfirm={(evidence, measurementNote) =>
@@ -475,7 +430,6 @@ export default function FloorPropertiesPanel({
             stepMm={1}
             keyboardStepMm={1}
             disabled={!canEdit}
-            dark={dark}
             compact
             testId="floor-properties-baseboard-depth-input"
             onCommit={onActiveRoomBaseboardDepthMmChange}
@@ -483,8 +437,8 @@ export default function FloorPropertiesPanel({
         </div>
       </details>
 
-      <details className="mt-2 border-t border-neutral-200/60 pt-2 dark:border-white/10">
-        <summary className={dark ? "cursor-pointer text-sm font-semibold text-neutral-100" : "cursor-pointer text-sm font-semibold text-neutral-800"}>
+      <details className="mt-2 border-t border-neutral-200/60 pt-2">
+        <summary className="cursor-pointer text-sm font-semibold text-neutral-800">
           Opacity
         </summary>
         <label className="mt-2 grid grid-cols-[3.25rem_1fr_3.3rem] items-center gap-2">
@@ -517,40 +471,34 @@ export default function FloorPropertiesPanel({
         </label>
       </details>
 
-      <details className="mt-2 border-t border-neutral-200/60 pt-2 dark:border-white/10">
-        <summary className={dark ? "cursor-pointer text-xs font-semibold text-neutral-200" : "cursor-pointer text-xs font-semibold text-neutral-700"}>
+      <details className="mt-2 border-t border-neutral-200/60 pt-2">
+        <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
           Advanced
         </summary>
         <div className="mt-2 grid grid-cols-3 gap-1.5">
-          <button
-            type="button"
-            className={secondaryButtonClass}
+          <Button
+            size="compact"
             data-testid="floor-rename-open"
             disabled={!canEdit}
             onClick={openRenameDialog}
           >
             Rename
-          </button>
-          <button type="button" className={secondaryButtonClass} disabled={!canEdit} onClick={onDuplicateFloor}>
+          </Button>
+          <Button size="compact" disabled={!canEdit} onClick={onDuplicateFloor}>
             Duplicate
-          </button>
-          <button
-            type="button"
-            className={secondaryButtonClass}
+          </Button>
+          <Button
+            size="compact"
             data-testid="floor-delete-open"
             disabled={!canEdit || floorOptions.length <= 1}
             onClick={openDeleteDialog}
           >
             Delete
-          </button>
+          </Button>
         </div>
         {renameOpen && (
           <div
-            className={
-              dark
-                ? "designer-raised mt-2 rounded-xl border border-white/10 p-2"
-                : "mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-2"
-            }
+            className="mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-2"
             data-testid="floor-rename-dialog"
           >
             <label className="block">
@@ -568,74 +516,52 @@ export default function FloorPropertiesPanel({
               />
             </label>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
-              <button
-                type="button"
-                className={secondaryButtonClass}
+              <Button
+                variant="secondary" size="compact"
                 onClick={() => setRenameOpen(false)}
               >
                 Cancel
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="floor-rename-save"
-                className={
-                  dark
-                    ? "designer-primary-action rounded-lg px-2 py-1.5 text-xs font-semibold disabled:opacity-50"
-                    : "rounded-lg bg-blue-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-                }
+                variant="primary" size="compact"
                 disabled={!renameValue.trim() || renameValue.trim() === activeFloorLabel}
                 onClick={commitRename}
               >
                 Save
-              </button>
+              </Button>
             </div>
           </div>
         )}
         {deleteOpen && (
           <div
-            className={
-              dark
-                ? "designer-status-blocked mt-2 rounded-xl p-2"
-                : "mt-2 rounded-xl border border-red-200 bg-red-50 p-2"
-            }
+            className="mt-2 rounded-xl border border-red-200 bg-red-50 p-2"
             data-testid="floor-delete-dialog"
           >
-            <div className={dark ? "text-xs font-semibold" : "text-xs font-semibold text-red-800"}>
+            <div className="text-xs font-semibold text-red-800">
               Delete {activeFloorLabel}?
             </div>
-            <div className={dark ? "mt-0.5 text-xs" : "mt-0.5 text-xs text-red-700"}>
+            <div className="mt-0.5 text-xs text-red-700">
               This removes {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"} and their doors and windows.
             </div>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
-              <button
-                type="button"
-                className={secondaryButtonClass}
+              <Button
+                variant="secondary" size="compact"
                 onClick={() => setDeleteOpen(false)}
               >
                 Cancel
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
                 data-testid="floor-delete-confirm"
-                className={
-                  dark
-                    ? "designer-destructive-action rounded-lg px-2 py-1.5 text-xs font-semibold"
-                    : "rounded-lg bg-red-600 px-2 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
-                }
+                variant="danger" size="compact"
                 onClick={commitDelete}
               >
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         )}
-        <label
-          className={
-            dark
-              ? "mt-2 grid grid-cols-[1fr_auto] items-center gap-3 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2"
-              : "mt-2 grid grid-cols-[1fr_auto] items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2"
-          }
-        >
+        <label className="mt-2 grid grid-cols-[1fr_auto] items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2">
           <span className="min-w-0">
             <span className={`block ${fieldLabelClass}`}>Stacked 3D floors</span>
             <span className={`block ${metaClass}`}>View all levels vertically</span>

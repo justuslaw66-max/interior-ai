@@ -6,7 +6,6 @@ import { CanvasSavedViews, type CanvasSavedViewsActions, type CanvasSavedViewsSt
 import { Button } from "@/components/ui/Button";
 
 export type CanvasViewToolbarProps = {
-  dark: boolean;
   /** The step panel's reach into the canvas: the toolbar centres itself on the rest. */
   leftInsetPx: number;
   viewMode: EditorViewMode;
@@ -43,18 +42,18 @@ const TOOLBAR_CLASS =
  * controls keep their test ids, so the specs that press them find them here.
  */
 export function CanvasViewToolbar(props: CanvasViewToolbarProps) {
-  const { dark, undoName, redoName } = props;
-  const buttonClass = dark ? "designer-control" : "";
+  const { undoName, redoName } = props;
+  const buttonClass = "";
   return (
     <div
       role="group"
       aria-label="Canvas controls"
       data-testid="canvas-view-toolbar"
-      className={`${TOOLBAR_CLASS} ${dark ? "designer-work-surface" : "border-neutral-200 bg-white text-neutral-900"}`}
+      className={`${TOOLBAR_CLASS} border-neutral-200 bg-white text-neutral-900`}
       style={{ left: canvasToolbarLeft(props.leftInsetPx) }}
     >
-      <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} dark={dark} variant="canvas" />
-      {props.viewMode === "3d" ? <CanvasSavedViews {...props.savedViews} dark={dark} size="toolbar" /> : null}
+      <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} variant="canvas" />
+      {props.viewMode === "3d" ? <CanvasSavedViews {...props.savedViews} size="toolbar" /> : null}
       <div aria-hidden="true" className="mx-1 h-6 w-px bg-neutral-200" />
       <Button
         variant="quiet"

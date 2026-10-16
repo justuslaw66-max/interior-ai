@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FloorPlanProposalState } from "@/lib/floor-plan-proposal-types";
 import type { RecoverProposedRoomLayoutInput } from "@/lib/floor-plan-room-recovery";
+import { Button } from "@/components/ui/Button";
 
 export function CanonicalRoomRecovery({ proposal, rooms, recover }: {
   proposal?: FloorPlanProposalState;
@@ -24,9 +25,13 @@ export function CanonicalRoomRecovery({ proposal, rooms, recover }: {
     <label className="block">Original room<select className={field} value={source.id} onChange={(event) => { setSourceId(event.target.value); setLayoutId(""); setMessage(""); }}>{sources.map((room) => <option key={room.id} value={room.id}>{room.name}</option>)}</select></label>
     <label className="mt-2 block">Saved layout<select className={field} value={layout?.id ?? ""} onChange={(event) => setLayoutId(event.target.value)}>{source.layoutVersions?.map((version) => <option key={version.id} value={version.id}>{version.name}</option>)}</select></label>
     <label className="mt-2 block">Recover into room<select className={field} value={target?.id ?? ""} onChange={(event) => setTargetId(event.target.value)}>{rooms.map((room) => <option key={room.id} value={room.id}>{room.name}</option>)}</select></label>
-    <button type="button" className="mt-2 rounded border border-neutral-400 px-2 py-1.5 disabled:opacity-40" disabled={!layout || !target} onClick={() => {
+    <Button
+      variant="secondary" size="compact" className="mt-2"
+      disabled={!layout || !target}
+      onClick={() => {
       if (layout && target && recover({ sourceRoomId: source.id, targetRoomId: target.id, layoutId: layout.id })) setMessage("Added to Layouts. Current furniture is unchanged.");
-    }}>Recover saved layout</button>
+    }}
+    >Recover saved layout</Button>
     <p role="status" className="mt-2">{message}</p>
   </details>;
 }

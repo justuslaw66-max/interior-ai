@@ -4,6 +4,7 @@ import {
 } from "@/lib/floor-plan-upload-dialog-focus";
 import { requestStartTemplates, SURFACES_START_TEMPLATE_ACTION_ID } from "@/lib/start-templates-request";
 import { FloorPlanWorkspaceOpener } from "../FloorPlanWorkspaceOpener";
+import { Button, buttonClassName } from "@/components/ui/Button";
 
 type EmptyFloorPlanProUploadActionProps = {
   isDesigner: boolean;
@@ -33,10 +34,7 @@ export function EmptyFloorPlanProUploadAction({
 }
 
 type EmptyFloorPlanSurfacesActionsProps = {
-  dark: boolean;
   isDesigner: boolean;
-  progressActionClass: string;
-  progressSecondaryActionClass: string;
   progressMetaClass: string;
   onStartDrawRoomSetup: () => void;
   onSelectUploadMode: () => void;
@@ -44,10 +42,7 @@ type EmptyFloorPlanSurfacesActionsProps = {
 };
 
 export function EmptyFloorPlanSurfacesActions({
-  dark,
   isDesigner,
-  progressActionClass,
-  progressSecondaryActionClass,
   progressMetaClass,
   onStartDrawRoomSetup,
   onSelectUploadMode,
@@ -56,32 +51,32 @@ export function EmptyFloorPlanSurfacesActions({
   return (
     <div
       data-testid="surfaces-start-state"
-      className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg border border-neutral-200 bg-white p-3"}
+      className="rounded-lg border border-neutral-200 bg-white p-3"
     >
-      <div className={dark ? "text-sm font-semibold text-neutral-100" : "text-sm font-semibold text-neutral-950"}>
+      <div className="text-sm font-semibold text-neutral-950">
         Choose a room before applying finishes
       </div>
       <div className={progressMetaClass}>Choose a template, draw a room, or upload a floor plan.</div>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <button id={SURFACES_START_TEMPLATE_ACTION_ID} type="button" className={progressActionClass}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button id={SURFACES_START_TEMPLATE_ACTION_ID} variant="primary" size="compact" className="grow"
           onClick={() => requestStartTemplates({ openerId: SURFACES_START_TEMPLATE_ACTION_ID })}>
           Templates
-        </button>
-        <button type="button" className={progressSecondaryActionClass} onClick={onStartDrawRoomSetup}>
+        </Button>
+        <Button size="compact" className="grow" onClick={onStartDrawRoomSetup}>
           Draw room
-        </button>
+        </Button>
         <FloorPlanWorkspaceOpener
           semanticId={FLOOR_PLAN_SURFACES_UPLOAD_ACTION_ID}
           isDesigner={isDesigner}
           onSelectUploadMode={onSelectUploadMode}
           data-testid="floor-plan-surfaces-upload"
-          className={progressSecondaryActionClass}
+          className={buttonClassName({ size: "compact", className: "grow" })}
         >
           Upload floor plan
         </FloorPlanWorkspaceOpener>
-        <button type="button" className={progressSecondaryActionClass} onClick={onAddDesignerRoom}>
+        <Button size="compact" className="grow" onClick={onAddDesignerRoom}>
           Blank room
-        </button>
+        </Button>
       </div>
     </div>
   );

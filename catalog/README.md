@@ -35,7 +35,15 @@ Use these as current gold-standard examples for future imports:
 - Template examples are under `catalog/furniture/_templates/canonical/` and should be promoted to live references once real assets are imported.
 
 ## Surface Materials On Real Tile Faces
-Florim Ardoise Blanc and Gardenia Anima, Dorica, Oxide, Falaise, Make (all but its mosaics), Tabulae (all but its chevrons), Bon Ton, Pietra Viva, La Geoteca (all but two Negresco sizes), Orosei, Gioia, I Pigmenti (all but its mosaics), La Marmoteca (all but its book-matched pairs), Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage and Block are drawn from the manufacturer's whole-tile pictures (`texture_assets.faces`). The Gardenia faces are stored at 0.6 px per mm; the originals are sharper, so sharper faces can be re-exported later. See `docs/architecture/surface-material-tile-faces.md`.
+Florim Ardoise Blanc and Gardenia Anima, Dorica, Oxide, Falaise, Make (all but its mosaics), Tabulae (its chevrons laid as a chevron), Bon Ton, Pietra Viva, La Geoteca (all but two Negresco sizes), Orosei, Gioia, I Pigmenti (all but its mosaics), La Marmoteca (all but its book-matched pairs), Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage, Block and Eterea, with Plein Air's outdoor (R11) sizes of them, and Plein Air's own ranges are drawn from the manufacturer's whole-tile pictures (`texture_assets.faces`). The Gardenia faces are stored at 0.6 px per mm; the originals are sharper, so sharper faces can be re-exported later. See `docs/architecture/surface-material-tile-faces.md`.
+
+Since 15 Oct 2026 the Gardenia entries on faces are published as quote on request (ABK's contact form as the quote link); the 52 still on configurator previews stay drafts. See `docs/architecture/surface-material-tile-faces.md`.
+
+## Outdoor Surface Materials
+An outdoor floor (`physical_specs.suitable_for_outdoor: true`) lists where it goes in `classification.outdoor_uses` (terrace, balcony, patio, garden, path, pool_edge, driveway, steps, outdoor_shower) and its outdoor laying in `physical_specs.installation_method`; the generator refuses one without them (and a driveway that isn't glued) and adds the same colour's indoor floor entries. The manufacturer's words behind them are in `lib/surface-material-outdoor-knowledge.ts` and `lib/surface-material-plein-air-system.ts` (ABK's Plein Air catalogue: laying, pedestals, packing, special pieces). See `docs/architecture/surface-material-outdoor-tiles.md`.
+
+## Manufacturer Technical Sheets
+Gardenia entries take `physical_specs.slip_rating` (DIN 51130) and, when missing, `total_thickness_mm` from ABK's technical sheets (`lib/surface-material-abk-data/datasheets.json`), and note the sheet. `scripts/test-surface-material-physical-scale.ts` checks every Gardenia entry against `findAbkDatasheetMatch`, so an entry that contradicts its sheet fails. See `docs/architecture/surface-material-abk-documents.md`.
 
 ## Recommended Folder Pattern
 ```text

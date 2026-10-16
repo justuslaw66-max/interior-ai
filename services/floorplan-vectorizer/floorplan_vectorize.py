@@ -8617,8 +8617,8 @@ def match_symbols(m):
             i_ = [rr[1]["x"], rr[1]["y"], rr[1]["x"] + rr[1]["w"], rr[1]["y"] + rr[1]["h"]]
             if i_[0] >= o_[0] - 0.5 and i_[1] >= o_[1] - 0.5 and i_[2] <= o_[2] + 0.5 and i_[3] <= o_[3] + 0.5:
                 tap = None
-                if solids:
-                    ev = np.vstack([_sample_fixture(r_) for r_ in solids[0]])
+                ev = np.vstack([_sample_fixture(r_) for r_ in solids[0]]) if solids else np.zeros((0, 2))
+                if len(ev):                                  # (a tap drawn only as ellipses has no sampled points)
                     tap = [float(ev[:, 0].min()), float(ev[:, 1].min()), float(ev[:, 0].max()), float(ev[:, 1].max())]
                 parts, side = basin_symbol(o_, i_, tap)
                 symbols.append({"type": "basin", "group": gi, "box": o_, "wall_side": side, "parts": parts, "stroke": rr[0]["w_px"]})
@@ -8626,6 +8626,8 @@ def match_symbols(m):
         if len(paths) < 3:
             continue
         ev = np.vstack([_sample_fixture(p) for p in paths])
+        if not len(ev):                                      # ellipses only: nothing to match against
+            continue
         box = [float(ev[:, 0].min()), float(ev[:, 1].min()), float(ev[:, 0].max()), float(ev[:, 1].max())]
         w_, h_ = box[2] - box[0], box[3] - box[1]
         lng, sht = max(w_, h_), min(w_, h_)

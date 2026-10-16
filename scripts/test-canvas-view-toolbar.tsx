@@ -33,7 +33,6 @@ const noop = () => {};
 
 // The toolbar.
 const toolbarProps = {
-  dark: false,
   leftInsetPx: 318,
   viewMode: "2d" as const,
   onViewModeChange: noop,
@@ -60,7 +59,8 @@ assert.match(toolbar, /style="left:clamp\(506px, calc\(50% \+ 159px\), calc\(100
 const order = ["editor-view-toggle", "editor-view-2d", "editor-view-3d", "canvas-fit-view", "command-undo", "command-redo"];
 const positions = order.map((testId) => toolbar.indexOf(`data-testid="${testId}"`));
 assert.ok(positions.every((position, index) => position > 0 && (index === 0 || position > positions[index - 1])), "2D | 3D, then Fit, Undo and Redo.");
-assert.match(toolbar, /aria-label="2D" aria-pressed="true" data-testid="editor-view-2d" class="inline-flex h-8 [^"]*bg-neutral-900 text-white"/);
+// 2D | 3D is the shared segmented control (UX 5n): 32px segments, the pressed one black.
+assert.match(toolbar, /aria-pressed="true" data-testid="editor-view-2d" class="[^"]*\bh-8 touch:h-11\b[^"]*\bbg-neutral-900 text-white"/);
 // Fit, Undo and Redo are the shared Button's 36px quiet icon buttons (AX10).
 assert.match(toolbar, /<button type="button" class="[^"]*\bh-9 w-9 shrink-0 rounded-lg p-0 border-transparent bg-transparent\b[^"]*" data-testid="canvas-fit-view" aria-label="Fit to screen" title="Fit to screen">/);
 assert.match(toolbar, /<button type="button" class="[^"]*\bh-9 w-9\b[^"]*" data-testid="command-undo" aria-label="Undo Remove Avery Armchair" title="Undo &quot;Remove Avery Armchair&quot; \(Cmd\/Ctrl\+Z\)"><svg/);
@@ -105,10 +105,10 @@ assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const plan2DSaf
 
 // The phone's pills (UX 4d, the PhonePlan mockup): 2D | 3D top left, Undo and Redo top right, 12px
 // under the bar, with 44px targets that keep the controls' test ids.
-const pills = renderToStaticMarkup(<PhoneCanvasPills dark={false} viewMode="3d" onViewModeChange={noop} canUndo canRedo={false}
+const pills = renderToStaticMarkup(<PhoneCanvasPills viewMode="3d" onViewModeChange={noop} canUndo canRedo={false}
   undoName="Remove Avery Armchair" redoName={null} onUndo={noop} onRedo={noop} savedViews={toolbarProps.savedViews} />);
 assert.match(pills, /^<div data-testid="canvas-view-pill" class="absolute top-bar-3 z-40 [^"]*left-3"><div role="group" aria-label="Design view" data-testid="editor-view-toggle"/);
-assert.match(pills, /aria-label="3D" aria-pressed="true" data-testid="editor-view-3d" class="inline-flex h-11 w-12 [^"]*bg-neutral-900 text-white"/);
+assert.match(pills, /aria-pressed="true" data-testid="editor-view-3d" class="[^"]*\bh-11 min-w-12\b[^"]*\bbg-neutral-900 text-white"/);
 assert.match(pills, /<div role="group" aria-label="History" data-testid="canvas-history-pill" class="absolute top-bar-3 z-40 [^"]*right-3">/);
 assert.match(pills, /<button type="button" data-testid="command-undo" aria-label="Undo Remove Avery Armchair" title="Undo &quot;Remove Avery Armchair&quot; \(Cmd\/Ctrl\+Z\)" class="inline-flex h-11 w-11 /);
 assert.match(pills, /data-testid="command-redo" aria-label="Redo" [^>]*disabled="">/);
@@ -122,10 +122,10 @@ assert.match(chrome, /const overCanvas = !bar\.isClientPreview && bar\.editorMod
 assert.match(chrome, /\{overCanvas && !wide \? \(\s*<PhoneCanvasPills/);
 assert.match(chrome, /\{onCanvas \? \(\s*<CanvasViewToolbar/);
 assert.match(chrome, /canFit=\{Boolean\(state\.commandBar\.room\)\}/);
-assert.match(chrome, /\{onCanvas \? <KeyboardShortcutsButton dark=\{dark\} \/> : null\}/);
+assert.match(chrome, /\{onCanvas \? <KeyboardShortcutsButton \/> : null\}/);
 assert.match(chrome, /<KeyboardShortcutsSheet enabled=\{!bar\.isClientPreview\}/);
 assert.match(read("lib/useMediaQuery.ts"), /CANVAS_TOOLBAR_MEDIA_QUERY = "\(min-width: 48rem\)"/);
-const corner = renderToStaticMarkup(<KeyboardShortcutsButton dark={false} />);
+const corner = renderToStaticMarkup(<KeyboardShortcutsButton />);
 assert.match(
   corner,
   /^<button type="button" class="[^"]*\bh-10 w-10 shrink-0 rounded-full p-0 border-neutral-300 bg-white\b[^"]*\babsolute bottom-4 right-4 z-30 max-lg:hidden shadow-sm[^"]*" data-testid="canvas-keyboard-shortcuts" aria-label="Keyboard shortcuts" title="Keyboard shortcuts \(\?\)">/,

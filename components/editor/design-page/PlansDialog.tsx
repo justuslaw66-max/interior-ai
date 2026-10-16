@@ -1,6 +1,7 @@
 "use client";
 
 import { EditorDialog } from "@/components/editor/design-system/EditorDialog";
+import { Button } from "@/components/ui/Button";
 import { getPlansReturnFocusIds } from "@/lib/plans-dialog-focus";
 
 export type PlansDialogState = {
@@ -48,7 +49,6 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
       returnFocusIds={getPlansReturnFocusIds(state.openedFromUpgrade, state.openerId)}
       cancelFocusRestorationOnUnmount
       manageBackground
-      forceLight
       panelClassName="!max-w-[420px] max-h-[calc(100dvh-2rem)] !p-4"
       contentClassName="!mt-3 overflow-y-auto"
     >
@@ -101,81 +101,59 @@ export function PlansDialog({ state, actions }: PlansDialogProps) {
             >
               Pro is active
             </div>
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               data-testid="plans-manage-billing"
               disabled={state.openingBillingPortal}
-              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              style={{
-                ...actionStyle,
-                border: "1px solid var(--border-subtle)",
-              }}
+              className="flex-1"
               onClick={actions.onManageBilling}
             >
               {state.openingBillingPortal ? "Opening billing…" : "Manage billing"}
-            </button>
+            </Button>
           </>
         ) : state.layout === "annual_highlight" ? (
           <>
-            <button
-              type="button"
+            <Button
+              variant="primary"
               data-testid="checkout-yearly"
               disabled={state.startingCheckout}
-              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              style={{
-                ...actionStyle,
-                border: "1px solid #059669",
-                background: "#ecfdf5",
-                fontWeight: 600,
-              }}
+              className="flex-1"
               onClick={() => actions.onStartCheckout("yearly")}
             >
               Start yearly — {state.yearlyLabel}
-            </button>
+            </Button>
 
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               data-testid="checkout-monthly"
               disabled={state.startingCheckout}
-              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              style={{
-                ...actionStyle,
-                border: "1px solid var(--border-subtle)",
-              }}
+              className="flex-1"
               onClick={() => actions.onStartCheckout("monthly")}
             >
               Start monthly — {state.monthlyLabel}
-            </button>
+            </Button>
           </>
         ) : (
           <>
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               data-testid="checkout-monthly"
               disabled={state.startingCheckout}
-              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              style={{
-                ...actionStyle,
-                border: "1px solid var(--border-subtle)",
-              }}
+              className="flex-1"
               onClick={() => actions.onStartCheckout("monthly")}
             >
               Start monthly — {state.monthlyLabel}
-            </button>
+            </Button>
 
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               data-testid="checkout-yearly"
               disabled={state.startingCheckout}
-              className="outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-              style={{
-                ...actionStyle,
-                border: "1px solid var(--border-subtle)",
-              }}
+              className="flex-1"
               onClick={() => actions.onStartCheckout("yearly")}
             >
               Start yearly — {state.yearlyLabel}
-            </button>
+            </Button>
           </>
         )}
       </div>

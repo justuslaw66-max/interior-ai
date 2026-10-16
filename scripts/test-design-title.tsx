@@ -126,7 +126,7 @@ assert.match(named, /class="flex shrink-0 items-center justify-end gap-1 md:min-
 // Phones also have Rename design in the Menu, and the dialog then hands focus back to the Menu.
 type MoreProps = ComponentProps<typeof CommandBarMoreMenu>;
 const more = renderToStaticMarkup(createElement(CommandBarMoreMenu, {
-  dark: false, phone: true, containerRef: createRef<HTMLDivElement>(), buttonRef: createRef<HTMLButtonElement>(),
+  phone: true, containerRef: createRef<HTMLDivElement>(), buttonRef: createRef<HTMLButtonElement>(),
   open: true, onToggle: noop, onClose: noop, menuButtonClass: "item", menuPanelClass: "panel",
   lightingSettingsOpen: false, showLoadDesign: true, isDesigner: false, isClientPreview: false,
   lightingAvailable: false, onOpenMyDesigns: noop, onNewPlan: noop,
@@ -139,7 +139,7 @@ assert.deepEqual(DESIGN_RENAME_RETURN_FOCUS_IDS, [DESIGN_RENAME_OPENER_ID, CLIEN
 
 // The dialog: the current name to edit, the API's length limit, and no empty names.
 const dialog = (value: string) => renderToStaticMarkup(createElement(DesignRenameDialog, {
-  open: true, dark: false, value, onValueChange: noop, onCancel: noop, onSave: noop,
+  open: true, value, onValueChange: noop, onCancel: noop, onSave: noop,
 }));
 assert.match(dialog("Tan flat"), /data-testid="design-rename-dialog"/);
 assert.match(dialog("Tan flat"), /data-testid="design-rename-input"[^>]*maxlength="120"[^>]*value="Tan flat"/i);

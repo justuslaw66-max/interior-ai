@@ -10,9 +10,9 @@ import type { StyleConsistencyReport } from "@/lib/style-consistency";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import MeasurementField from "./MeasurementField";
+import { Button } from "@/components/ui/Button";
 
 type SelectedItemDetailsPanelProps = {
-  dark: boolean;
   isDesigner: boolean;
   product: CatalogItemSchema;
   item: DesignItem | null;
@@ -50,7 +50,6 @@ type SelectedItemDetailsPanelProps = {
 };
 
 export default function SelectedItemDetailsPanel({
-  dark,
   isDesigner,
   product,
   item,
@@ -82,38 +81,12 @@ export default function SelectedItemDetailsPanel({
   onApplyStyleAlternative,
 }: SelectedItemDetailsPanelProps) {
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
-  const disabledButtonClass = dark
-    ? "designer-control rounded-md border px-2 py-1 text-xs disabled:opacity-40"
-    : "rounded-md border border-neutral-200 px-2 py-1 text-xs text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
-  const actionToggleClass = (active: boolean, disabled = false) => {
-    const base =
-      "inline-flex min-h-11 items-center justify-start gap-2 rounded-lg border px-3 text-xs font-semibold transition-colors";
-    if (disabled) {
-      return dark
-        ? `${base} cursor-not-allowed border-white/10 bg-white/[0.03] text-neutral-500 opacity-60`
-        : `${base} cursor-not-allowed border-neutral-200 bg-neutral-50 text-neutral-400 opacity-80`;
-    }
-    if (active) {
-      return dark
-        ? `${base} border-emerald-300/35 bg-emerald-400/15 text-emerald-100 shadow-sm`
-        : `${base} border-neutral-900 bg-neutral-900 text-white shadow-sm`;
-    }
-    return dark
-      ? `${base} border-white/10 bg-white/[0.04] text-neutral-300 hover:border-white/20 hover:bg-white/[0.08] hover:text-white`
-      : `${base} border-neutral-200 bg-white text-neutral-700 shadow-sm hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950`;
-  };
   const actionIconClass = "h-3.5 w-3.5 shrink-0";
-  const panelClass = dark
-    ? "designer-raised mt-2 space-y-3 rounded-lg p-3"
-    : "mt-2 space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
-  const compactPanelClass = dark
-    ? "designer-raised mt-2 space-y-2 rounded-lg p-3"
-    : "mt-2 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
-  const sectionTitleClass = dark
-    ? "designer-text-primary text-xs font-semibold uppercase tracking-[0.08em]"
-    : "text-xs font-semibold uppercase tracking-[0.08em] text-neutral-700";
-  const labelClass = dark ? "designer-text-secondary text-xs" : "text-xs text-neutral-600";
-  const valueClass = dark ? "designer-text-primary text-xs" : "text-xs text-neutral-900";
+  const panelClass = "mt-2 space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
+  const compactPanelClass = "mt-2 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
+  const sectionTitleClass = "text-xs font-semibold uppercase tracking-[0.08em] text-neutral-700";
+  const labelClass = "text-xs text-neutral-600";
+  const valueClass = "text-xs text-neutral-900";
   const hasFullDimensions = Boolean(fullDimensionsDetails?.length);
   const hasDeliveryWarranty = Boolean(productDetailSections?.deliveryWarranty?.length);
   const itemActionsDisabled = !item || !canEdit || (isDesigner && Boolean(item.locked));
@@ -121,36 +94,28 @@ export default function SelectedItemDetailsPanel({
   const positionZ = item?.position?.[2] ?? 0;
   const styleStatusClass =
     styleConsistencyReport?.status === "cohesive"
-      ? dark
-        ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100"
-        : "border-emerald-200 bg-emerald-50 text-emerald-800"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
       : styleConsistencyReport?.status === "clashing"
-        ? dark
-          ? "border-rose-400/30 bg-rose-400/10 text-rose-100"
-          : "border-rose-200 bg-rose-50 text-rose-800"
-        : dark
-          ? "border-amber-400/30 bg-amber-400/10 text-amber-100"
-          : "border-amber-200 bg-amber-50 text-amber-800";
+        ? "border-rose-200 bg-rose-50 text-rose-800"
+        : "border-amber-200 bg-amber-50 text-amber-800";
 
 
   return (
     <div className="mt-2 space-y-1.5" data-testid="selected-item-details">
       <div className="pt-1">
         <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            className={actionToggleClass(showInspectorDetails)}
+          <Button
+            size="compact"
             aria-label={showInspectorDetails ? "Hide details" : "Show details"}
-            aria-pressed={showInspectorDetails}
+            pressed={showInspectorDetails}
             onClick={onToggleInspectorDetails}
             title={showInspectorDetails ? "Hide details" : "Show details"}
           >
             <Info className={actionIconClass} aria-hidden="true" />
             <span>Details</span>
-          </button>
-          <button
-            type="button"
-            className={actionToggleClass(showFullDimensions, !hasFullDimensions)}
+          </Button>
+          <Button
+            size="compact"
             aria-label={
               hasFullDimensions
                 ? showFullDimensions
@@ -159,7 +124,7 @@ export default function SelectedItemDetailsPanel({
                 : "Full dimensions unavailable"
             }
             disabled={!hasFullDimensions}
-            aria-pressed={showFullDimensions}
+            pressed={showFullDimensions}
             onClick={onToggleFullDimensions}
             title={
               hasFullDimensions
@@ -169,10 +134,9 @@ export default function SelectedItemDetailsPanel({
           >
             <Ruler className={actionIconClass} aria-hidden="true" />
             <span>Dimensions</span>
-          </button>
-          <button
-            type="button"
-            className={actionToggleClass(showDeliveryWarranty, !hasDeliveryWarranty)}
+          </Button>
+          <Button
+            size="compact"
             aria-label={
               hasDeliveryWarranty
                 ? showDeliveryWarranty
@@ -181,7 +145,7 @@ export default function SelectedItemDetailsPanel({
                 : "Delivery and warranty unavailable"
             }
             disabled={!hasDeliveryWarranty}
-            aria-pressed={showDeliveryWarranty}
+            pressed={showDeliveryWarranty}
             onClick={onToggleDeliveryWarranty}
             title={
               hasDeliveryWarranty
@@ -191,20 +155,19 @@ export default function SelectedItemDetailsPanel({
           >
             <Truck className={actionIconClass} aria-hidden="true" />
             <span>Delivery</span>
-          </button>
+          </Button>
           {item ? (
-            <button
-              type="button"
-              className={actionToggleClass(showAdvancedControls)}
+            <Button
+              size="compact"
               aria-expanded={showAdvancedControls}
-              aria-pressed={showAdvancedControls}
+              pressed={showAdvancedControls}
               data-testid="selected-item-advanced-controls-toggle"
               onClick={() => setShowAdvancedControls((value) => !value)}
               title={showAdvancedControls ? "Hide controls" : "Show controls"}
             >
               <SlidersHorizontal className={actionIconClass} aria-hidden="true" />
               <span>More controls</span>
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>
@@ -214,7 +177,7 @@ export default function SelectedItemDetailsPanel({
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className={sectionTitleClass}>Hanging height</div>
-              <div className={dark ? "mt-0.5 text-xs text-neutral-400" : "mt-0.5 text-xs text-neutral-500"}>
+              <div className="mt-0.5 text-xs text-neutral-500">
                 Adjusts only the central cable
               </div>
             </div>
@@ -230,7 +193,6 @@ export default function SelectedItemDetailsPanel({
               stepMm={adjustableHangingHeight.stepCm * 10}
               keyboardStepMm={adjustableHangingHeight.stepCm * 10}
               disabled={itemActionsDisabled}
-              dark={dark}
               compact
               onCommit={(valueMm) => onAdjustHangingHeight(valueMm / 10)}
             />
@@ -249,7 +211,7 @@ export default function SelectedItemDetailsPanel({
             }}
             aria-label="Adjust pendant hanging height"
           />
-          <div className={`flex justify-between text-xs ${dark ? "text-neutral-400" : "text-neutral-500"}`}>
+          <div className="flex justify-between text-xs text-neutral-500">
             <span>{formatCabinetMeasurement(adjustableHangingHeight.minCm * 10, measurementUnit)}</span>
             <span>{formatCabinetMeasurement(adjustableHangingHeight.maxCm * 10, measurementUnit)}</span>
           </div>
@@ -260,38 +222,32 @@ export default function SelectedItemDetailsPanel({
         <div className={compactPanelClass} data-testid="selected-item-placement">
           <div className={sectionTitleClass}>Placement</div>
           <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              className={`${disabledButtonClass} min-h-11`}
+            <Button
+              variant="secondary" size="touch"
               disabled={itemActionsDisabled}
               onClick={onCenterInRoom}
               data-testid="selected-item-center"
               title="Centre selected item in room"
             >
               Centre
-            </button>
-            <button
-              type="button"
-              className={`${disabledButtonClass} min-h-11`}
+            </Button>
+            <Button
+              variant="secondary" size="touch"
               disabled={itemActionsDisabled}
               onClick={onSnapToWall}
               data-testid="selected-item-snap-wall"
               title="Snap selected item to nearest wall"
             >
               Snap wall
-            </button>
+            </Button>
           </div>
 
           <div
-            className={
-              dark
-                ? "rounded-lg border border-white/10 bg-black/10 p-2"
-                : "rounded-lg border border-neutral-200 bg-white p-2"
-            }
+            className="rounded-lg border border-neutral-200 bg-white p-2"
             data-testid="selected-item-precision"
           >
             <div
-              className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}
+              className="text-xs text-neutral-500"
               data-testid="selected-item-size-guidance"
             >
               Catalogue size is preserved. Choose an available model or size option below to resize accurately.
@@ -305,7 +261,6 @@ export default function SelectedItemDetailsPanel({
                 stepMm={10}
                 keyboardStepMm={50}
                 disabled={itemActionsDisabled}
-                dark={dark}
                 compact
                 touchFriendly
                 onCommit={(valueMm) => onSetPosition(valueMm / 1000, positionZ)}
@@ -318,53 +273,48 @@ export default function SelectedItemDetailsPanel({
                 stepMm={10}
                 keyboardStepMm={50}
                 disabled={itemActionsDisabled}
-                dark={dark}
                 compact
                 touchFriendly
                 onCommit={(valueMm) => onSetPosition(positionX, valueMm / 1000)}
               />
             </div>
             <div className="mt-2 grid grid-cols-4 gap-2">
-              <button
-                type="button"
+              <Button
+                size="compact"
                 data-testid="selected-item-nudge-left"
-                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item left by 5 centimetres"
                 onClick={() => onNudge(-0.05, 0)}
               >
                 Left
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="compact"
                 data-testid="selected-item-nudge-back"
-                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item back by 5 centimetres"
                 onClick={() => onNudge(0, -0.05)}
               >
                 Back
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="compact"
                 data-testid="selected-item-nudge-front"
-                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item forward by 5 centimetres"
                 onClick={() => onNudge(0, 0.05)}
               >
                 Front
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                size="compact"
                 data-testid="selected-item-nudge-right"
-                className={`${disabledButtonClass} min-h-11`}
                 disabled={itemActionsDisabled}
                 aria-label="Nudge selected item right by 5 centimetres"
                 onClick={() => onNudge(0.05, 0)}
               >
                 Right
-              </button>
+              </Button>
             </div>
           </div>
           <div className={labelClass}>
@@ -372,11 +322,7 @@ export default function SelectedItemDetailsPanel({
           </div>
           {styleConsistencyReport && styleConsistencyReport.status !== "solo" ? (
             <div
-              className={
-                dark
-                  ? "rounded-lg border border-white/10 bg-black/10 p-2"
-                  : "rounded-lg border border-neutral-200 bg-white p-2"
-              }
+              className="rounded-lg border border-neutral-200 bg-white p-2"
               data-testid="selected-item-style-check"
             >
               <div className="flex items-center justify-between gap-2">
@@ -388,7 +334,7 @@ export default function SelectedItemDetailsPanel({
                   {styleConsistencyReport.status}
                 </span>
               </div>
-              <div className={dark ? "mt-1 text-xs text-neutral-300" : "mt-1 text-xs text-neutral-700"}>
+              <div className="mt-1 text-xs text-neutral-700">
                 {styleConsistencyReport.summary}
               </div>
               {styleConsistencyReport.findings.length > 0 ? (
@@ -396,9 +342,9 @@ export default function SelectedItemDetailsPanel({
                   {styleConsistencyReport.findings.slice(0, 3).map((finding) => (
                     <div
                       key={`${finding.kind}-${finding.label}`}
-                      className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-600"}
+                      className="text-xs text-neutral-600"
                     >
-                      <span className={dark ? "text-neutral-200" : "font-semibold text-neutral-800"}>
+                      <span className="font-semibold text-neutral-800">
                         {finding.label}:
                       </span>{" "}
                       {finding.message}
@@ -412,18 +358,14 @@ export default function SelectedItemDetailsPanel({
                     <button
                       key={alternative.productId}
                       type="button"
-                      className={
-                        dark
-                          ? "w-full rounded-md border border-white/10 bg-white/5 px-2 py-1.5 text-left text-xs text-neutral-200 hover:bg-white/10"
-                          : "w-full rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-left text-xs text-neutral-700 hover:bg-neutral-100"
-                      }
+                      className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-left text-xs text-neutral-700 hover:bg-neutral-100"
                       data-testid={`selected-item-style-alternative-${alternative.productId}`}
                       disabled={itemActionsDisabled}
                       onClick={() => onApplyStyleAlternative(alternative.productId)}
                       title={alternative.reason}
                     >
                       <span className="block truncate font-semibold">{alternative.title}</span>
-                      <span className={dark ? "block text-neutral-400" : "block text-neutral-500"}>
+                      <span className="block text-neutral-500">
                         {alternative.reason}
                       </span>
                     </button>
@@ -437,11 +379,7 @@ export default function SelectedItemDetailsPanel({
               <span className={labelClass}>Move to room</span>
               <select
                 data-testid="selected-item-move-room"
-                className={
-                  dark
-                    ? "mt-1 h-11 w-full rounded-md border border-white/15 bg-[#111827] px-2 text-xs text-neutral-100"
-                    : "mt-1 h-11 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-900"
-                }
+                className="mt-1 h-11 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-900"
                 value={activeRoomId}
                 disabled={itemActionsDisabled}
                 onChange={(event) => onMoveToRoom(event.currentTarget.value)}
@@ -474,7 +412,7 @@ export default function SelectedItemDetailsPanel({
               ))}
             </div>
           ) : (
-            <div className={dark ? "designer-text-secondary text-xs" : "text-xs text-neutral-700"}>
+            <div className="text-xs text-neutral-700">
               {selectedBrand ? `${selectedBrand} - ` : ""}
               {selectedCategoryDebugLabel ?? product.category.replace(/_/g, " ")}
               {activeVariantLabel ? ` - ${activeVariantLabel}` : ""}

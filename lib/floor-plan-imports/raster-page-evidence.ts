@@ -10,7 +10,9 @@ export async function attachRasterSourceArtwork(pages:RegisteredPageEvidence[], 
     try {
       const asset=preview&&context.store.readDerivative?await context.store.readDerivative(preview.assetKey):null;
       if(!asset)continue;
-      page.sourceArtwork=await extractSourceArtwork(asset.bytes,{widthPx:page.widthPx,heightPx:page.heightPx,signal:context.signal,textRegions:page.text});
+      // With the vectorizer's own drawing of the page, the clean traced drawing (source-strokes-v3); else the artwork trace.
+      page.sourceArtwork=await extractSourceArtwork(asset.bytes,{widthPx:page.widthPx,heightPx:page.heightPx,signal:context.signal,textRegions:page.text,
+        clean:page.vectorizer?.drawing});
     }catch(cause){page.semantics.notes.push(`Source artwork trace unavailable: ${cause instanceof Error?cause.message:"unknown error"}. Architectural evidence is retained.`);}
   }
 }

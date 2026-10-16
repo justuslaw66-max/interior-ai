@@ -229,17 +229,17 @@ assert.match(source, /const openStartTemplates = \(openerId: string\) => \(\) =>
 assert.match(source, /chooseTemplate: openStartTemplates\(PLAN_START_TEMPLATE_ACTION_ID\),/);
 assert.match(
   source,
-  /id: PLAN_TEMPLATE_LIBRARY_ACTION_ID,\s*testId: "plan-tool-template-library",[\s\S]*?onClick: openStartTemplates\(PLAN_TEMPLATE_LIBRARY_ACTION_ID\),\s*\}\)\}\s*<\/div>\s*<AddRoomTemplateTiles dark=\{dark\} canEdit=\{canEdit\} measurementUnit=\{measurementUnit\}\s*onAddRoomTemplate=\{onAddRoomTemplate\} \/>/,
+  /id: PLAN_TEMPLATE_LIBRARY_ACTION_ID,\s*testId: "plan-tool-template-library",[\s\S]*?onClick: openStartTemplates\(PLAN_TEMPLATE_LIBRARY_ACTION_ID\),\s*\}\)\}\s*<\/div>\s*<AddRoomTemplateTiles canEdit=\{canEdit\} measurementUnit=\{measurementUnit\}\s*onAddRoomTemplate=\{onAddRoomTemplate\} \/>/,
   "The palette's Templates hold Choose a template, then Add one room."
 );
 assert.match(
   source,
-  /id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*type="button"\s*data-testid="plan-start-template"[\s\S]*?onClick=\{openStartTemplates\(PLAN_START_TEMPLATE_ACTION_ID\)\}/,
+  /id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*data-testid="plan-start-template"[\s\S]*?onClick=\{openStartTemplates\(PLAN_START_TEMPLATE_ACTION_ID\)\}/,
   "Pro's empty plan opens the same template list."
 );
 assert.match(
   fs.readFileSync(path.join(process.cwd(), "components", "editor", "RoomSetupStartActions.tsx"), "utf8"),
-  /id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*type="button"\s*data-testid="plan-start-template"/
+  /<Button\s+id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*data-testid="plan-start-template"/
 );
 assert.match(
   fs.readFileSync(path.join(process.cwd(), "components", "editor", "design-controls-plan", "EmptyFloorPlanSurfacesActions.tsx"), "utf8"),
@@ -275,7 +275,6 @@ const renderedPlanToolSections = planToolSectionContracts.map(
     title,
     markup: renderToStaticMarkup(
       PlanToolSection({
-        dark: false,
         section,
         title,
         collapsed: true,
@@ -795,7 +794,7 @@ const replaceCurrentPlan = () => undefined;
 const saveCurrentAndStartNew = () => undefined;
 const signInForPlan = () => undefined;
 const dialogModel = buildDesignPageDialogLayerModel({
-  access: { isClientPreview: false, isAuthenticated: true, capabilities: resolveEditorCapabilities("pro"), designerTheme: false },
+  access: { isClientPreview: false, isAuthenticated: true, capabilities: resolveEditorCapabilities("pro") },
   billing: { upgrade: {}, plans: {}, startingCheckout: false, annualSavingsLabel: "", upgradeActions: {}, plansActions: {} },
   persistence: {
     guestSave: {
@@ -889,7 +888,7 @@ assert.match(
 
 assert.match(
   planTemplateChoiceDialogSource,
-  /data-testid="new-plan-choice-dialog"[\s\S]*?data-testid="new-plan-cancel"[\s\S]*?data-testid="new-plan-replace-current"[\s\S]*?data-testid="new-plan-save-current"/,
+  /testId="new-plan-choice-dialog"[\s\S]*?data-testid="new-plan-cancel"[\s\S]*?data-testid="new-plan-replace-current"[\s\S]*?data-testid="new-plan-save-current"/,
   "The plan choice dialog should expose Cancel, Replace current, and Save current & start new actions."
 );
 

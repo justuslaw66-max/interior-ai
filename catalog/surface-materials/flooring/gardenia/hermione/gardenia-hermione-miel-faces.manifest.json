@@ -1,6 +1,6 @@
 {
  "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/hermione/miel/",
- "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: HERMIONE - MIEL - minimali.zip (10028212 bytes, sha256 b9d00d1ecca1f5bca691e86ae582621adc6daae906750e14f62682c9128c4744).",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-10: HERMIONE - MIEL - minimali.zip (10028212 bytes, sha256 b9d00d1ecca1f5bca691e86ae582621adc6daae906750e14f62682c9128c4744); and on 2026-10-13: PLEIN AIR - HERMIONE MIEL - minimali.zip (37572444 bytes, sha256 5dbee203575109f5e93d04e41a7cac4e2262c14ec302031da8ec1634b3877ee5).",
  "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
  "resolution": {
   "stored_px_per_mm": 0.6,
@@ -9,6 +9,557 @@
   "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
  },
  "formats": [
+  {
+   "format": "30x120",
+   "item_code": "0202269",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/hermione-miel/020226912.-v102/",
+   "face_mm": {
+    "width": 300,
+    "height": 1200
+   },
+   "swatch": "0202269_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of faces 01 to 02 laid side by side",
+   "duplicates_dropped_site_positions": [
+    6,
+    13,
+    14,
+    16,
+    21,
+    27
+   ],
+   "used_by": "floor gardenia-flooring-hermione-miel-0202269-30x120-r11",
+   "faces": [
+    {
+     "file": "0202269_01.webp",
+     "face": 1,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 18308,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "75750b262f7290f9afaa57ac3cb72eabb8360496d4b050730b33d639bca907c7",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 1 (view_01)",
+      "name": "X20 HERMIONE MIEL 30X120_01",
+      "id": "4588c7d6-5b47-4e08-82c9-23e9dd4dbbf2",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0202269_02.webp",
+     "face": 2,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 15110,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "a83c16ad55140ca209580e5026f43944ce82cadaed62ce05c71b73235c36af47",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 2",
+      "name": "OUT.20 HERMIONE MIEL 30X120_22",
+      "id": "01130477-3d94-44f4-82d4-4cf81d561e22",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0202269_03.webp",
+     "face": 3,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 14000,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "d4ca32a490cfeefd047970fae0a5e2043e94e9c865dc702a526cee9c779990e0",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 3",
+      "name": "OUT.20 HERMIONE MIEL 30X120_21",
+      "id": "0191a083-d95b-49f2-a247-49e5b87a5459",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0202269_04.webp",
+     "face": 4,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20674,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "67cb7b1e1374cca30e79fe1e2838ea14f9688df8e3209a15b12d4931b0a85abe",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 4",
+      "name": "X20 HERMIONE MIEL 30X120_20",
+      "id": "16ae273d-3561-412a-ad54-44e921282fc3",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0202269_05.webp",
+     "face": 5,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 16348,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "cd5c45e4ca65d78b24ec045cf67178722219be1259fc236fb6489913d41fdf4d",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 5",
+      "name": "X20 HERMIONE MIEL 30X120_03",
+      "id": "1a82df57-5852-407d-a7c8-589f35030930",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0202269_06.webp",
+     "face": 6,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 16140,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "fd323e94df73eaa723d70d49f5fc4e3da4e0d088eaeb264f14bf02de9b7398f2",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 7",
+      "name": "X20 HERMIONE MIEL 30X120_17",
+      "id": "3df4fbf2-221a-44db-86bb-3607bb6fda73",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0202269_07.webp",
+     "face": 7,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 16108,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_8.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "ff01c680b5009f2c3c58a6656c4ba8659afb28edaa209b45aed9880995a1f173",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 8",
+      "name": "X20 HERMIONE MIEL 30X120_02",
+      "id": "4a1513ef-94bf-43e6-98e5-fbe500cdfc38",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0202269_08.webp",
+     "face": 8,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 17008,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_9.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "30f2edcbae73f0bb2590152965fbad7c01d2269dce85502ddf6c25171344178f",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 9",
+      "name": "OUT.20 HERMIONE MIEL 30X120_18",
+      "id": "4d247e1d-e287-4aa5-b3b6-8ac4535e0667",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0202269_09.webp",
+     "face": 9,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 16490,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_10.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "33bd76b1e35b5b8b7cc5eb3e195b2b1f28a220f94835c77beff2368674b31abc",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 10",
+      "name": "X20 HERMIONE MIEL 30X120_14",
+      "id": "4e09f90d-debf-452e-b77c-0f7e4dca510c",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0202269_10.webp",
+     "face": 10,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 22404,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_11.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "230c9961ce6154198b632934dd4f1544a6f6fc2dcb0e2b15c855c66839dfde9e",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 11",
+      "name": "OUT.20 HERMIONE MIEL 30X120_19",
+      "id": "502039a3-0a86-4ee5-a44c-126cbfa84c12",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0202269_11.webp",
+     "face": 11,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 23200,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_12.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "b2c1a78d29adbdf8bcce8186e661c5e9d666eafc05521241fa075159d91e4b5c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 12",
+      "name": "X20 HERMIONE MIEL 30X120_09",
+      "id": "60acb038-fd69-4d57-b3bc-571952192bbc",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0202269_12.webp",
+     "face": 12,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 15698,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_15.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "831b4a249918dd46d34df8a38e6a9d5922f0a90e963d51a4c5b5f759076a99b4",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 15",
+      "name": "X20 HERMIONE MIEL 30X120_13",
+      "id": "9c1a0772-a454-4084-b48e-7c4b384f2993",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0202269_13.webp",
+     "face": 13,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20894,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_17.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "43c8c13673db274b38bb41a95721ea952e9ed86aad51f48f108d1f23f1306b65",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 17",
+      "name": "X20 HERMIONE MIEL 30X120_08",
+      "id": "aac6f5fe-0b5d-4c10-b0e3-6607446753da",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0202269_14.webp",
+     "face": 14,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19920,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_18.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "05127ab982631c81e24d80ec6cea6fd63fc14d3818160e4abc07e536e70d58fb",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 18",
+      "name": "X20 HERMIONE MIEL 30X120_15",
+      "id": "b114185e-8704-434b-9f16-60b57dade904",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0202269_15.webp",
+     "face": 15,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 20470,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_19.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "b3ae2c8427aa6a9fa81bb45790daf5bff70385226db0d3f9a5ee4e135d5815a5",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 19",
+      "name": "X20 HERMIONE MIEL 30X120_06",
+      "id": "b9a86329-9839-4ba0-bd48-1b4ec47b6138",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0202269_16.webp",
+     "face": 16,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 23876,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_20.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "bffac1cf26d7cf6cc0e02679cbf83f4936f43a0a76837414b4f10af95211d715",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 20",
+      "name": "X20 HERMIONE MIEL 30X120_10",
+      "id": "c08522dc-73c1-4170-a3b4-1bdcc1af03ed",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0202269_17.webp",
+     "face": 17,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 16788,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_22.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "5b6a2c30b56993e59d88693e831062559d281a68214b9966f47759dc0d605d42",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 22",
+      "name": "X20 HERMIONE MIEL 30X120_04",
+      "id": "d0c03fe1-b44a-4b11-8950-06f26a9fe4e9",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0202269_18.webp",
+     "face": 18,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 12946,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_23.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "c9aad93735bfcf8845168beb900959d8254faf097e890f7aed90583a81a34d51",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 23",
+      "name": "X20 HERMIONE MIEL 30X120_11",
+      "id": "d83f7775-6f31-4829-886f-cbe76db89aa0",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0202269_19.webp",
+     "face": 19,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 21714,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_24.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "af445c04a39ae9801ca7f9aa7b63a1d191d632c88c569f63ee2f83a8e9348c6c",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 24",
+      "name": "X20 HERMIONE MIEL 30X120_07",
+      "id": "dcbce095-73d4-4acc-9bda-962eadb44914",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0202269_20.webp",
+     "face": 20,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 19304,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_25.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "45af10bd76fcace1df793b90f8fd8529a4f15dfd048b21cb59cc66cfc2e5ba74",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 25",
+      "name": "X20 HERMIONE MIEL 30X120_16",
+      "id": "e65bfb18-b3f6-4ffa-ab6f-e248a45d7c13",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0202269_21.webp",
+     "face": 21,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 25888,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_26.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "a107bf849d3ace107e442caa97b049081d8fb68e97cfd3c32e1fbce981a73517",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 26",
+      "name": "X20 HERMIONE MIEL 30X120_05",
+      "id": "f2bd8219-3fe0-4242-8159-6bdcc79b21ce",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0202269_22.webp",
+     "face": 22,
+     "width_mm": 300,
+     "height_mm": 1200,
+     "width_px": 180,
+     "height_px": 720,
+     "bytes": 11768,
+     "source_zip": "PLEIN AIR - HERMIONE MIEL - minimali.zip",
+     "source_file": "30X120-R11/PLEIN AIR - HERMIONE MIEL - 30X120 - R11 - view_28.jpg",
+     "source_px": [
+      2560,
+      640
+     ],
+     "source_sha256": "6cac19c9be4ff5e07634bef3b8670910dee20bd285cfd89c812d95985f38cf94",
+     "source_px_per_mm": 2.133,
+     "orientation": "turned 90 ccw",
+     "abk_picture": {
+      "label": "30X120 · R11 · Faccia 28",
+      "name": "X20 HERMIONE MIEL 30X120_12",
+      "id": "feab72b4-365b-4f00-a624-7e6f19ec10e9",
+      "site_position": 28
+     }
+    }
+   ]
+  },
   {
    "format": "20x120",
    "item_code": "0202266",

@@ -36,6 +36,7 @@ export function decodeSurfaceMaterialRenderTuple(
       plank_length_mm: tuple[10],
       tile_width_mm: tuple[11],
       tile_length_mm: tuple[12],
+      ...(tuple[33] ? { chevron_end_offset_mm: tuple[33] } : {}),
     },
     texture_assets: {
       swatch_url: tuple[13],

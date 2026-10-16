@@ -2,6 +2,7 @@
 
 import type { FloorPlanPageCandidate } from "@/lib/floor-plan-imports/types";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanPageSelectionPanelProps = {
   job: Pick<ConsumerFloorPlanImportJob, "id" | "renderedPagesJson">;
@@ -11,7 +12,6 @@ type FloorPlanPageSelectionPanelProps = {
   onConfirm: () => void;
   submitting?: boolean;
   disabled?: boolean;
-  dark?: boolean;
 };
 
 export default function FloorPlanPageSelectionPanel({
@@ -22,9 +22,8 @@ export default function FloorPlanPageSelectionPanel({
   onConfirm,
   submitting = false,
   disabled = false,
-  dark = false,
 }: FloorPlanPageSelectionPanelProps) {
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
+  const subtle = "text-neutral-600";
 
   return (
     <section data-testid="floor-plan-page-selection" data-floor-plan-workspace-state="page-selection">
@@ -47,9 +46,7 @@ export default function FloorPlanPageSelectionPanel({
                 "overflow-hidden rounded-lg border text-left transition disabled:opacity-50",
                 selectedPageNumber === candidate.pageNumber
                   ? "border-emerald-500 ring-2 ring-emerald-500/25"
-                  : dark
-                    ? "border-white/10"
-                    : "border-neutral-200 hover:border-neutral-400",
+                  : "border-neutral-200 hover:border-neutral-400",
               ].join(" ")}
               disabled={disabled || submitting}
               onClick={() =>
@@ -92,11 +89,11 @@ export default function FloorPlanPageSelectionPanel({
           );
         })}
       </div>
-      <button
-        type="button" data-floor-plan-workspace-focus={
+      <Button
+        data-floor-plan-workspace-focus={
           selectedPageNumber === null ? "primary" : undefined
         }
-        className="mt-3 w-full rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+        variant="primary" size="compact" className="mt-3 w-full"
         disabled={
           disabled ||
           submitting ||
@@ -105,7 +102,7 @@ export default function FloorPlanPageSelectionPanel({
         onClick={onConfirm}
       >
         {submitting ? "Analysing selected page…" : "Use this page"}
-      </button>
+      </Button>
     </section>
   );
 }

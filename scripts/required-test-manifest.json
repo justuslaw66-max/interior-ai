@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 318,
-      "expectedPathSha256": "47309f8f218cc9a0d5329f020974485d426e898f643abf62f6cf166b46094092"
+      "expectedFileCount": 322,
+      "expectedPathSha256": "bd90f5738528b7ce65c1936babae5636901ef4e8c78e05adca730243c3126143"
     },
     {
       "id": "browser-specs",
@@ -505,7 +505,7 @@
       "blocking": true,
       "command": "npm run test:floor-plan-required",
       "packageScript": "test:floor-plan-required",
-      "packageClosure": { "expectedScriptCount": 59, "expectedSha256": "ec5e33ecf6cf8b6cddfe5f6313d6365ed7970be68b885629522f8a0372f0a7f9" },
+      "packageClosure": { "expectedScriptCount": 60, "expectedSha256": "1f99668552746da930862c0e6ef3edb30c8438b8dbac76fcf1dc324f9a3e821e" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-floor-plan-directory-privacy.ts",
@@ -542,11 +542,12 @@
       "blocking": true,
       "command": "npm run test:catalog-audit && npm run test:catalog-asset-availability && npm run test:surface-material-semantics",
       "packageScripts": ["test:catalog-audit", "test:catalog-asset-availability", "test:surface-material-semantics"],
-      "packageClosure": { "expectedScriptCount": 13, "expectedSha256": "6e1a80dd0e336a509c2f2165b937c313ad96d01fe80ea7227820d3e9041cb819" },
+      "packageClosure": { "expectedScriptCount": 14, "expectedSha256": "c1c98df0260b732af397700399604523bc1a994c087496c7a847e9ebf5a0ecde" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-catalog-quality-audit.ts",
         "scripts/test-catalog-registry-sync.ts",
+        "scripts/test-catalog-api-payload.ts",
         "scripts/test-catalog-asset-availability.ts",
         "scripts/test-surface-material-schema.ts",
         "scripts/test-surface-material-physical-scale.ts",

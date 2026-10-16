@@ -10,11 +10,11 @@ import type {
   DesignLightingSettings,
   LightingPreset,
 } from "@/lib/lightingPresets";
+import { Button } from "@/components/ui/Button";
 
 type LightingSettingsControlsProps = {
   settings: DesignLightingSettings;
   liteEnabled: boolean;
-  dark: boolean;
   advanced: boolean;
   placedFixtureCount: number;
   activeFixtureCount: number;
@@ -44,25 +44,17 @@ function SectionHeading({
   id,
   title,
   detail,
-  dark,
 }: {
   id: string;
   title: string;
   detail: string;
-  dark: boolean;
 }) {
   return (
     <div>
       <h3 id={id} className="text-sm font-bold">
         {title}
       </h3>
-      <p
-        className={
-          dark
-            ? "mt-0.5 text-xs text-neutral-400"
-            : "mt-0.5 text-xs text-neutral-600"
-        }
-      >
+      <p className="mt-0.5 text-xs text-neutral-600">
         {detail}
       </p>
     </div>
@@ -73,13 +65,11 @@ function SwitchControl({
   checked,
   testId,
   label,
-  dark,
   onChange,
 }: {
   checked: boolean;
   testId: string;
   label: string;
-  dark: boolean;
   onChange: (next: boolean) => void;
 }) {
   return (
@@ -89,7 +79,7 @@ function SwitchControl({
       aria-checked={checked}
       data-testid={testId}
       className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-        checked ? "bg-emerald-500" : dark ? "bg-neutral-700" : "bg-neutral-300"
+        checked ? "bg-emerald-500" : "bg-neutral-300"
       }`}
       onClick={() => onChange(!checked)}
     >
@@ -109,7 +99,6 @@ function SwitchControl({
 export function LightingSettingsControls({
   settings,
   liteEnabled,
-  dark,
   advanced,
   placedFixtureCount,
   activeFixtureCount,
@@ -118,9 +107,7 @@ export function LightingSettingsControls({
   onShadowsEnabledChange,
   onSettingsChange,
 }: LightingSettingsControlsProps) {
-  const panelClass = dark
-    ? "rounded-2xl border border-white/10 bg-white/5 p-4"
-    : "rounded-2xl border border-neutral-200 bg-neutral-50 p-4";
+  const panelClass = "rounded-2xl border border-neutral-200 bg-neutral-50 p-4";
   const selectedMode = resolveLightingMode(settings.preset);
 
   return (
@@ -142,12 +129,8 @@ export function LightingSettingsControls({
                 data-persisted-preset={preset.persistedId ?? undefined}
                 className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                   selected
-                    ? dark
-                      ? "border-blue-400 bg-blue-500/15"
-                      : "border-neutral-950 bg-neutral-50"
-                    : dark
-                      ? "border-white/10 hover:bg-white/5"
-                      : "border-neutral-200 hover:bg-neutral-50"
+                    ? "border-neutral-950 bg-neutral-50"
+                    : "border-neutral-200 hover:bg-neutral-50"
                 }`}
                 onClick={() =>
                   onPresetChange(resolvePersistedLightingPreset(mode))
@@ -157,13 +140,7 @@ export function LightingSettingsControls({
                   <span className="block text-sm font-bold">
                     {preset.label}
                   </span>
-                  <span
-                    className={
-                      dark
-                        ? "mt-0.5 block text-xs text-neutral-400"
-                        : "mt-0.5 block text-xs text-neutral-600"
-                    }
-                  >
+                  <span className="mt-0.5 block text-xs text-neutral-600">
                     {preset.description}
                   </span>
                 </span>
@@ -171,12 +148,8 @@ export function LightingSettingsControls({
                   aria-hidden="true"
                   className={`h-4 w-4 rounded-full border-4 ${
                     selected
-                      ? dark
-                        ? "border-blue-400 bg-neutral-950"
-                        : "border-neutral-950 bg-white"
-                      : dark
-                        ? "border-neutral-600"
-                        : "border-neutral-300"
+                      ? "border-neutral-950 bg-white"
+                      : "border-neutral-300"
                   }`}
                 />
               </button>
@@ -195,7 +168,6 @@ export function LightingSettingsControls({
             id="lighting-camera-heading"
             title="Pro adjustments"
             detail="Tune the viewport without changing authored material colours."
-            dark={dark}
           />
           <label className="mt-4 block text-xs font-semibold">
             Exposure
@@ -230,7 +202,6 @@ export function LightingSettingsControls({
               checked={settings.shadowsEnabled}
               testId="lighting-shadows-toggle"
               label="shadows"
-              dark={dark}
               onChange={onShadowsEnabledChange}
             />
           </div>
@@ -238,11 +209,7 @@ export function LightingSettingsControls({
           {liteEnabled && settings.shadowsEnabled ? (
             <p
               data-testid="lighting-lite-shadow-message"
-              className={
-                dark
-                  ? "mt-3 rounded-xl bg-amber-400/10 px-3 py-2 text-xs font-semibold text-amber-200"
-                  : "mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800"
-              }
+              className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800"
             >
               Shadows are paused in Lite mode.
             </p>
@@ -256,11 +223,7 @@ export function LightingSettingsControls({
                 <input
                   type="time"
                   data-testid="lighting-time-input"
-                  className={
-                    dark
-                      ? "mt-1 h-9 w-full rounded-lg border border-white/15 bg-neutral-900 px-2 text-xs"
-                      : "mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
-                  }
+                  className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
                   value={formatTimeMinutes(settings.timeMinutes)}
                   onChange={(event) => {
                     const timeMinutes = parseTimeMinutes(
@@ -275,11 +238,7 @@ export function LightingSettingsControls({
                 <input
                   type="date"
                   data-testid="lighting-date-input"
-                  className={
-                    dark
-                      ? "mt-1 h-9 w-full rounded-lg border border-white/15 bg-neutral-900 px-2 text-xs"
-                      : "mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
-                  }
+                  className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
                   value={settings.dateIso ?? ""}
                   onChange={(event) =>
                     onSettingsChange({
@@ -315,11 +274,7 @@ export function LightingSettingsControls({
                 <input
                   type="number"
                   data-testid="lighting-latitude-input"
-                  className={
-                    dark
-                      ? "mt-1 h-9 w-full rounded-lg border border-white/15 bg-neutral-900 px-2 text-xs"
-                      : "mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
-                  }
+                  className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
                   min={-90}
                   max={90}
                   step={0.01}
@@ -342,11 +297,7 @@ export function LightingSettingsControls({
                 <input
                   type="number"
                   data-testid="lighting-longitude-input"
-                  className={
-                    dark
-                      ? "mt-1 h-9 w-full rounded-lg border border-white/15 bg-neutral-900 px-2 text-xs"
-                      : "mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
-                  }
+                  className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
                   min={-180}
                   max={180}
                   step={0.01}
@@ -366,14 +317,13 @@ export function LightingSettingsControls({
               </label>
             </div>
             {settings.location ? (
-              <button
-                type="button"
-                data-testid="lighting-location-clear"
-                className="mt-2 text-xs font-semibold underline opacity-65"
+              <Button
+                variant="link" size="inline" data-testid="lighting-location-clear"
+                className="mt-2 text-xs"
                 onClick={() => onSettingsChange({ location: undefined })}
               >
                 Use neutral reference location
-              </button>
+              </Button>
             ) : null}
           </div>
 
@@ -392,7 +342,6 @@ export function LightingSettingsControls({
                 checked={settings.fixtureMasterEnabled}
                 testId="lighting-fixture-master-toggle"
                 label="fixture lights"
-                dark={dark}
                 onChange={(fixtureMasterEnabled) =>
                   onSettingsChange({ fixtureMasterEnabled })
                 }
@@ -425,13 +374,7 @@ export function LightingSettingsControls({
         </section>
       ) : null}
 
-      <p
-        className={
-          dark
-            ? "border-t border-white/10 pt-4 text-xs text-neutral-500"
-            : "border-t border-neutral-200 pt-4 text-xs text-neutral-500"
-        }
-      >
+      <p className="border-t border-neutral-200 pt-4 text-xs text-neutral-500">
         Interactive visualisation only; this is not certified photometric
         analysis.
       </p>

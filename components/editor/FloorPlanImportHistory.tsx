@@ -9,9 +9,9 @@ import type { ConsumerFloorPlanImportJob, ConsumerFloorPlanImportSummary } from 
 import { useFloorPlanHistoryConfirmationState } from "./useFloorPlanHistoryConfirmationState";
 import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 import { buildDesignEditorUrl } from "@/lib/design-editor-url";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanImportHistoryProps = {
-  dark?: boolean;
   disabled?: boolean;
   activeJobId: string | null;
   activeJobSnapshot: ConsumerFloorPlanImportJob | null;
@@ -41,7 +41,6 @@ function statusLabel(job: ConsumerFloorPlanImportSummary) {
 }
 
 export default function FloorPlanImportHistory({
-  dark = false,
   disabled = false,
   activeJobId,
   activeJobSnapshot,
@@ -248,17 +247,12 @@ export default function FloorPlanImportHistory({
     });
   };
 
-  const subtle = dark ? "text-neutral-400" : "text-neutral-500";
-  const card = dark
-    ? "designer-control rounded-lg border border-white/10 p-2.5"
-    : "rounded-lg border border-neutral-200 bg-white p-2.5";
-  const secondary = dark
-    ? "designer-control rounded-md border px-2 py-1 text-xs font-semibold disabled:opacity-50"
-    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50";
+  const subtle = "text-neutral-500";
+  const card = "rounded-lg border border-neutral-200 bg-white p-2.5";
 
   return (
     <details
-      className={dark ? "designer-recessed rounded-lg p-3" : "rounded-lg bg-neutral-50 p-3"}
+      className="rounded-lg bg-neutral-50 p-3"
       open={historyOpen}
       onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
       onKeyDownCapture={guardConfirmationEscape}
@@ -269,11 +263,7 @@ export default function FloorPlanImportHistory({
       </p>
       {!loading && jobs.length > 0 ? (
         <div
-          className={`mt-2 flex flex-wrap items-center gap-2 rounded-md border p-2 ${
-            dark
-              ? "border-white/10 bg-black/10"
-              : "border-neutral-200 bg-white"
-          }`}
+          className="mt-2 flex flex-wrap items-center gap-2 rounded-md border p-2 border-neutral-200 bg-white"
           data-testid="floor-plan-import-bulk-actions"
         >
           <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold">
@@ -289,24 +279,22 @@ export default function FloorPlanImportHistory({
             {selectedJobIds.size} selected
           </span>
           <div className="ml-auto flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              className={`${secondary} text-red-700`}
+            <Button
+              variant="secondary" size="compact"
               disabled={
                 disabled || bulkDeleting || selectedJobIds.size === 0
               }
               onClick={() => setBulkDeleteScope("selected")}
             >
               Delete selected
-            </button>
-            <button
-              type="button"
-              className={`${secondary} text-red-700`}
+            </Button>
+            <Button
+              variant="secondary" size="compact"
               disabled={disabled || bulkDeleting}
               onClick={() => setBulkDeleteScope("all")}
             >
               Delete all
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
@@ -314,11 +302,7 @@ export default function FloorPlanImportHistory({
         <div
           role="alertdialog"
           aria-labelledby="floor-plan-bulk-delete-title"
-          className={`mt-2 rounded-md border p-2 ${
-            dark
-              ? "border-red-400/30 bg-red-950/30"
-              : "border-red-200 bg-red-50"
-          }`}
+          className="mt-2 rounded-md border p-2 border-red-200 bg-red-50"
           data-testid="floor-plan-import-bulk-delete-confirmation"
         >
           <p
@@ -337,17 +321,15 @@ export default function FloorPlanImportHistory({
             retention settings.
           </p>
           <div className="mt-2 flex gap-1.5">
-            <button
-              type="button"
-              className={secondary}
+            <Button
+              variant="secondary" size="compact"
               disabled={disabled || bulkDeleting}
               onClick={() => setBulkDeleteScope(null)}
             >
               Keep uploads
-            </button>
-            <button
-              type="button"
-              className={`${secondary} text-red-700`}
+            </Button>
+            <Button
+              variant="secondary" size="compact"
               disabled={disabled || bulkDeleting}
               onClick={() => void runBulkDelete(bulkDeleteScope)}
             >
@@ -356,7 +338,7 @@ export default function FloorPlanImportHistory({
                 : bulkDeleteScope === "all"
                   ? "Delete all uploads"
                   : "Delete selected uploads"}
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
@@ -409,55 +391,48 @@ export default function FloorPlanImportHistory({
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {canResume ? (
-                  <button type="button" className={secondary} disabled={disabled || busy} onClick={() => onResume(job.id)}>
+                  <Button variant="secondary" size="compact" disabled={disabled || busy} onClick={() => onResume(job.id)}>
                     {active ? "Continue below" : "Resume"}
-                  </button>
+                  </Button>
                 ) : null}
                 {job.appliedDesignId ? (
-                  <button
-                    type="button"
-                    className={secondary}
+                  <Button
+                    variant="secondary" size="compact"
                     disabled={disabled || busy}
                     onClick={() =>
                       router.push(buildDesignEditorUrl({ designId: job.appliedDesignId!, view: "2d" }))
                     }
                   >
                     Open design
-                  </button>
+                  </Button>
                 ) : null}
                 {job.status === "failed" ? (
-                  <button type="button" className={secondary} disabled={disabled || busy} onClick={() => void runAction(job, "retry")}>
+                  <Button variant="secondary" size="compact" disabled={disabled || busy} onClick={() => void runAction(job, "retry")}>
                     {busy ? "Retrying…" : "Try again"}
-                  </button>
+                  </Button>
                 ) : null}
                 {CANCELLABLE_STATUSES.has(job.status) ? (
-                  <button
-                    type="button"
-                    className={`${secondary} text-red-700`}
+                  <Button
+                    variant="secondary" size="compact"
                     disabled={disabled || busy}
                     onClick={() => void runAction(job, "cancel")}
                   >
                     {busy ? "Cancelling…" : "Cancel"}
-                  </button>
+                  </Button>
                 ) : null}
-                <button
-                  type="button"
-                  className={`${secondary} text-red-700`}
+                <Button
+                  variant="secondary" size="compact"
                   disabled={disabled || busy}
                   onClick={() => setConfirmDeleteJobId(job.id)}
                 >
                   Delete
-                </button>
+                </Button>
               </div>
               {confirmingDelete ? (
                 <div
                   role="alertdialog"
                   aria-labelledby={`floor-plan-delete-title-${job.id}`}
-                  className={`mt-2 rounded-md border p-2 ${
-                    dark
-                      ? "border-red-400/30 bg-red-950/30"
-                      : "border-red-200 bg-red-50"
-                  }`}
+                  className="mt-2 rounded-md border p-2 border-red-200 bg-red-50"
                 >
                   <p
                     id={`floor-plan-delete-title-${job.id}`}
@@ -473,22 +448,20 @@ export default function FloorPlanImportHistory({
                       : ""}
                   </p>
                   <div className="mt-2 flex gap-1.5">
-                    <button
-                      type="button"
-                      className={secondary}
+                    <Button
+                      variant="secondary" size="compact"
                       disabled={disabled || busy}
                       onClick={() => setConfirmDeleteJobId(null)}
                     >
                       Keep upload
-                    </button>
-                    <button
-                      type="button"
-                      className={`${secondary} text-red-700`}
+                    </Button>
+                    <Button
+                      variant="secondary" size="compact"
                       disabled={disabled || busy}
                       onClick={() => void runAction(job, "delete")}
                     >
                       {busy ? "Deleting…" : "Delete upload"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : null}
@@ -497,9 +470,9 @@ export default function FloorPlanImportHistory({
         })}
       </div>
       {nextCursor ? (
-        <button type="button" className={`${secondary} mt-2 w-full`} disabled={loadingMore} onClick={() => void load(nextCursor, true)}>
+        <Button variant="secondary" size="compact" className="mt-2 w-full" disabled={loadingMore} onClick={() => void load(nextCursor, true)}>
           {loadingMore ? "Loading…" : "Show older uploads"}
-        </button>
+        </Button>
       ) : null}
       {errorMessage ? <p role="alert" className="mt-2 text-xs text-red-600">{errorMessage}</p> : null}
     </details>

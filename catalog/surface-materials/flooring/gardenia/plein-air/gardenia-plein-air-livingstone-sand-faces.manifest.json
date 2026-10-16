@@ -1,0 +1,148 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/livingstone-sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - LIVINGSTONE SAND - minimali.zip (11226430 bytes, sha256 b3c7e6391a562f716355c16a0f50ea68c8450f876f82ddeb29da157bd179cb31).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0020647",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/livingstone-sand/pf60020647-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0020647_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-livingstone-sand-0020647-80x80-r11",
+   "faces": [
+    {
+     "file": "0020647_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46032,
+     "source_zip": "PLEIN AIR - LIVINGSTONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE SAND - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a91b30eeeea4ca0b35dfb853124daab8993931626c930a7e866534e1c8e518e1",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "LIVINGSTONE SAND 80X80 R11_20 MM_01",
+      "id": "b3a11c76-1742-495a-9d92-93dcc8c14d81",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0020647_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 46224,
+     "source_zip": "PLEIN AIR - LIVINGSTONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE SAND - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b5d93bc247b08356c94eda6be48966f43b19354be32939a103e0bc216608eaf4",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "LIVINGSTONE SAND 80X80 R11_20 MM_02",
+      "id": "9d329b6e-ae35-4925-b99a-08417ad04201",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0020647_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 43818,
+     "source_zip": "PLEIN AIR - LIVINGSTONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE SAND - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e2050e9ebc079c1b0d4056bf949011e19be5feaf2898bce6725e705a89dba1c6",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "LIVINGSTONE SAND 80X80 R11_20 MM_06",
+      "id": "af874a1b-9ed3-4b85-a554-9a521627515f",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0020647_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 35656,
+     "source_zip": "PLEIN AIR - LIVINGSTONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE SAND - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "e79d618adc12ccd801b1cf3edbee6b19c73e17f7e153ca117d150e0664148013",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "LIVINGSTONE SAND 80X80 R11_20 MM_04",
+      "id": "4fddfb35-d40e-43fe-8592-ba7bc055aa7d",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0020647_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 37492,
+     "source_zip": "PLEIN AIR - LIVINGSTONE SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - LIVINGSTONE SAND - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "3bfbc5ad26ea8f12dd28686d118e071cfe0b4aeba281fd306a4691327e6010fd",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "LIVINGSTONE SAND 80X80 R11_20 MM_03",
+      "id": "c96be164-8474-4a8e-b9a5-5a05cf0fa591",
+      "site_position": 5
+     }
+    }
+   ]
+  }
+ ]
+}

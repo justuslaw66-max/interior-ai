@@ -1,4 +1,4 @@
-import type { SurfaceMaterial } from "./surface-material-schema";
+import type { SurfaceMaterial, SurfaceMaterialOutdoorProfile } from "./surface-material-schema";
 import type { SurfaceTextureFacesData } from "./surface-texture-face-run";
 
 export type SurfaceMaterialRenderRecord = {
@@ -18,7 +18,7 @@ export type SurfaceMaterialRenderRecord = {
   >;
   physical_specs: Pick<
     SurfaceMaterial["physical_specs"],
-    "plank_width_mm" | "plank_length_mm" | "tile_width_mm" | "tile_length_mm"
+    "plank_width_mm" | "plank_length_mm" | "tile_width_mm" | "tile_length_mm" | "chevron_end_offset_mm"
   >;
   texture_assets: SurfaceMaterial["texture_assets"];
   rendering: SurfaceMaterial["rendering"];
@@ -39,7 +39,10 @@ export type SurfaceMaterialCatalogMetadata = {
   classification: Pick<
     SurfaceMaterial["classification"],
     "tone" | "style_cluster" | "room_suitability"
-  >;
+  > & {
+    /** Outdoor floor tiles only: where it goes, how it can be laid, the same colour's indoor floor entries. */
+    outdoor?: SurfaceMaterialOutdoorProfile;
+  };
   physical_specs: Pick<
     SurfaceMaterial["physical_specs"],
     | "total_thickness_mm"
@@ -100,13 +103,14 @@ export type SurfaceMaterialRenderBaseTuple = readonly [
 ];
 
 /**
- * The trailing fields are emitted only for materials with physical-scale image data. Faces
- * are written as a run where their file names allow it (see surface-texture-face-run.ts).
+ * The trailing fields are emitted only for materials with physical-scale image data (and a chevron's end offset).
+ * Faces are written as a run where their file names allow it (see surface-texture-face-run.ts).
  */
 export type SurfaceMaterialRenderTuple = readonly [
   ...SurfaceMaterialRenderBaseTuple,
   imagePhysicalSizeMm?: { width: number; height: number } | null,
   faces?: SurfaceTextureFacesData | null,
+  chevronEndOffsetMm?: number | null,
 ];
 
 export type SurfaceMaterialRenderInfo = SurfaceMaterialRenderRecord;

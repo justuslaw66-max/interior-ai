@@ -1,0 +1,769 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/chevron-genuine-havana/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: TABULAE - CHEVRON GENUINE HAVANA - minimali.zip (15783102 bytes, sha256 6dba4f3d336e551366c1c4cfd1a8a554bd90eefc022296c1e86ab0bda5eccef4).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Each picture is one chevron piece with both ends cut on a slant, on white; ABK shows both hands (par-dx-sx). Pictures whose top cut rises to the left are mirrored left to right, so every face has its top cut rising to the right; the app lays that hand and mirrors it in every other band. The white beyond the cuts and the 1-2 px white side margins are filled with the piece's own edge pixels, repeated along the grain, so no white bleeds in when a face is scaled down. Each face covers the piece's 150 x 850 mm bounding box (ABK's pictures are 2% narrower than that; drawn at the tile's width).",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "chevron": {
+  "end_offset_mm": 70.7,
+  "measured": "Each end's cut runs 317 px along the piece in every one of the 118 pictures (straight-line fits to both cuts, 316.8 to 317.1 px), and the pictures are 3809 px tip to tip for 850 mm: 70.7 mm. The pieces lean about 25 degrees off the band crossing, as ABK's configurator preview (two pieces meeting at a vertical cut) and room photos show."
+ },
+ "formats": [
+  {
+   "format": "15x85",
+   "item_code": "0021111",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/chevron-genuine-havana/pf60021111-v102/",
+   "face_mm": {
+    "width": 150,
+    "height": 850
+   },
+   "swatch": "0021111_swatch.webp",
+   "swatch_note": "600 x 600 mm of the laid chevron (2 mm joints), painted with the app's chevron layout, a band line across its middle",
+   "used_by": "floor gardenia-flooring-tabulae-chevron-havana-pf60021111-15x85-nat-92342-par-dx-sx; wall gardenia-wall-tile-tabulae-chevron-havana-pf60021111-15x85-nat-92342-par-dx-sx",
+   "mirrored_faces": [
+    3,
+    5,
+    7,
+    8,
+    10,
+    11,
+    13,
+    17,
+    19,
+    21,
+    22,
+    24,
+    25,
+    26,
+    30
+   ],
+   "faces": [
+    {
+     "file": "0021111_01.webp",
+     "face": 1,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3974,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_1 (2).jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "57356bcb4c3c661b77880a04d3ec8300ccf687a37a7d5b9fdc4e7aad6c40d822",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_01",
+      "id": "22c09ff1-f081-4c36-90cb-edc781e2f6fb",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021111_02.webp",
+     "face": 2,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4222,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_1.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "ab59244529a022455e3b7b024660b7206903390cfcf56df721735f38aaa060b8",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_27",
+      "id": "af79631d-7c5f-488a-965c-bf70dc4a0164",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021111_03.webp",
+     "face": 3,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4588,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_3.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "04801fa9615910b1f183e517fe2ca03dbbe18c3bb74b086016307fc9fa4c8301",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_24",
+      "id": "1e60223c-7b9d-4450-bd96-5112b1d127a1",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021111_04.webp",
+     "face": 4,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4432,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_4.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "4602c5449f8cb137de7d39c91eac8b6489fae83c78155f23813e6f7181b99969",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_25",
+      "id": "26253929-72f6-4857-a537-9e7afdf37b22",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021111_05.webp",
+     "face": 5,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3816,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_5.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "3cc39c65c8094c17ad7b2ffefc2137bd8092b8470195eaad524eb9fdbfccf30b",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_28",
+      "id": "6a7dd27b-adde-4601-83ed-6759b5399ab0",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021111_06.webp",
+     "face": 6,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3600,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_6.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "78683378592e587f3fc40f5f9e888257b0ea27d1c091a5fe2e57954e0ffe24dd",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_23",
+      "id": "537c58ea-68f6-4fa7-87cd-ff9401ab2ee7",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021111_07.webp",
+     "face": 7,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4268,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_7.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "4d606fe16d9c61293c68e8e9fc1721ebe8028f70f3ac92b39cd786166119e37f",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_02",
+      "id": "be7d0fda-de64-4899-9408-970932ad11b0",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021111_08.webp",
+     "face": 8,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4560,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_8.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "2a3fdd9e6c4b7b5eb6ddf493759dadfbe90478cb67050174066ebebcf8faf874",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_06",
+      "id": "4e26aac5-3428-4cee-aadf-dc1ec92c2f2f",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021111_09.webp",
+     "face": 9,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4870,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_9.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "dae257bfa956ad513c20eefa381e4a1433c6beac869e05a2852d11bf3276d4e4",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_29",
+      "id": "3f2099f1-8aba-45f4-bbb3-67cfb9514e91",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021111_10.webp",
+     "face": 10,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4862,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_10.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "ddda6861f2db34722814c2c529e81f1a095dbe4cfa60f6091e8c7a4338db55bc",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_16",
+      "id": "681c2c75-6b0c-4a12-b30b-a9ea9b8405ed",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021111_11.webp",
+     "face": 11,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4588,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_11.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "1ec4aef1b56f64627b7d5c65c9bd2d603cb1a3a995484aac92f7887076058a39",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_14",
+      "id": "d0a5238a-069a-4355-9973-43458470addf",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021111_12.webp",
+     "face": 12,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3786,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_12.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "f429df76275afebd02c61e5ed3099e89368f9c29d76f0d3a4d57c663a467430e",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_03",
+      "id": "087966cf-41d0-4ba8-bd29-3054e21129df",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021111_13.webp",
+     "face": 13,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4016,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_13.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "415e9e0699814273e001d146ae8ab263f0254be69584e0f3aa9dc385373cb0ff",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_18",
+      "id": "29fb51fb-4e82-4dfc-a9e8-45ab0b42f2c4",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021111_14.webp",
+     "face": 14,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4210,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_14.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "b1e957dfcd0d14d9c5ed9943307fa18e8890e3d310157e13b9925095f865258e",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_9",
+      "id": "3df57bab-18a4-4fb1-b21a-1cb0b269efe8",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021111_15.webp",
+     "face": 15,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4812,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_15.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "4e77f6082e73ad9780300a8f2635c87aa1bef2449dc44df42e5caa5a6e805820",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_19",
+      "id": "51448997-86c8-4eeb-a957-728297c5d2df",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021111_16.webp",
+     "face": 16,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4160,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_16.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "460ce97001129001d1b7f4afb085d84cac8b62f760fcfd23098022d1f3e3fae7",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_07",
+      "id": "b8ba2247-2f7e-4b7c-a329-85b8be9bb6eb",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021111_17.webp",
+     "face": 17,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4478,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_17.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "e9272de2cf6a57e257f568c2bef1b051a407f1deab032a1ce2b97f82acdd9f17",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_04",
+      "id": "c0c4374a-253f-49fd-b318-0125de3ecc04",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021111_18.webp",
+     "face": 18,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3922,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_18.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "2138dedcb76fd786e12ec390d70e3b34b4a8665cf3b9daceda8aa2213dd3d5c1",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_05",
+      "id": "bdc31d57-429b-4f10-9d56-e0e0cfc199c9",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021111_19.webp",
+     "face": 19,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3990,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_19.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "9ef9a94ff864dce295a98bd60525d39b92c07fc64d46d31537579d5c9a149295",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_10",
+      "id": "e70e71f8-25b0-46ad-a5d8-c49121d3dec8",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021111_20.webp",
+     "face": 20,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3856,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_20.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "e9942dab597c3f1c4c940a7fc1bc45b01ec0c9680c92b681db17fa87886b03cf",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_15",
+      "id": "14ef5b30-5190-4286-8163-14dc0009050e",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0021111_21.webp",
+     "face": 21,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4182,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_21.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "e19c3e1f9ea74c7e07c2836b8aebdee7bc6bd173f7b38dbd3b6120ac8278c673",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 21",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_20",
+      "id": "fed4ae9b-9daa-4468-be14-b3189dc79f0b",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0021111_22.webp",
+     "face": 22,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4044,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_22.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "bb77bc23caf67fe343757df7914f7bab92ec8c28437fb6ea0999bbd9784d69db",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 22",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_08",
+      "id": "9efe68d7-de6c-4d52-b853-23722df2685e",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0021111_23.webp",
+     "face": 23,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4544,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_23.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "140a04a853d879b08c6e78c45336f2be62f02156072727189dc30efb2f75d092",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 23",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_21",
+      "id": "d9173e9c-104f-49b3-836d-a313db5ca30b",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0021111_24.webp",
+     "face": 24,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4190,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_24.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "13405ba1ffebf79afdb7191772e4d009618c68b7e387b0be3e689a6ce13474b3",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 24",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_22",
+      "id": "c38757e4-4904-48a6-8d36-2cf503f385dc",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0021111_25.webp",
+     "face": 25,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 5312,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_25.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "797409df6c1a08790bf6dacb6220423b919853f08deea680db5e68f3e459e70a",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 25",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_26",
+      "id": "58b1ee5b-87d5-4efb-8671-f7c50435dd19",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0021111_26.webp",
+     "face": 26,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4226,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_26.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "494f7d235565c261629e625e81f2b2136868f31b703c2b16500eb6eabfa814dc",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 26",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_30",
+      "id": "82fb2c3e-5dd3-4730-908a-06b2165d1091",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0021111_27.webp",
+     "face": 27,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 5214,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_27.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "edb5944728f46bce8c2406a2a6a9a28dad2bc1128071038d1c9c8857b66e2169",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 27",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_11",
+      "id": "3c842406-02c0-417f-bc6e-838de33a1685",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0021111_28.webp",
+     "face": 28,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4190,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_28.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "dd186891ea272aab580317cee3ded67327977fa00010312ce65430f4c8796895",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 28",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_13",
+      "id": "e3cc4509-e4f0-40d3-8a93-329e262e5406",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0021111_29.webp",
+     "face": 29,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4782,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_29.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "1354a663c8cc1e2ba72c06be7c68c43a2d9d7b167b8b57faa6dac1f74f25d4ca",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 29",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_17",
+      "id": "8fef494e-9bb5-41e0-be4f-c58449f8c833",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0021111_30.webp",
+     "face": 30,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4468,
+     "source_zip": "TABULAE - CHEVRON GENUINE HAVANA - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON GENUINE HAVANA - 15X85 - Natural - view_30.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "a562156f119376df99327c48c70017294b6da515c8d0fca2b5cb701a55156613",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 30",
+      "name": "TABULAE CHEVRON GENUINE HAVANA 15X85_12",
+      "id": "96996554-0cd1-4a91-a3ba-d08729eae22a",
+      "site_position": 30
+     }
+    }
+   ]
+  }
+ ]
+}

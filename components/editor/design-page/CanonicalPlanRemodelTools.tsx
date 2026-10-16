@@ -10,10 +10,10 @@ import { CanonicalWallDimensions } from "./CanonicalWallDimensions";
 import { CanonicalRoomRecovery } from "./CanonicalRoomRecovery";
 import type { FloorPlanProposalState } from "@/lib/floor-plan-proposal-types";
 import type { RecoverProposedRoomLayoutInput } from "@/lib/floor-plan-room-recovery";
+import { Button } from "@/components/ui/Button";
 
 type Props = { floor: FloorPlanFloorV2; wall: FloorPlanWallV2; commit: (operation: ConsumerWallTopologyMutationV2) => boolean };
 const inputStyle = "mt-1 w-full rounded border border-neutral-400 bg-transparent p-1.5";
-const buttonStyle = "rounded border border-neutral-400 px-2 py-1.5 disabled:opacity-40";
 
 function Millimetres({ label, value, change, min }: { label: string; value: number; change: (value: number) => void; min?: number }) {
   return <label>{label} (mm)<input className={inputStyle} type="number" step="1" min={min} value={value} onChange={(event) => change(Number(event.target.value))} /></label>;
@@ -50,7 +50,7 @@ function AddPartition({ floor, commit }: Omit<Props, "wall">) {
       <Millimetres label="Thickness" value={values.thickness} change={(v) => set("thickness", v)} min={1} /><Millimetres label="Proposed height" value={values.height} change={(v) => set("height", v)} min={1} />
       <label className="col-span-2">New room name if divided<input className={inputStyle} value={values.roomName} onChange={(event) => set("roomName", event.target.value)} /></label>
       <p className="col-span-2">For a dividing partition, the existing name stays on the boundary side reached from start to end. For an enclosed loop, it stays with the surrounding space. The new room inherits finishes for review.</p>
-      <button type="button" className={`${buttonStyle} col-span-2`} onClick={add}>Add proposed wall</button>
+      <Button variant="secondary" size="compact" className="col-span-2" onClick={add}>Add proposed wall</Button>
     </div>
   </details>;
 }
@@ -66,7 +66,7 @@ function WallRemoval({ floor, wall, commit }: Props) {
     <p>Affected openings: {openings.map((opening) => `${opening.kind} ${opening.id}`).join(", ") || "none"}. Their removal is part of this transaction. Attached furniture stays at its world position for review.</p>
     {rooms.length === 2 ? <label className="my-2 block">Keep name and finishes from<select className={inputStyle} value={keepRoomId} onChange={(event) => setKeepRoomId(event.target.value)}>{rooms.map((room) => <option key={room.id} value={room.id}>{room.name}</option>)}</select></label> : null}
     <label className="my-2 flex gap-2"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I reviewed these dependencies and am making a conceptual proposal.</label>
-    <button type="button" className={buttonStyle} disabled={!confirmed || wall.path.kind !== "line"} onClick={() => commit({ kind: "remove_wall", floorId: floor.id, wallId: wall.id, confirmedOpeningIds: openings.map(({ id }) => id), keepRoomId })}>Remove proposed wall</button>
+    <Button variant="secondary" size="compact" disabled={!confirmed || wall.path.kind !== "line"} onClick={() => commit({ kind: "remove_wall", floorId: floor.id, wallId: wall.id, confirmedOpeningIds: openings.map(({ id }) => id), keepRoomId })}>Remove proposed wall</Button>
   </details>;
 }
 
@@ -93,7 +93,7 @@ function OpeningForm({ floor, wall, opening, commit }: Props & { opening?: Floor
     <label>Hinge<select className={inputStyle} value={draft.hinge} onChange={(event) => { const value = event.target.value; if (value === "start" || value === "end" || value === "none" || value === "unknown") setDraft({ ...draft, hinge: value }); }}>{["start", "end", "none", "unknown"].map((v) => <option key={v}>{v}</option>)}</select></label>
     <label>Swing side<select className={inputStyle} value={draft.handing} onChange={(event) => { const value = event.target.value; if (value === "left" || value === "right" || value === "double" || value === "none" || value === "unknown") setDraft({ ...draft, handing: value }); }}>{["left", "right", "double", "none", "unknown"].map((v) => <option key={v}>{v}</option>)}</select></label>
     <p className="col-span-2">Heights without source measurements use the plan defaults. Only values you change become proposed measurements.</p>
-    <button type="button" className={`${buttonStyle} col-span-2`} onClick={() => commit(opening ? { kind: "update_opening", floorId: floor.id, openingId: opening.id, changes: changedOpeningFormFields(floor, opening, draft) } : { kind: "add_opening", floorId: floor.id, opening: { ...draft, id: `opening-${crypto.randomUUID()}`, wallId: wall.id, heightEvidence: "assumed", sillHeightEvidence: "assumed", widthEvidence: "user_confirmed" } })}>{opening ? "Apply opening changes" : "Add opening"}</button>
-    {opening ? <button type="button" className={`${buttonStyle} col-span-2`} onClick={() => commit({ kind: "remove_opening", floorId: floor.id, openingId: opening.id })}>Remove opening</button> : null}
+    <Button variant="secondary" size="compact" className="col-span-2" onClick={() => commit(opening ? { kind: "update_opening", floorId: floor.id, openingId: opening.id, changes: changedOpeningFormFields(floor, opening, draft) } : { kind: "add_opening", floorId: floor.id, opening: { ...draft, id: `opening-${crypto.randomUUID()}`, wallId: wall.id, heightEvidence: "assumed", sillHeightEvidence: "assumed", widthEvidence: "user_confirmed" } })}>{opening ? "Apply opening changes" : "Add opening"}</Button>
+    {opening ? <Button variant="secondary" size="compact" className="col-span-2" onClick={() => commit({ kind: "remove_opening", floorId: floor.id, openingId: opening.id })}>Remove opening</Button> : null}
   </div>;
 }

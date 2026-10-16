@@ -99,7 +99,6 @@ export type SelectedItemPanelState = {
 };
 
 export type SelectedItemPanelConfiguration = {
-  dark: boolean;
   isDesigner: boolean;
   isClientPreview: boolean;
   canEdit: boolean;
@@ -136,7 +135,7 @@ export type SelectedItemPanelProps = {
  * second Delete are gone.
  */
 export function SelectedItemPanel({ state, configuration, actions }: SelectedItemPanelProps) {
-  const { dark, isDesigner, isClientPreview, canEdit, canChangeProducts } = configuration;
+  const { isDesigner, isClientPreview, canEdit, canChangeProducts } = configuration;
   const { details, summary } = state;
   const title = details.selectedModelTitle || summary.title;
   const locked = Boolean(details.item?.locked);
@@ -152,11 +151,7 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
       <section
         data-testid="selected-item-panel" data-touch-area
         aria-label="Selected product"
-        className={
-          dark
-            ? "designer-panel designer-panel-strong flex w-full flex-col gap-4 rounded-xl p-4"
-            : "flex w-full flex-col gap-4 rounded-xl bg-white p-4 shadow"
-        }
+        className="flex w-full flex-col gap-4 rounded-xl bg-white p-4 shadow"
       >
         <SelectedItemPanelHeader
           title={title}
@@ -167,7 +162,7 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
           onDeselect={actions.onDeselect}
         />
         <SelectedItemSummaryCard summary={summary} title={title} locked={locked} onViewProduct={actions.onViewProduct} />
-        <SelectedItemOptions state={state} dark={dark} actions={actions} />
+        <SelectedItemOptions state={state} actions={actions} />
         <SelectedItemActionRow
           rotationOpen={state.rotation?.expanded ?? false}
           canRotate={Boolean(state.rotation)}
@@ -177,7 +172,7 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
           onRemove={actions.onRemove}
         />
         {state.rotation ? (
-          <SelectedItemRotationControls dark={dark} isDesigner={isDesigner} {...state.rotation} {...actions.rotation} />
+          <SelectedItemRotationControls isDesigner={isDesigner} {...state.rotation} {...actions.rotation} />
         ) : null}
         <SelectedItemSwaps
           cheaper={summary.swaps.cheaper}
@@ -187,7 +182,7 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
           onSwapToPricier={actions.onSwapToPricier}
         />
         {state.light && actions.onChangeLight ? <ProductLightControls light={state.light} disabled={editsDisabled} onChange={actions.onChangeLight} /> : null}
-        <SelectedItemDetailsPanel dark={dark} isDesigner={isDesigner} canEdit={canEdit} {...details} {...actions.details} />
+        <SelectedItemDetailsPanel isDesigner={isDesigner} canEdit={canEdit} {...details} {...actions.details} />
       </section>
     </div>
   );
@@ -196,23 +191,19 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
 /** The product's configuration and colour pickers, then its size in the design's units. */
 function SelectedItemOptions({
   state,
-  dark,
   actions,
 }: {
   state: SelectedItemPanelState;
-  dark: boolean;
   actions: SelectedItemPanelActions;
 }) {
   return (
     <div className="flex flex-col gap-3">
       <ProductModelVariantControls
         state={state.productModelVariants}
-        configuration={{ dark }}
         actions={actions.productModelVariants}
       />
       <ProductFinishControls
         state={state.productFinishes}
-        configuration={{ dark }}
         actions={actions.productFinishes}
       />
       <div className="flex flex-col gap-1">

@@ -135,8 +135,11 @@ export function pageLineworkKind(page: RegisteredPageEvidence) {
   return raster && native ? "mixed" : raster ? "raster_linework" : "pdf_vector";
 }
 
-export function pageGeometryBasis(page: RegisteredPageEvidence | undefined, mimeType: string) {
-  return mimeType === "application/pdf" && (!page || pageLineworkKind(page) === "pdf_vector")
+/** Rooms the local vectorizer measured come from the rendered page, so they are raster-traced on any page. */
+export function pageGeometryBasis(page: RegisteredPageEvidence | undefined, mimeType: string,
+  rooms: ReadonlyArray<{ registrationKind?: string }> = []) {
+  const vectorizerRooms = rooms.length > 0 && rooms.every((room) => room.registrationKind === "vectorizer_wall_topology");
+  return mimeType === "application/pdf" && !vectorizerRooms && (!page || pageLineworkKind(page) === "pdf_vector")
     ? "vector_traced" as const : "raster_traced" as const;
 }
 

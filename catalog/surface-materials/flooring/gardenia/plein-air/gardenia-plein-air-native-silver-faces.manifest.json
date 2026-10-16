@@ -1,0 +1,235 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-silver/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - NATIVE SILVER - minimali.zip (12143141 bytes, sha256 ab45049f801ee7856b461acdb54c925514749d78a341ddbf5d457a310413e0a5).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "g56791",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-silver/g0056791-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "g56791_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-native-silver-g56791-80x80-r11",
+   "faces": [
+    {
+     "file": "g56791_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 11604,
+     "source_zip": "PLEIN AIR - NATIVE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE SILVER - 80X80 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "fdd2cccc72464cc1afa92e1a239482c07154cfef740fd9991ee9a1c7605c38ad",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1 (view_01)",
+      "name": "NATIVE SILVER 80X80 R11 20 MM_01",
+      "id": "736895bc-3e24-421f-987a-51242b2b6f89",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "g56791_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 13124,
+     "source_zip": "PLEIN AIR - NATIVE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE SILVER - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "168d8bc0b4a5d699f3c12165944ce3abd7c4c5a3bef6c4eb545e72d967a18776",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "NATIVE SILVER 80X80 R11 20 MM_03",
+      "id": "f3fa5db8-066a-49f9-b239-61ff0a6fc7af",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "g56791_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 15298,
+     "source_zip": "PLEIN AIR - NATIVE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE SILVER - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "4206bc104e12465785e81bdc37724801d2bf811fa8d769df7f628f40103d5744",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "NATIVE SILVER 80X80 R11 20 MM_02",
+      "id": "9f55816e-9fdf-43e2-b747-1fabf0fb2333",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "g56791_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 14412,
+     "source_zip": "PLEIN AIR - NATIVE SILVER - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - NATIVE SILVER - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "6da6bafeb5c5fbd95f07d9b39e6603d8dd2fd1f90edf6a1e4591a8188adf4e06",
+     "source_px_per_mm": 3.2,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "NATIVE SILVER 80X80 R11 20 MM_04",
+      "id": "2267c18b-de91-4955-875b-98a5f725490a",
+      "site_position": 4
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0013507",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/native-silver/pf60013507-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0013507_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-native-silver-0013507-60x60-r11",
+   "faces": [
+    {
+     "file": "0013507_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 9648,
+     "source_zip": "PLEIN AIR - NATIVE SILVER - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE SILVER - 60X60 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "92447be239ff5812147a601e8ed6a3a237d3ea6038d4e0577caaaf08f2fe0f13",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "NATIVE SILVER 60X60 R11 20 MM_01",
+      "id": "1013a7e5-67c6-4083-841a-7887f06696cf",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0013507_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 10384,
+     "source_zip": "PLEIN AIR - NATIVE SILVER - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE SILVER - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "85eee5513c7e755e55f533bc49d31de7067e9938de434e7bde3befec7ecd0929",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2",
+      "name": "NATIVE SILVER 60X60 R11 20 MM_02",
+      "id": "92076ca5-3447-4f77-a8fa-c76b33c8ce0c",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0013507_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 9680,
+     "source_zip": "PLEIN AIR - NATIVE SILVER - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE SILVER - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "79c521f3bb88d34939d2ff7a5b86975957fd26322087e44a3c189f58af66c9d2",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3",
+      "name": "NATIVE SILVER 60X60 R11 20 MM_04",
+      "id": "1e506c02-76b4-4cca-ab70-cf35713ef3e5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0013507_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 10420,
+     "source_zip": "PLEIN AIR - NATIVE SILVER - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - NATIVE SILVER - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "742c7f133c74f03ffdee9930aa0a8c9c7bdbfc29a4ed438909e6fa2880805072",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 4",
+      "name": "NATIVE SILVER 60X60 R11 20 MM_03",
+      "id": "848e8909-df4c-420a-9784-ac23a3b9f270",
+      "site_position": 4
+     }
+    }
+   ]
+  }
+ ]
+}

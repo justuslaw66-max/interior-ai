@@ -2,6 +2,7 @@
 
 import type { PendingCatalogPlacementScene } from "@/lib/catalog-placement";
 import type { ManualPlacementScore } from "@/lib/manual-placement-scoring";
+import { Button } from "@/components/ui/Button";
 
 type PlacementQuality = {
   label: string;
@@ -245,190 +246,165 @@ export function CatalogPlacementConfirmPanel({
             </div>
           )}
           <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-2">
-            <button
-              type="button"
+            <Button
               data-testid="catalog-placement-auto-place"
-              className="min-h-11 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+              variant="secondary" size="regular"
               onClick={actions.onAutoPlace}
             >
               Find open spot
-            </button>
+            </Button>
             {pendingCatalogBestRoomPlacement ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-best-room"
-                className="min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-800 hover:bg-indigo-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onMoveToBestRoom}
               >
                 Best room
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogBestVariantPlacement ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-best-option"
-                className="min-h-11 rounded-lg border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-800 hover:bg-violet-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onSwitchToBestOption}
               >
                 Best option
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementImprovement ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-improve"
-                className="min-h-11 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onImprovePlacement}
               >
                 Improve placement
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementBlocked && hasRestorablePlacement ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-restore-valid"
-                className="min-h-11 rounded-lg border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onRestoreValidPlacement}
               >
                 Back to valid spot
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementBlocked ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-select-blocker"
-                className="min-h-11 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="danger" size="regular"
                 onClick={actions.onSelectBlocker}
               >
                 Select blocker
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("swap_with_blocker") ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-swap-blocker"
-                className="min-h-11 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onSwapWithBlocker}
               >
                 Swap with blocker
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("move_blocker_aside") ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-move-blocker"
-                className="min-h-11 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onMoveBlockerAside}
               >
                 Move blocker aside
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("place_beside_blocker") ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-beside-blocker"
-                className="min-h-11 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onPlaceBesideBlocker}
               >
                 Place beside blocker
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("try_smaller_variant") ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-smaller-variant"
-                className="min-h-11 rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onTrySmallerVariant}
               >
                 Try smaller variant
-              </button>
+              </Button>
             ) : null}
-            <button
-              type="button"
+            <Button
               data-testid="catalog-placement-center"
-              className="min-h-11 rounded-lg border border-neutral-200 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+              variant="secondary" size="regular"
               onClick={actions.onCenter}
             >
               Centre
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="icon"
               data-testid="catalog-placement-nudge-left"
-              className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
               aria-label="Nudge placement left"
               onClick={() => actions.onNudge(-nudgeStepMeters, 0)}
             >
               ←
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="icon"
               data-testid="catalog-placement-nudge-up"
-              className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
               aria-label="Nudge placement back"
               onClick={() => actions.onNudge(0, -nudgeStepMeters)}
             >
               ↑
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="icon"
               data-testid="catalog-placement-nudge-down"
-              className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
               aria-label="Nudge placement front"
               onClick={() => actions.onNudge(0, nudgeStepMeters)}
             >
               ↓
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              size="icon"
               data-testid="catalog-placement-nudge-right"
-              className="h-11 w-11 rounded-lg border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:h-8 md:w-8 md:text-xs"
               aria-label="Nudge placement right"
               onClick={() => actions.onNudge(nudgeStepMeters, 0)}
             >
               →
-            </button>
+            </Button>
           </div>
         </div>
         <div className="sticky bottom-0 -mx-4 grid shrink-0 grid-cols-2 gap-2 border-t border-neutral-200 bg-white/95 px-4 pb-1 pt-3 backdrop-blur md:-mx-3 md:px-3 md:pb-0 md:pt-2">
-          <button
-            type="button"
+          <Button
             data-testid="catalog-placement-rotate-left"
-            className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:text-xs"
+            variant="secondary" size="regular"
             onClick={() => actions.onRotate("left")}
           >
             Rotate left
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="catalog-placement-rotate-right"
-            className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:text-xs"
+            variant="secondary" size="regular"
             onClick={() => actions.onRotate("right")}
           >
             Rotate right
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="catalog-placement-cancel"
-            className="min-h-11 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 md:min-h-9 md:text-xs"
+            variant="secondary" size="regular"
             onClick={actions.onCancel}
           >
             Cancel
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="catalog-placement-confirm"
+            variant="primary" size="regular"
             disabled={
               pendingCatalogPlacementHardInvalid &&
               !shouldConfirmImprovedCatalogPlacement &&
               !shouldConfirmRestoredCatalogPlacement
             }
-            className={`min-h-11 rounded-lg px-3 py-2 text-sm font-semibold text-white md:min-h-9 md:text-xs ${
-              pendingCatalogPlacementHardInvalid &&
-              !shouldConfirmImprovedCatalogPlacement &&
-              !shouldConfirmRestoredCatalogPlacement
-                ? "cursor-not-allowed bg-neutral-300"
-                : "bg-neutral-950 hover:bg-neutral-800"
-            }`}
             onClick={actions.onConfirm}
           >
             {shouldConfirmImprovedCatalogPlacement
@@ -437,7 +413,7 @@ export function CatalogPlacementConfirmPanel({
                 ? "Add valid spot to"
                 : "Add to"}{" "}
             {pendingCatalogPlacementRoomName ?? activeRoomName ?? "room"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

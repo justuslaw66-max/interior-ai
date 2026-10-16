@@ -1,5 +1,7 @@
 "use client";
 
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+
 type PlacementAddMode = "preview" | "auto";
 
 type PlacementAddModeToggleProps = {
@@ -9,9 +11,10 @@ type PlacementAddModeToggleProps = {
   onChange: (mode: PlacementAddMode) => void;
 };
 
-const ACTIVE_CLASS = "rounded-lg bg-neutral-900 px-3 py-2 text-xs font-semibold text-white";
-const IDLE_CLASS =
-  "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50";
+const ADD_MODE_OPTIONS = [
+  { value: "preview", label: "Preview add", testId: "placement-add-mode-preview" },
+  { value: "auto", label: "Auto add", testId: "placement-add-mode-auto" },
+] as const;
 
 /**
  * Pro's choice between previewing a product before it's added and adding it straight away. Consumers
@@ -20,19 +23,14 @@ const IDLE_CLASS =
 export function PlacementAddModeToggle({ visible, mode, onChange }: PlacementAddModeToggleProps) {
   if (!visible) return null;
   return (
-    <div className="mb-3 grid grid-cols-2 gap-2" data-testid="placement-add-mode">
-      {(["preview", "auto"] as const).map((option) => (
-        <button
-          key={option}
-          type="button"
-          data-testid={`placement-add-mode-${option}`}
-          data-active={mode === option ? "true" : "false"}
-          className={mode === option ? ACTIVE_CLASS : IDLE_CLASS}
-          onClick={() => onChange(option)}
-        >
-          {option === "preview" ? "Preview add" : "Auto add"}
-        </button>
-      ))}
-    </div>
+    <SegmentedControl
+      label="How products are added"
+      testId="placement-add-mode"
+      className="mb-3"
+      fill
+      value={mode}
+      onChange={onChange}
+      options={ADD_MODE_OPTIONS}
+    />
   );
 }

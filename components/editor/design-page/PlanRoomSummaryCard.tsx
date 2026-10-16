@@ -8,6 +8,7 @@ import {
   buildPlanRoomSummary,
   formatPlanRoomMetricLabel,
 } from "@/lib/plan-room-summary";
+import { Button } from "@/components/ui/Button";
 
 export type PlanRoomSummaryCardState = {
   rooms: HousePlanRoom2D[];
@@ -15,7 +16,6 @@ export type PlanRoomSummaryCardState = {
 };
 
 export type PlanRoomSummaryCardConfiguration = {
-  dark: boolean;
   measurementUnit: DisplayUnit;
   mobile?: boolean;
 };
@@ -52,13 +52,9 @@ export function PlanRoomSummaryCard({
   const hasMultipleSelectedRooms = selection.roomCount > 1;
   const hasAllRoomsSelected =
     wholePlan.roomCount > 1 && selection.roomCount === wholePlan.roomCount;
-  const shellClass = configuration.dark
-    ? "border-white/10 bg-[#171a22]/95 text-neutral-100"
-    : "border-neutral-200 bg-white/95 text-neutral-900";
-  const mutedClass = configuration.dark ? "text-neutral-400" : "text-neutral-500";
-  const metricClass = configuration.dark
-    ? "border-white/10 bg-white/[0.06]"
-    : "border-neutral-200 bg-neutral-50";
+  const shellClass = "border-neutral-200 bg-white/95 text-neutral-900";
+  const mutedClass = "text-neutral-500";
+  const metricClass = "border-neutral-200 bg-neutral-50";
 
   if (wholePlan.roomCount === 0) return null;
 
@@ -94,11 +90,7 @@ export function PlanRoomSummaryCard({
               data-testid="plan-room-selection-summary"
               className={`mb-2 rounded-lg border px-2.5 py-2 ${metricClass}`}
             >
-              <div
-                className={`text-xs font-bold ${
-                  configuration.dark ? "text-emerald-300" : "text-emerald-700"
-                }`}
-              >
+              <div className="text-xs font-bold text-emerald-700">
                 {selection.roomCount} rooms selected
               </div>
               <div className={`mt-0.5 text-xs ${mutedClass}`}>
@@ -118,9 +110,7 @@ export function PlanRoomSummaryCard({
                   data-selected={selected ? "true" : "false"}
                   className={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs ${
                     selected
-                      ? configuration.dark
-                        ? "bg-emerald-400/10 text-emerald-100"
-                        : "bg-emerald-50 text-emerald-900"
+                      ? "bg-emerald-50 text-emerald-900"
                       : ""
                   }`}
                 >
@@ -138,14 +128,9 @@ export function PlanRoomSummaryCard({
               <span className={`text-xs leading-4 ${mutedClass}`}>
                 Shift-click or ⌘/Ctrl-click rooms to compare.
               </span>
-              <button
-                type="button"
+              <Button
                 data-testid={hasAllRoomsSelected ? "clear-room-selection" : "select-all-rooms"}
-                className={
-                  configuration.dark
-                    ? "shrink-0 rounded-md border border-white/15 px-2 py-1 text-xs font-bold hover:bg-white/10"
-                    : "shrink-0 rounded-md border border-neutral-200 px-2 py-1 text-xs font-bold text-neutral-700 hover:bg-neutral-50"
-                }
+                variant="secondary" size="compact" className="shrink-0"
                 onClick={
                   hasAllRoomsSelected
                     ? actions.clearRoomSelection
@@ -153,7 +138,7 @@ export function PlanRoomSummaryCard({
                 }
               >
                 {hasAllRoomsSelected ? "Deselect all" : "Select all"}
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

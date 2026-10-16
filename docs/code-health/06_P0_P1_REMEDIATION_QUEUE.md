@@ -926,6 +926,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 - **Reach and impact:** The route is publicly production reachable. It leaks deployment filesystem paths, authoring validation, and draft product data; it does not mutate data, but external consumers may bind to an unstable administrative DTO and users may see unreleased content.
 - **Dependencies and tests:** Inventory repository, telemetry, and known external consumers before narrowing/removal. Required contract tests prove draft/validation/path omission, known live item presence, and old-route redirect or authorization behavior.
 - **Scope and rollback:** First characterize consumers, then redirect, protect, or replace the response with the stripped live DTO. Keep a versioned compatibility adapter for rollback; do not restore absolute paths or drafts to satisfy an unknown client silently.
+- **16 Oct 2026, surface materials only:** the route lists surface materials as short summaries (`lib/catalog-api-payload.ts`, `scripts/test-catalog-api-payload.ts`). Production listed no surface material until Gardenia's entries were published (#156), so no consumer could rely on the full records; the full list would have been about 14 MB. The furniture `items` part is unchanged and stays blocked as above.
 
 ### CH-0007 — parallel catalog truths and non-transactional authoring
 

@@ -1,0 +1,455 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-fog/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - MINERAL FOG - minimali.zip (83364020 bytes, sha256 dc321d51543903639aa40fc7a11fd206fc64b03d2fa915ecace609f2cecabcb1).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0001821",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-fog/pf60001821-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0001821_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-mineral-fog-0001821-60x120-r11",
+   "faces": [
+    {
+     "file": "0001821_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 63418,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL FOG - 60X120 - R11 - view_1.jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "a331c4231e9213e830576f7cfe3c13c304a62b861d17a60498a92fb629f190ad",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 1 (view_01)",
+      "name": "FUSION FOG 60X120_01",
+      "id": "4892c237-2295-437e-9752-6d518d1ff719",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0001821_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 70390,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL FOG - 60X120 - R11 - view_2.jpg",
+     "source_px": [
+      2064,
+      4096
+     ],
+     "source_sha256": "ccd55e45e78fa2100c35e4487e40360bd62536be71b901c2ae97387dc7fae17e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 2 (view_02)",
+      "name": "FUSION  FOG 60X120_02",
+      "id": "42198e1e-4d5b-4686-82dc-00efb3d355d2",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0001821_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 67026,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL FOG - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "343392c3b29b323dd49cbd8a18494da0c4d2bac336b66415752b60995e400cdf",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 3 (view_03)",
+      "name": "FUSION  FOG 60X120_03",
+      "id": "90a86353-7d0d-4df0-8a17-f360feffc79c",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0001821_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 68246,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL FOG - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2064,
+      4096
+     ],
+     "source_sha256": "f9907c4b0af39ac88d93cbf3c6ad68e69b67299bc4a82e8b93766a43e7adfe3e",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 4 (view_04)",
+      "name": "FUSION  FOG 60X120_04",
+      "id": "4639f778-1565-411e-a0c8-3e2b6e40f80f",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0001821_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 67050,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL FOG - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "56a5e75d25f6c4ab5b2c8cd472f8bc2db58e64195daf1ed44689c99964b9b450",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 5 (view_05)",
+      "name": "FUSION  FOG 60X120_05",
+      "id": "203c57f7-d76e-4ab7-8487-7a046107f08e",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0001821_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 62118,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL FOG - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2063,
+      4096
+     ],
+     "source_sha256": "55fa624332833e58e55759b1a9607743dddeaaa61d99f55d75160de46b24fc73",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 6 (view_06)",
+      "name": "FUSION  FOG 60X120_06",
+      "id": "c809fdf5-0f87-4e87-8290-b27b9c112d7d",
+      "site_position": 6
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0013511",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-fog/pf60013511-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0013511_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    11,
+    12
+   ],
+   "used_by": "floor gardenia-flooring-plein-air-mineral-fog-0013511-60x60-r11",
+   "faces": [
+    {
+     "file": "0013511_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 33532,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "1565a2b183720ace695e562ab50e9729a8b5d595f375a306c0f7a37858fdb26a",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 2 (view_01)",
+      "name": "FUSION FOG 60X60_01",
+      "id": "e1b6bed7-7b38-4cd8-804b-bbe1ca504912",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0013511_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30314,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0337ebc7ec9aa26bdc3a51929aca245947e455a26ea8238cd7431b07374de74d",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3 (view_02)",
+      "name": "FUSION FOG 60X60_02",
+      "id": "5e5e6cea-d656-447f-af51-251067b84efd",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0013511_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30298,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_3 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a707de10e01f91196e4f9179bfc3d7fd9811cf64b990b023c92113e4803a48f5",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 6 (view_03)",
+      "name": "FUSION FOG 60X60_03",
+      "id": "cec307fa-f6db-40f0-ab89-f3f2be25ee15",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0013511_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31086,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "5efd91fc39fe6ea7f1195047a27b781dd80dc417937638b676ab5f5246ad5375",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 8 (view_04)",
+      "name": "FUSION FOG 60X60_04",
+      "id": "94f145fc-6329-4ad2-a415-684cf4bd1d5a",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0013511_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 34542,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "bbe5ff808efb9ad66f52189225e2202a6c4aeee0dc81878fc823b424b074b583",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 10 (view_05)",
+      "name": "FUSION FOG 60X60_05",
+      "id": "a957be4f-5ece-4245-ba61-bd07189283a3",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0013511_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 33174,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_7 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "f10258d4908348068e5c5b0e5fed6c9b2438cdabf3e18e3ac9afc33550215c19",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 14 (view_07)",
+      "name": "FUSION FOG 60X60_07",
+      "id": "aa397da5-58db-470c-8982-7db605444ca0",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0013511_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 34884,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_8 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a6ab59b8573d28232d69e4cba5e040cf7333b1bc1bfa95c6bca5084bc51d9749",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 16 (view_08)",
+      "name": "FUSION FOG 60X60_08",
+      "id": "69d0c27f-2e70-4209-8ec1-ecb2fcaa4bda",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0013511_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32804,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_9 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "aae20be5a943beb585100ef7aa63b3a3c390127f5e2c1fbc54ebb7636515c9b6",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 18 (view_09)",
+      "name": "FUSION FOG 60X60_09",
+      "id": "60bc360b-c233-4b59-98c9-d1586c11c306",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0013511_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 35862,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_10.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "14c1796f49627f8246019642c825adceb92cf5c8062f862856628bf7f3dde558",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 19 (view_10)",
+      "name": "FUSION FOG 60X60_10",
+      "id": "454ea078-14c7-40f7-b7b4-7852d2c95bc7",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0013511_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 34070,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_11 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "cf207554d545507d54e4fab409d05e4766c3d25012230db318c9d608b6ff0d23",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 22 (view_11)",
+      "name": "FUSION FOG 60X60_11",
+      "id": "596c5c83-6905-4428-979b-3812d3a80a13",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0013511_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 35216,
+     "source_zip": "PLEIN AIR - MINERAL FOG - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL FOG - 60X60 - R11 - view_12.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "9ac48b42d7f2537a2bbbbe2df4d764b435a1e07b8935ce3bfe4afd4c040279a4",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 23 (view_12)",
+      "name": "FUSION FOG 60X60_12",
+      "id": "68c3ea19-2c03-431b-8549-d19077af8b3b",
+      "site_position": 23
+     }
+    }
+   ]
+  }
+ ]
+}

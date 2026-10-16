@@ -11,7 +11,6 @@ type DesignControlsPanelActionKey = Extract<
 >;
 
 type DesignControlsPanelConfigurationKey =
-  | "dark"
   | "isClientPreview"
   | "isAuthed"
   | "floorPlanLifecycleIdentity"

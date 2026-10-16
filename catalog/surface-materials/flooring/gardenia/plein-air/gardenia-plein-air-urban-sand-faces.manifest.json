@@ -1,0 +1,633 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/urban-sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - URBAN SAND - minimali.zip (27904699 bytes, sha256 dc972d93203ca9e3b8119a8814447becd652170cfbdef7a08563fbecb6f68e8d).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "80x80",
+   "item_code": "0012162",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/urban-sand/pf60012162-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012162_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-urban-sand-0012162-80x80-r11",
+   "faces": [
+    {
+     "file": "0012162_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27144,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "adcf870470261246d389586e8f383fc84ab87e47b59cc95371ac9be6bdd315a3",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 1",
+      "name": "URBAN SAND 80X80 R11_20MM_07",
+      "id": "bc9a1dc1-a202-4f05-b179-0de71330ff07",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012162_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 20224,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "01693bfa824e88a17c71ff3817693cd4d53b59daac66d749d4e78dfca2148c65",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 2",
+      "name": "URBAN SAND 80X80 R11_20MM_09",
+      "id": "605ed343-f132-4960-b75e-06598d11a2d5",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0012162_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24446,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "85f0d386af974e2b482c7618502bb8ad56c59aa9ef15b440f093f246f6cbc85e",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 3",
+      "name": "URBAN SAND 80X80 R11_20MM_01",
+      "id": "32a5155b-d2bc-4742-b192-5c19ca1633e9",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012162_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 17390,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "2c5083ce13a995641af4ac9893c8055f3ef55b56477ca20aeb3964b8b1d1f0c6",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 4",
+      "name": "URBAN SAND 80X80 R11_20MM_08",
+      "id": "005031bf-a7fc-4e8f-964e-d03bc02037ee",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0012162_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 15580,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "3436c08c05fc157539c60dbc116b5ac2eb67f0b24af7bf7cf00b0a7f62e53f79",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 5",
+      "name": "URBAN SAND 80X80 R11_20MM_11",
+      "id": "fa2b1903-5b59-4bc2-a95a-0cecf5d0b3e0",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012162_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 20616,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "1eeead8f4fce4d5e5dbbc8c191b40ce1196745a3d9e8beb549aca2e711a78a58",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 6",
+      "name": "URBAN SAND 80X80 R11_20MM_10",
+      "id": "30628bc0-a3a8-4a36-a6ba-25401bce0fe3",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0012162_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 18908,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "8fb0fba9ace0c0208d5acd7b8c01971ade66af48ca50b4ad69ce6427157f8f40",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 7",
+      "name": "URBAN SAND 80X80 R11_20MM_06",
+      "id": "34580e7f-df63-4d20-9b1b-40be203a4647",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012162_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 19492,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "1de27e3d3a92795a5d2400236d3ea14228d51343e7ab9a80c883c021117df924",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 8",
+      "name": "URBAN SAND 80X80 R11_20MM_12",
+      "id": "cbcdb169-7ac1-48bc-bd7d-96f00f41ed28",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0012162_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 32972,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "8dea889cf9921775358f3c4ee9555e4fd72a97c75cdc2ed3bc0892d77e25a15b",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 9",
+      "name": "URBAN SAND 80X80 R11_20MM_03",
+      "id": "81caf18e-7f38-4b37-8a7d-a05dd9f2bf92",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012162_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 27774,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_10.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "48a32e80d1f83149e124d37dab22d6e3eb961ae4951d8f2c4310a34c46667390",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 10",
+      "name": "URBAN SAND 80X80 R11_20MM_02",
+      "id": "25aca136-d4cf-48cc-b2cb-c8b07483a8f2",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0012162_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 31698,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_11.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "6542b96738470958b84351ec6a20f5bc45e1b21de024a49ea9aa156253f16c8f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 11",
+      "name": "URBAN SAND 80X80 R11_20MM_04",
+      "id": "f98c0342-6841-4c8f-8a5d-b0d916f4f94f",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0012162_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 22158,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "80X80-R11/PLEIN AIR - URBAN SAND - 80X80 - R11 - view_12.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "99341e6f390de75f253400b15735fb009cfbf594b1ab9d348b1c069c5043f11f",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "80X80 · R11 · Faccia 12",
+      "name": "URBAN SAND 80X80 R11_20MM_05",
+      "id": "06a053aa-a867-42cd-9e62-bc38084ab6d3",
+      "site_position": 12
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0012164",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/urban-sand/pf60012164-v102/",
+   "face_mm": {
+    "width": 800,
+    "height": 800
+   },
+   "swatch": "0012164_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "duplicates_dropped_site_positions": [
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16,
+    18,
+    20,
+    22,
+    24
+   ],
+   "used_by": "floor gardenia-flooring-plein-air-urban-sand-0012164-60x60-r11",
+   "faces": [
+    {
+     "file": "0012164_01.webp",
+     "face": 1,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 25174,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "d2bdda655db7669b37a409605831844f31d4250fe01fb167c7c62e83e63af988",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "MESH UP SAND 20 MM 60X60_01",
+      "id": "17a11de5-6d4b-43a1-880d-8885488e75ad",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0012164_02.webp",
+     "face": 2,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 30406,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "b434a3d1139de693092352f8d3a5760d3a07d4908414ffebaabd92fb01255aa8",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3 (view_02)",
+      "name": "OUT.20 LAB325 SAND 20 MM 60X60_02",
+      "id": "2c0acbc6-6a6c-44ff-865d-cb04f143d50d",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0012164_03.webp",
+     "face": 3,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 34506,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "f7ec701bf3a752e45f1a659101656550d2a3e5903344346c1602e2a8452b959b",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5 (view_03)",
+      "name": "MESH UP SAND 20 MM 60X60_03",
+      "id": "b33004a0-68f0-45ef-8027-0b9804301f72",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0012164_04.webp",
+     "face": 4,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 33270,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_4.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "35415eb8544be52606779ef57f56146fc801507cdd175fcf1edc07e9147f4a47",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 7 (view_04)",
+      "name": "MESH UP SAND 20 MM 60X60_04",
+      "id": "2a54b961-a433-4935-b96f-47bed224e5cf",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0012164_05.webp",
+     "face": 5,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 24506,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_5.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "e905d38fdce15896f8d8543d5f3b0cb0bdf4e0c19e3501edd8205bedb351c422",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 9 (view_05)",
+      "name": "OUT.20 LAB325 SAND 20 MM 60X60_05",
+      "id": "1a0728a1-353d-4a7b-8fa8-22a9d0d31c12",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0012164_06.webp",
+     "face": 6,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 20460,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_6.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "f08fc001561a30f88966663910976113746bf62456042d1765b26fba55dc1543",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 11 (view_06)",
+      "name": "OUT.20 LAB325 SAND 20 MM 60X60_06",
+      "id": "02500968-938d-402a-9559-f028dcb2f497",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0012164_07.webp",
+     "face": 7,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 28404,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "b085af509773c84518d56463326390b84dcc5036de3cdc39eed7293d6a08c42b",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 13 (view_07)",
+      "name": "OUT.20 LAB325 SAND 20 MM 60X60_07",
+      "id": "12a974c4-aed6-431e-8fe1-33fa256df3dd",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0012164_08.webp",
+     "face": 8,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 18738,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_8.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "bcf029bd3e301bb1a5507c173532152306ae2ff9ba9707f0d7e37fe36aca463c",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 15 (view_08)",
+      "name": "OUT.20 LAB325 SAND 20 MM 60X60_08",
+      "id": "5ab3bc61-a79b-4ec5-8cd8-f4c5aa2b2e17",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0012164_09.webp",
+     "face": 9,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 22978,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_9.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "e483a0c548bca83b591daaf5c0f2446edf38545dea2ae6a1f20bde6b0316f172",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 17 (view_09)",
+      "name": "OUT.20 LAB325 SAND 20 MM 60X60_09",
+      "id": "443b2d34-8604-4acc-aa32-af15b317af0e",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0012164_10.webp",
+     "face": 10,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 21552,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_10.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "c359398fb551ed9a6d0a68596a096e320fd69949250541ce1248f1417b6e88d5",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 19 (view_10)",
+      "name": "OUT.20 LAB325 SAND 20 MM 60X60_10",
+      "id": "b66dd58e-8afd-4cb6-8f32-b9ea82202e65",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0012164_11.webp",
+     "face": 11,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 16858,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_11.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "dec5b033b6e3560f6b053f1d55b01404c1551f52d199882981aaa5b665c546db",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 21 (view_11)",
+      "name": "OUT.20 LAB325 SAND 20 MM 60X60_11",
+      "id": "1f0244d7-7035-4f72-af24-841435ef1e98",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0012164_12.webp",
+     "face": 12,
+     "width_mm": 800,
+     "height_mm": 800,
+     "width_px": 480,
+     "height_px": 480,
+     "bytes": 21622,
+     "source_zip": "PLEIN AIR - URBAN SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - URBAN SAND - 60X60 - R11 - view_12.jpg",
+     "source_px": [
+      1600,
+      1600
+     ],
+     "source_sha256": "d7bfad40784724b8215ff9f0feb171d46ff6f3582f8e530435b370b29f9cb5e9",
+     "source_px_per_mm": 2.0,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 23 (view_12)",
+      "name": "MESH UP SAND 20 MM 60X60_12",
+      "id": "0e3775bb-7002-4d4f-9485-7ef24a027017",
+      "site_position": 23
+     }
+    }
+   ]
+  }
+ ]
+}

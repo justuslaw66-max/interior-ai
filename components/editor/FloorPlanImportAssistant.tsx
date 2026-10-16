@@ -29,11 +29,12 @@ import { FloorPlanImportRetentionNotice } from "./FloorPlanImportRetentionNotice
 import { FloorPlanImportPausedNotice } from "./FloorPlanImportPausedNotice";
 import FloorPlanPageSelectionPanel from "./FloorPlanPageSelectionPanel";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanImportAssistantProps = {
   file: File | null;
   trainingBenchmarkOptIn?: boolean;
-  dark?: boolean; disabled?: boolean; proMode?: boolean;
+  disabled?: boolean; proMode?: boolean;
   resumeJobId?: string | null;
   onChooseFile?: () => void;
   onActiveJobIdChange?: (jobId: string | null) => void;
@@ -62,7 +63,7 @@ function uploadRetentionNote(input: {
 export default function FloorPlanImportAssistant({
   file,
   trainingBenchmarkOptIn = false,
-  dark = false, disabled = false, proMode = false,
+  disabled = false, proMode = false,
   resumeJobId = null,
   onChooseFile,
   onActiveJobIdChange,
@@ -342,13 +343,9 @@ export default function FloorPlanImportAssistant({
   };
 
   if ((!file && !resumeJobId) || state.kind === "idle") return null;
-  const surface = dark
-    ? "designer-recessed rounded-xl border border-white/10 p-4 sm:p-5"
-    : "rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-sm sm:p-5";
-  const subtle = dark ? "text-neutral-400" : "text-neutral-600";
-  const control = dark
-    ? "designer-control rounded-md border px-2 py-1.5 text-xs text-neutral-100"
-    : "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs text-neutral-900";
+  const surface = "rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-sm sm:p-5";
+  const subtle = "text-neutral-600";
+  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs text-neutral-900";
 
   if (state.kind === "working") {
     const estimate = state.estimate;
@@ -409,11 +406,7 @@ export default function FloorPlanImportAssistant({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progress}
-            className={
-              dark
-                ? "mt-2 h-2 overflow-hidden rounded-full bg-white/10"
-                : "mt-2 h-2 overflow-hidden rounded-full bg-emerald-100"
-            }
+            className="mt-2 h-2 overflow-hidden rounded-full bg-emerald-100"
           >
             <div
               className="h-full rounded-full bg-emerald-500 transition-all"
@@ -436,7 +429,7 @@ export default function FloorPlanImportAssistant({
 
   if (state.kind === "error") {
     return (
-      <FloorPlanImportPausedNotice dark={dark} subtle={subtle} control={control} message={state.message}
+      <FloorPlanImportPausedNotice subtle={subtle} message={state.message}
         authenticationRequired={Boolean(state.authenticationRequired)} resumableJobId={state.resumableJobId ?? null} />
     );
   }
@@ -449,26 +442,25 @@ export default function FloorPlanImportAssistant({
           Retry with a clearer drawing or upload a new file.
         </p>
         {!sourceContentDeleted && !sourceDeletionPending ? (
-          <button
-            type="button" data-floor-plan-workspace-focus="primary"
-            className="mt-3 rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+          <Button
+            data-floor-plan-workspace-focus="primary"
+            variant="primary" size="compact" className="mt-3"
             disabled={disabled || retryingDetection || deletingSource}
             onClick={() => void retryDetection()}
           >
             {retryingDetection
               ? "Retrying improved detection…"
               : "Retry with improved detection"}
-          </button>
+          </Button>
         ) : null}
         {!sourceContentDeleted && !sourceDeletionPending ? (
-          <button
-            type="button"
-            className={dark ? "designer-control mt-2 rounded-md border px-2 py-1.5 text-xs" : "mt-2 rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs"}
+          <Button
+            variant="secondary" size="compact" className="mt-2"
             disabled={disabled || deletingSource || retryingDetection}
             onClick={() => void deletePrivateSource()}
           >
             {deletingSource ? "Deleting upload…" : "Delete private upload now"}
-          </button>
+          </Button>
         ) : sourceDeletionPending ? (
           <p className={`mt-2 text-xs ${subtle}`}>
             Deletion requested; removal from private storage is queued.
@@ -519,13 +511,12 @@ export default function FloorPlanImportAssistant({
             focusedIssueEntityIds={[]}
             onChange={(next) => setCandidate(next)}
             previewOnly
-            dark={dark}
             disabled
           />
         ) : null}
-        <button
-          type="button" data-floor-plan-workspace-focus="primary"
-          className="mt-4 w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+        <Button
+          data-floor-plan-workspace-focus="primary"
+          variant="primary" size="touch" className="mt-4 w-full"
           disabled={disabled || submitting || deletingSource}
           onClick={() => void createDesign()}
         >
@@ -534,7 +525,7 @@ export default function FloorPlanImportAssistant({
             : createError
               ? "Try creating again"
               : "Create design"}
-        </button>
+        </Button>
         <p className={`mt-2 text-center text-xs leading-5 ${subtle}`}>
           Opens in Plan, in 2D, so you can check it before you furnish. Your planning review does not grant source verification or construction approval.
         </p>
@@ -543,13 +534,7 @@ export default function FloorPlanImportAssistant({
             Creation paused: {createError}
           </p>
         ) : null}
-        <details
-          className={
-            dark
-              ? "designer-recessed mt-4 rounded-xl p-3"
-              : "mt-4 rounded-xl border border-neutral-200 bg-white p-3"
-          }
-        >
+        <details className="mt-4 rounded-xl border border-neutral-200 bg-white p-3">
           <summary className="cursor-pointer text-xs font-semibold">
             Rename, plan options & privacy
           </summary>
@@ -566,7 +551,6 @@ export default function FloorPlanImportAssistant({
           {candidate && optionalConfigurationCount > 0 ? (
             <FloorPlanOptionalConfigurationPanel
               document={candidate}
-              dark={dark}
               disabled={disabled || submitting || deletingSource}
               compact
             />
@@ -586,32 +570,22 @@ export default function FloorPlanImportAssistant({
           <FloorPlanImportRetentionNotice sourceDeletionPending={sourceDeletionPending} sourceContentDeleted={sourceContentDeleted}
             savedUnderlaysScrubbed={savedUnderlaysScrubbed} retentionDate={retentionDate} subtle={subtle} />
           {!sourceContentDeleted && !sourceDeletionPending ? (
-            <button
-              type="button"
-              className={
-                dark
-                  ? "designer-control mt-2 rounded-md border px-3 py-2 text-xs font-semibold"
-                  : "mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
-              }
+            <Button
+              variant="secondary" size="compact" className="mt-2"
               disabled={disabled || deletingSource || submitting}
               onClick={() => void deletePrivateSource()}
             >
               {deletingSource ? "Deleting upload…" : "Delete private upload"}
-            </button>
+            </Button>
           ) : null}
           {onChooseFile ? (
-            <button
-              type="button"
-              className={
-                dark
-                  ? "designer-control ml-2 mt-2 rounded-md border px-3 py-2 text-xs font-semibold"
-                  : "ml-2 mt-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700"
-              }
+            <Button
+              variant="secondary" size="compact" className="ml-2 mt-2"
               disabled={disabled || submitting || deletingSource}
               onClick={onChooseFile}
             >
               Use a different file
-            </button>
+            </Button>
           ) : null}
           {deleteError ? (
             <p className="mt-2 text-xs text-red-600">{deleteError}</p>
@@ -635,7 +609,6 @@ export default function FloorPlanImportAssistant({
           onConfirm={() => void confirmSelectedPage()}
           submitting={submitting}
           disabled={disabled}
-          dark={dark}
         />
       </div>
     );
@@ -666,7 +639,7 @@ export default function FloorPlanImportAssistant({
         retryingDetection={retryingDetection}
         onSubmit={(reviewIssues) => void submitReview(reviewIssues)}
         submitting={submitting}
-        disabled={photoReviewBusy(disabled,submitting,retryingDetection)} proMode={proMode} dark={dark}
+        disabled={photoReviewBusy(disabled,submitting,retryingDetection)} proMode={proMode}
       /></PhotoReviewAction.Provider></SourceTraceAction.Provider>
     </div>
   );

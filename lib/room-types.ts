@@ -2,6 +2,7 @@ import type {
   FloorPlanDocumentV2,
 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
+import type { SurfacePatternLayout } from "@/lib/surface-material-schema";
 import { keepUnchangedRooms } from "@/lib/room-snapshot-sharing";
 import type {
   CabinetBOMItem,
@@ -61,14 +62,8 @@ export interface RoomPlanPolygonPoint {
   z: number;
 }
 
-export type RoomFloorPattern =
-  | "straight"
-  | "brick"
-  | "vertical_brick"
-  | "random_stagger"
-  | "herringbone"
-  | "grid"
-  | "checker";
+/** How a surface's tiles are laid: the same vocabulary as a surface material's `available_pattern_layouts`. */
+export type RoomFloorPattern = SurfacePatternLayout;
 
 export type RoomSurfaceTargetKind = "floor" | "wall" | "ceiling";
 export type SurfacePattern = RoomFloorPattern;

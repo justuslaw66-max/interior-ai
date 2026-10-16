@@ -11,6 +11,7 @@ import { FurnishFooter } from "./FurnishFooter";
 import { FurnishImportedModels } from "./FurnishImportedModels";
 import { FurnishInThisRoom } from "./FurnishInThisRoom";
 import { PlacementAddModeToggle } from "./PlacementAddModeToggle";
+import { Button } from "@/components/ui/Button";
 
 type ImportedFamilyOption = {
   familyKey: string;
@@ -18,7 +19,6 @@ type ImportedFamilyOption = {
 };
 
 type DesignControlsFurnishPanelProps = {
-  dark: boolean;
   canEdit: boolean;
   /** The product lists have loaded: adding a product waits for it; choosing a room doesn't. */
   canChangeProducts: boolean;
@@ -108,14 +108,13 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
   } = useCatalogCategoryNavigation(`${activeRoomName}:${activeRoomTypeLabel}`, "all");
   const catalogRoomNavigationRevision = props.catalogRoomNavigationRevision;
   const suggestLayout = props.aiDesignEnabled ? (
-    <button
-      type="button"
+    <Button
       data-testid="editor-workflow-ai"
-      className="h-10 shrink-0 whitespace-nowrap rounded-lg border border-neutral-300 bg-white px-1.5 text-[13px] font-bold text-blue-800 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900"
+      variant="secondary" size="regular" className="shrink-0"
       onClick={props.onGoAiDesign}
     >
       Suggest a layout
-    </button>
+    </Button>
   ) : null;
   return (
     <CatalogPanel
@@ -144,10 +143,10 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
  * and the way to Shop.
  */
 export default function DesignControlsFurnishPanel(props: DesignControlsFurnishPanelProps) {
-  const { dark, canEdit, isDesigner = false, activeRoomName, activeRoomShoppingItems } = props;
+  const { canEdit, isDesigner = false, activeRoomName, activeRoomShoppingItems } = props;
   const { placementAddMode, onPlacementAddModeChange } = props;
   const productCount = activeRoomShoppingItems.reduce((total, item) => total + item.quantity, 0);
-  const panelClass = dark ? "designer-dock rounded-2xl p-3" : "rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm";
+  const panelClass = "rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm";
 
   return (
     <div className="space-y-3">

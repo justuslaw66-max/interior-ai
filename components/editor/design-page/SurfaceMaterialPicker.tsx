@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { Button } from "@/components/ui/Button";
 
 export type SurfacePickerOption = {
   materialId: string;
@@ -75,14 +76,13 @@ export function SurfaceMaterialPicker({ picker, onClose, onSelect }: {
     <div data-testid="selection-inspector-floor-picker" className="mt-3 max-h-80 overflow-y-auto rounded-lg border border-neutral-200 bg-white p-2">
       <div className="flex items-center justify-between gap-2">
         <div className="text-xs font-semibold text-neutral-900">{picker.title}</div>
-        <button
-          type="button"
+        <Button
           data-testid="selection-inspector-floor-picker-close"
-          className="rounded-md border border-neutral-200 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+          variant="secondary" size="compact"
           onClick={onClose}
         >
           Close
-        </button>
+        </Button>
       </div>
       {picker.options.length ? (
         <div className="mt-2 grid gap-2">

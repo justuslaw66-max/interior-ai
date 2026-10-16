@@ -13,53 +13,46 @@ type PlanOpeningInspectorProps = {
   wallSpanMeters: number;
   maxHeightMeters?: number;
   measurementUnit: PlanMeasurementUnit;
-  dark?: boolean;
   proMode?: boolean;
   onChange: (id: string, metrics: DesignPageOpeningMetricsPatch) => void;
 };
 
-function OpeningHeader({ opening, roomName, dark }: {
+function OpeningHeader({ opening, roomName }: {
   opening: RoomOpening2D;
   roomName: string;
-  dark: boolean;
 }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
-        <div className={dark ? "text-xs font-semibold text-neutral-100" : "text-xs font-semibold text-gray-900"}>{opening.kind === "door" ? "Door" : "Window"}</div>
-        <div className={dark ? "mt-0.5 text-xs text-neutral-400" : "mt-0.5 text-xs text-gray-500"}>
+        <div className="text-xs font-semibold text-gray-900">{opening.kind === "door" ? "Door" : "Window"}</div>
+        <div className="mt-0.5 text-xs text-gray-500">
           On the {opening.canonicalHost ? "selected" : opening.wall} wall
         </div>
       </div>
-      <div className={dark
-        ? "rounded-full bg-neutral-800 px-2 py-1 text-xs font-medium text-neutral-200"
-        : "rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600"}>
+      <div className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
         {roomName}
       </div>
     </div>
   );
 }
 
-function OpeningBasics({ opening, wallSpanMeters, unit, dark, proMode, onChange }: {
+function OpeningBasics({ opening, wallSpanMeters, unit, proMode, onChange }: {
   opening: RoomOpening2D;
   wallSpanMeters: number;
   unit: PlanMeasurementUnit;
-  dark: boolean;
   proMode: boolean;
   onChange: PlanOpeningInspectorProps["onChange"];
 }) {
-  const labelClass = dark ? "text-xs font-medium text-neutral-300" : "text-xs font-medium text-gray-600";
+  const labelClass = "text-xs font-medium text-gray-600";
   return (
     <div className="grid grid-cols-2 gap-2">
       <OpeningKindControl
-        opening={opening} dark={dark} canEdit proMode={proMode}
+        opening={opening} canEdit proMode={proMode}
         testId="plan-opening-kind-input"
         onChange={(patch) => onChange(opening.id, patch)}
       />
       <div className={labelClass}>Wall span
-        <div className={dark
-          ? "designer-control mt-1 rounded-md border px-2 py-2 text-xs text-neutral-100"
-          : "mt-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-2 text-xs text-gray-900"}>
+        <div className="mt-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-2 text-xs text-gray-900">
           {formatCabinetMeasurement(wallSpanMeters * 1000, unit)}
         </div>
       </div>
@@ -73,7 +66,6 @@ export default function PlanOpeningInspector({
   wallSpanMeters,
   maxHeightMeters = 3.2,
   measurementUnit,
-  dark = false,
   proMode = false,
   onChange,
 }: PlanOpeningInspectorProps) {
@@ -83,22 +75,20 @@ export default function PlanOpeningInspector({
   return (
     <div
       data-testid="plan-opening-inspector"
-      className={dark
-        ? "designer-raised space-y-3 rounded-lg p-3"
-        : "space-y-3 rounded-lg border border-gray-200 bg-white p-3"}
+      className="space-y-3 rounded-lg border border-gray-200 bg-white p-3"
     >
-      <OpeningHeader opening={opening} roomName={roomName} dark={dark} />
-      <OpeningBasics opening={opening} wallSpanMeters={wallSpanMeters} unit={measurementUnit} dark={dark} proMode={proMode} onChange={onChange} />
+      <OpeningHeader opening={opening} roomName={roomName} />
+      <OpeningBasics opening={opening} wallSpanMeters={wallSpanMeters} unit={measurementUnit} proMode={proMode} onChange={onChange} />
 
       <PlanOpeningInspectorWarnings
         opening={opening} hostNeedsRepair={wallSpanMeters <= 0}
-        vertical={vertical} unit={measurementUnit} dark={dark} onChange={onChange}
+        vertical={vertical} unit={measurementUnit} onChange={onChange}
       />
       <PlanOpeningDimensionFields
         opening={opening} vertical={vertical} wallSpanMeters={wallSpanMeters}
         maxHeightMeters={maxHeightMeters}
         maxWidthMm={Math.max(400, (wallSpanMeters - 0.06) * 1000)}
-        unit={measurementUnit} dark={dark} onChange={onChange}
+        unit={measurementUnit} onChange={onChange}
       />
     </div>
   );

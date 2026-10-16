@@ -1,0 +1,475 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-sand/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-13: PLEIN AIR - MINERAL SAND - minimali.zip (106757895 bytes, sha256 34b58f84a657651de14a4250b6bc0e71546cfce49fec8615d7cb4084bf137d71).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Landscape pictures are turned upright (90 degrees counter-clockwise). Untagged JPGs are read as sRGB.",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/plein-air/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "formats": [
+  {
+   "format": "60x120",
+   "item_code": "0013514",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-sand/pf60013514-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 1200
+   },
+   "swatch": "0013514_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-mineral-sand-0013514-60x120-r11",
+   "faces": [
+    {
+     "file": "0013514_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 56118,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL SAND - 60X120 - R11 - view_1 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "486cc734c2f4f317b3ad698aad164a2bd3917b19d710babc4eb8d8a9acb400dc",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 2 (view_01)",
+      "name": "FUSION SAND 60X120_01",
+      "id": "e9812028-66d7-43cc-b9a1-b4d877c6d918",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0013514_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 62678,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL SAND - 60X120 - R11 - view_2 (2).jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "adf9dea31efa32628201a7f5ba3a9ca7df5ab55ed7c58ae83617d9635dc12c3d",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 4 (view_02)",
+      "name": "FUSION SAND 60X120_02",
+      "id": "cfe56f8a-d9c9-48dd-95bf-e58e45031c1c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0013514_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 55740,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL SAND - 60X120 - R11 - view_3.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "2e5c2eae94774decdfb4e058582ba1eb13bce1eca2cf05df66fbbce29d3ef456",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 5 (view_03)",
+      "name": "FUSION SAND 60X120_03",
+      "id": "52047682-310b-438f-805e-acd57840cd42",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0013514_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 57366,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL SAND - 60X120 - R11 - view_4.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "694819fc1ce7815465c3c0e20fa61e33c09e619d1db858ec90e985e1b43e2eaa",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 7 (view_04)",
+      "name": "FUSION SAND 60X120_04",
+      "id": "5b97954b-cbc8-49f5-b43d-0d4f3b30985c",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0013514_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 54938,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL SAND - 60X120 - R11 - view_5.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "bcaf0a3c60090349abf1564408017277f83fdadd2ea0ff7f7330854f048a2ebb",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 9 (view_05)",
+      "name": "FUSION SAND 60X120_05",
+      "id": "6545b6d0-64fd-415a-a958-88e31e7ac23a",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0013514_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 1200,
+     "width_px": 360,
+     "height_px": 720,
+     "bytes": 52172,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X120-R11/PLEIN AIR - MINERAL SAND - 60X120 - R11 - view_6.jpg",
+     "source_px": [
+      2048,
+      4096
+     ],
+     "source_sha256": "63892810511e790c2a34326123c5e7823b91775b8c68fb62c376deac71985c13",
+     "source_px_per_mm": 3.413,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X120 · R11 · Faccia 11 (view_06)",
+      "name": "FUSION SAND 60X120_06",
+      "id": "32b3c320-27c1-4d25-bf76-246f62160a1e",
+      "site_position": 11
+     }
+    }
+   ]
+  },
+  {
+   "format": "60x60",
+   "item_code": "0013513",
+   "finish": "R11",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/plein-air/mineral-sand/pf60013513-v102/",
+   "face_mm": {
+    "width": 600,
+    "height": 600
+   },
+   "swatch": "0013513_swatch.webp",
+   "swatch_note": "the centre 600 x 600 mm of face 01",
+   "used_by": "floor gardenia-flooring-plein-air-mineral-sand-0013513-60x60-r11",
+   "faces": [
+    {
+     "file": "0013513_01.webp",
+     "face": 1,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 26134,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_1.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "2d7e3858b045583d11b679bf852c629f2e52a9628e7504e83f98a7c38b355bf3",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 1 (view_01)",
+      "name": "FUSION SAND 60X60_01",
+      "id": "db5a46f7-d4ec-45dc-a257-c089f81e1f83",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0013513_02.webp",
+     "face": 2,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 27302,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_2.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "c79695bc148b6e5a51829a8e0fc2b7f0f5427f23383755f621accf282c351528",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 3 (view_02)",
+      "name": "FUSION SAND 60X60_02",
+      "id": "3d4cb4b8-2ded-4929-88b1-7881dce49ff9",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0013513_03.webp",
+     "face": 3,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 31130,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_3.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0eb1c78741e0ed5851c55bac249a9b5da894f130f0ed5d60147b5beaab90e3e1",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 5 (view_03)",
+      "name": "FUSION SAND 60X60_03",
+      "id": "bc41e6dd-b36c-4915-a6f3-f1ed450e1d35",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0013513_04.webp",
+     "face": 4,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 34850,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_4 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "47404cf47136ba6737779f6fec516b2ae0102357281c7d8fe749ba18bd5e0689",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 8 (view_04)",
+      "name": "FUSION SAND 60X60_04",
+      "id": "9a44d085-1868-4816-9e43-45619e73cfd7",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0013513_05.webp",
+     "face": 5,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 29492,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_5 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "b8e1f3614882e091eba22711feee647a9f4c1d5e0f006a765a013b199a5496dd",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 10 (view_05)",
+      "name": "FUSION SAND 60X60_05",
+      "id": "4b549735-f05d-43b6-af39-24cdc42a17c8",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0013513_06.webp",
+     "face": 6,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28964,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_6 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "8b75b53a3e3c8cc6427468ca3e0a956b63eb214231e72c7c5fbc9928bb29dc15",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 12 (view_06)",
+      "name": "FUSION SAND 60X60_06",
+      "id": "ec7c2b7a-7921-482a-9535-1c48bf237a26",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0013513_07.webp",
+     "face": 7,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32478,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_7.jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "0e57dfcc79135226c71ba4d096efb40662ea32f1c0057ba4c6d55382cf339d50",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 13 (view_07)",
+      "name": "FUSION SAND 60X60_07",
+      "id": "9f8d4d6d-858f-4858-a659-8f5139795e62",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0013513_08.webp",
+     "face": 8,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30182,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_8 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "a0c5601bd30fa93c216e15f9f5101e2db0613aff4a6e3084933184ce999a4d3f",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 16 (view_08)",
+      "name": "FUSION SAND 60X60_08",
+      "id": "ba112143-a241-4c90-96b9-00bbfe67227e",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0013513_09.webp",
+     "face": 9,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 30296,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_9 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "510512bf2972c7814621a5ccff05002a9c7f93bb02c3f6cda507d6a8a1cf15e3",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 18 (view_09)",
+      "name": "FUSION SAND 60X60_09",
+      "id": "92843794-7eb7-423e-a485-a4b832b1139b",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0013513_10.webp",
+     "face": 10,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28888,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_10 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "04df91fa6234c2df0545db3e77ae5e7886eff449e74e632ad7f81b5d754a67a0",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 20 (view_10)",
+      "name": "FUSION SAND 60X60_10",
+      "id": "8043f413-c8ad-4362-b2e3-ff9514e69642",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0013513_11.webp",
+     "face": 11,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 28078,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_11 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "619bbf2b23a15777a19e7934accf9199fce1072b94c5b327cc79bbf1c38d9a6c",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 22 (view_11)",
+      "name": "FUSION SAND 60X60_11",
+      "id": "1988598b-6f04-40c2-b837-fd732513e7e3",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0013513_12.webp",
+     "face": 12,
+     "width_mm": 600,
+     "height_mm": 600,
+     "width_px": 360,
+     "height_px": 360,
+     "bytes": 32238,
+     "source_zip": "PLEIN AIR - MINERAL SAND - minimali.zip",
+     "source_file": "60X60-R11/PLEIN AIR - MINERAL SAND - 60X60 - R11 - view_12 (2).jpg",
+     "source_px": [
+      2560,
+      2560
+     ],
+     "source_sha256": "21a70e110abd0e84698ff39210acac5d4f6b4377b4211976810a8fd96b640b07",
+     "source_px_per_mm": 4.267,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "60X60 · R11 · Faccia 24 (view_12)",
+      "name": "FUSION SAND 60X60_12",
+      "id": "e21bb6b6-3751-486d-9262-11c8fe5b89ec",
+      "site_position": 24
+     }
+    }
+   ]
+  }
+ ]
+}

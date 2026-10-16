@@ -50,6 +50,28 @@ const edgeOpening = z.object({
   note: z.string().max(240).nullish(),
 });
 
+// The vectorizer's own clean drawing of the page (exporter 0.28.1+): every wall it read, rooms or not, and the other
+// shapes it recognised, in source pixels, for the clean traced drawing. Lettering is only located (`textBoxes`), never
+// redrawn: the trace keeps the source's own letters. Absent from older exporters.
+const drawingCommand = z.enum(["M", "L", "C", "Z"]);
+const drawingSchema = z.object({
+  version: z.string().max(40),
+  items: z
+    .array(
+      z.object({
+        kind: z.string().max(40),
+        fill: z.boolean(),
+        strokeWidthPx: z.number().min(0).max(200),
+        commands: z.array(drawingCommand).max(4_000),
+        points: z.array(point).min(1).max(12_000),
+      })
+    )
+    .max(8_000),
+  textBoxes: z
+    .array(z.tuple([z.number().finite(), z.number().finite(), z.number().finite(), z.number().finite()]))
+    .max(2_000),
+});
+
 const vectorizerEvidenceSchema = z.object({
   kind: z.literal(VECTORIZER_EVIDENCE_KIND),
   exporterVersion: z.string().max(80),
@@ -174,6 +196,7 @@ const vectorizerEvidenceSchema = z.object({
       })
     )
     .max(200),
+  drawing: drawingSchema.optional(),
   diagnostics: z.record(z.string(), z.unknown()),
 });
 

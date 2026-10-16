@@ -6,6 +6,8 @@ import { useEditorDialogLifecycle } from "@/components/editor/design-system/useE
 
 export type EditorDialogProps = {
   open: boolean;
+  /** alertdialog for a confirmation that interrupts the work (ConfirmDialog). */
+  role?: "dialog" | "alertdialog";
   title: ReactNode;
   description?: ReactNode;
   children: ReactNode;
@@ -15,9 +17,9 @@ export type EditorDialogProps = {
   closeDisabled?: boolean;
   closeOnBackdrop?: boolean;
   showCloseButton?: boolean;
-  dark?: boolean;
-  forceLight?: boolean;
   testId?: string;
+  /** A test id for the panel itself, where a test measures the sheet rather than its layer. */
+  panelTestId?: string;
   dialogId?: string;
   closeButtonTestId?: string;
   closeButtonId?: string;
@@ -29,9 +31,17 @@ export type EditorDialogProps = {
   focusRestorationEnabledRef?: { current: boolean };
   hideWhenSuperseded?: boolean;
   cancelFocusRestorationOnUnmount?: boolean;
-  manageBackground?: boolean; lockBodyScroll?: boolean;
+  /** On by default: the rest of the page is inert and hidden from assistive technology. */
+  manageBackground?: boolean;
+  /** On by default: the page behind doesn't scroll. */
+  lockBodyScroll?: boolean;
   waitForEntryTransition?: boolean;
-  placement?: "center" | "right";
+  /** Centred, or a sheet: from the bottom on phones and down the right side from sm (AX5). */
+  placement?: EditorDialogPlacement;
+  /** The layer's z-index class; z-50 unless the dialog must sit above other overlays. */
+  layerClassName?: string;
+  /** Set while the dialog's action runs. */
+  busy?: boolean;
   overlayClassName?: string;
   panelClassName?: string;
   headerClassName?: string;
@@ -39,31 +49,66 @@ export type EditorDialogProps = {
   footerClassName?: string;
 };
 
-function getDialogThemeClasses(dark: boolean, forceLight: boolean) {
-  if (dark) return {
-    panel: "border-white/10 bg-[#1e2839] text-white",
-    description: "text-neutral-300",
-    close: "text-neutral-300 hover:bg-white/10 hover:text-white focus-visible:ring-offset-[#1e2839]",
-  };
-  if (forceLight) return {
-    panel: "border-neutral-200 bg-white text-neutral-950",
-    description: "text-neutral-600",
-    close: "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus-visible:ring-offset-white",
+export type EditorDialogPlacement = "center" | "sheet";
+
+/**
+ * Where the panel sits. A sheet dims the page less, so what it adjusts (Lighting's scene) stays
+ * readable behind it.
+ */
+function getDialogPlacementClasses(placement: EditorDialogPlacement) {
+  if (placement === "sheet") return {
+    layer: "bg-black/30 backdrop-blur-[1px]",
+    panel: "absolute inset-x-0 bottom-0 max-h-[85vh] max-h-[85dvh] overflow-y-auto rounded-t-3xl border-t p-5 shadow-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[25rem] sm:rounded-none sm:border-l sm:border-t-0 sm:p-6",
   };
   return {
-    panel: "border-neutral-200 bg-white text-neutral-950 dark:border-gray-700 dark:bg-[#1e2839] dark:text-white",
-    description: "text-neutral-600 dark:text-neutral-300",
-    close: "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus-visible:ring-offset-white dark:text-neutral-300 dark:hover:bg-white/10 dark:hover:text-white dark:focus-visible:ring-offset-[#1e2839]",
+    layer: "items-center justify-center bg-black/45 p-4 backdrop-blur-[1px]",
+    panel: "w-full max-w-md rounded-2xl border p-5 shadow-2xl",
   };
+}
+
+/** The panel's colours: one light theme. */
+const DIALOG_THEME_CLASSES = {
+  panel: "border-neutral-200 bg-white text-neutral-950",
+  description: "text-neutral-600",
+  close: "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus-visible:ring-offset-white",
+};
+
+type EditorDialogCloseButtonProps = {
+  buttonRef: { current: HTMLButtonElement | null };
+  id?: string;
+  label: string;
+  testId?: string;
+  disabled: boolean;
+  className: string;
+  onClick: () => void;
+};
+
+/** The × in the dialog's corner: 44px, with the shared focus ring. */
+function EditorDialogCloseButton({ buttonRef, id, label, testId, disabled, className, onClick }: EditorDialogCloseButtonProps) {
+  return (
+    <button
+      ref={buttonRef} id={id}
+      type="button"
+      aria-label={label}
+      data-testid={testId}
+      disabled={disabled}
+      className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-xl font-semibold outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      onClick={onClick}
+    >
+      <span aria-hidden="true">×</span>
+    </button>
+  );
 }
 
 /**
  * Shared modal shell for editor workflows. It owns dialog semantics, focus
- * entry/trapping/return, Escape and backdrop dismissal, and visible focus
- * treatment while leaving domain content to the caller.
+ * entry/trapping/return, Escape and backdrop dismissal, the inert background and
+ * scroll lock (both on by default, UX AX5), and visible focus treatment while
+ * leaving domain content to the caller.
  */
 export function EditorDialog({
   open,
+  role = "dialog",
   title,
   description,
   children,
@@ -73,16 +118,15 @@ export function EditorDialog({
   closeDisabled = false,
   closeOnBackdrop = true,
   showCloseButton = true,
-  dark = false,
-  forceLight = false,
-  testId, dialogId,
+  testId, panelTestId, dialogId,
   closeButtonTestId, closeButtonId, closeButtonClassName = "",
   closeButtonRef: providedCloseButtonRef,
   initialFocusRef,
   returnFocusId, returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded = false,
-  manageBackground = false, lockBodyScroll = false,
+  manageBackground = true, lockBodyScroll = true,
   cancelFocusRestorationOnUnmount = false, waitForEntryTransition = false,
   placement = "center",
+  layerClassName = "z-50", busy,
   overlayClassName = "",
   panelClassName = "",
   headerClassName = "", contentClassName = "", footerClassName = "",
@@ -93,7 +137,7 @@ export function EditorDialog({
   const panelRef = useRef<HTMLDivElement | null>(null);
   const internalCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const closeButtonRef = providedCloseButtonRef ?? internalCloseButtonRef;
-  const themeClasses = getDialogThemeClasses(dark, forceLight);
+  const placementClasses = getDialogPlacementClasses(placement);
   const requestClose = useEditorDialogLifecycle({
     open, dialogRef, panelRef, closeButtonRef, initialFocusRef,
     returnFocusId, returnFocusIds, focusRestorationEnabledRef, hideWhenSuperseded,
@@ -109,14 +153,13 @@ export function EditorDialog({
     <div
       ref={dialogRef}
       id={dialogId} tabIndex={-1}
-      className={`fixed inset-0 z-50 flex items-center bg-black/45 backdrop-blur-[1px] outline-hidden motion-reduce:transition-none ${
-        placement === "right" ? "justify-end p-0" : "justify-center p-4"
-      } ${overlayClassName}`}
+      className={`fixed inset-0 ${layerClassName} flex outline-hidden motion-reduce:transition-none ${placementClasses.layer} ${overlayClassName}`}
       data-testid={testId} data-editor-dialog-state="mounting"
-      role="dialog"
+      role={role}
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
+      aria-busy={busy}
       onMouseDown={(event) => {
         if (
           closeOnBackdrop &&
@@ -129,8 +172,8 @@ export function EditorDialog({
     >
       <div
         ref={panelRef}
-        tabIndex={-1} data-editor-dialog-state="mounting"
-        className={`w-full max-w-md rounded-2xl border p-5 shadow-2xl outline-hidden transition-transform motion-reduce:transition-none ${themeClasses.panel} ${panelClassName}`}
+        tabIndex={-1} data-editor-dialog-state="mounting" data-testid={panelTestId}
+        className={`${placementClasses.panel} outline-hidden transition-transform motion-reduce:transition-none ${DIALOG_THEME_CLASSES.panel} ${panelClassName}`}
       >
         <div className={`flex items-start justify-between gap-4 ${headerClassName}`}>
           <div className="min-w-0">
@@ -140,24 +183,17 @@ export function EditorDialog({
             {description ? (
               <div
                 id={descriptionId}
-                className={`mt-1 text-sm leading-5 ${themeClasses.description}`}
+                className={`mt-1 text-sm leading-5 ${DIALOG_THEME_CLASSES.description}`}
               >
                 {description}
               </div>
             ) : null}
           </div>
           {showCloseButton ? (
-            <button
-              ref={closeButtonRef} id={closeButtonId}
-              type="button"
-              aria-label={closeLabel}
-              data-testid={closeButtonTestId}
-              disabled={closeDisabled}
-              className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-xl font-semibold outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${themeClasses.close} ${closeButtonClassName}`}
-              onClick={requestClose}
-            >
-              <span aria-hidden="true">×</span>
-            </button>
+            <EditorDialogCloseButton
+              buttonRef={closeButtonRef} id={closeButtonId} label={closeLabel} testId={closeButtonTestId}
+              disabled={closeDisabled} className={`${DIALOG_THEME_CLASSES.close} ${closeButtonClassName}`} onClick={requestClose}
+            />
           ) : null}
         </div>
         <div className={`mt-4 ${contentClassName}`}>{children}</div>

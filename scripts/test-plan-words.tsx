@@ -62,7 +62,7 @@ assert.match(read("app/share/[shareToken]/export/page.tsx"), /const floorLabel =
 const renderer = read("components/editor/renderers/RoomRenderer2D.tsx");
 assert.match(renderer, /\{ id: "floor", label: "Surfaces", action: onEditFloor \},/);
 assert.match(renderer, /aria-label=\{tool\.id === "floor" \? "Room surfaces" : `\$\{tool\.label\} room`\}/);
-assert.match(read("components/editor/design-page/DesignPageSelectionInspector.tsx"), /data-testid="selection-inspector-edit-floor"[\s\S]*?>\s*Surfaces\s*<\/button>/);
+assert.match(read("components/editor/design-page/DesignPageSelectionInspector.tsx"), /data-testid="selection-inspector-edit-floor"[\s\S]*?>\s*Surfaces\s*<\/Button>/);
 
 // × Deselect <name> where "Clear" deselected (the inspector, the multi-selection bar, the room summary).
 assert.match(read("components/editor/design-page/MultiSelectionToolbar.tsx"), /aria-label=\{`Deselect \$\{state\.count\} products`\}[\s\S]*?<X className="h-4 w-4" aria-hidden="true" \/>/);

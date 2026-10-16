@@ -26,8 +26,12 @@ type VectorizerPassInput = {
   /** How many of the best-ranked pages to analyse. */
   pageLimit: number;
   rankPages: (pages: RegisteredPageEvidence[]) => RegisteredPageEvidence[];
-  /** The adapter's ordinary semantic merge, with the vectorizer's observations preferred. */
-  mergeSemantics: (deterministic: PageSemanticEvidence, semantic: PageSemanticEvidence) => PageSemanticEvidence;
+  /** The adapter's ordinary semantic merge of the vectorizer's observations into this page. */
+  mergeSemantics: (
+    deterministic: PageSemanticEvidence,
+    semantic: PageSemanticEvidence,
+    page: RegisteredPageEvidence
+  ) => PageSemanticEvidence;
 };
 
 function failedPass(providerId: string, started: number, cause: unknown): VectorizerPageDiagnostics {
@@ -45,7 +49,7 @@ function failedPass(providerId: string, started: number, cause: unknown): Vector
 }
 
 /**
- * Local vectorizer pass over raster pages. It is slow (minutes), so only the
+ * Local vectorizer pass over the candidate pages (see vectorizer-pdf-pages.ts). It is slow (minutes), so only the
  * best-ranked page(s) are analysed; a failure leaves the page exactly as the
  * other evidence sources made it.
  */
@@ -66,7 +70,7 @@ export async function applyVectorizerEvidence(input: VectorizerPassInput) {
         { pageNumber: page.pageNumber, widthPx: page.widthPx, heightPx: page.heightPx, mimeType: derivative.mimeType, bytes: derivative.bytes },
         { timeoutMs, signal: context.signal }
       );
-      page.semantics = input.mergeSemantics(page.semantics, registerVectorizerEvidence(page, evidence, derivative.bytes));
+      page.semantics = input.mergeSemantics(page.semantics, registerVectorizerEvidence(page, evidence, derivative.bytes), page);
       diagnostics.set(page.pageNumber, {
         providerId: provider.id,
         status: "completed",

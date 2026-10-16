@@ -77,7 +77,7 @@ const frame = read("components/editor/DesignControlsPanelFrame.tsx");
 assert.match(frame, /const policy = useTabletPanelPolicy\(useMediaQuery\(TABLET_MEDIA_QUERY\), props\.collapsed\);\s*const collapsed = wide \? policy\.collapsed : props\.collapsed;/);
 assert.match(frame, /if \(wide\) toggleStepPanel\(policy, props\.collapsed, onCollapsedChange\);/);
 assert.match(frame, /usePanelToggleShortcut\(onCollapsedChange, toggle\);/, "Ctrl/⌘ B toggles the same way.");
-assert.equal(frame.match(/h-9 w-9 touch:h-11 touch:w-11 [^"]*opacity-0 touch:opacity-100/g)?.length, 2, "The edge toggle is a visible 44px target on touch.");
+assert.equal(frame.match(/h-9 w-9 touch:h-11 touch:w-11 [^"]*opacity-0 touch:opacity-100/g)?.length, 1, "The edge toggle is a visible 44px target on touch.");
 const barToggle = read("components/editor/command-bar/CommandBarCanvasControls.tsx");
 assert.match(barToggle, /const policy = useTabletPanelPolicy\(useMediaQuery\(TABLET_MEDIA_QUERY\), storedCollapsed\);/);
 assert.match(barToggle, /onClick=\{\(\) => toggleStepPanel\(policy, storedCollapsed, setCollapsed\)\}/);

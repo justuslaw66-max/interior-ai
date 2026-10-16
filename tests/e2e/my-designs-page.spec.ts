@@ -85,7 +85,7 @@ test.describe("My designs page", () => {
 
       await actions.click();
       await page.getByRole("menuitem", { name: "Delete" }).click();
-      const confirm = page.getByRole("dialog", { name: "Delete Tan flat?" });
+      const confirm = page.getByRole("alertdialog", { name: "Delete Tan flat?" });
       await expect(confirm).toBeVisible();
       await confirm.getByRole("button", { name: "Delete", exact: true }).click();
       await expect(page.getByTestId("my-designs-status")).toHaveText("Deleted Tan flat");

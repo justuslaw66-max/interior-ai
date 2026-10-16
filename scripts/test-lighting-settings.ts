@@ -767,19 +767,20 @@ assert.match(
   /data-testid="editor-command-overflow-lighting"[\s\S]*?Lighting settings/,
   "Lighting settings should open from the existing More menu."
 );
+// The shared dialog owns the drawer's dialog contract, Escape, focus and the inert page (UX AX5).
 assert.match(
   drawerSource,
-  /role="dialog"[\s\S]*?aria-modal="true"[\s\S]*?aria-labelledby="lighting-settings-title"/,
-  "The drawer should expose an accessible dialog contract."
+  /createPortal\(\s*<EditorDialog\s+open\s+placement="sheet"\s+title="Lighting settings"[\s\S]*?onClose=\{onClose\}[\s\S]*?returnFocusId=\{CLIENT_PREVIEW_FALLBACK_ACTION_ID\}/,
+  "The drawer should be the shared dialog's sheet, returning focus to More."
+);
+assert.doesNotMatch(
+  drawerSource,
+  /addEventListener\("keydown"|onKeyDown=/,
+  "Escape and Tab belong to the shared dialog, not the lighting drawer."
 );
 assert.match(
-  drawerSource,
-  /event\.key === "Escape"[\s\S]*?onClose\(\)/,
-  "Escape should close the lighting drawer."
-);
-assert.match(
-  drawerSource,
-  /sm:inset-y-0[\s\S]*?sm:right-0/,
+  read("components/editor/design-system/EditorDialog.tsx"),
+  /placement === "sheet"[\s\S]*?absolute inset-x-0 bottom-0[\s\S]*?sm:inset-y-0[\s\S]*?sm:right-0/,
   "The mobile bottom sheet should become a right-side desktop drawer."
 );
 assert.match(

@@ -7,10 +7,10 @@ import {
   floorPlanPropertyEvidenceLabel,
   type FloorPlanConsumerMeasurementEvidenceV2,
 } from "@/lib/floor-plan-measured-property-mutations";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanPropertyEvidenceControlProps = {
   evidence: FloorPlanPropertyEvidenceV2 | null | undefined;
-  dark?: boolean;
   disabled?: boolean;
   onConfirm?: (
     evidence: FloorPlanConsumerMeasurementEvidenceV2,
@@ -22,29 +22,28 @@ type FloorPlanPropertyEvidenceControlProps = {
 };
 
 function EvidenceStatus({
-  evidence, dark, testId, assumedLabel, assumedHelpText,
+  evidence, testId, assumedLabel, assumedHelpText,
 }: Pick<FloorPlanPropertyEvidenceControlProps, "testId" | "assumedLabel" | "assumedHelpText"> & {
   evidence: FloorPlanPropertyEvidenceV2;
-  dark: boolean;
 }) {
   const editable = floorPlanPropertyEvidenceIsEditable(evidence);
   const badgeClass = evidence === "assumed"
-    ? dark ? "bg-amber-400/15 text-amber-200" : "bg-amber-100 text-amber-800"
+    ? "bg-amber-100 text-amber-800"
     : evidence === "site_measured"
-      ? dark ? "bg-emerald-400/15 text-emerald-200" : "bg-emerald-100 text-emerald-800"
-      : dark ? "bg-blue-400/15 text-blue-200" : "bg-blue-100 text-blue-800";
+      ? "bg-emerald-100 text-emerald-800"
+      : "bg-blue-100 text-blue-800";
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badgeClass}`} data-testid={`${testId}-badge`}>
         {evidence === "assumed" && assumedLabel ? assumedLabel : floorPlanPropertyEvidenceLabel(evidence)}
       </span>
       {evidence === "assumed" ? (
-        <span className={dark ? "text-xs text-amber-200" : "text-xs text-amber-700"}>
+        <span className="text-xs text-amber-700">
           {assumedHelpText ?? "Not read from the source drawing."}
         </span>
       ) : null}
       {!editable ? (
-        <span className={dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500"}>
+        <span className="text-xs text-neutral-500">
           Locked; use reviewed override workflow to replace it.
         </span>
       ) : null}
@@ -54,14 +53,13 @@ function EvidenceStatus({
 
 function EvidenceConfirmation({
   selectedEvidence, setSelectedEvidence, measurementNote, setMeasurementNote,
-  controlClass, dark, disabled, onConfirm,
+  controlClass, disabled, onConfirm,
 }: {
   selectedEvidence: FloorPlanConsumerMeasurementEvidenceV2;
   setSelectedEvidence: (value: FloorPlanConsumerMeasurementEvidenceV2) => void;
   measurementNote: string;
   setMeasurementNote: (value: string) => void;
   controlClass: string;
-  dark: boolean;
   disabled: boolean;
   onConfirm: NonNullable<FloorPlanPropertyEvidenceControlProps["onConfirm"]>;
 }) {
@@ -73,13 +71,13 @@ function EvidenceConfirmation({
           <option value="user_confirmed">I confirm this value</option>
           <option value="site_measured">Measured on site</option>
         </select>
-        <button type="button" className={dark
-          ? "designer-work-control rounded-md px-2 py-1 text-xs font-semibold disabled:opacity-40"
-          : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 disabled:opacity-40"}
+        <Button
+          variant="secondary" size="compact"
           disabled={disabled || (selectedEvidence === "site_measured" && measurementNote.trim().length < 4)}
-          onClick={() => onConfirm(selectedEvidence, measurementNote.trim() || undefined)}>
+          onClick={() => onConfirm(selectedEvidence, measurementNote.trim() || undefined)}
+        >
           Confirm displayed value
-        </button>
+        </Button>
       </div>
       {selectedEvidence === "site_measured" ? (
         <input aria-label="Site measurement method" className={controlClass} disabled={disabled} maxLength={240}
@@ -92,7 +90,6 @@ function EvidenceConfirmation({
 
 export default function FloorPlanPropertyEvidenceControl({
   evidence,
-  dark = false,
   disabled = false,
   onConfirm,
   testId,
@@ -105,18 +102,16 @@ export default function FloorPlanPropertyEvidenceControl({
   if (!evidence) return null;
 
   const editable = floorPlanPropertyEvidenceIsEditable(evidence);
-  const controlClass = dark
-    ? "designer-control rounded-md border px-2 py-1 text-xs text-neutral-100"
-    : "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-700";
+  const controlClass = "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-700";
 
   return (
     <div className="mt-1.5 grid grid-cols-1 gap-1.5" data-testid={testId}>
-      <EvidenceStatus evidence={evidence} dark={dark} testId={testId} assumedLabel={assumedLabel} assumedHelpText={assumedHelpText} />
+      <EvidenceStatus evidence={evidence} testId={testId} assumedLabel={assumedLabel} assumedHelpText={assumedHelpText} />
       {editable && onConfirm ? (
         <EvidenceConfirmation
           selectedEvidence={selectedEvidence} setSelectedEvidence={setSelectedEvidence}
           measurementNote={measurementNote} setMeasurementNote={setMeasurementNote}
-          controlClass={controlClass} dark={dark} disabled={disabled} onConfirm={onConfirm}
+          controlClass={controlClass} disabled={disabled} onConfirm={onConfirm}
         />
       ) : null}
     </div>

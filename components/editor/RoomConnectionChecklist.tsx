@@ -5,12 +5,12 @@ import type {
   HouseRoomDoorwaySuggestion,
 } from "@/lib/design-page-house-plan";
 import { formatDisplayLength, type DisplayUnit } from "@/lib/display-units";
+import { Button } from "@/components/ui/Button";
 
 type RoomConnectionChecklistProps = {
   items: HouseRoomConnectionChecklistItem[];
   measurementUnit: DisplayUnit;
   disabled?: boolean;
-  dark?: boolean;
   variant?: "pro" | "consumer";
   collapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
@@ -29,7 +29,6 @@ export default function RoomConnectionChecklist({
   items,
   measurementUnit,
   disabled = false,
-  dark = false,
   variant = "consumer",
   collapsed = false,
   onCollapsedChange,
@@ -37,34 +36,14 @@ export default function RoomConnectionChecklist({
 }: RoomConnectionChecklistProps) {
   if (items.length === 0) return null;
 
-  const shellClass = dark
-    ? "rounded-xl border border-white/10 bg-[#151820] p-3"
-    : "rounded-xl border border-neutral-200 bg-white p-3";
-  const titleClass = dark
-    ? "text-sm font-semibold text-neutral-100"
-    : "text-sm font-semibold text-neutral-900";
-  const rowClass = dark
-    ? "rounded-lg border border-white/10 bg-white/5 p-2"
-    : "rounded-lg border border-neutral-200 bg-neutral-50 p-2";
-  const labelClass = dark
-    ? "text-xs font-semibold text-neutral-100"
-    : "text-xs font-semibold text-neutral-800";
-  const metaClass = dark ? "text-xs text-neutral-400" : "text-xs text-neutral-500";
-  const connectedClass = dark
-    ? "rounded-full bg-emerald-400/15 px-2 py-1 text-xs font-semibold text-emerald-200"
-    : "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
-  const needsClass = dark
-    ? "designer-status-warning rounded-full px-2 py-1 text-xs font-semibold"
-    : "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
-  const reviewClass = dark
-    ? "rounded-full bg-orange-400/15 px-2 py-1 text-xs font-semibold text-orange-200"
-    : "rounded-full bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-700";
-  const buttonClass = dark
-    ? "rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-950 disabled:opacity-50"
-    : "rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
-  const toggleClass = dark
-    ? "rounded-lg border border-white/10 px-2 py-1 text-xs font-semibold text-neutral-300"
-    : "rounded-lg border border-neutral-200 px-2 py-1 text-xs font-semibold text-neutral-600";
+  const shellClass = "rounded-xl border border-neutral-200 bg-white p-3";
+  const titleClass = "text-sm font-semibold text-neutral-900";
+  const rowClass = "rounded-lg border border-neutral-200 bg-neutral-50 p-2";
+  const labelClass = "text-xs font-semibold text-neutral-800";
+  const metaClass = "text-xs text-neutral-500";
+  const connectedClass = "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
+  const needsClass = "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
+  const reviewClass = "rounded-full bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-700";
   const getStatusClass = (status: HouseRoomConnectionChecklistItem["status"]) => {
     if (status === "connected" || status === "reachable") return connectedClass;
     if (status === "needs_doorway") return needsClass;
@@ -86,14 +65,13 @@ export default function RoomConnectionChecklist({
       <div className="flex items-center justify-between gap-2">
         <div className={titleClass}>Connections</div>
         {onCollapsedChange ? (
-          <button
-            type="button"
-            className={toggleClass}
+          <Button
+            variant="secondary" size="compact"
             aria-expanded={!collapsed}
             onClick={() => onCollapsedChange(!collapsed)}
           >
             {collapsed ? "Expand" : "Collapse"}
-          </button>
+          </Button>
         ) : null}
       </div>
       {collapsed ? null : (
@@ -115,15 +93,14 @@ export default function RoomConnectionChecklist({
               </div>
             </div>
             {item.status === "needs_doorway" && item.doorwaySuggestion && (
-              <button
-                type="button"
+              <Button
                 data-testid="room-connection-add-doorway"
-                className={`${buttonClass} mt-2`}
+                variant="primary" size="compact" className="mt-2"
                 disabled={disabled}
                 onClick={() => onAddDoorway(item.doorwaySuggestion!)}
               >
                 Add connecting door
-              </button>
+              </Button>
             )}
           </div>
         ))}

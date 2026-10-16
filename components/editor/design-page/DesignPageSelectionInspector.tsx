@@ -21,6 +21,7 @@ import FloorPlanPropertyEvidenceControl from "@/components/editor/FloorPlanPrope
 import { SelectedOpeningDimensions, type SelectedOpeningDimensionsActions as OpeningActions } from "./SelectedOpeningDimensions";
 import type { resolveDesignPageOpeningViewportState } from "@/lib/design-page-opening-viewport";
 import { inspectorFrame, useInspectorPlacement } from "./selectionInspectorPlacement";
+import { Button } from "@/components/ui/Button";
 
 type SelectedRoom = Pick<HousePlanRoom2D, "id" | "w" | "d">;
 
@@ -45,7 +46,6 @@ export type DesignPageSelectionInspectorProps = {
     canDeleteSelectedRoom: boolean;
   };
   configuration: {
-    dark: boolean;
     canEditPlanGeometry: boolean;
     proMode: boolean;
     dockWhenPortalAvailable: boolean;
@@ -95,42 +95,29 @@ export function DesignPageSelectionInspector({
       className={frame.className} style={frame.style}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div
-            className={
-              configuration.dark
-                ? "text-xs font-semibold uppercase text-neutral-400"
-                : "text-xs font-semibold uppercase text-neutral-500"
-            }
-          >
+          <div className="text-xs font-semibold uppercase text-neutral-500">
             {state.summary.kind}
           </div>
           <div className="mt-1 truncate text-sm font-semibold">{state.summary.title}</div>
-          <div
-            className={
-              configuration.dark
-                ? "mt-0.5 truncate text-neutral-400"
-                : "mt-0.5 truncate text-neutral-500"
-            }
-          >
+          <div className="mt-0.5 truncate text-neutral-500">
             {state.summary.detail}
           </div>
         </div>
-        <button
-          type="button"
+        <Button
+          size={frame.clearSize}
           data-testid="selection-inspector-clear"
-          className={frame.clearClassName}
           aria-label={placement.inSheet ? undefined : `Deselect ${state.summary.title}`}
           title={placement.inSheet ? undefined : `Deselect ${state.summary.title}`}
           onClick={actions.clearSelection}
         >
           {placement.inSheet ? "Done" : <X className="h-4 w-4" aria-hidden="true" />}
-        </button>
+        </Button>
       </div>
 
       {state.selectedOpening ? (
         <SelectedOpeningDimensions
           state={{ ...state.selectedOpening, measurementUnit: state.measurementUnit }}
-          configuration={{ dark: configuration.dark, canEdit: configuration.canEditPlanGeometry, proMode: configuration.proMode }}
+          configuration={{ canEdit: configuration.canEditPlanGeometry, proMode: configuration.proMode }}
           actions={{ commitWidthMm: actions.commitOpeningWidthMm, commitHeightMm: actions.commitOpeningHeightMm,
             commitBottomMm: actions.commitOpeningBottomMm, commitKind: actions.commitOpeningKind,
             commitWall: actions.commitOpeningWall, commitOffsetMm: actions.commitOpeningOffsetMm }} />
@@ -143,11 +130,7 @@ export function DesignPageSelectionInspector({
           {state.summary.metrics.map((metric) => (
             <div
               key={metric}
-              className={
-                configuration.dark
-                  ? "designer-raised rounded-lg border px-2.5 py-2 font-semibold"
-                  : "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 font-semibold text-neutral-800"
-              }
+              className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 font-semibold text-neutral-800"
             >
               {metric}
             </div>
@@ -158,11 +141,7 @@ export function DesignPageSelectionInspector({
       {roomSelectionActive && state.selectedRoom ? (
         <div
           data-testid="selection-inspector-room-dimensions"
-          className={
-            configuration.dark
-              ? "designer-divider mt-3 border-t pt-3"
-              : "mt-3 border-t border-neutral-200 pt-3"
-          }
+          className="mt-3 border-t border-neutral-200 pt-3"
         >
           <div className="flex items-end justify-between gap-3">
             <div className="text-xs font-semibold uppercase text-neutral-500">
@@ -170,7 +149,6 @@ export function DesignPageSelectionInspector({
             </div>
             <DisplayUnitSelect
               value={state.measurementUnit}
-              dark={configuration.dark}
               testId="selection-inspector-measurement-units"
               className="w-48 max-w-[70%]"
               onChange={actions.setMeasurementUnit}
@@ -186,7 +164,6 @@ export function DesignPageSelectionInspector({
               stepMm={10}
               keyboardStepMm={50}
               disabled={!configuration.canEditPlanGeometry}
-              dark={configuration.dark}
               compact
               touchFriendly
               testId="selection-inspector-room-width"
@@ -203,7 +180,6 @@ export function DesignPageSelectionInspector({
               stepMm={10}
               keyboardStepMm={50}
               disabled={!configuration.canEditPlanGeometry}
-              dark={configuration.dark}
               compact
               touchFriendly
               testId="selection-inspector-room-depth"
@@ -212,23 +188,11 @@ export function DesignPageSelectionInspector({
               }
             />
           </div>
-          <div
-            className={
-              configuration.dark
-                ? "mt-1.5 text-xs text-neutral-400"
-                : "mt-1.5 text-xs text-neutral-500"
-            }
-          >
+          <div className="mt-1.5 text-xs text-neutral-500">
             Resize keeps the room centre when space allows. Enter applies; Esc cancels.
           </div>
 
-          <div
-            className={
-              configuration.dark
-                ? "designer-divider mt-3 border-t pt-3"
-                : "mt-3 border-t border-neutral-200 pt-3"
-            }
-          >
+          <div className="mt-3 border-t border-neutral-200 pt-3">
             <MeasurementField
               label="Wall height"
               valueMm={state.activeRoomHeightMm}
@@ -238,7 +202,6 @@ export function DesignPageSelectionInspector({
               stepMm={10}
               keyboardStepMm={50}
               disabled={!configuration.canEditPlanGeometry}
-              dark={configuration.dark}
               compact
               testId="selection-inspector-floor-wall-height"
               hint={`Applies to ${state.activeFloorRoomCount} room${
@@ -248,7 +211,6 @@ export function DesignPageSelectionInspector({
             />
             <FloorPlanPropertyEvidenceControl
               evidence={state.activeRoomWallHeightEvidence}
-              dark={configuration.dark}
               disabled={!state.canEditActiveRoomWallHeight}
               testId="selection-inspector-floor-wall-height-evidence"
               onConfirm={(evidence, measurementNote) =>
@@ -270,76 +232,51 @@ export function DesignPageSelectionInspector({
       >
         {roomSelectionActive && state.selectedRoom ? (
           <>
-            <button
-              type="button"
+            <Button
               data-testid="selection-inspector-edit-floor"
-              className={
-                configuration.dark
-                  ? "designer-work-control-active rounded-lg px-2.5 py-1.5 font-semibold"
-                  : "rounded-lg bg-neutral-950 px-2.5 py-1.5 font-semibold text-white hover:bg-neutral-800"
-              }
+              variant="primary" size="compact"
               onClick={() => actions.room.editFloor(state.selectedRoom!.id)}
             >
               Surfaces
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               data-testid="selection-inspector-fit-room"
-              className={
-                configuration.dark
-                  ? "designer-work-control rounded-lg px-2.5 py-1.5 font-semibold"
-                  : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"
-              }
+              variant="secondary" size="compact"
               onClick={() => actions.room.fit(state.selectedRoom!.id)}
             >
               Fit
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               data-testid="selection-inspector-duplicate-room"
-              className={
-                configuration.dark
-                  ? "designer-work-control rounded-lg px-2.5 py-1.5 font-semibold"
-                  : "rounded-lg border border-neutral-200 px-2.5 py-1.5 font-semibold text-neutral-700 hover:bg-neutral-50"
-              }
+              variant="secondary" size="compact"
               onClick={() => actions.room.duplicate(state.selectedRoom!.id)}
             >
               Duplicate
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               data-testid="selection-inspector-delete-room"
-              className={
-                configuration.dark
-                  ? "designer-status-blocked rounded-lg px-2.5 py-1.5 font-semibold disabled:cursor-not-allowed disabled:opacity-40"
-                  : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
-              }
+              variant="danger" size="compact"
               disabled={!state.canDeleteSelectedRoom}
               onClick={() => actions.room.delete(state.selectedRoom!.id)}
             >
               Delete
-            </button>
+            </Button>
           </>
         ) : state.hasSelectedPlanOverlay ? (
-          <button
-            type="button"
+          <Button
             data-testid="selection-inspector-delete-overlay"
-            className={
-              configuration.dark
-                ? "designer-status-blocked rounded-lg px-2.5 py-1.5 font-semibold"
-                : "rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 font-semibold text-red-700 hover:bg-red-100"
-            }
+            variant="danger" size="compact"
             onClick={actions.deleteSelectedPlanOverlay}
           >
             Delete
-          </button>
+          </Button>
         ) : null}
       </div>
 
       {state.surfaceInspector ? (
         <SelectedSurfaceInspector
           state={state.surfaceInspector}
-          configuration={{ dark: configuration.dark, pro: configuration.proMode }}
+          configuration={{ pro: configuration.proMode }}
           actions={actions.surfaceInspector}
         />
       ) : null}

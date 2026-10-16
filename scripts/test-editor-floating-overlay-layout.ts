@@ -666,7 +666,7 @@ const phoneCanvasPillsSource = fs.readFileSync(
   path.join(process.cwd(), "components", "editor", "canvas", "PhoneCanvasPills.tsx"),
   "utf8"
 );
-assert.match(phoneCanvasPillsSource, /const historyClass = `inline-flex h-11 w-11 shrink-0 (?![^`]*\bmd:)/, "The phone's Undo and Redo are 44px.");
+assert.match(phoneCanvasPillsSource, /const historyClass = "inline-flex h-11 w-11 shrink-0 (?![^"]*\bmd:)/, "The phone's Undo and Redo are 44px.");
 for (const historyTestId of ["command-undo", "command-redo"] as const) {
   assert.match(
     phoneCanvasPillsSource,
@@ -684,10 +684,10 @@ for (const controlTestId of ["save-design", "editor-command-share"] as const) {
     `${controlTestId} should be 44px on phones and 36px from md.`
   );
 }
-assert.match(editorCommandBarSource, /if \(phone\) \{\s*return dark\s*\? "designer-control inline-flex h-11 w-11 /, "The phone's Menu is 44px.");
-assert.match(editorCommandBarSource, /return dark\s*\? "designer-control inline-flex h-9 w-9 [^"]*"\s*: "inline-flex h-9 w-9 /, "More is 36px.");
+assert.match(editorCommandBarSource, /if \(phone\) \{\s*return "inline-flex h-11 w-11 /, "The phone's Menu is 44px.");
+assert.match(editorCommandBarSource, /return "inline-flex h-9 w-9 /, "More is 36px.");
 assert.match(editorCommandBarSource, /data-testid="editor-command-account"[\s\S]{0,400}?"inline-flex h-9 w-9 /, "Account is 36px.");
-assert.match(editorCommandBarSource, /data-testid="editor-design-sidebar-toggle"[\s\S]{0,700}?: "inline-flex h-9 w-9 /, "The sidebar toggle is 36px, from md.");
+assert.match(editorCommandBarSource, /data-testid="editor-design-sidebar-toggle"[\s\S]{0,700}?"inline-flex h-9 w-9 /, "The sidebar toggle is 36px, from md.");
 assert.match(editorCommandBarSource, /sidebarToggleVisible=\{sidebarToggleVisible && wide\}/, "Phones collapse and expand the step sheet from its handle.");
 for (const controlTestId of ["editor-command-get-pro", "editor-command-download"] as const) {
   assert.match(
@@ -710,7 +710,7 @@ assert.match(
 // The steps sit in the bar from tablet width up; phones get them as a bar along the bottom.
 assert.match(
   editorCommandBarSource,
-  /function stepNavClass\(dark: boolean\) \{[\s\S]*?"fixed inset-x-0 bottom-0 z-50 grid h-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] grid-cols-3[^"]*md:static md:inline-flex md:h-11 [^"]*md:rounded-xl md:p-1/,
+  /function stepNavClass\(\) \{[\s\S]*?"fixed inset-x-0 bottom-0 z-50 grid h-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] grid-cols-3[^"]*md:static md:inline-flex md:h-11 [^"]*md:rounded-xl md:p-1/,
   "The design steps should be the mockup's 44px segmented control of 36px steps in the bar, and a bottom bar on phones."
 );
 assert.match(
@@ -753,16 +753,14 @@ assert.match(
   /variant: "canvas" \| "pill";/,
   "The view selector is the canvas toolbar's or the phone's: Present & export's 30px one retired with it."
 );
+// The shared segmented control (UX 5n) draws both: its 44px segments without a track in the
+// phone's pill, and its regular 36px control with 32px segments in the canvas toolbar.
 assert.match(
   editorViewToggleSource,
-  /const PILL_SEGMENT_CLASS =\s*"inline-flex h-11 w-12 items-center justify-center rounded-\[9px\] text-sm font-bold leading-none";/,
-  "The phone's view selector should use 44px segments, in a pill over the canvas (UX 4d)."
+  /<SegmentedControl\b[\s\S]*?size=\{variant === "pill" \? "touch" : "regular"\}[\s\S]*?track=\{variant === "canvas"\}/,
+  "The phone's view selector should use 44px segments, in a pill over the canvas (UX 4d), and the canvas toolbar's the mockup's 32px segments."
 );
-assert.match(
-  editorViewToggleSource,
-  /const CANVAS_SEGMENT_CLASS =\s*"inline-flex h-8 touch:h-11 items-center justify-center rounded-\[7px\] px-3\.5 text-\[13px\] font-bold leading-none";/,
-  "The canvas toolbar's view selector should use the mockup's 32px segments."
-);
+assert.doesNotMatch(editorViewToggleSource, /<button\b/, "The view selector is the shared SegmentedControl.");
 
 assert.match(
   roomPlanStatusBarSource,
@@ -772,7 +770,7 @@ assert.match(
 
 assert.match(
   editorCommandBarSource,
-  /const menuButtonClass = dark[\s\S]*?px-3 py-2 text-left text-sm/,
+  /const menuButtonClass = "[^"]*px-3 py-2 text-left text-sm/,
   "Opened command menus should retain their comfortable row sizing."
 );
 
@@ -870,7 +868,7 @@ assert.match(
 
 assert.match(
   draggableSource,
-  /absolute -left-7 top-0 flex/,
+  /absolute -left-8 touch:-left-13 top-0 flex w-6 touch:w-11 flex-col/,
   "Floating panel rail controls should align with the panel top edge."
 );
 

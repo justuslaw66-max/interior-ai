@@ -12,6 +12,7 @@ const EXPORT_FLOORING_ID = "goodrich-geff-novaclick-gnv-001-ivory-oak";
 const EXPORT_WALL_ID = "goodrich-geff-novaclick-gnv-002-silver-oak";
 const GARDENIA_DORICA_CREMA_120_ID = "gardenia-flooring-dorica-crema-0010006-120x120-nat-196270-0";
 const GARDENIA_DORICA_CREMA_20X120_ID = "gardenia-flooring-dorica-crema-0010519-20x120-nat-196278-0";
+const GARDENIA_TABULAE_CHEVRON_SABBIA_ID = "gardenia-flooring-tabulae-chevron-sabbia-pf60021110-15x85-nat-92341-par-dx-sx";
 
 function resolveDatabaseUrl() {
   if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
@@ -194,27 +195,22 @@ test.describe("Flooring surface materials", () => {
     await expect(floorPanel).toBeVisible({ timeout: 30000 });
 
     await page.getByRole("button", { name: "2D", exact: true }).click();
-    const planReviewPanel = page.getByTestId("plan-quality-review-panel");
-    const selectionInspector = page.getByTestId("selection-inspector");
-    await expect(planReviewPanel).toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "2d");
+    const rightRail = page.getByTestId("plan-right-rail");
+    const levelsPanel = rightRail.getByTestId("coohom-floor-panel");
+    const selectionInspector = rightRail.getByTestId("selection-inspector");
+    await expect(levelsPanel).toBeVisible({ timeout: 30000 });
     await expect(selectionInspector).toBeVisible({ timeout: 30000 });
-    const rightRailMetrics = await page.evaluate(() => {
-      const review = document.querySelector<HTMLElement>('[data-testid="plan-quality-review-panel"]');
-      const inspector = document.querySelector<HTMLElement>('[data-testid="selection-inspector"]');
-      if (!review || !inspector) return null;
-      const reviewRect = review.getBoundingClientRect();
-      const inspectorRect = inspector.getBoundingClientRect();
-      return {
-        gap: Math.round(inspectorRect.top - reviewRect.bottom),
-        leftDelta: Math.round(Math.abs(inspectorRect.left - reviewRect.left)),
-        widthDelta: Math.round(Math.abs(inspectorRect.width - reviewRect.width)),
-      };
-    });
-    if (!rightRailMetrics) throw new Error("Unable to measure 2D right rail panels");
-    expect(rightRailMetrics.gap).toBeGreaterThanOrEqual(0);
-    expect(rightRailMetrics.gap).toBeLessThanOrEqual(10);
-    expect(rightRailMetrics.leftDelta).toBeLessThanOrEqual(1);
-    expect(rightRailMetrics.widthDelta).toBeLessThanOrEqual(1);
+    // The starter room has its door and window, so plan review finds no issue and shows no panel (eeb6c16b, UX audit ED4);
+    // the inspector docks directly under Levels.
+    await expect(page.getByTestId("plan-quality-review-panel")).toHaveCount(0);
+    const [levelsBox, inspectorBox] = await Promise.all([levelsPanel.boundingBox(), selectionInspector.boundingBox()]);
+    if (!levelsBox || !inspectorBox) throw new Error("Unable to measure 2D right rail panels");
+    const gap = Math.round(inspectorBox.y - (levelsBox.y + levelsBox.height));
+    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(gap).toBeLessThanOrEqual(10);
+    expect(Math.round(Math.abs(inspectorBox.x - levelsBox.x))).toBeLessThanOrEqual(1);
+    expect(Math.round(Math.abs(inspectorBox.width - levelsBox.width))).toBeLessThanOrEqual(1);
     await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "3d");
 
@@ -226,7 +222,7 @@ test.describe("Flooring surface materials", () => {
     await expect(surfaceControls).toHaveAttribute("data-surface-target", "floor");
     await surfaceControls.getByTestId("surfaces-search").fill("Dorica Crema");
 
-    const doricaCremaCard = surfaceControls.getByRole("button", { name: /Dorica Crema Marble .*5 sizes/i }).first();
+    const doricaCremaCard = surfaceControls.getByRole("button", { name: /Dorica Crema Marble .*6 sizes/i }).first();
     await expect(doricaCremaCard).toBeVisible({ timeout: 30000 });
     await doricaCremaCard.click();
     await floorPanel.getByTestId(`surface-size-option-${GARDENIA_DORICA_CREMA_120_ID}`).click();
@@ -261,6 +257,34 @@ test.describe("Flooring surface materials", () => {
     await expect(floorPanel).toHaveAttribute("data-floor-material-id", GARDENIA_DORICA_CREMA_120_ID);
     await expect(floorPanel.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(3);
     await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("straight");
+  });
+
+  test("a Tabulae chevron is laid as a chevron", async ({ page }) => {
+    test.setTimeout(90000);
+
+    await mockProPlan(page);
+    await page.goto("/design?mode=designer");
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator('[data-testid="scene-canvas"]:visible').first()).toBeVisible({ timeout: 30000 });
+    await dismissBlockingDialogs(page);
+
+    const floorPanel = page.getByTestId("selection-inspector-floor-settings");
+    await expect(floorPanel).toBeVisible({ timeout: 30000 });
+    await page.getByTestId("plan-change-floor-finish").click();
+    const surfaceControls = page.getByTestId("floor-finish-panel").getByTestId("room-surfaces-floor-panel");
+    await expect(surfaceControls).toBeVisible({ timeout: 30000 });
+    await surfaceControls.getByTestId("surfaces-search").fill("Tabulae Chevron Sabbia");
+
+    const chevronCard = surfaceControls.getByRole("button", { name: /Tabulae Chevron Sabbia/i }).first();
+    await expect(chevronCard).toBeVisible({ timeout: 30000 });
+    await chevronCard.click();
+    await expect(floorPanel).toHaveAttribute("data-floor-material-id", GARDENIA_TABULAE_CHEVRON_SABBIA_ID);
+    // Its pieces are cut for a chevron, so that is the one layout it offers, and it is applied with it.
+    await expect(floorPanel.getByTestId("surface-pattern-options").getByRole("button")).toHaveCount(1);
+    await expect(floorPanel.getByTestId("surface-pattern-option-chevron")).toHaveAttribute("aria-pressed", "true");
+    await expect(floorPanel.getByTestId("surface-pattern-select")).toHaveValue("chevron");
+    await surfaceControls.getByTestId("surface-summary-open").click();
+    await expect(surfaceControls.getByTestId("surface-summary-panel")).toContainText("Chevron");
   });
 
   test("apply all uses the selected wall paint instead of the custom default", async ({ page }) => {
@@ -298,19 +322,25 @@ test.describe("Flooring surface materials", () => {
     await dismissBlockingDialogs(page);
 
     const surfacesPanel = await openSurfacesPanelFromInspector(page);
-    const targetButtonMetrics = await surfacesPanel.getByTestId("surface-target-bar").evaluate((bar) =>
-      Array.from(bar.querySelectorAll("button")).map((button) => {
-        const rect = button.getBoundingClientRect();
-        return { width: Math.round(rect.width), height: Math.round(rect.height) };
-      })
-    );
-    expect(Math.max(...targetButtonMetrics.map((metric) => metric.height))).toBe(
-      Math.min(...targetButtonMetrics.map((metric) => metric.height))
-    );
-    expect(
-      Math.max(...targetButtonMetrics.map((metric) => metric.width)) -
-        Math.min(...targetButtonMetrics.map((metric) => metric.width))
-    ).toBeLessThanOrEqual(1);
+    // The targets are the shared segmented control (UX 5n, J's choice on 14 Oct): one height, and
+    // four segments share the bar by their labels, each on one line, so "Selected wall" is wider.
+    const targetBar = await surfacesPanel.getByTestId("surface-target-bar").evaluate((bar) => {
+      const barRect = bar.getBoundingClientRect();
+      const panelRect = (bar.parentElement ?? bar).getBoundingClientRect();
+      return {
+        insidePanel: barRect.left >= panelRect.left - 1 && barRect.right <= panelRect.right + 1,
+        overflows: bar.scrollWidth > bar.clientWidth + 1,
+        buttons: Array.from(bar.querySelectorAll("button")).map((button) => ({
+          height: Math.round(button.getBoundingClientRect().height),
+          clipped: button.scrollWidth > button.clientWidth + 1,
+        })),
+      };
+    });
+    expect(targetBar.buttons).toHaveLength(4);
+    expect(new Set(targetBar.buttons.map((button) => button.height)).size).toBe(1);
+    expect(targetBar.buttons.filter((button) => button.clipped)).toEqual([]);
+    expect(targetBar.overflows).toBe(false);
+    expect(targetBar.insidePanel).toBe(true);
 
     await surfacesPanel.getByTestId("surface-target-ceiling").click();
     await expect(surfacesPanel).toHaveAttribute("data-surface-target", "ceiling");

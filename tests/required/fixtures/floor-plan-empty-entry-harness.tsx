@@ -20,7 +20,6 @@ function buildEmptyPlanProps(
       currentDesignId: null,
       subscriptionPlan: "pro",
     },
-    dark: false,
     isClientPreview: false,
     isDesigner: true,
     canEdit: true,
@@ -219,10 +218,7 @@ function EmptyPlanEntryHarness() {
       </section>
       <section data-testid="floor-plan-empty-surfaces-entry">
         <EmptyFloorPlanSurfacesActions
-          dark={false}
           isDesigner
-          progressActionClass="fixture-action"
-          progressSecondaryActionClass="fixture-action"
           progressMetaClass="fixture-meta"
           onStartDrawRoomSetup={noop}
           onSelectUploadMode={() => {
