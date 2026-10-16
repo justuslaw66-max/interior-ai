@@ -572,10 +572,10 @@ Repository-controlled cadence is explicit:
 - `release-blocking`: evidence is validated before Vercel Gate A3 certification
   or by the existing cabinetry release-evidence validator;
 - `advisory`: the full development/staging E2E inventory runs only by required
-  manual exact-SHA dispatch, PR label `run-full-e2e`, or nightly staging
-  schedule in its own non-required workflow; its real failed or cancelled
-  conclusion and dishonest evidence remain visible and are never accepted as
-  release certification.
+  manual exact-SHA dispatch, PR label `run-full-e2e`, or a nightly schedule on
+  the integration line (`integration/deep-clean-v1`) in its own non-required
+  workflow; its real failed or cancelled conclusion and dishonest evidence
+  remain visible and are never accepted as release certification.
 
 The 27-gate inventory includes the required Git-history secret scan, code
 quality, CH-0016 artifact-contract and runtime smoke, authorization/security,

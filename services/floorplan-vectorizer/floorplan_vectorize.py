@@ -113,6 +113,8 @@ R27_TILT = os.environ.get("FV_R27_TILT", "1") != "0"        # a long straight va
 # but on the 60 dev s-plans it closed rooms whose casement windows (drawn with leaf arcs) the exporter then reads as doors:
 # +4 rooms, +3 false doors, +2 false windows.  "1" turns it on, once the exporter tells those windows from doors.
 R27_SHEET = os.environ.get("FV_R27_SHEET", "0") == "1"
+# round 38: a slightly drifting line with a parallel partner a thin wall apart is a wall face, not a note leader
+R38_FACES = os.environ.get("FV_R38_FACES", "1") != "0"
 # The drawing (SVG only) cleaned where the trace's pieces meet: walls drawn as one, lines to where the drawing's lines end,
 # fixture outlines closed, a dashed line not cut by a stray short line (see clean_drawing).  Off: the SVG as before.
 CLEAN_DRAWING = os.environ.get("FV_CLEAN_DRAWING", "1") != "0"
@@ -6080,11 +6082,35 @@ def slanted_strokes(m):
                     sheet_.add(id(l))
         if sheet_:
             m.setdefault("dimension_report", {})["lines_on_sheet_tilt"] = len(sheet_)
+    dmin_, dmax_ = 60.0 / scale, 210.0 / scale             # a thin wall's two faces (partition_network's spacing)
+    def partners(l):
+        L_ = l["b"] - l["a"]
+        return [q for q in m["lines"] if q is not l and q["o"] == l["o"] and "dash" not in q and dmin_ <= abs(q["c"] - l["c"]) <= dmax_
+                and min(q["b"], l["b"]) - max(q["a"], l["a"]) >= 0.5 * L_]
+    # round 38: a line with a parallel partner a thin wall's thickness away along most of its length is one face of a
+    # thin wall drawn as two lines (s034's bedroom / kitchen wall on a scan 0.2 deg off square); a note leader never runs
+    # beside another line like that. It stays an axis line, so that the pair becomes the wall it is. The partner must
+    # stay too: a line that would itself become a leader is none (c24, a sheet ~1 deg off square: the outer face of the
+    # right-hand wall drifts 11 px and goes, and its inner face kept alone made a wall of one face and a spike outside).
+    faces_ = set()
+    if R38_FACES:
+        drifting = {id(l) for l in m["lines"] if id(l) not in sheet_ and _slant_fit(l, m, g, T, thr) is not None}
+        pal = {id(l): partners(l) for l in m["lines"] if id(l) in drifting}
+        faces_ = {i_ for i_, ps in pal.items() if ps}
+        while True:
+            lone = {i_ for i_ in faces_ if not any(id(q) not in drifting or id(q) in faces_ for q in pal[i_])}
+            if not lone:
+                break
+            faces_ -= lone
     for l in list(m["lines"]):
         if id(l) in sheet_:
             continue
         f_ = _slant_fit(l, m, g, T, thr)                    # (again: the dots found on earlier leaders count)
         if f_ is None:
+            continue
+        if id(l) in faces_:
+            m.setdefault("dimension_report", {}).setdefault("slanted_kept_as_wall_faces", []).append(
+                [l["o"], round(l["c"]), round(l["a"]), round(l["b"])])
             continue
         k_, c0_, L_, drift = f_
         pa = (l["a"], float(np.polyval([k_, c0_], l["a"]))); pb = (l["b"], float(np.polyval([k_, c0_], l["b"])))
