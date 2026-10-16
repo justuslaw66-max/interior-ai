@@ -4542,12 +4542,15 @@ for (const mutation of [
 
 // Under GitHub Actions, Playwright copies the pull request's title into config.metadata.ci. A title that starts
 // with "/" (16 Oct 2026: "/api/catalog lists …") is text, not a path: the portable report leaves it out.
-for (const prTitle of [
-  "/api/catalog lists surface materials as short summaries",
-  "/home/runner/work/interior-ai/interior-ai/secret.json",
-  "C:\\Users\\runner\\title",
+// The path-like titles lie outside every repository root, so the control below must refuse them in any checkout
+// (a path inside the repository is owned, and is accepted wherever it appears).
+for (const titleFor of [
+  () => "/api/catalog lists surface materials as short summaries",
+  (fixture) => path.join(fixture.outsideRoot, "secret.json"),
+  () => "C:\\Users\\runner\\title",
 ]) {
   const fixture = runtimeReportCanonicalizationFixture();
+  const prTitle = titleFor(fixture);
   try {
     const ci = {
       commitHref: "https://github.com/owner/repo/commit/abc",
