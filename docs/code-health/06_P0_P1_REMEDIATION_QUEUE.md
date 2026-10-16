@@ -1,5 +1,23 @@
 # P0/P1 remediation queue
 
+## Runtime report: the pull request title is text — 2026-10-17
+
+- **What happened:** on 16 Oct, #159's first CI run failed after both runtime
+  smoke tests had passed. Under GitHub Actions, Playwright copies the pull
+  request's title into `config.metadata.ci.prTitle`, and the title began with
+  "/" ("/api/catalog lists …"). The raw report check read it as an absolute
+  path outside its ownership contract.
+- **Correction:** `canonicalizeExternalRuntimeReport` leaves `prTitle` out
+  before its two path checks, so the portable report has no title. Every other
+  field, the rest of `metadata.ci` included, is checked as before. The raw
+  report and its bound SHA-256 are unchanged.
+- **Proof:** `test-production-artifact-evidence.mjs` accepts three titles that
+  look like paths (POSIX, a runner path, Windows) and checks that the portable
+  report keeps the other CI fields and drops the title. As a control, the same
+  text in `metadata.ci.prBaseHash` is still refused.
+- **Rollback:** revert the commit. Titles starting with "/" then fail the
+  check again.
+
 ## Certification auth fixture session continuity — 2026-08-20
 
 - **Preserved result:** `COMMITTED_COMMAND_MODE_INCONCLUSIVE` /

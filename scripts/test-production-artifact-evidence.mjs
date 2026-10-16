@@ -4540,6 +4540,60 @@ for (const mutation of [
   }
 }
 
+// Under GitHub Actions, Playwright copies the pull request's title into config.metadata.ci. A title that starts
+// with "/" (16 Oct 2026: "/api/catalog lists …") is text, not a path: the portable report leaves it out.
+// The path-like titles lie outside every repository root, so the control below must refuse them in any checkout
+// (a path inside the repository is owned, and is accepted wherever it appears).
+for (const titleFor of [
+  () => "/api/catalog lists surface materials as short summaries",
+  (fixture) => path.join(fixture.outsideRoot, "secret.json"),
+  () => "C:\\Users\\runner\\title",
+]) {
+  const fixture = runtimeReportCanonicalizationFixture();
+  const prTitle = titleFor(fixture);
+  try {
+    const ci = {
+      commitHref: "https://github.com/owner/repo/commit/abc",
+      commitHash: "abc",
+      prHref: "https://github.com/owner/repo/pull/159",
+      prTitle,
+      prBaseHash: "def",
+      buildHref: "https://github.com/owner/repo/actions/runs/1",
+    };
+    const report = structuredClone(fixture.report);
+    report.config.metadata.ci = ci;
+    const raw = fixture.writeReport(report);
+    const portable = fixture.canonicalize({ expectedRawReportSha256: raw.sha256 });
+    const ciWithoutTitle = { ...ci };
+    delete ciWithoutTitle.prTitle;
+    assert.deepEqual(portable.config.metadata.ci, ciWithoutTitle, prTitle);
+    assert.equal(JSON.stringify(portable).includes(JSON.stringify(prTitle).slice(1, -1)), false, prTitle);
+    assert.deepEqual(readFileSync(fixture.reportPath), raw.bytes, "the raw report is not rewritten");
+    assert.deepEqual(
+      validateRequiredTestReport({
+        repositoryRoot: fixture.repositoryRoot,
+        gateId: "ci.production-runtime-smoke",
+        report: portable,
+        processExitCode: 0,
+        requireMetadata: false,
+        validateRepository: false,
+      }).issues,
+      [],
+    );
+    // Control: the same text anywhere else in the report is still an unowned absolute path.
+    const elsewhere = structuredClone(report);
+    elsewhere.config.metadata.ci.prBaseHash = prTitle;
+    const elsewhereRaw = fixture.writeReport(elsewhere);
+    assert.throws(
+      () => fixture.canonicalize({ expectedRawReportSha256: elsewhereRaw.sha256 }),
+      /absolute paths outside its explicit ownership contract: report\.config\.metadata\.ci\.prBaseHash/,
+      prTitle,
+    );
+  } finally {
+    fixture.cleanup();
+  }
+}
+
 {
   const fixture = runtimeReportCanonicalizationFixture();
   try {

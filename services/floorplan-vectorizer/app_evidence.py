@@ -16,7 +16,7 @@ import json, math, os, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.30.0"
+VERSION = "app-evidence-0.30.1"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 INNER_SIGN = 1
@@ -3015,43 +3015,66 @@ def _move_cut(q, j, u, T, m=None):
     return False
 
 
+R38_SETTLE = os.environ.get("AE_R38_SETTLE", "1") != "0"   # round 38: a hook a wall's thickness through a neighbour's wall line is cut there (s036)
+
+
 def _settle_crossings(rooms, T, reach, m=None):
     """Walls of two rooms may meet only at corners.  Where a side of one room runs a little way THROUGH a wall line of
     another (its own end wall was measured on a different line than the neighbour's), its end wall is moved onto the
-    neighbour's line: both rooms are looking at the same wall."""
+    neighbour's line: both rooms are looking at the same wall.  Where the side runs through by a wall's thickness or less and
+    turns back onto that same line by a scrap of a slanted side (a hook at a door's jamb, too short for the chamfer rule
+    to see harm in within the room's own outline), the scrap goes and the side ends on the neighbour's line (round 38,
+    s036: the living room's corridor ran 15 px into the main bedroom's wall at its door, and the main bedroom was withheld)."""
     for _ in range(12):
         moved = False
-        for r in rooms:
-            n = len(r["pts"])
-            for i in range(n):
-                a, b = r["pts"][i], r["pts"][(i + 1) % n]
-                for q in rooms:
-                    if q is r or moved:
-                        continue
-                    m_ = len(q["pts"])
-                    for j in range(m_):
-                        c, d = q["pts"][j], q["pts"][(j + 1) % m_]
-                        sj = q["sides"][j]
-                        if "axis" not in sj or "axis" not in r["sides"][i] or sj["axis"] == r["sides"][i]["axis"] or not _proper_cross(a, b, c, d):
+        for late in ((False, True) if R38_SETTLE else (False,)):
+            for r in rooms:
+                n = len(r["pts"])
+                for i in range(n):
+                    a, b = r["pts"][i], r["pts"][(i + 1) % n]
+                    for q in rooms:
+                        if q is r or moved:
                             continue
-                        ax = sj["axis"]                       # the crossed wall is the line  (coordinate ax) = sj.coord
-                        # which end of side i sticks out beyond the crossed line, and by how much?
-                        over = [(abs(p_[ax] - sj["coord"]), k_) for k_, p_ in ((0, a), (1, b))]
-                        dist, end = min(over)
-                        if dist > reach:
-                            continue
-                        nb = r["sides"][(i - 1) % n] if end == 0 else r["sides"][(i + 1) % n]
-                        small = r.get("outdoor") or r["area_px"] <= q["area_px"]
-                        # The crossed side is the thick part of a side split where the wall behind it changes thickness,
-                        # and the change is where THIS room's wall meets it (the thick mass begins with that wall's flank):
-                        # the split moves onto this wall's centre-line, so that the thin part meets it at the corner.
-                        if sj.get("split") and _move_cut(q, j, r["sides"][i]["coord"], T, m):
-                            moved = True
-                            break
-                        if nb.get("axis") == ax and small:
-                            nb["coord"] = sj["coord"]; nb["t"] = sj["t"]
-                            if _legal_outline(r, T, m):
+                        m_ = len(q["pts"])
+                        for j in range(m_):
+                            c, d = q["pts"][j], q["pts"][(j + 1) % m_]
+                            sj = q["sides"][j]
+                            if "axis" not in sj or "axis" not in r["sides"][i] or sj["axis"] == r["sides"][i]["axis"] or not _proper_cross(a, b, c, d):
+                                continue
+                            ax = sj["axis"]                       # the crossed wall is the line  (coordinate ax) = sj.coord
+                            # which end of side i sticks out beyond the crossed line, and by how much?
+                            over = [(abs(p_[ax] - sj["coord"]), k_) for k_, p_ in ((0, a), (1, b))]
+                            dist, end = min(over)
+                            if dist > reach:
+                                continue
+                            nb = r["sides"][(i - 1) % n] if end == 0 else r["sides"][(i + 1) % n]
+                            small = r.get("outdoor") or r["area_px"] <= q["area_px"]
+                            # The crossed side is the thick part of a side split where the wall behind it changes thickness,
+                            # and the change is where THIS room's wall meets it (the thick mass begins with that wall's flank):
+                            # the split moves onto this wall's centre-line, so that the thin part meets it at the corner.
+                            if not late and sj.get("split") and _move_cut(q, j, r["sides"][i]["coord"], T, m):
                                 moved = True
+                                break
+                            if nb.get("axis") == ax and not late and small:
+                                nb["coord"] = sj["coord"]; nb["t"] = sj["t"]
+                                if _legal_outline(r, T, m):
+                                    moved = True
+                                break
+                            if late and "axis" not in nb and not nb.get("curve") and nb["L"] <= CHAMFER_T * T and dist <= T:
+                                k_nb = (i + 1) % n if end == 1 else (i - 1) % n
+                                after = r["sides"][(k_nb + 1) % n] if end == 1 else r["sides"][(k_nb - 1) % n]
+                                if after.get("axis") == ax and abs(after["coord"] - sj["coord"]) <= 0.5 * T:
+                                    was = list(r["sides"])
+                                    r["sides"] = [s_ for k_, s_ in enumerate(r["sides"]) if k_ != k_nb]
+                                    if _legal_outline(r, T, m):
+                                        moved = True
+                                        if m is not None:
+                                            m["_hooks_settled"] = m.get("_hooks_settled", 0) + 1
+                                    else:                             # (as it was)
+                                        r["sides"] = was
+                                        _legal_outline(r, T, m)
+                                    break
+                        if moved:
                             break
                     if moved:
                         break
@@ -3061,7 +3084,6 @@ def _settle_crossings(rooms, T, reach, m=None):
                 break
         if not moved:
             break
-
 
 DIAG_WELD = os.environ.get("AE_DIAG_WELD", "1") != "0"    # two rooms looking at one slanted wall share its centre-line
 
