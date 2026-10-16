@@ -796,6 +796,10 @@ test("removed opener falls back and reopen creates a new lifecycle generation", 
   // Plan's "Choose a template" opens Start a new design at Templates, whose address link opens Plan's search (ST8).
   await page.getByRole("button", { name: "Choose a template", exact: true }).click();
   await page.getByRole("button", { name: "Search by HDB address", exact: true }).click();
+  // The search moves focus to its heading a frame after it opens. Typing before that lands can lose the
+  // text: on 16 Oct WebKit moved focus during the floor's fill, the floor stayed empty and no search was
+  // sent (CI run 38902469934, attempt 1).
+  await expect(page.getByRole("heading", { name: "Find your home by address" })).toBeFocused();
   const sentinel = {
     address: "867A C1 Exact Privacy Sentinel Street",
     floor: "73",
@@ -804,6 +808,7 @@ test("removed opener falls back and reopen creates a new lifecycle generation", 
   const addressInput = page.getByTestId("floor-plan-address-search");
   await addressInput.fill(sentinel.address);
   await page.getByTestId("floor-plan-address-floor").fill(sentinel.floor);
+  await expect(page.getByTestId("floor-plan-address-floor")).toHaveValue(sentinel.floor);
   const [response] = await Promise.all([
     page.waitForResponse((candidate) =>
       new URL(candidate.url()).pathname === "/api/floor-plans" &&
