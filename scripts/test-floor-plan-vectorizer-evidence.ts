@@ -14,6 +14,7 @@ import type {
 } from "@/lib/floor-plan-imports/deterministic-evidence";
 import { PdfRasterFloorPlanSourceAdapter } from "@/lib/floor-plan-imports/pdf-raster-adapter";
 import { applyVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-pass";
+import { alignVectorizerFaces, vectorizerThicknessMm } from "@/lib/floor-plan-imports/vectorizer-face-millimetres";
 import { addVectorizerStandaloneWalls } from "@/lib/floor-plan-imports/vectorizer-standalone-walls";
 import type { FloorPlanAdapterContext } from "@/lib/floor-plan-imports/source-adapter";
 import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
@@ -265,10 +266,52 @@ function testStandaloneWallsLineUp() {
   assert.equal(ends(e94)[1].xMm, 12141, "an end inside a wall is not pulled onto its near face (the two would only touch)");
 }
 
+/**
+ * Faces first (round 37): a wall and a thinner window flush with its outer face, joined by a jog, keep that face on
+ * one whole millimetre; centre-lines and thicknesses are whole millimetres, and the window's odd thickness gives way
+ * on the face no neighbour shares.
+ */
+function testFaceMillimetres() {
+  const mm = 23.0004;
+  const edge = (id: string, from: [number, number], to: [number, number], thicknessPx: number) =>
+    ({ id, kind: "wall_centerline" as const, sourcePx: [from, to] as [[number, number], [number, number]], thicknessPx, opening: null });
+  const points = [{ x: 100, y: 0 }, { x: 100, y: 50 }, { x: 101.85, y: 50 }, { x: 101.85, y: 90 }];
+  const aligned = alignVectorizerFaces({
+    wallEdges: [
+      edge("e1", [100, 0], [100, 50], 10),             // faces 95 and 105 px
+      edge("e3", [100, 50], [101.85, 50], 1.85),       // the jog
+      edge("e2", [101.85, 50], [101.85, 90], 6.3),     // faces 98.7 and 105 px: flush with e1 outside
+      edge("e4", [101.85, 90], [100, 0], 3),           // slanted: left as measured
+    ],
+    rooms: [{ key: "r1", label: "", roomType: "other", confidence: 0.9, sourcePoints: points, edgeIds: ["e1", "e3", "e2", "e4"] }],
+  } as unknown as Parameters<typeof alignVectorizerFaces>[0], mm);
+  const plumb = (id: string) => {
+    const found = aligned.wallEdges.find((candidate) => candidate.id === id);
+    assert.ok(found, id);
+    const centre = found.sourcePx[0][0] * mm;
+    const thickness = found.thicknessPx * mm;
+    for (const value of [centre, thickness]) assert.ok(Math.abs(value - Math.round(value)) < 1e-6, `${id}: whole millimetres`);
+    return { low: centre - thickness / 2, high: centre + thickness / 2, thickness };
+  };
+  const wall = plumb("e1");
+  const window_ = plumb("e2");
+  assert.ok(Math.abs(wall.high - window_.high) < 1e-6, "one outer face for the wall and the window, to the millimetre");
+  assert.ok(Math.abs(window_.thickness - 6.3 * mm) <= 1.5, "the window keeps its drawn thickness within a millimetre and a half");
+  assert.equal(Math.round(window_.thickness) % 2, 0, "an even thickness: the centre-line on a whole millimetre");
+  assert.deepEqual(aligned.wallEdges.find((candidate) => candidate.id === "e4")?.sourcePx, [[101.85, 90], [100, 0]]);
+  const [, corner] = aligned.rooms[0].sourcePoints;
+  assert.ok(Math.abs(corner.x * mm - (wall.low + wall.high) / 2) < 1e-6, "the room's corner on the wall's new centre-line");
+  // A level or plumb wall keeps its whole-millimetre thickness; a slanted one keeps 5 mm steps (nothing lines its
+  // faces up, and a millimetre's change there only moved the corners of p03's photographed copy).
+  assert.equal(vectorizerThicknessMm([[0, 0], [0, 10]], 113 / mm, mm), 113);
+  assert.equal(vectorizerThicknessMm([[0, 0], [3, 10]], 113 / mm, mm), 115);
+}
+
 async function main() {
   const summary: string[] = [];
   testStandaloneWalls();
   testStandaloneWallsLineUp();
+  testFaceMillimetres();
   for (const name of ["room4", "h1", "d12", "exec"]) {
     const { evidence, page, scale, document, issues } = await importFixture(name);
     assert.ok(scale, `${name}: the adapter's cross-checked solver accepts a scale from the vectorizer spans`);
