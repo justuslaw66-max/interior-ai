@@ -111,12 +111,12 @@ assert.doesNotMatch(guest, /Choose a file|floor-plan-upload-drop-zone/);
 // "Auto-detection paused" always has a way on.
 const paused = (overrides: Partial<Parameters<typeof FloorPlanImportPausedNotice>[0]>) =>
   renderToStaticMarkup(createElement(FloorPlanImportPausedNotice, {
-    subtle: "", control: "", message: "Sign in to privately detect, review, and save this plan.",
+    subtle: "", message: "Sign in to privately detect, review, and save this plan.",
     authenticationRequired: false, resumableJobId: null, ...overrides,
   }));
 assert.match(
   paused({ authenticationRequired: true, resumableJobId: "job" }),
-  /data-testid="floor-plan-import-sign-in" class="[^"]*\bmin-h-11\b[^"]*">Sign in and continue</
+  /class="[^"]*\bmin-h-11\b[^"]*" data-floor-plan-workspace-focus="primary" data-testid="floor-plan-import-sign-in">Sign in and continue</
 );
 assert.doesNotMatch(paused({ authenticationRequired: true }), /Resume processing/);
 assert.match(paused({ resumableJobId: "job" }), />Resume processing</);
@@ -131,12 +131,12 @@ assert.doesNotMatch(read("components/editor/FloorPlanUploadPanel.tsx"), /<FloorP
 
 // One visible Upload floor plan under the room card (ST2).
 const startActions = renderToStaticMarkup(createElement(RoomSetupStartActions, {
-  canEdit: true, secondaryActionClass: "",
+  canEdit: true,
   actions: { chooseTemplate: noop, drawRoom: noop, uploadFloorPlan: noop },
 }));
 assert.match(
   startActions,
-  new RegExp(`Have a floor plan\\?[^<]*<button id="${FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID}" type="button" data-testid="plan-tool-import-2d"[^>]*>Upload floor plan</button>`)
+  new RegExp(`Have a floor plan\\?[^<]*<button type="button" class="[^"]*\\btext-accent\\b[^"]*" id="${FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID}" data-testid="plan-tool-import-2d"[^>]*>Upload floor plan</button>`)
 );
 assert.ok(startActions.indexOf("plan-start-template") < startActions.indexOf("plan-tool-import-2d"));
 

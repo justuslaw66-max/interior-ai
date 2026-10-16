@@ -219,8 +219,6 @@ function EmptyPlanEntryHarness() {
       <section data-testid="floor-plan-empty-surfaces-entry">
         <EmptyFloorPlanSurfacesActions
           isDesigner
-          progressActionClass="fixture-action"
-          progressSecondaryActionClass="fixture-action"
           progressMetaClass="fixture-meta"
           onStartDrawRoomSetup={noop}
           onSelectUploadMode={() => {

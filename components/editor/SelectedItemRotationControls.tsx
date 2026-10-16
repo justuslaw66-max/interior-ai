@@ -10,6 +10,9 @@ const SNAP_PRESET_OPTIONS: ReadonlyArray<{ value: RotationSnapPresetDegrees; lab
   { value: 0, label: "Free rotate", testId: "rotation-snap-preset-free", title: "Disable snap for unrestricted rotation" },
 ];
 
+// Pro's fine steps, in the order they read: −1°, +1°, −5°, +5°.
+const FINE_STEPS = [-1, 1, -5, 5] as const;
+
 type SelectedItemRotationControlsProps = {
   isDesigner: boolean;
   expanded: boolean;
@@ -44,7 +47,6 @@ export default function SelectedItemRotationControls({
   const textPrimaryClass = "text-sm font-semibold text-neutral-900";
   const textSecondaryClass = "mt-1 text-xs text-neutral-600";
   const hintClass = "mt-2 text-xs text-neutral-500";
-  const buttonClass = "min-h-11 rounded-lg border border-neutral-200 px-2 py-2 text-xs text-neutral-800";
 
   return (
     <div className="pt-3">
@@ -76,80 +78,67 @@ export default function SelectedItemRotationControls({
             options={SNAP_PRESET_OPTIONS}
           />
 
+          {/* Degree signs, so each label fits a compact Button in four columns (J, 16 Oct). */}
           <div className="mt-2 grid grid-cols-4 gap-2">
-            <button
+            <Button
+              size="compact"
               data-testid="rotation-btn-step-negative"
-              className={buttonClass}
               disabled={disabled}
+              aria-label={`Rotate left by ${rotationSnapStepDegrees} degrees`}
               title={`Rotate left by ${rotationSnapStepDegrees} degrees`}
               aria-keyshortcuts="q"
               onClick={() => onRotateByDegrees(-rotationSnapStepDegrees)}
             >
-              -{rotationSnapStepDegrees} deg
-            </button>
-            <button
+              −{rotationSnapStepDegrees}°
+            </Button>
+            <Button
+              size="compact"
               data-testid="rotation-btn-step-positive"
-              className={buttonClass}
               disabled={disabled}
+              aria-label={`Rotate right by ${rotationSnapStepDegrees} degrees`}
               title={`Rotate right by ${rotationSnapStepDegrees} degrees`}
               aria-keyshortcuts="e"
               onClick={() => onRotateByDegrees(rotationSnapStepDegrees)}
             >
-              +{rotationSnapStepDegrees} deg
-            </button>
-            <button
+              +{rotationSnapStepDegrees}°
+            </Button>
+            <Button
+              size="compact"
               data-testid="rotation-btn-quarter-turn"
-              className={buttonClass}
               disabled={disabled}
+              aria-label="Rotate right by 90 degrees"
               title="Rotate right by 90 degrees"
               aria-keyshortcuts="r"
               onClick={() => onRotateByDegrees(90)}
             >
-              +90 deg
-            </button>
-            <button
+              +90°
+            </Button>
+            <Button
+              size="compact"
               data-testid="rotation-btn-reset"
-              className={buttonClass}
               disabled={disabled}
               title="Reset rotation to 0 degrees"
               aria-keyshortcuts="0"
               onClick={onResetRotation}
             >
               Reset
-            </button>
+            </Button>
           </div>
 
           {isDesigner ? (
             <>
               <div className="mt-2 grid grid-cols-4 gap-2">
-                <button
-                  className={buttonClass}
-                  disabled={disabled}
-                  onClick={() => onRotateByDegrees(-1)}
-                >
-                  -1 deg
-                </button>
-                <button
-                  className={buttonClass}
-                  disabled={disabled}
-                  onClick={() => onRotateByDegrees(1)}
-                >
-                  +1 deg
-                </button>
-                <button
-                  className={buttonClass}
-                  disabled={disabled}
-                  onClick={() => onRotateByDegrees(-5)}
-                >
-                  -5 deg
-                </button>
-                <button
-                  className={buttonClass}
-                  disabled={disabled}
-                  onClick={() => onRotateByDegrees(5)}
-                >
-                  +5 deg
-                </button>
+                {FINE_STEPS.map((degrees) => (
+                  <Button
+                    key={degrees}
+                    size="compact"
+                    disabled={disabled}
+                    aria-label={`Rotate ${degrees < 0 ? "left" : "right"} by ${Math.abs(degrees)} degree${Math.abs(degrees) === 1 ? "" : "s"}`}
+                    onClick={() => onRotateByDegrees(degrees)}
+                  >
+                    {degrees < 0 ? "−" : "+"}{Math.abs(degrees)}°
+                  </Button>
+                ))}
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <input

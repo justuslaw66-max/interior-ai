@@ -1,10 +1,10 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import { requestFloorPlanUploadSignIn } from "@/lib/floor-plan-upload-request";
 
 type FloorPlanImportPausedNoticeProps = {
   subtle: string;
-  control: string;
   message: string;
   authenticationRequired: boolean;
   resumableJobId: string | null;
@@ -18,7 +18,6 @@ type FloorPlanImportPausedNoticeProps = {
  */
 export function FloorPlanImportPausedNotice({
   subtle,
-  control,
   message,
   authenticationRequired,
   resumableJobId,
@@ -28,21 +27,21 @@ export function FloorPlanImportPausedNotice({
       <div className="text-xs font-semibold">Auto-detection paused</div>
       <p className={`mt-1 text-xs leading-4 ${subtle}`}>{message}</p>
       {authenticationRequired ? (
-        <button
-          type="button" data-floor-plan-workspace-focus="primary" data-testid="floor-plan-import-sign-in"
-          className={`${control} mt-3 min-h-11 font-semibold`}
+        <Button
+          data-floor-plan-workspace-focus="primary" data-testid="floor-plan-import-sign-in"
+          className="mt-3"
           onClick={requestFloorPlanUploadSignIn}
         >
           Sign in and continue
-        </button>
+        </Button>
       ) : resumableJobId ? (
-        <button
-          type="button" data-floor-plan-workspace-focus="primary"
-          className={`${control} mt-3 min-h-11 font-semibold`}
+        <Button
+          data-floor-plan-workspace-focus="primary"
+          className="mt-3"
           onClick={() => window.location.reload()}
         >
           Resume processing
-        </button>
+        </Button>
       ) : null}
     </div>
   );

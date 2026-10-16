@@ -868,7 +868,7 @@ assert.match(
 
 assert.match(
   draggableSource,
-  /absolute -left-7 top-0 flex/,
+  /absolute -left-8 touch:-left-13 top-0 flex w-6 touch:w-11 flex-col/,
   "Floating panel rail controls should align with the panel top edge."
 );
 

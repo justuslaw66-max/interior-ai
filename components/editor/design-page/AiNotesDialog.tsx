@@ -86,14 +86,13 @@ export function AiNotesDialog({
                           Apply
                         </Button>
                       ) : (
-                        <button
-                          type="button"
+                        <Button
+                          variant="primary" size="touch"
                           disabled
-                          className="min-h-11 rounded-lg bg-gray-400 px-4 py-2 text-sm font-semibold text-white"
                           title="Upgrade to Pro to apply suggestions"
                         >
                           Pro only
-                        </button>
+                        </Button>
                       )}
                     </div>
                   ))}

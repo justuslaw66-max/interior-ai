@@ -234,12 +234,12 @@ assert.match(
 );
 assert.match(
   source,
-  /id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*type="button"\s*data-testid="plan-start-template"[\s\S]*?onClick=\{openStartTemplates\(PLAN_START_TEMPLATE_ACTION_ID\)\}/,
+  /id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*data-testid="plan-start-template"[\s\S]*?onClick=\{openStartTemplates\(PLAN_START_TEMPLATE_ACTION_ID\)\}/,
   "Pro's empty plan opens the same template list."
 );
 assert.match(
   fs.readFileSync(path.join(process.cwd(), "components", "editor", "RoomSetupStartActions.tsx"), "utf8"),
-  /id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*type="button"\s*data-testid="plan-start-template"/
+  /<Button\s+id=\{PLAN_START_TEMPLATE_ACTION_ID\}\s*data-testid="plan-start-template"/
 );
 assert.match(
   fs.readFileSync(path.join(process.cwd(), "components", "editor", "design-controls-plan", "EmptyFloorPlanSurfacesActions.tsx"), "utf8"),

@@ -5,11 +5,11 @@ import {
   type ComponentPropsWithoutRef,
   type ReactNode,
 } from "react";
+import { Button } from "@/components/ui/Button";
 
 type SurfaceMaterialCatalogBoundaryProps = ComponentPropsWithoutRef<"div"> & {
   open: boolean;
   status: "idle" | "loading" | "success" | "error";
-  retryActionClass: string;
   onRetry: () => Promise<unknown>;
   children: ReactNode;
 };
@@ -18,7 +18,7 @@ export const SurfaceMaterialCatalogBoundary = forwardRef<
   HTMLDivElement,
   SurfaceMaterialCatalogBoundaryProps
 >(function SurfaceMaterialCatalogBoundary(
-  { open, status, retryActionClass, onRetry, children, ...divProps },
+  { open, status, onRetry, children, ...divProps },
   ref
 ) {
   if (!open) return null;
@@ -37,14 +37,14 @@ export const SurfaceMaterialCatalogBoundary = forwardRef<
               : "Loading surface materials…"}
           </div>
           {status === "error" ? (
-            <button
-              type="button"
+            <Button
+              size="compact"
               data-testid="surface-catalog-retry"
-              className={`${retryActionClass} mt-2`}
+              className="mt-2"
               onClick={() => void onRetry().catch(() => undefined)}
             >
               Try again
-            </button>
+            </Button>
           ) : null}
         </>
       )}

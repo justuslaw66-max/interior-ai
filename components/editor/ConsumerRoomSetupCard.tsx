@@ -72,7 +72,6 @@ export function ConsumerRoomSetupCard({
   const shellClass = "border-b border-neutral-100 bg-neutral-50/80 p-3";
   const labelClass = "text-xs font-semibold text-neutral-700";
   const inputClass = "min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-900 outline-hidden focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
-  const secondaryActionClass = "min-h-11 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
 
   return (
     <section
@@ -225,7 +224,7 @@ export function ConsumerRoomSetupCard({
         </div>
       )}
 
-      <RoomSetupStartActions canEdit={canEdit} secondaryActionClass={secondaryActionClass} actions={actions} />
+      <RoomSetupStartActions canEdit={canEdit} actions={actions} />
     </section>
   );
 }

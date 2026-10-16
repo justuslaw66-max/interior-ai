@@ -120,7 +120,7 @@ import type {
   PlanStartMode,
 } from "./design-controls-plan/DesignControlsPlanPanel.types";
 import { planPaletteOpeningSummary } from "@/lib/consumer-room-setup-copy";
-import { Button } from "@/components/ui/Button";
+import { Button, buttonClassName } from "@/components/ui/Button";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 const WALL_SURFACE_MODE_OPTIONS: ReadonlyArray<{ value: WallSurfaceMode; label: string; testId: string }> = [
@@ -503,15 +503,8 @@ export default function DesignControlsPlanPanel({
     activeSurfaceTarget,
     onSurfaceMaterialSelected,
   ]);
-  const planStartButtonClass = (mode: Exclude<PlanStartMode, "start">) => {
-    const isActive = planStartMode === mode;
-    return [
-      "rounded-lg border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
-      isActive
-        ? "border-neutral-900 bg-neutral-900 text-white"
-        : "border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-100",
-    ].join(" ");
-  };
+  // The way to start that's open is black (UX 5n): Buttons, and the upload opener's own button.
+  const planStartVariant = (mode: Exclude<PlanStartMode, "start">) => (planStartMode === mode ? "primary" : "secondary");
   const showPlanDetails =
     planStartMode !== "start" ||
     planRoomCount > 0 ||
@@ -673,9 +666,6 @@ export default function DesignControlsPlanPanel({
   const progressReadyClass = "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
   const progressTodoClass = "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
   const progressViewClass = "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700";
-  const progressActionClass = "rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-neutral-700 disabled:opacity-50";
-  const progressSecondaryActionClass = "rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-100 disabled:opacity-50";
-  const collapsedToggleClass = "shrink-0 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-100";
   const renderCollapsibleHeader = ({
     section,
     title,
@@ -697,7 +687,6 @@ export default function DesignControlsPlanPanel({
         collapsed={collapsed}
         titleClassName={titleClass}
         metaClassName={progressMetaClass}
-        toggleClassName={collapsedToggleClass}
         onToggle={() => setPlanSectionCollapsed(section, !collapsed)}
       />
     );
@@ -1061,8 +1050,6 @@ export default function DesignControlsPlanPanel({
       setWallPaintSearch={setWallPaintSearch}
       setWallPaintVisibleLimit={setWallPaintVisibleLimit}
       hiddenNipponWallPaintCount={hiddenNipponWallPaintCount}
-      progressActionClass={progressActionClass}
-      progressSecondaryActionClass={progressSecondaryActionClass}
       applyWallPaintToActiveTarget={applyWallPaintToActiveTarget}
       applyWallPaintToAllRooms={applyWallPaintToAllRooms}
       onResetActiveCeilingSurface={onResetActiveCeilingSurface}
@@ -1214,12 +1201,11 @@ export default function DesignControlsPlanPanel({
       ref={surfaceWorkspaceRef}
       data-testid="room-surfaces-floor-panel" data-floor-material-id={activeRoomFloorMaterialId}
       data-surface-target={activeSurfaceTarget} data-surface-material-id={activeTargetMaterialId ?? ""}
-      open={roomFinishPanelOpen} status={surfaceCatalog.status} retryActionClass={progressSecondaryActionClass} onRetry={surfaceCatalog.retry}
+      open={roomFinishPanelOpen} status={surfaceCatalog.status} onRetry={surfaceCatalog.retry}
       className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"
     >
       {!hasRooms ? (
         <EmptyFloorPlanSurfacesActions isDesigner={isDesigner}
-          progressActionClass={progressActionClass} progressSecondaryActionClass={progressSecondaryActionClass}
           progressMetaClass={progressMetaClass}
           onStartDrawRoomSetup={startDrawRoomSetup} onSelectUploadMode={() => setPlanStartMode("upload")}
           onAddDesignerRoom={onAddDesignerRoom} />
@@ -1272,14 +1258,13 @@ export default function DesignControlsPlanPanel({
                 className="h-9 w-full rounded-lg border border-neutral-200 bg-white px-2.5 text-sm text-neutral-900 placeholder:text-neutral-400"
               />
             </label>
-            <button
-              type="button"
+            <Button
+              size="regular"
               data-testid="surfaces-filter-toggle"
-              className={progressSecondaryActionClass}
               onClick={() => setSurfaceFilterDrawerOpen((open) => !open)}
             >
               Filter
-            </button>
+            </Button>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <Button
@@ -1409,7 +1394,6 @@ export default function DesignControlsPlanPanel({
                       materialId={materialId}
                       productName={displayName}
                       favorite={favorite}
-                      detailsClassName={progressSecondaryActionClass}
                       onToggleFavorite={() => toggleFavoriteSurfaceMaterialGroup(group)}
                       onOpenDetails={() => selectSurfaceMaterial(materialId, "details")}
                     />
@@ -1511,7 +1495,7 @@ export default function DesignControlsPlanPanel({
                   href={selectedSurfaceMaterial.source.source_url}
                   target="_blank"
                   rel="noreferrer"
-                  className={progressSecondaryActionClass}
+                  className={buttonClassName({ size: "compact" })}
                 >
                   Source
                 </a>
@@ -2068,10 +2052,9 @@ export default function DesignControlsPlanPanel({
               Other ways to start
             </summary>
             <div className="mt-2 grid gap-2">
-              <button
-                type="button"
+              <Button
+                variant={planStartVariant("draw")} size="regular"
                 data-testid="plan-start-draw"
-                className={planStartButtonClass("draw")}
                 disabled={!canEdit}
                 onClick={() => {
                   setPlanStartMode("draw");
@@ -2080,23 +2063,22 @@ export default function DesignControlsPlanPanel({
                 }}
               >
                 Draw room
-              </button>
+              </Button>
               <EmptyFloorPlanProUploadAction
                 isDesigner={isDesigner}
                 onSelectUploadMode={() => setPlanStartMode("upload")}
-                className={planStartButtonClass("upload")}
+                className={buttonClassName({ variant: planStartVariant("upload"), size: "regular" })}
                 canEdit={canEdit}
               />
-              <button
+              <Button
+                variant={planStartVariant("template")} size="regular"
                 id={PLAN_START_TEMPLATE_ACTION_ID}
-                type="button"
                 data-testid="plan-start-template"
-                className={planStartButtonClass("template")}
                 disabled={!canEdit}
                 onClick={openStartTemplates(PLAN_START_TEMPLATE_ACTION_ID)}
               >
                 Choose a template
-              </button>
+              </Button>
             </div>
           </details>
 

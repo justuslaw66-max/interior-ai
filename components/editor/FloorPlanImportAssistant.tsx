@@ -429,7 +429,7 @@ export default function FloorPlanImportAssistant({
 
   if (state.kind === "error") {
     return (
-      <FloorPlanImportPausedNotice subtle={subtle} control={control} message={state.message}
+      <FloorPlanImportPausedNotice subtle={subtle} message={state.message}
         authenticationRequired={Boolean(state.authenticationRequired)} resumableJobId={state.resumableJobId ?? null} />
     );
   }

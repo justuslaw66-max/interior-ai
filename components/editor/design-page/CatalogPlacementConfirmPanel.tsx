@@ -246,43 +246,39 @@ export function CatalogPlacementConfirmPanel({
             </div>
           )}
           <div className="mt-3 flex flex-wrap items-center gap-2 md:mt-2">
-            <button
-              type="button"
+            <Button
               data-testid="catalog-placement-auto-place"
-              className="min-h-11 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+              variant="secondary" size="regular"
               onClick={actions.onAutoPlace}
             >
               Find open spot
-            </button>
+            </Button>
             {pendingCatalogBestRoomPlacement ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-best-room"
-                className="min-h-11 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-800 hover:bg-indigo-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onMoveToBestRoom}
               >
                 Best room
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogBestVariantPlacement ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-best-option"
-                className="min-h-11 rounded-lg border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-800 hover:bg-violet-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onSwitchToBestOption}
               >
                 Best option
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementImprovement ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-improve"
-                className="min-h-11 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800 hover:bg-blue-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onImprovePlacement}
               >
                 Improve placement
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementBlocked && hasRestorablePlacement ? (
               <Button
@@ -303,24 +299,22 @@ export function CatalogPlacementConfirmPanel({
               </Button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("swap_with_blocker") ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-swap-blocker"
-                className="min-h-11 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onSwapWithBlocker}
               >
                 Swap with blocker
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("move_blocker_aside") ? (
-              <button
-                type="button"
+              <Button
                 data-testid="catalog-placement-move-blocker"
-                className="min-h-11 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-100 md:min-h-9 md:px-3 md:py-1.5 md:text-xs"
+                variant="secondary" size="regular"
                 onClick={actions.onMoveBlockerAside}
               >
                 Move blocker aside
-              </button>
+              </Button>
             ) : null}
             {pendingCatalogPlacementScore?.actions.includes("place_beside_blocker") ? (
               <Button
@@ -403,21 +397,14 @@ export function CatalogPlacementConfirmPanel({
           >
             Cancel
           </Button>
-          <button
-            type="button"
+          <Button
             data-testid="catalog-placement-confirm"
+            variant="primary" size="regular"
             disabled={
               pendingCatalogPlacementHardInvalid &&
               !shouldConfirmImprovedCatalogPlacement &&
               !shouldConfirmRestoredCatalogPlacement
             }
-            className={`min-h-11 rounded-lg px-3 py-2 text-sm font-semibold text-white md:min-h-9 md:text-xs ${
-              pendingCatalogPlacementHardInvalid &&
-              !shouldConfirmImprovedCatalogPlacement &&
-              !shouldConfirmRestoredCatalogPlacement
-                ? "cursor-not-allowed bg-neutral-300"
-                : "bg-neutral-950 hover:bg-neutral-800"
-            }`}
             onClick={actions.onConfirm}
           >
             {shouldConfirmImprovedCatalogPlacement
@@ -426,7 +413,7 @@ export function CatalogPlacementConfirmPanel({
                 ? "Add valid spot to"
                 : "Add to"}{" "}
             {pendingCatalogPlacementRoomName ?? activeRoomName ?? "room"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
