@@ -38,7 +38,7 @@ const markup = renderToStaticMarkup(
 );
 
 assert.equal(
-  (markup.match(/role="tablist"/g) ?? []).length,
+  (markup.match(/role="group" aria-label="Material"/g) ?? []).length,
   1,
   "stocked and custom finishes must share one material selector"
 );
@@ -47,10 +47,22 @@ assert.match(
   /data-testid="catalog-finish-picker"/,
   "the finish picker must retain a stable browser-test boundary"
 );
-assert.equal(
-  (markup.match(/role="tab"/g) ?? []).length,
-  2,
-  "the shared selector must expose Fabric and Leather tabs"
+const materialSegments = Array.from(
+  markup.matchAll(/<button type="button" aria-pressed="(true|false)"[^>]*>(Fabric|Leather)<\/button>/g),
+  (match) => [match[2], match[1]]
+);
+assert.deepEqual(
+  materialSegments,
+  [
+    ["Fabric", "true"],
+    ["Leather", "false"],
+  ],
+  "the shared selector is the app's segmented control: Fabric and Leather, the chosen one pressed (UX 5n)"
+);
+assert.doesNotMatch(
+  markup,
+  /#4b2635|#5a2135/,
+  "the picker uses the app's colours, not a brand's (UX 5n, J, 17 Oct)"
 );
 assert.match(markup, /Stocked Fabrics:/, "the active material must show its stocked section");
 assert.match(markup, /Custom Fabrics:/, "the active material must show its custom section");

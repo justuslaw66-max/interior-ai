@@ -1429,7 +1429,7 @@
     "components/catalog/CatalogItemFinishPicker.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 161
+        "maximum": 148
       }
     },
     "components/catalog/CatalogItemGallery.tsx": {

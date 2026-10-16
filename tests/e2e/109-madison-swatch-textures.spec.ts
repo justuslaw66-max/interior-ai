@@ -34,10 +34,11 @@ test.describe("109. Madison Swatch Textures", () => {
     const drawer = page.locator("aside").filter({ hasText: "Product details" }).first();
     await expect(drawer).toBeVisible({ timeout: 10000 });
 
-    const fabricTab = drawer.getByRole("tab", { name: "Fabric" });
-    const leatherTab = drawer.getByRole("tab", { name: "Leather" });
-    await expect(fabricTab).toHaveAttribute("aria-selected", "true");
-    await expect(leatherTab).toHaveAttribute("aria-selected", "false");
+    const material = drawer.getByRole("group", { name: "Material" });
+    const fabricTab = material.getByRole("button", { name: "Fabric", exact: true });
+    const leatherTab = material.getByRole("button", { name: "Leather", exact: true });
+    await expect(fabricTab).toHaveAttribute("aria-pressed", "true");
+    await expect(leatherTab).toHaveAttribute("aria-pressed", "false");
     await expect(drawer.getByText("Fabric colour")).toBeVisible();
     await expect(drawer.getByRole("button", { name: /Bisque/ }).first()).toHaveAttribute(
       "aria-pressed",
@@ -45,7 +46,7 @@ test.describe("109. Madison Swatch Textures", () => {
     );
 
     await leatherTab.click();
-    await expect(leatherTab).toHaveAttribute("aria-selected", "true");
+    await expect(leatherTab).toHaveAttribute("aria-pressed", "true");
     await expect(drawer.getByRole("button", { name: /Caramel/ }).first()).toHaveAttribute(
       "aria-pressed",
       "true",

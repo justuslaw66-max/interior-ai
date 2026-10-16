@@ -673,5 +673,10 @@ assert.match(
   /state\.structuredColour\.preview[\s\S]{0,160}\?\s*createPortal\(/,
   "Structured-colour previews should still portal from ProductFinishControls.",
 );
+assert.doesNotMatch(
+  finishControlsSource,
+  /font-serif|#4b2635|#5a2135|#5b2d3c|#8f4b31/,
+  "Finishes, swatch rings and the material preview use the app's type and colours, not a brand's (UX 5n, J, 17 Oct).",
+);
 
 console.log("Design-page selected-item panel ownership checks passed.");

@@ -354,7 +354,7 @@ export function ProductFinishControls({
                     }}
                   />
                   <div className="space-y-1 bg-white px-4 py-3">
-                    <div className="font-serif text-[18px] leading-snug text-[#4b2635]">
+                    <div className="text-base font-semibold leading-snug text-neutral-900">
                       {state.structuredColour.preview.title}
                     </div>
                     {state.structuredColour.preview.subtitle ? (
@@ -367,7 +367,7 @@ export function ProductFinishControls({
                         {state.structuredColour.preview.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-sm bg-[#f4f1eb] px-2 py-1 text-xs text-[#5b2d3c]"
+                            className="rounded-sm bg-neutral-100 px-2 py-1 text-xs text-neutral-700"
                           >
                             {tag}
                           </span>
@@ -375,19 +375,19 @@ export function ProductFinishControls({
                       </div>
                     ) : null}
                     {state.structuredColour.preview.finishCode ? (
-                      <div className="text-xs uppercase tracking-[0.18em] text-[#8f4b31]">
+                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                         {state.structuredColour.preview.finishCode}
                       </div>
                     ) : null}
                     {state.structuredColour.preview.compositionHeading ? (
                       <>
-                        <div className="mt-3 text-xs uppercase tracking-[0.18em] text-[#8f4b31]">
+                        <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                           {state.structuredColour.preview.compositionHeading}
                         </div>
                         <div className="text-[12px] leading-snug text-neutral-700">
                           {state.structuredColour.preview.composition}
                         </div>
-                        <div className="mt-2 text-xs uppercase tracking-[0.18em] text-[#8f4b31]">
+                        <div className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                           Care
                         </div>
                         <div className="text-[12px] leading-snug text-neutral-700">
