@@ -1,0 +1,769 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/chevron-refined-miele/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: TABULAE - CHEVRON REFINED MIELE - minimali.zip (20254817 bytes, sha256 3e261d2bdb4c8f08e3f704732bfca0aa5bbf7d247b396060e5f8adc21a451f7a).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Each picture is one chevron piece with both ends cut on a slant, on white; ABK shows both hands (par-dx-sx). Pictures whose top cut rises to the left are mirrored left to right, so every face has its top cut rising to the right; the app lays that hand and mirrors it in every other band. The white beyond the cuts and the 1-2 px white side margins are filled with the piece's own edge pixels, repeated along the grain, so no white bleeds in when a face is scaled down. Each face covers the piece's 150 x 850 mm bounding box (ABK's pictures are 2% narrower than that; drawn at the tile's width).",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "chevron": {
+  "end_offset_mm": 70.7,
+  "measured": "Each end's cut runs 317 px along the piece in every one of the 118 pictures (straight-line fits to both cuts, 316.8 to 317.1 px), and the pictures are 3809 px tip to tip for 850 mm: 70.7 mm. The pieces lean about 25 degrees off the band crossing, as ABK's configurator preview (two pieces meeting at a vertical cut) and room photos show."
+ },
+ "formats": [
+  {
+   "format": "15x85",
+   "item_code": "0021113",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/chevron-refined-miele/pf60021113-v102/",
+   "face_mm": {
+    "width": 150,
+    "height": 850
+   },
+   "swatch": "0021113_swatch.webp",
+   "swatch_note": "600 x 600 mm of the laid chevron (2 mm joints), painted with the app's chevron layout, a band line across its middle",
+   "used_by": "floor gardenia-flooring-tabulae-chevron-miele-pf60021113-15x85-nat-92344-par-dx-sx; wall gardenia-wall-tile-tabulae-chevron-miele-pf60021113-15x85-nat-92344-par-dx-sx",
+   "mirrored_faces": [
+    3,
+    5,
+    6,
+    8,
+    9,
+    11,
+    13,
+    16,
+    17,
+    18,
+    21,
+    22,
+    26,
+    29,
+    30
+   ],
+   "faces": [
+    {
+     "file": "0021113_01.webp",
+     "face": 1,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 1704,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_1 (2).jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "315157430e6eaa136a858eb92a256d6820553294f975c1d3ad6cf014283b5006",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_01",
+      "id": "9e0a17ae-cabd-41e4-acd6-c48fa800476f",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021113_02.webp",
+     "face": 2,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3020,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_1.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "022379d683e9a454347941e4325dc284a98cfa163a6b353793229617531b4091",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_25",
+      "id": "0838c109-0c71-4083-b9fc-3c204fb79277",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021113_03.webp",
+     "face": 3,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3670,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_2.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "f4832de88c5a7d179f46466edbdf595e15b7d4b2ada89b676d6aa6b4b34b7a04",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_26",
+      "id": "0a1b981b-2833-4232-86ec-0383d1a6f4a5",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021113_04.webp",
+     "face": 4,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2702,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_3.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "4c80afe5a46dceda95e359ac2b818b5401b4af344712698eb5d19da911a3cbc3",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_17",
+      "id": "5be9695a-448e-410d-a52d-0c793f79464a",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021113_05.webp",
+     "face": 5,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3054,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_4.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "87fffe90a9514e9daf7045de168b1417882de5524ad342942e278fe272f3500e",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_02",
+      "id": "101c3302-2f59-43dd-9780-42dfe95ff329",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021113_06.webp",
+     "face": 6,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2686,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_5.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "2ec6d30db06e746d262468d0e6b3cb171e27b22695d0ba329fed20e017168ccc",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_06",
+      "id": "785d1682-22cd-478c-8080-3d220d6344d0",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021113_07.webp",
+     "face": 7,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2502,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_6.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "446df82d380eff40b2f48a760ea289ba75260c9149259abeb5ca82bcacccbb1c",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_29",
+      "id": "77b1e392-23f3-44c4-ad99-016e20d083a8",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021113_08.webp",
+     "face": 8,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3458,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_7.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "57e3edd2baa81904955b79b388eca4b2c30e16076834e78ef9c598af35dd9874",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_28",
+      "id": "530ea750-1e67-4ea5-ac9f-b037c0a652df",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021113_09.webp",
+     "face": 9,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3382,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_8.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "9545a3f94aa27ea40a3c46d5c86328f1d9884cfe4cd7d7250631322d1e0c7776",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_14",
+      "id": "4c9091c8-1958-4276-9e44-28a3f7a9fa37",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021113_10.webp",
+     "face": 10,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2450,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_9.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "77e8e577491ef1a085bcd65565ce08bc56d8f4c3267ded9958e3e44c0f7570a6",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_19",
+      "id": "ec902124-8de1-49c6-84ab-305249738911",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021113_11.webp",
+     "face": 11,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3538,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_10.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "56b7548143860a26664f7670845384a4bdd4733070713869a39e4eee43ca5dd9",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_24",
+      "id": "23f75821-bd38-4c72-bb6f-84ee4ff8c201",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021113_12.webp",
+     "face": 12,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2640,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_11.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "1f24bc0de34e9efa4f8971056383c4273a6eabe19b8b0899b6b9a9d06c25cdc0",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_27",
+      "id": "02a3f1e6-b475-4c71-a661-1f2daa94e3f2",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021113_13.webp",
+     "face": 13,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2858,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_12.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "bb51a486ba13d7d6b2cb238da06cbe8d2502999b696495064d189013a3a7c34d",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_18",
+      "id": "bede75b6-65f4-4a20-8558-18a62bce98ba",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021113_14.webp",
+     "face": 14,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2202,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_13.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "d97cd872b6d7228de8bf2b4faa0c4c274fe3c2d94b55c3cc7e916599c2e0d1f4",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_07",
+      "id": "9d29afb2-2db2-468d-80e1-acaeb3ab8d7e",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021113_15.webp",
+     "face": 15,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2528,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_14.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "3c194699e462fafbdcb6684ee1d4690b206d164a55df6f83bec8057c09485ddc",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_03",
+      "id": "1a187272-db70-48bf-99e6-b22b7253bf08",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021113_16.webp",
+     "face": 16,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3124,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_15.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "e8de92df2d8787c6726415223f0347ccdf64fd5aee0939330e13b5395d525da6",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_30",
+      "id": "4b8b6bb6-bb42-47ed-82ab-03cdf7f3c2de",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021113_17.webp",
+     "face": 17,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3168,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_16.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "3b91e44032d34e4995f1d7317c28fce2179b4dd51e1621a2240cae0a38a931b2",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_12",
+      "id": "857abb83-1af3-4516-86fb-c60e5d2c58d1",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021113_18.webp",
+     "face": 18,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2868,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_17.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "d722dae55c67f5acf5dcf8f685e32e676858720dcc40488379ef201fd3ef1e19",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_08",
+      "id": "0fa4541a-6a1a-4dca-a77e-1a0cc00b4e52",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021113_19.webp",
+     "face": 19,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2628,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_18.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "c2742f9580db4d2feb79e78ed5196b904b8fc58b62baf2f723aeda55dba4b19f",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_13",
+      "id": "af98a11a-de2e-4368-8b44-12b799752729",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021113_20.webp",
+     "face": 20,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2260,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_19.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "24d628860aa83377d847a152565e3e96032c8d8ea68b4866700b129fc6d30934",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_11",
+      "id": "ffd26d7b-c85b-4966-af43-974a8b395f68",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0021113_21.webp",
+     "face": 21,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3064,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_20.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "cce3022fc411f49f53fef1b0a8c0e4b493d3a18ee57d7414e98adfd9c693b0ae",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 21",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_16",
+      "id": "6c067673-85d6-4d05-ac41-3828db69684c",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0021113_22.webp",
+     "face": 22,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3248,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_21.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "e84764e168cec2970fca899fb1b32cb32a6df79691e2888807a0935d8599114b",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 22",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_22",
+      "id": "cb3714de-e0ec-4d42-bed7-2be6f1082a0b",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0021113_23.webp",
+     "face": 23,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 1874,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_22.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "6f30c7f9ec8a429af55eeb94356c6bf1b678cd7e2bc579f20c71c18621e6729a",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 23",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_09",
+      "id": "53eb7d34-1458-49ff-8b49-436fcf646141",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0021113_24.webp",
+     "face": 24,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2724,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_23.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "1c9f9c516d086bcbd69db48234297bb850bc50197fa523a8de85904cf39643c6",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 24",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_05",
+      "id": "d3b0c29a-3fd8-4c2f-a229-98b460bc4a7f",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0021113_25.webp",
+     "face": 25,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2570,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_24.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "73087fb9ef233346a14369ead342a5bba155ecc8c5a6b9ca3e6159352fd79c3c",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 25",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_21",
+      "id": "5c9d623a-6a0a-4759-b04d-b48effe5ef24",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0021113_26.webp",
+     "face": 26,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2950,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_25.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "faf6702fa3f33c7d6035aef45ca590ca0b8bd22a4898b1ec634f7ffffa678af7",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 26",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_04",
+      "id": "8a704f27-3647-4301-a00e-0dbeafd6c3ad",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0021113_27.webp",
+     "face": 27,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2656,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_26.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "a4fa52b25235193b7e82b86c9b3082fa79bd02060642410bed2f7b68bb4300d5",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 27",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_15",
+      "id": "ceef8f6f-4b37-4b32-a81d-2c48692f74b8",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0021113_28.webp",
+     "face": 28,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2614,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_27.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "20d1d38475c742a45e54da2e55660efbc030d529209e340dfb0bed2d92e186de",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 28",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_23",
+      "id": "261d4ad4-5244-4225-a2a4-290a2db648a9",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0021113_29.webp",
+     "face": 29,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3170,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_28.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "eb944cb9a05e4ad7adfdd58ee614f61d296227d637bdd0b91e089421b77a64ed",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 29",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_10",
+      "id": "e6443c3d-a81b-4fc3-962c-6fd8324f7438",
+      "site_position": 29
+     }
+    },
+    {
+     "file": "0021113_30.webp",
+     "face": 30,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3030,
+     "source_zip": "TABULAE - CHEVRON REFINED MIELE - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED MIELE - 15X85 - Natural - view_29.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "3928884aa0ecd48b7d25af9451583418c5537d017a1223e9be49713d0dbb3adf",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 30",
+      "name": "TABULAE CHEVRON REFINED MIELE 15X85_20",
+      "id": "ab8bae42-77b2-4923-a4e3-2be58d9dfedf",
+      "site_position": 30
+     }
+    }
+   ]
+  }
+ ]
+}

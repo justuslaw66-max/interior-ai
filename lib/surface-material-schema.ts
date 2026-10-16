@@ -69,6 +69,7 @@ export type SurfacePatternLayout =
   | "vertical_brick"
   | "random_stagger"
   | "herringbone"
+  | "chevron"
   | "grid"
   | "checker";
 
@@ -115,6 +116,8 @@ export type SurfaceMaterial = {
     plank_length_mm?: number | null;
     tile_width_mm?: number | null;
     tile_length_mm?: number | null;
+    /** Chevron pieces only: how far each end's slanted cut runs along the piece; tile_length_mm is tip to tip. */
+    chevron_end_offset_mm?: number | null;
     total_thickness_mm?: number | null;
     wear_layer_mm?: number | null;
     installation_method?: string[];

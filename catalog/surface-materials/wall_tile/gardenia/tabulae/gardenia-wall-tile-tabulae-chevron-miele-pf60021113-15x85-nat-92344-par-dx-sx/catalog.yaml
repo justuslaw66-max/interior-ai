@@ -15,6 +15,7 @@ source:
   currency: EUR
   license_status: confirmed
   notes:
+    - "Tile faces: 30 single item pictures from the ABK Group download area (https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/chevron-refined-miele/pf60021113-v102/), downloaded signed in on 2026-10-09, stored at 0.6 px per mm; the originals are sharper, see gardenia-tabulae-chevron-refined-miele-faces.manifest.json. Each is one chevron piece (par-dx-sx: ABK shows both hands; the left-hand pictures are mirrored so every face is one hand, and the app mirrors every other band) and covers its 150x850 mm bounding box, tip to tip."
     - Imported from Gardenia RealityRemod configurator with user-confirmed permission on 2026-07-04.
     - Gardenia tile item GARDENIA/PF60021113/PAR_DX_SX/92344 for wall use.
     - "Configurator format: 15x85 Nat; surface destination: ENTRAMBE."
@@ -25,6 +26,9 @@ source:
     - "Collection page sizes: 10x60, 5x120, 23.4x148, 20x120, 15x85, 60x120, 60x60, 30x120."
     - "Available configurator formats: PF60021113 15x85 Nat ENTRAMBE patterns CPLX."
     - The configurator API did not expose slip rating, package quantity, price, or seamless texture QA data.
+    - "Chevron layout (2026-10-16): each end of the piece is cut on a slant that runs 70.7 mm along it (317 of ABK's 3809 px over 850 mm, the same in all 118 pictures), so pieces lean about 25 degrees and bands are 705 mm apart, as in ABK's configurator preview and room photos."
+    - "ABK's colour page https://www.abkgroup.it/en/gardeniaariana/floor-and-wall-tiles/tabulae/chevron-refined-miele/ (read 2026-10-16): 15X85, Natural, 9.5 mm; the catalogue takes the thickness from it (J, 2026-10-15: fill thickness from ABK, then publish)."
+    - "Quote on request (J, 2026-10-15): no price yet; the entry is published with purchase mode quote_or_sample, and Request sample / quote opens ABK's Gardenia&Ariana contact form (https://www.abkgroup.it/en/gardeniaariana/contacts/), where private customers and professionals send an information request."
 classification:
   flooring_type: tile
   design_effect: wood
@@ -52,7 +56,8 @@ physical_specs:
   plank_length_mm: null
   tile_width_mm: 150
   tile_length_mm: 850
-  total_thickness_mm: null
+  chevron_end_offset_mm: 70.7
+  total_thickness_mm: 9.5
   wear_layer_mm: null
   installation_method:
     - direct_stick
@@ -62,16 +67,110 @@ physical_specs:
   suitable_for_outdoor: null
   commercial_grade: null
 texture_assets:
-  swatch_url: /assets/catalog/surface-materials/gardenia/tabulae/pf60021113-par-dx-sx.webp
-  base_color_url: /assets/catalog/surface-materials/gardenia/tabulae/pf60021113-par-dx-sx.webp
+  swatch_url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_swatch.webp
+  base_color_url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_01.webp
   normal_url: null
   roughness_url: null
   ao_url: null
   preview_room_url: null
-  tileable: needs_confirmation
+  tileable: false
   texture_repeat_size_cm:
     width: 15
     height: 85
+  image_physical_size_mm:
+    width: 150
+    height: 850
+  faces:
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_01.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_02.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_03.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_04.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_05.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_06.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_07.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_08.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_09.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_10.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_11.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_12.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_13.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_14.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_15.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_16.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_17.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_18.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_19.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_20.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_21.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_22.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_23.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_24.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_25.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_26.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_27.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_28.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_29.webp
+      width_mm: 150
+      height_mm: 850
+    - url: /assets/catalog/surface-materials/gardenia/tabulae/0021113_30.webp
+      width_mm: 150
+      height_mm: 850
 rendering:
   default_rotation_deg: 0
   roughness: 0.62
@@ -82,25 +181,23 @@ rendering:
   source_pattern_ids:
     - CPLX
   available_pattern_layouts:
-    - straight
+    - chevron
 commerce:
-  purchase_mode: unknown
+  purchase_mode: quote_or_sample
   price_per_sqm:
     currency: EUR
     amount: null
   sample_available: unknown
-  sample_request_url: null
+  sample_request_url: https://www.abkgroup.it/en/gardeniaariana/contacts/
   direct_checkout: false
 import_governance:
-  publish_status: draft
-  publish_blockers:
-    - confirm_physical_dimensions
-    - confirm_texture_tileability
-    - confirm_price_per_sqm_or_quote_mode
+  publish_status: published
+  publish_blockers: []
   qa_flags:
     - gardenia_realityremod_import
     - gardenia_tile_item_variant
     - user_confirmed_permission
-    - configurator_preview_asset
+    - physical_scale_faces
+    - abk_download_area_face_pictures
     - gardenia_collection_page_enriched
     - surface_target_specific_entry

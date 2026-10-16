@@ -265,7 +265,7 @@
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
-      "lines": 1073,
+      "lines": 855,
       "limit": 400
     },
     "components/editor/RoomPanNavigator.tsx": {
@@ -589,7 +589,7 @@
       "limit": 400
     },
     "lib/room-types.ts": {
-      "lines": 570,
+      "lines": 565,
       "limit": 400
     },
     "lib/surface-material-audit.ts": {
@@ -597,7 +597,7 @@
       "limit": 400
     },
     "lib/surface-settings.ts": {
-      "lines": 457,
+      "lines": 456,
       "limit": 400
     },
     "lib/useDesignPageAiLayout.ts": {
@@ -2099,11 +2099,11 @@
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 258
+        "maximum": 166
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 29
+        "maximum": 17
       }
     },
     "components/editor/RoomConnectionChecklist.tsx": {

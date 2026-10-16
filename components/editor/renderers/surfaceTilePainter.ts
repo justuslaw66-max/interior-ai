@@ -340,7 +340,7 @@ function getPhysicalHerringboneVariation({
 }
 
 /** Reads each physical source once, scaled down to the canvas resolution so sampling does not alias. */
-function readPhysicalPlankSources(
+export function readPhysicalPlankSources(
   physicalSources: readonly LoadedSurfacePhysicalSource[],
   canvasPxPerMm: number
 ): PhysicalPlankSource[] | null {

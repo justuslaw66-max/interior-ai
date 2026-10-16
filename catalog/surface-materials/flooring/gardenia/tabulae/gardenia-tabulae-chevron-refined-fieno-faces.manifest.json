@@ -1,0 +1,744 @@
+{
+ "source_page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/chevron-refined-fieno/",
+ "source": "ABK Group download area, \"Download all (.zip)\" on the colour page after sign-in, downloaded for J on 2026-10-09: TABULAE - CHEVRON REFINED FIENO - minimali.zip (20189441 bytes, sha256 73f8c768f4e265763c929c131f2c2425bbd0a1fd1fd9d9c62510d7971e431bcb).",
+ "note": "This download holds one copy of each face. Every site picture was matched to its ZIP file by sha256 (each picture's own download, read in the signed-in browser pane). Pictures that ABK lists twice with identical bytes are used once. Face numbers run 01..n in the site's order. Each picture is one chevron piece with both ends cut on a slant, on white; ABK shows both hands (par-dx-sx). Pictures whose top cut rises to the left are mirrored left to right, so every face has its top cut rising to the right; the app lays that hand and mirrors it in every other band. The white beyond the cuts and the 1-2 px white side margins are filled with the piece's own edge pixels, repeated along the grain, so no white bleeds in when a face is scaled down. Each face covers the piece's 150 x 850 mm bounding box (ABK's pictures are 2% narrower than that; drawn at the tile's width).",
+ "resolution": {
+  "stored_px_per_mm": 0.6,
+  "why": "Chosen by J on 2026-10-04 for Gardenia (see the Anima manifests) to keep the repository small. The app draws floors at 0.26 px per mm and walls at 0.56, so 0.6 loses nothing visible today.",
+  "sharper_masters": "The original JPGs are sharper (see source_px_per_mm per face). They are kept outside the repository: J's ~/Developer/material-masters/gardenia/tabulae/ holds the tracking files, and the ZIPs can be downloaded again from the source page with a Gardenia&Ariana account.",
+  "to_go_sharper": "Re-export the faces from the masters at a higher px per mm with the same file names; no catalogue change is needed. See docs/architecture/surface-material-tile-faces.md."
+ },
+ "chevron": {
+  "end_offset_mm": 70.7,
+  "measured": "Each end's cut runs 317 px along the piece in every one of the 118 pictures (straight-line fits to both cuts, 316.8 to 317.1 px), and the pictures are 3809 px tip to tip for 850 mm: 70.7 mm. The pieces lean about 25 degrees off the band crossing, as ABK's configurator preview (two pieces meeting at a vertical cut) and room photos show."
+ },
+ "formats": [
+  {
+   "format": "15x85",
+   "item_code": "0021112",
+   "finish": "Natural",
+   "page": "https://www.abkgroup.it/en/gardeniaariana/download-area/single-item-picture/tabulae/chevron-refined-fieno/pf60021112-v102/",
+   "face_mm": {
+    "width": 150,
+    "height": 850
+   },
+   "swatch": "0021112_swatch.webp",
+   "swatch_note": "600 x 600 mm of the laid chevron (2 mm joints), painted with the app's chevron layout, a band line across its middle",
+   "used_by": "floor gardenia-flooring-tabulae-chevron-fieno-pf60021112-15x85-nat-92343-par-dx-sx; wall gardenia-wall-tile-tabulae-chevron-fieno-pf60021112-15x85-nat-92343-par-dx-sx",
+   "mirrored_faces": [
+    2,
+    7,
+    9,
+    11,
+    12,
+    14,
+    15,
+    17,
+    19,
+    20,
+    23,
+    26,
+    27,
+    28
+   ],
+   "faces": [
+    {
+     "file": "0021112_01.webp",
+     "face": 1,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4042,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_1 (2).jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "6b47d9e53b50a18f13a8e6bb670859d66b955d76a9050ebf1993d30ad6678b76",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 1 (view_01)",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_01",
+      "id": "b282e9e1-247e-4961-aadf-154857d4e670",
+      "site_position": 1
+     }
+    },
+    {
+     "file": "0021112_02.webp",
+     "face": 2,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2542,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_1.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "7c52f43d77de56ca7cc8b27f57cc599992a38f0f2c331e0779b31aad226aa0a7",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 2",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_28",
+      "id": "fd24b39d-be3d-4d30-ac98-35c0045c1f9b",
+      "site_position": 2
+     }
+    },
+    {
+     "file": "0021112_03.webp",
+     "face": 3,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3446,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_2.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "678d2182106c8d6cb6fb28e69f2a9757d42582baedbfd9161a2ae7347563c4cf",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 3",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_27",
+      "id": "c1f13ff3-6e98-4045-b48a-48e96e964328",
+      "site_position": 3
+     }
+    },
+    {
+     "file": "0021112_04.webp",
+     "face": 4,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4278,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_3.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "3ebae95eef0b086e6b57b491780fb60c897719b57156551686a80edd52aa3ab0",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 4",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_03",
+      "id": "9d855801-8dc9-43ed-9487-df5977c34c6c",
+      "site_position": 4
+     }
+    },
+    {
+     "file": "0021112_05.webp",
+     "face": 5,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4228,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_4.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "c59c5a5942bdc819a729da84324affa1d0e10f32e59c67e9694a2eea0897a2e2",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 5",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_23",
+      "id": "63d95b35-2d60-4997-87aa-46a35518c1b0",
+      "site_position": 5
+     }
+    },
+    {
+     "file": "0021112_06.webp",
+     "face": 6,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3660,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_5.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "d7c0754115935b1f99b9edf6b31b12b95267b6c22dc6e0b58b0338c568c06b8b",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 6",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_21",
+      "id": "8db936a1-39eb-41bf-93d1-c2e92cc87789",
+      "site_position": 6
+     }
+    },
+    {
+     "file": "0021112_07.webp",
+     "face": 7,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2504,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_6.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "f91c32b4ad734b16e72266d5b7020560578ffae242dbab892b3d23751a311503",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 7",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_24",
+      "id": "2d950bfe-f73f-4f1c-9739-11a599ca5d46",
+      "site_position": 7
+     }
+    },
+    {
+     "file": "0021112_08.webp",
+     "face": 8,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4524,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_7.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "bd7c6225439ec7e5e58f48f419e5f9841ce50faf33ba5500b0ee20e4259fdd38",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 8",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_07",
+      "id": "3d36689d-97b8-4b4d-9217-772a1238c61c",
+      "site_position": 8
+     }
+    },
+    {
+     "file": "0021112_09.webp",
+     "face": 9,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3332,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_8.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "cddc6d9bdd93e398dc4c3840ea46a72acf2db4a1d4836991baf1edbe42ba55ef",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 9",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_18",
+      "id": "05fa83e9-7d7c-4207-bc73-1505117fb55b",
+      "site_position": 9
+     }
+    },
+    {
+     "file": "0021112_10.webp",
+     "face": 10,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3106,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_9.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "34d612d1dcaa65c75d51f9164454d09ca8d9846e125618fe4ed78874afc2e2f8",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 10",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_25",
+      "id": "affdf9c8-2e77-41e2-92fa-134fdf7c6d31",
+      "site_position": 10
+     }
+    },
+    {
+     "file": "0021112_11.webp",
+     "face": 11,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3400,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_10.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "d01c5483c95a629ba22e649fbf2bc0ce6a2d65624974989fa71ab50c63072543",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 11",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_06",
+      "id": "e632b22f-a274-40f3-8db9-410918e74e1d",
+      "site_position": 11
+     }
+    },
+    {
+     "file": "0021112_12.webp",
+     "face": 12,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2768,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_11.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "b7dca17118ae9893c3dc18e485869e2269e452ff2bda9ddacfd2ef9fcb43c124",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 12",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_30",
+      "id": "e87abd46-0c55-4235-8f08-06ee04406c98",
+      "site_position": 12
+     }
+    },
+    {
+     "file": "0021112_13.webp",
+     "face": 13,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3448,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_12.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "5c2d4a18e2806585d2d811e655210443b644c49f519cb6852c96021e8d671531",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 13",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_19",
+      "id": "fadf3c87-797d-4ce1-9f14-317dae15e0e1",
+      "site_position": 13
+     }
+    },
+    {
+     "file": "0021112_14.webp",
+     "face": 14,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2934,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_13.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "9eb48a91377a1acd1231a3646d9e7d5f8b6b75a277cac2c3406477cc314fa587",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 14",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_22",
+      "id": "129fc607-be3f-4ddb-9b05-ddef360fbab7",
+      "site_position": 14
+     }
+    },
+    {
+     "file": "0021112_15.webp",
+     "face": 15,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3348,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_14.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "7b4bc0db76fe74e346685bb13ce82de3fae8161ae6477649acba06b198ee5072",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 15",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_20",
+      "id": "1af26565-fc42-4ef2-a8a4-938f51429f22",
+      "site_position": 15
+     }
+    },
+    {
+     "file": "0021112_16.webp",
+     "face": 16,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4798,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_15.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "87263083708a25a4dad35c477065ae5602d76dcea0ee63772df64824cc4aa4f3",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 16",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_05",
+      "id": "16da4346-65e6-4dcb-8f48-b52c18577717",
+      "site_position": 16
+     }
+    },
+    {
+     "file": "0021112_17.webp",
+     "face": 17,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 2996,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_16.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "6d7b6178b15dbb2121abf7b90655bfb9da468c97302ffaa01c83b57b19b9df15",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 17",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_12",
+      "id": "1084f182-bcf5-4529-9dec-9a5a70a96539",
+      "site_position": 17
+     }
+    },
+    {
+     "file": "0021112_18.webp",
+     "face": 18,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3934,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_17.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "9c7233e086896cf748127c3eab019389b08a993d589dc380ca7e70507461eb21",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 18",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_13",
+      "id": "c9b3fd02-b6b2-42b7-bf4e-5d7fc5294b95",
+      "site_position": 18
+     }
+    },
+    {
+     "file": "0021112_19.webp",
+     "face": 19,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3360,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_18.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "6a17c1f8767ae53f77b2b72ee33c8f99e3fdadef6a7921b39e16d532136a632d",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 19",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_08",
+      "id": "32b1d45f-6bf0-4df8-8c10-6461b2413ee1",
+      "site_position": 19
+     }
+    },
+    {
+     "file": "0021112_20.webp",
+     "face": 20,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3090,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_19.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "cf7e0ba7273d07d910d2d4b48832df9df2bb8e485b5224dbcc8d889159040a04",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 20",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_02",
+      "id": "39fea123-d1e9-4f5d-ae85-9b32ffb988b0",
+      "site_position": 20
+     }
+    },
+    {
+     "file": "0021112_21.webp",
+     "face": 21,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4202,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_20.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "f0536ae4b33ba2b7ccd1398b9905bb2b1cab83c1cf1b1b082bfc7d4cef891ca5",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 21",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_15",
+      "id": "02da6a66-4751-48a7-8542-751ff5bfb57d",
+      "site_position": 21
+     }
+    },
+    {
+     "file": "0021112_22.webp",
+     "face": 22,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4172,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_21.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "606a779817aabf8911f718878e60eaa096fa7a2f97551ebf52614472975942fb",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 22",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_11",
+      "id": "47125e6f-b50e-4d04-acf5-0faf03777630",
+      "site_position": 22
+     }
+    },
+    {
+     "file": "0021112_23.webp",
+     "face": 23,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3130,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_22.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "de99176f5d1291ae67713111f0eb5dd5c9d0aa59a1de64c4d814ac79f306971e",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 23",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_04",
+      "id": "c46b42ef-c48d-4136-b10d-6f9ec03e9b9f",
+      "site_position": 23
+     }
+    },
+    {
+     "file": "0021112_24.webp",
+     "face": 24,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3918,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_23.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "be10680017908f35db2dbd4d988a0a35be0616b04483a9d0b3157a7fbfd5d21d",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 24",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_09",
+      "id": "de99366e-7291-4c71-884e-6ecdd505846c",
+      "site_position": 24
+     }
+    },
+    {
+     "file": "0021112_25.webp",
+     "face": 25,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 4010,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_24.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "37eb4d6c51a67bfedcacbbefa757a485563d3f72910196dd23b2bbae800a6204",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 25",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_29",
+      "id": "9604ec0e-d1d0-4a2e-8192-cc83eca70656",
+      "site_position": 25
+     }
+    },
+    {
+     "file": "0021112_26.webp",
+     "face": 26,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3108,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_25.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "1f21ebb5729bfcdc627f30bf43c673a04ac7c37efb02998f0b843119725f4702",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 26",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_14",
+      "id": "c4df43f1-ec9d-44db-9985-06c2aea85462",
+      "site_position": 26
+     }
+    },
+    {
+     "file": "0021112_27.webp",
+     "face": 27,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3252,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_26.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "1f9e504a9b38e247c47f9d3fa82a5a6f3545a83950530864d32bb94a93c4c3cf",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 27",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_10",
+      "id": "58fcb41f-9665-4681-be3c-c41d9bdca5f1",
+      "site_position": 27
+     }
+    },
+    {
+     "file": "0021112_28.webp",
+     "face": 28,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3460,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_28.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "b61b33f52702ea40a5dbb7962702a96ce924a1d2086d28cc9ea086df7de98765",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright, mirrored left to right (ABK's other hand)",
+     "abk_picture": {
+      "label": "Faccia 28",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_16",
+      "id": "ac8fd16e-a3fe-4034-ac33-44718caaad0a",
+      "site_position": 28
+     }
+    },
+    {
+     "file": "0021112_29.webp",
+     "face": 29,
+     "width_mm": 150,
+     "height_mm": 850,
+     "width_px": 90,
+     "height_px": 510,
+     "bytes": 3526,
+     "source_zip": "TABULAE - CHEVRON REFINED FIENO - minimali.zip",
+     "source_file": "15X85-Natural/TABULAE - CHEVRON REFINED FIENO - 15X85 - Natural - view_29.jpg",
+     "source_px": [
+      659,
+      3809
+     ],
+     "source_sha256": "ce07e70f6d4472af6eb89a58fee1422ac2dbdf2b97ddbd0aba8d70209702ee44",
+     "source_px_per_mm": 4.481,
+     "orientation": "upright",
+     "abk_picture": {
+      "label": "Faccia 29",
+      "name": "TABULAE CHEVRON REFINED FIENO 15X85_17",
+      "id": "8a9dc47e-c982-49f2-9d77-e7121eca578f",
+      "site_position": 29
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,5 +1,11 @@
 import type { RoomFloorPattern } from "@/lib/room-types";
 import { getSurfacePatternPreviewTiles } from "@/lib/design-page-surface-inspector";
+import { getChevronLayout, getChevronPiecePolygons } from "@/lib/surface-chevron-layout";
+
+// Tabulae's chevron proportions (150 x 850 mm, 70.7 mm end cuts) in the 60 x 42 preview, moved up 7 so that a band
+// line crosses the middle.
+const PREVIEW_CHEVRON = getChevronLayout({ pieceWidth: 6, pieceLength: 34, endOffset: 2.83 });
+const PREVIEW_CHEVRON_PIECES = PREVIEW_CHEVRON ? getChevronPiecePolygons(PREVIEW_CHEVRON, 60, 49) : [];
 
 export type SurfacePatternPreviewProps = {
   pattern: RoomFloorPattern;
@@ -22,7 +28,16 @@ export default function SurfacePatternPreview({
       preserveAspectRatio="none"
     >
       <rect x="0" y="0" width="60" height="42" rx="2" fill={background} />
-      {getSurfacePatternPreviewTiles(pattern).map((tile, index) => (
+      {pattern === "chevron" && PREVIEW_CHEVRON_PIECES.map((piece) => (
+        <polygon
+          key={`chevron-${piece.band}-${piece.piece}`}
+          points={piece.points.map(([x, y]) => `${x},${y - 7}`).join(" ")}
+          fill={piece.piece % 2 === 0 ? fill : shadedFill}
+          stroke={stroke}
+          strokeWidth="0.75"
+        />
+      ))}
+      {pattern !== "chevron" && getSurfacePatternPreviewTiles(pattern).map((tile, index) => (
         <rect
           key={`${pattern}-${index}`}
           x={tile.x}
