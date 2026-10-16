@@ -2752,10 +2752,10 @@ assert.equal(
   assert.match(advisoryWorkflow, /github\.event\.label\.name == 'run-full-e2e'/);
   assert.match(advisoryWorkflow, /workflow_dispatch:[\s\S]*source_sha:[\s\S]*required:\s*true/);
   assert.match(advisoryWorkflow, /schedule:[\s\S]*cron:/);
-  assert.match(advisoryWorkflow, /'refs\/heads\/staging'/);
+  assert.match(advisoryWorkflow, /'refs\/heads\/integration\/deep-clean-v1'/);
   assert.match(
     advisoryWorkflow,
-    /ref:\s*\$\{\{[^\n]*github\.event\.pull_request\.head\.sha[^\n]*inputs\.source_sha[^\n]*refs\/heads\/staging[^\n]*\}\}/,
+    /ref:\s*\$\{\{[^\n]*github\.event\.pull_request\.head\.sha[^\n]*inputs\.source_sha[^\n]*refs\/heads\/integration\/deep-clean-v1[^\n]*\}\}/,
     "label, manual, and scheduled full-advisory runs must select an explicit source",
   );
   assert.ok(

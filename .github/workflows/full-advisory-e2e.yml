@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: full-advisory-${{ github.event.pull_request.number || github.event_name == 'schedule' && 'staging-nightly' || inputs.source_sha || github.ref }}
+  group: full-advisory-${{ github.event.pull_request.number || github.event_name == 'schedule' && 'line-nightly' || inputs.source_sha || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -81,7 +81,7 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event_name == 'workflow_dispatch' && inputs.source_sha || 'refs/heads/staging' }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event_name == 'workflow_dispatch' && inputs.source_sha || 'refs/heads/integration/deep-clean-v1' }}
           lfs: true
           fetch-depth: 0
 
