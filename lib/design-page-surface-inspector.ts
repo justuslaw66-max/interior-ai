@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { RoomFloorPattern } from "@/lib/room-types";
 import {
-  getSurfaceMaterialTextureSource,
+  getSurfaceMaterialPreviewSource,
   type SurfaceMaterialRenderInfo,
 } from "@/lib/surface-material-runtime";
 import {
@@ -34,7 +34,7 @@ export function formatFlooringInspectorValue(value?: string | null): string {
 export function getFlooringInspectorSurfaceSwatchStyle(
   material: SurfaceMaterialRenderInfo
 ): CSSProperties {
-  const textureSource = getSurfaceMaterialTextureSource(material);
+  const textureSource = getSurfaceMaterialPreviewSource(material);
   if (textureSource) {
     return {
       backgroundColor: "#e8e2d6",

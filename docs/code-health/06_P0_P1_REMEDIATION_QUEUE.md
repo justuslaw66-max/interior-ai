@@ -12,9 +12,12 @@
   field, the rest of `metadata.ci` included, is checked as before. The raw
   report and its bound SHA-256 are unchanged.
 - **Proof:** `test-production-artifact-evidence.mjs` accepts three titles that
-  look like paths (POSIX, a runner path, Windows) and checks that the portable
-  report keeps the other CI fields and drops the title. As a control, the same
-  text in `metadata.ci.prBaseHash` is still refused.
+  look like paths (one starting with "/", an absolute path outside the
+  repository, and a Windows path) and checks that the portable report keeps the
+  other CI fields and drops the title. As a control, the same text in
+  `metadata.ci.prBaseHash` is still refused. The second sample was a runner
+  path until 2204d538: on GitHub's runners that path is inside the repository,
+  where it is accepted anyway.
 - **Rollback:** revert the commit. Titles starting with "/" then fail the
   check again.
 

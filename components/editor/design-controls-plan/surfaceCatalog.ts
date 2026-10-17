@@ -8,7 +8,7 @@ import type {
 } from "@/lib/room-types";
 import type { RoomWallFinishQuantities } from "@/lib/surface-material-wall-panels";
 import {
-  getSurfaceMaterialTextureSource,
+  getSurfaceMaterialPreviewSource,
   type SurfaceMaterialCatalogRecord,
 } from "@/lib/surface-material-runtime";
 
@@ -292,7 +292,7 @@ export function getSurfaceMaterialSampleUrl(
 export function getSurfaceMaterialSwatchStyle(
   material: SurfaceMaterialCatalogRecord
 ): CSSProperties {
-  const textureSource = getSurfaceMaterialTextureSource(material);
+  const textureSource = getSurfaceMaterialPreviewSource(material);
   if (textureSource) {
     return {
       backgroundColor: "#e8e2d6",

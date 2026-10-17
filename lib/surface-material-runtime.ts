@@ -94,6 +94,19 @@ export function getSurfaceMaterialTextureSource(
   return null;
 }
 
+/**
+ * The picture a card or an inspector shows. A material that can't be laid straight (Tabulae's chevrons) shows its swatch,
+ * which is painted laid: its base colour is one piece's face, which reads as plain wood. Others show what the renderer uses.
+ */
+export function getSurfaceMaterialPreviewSource(
+  material: SurfaceMaterialRenderInfo | null
+): SurfaceMaterialTextureSource | null {
+  const layouts = material?.rendering.available_pattern_layouts ?? [];
+  const swatchUrl = material?.texture_assets.swatch_url?.trim();
+  if (swatchUrl && layouts.length > 0 && !layouts.includes("straight")) return { url: swatchUrl, kind: "swatch" };
+  return getSurfaceMaterialTextureSource(material);
+}
+
 export function shouldUseSingleSurfaceSwatch(
   material: SurfaceMaterialRenderInfo,
   sourceKind: SurfaceMaterialTextureSource["kind"]
