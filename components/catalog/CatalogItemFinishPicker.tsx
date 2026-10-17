@@ -1,3 +1,4 @@
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { inferCollectionType, shouldShowCollectionGrouping } from "@/lib/catalog/variant-normalization";
 
 type MaterialType = "Fabric" | "Leather" | "Wood";
@@ -55,6 +56,14 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
       ? selectedFinish.materialType
       : upholsteryMaterialTypes[0];
   const activeCollectionType = selectedFinish ? resolveCollectionType(selectedFinish) : undefined;
+  // A material's first finish in the chosen collection (stocked or custom), else its first finish.
+  const firstFinishOf = (materialType: MaterialType) => {
+    const matchingOptions = finishOptions.filter((finish) => finish.materialType === materialType);
+    return (
+      matchingOptions.find((finish) => resolveCollectionType(finish) === activeCollectionType) ??
+      matchingOptions[0]
+    );
+  };
 
   const renderSwatches = (sectionKey: string, items: FinishOption[]) => (
     <div className="mt-3 grid grid-cols-4 gap-2.5">
@@ -113,7 +122,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
           data-testid={`catalog-finish-section-${sectionKey}`}
         >
           <div className="flex items-baseline justify-between gap-3">
-            <h4 className="text-sm font-semibold text-[#4b2635]">
+            <h4 className="text-sm font-semibold text-neutral-900">
               {section.collectionType
                 ? getCollectionLabel(section.collectionType, materialType)
                 : getMaterialLabel(materialType)}
@@ -155,38 +164,17 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
       </div>
 
       {upholsteryMaterialTypes.length > 1 && activeUpholsteryMaterialType ? (
-        <div className="mt-4 grid grid-cols-2 gap-2" role="tablist" aria-label="Material">
-          {upholsteryMaterialTypes.map((materialType) => {
-            const active = materialType === activeUpholsteryMaterialType;
-            const matchingOptions = finishOptions.filter(
-              (finish) => finish.materialType === materialType
-            );
-            const nextFinish =
-              matchingOptions.find(
-                (finish) => resolveCollectionType(finish) === activeCollectionType
-              ) ?? matchingOptions[0];
-
-            return (
-              <button
-                key={`material-tab-${materialType}`}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => {
-                  if (nextFinish) onSetFinish(nextFinish.id, nextFinish);
-                }}
-                className={[
-                  "rounded-full border px-3 py-2 text-xs font-semibold transition",
-                  active
-                    ? "border-[#5a2135] bg-[#5a2135] text-white"
-                    : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400",
-                ].join(" ")}
-              >
-                {materialType}
-              </button>
-            );
-          })}
-        </div>
+        <SegmentedControl
+          label="Material"
+          fill
+          className="mt-4"
+          value={activeUpholsteryMaterialType}
+          onChange={(materialType) => {
+            const nextFinish = firstFinishOf(materialType);
+            if (nextFinish) onSetFinish(nextFinish.id, nextFinish);
+          }}
+          options={upholsteryMaterialTypes.map((value) => ({ value, label: value }))}
+        />
       ) : null}
 
       {activeUpholsteryMaterialType && activeUpholsteryOptions.length > 0
