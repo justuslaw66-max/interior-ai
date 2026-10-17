@@ -17,6 +17,10 @@ import { ShareScene } from "@/components/public-share/ShareScene";
 import { Chip } from "@/components/ui/Chip";
 import { ChoiceTile } from "@/components/ui/ChoiceTile";
 
+// The share page shows the focus ring on any focus, not only :focus-visible: the rooms' arrow keys
+// move focus by script, which WebKit doesn't count as focus-visible (its responsive gate checks).
+const SHARE_FOCUS_RING = "outline-offset-2 focus:outline-2 focus:outline-focus";
+
 function focusAdjacentRoom(event: KeyboardEvent<HTMLButtonElement>) {
   if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
   const roomButtons = Array.from(
@@ -61,6 +65,7 @@ function RoomNavigation({
           data-share-touch-target="true"
           onClick={() => selectRoom(room.id)}
           onKeyDown={focusAdjacentRoom}
+          className={SHARE_FOCUS_RING}
         >
           {room.name}
         </Chip>
@@ -156,7 +161,7 @@ function SavedViewNavigation({
             data-testid={publicShareSavedViewActionTestId(view.id)}
             data-share-touch-target="true"
             onClick={() => selectSavedView(view.id)}
-            className="min-h-11 p-3 text-center"
+            className={`min-h-11 p-3 text-center ${SHARE_FOCUS_RING}`}
           >
             <span className="text-sm font-medium">{view.name}</span>
           </ChoiceTile>
