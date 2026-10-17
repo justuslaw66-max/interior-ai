@@ -189,7 +189,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 2900,
+      "lines": 2899,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -565,7 +565,7 @@
       "limit": 400
     },
     "lib/floor-plan-quality.ts": {
-      "lines": 612,
+      "lines": 605,
       "limit": 400
     },
     "lib/floor-plan-tracing.ts": {
@@ -1799,7 +1799,7 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 2770
+        "maximum": 2769
       },
       "complexFunctions": {
         "count": 2,

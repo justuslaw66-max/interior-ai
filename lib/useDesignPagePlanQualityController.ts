@@ -10,6 +10,7 @@ import {
   type FloorPlanQualityAction,
   type FloorPlanQualityIssue,
 } from "@/lib/floor-plan-quality";
+import { withSurfaceSuitabilityIssues } from "@/lib/floor-plan-surface-checks";
 import type { DesignSnapshot } from "@/lib/room-types";
 
 export type DesignPagePlanQualityState = {
@@ -97,12 +98,16 @@ function routePlanQualityAction(
     );
     return;
   }
-  if (action === "review_plan_layout") {
+  if (action === "review_plan_layout" || action === "review_surface") {
     actions.goPlan();
     actions.setViewMode("2d");
     actions.clearNonRoomSelection();
     selectPlanIssueTarget(availableTargetRoomId, target, actions.selectPlanRoom, actions.updateSelection);
-    actions.showToast("Review the highlighted plan issue");
+    actions.showToast(
+      action === "review_surface"
+        ? "Check the highlighted room's finishes"
+        : "Review the highlighted plan issue"
+    );
     return;
   }
   if (action === "review_furniture_fit") {
@@ -160,7 +165,7 @@ export function useDesignPagePlanQualityController({
 
   const report = useMemo(
     () =>
-      buildFloorPlanQualityReport({
+      withSurfaceSuitabilityIssues(buildFloorPlanQualityReport({
         rooms: housePlanRooms,
         openings: planOpenings,
         items: designSnapshot.rooms.flatMap((room) =>
@@ -170,7 +175,7 @@ export function useDesignPagePlanQualityController({
           }))
         ),
         activeRoomId: designSnapshot.activeRoomId,
-      }),
+      }), housePlanRooms),
     [designSnapshot.activeRoomId, designSnapshot.rooms, housePlanRooms, planOpenings]
   );
 

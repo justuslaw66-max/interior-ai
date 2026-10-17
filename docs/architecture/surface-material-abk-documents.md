@@ -7,7 +7,8 @@ which he had approved first with Plein Air's sheet. All 22 PDFs were read on 14 
 (installation and cleaning advice, technical characteristics, certifications) and the discontinued-item lists weren't downloaded.
 
 The app's AI doesn't read any of this yet. The data is kept so that it can: every value names its sheet, and the catalogue entries
-it changed note the sheet.
+it changed note the sheet. Since 17 Oct 2026 plan review does: its surface checks read each entry's slip and barefoot classes,
+outdoor range and white-body flag from the sheets (`docs/architecture/surface-suitability-checks.md`).
 
 ## Where it is
 
