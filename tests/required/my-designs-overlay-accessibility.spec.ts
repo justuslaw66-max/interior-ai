@@ -191,11 +191,19 @@ async function openMoreMenu(page: Page) {
   await expect(page.getByTestId("editor-command-overflow-menu")).toBeVisible();
 }
 
+// Rename design keeps focus on the dialog itself until its first frame has run, then hands it to
+// the name field (EditorDialog, AX5). A fill sent before that frame lost its text in WebKit, so Save
+// kept the old name. Wait for the field, as command-bar-design-name and my-designs-page do, and
+// check the name took.
 async function renameDesign(page: Page, name: string) {
   await page.getByTestId("editor-design-title").click();
-  await page.getByTestId("design-rename-input").fill(name);
+  const input = page.getByTestId("design-rename-input");
+  await expect(input).toBeFocused();
+  await input.fill(name);
+  await expect(input).toHaveValue(name);
   await page.getByTestId("design-rename-save").click();
   await expect(page.getByTestId("design-rename-dialog")).toHaveCount(0);
+  await expect(page.getByTestId("editor-design-title")).toHaveText(name);
 }
 
 function card(page: Page, designId: string) {
