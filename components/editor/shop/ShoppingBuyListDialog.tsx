@@ -2,6 +2,7 @@
 
 import { Check, ExternalLink } from "lucide-react";
 import { useMemo } from "react";
+import { Button } from "@/components/ui/Button";
 import {
   EditorDialog,
   EditorDialogActions,
@@ -40,18 +41,17 @@ function BuyListRow({ line, retailer, opened, busy, onOpenLine }: {
         <div className="truncate text-xs text-neutral-600" title={line.detail}>{line.detail}</div>
         <div data-testid="shopping-buy-list-add" className="text-xs font-bold text-neutral-800">{addLabel(line)}</div>
       </div>
-      <button
-        type="button"
+      <Button
         data-testid="shopping-buy-list-open"
         aria-label={opened ? `Open ${line.title} at ${retailer.name} again` : `Open ${line.title} at ${retailer.name}`}
         disabled={busy}
         onClick={() => onOpenLine(line)}
-        className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 text-[13px] font-bold text-neutral-900 hover:bg-neutral-50 disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+        className="shrink-0"
       >
         {opened ? <Check className="h-4 w-4 text-emerald-700" aria-hidden="true" /> : null}
         {opened ? "Opened" : "Open"}
         {opened ? null : <ExternalLink className="h-4 w-4" aria-hidden="true" />}
-      </button>
+      </Button>
     </li>
   );
 }

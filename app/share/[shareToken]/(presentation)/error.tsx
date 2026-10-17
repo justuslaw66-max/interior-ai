@@ -1,6 +1,7 @@
 "use client";
 
 import { PublicShareFallbackStateReporter } from "@/components/public-share/PublicShareRootLifecycle";
+import { Button } from "@/components/ui/Button";
 
 export default function PublicShareError({ reset }: { reset: () => void }) {
   return (
@@ -11,15 +12,16 @@ export default function PublicShareError({ reset }: { reset: () => void }) {
         <p className="mt-1 text-sm text-neutral-600">
           The link may still work. Try loading this design again.
         </p>
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="touch"
           data-testid="public-share-error-retry"
-          className="mt-4 min-h-11 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-semibold text-white outline-offset-2 focus-visible:outline-2"
+          className="mt-4"
           data-share-touch-target="true"
           onClick={reset}
         >
           Try again
-        </button>
+        </Button>
       </div>
     </div>
   );

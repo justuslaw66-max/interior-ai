@@ -1,6 +1,7 @@
 "use client";
 
 import { Heart } from "lucide-react";
+import { Button, buttonClassName } from "@/components/ui/Button";
 import { favouriteLabel } from "./CatalogCard";
 
 type AddHandler = (id: string, variantId?: string, purchaseOptionId?: string) => void;
@@ -35,8 +36,8 @@ type CatalogItemDrawerAddSectionProps = {
   favourite?: CatalogItemDrawerFavourite;
 };
 
-const SECONDARY_CLASS =
-  "rounded-lg border border-neutral-200 px-3 py-2 text-center text-xs font-semibold text-neutral-700 hover:bg-neutral-50";
+// The retailer link is an <a>, so it takes the Button's classes; Compare beside it is the Button.
+const RETAILER_LINK_CLASS = buttonClassName({ variant: "secondary", size: "compact" });
 
 function AddSummary({ summary, placesDirectly }: Pick<CatalogItemDrawerAddSectionProps, "summary" | "placesDirectly">) {
   return (
@@ -76,30 +77,31 @@ export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionPr
     <div className="border-t border-neutral-100 bg-white px-4 pb-4 pt-3">
       <AddSummary summary={summary} placesDirectly={placesDirectly} />
       <div className="flex gap-2">
-        <button
-          type="button"
+        <Button
+          variant="primary"
           onClick={() => props.onAdd(productId, variantId, purchaseOptionId)}
           disabled={props.addDisabled}
           data-testid="catalog-detail-add-to-room"
-          className="min-w-0 flex-1 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-wait disabled:opacity-60"
+          className="min-w-0 flex-1"
         >
           {props.addDisabled ? "Loading products…" : addQuantity > 1 ? `Add set of ${addQuantity} to ${summary.roomLabel}` : `Add to ${summary.roomLabel}`}
-        </button>
+        </Button>
         {props.favourite ? <DetailFavourite favourite={props.favourite} /> : null}
       </div>
       {placesDirectly && onChooseSpot ? (
-        <button
-          type="button"
+        <Button
+          variant="link"
+          size="inline"
           data-testid="catalog-detail-choose-spot"
           disabled={props.addDisabled}
-          className="mt-1 min-h-11 w-full text-center text-xs font-semibold text-neutral-700 underline-offset-2 hover:underline disabled:opacity-60"
+          className="mt-1 min-h-11 w-full text-xs"
           onClick={() => {
             onChooseSpot(productId, variantId, purchaseOptionId);
             props.onClose();
           }}
         >
           Choose where it goes
-        </button>
+        </Button>
       ) : (
         <div className="mt-2 text-center text-xs text-neutral-500">
           Next: confirm the placement ghost before it becomes part of the room.
@@ -107,7 +109,7 @@ export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionPr
       )}
       <div className="mt-3 grid grid-cols-2 gap-2">
         {props.retailerUrl ? (
-          <a href={props.retailerUrl} target="_blank" rel="noreferrer" className={SECONDARY_CLASS}>
+          <a href={props.retailerUrl} target="_blank" rel="noreferrer" className={RETAILER_LINK_CLASS}>
             Retailer link
           </a>
         ) : (
@@ -115,14 +117,13 @@ export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionPr
             No retailer link
           </div>
         )}
-        <button
-          type="button"
+        <Button
+          size="compact"
           onClick={() => props.onToggleCompare(productId)}
-          className={SECONDARY_CLASS}
           data-testid={`catalog-compare-toggle-drawer-${productId}`}
         >
           {props.isCompared ? "Remove compare" : "Compare"}
-        </button>
+        </Button>
       </div>
     </div>
   );

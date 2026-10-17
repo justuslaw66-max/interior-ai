@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import { Link2, MoreHorizontal } from "lucide-react";
 import { DesignPlanThumbnailSvg } from "@/components/my-designs/DesignPlanThumbnailSvg";
+import { Button } from "@/components/ui/Button";
 import { buildDesignEditorUrl } from "@/lib/design-editor-url";
 import type { MyDesignCard } from "@/lib/my-designs";
 import { useDismissibleMenu } from "@/lib/useDismissibleMenu";
@@ -58,12 +59,11 @@ export function MyDesignCardView({ card, menuOpen, busy, onToggleMenu, onCloseMe
         </span>
       </Link>
       <div ref={containerRef} className="absolute right-2 top-[156px]">
-        <button ref={buttonRef} id={myDesignActionsButtonId(card.id)} type="button" disabled={busy}
+        <Button ref={buttonRef} variant="quiet" size="icon" id={myDesignActionsButtonId(card.id)} disabled={busy}
           data-testid={`my-design-actions-${card.id}`} aria-label={`More actions for ${card.title}`}
-          aria-haspopup="menu" aria-expanded={menuOpen} onClick={onToggleMenu}
-          className={`flex h-11 w-11 items-center justify-center rounded-lg text-neutral-700 hover:bg-neutral-100 disabled:cursor-wait disabled:opacity-60 ${FOCUS_RING}`}>
+          aria-haspopup="menu" aria-expanded={menuOpen} onClick={onToggleMenu}>
           <MoreHorizontal aria-hidden="true" className="h-5 w-5" strokeWidth={2.2} />
-        </button>
+        </Button>
         {menuOpen ? <MyDesignCardMenu card={card} href={href} onAction={onAction} /> : null}
       </div>
     </li>

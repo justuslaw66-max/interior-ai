@@ -17,6 +17,12 @@ export type ChoiceTileProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ari
   selected: boolean;
 };
 
+/**
+ * A chosen swatch's ring, as a `box-shadow`: a white gap, then black (UX 5n, J, 16 Oct; the
+ * catalogue's swatches too, J, 17 Oct). The swatch keeps its colour or texture, whole.
+ */
+export const CHOSEN_SWATCH_RING = "0 0 0 2px #fff, 0 0 0 4px #171717";
+
 const CHOICE_TILE_BASE_CLASS =
   "rounded-lg border bg-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
 const CHOICE_TILE_SELECTED_CLASS = "border-neutral-900 text-neutral-900 inset-ring inset-ring-neutral-900";

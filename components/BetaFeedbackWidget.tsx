@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
 
 export type BetaFeedbackContext = {
@@ -190,14 +192,9 @@ export default function BetaFeedbackWidget({
                 <h3 className="text-base font-semibold text-neutral-950">Beta feedback</h3>
                 <p className="mt-0.5 truncate text-xs text-neutral-500">{contextSummary}</p>
               </div>
-              <button
-                type="button"
-                className="rounded-md px-2 py-1 text-sm font-semibold text-neutral-500 hover:bg-neutral-100"
-                aria-label="Close feedback dialog"
-                onClick={resetAndClose}
-              >
-                x
-              </button>
+              <Button variant="quiet" size="icon" aria-label="Close feedback dialog" onClick={resetAndClose}>
+                <X className="h-4 w-4" aria-hidden="true" />
+              </Button>
             </div>
 
             <label className="mt-3 block">
@@ -239,29 +236,16 @@ export default function BetaFeedbackWidget({
             </div>
 
             <div className="mt-3 grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                className="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
-                onClick={copyReport}
-              >
-                Copy
-              </button>
-              <button
-                type="button"
-                className="rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
-                onClick={resetAndClose}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
+              <Button onClick={copyReport}>Copy</Button>
+              <Button onClick={resetAndClose}>Cancel</Button>
+              <Button
+                variant="primary"
                 data-testid="beta-feedback-submit"
-                className="rounded-lg bg-neutral-950 px-3 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
                 disabled={(!note.trim() && !submitted) || status === "sending"}
                 onClick={submitted ? resetAndClose : submitFeedback}
               >
                 {submitted ? "Done" : status === "sending" ? "Sending" : "Send"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

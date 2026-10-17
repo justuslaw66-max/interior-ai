@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { Button, buttonClassName } from "@/components/ui/Button";
 import { useClientHydrated } from "@/lib/useClientHydrated";
-
-const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
 
 /**
  * My designs for guests (audit finding MD2): a sign-in prompt instead of a silent redirect.
@@ -24,13 +23,11 @@ export function MyDesignsSignedOut() {
           an account moves in when you sign in.
         </p>
         <div className="mt-1 flex flex-wrap gap-2.5">
-          <button type="button" data-testid="my-designs-sign-in"
-            onClick={() => void signIn("google", { callbackUrl: "/dashboard" })}
-            className={`flex h-11 items-center rounded-[10px] bg-neutral-900 px-5 text-[15px] font-bold text-white hover:bg-neutral-800 ${FOCUS_RING}`}>
+          <Button variant="primary" data-testid="my-designs-sign-in"
+            onClick={() => void signIn("google", { callbackUrl: "/dashboard" })}>
             Continue with Google
-          </button>
-          <Link href="/design" data-testid="my-designs-continue-as-guest"
-            className={`flex h-11 items-center rounded-[10px] border border-neutral-300 bg-white px-5 text-[15px] font-bold text-neutral-900 hover:bg-neutral-100 ${FOCUS_RING}`}>
+          </Button>
+          <Link href="/design" data-testid="my-designs-continue-as-guest" className={buttonClassName()}>
             Design without an account
           </Link>
         </div>

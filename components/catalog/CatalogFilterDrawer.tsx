@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import type { CatalogFilterState, SofaSeatCapacityBucket } from "@/lib/catalog/view-builders";
 
 /** The popover's id, for Filters' aria-controls, and its title's (UX AX5). */
@@ -34,7 +35,6 @@ export default function CatalogFilterDrawer({
   onPatch,
 }: Props) {
   if (!open) return null;
-
   return (
     <div id={CATALOG_FILTER_POPOVER_ID} role="dialog" aria-labelledby={CATALOG_FILTER_POPOVER_TITLE_ID} tabIndex={-1}
       data-testid="catalog-filter-drawer"
@@ -42,7 +42,7 @@ export default function CatalogFilterDrawer({
     >
       <div className="sticky -top-3 z-10 -mx-3 -mt-3 mb-2 flex items-center justify-between border-b border-neutral-100 bg-white px-3 py-3">
         <div id={CATALOG_FILTER_POPOVER_TITLE_ID} className="text-xs font-semibold text-neutral-900">Structured filters</div>
-        <button type="button" onClick={onClose} className="text-xs text-neutral-500">Close</button>
+        <Button variant="quiet" size="compact" onClick={onClose}>Close</Button>
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-xs">

@@ -5,7 +5,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { EditorDialogButton } from "../components/editor/design-system/EditorDialog";
 import { Button, buttonClassName } from "../components/ui/Button";
-import { ChoiceTile } from "../components/ui/ChoiceTile";
+import { Chip } from "../components/ui/Chip";
+import { CHOSEN_SWATCH_RING, ChoiceTile } from "../components/ui/ChoiceTile";
 import { SegmentedControl, segmentClassName } from "../components/ui/SegmentedControl";
 import { nextMenuItemIndex } from "../lib/useDismissibleMenu";
 
@@ -142,6 +143,19 @@ assert.match(chosenTile, /^<button type="button" aria-pressed="true" class="[^"]
 const idleTile = markup(<ChoiceTile selected={false}>Chaise left</ChoiceTile>);
 assert.match(idleTile, /aria-pressed="false" class="[^"]*\bborder-neutral-200 text-neutral-700\b/);
 assert.doesNotMatch(idleTile, /inset-ring|outline-hidden|focus-visible:ring/, "An idle tile has a 1px edge and the shared focus ring.");
+assert.equal(CHOSEN_SWATCH_RING, "0 0 0 2px #fff, 0 0 0 4px #171717", "A chosen swatch has a white gap, then a black ring.");
+
+// A chip (AX10 area b, J's choice on 17 Oct): the pill, with a grey edge and the chosen one black;
+// in a one-of row it reports aria-pressed, as an action chip it doesn't. 32px, 44px on touch
+// screens; the share page's chips are 44px everywhere.
+const chosenChip = markup(<Chip pressed>Sofas</Chip>);
+assert.match(chosenChip, /^<button type="button" aria-pressed="true" class="[^"]*\brounded-full border\b[^"]*\bh-8 touch:h-11 px-3 border-neutral-900 bg-neutral-900 text-white">Sofas<\/button>$/);
+const idleChip = markup(<Chip pressed={false}>Chairs</Chip>);
+assert.match(idleChip, /aria-pressed="false" class="[^"]*\bborder-neutral-300 bg-white text-neutral-800\b/);
+const actionChip = markup(<Chip>Clear all</Chip>);
+assert.doesNotMatch(actionChip, /aria-pressed/, "An action chip isn't a toggle.");
+assert.doesNotMatch(chosenChip + idleChip, /outline-hidden|focus-visible:ring/, "Chips show the shared focus ring.");
+assert.match(markup(<Chip size="touch" pressed={false}>Bedroom</Chip>), /\bmin-h-11 min-w-11 px-4\b/);
 const bare = markup(
   <SegmentedControl label="Pill" value="a" onChange={() => undefined} size="touch" track={false} options={[{ value: "a", label: "A" }]} />
 );
@@ -205,7 +219,7 @@ const emojiButtons = sources
       ).length,
     0
   );
-const LIMITS = { rawButtons: 401, emojiButtons: 3 };
+const LIMITS = { rawButtons: 351, emojiButtons: 3 };
 const counts = { rawButtons, emojiButtons };
 for (const [name, limit] of Object.entries(LIMITS) as Array<[keyof typeof LIMITS, number]>) {
   assert.ok(counts[name] <= limit, `${name} rose to ${counts[name]} (limit ${limit}); it can only go down.`);
