@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { EditorDialogButton } from "../components/editor/design-system/EditorDialog";
 import { Button, buttonClassName } from "../components/ui/Button";
+import { ChoiceTile } from "../components/ui/ChoiceTile";
 import { SegmentedControl, segmentClassName } from "../components/ui/SegmentedControl";
 import { nextMenuItemIndex } from "../lib/useDismissibleMenu";
 
@@ -133,6 +134,14 @@ const filled = markup(
 assert.match(filled, /class="flex w-full gap-0\.5 rounded-lg bg-neutral-100 p-0\.5"/);
 assert.equal(filled.match(/\bh-\[26px\] touch:h-11\b[^"]*\bflex-1 basis-0\b/g)?.length, 4, "Filling, the segments share the width equally.");
 assert.doesNotMatch(filled, /\bmin-w-0\b/, "A label never shrinks below its own width: it stays on one line.");
+
+// An option tile (UX 5n, J's choice on 16 Oct): white, and the chosen one has a black edge whose
+// second pixel is drawn inside, so choosing moves nothing; it reports aria-pressed.
+const chosenTile = markup(<ChoiceTile selected className="px-3 py-2 text-sm">3 seater</ChoiceTile>);
+assert.match(chosenTile, /^<button type="button" aria-pressed="true" class="[^"]*\bborder bg-white\b[^"]*\bborder-neutral-900 text-neutral-900 inset-ring inset-ring-neutral-900 px-3 py-2 text-sm">3 seater<\/button>$/);
+const idleTile = markup(<ChoiceTile selected={false}>Chaise left</ChoiceTile>);
+assert.match(idleTile, /aria-pressed="false" class="[^"]*\bborder-neutral-200 text-neutral-700\b/);
+assert.doesNotMatch(idleTile, /inset-ring|outline-hidden|focus-visible:ring/, "An idle tile has a 1px edge and the shared focus ring.");
 const bare = markup(
   <SegmentedControl label="Pill" value="a" onChange={() => undefined} size="touch" track={false} options={[{ value: "a", label: "A" }]} />
 );
@@ -196,7 +205,7 @@ const emojiButtons = sources
       ).length,
     0
   );
-const LIMITS = { rawButtons: 437, emojiButtons: 3 };
+const LIMITS = { rawButtons: 413, emojiButtons: 3 };
 const counts = { rawButtons, emojiButtons };
 for (const [name, limit] of Object.entries(LIMITS) as Array<[keyof typeof LIMITS, number]>) {
   assert.ok(counts[name] <= limit, `${name} rose to ${counts[name]} (limit ${limit}); it can only go down.`);

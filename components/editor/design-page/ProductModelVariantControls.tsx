@@ -11,6 +11,8 @@ import {
   type JaronConfigurationSelectorState,
 } from "@/components/editor/design-page/JaronConfigurationSelector";
 import { getCastleryConfigurationIconDescriptor } from "@/components/editor/design-page/castleryConfigurationIcons";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 type ProductTargetOption = {
   key: string;
@@ -89,8 +91,6 @@ type ProductModelVariantControlsProps = {
 };
 
 const sectionHeadingClass = "text-sm font-semibold text-neutral-900";
-
-const optionTextClass = "text-neutral-900";
 
 type CastleryConfigurationFamily = "hamilton" | "dawson";
 type CastleryConfigurationGroupKey =
@@ -209,11 +209,9 @@ function castleryConfigurationLabel(
 
 function CastleryConfigurationDiagram({
   productId,
-  active,
   compact = false,
 }: {
   productId: string;
-  active: boolean;
   compact?: boolean;
 }) {
   const descriptor = getCastleryConfigurationIconDescriptor(productId);
@@ -223,7 +221,7 @@ function CastleryConfigurationDiagram({
   ].filter(Boolean);
 
   return (
-    // Raw transparent assets preserve Castlery's exact artwork, CSS recolouring, and mirroring.
+    // Raw transparent assets preserve Castlery's exact artwork and mirroring.
     // eslint-disable-next-line @next/next/no-img-element
     <img
       alt=""
@@ -237,7 +235,6 @@ function CastleryConfigurationDiagram({
       loading="lazy"
       src={descriptor.src}
       style={{
-        filter: active ? "brightness(0) invert(1)" : undefined,
         objectPosition: descriptor.crop?.objectPosition,
         transform: transforms.length ? transforms.join(" ") : undefined,
       }}
@@ -281,112 +278,75 @@ function CastleryConfigurationSelector({
         </div>
       </div>
 
-      <div className="mt-2 overflow-hidden rounded-lg border border-[#e8ded0] bg-[#fbfaf2]">
-        <div className="border-b border-[#e8ded0] px-3 py-3 text-[#4b1225]">
-          <div className="text-sm font-semibold leading-snug">
-            {castleryConfigurationLabel(family, activeOption)}
-          </div>
-          <div className="mt-0.5 text-xs text-[#77646a]">
-            Select a layout below
-          </div>
-        </div>
+      <div className="mt-2 text-sm font-semibold leading-snug text-neutral-900">
+        {castleryConfigurationLabel(family, activeOption)}
+      </div>
+      <div className="mt-0.5 text-xs text-neutral-500">Select a layout below</div>
 
-        <div
-          className="grid border-b border-[#ece4d8] bg-[#f5f1e7]"
-          style={{
-            gridTemplateColumns: `repeat(${visibleGroups.length}, minmax(0, 1fr))`,
-          }}
-        >
-          {visibleGroups.map((group) => {
-            const active = group.key === activeGroup?.key;
-            const firstOption = group.options[0];
+      <SegmentedControl
+        label="Configuration type"
+        size="compact"
+        fill
+        className="mt-2"
+        value={activeGroup?.key ?? null}
+        onChange={(groupKey) => {
+          const firstOption = visibleGroups.find((group) => group.key === groupKey)?.options[0];
+          if (groupKey !== activeGroup?.key && firstOption?.productId) {
+            actions.onSelectModel(firstOption.productId, castleryConfigurationLabel(family, firstOption));
+          }
+        }}
+        options={visibleGroups.map((group) => ({
+          value: group.key,
+          label: group.label,
+          testId: `${family}-config-tab-${group.key}`,
+          disabled: group.options[0].disabled,
+        }))}
+      />
 
-            return (
-              <button
-                key={group.key}
-                type="button"
-                data-testid={`${family}-config-tab-${group.key}`}
-                data-active={active ? "true" : "false"}
-                className={`min-h-11 whitespace-nowrap px-1 py-2 text-center text-xs font-semibold sm:px-2 ${
-                  active
-                    ? "border-b-2 border-[#93452a] text-[#93452a]"
-                    : "text-[#4b1225]"
-                }`}
-                disabled={firstOption.disabled}
-                onClick={() => {
-                  if (!active && firstOption.productId) {
-                    actions.onSelectModel(
-                      firstOption.productId,
-                      castleryConfigurationLabel(family, firstOption)
-                    );
-                  }
-                }}
-              >
-                {group.label}
-              </button>
-            );
-          })}
-        </div>
+      <div
+        className="grid grid-cols-4 gap-1.5 mt-2"
+        data-testid={`${family}-configuration-grid`}
+      >
+        {activeGroup?.options.map((option) => {
+          const label = castleryConfigurationLabel(family, option);
 
-        <div
-          className="grid grid-cols-4 gap-1.5 px-3 py-2"
-          data-testid={`${family}-configuration-grid`}
-        >
-          {activeGroup?.options.map((option) => {
-            const active = option.active;
-            const label = castleryConfigurationLabel(family, option);
-            const productId = String(option.productId ?? "");
-
-            return (
-              <button
-                key={option.key}
-                type="button"
-                aria-label={`Select ${label}`}
-                title={label}
-                data-testid={`${family}-config-option-${option.key}`}
-                data-active={active ? "true" : "false"}
-                className={`flex h-12 min-w-0 items-center justify-center rounded-lg border transition ${
-                  active
-                    ? "border-[#4b0f22] bg-[#4b0f22] text-white"
-                    : "border-[#c9c7c3] bg-white text-[#4b1225] hover:border-[#93452a]"
-                }`}
-                disabled={option.disabled}
-                onClick={() => {
-                  if (option.productId) {
-                    actions.onSelectModel(option.productId, label);
-                  }
-                }}
-              >
-                <CastleryConfigurationDiagram productId={productId} active={active} />
-                <span className="sr-only">{label}</span>
-              </button>
-            );
-          })}
-        </div>
+          return (
+            <ChoiceTile
+              key={option.key}
+              selected={option.active}
+              aria-label={`Select ${label}`}
+              title={label}
+              data-testid={`${family}-config-option-${option.key}`}
+              data-active={option.active ? "true" : "false"}
+              className="flex h-12 min-w-0 items-center justify-center"
+              disabled={option.disabled}
+              onClick={() => {
+                if (option.productId) {
+                  actions.onSelectModel(option.productId, label);
+                }
+              }}
+            >
+              <CastleryConfigurationDiagram productId={String(option.productId ?? "")} />
+              <span className="sr-only">{label}</span>
+            </ChoiceTile>
+          );
+        })}
       </div>
 
       {orientationOptions.length ? (
         <div className="mt-3" data-testid={`${family}-orientation-selector`}>
-          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#93452a]">
-            Orientation
-          </div>
+          <div className={`mb-2 ${sectionHeadingClass}`}>Orientation</div>
           <div className="grid grid-cols-2 gap-2">
             {orientationOptions.map((option) => {
-              const active = option.active;
-              const productId = String(option.productId ?? "");
               const isRightFacing = /right/i.test(option.label);
 
               return (
-                <button
+                <ChoiceTile
                   key={option.key}
-                  type="button"
+                  selected={option.active}
                   data-testid={`${family}-orientation-${isRightFacing ? "right" : "left"}`}
-                  data-active={active ? "true" : "false"}
-                  className={`flex min-h-[4.5rem] items-center justify-center gap-1 overflow-hidden rounded-lg border px-2 py-2 text-xs font-semibold ${
-                    active
-                      ? "border-[#4b0f22] bg-[#4b0f22] text-white"
-                      : "border-[#c9c7c3] bg-white text-[#4b1225] hover:border-[#93452a]"
-                  }`}
+                  data-active={option.active ? "true" : "false"}
+                  className="flex min-h-[4.5rem] items-center justify-center gap-1 overflow-hidden px-2 py-2 text-xs font-semibold"
                   disabled={option.disabled}
                   onClick={() => {
                     if (option.productId) {
@@ -395,13 +355,9 @@ function CastleryConfigurationSelector({
                   }}
                   title={option.title}
                 >
-                  <CastleryConfigurationDiagram
-                    productId={productId}
-                    active={active}
-                    compact
-                  />
+                  <CastleryConfigurationDiagram productId={String(option.productId ?? "")} compact />
                   <span className="whitespace-nowrap">{option.label}</span>
-                </button>
+                </ChoiceTile>
               );
             })}
           </div>
@@ -438,11 +394,10 @@ export function ProductModelVariantControls({
 
           <div className="mt-2 grid grid-cols-2 gap-2">
             {state.orientationOptions.map((option) => (
-              <button
+              <ChoiceTile
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
-                  option.active ? "designer-accent-border" : "border-neutral-200"
-                }`}
+                selected={option.active}
+                className="px-3 py-2 text-sm"
                 disabled={option.disabled}
                 onClick={() => {
                   if (option.productId) actions.onSelectOrientation(option.productId, option.label);
@@ -450,7 +405,7 @@ export function ProductModelVariantControls({
                 title={option.title}
               >
                 {option.label}
-              </button>
+              </ChoiceTile>
             ))}
           </div>
         </div>
@@ -476,11 +431,10 @@ export function ProductModelVariantControls({
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.armStyleOptions.map((option) => (
-              <button
+              <ChoiceTile
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
-                  option.active ? "designer-accent-border" : "border-neutral-200"
-                }`}
+                selected={option.active}
+                className="px-3 py-2 text-sm"
                 disabled={option.disabled}
                 onClick={() => {
                   if (option.productId) actions.onSelectArmStyle(option.productId, option.label);
@@ -488,7 +442,7 @@ export function ProductModelVariantControls({
                 title={option.title}
               >
                 {option.label}
-              </button>
+              </ChoiceTile>
             ))}
           </div>
         </div>
@@ -512,19 +466,12 @@ export function ProductModelVariantControls({
                 state.variantSection?.kind === "variant";
 
               return (
-                <button
+                <ChoiceTile
                   key={option.key}
+                  selected={option.active}
                   data-testid={option.testId}
                   data-active={option.testId ? (option.active ? "true" : "false") : undefined}
-                  className={
-                    swatch
-                      ? `flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
-                          option.active ? "designer-accent-border" : "border-neutral-200"
-                        }`
-                      : `rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
-                          option.active ? "designer-accent-border" : "border-neutral-200"
-                        }`
-                  }
+                  className={swatch ? "flex items-center gap-2 px-3 py-2 text-sm" : "px-3 py-2 text-sm"}
                   disabled={option.disabled}
                   onClick={() => {
                     switch (state.variantSection?.kind) {
@@ -558,7 +505,7 @@ export function ProductModelVariantControls({
                     />
                   ) : null}
                   {option.label}
-                </button>
+                </ChoiceTile>
               );
             })}
           </div>
@@ -585,7 +532,7 @@ export function ProductModelVariantControls({
                 backgroundImage: state.sloaneBenchMaterial.swatchTextureUrl
                   ? `url(${state.sloaneBenchMaterial.swatchTextureUrl})`
                   : undefined,
-                boxShadow: "0 0 0 2px #fff, 0 0 0 4px #5a2135",
+                boxShadow: "0 0 0 2px #fff, 0 0 0 4px #171717",
               }}
             />
           </div>
@@ -598,11 +545,10 @@ export function ProductModelVariantControls({
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.lengthOptions.map((option) => (
-              <button
+              <ChoiceTile
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
-                  option.active ? "designer-accent-border" : "border-neutral-200"
-                }`}
+                selected={option.active}
+                className="px-3 py-2 text-sm"
                 disabled={option.disabled}
                 onClick={() => {
                   if (option.productId) actions.onSelectLength(option.productId, option.label);
@@ -610,7 +556,7 @@ export function ProductModelVariantControls({
                 title={option.title}
               >
                 {option.label}
-              </button>
+              </ChoiceTile>
             ))}
           </div>
         </div>
@@ -622,11 +568,10 @@ export function ProductModelVariantControls({
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.huggModelOptions.map((option) => (
-              <button
+              <ChoiceTile
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
-                  option.active ? "designer-accent-border" : "border-neutral-200"
-                }`}
+                selected={option.active}
+                className="px-3 py-2 text-sm"
                 data-testid={`hugg-model-option-${option.key}`}
                 disabled={option.disabled}
                 onClick={() => {
@@ -635,7 +580,7 @@ export function ProductModelVariantControls({
                 title={option.title}
               >
                 {option.label}
-              </button>
+              </ChoiceTile>
             ))}
           </div>
         </div>
@@ -647,11 +592,10 @@ export function ProductModelVariantControls({
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.sebModelOptions.map((option) => (
-              <button
+              <ChoiceTile
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
-                  option.active ? "designer-accent-border" : "border-neutral-200"
-                }`}
+                selected={option.active}
+                className="px-3 py-2 text-sm"
                 data-testid={`seb-model-option-${option.key}`}
                 data-active={option.active ? "true" : "false"}
                 disabled={option.disabled}
@@ -661,7 +605,7 @@ export function ProductModelVariantControls({
                 title={option.title}
               >
                 {option.label}
-              </button>
+              </ChoiceTile>
             ))}
           </div>
         </div>
@@ -674,16 +618,15 @@ export function ProductModelVariantControls({
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.layout.options.map((option) => (
-              <button
+              <ChoiceTile
                 key={`config-${option.code}`}
-                className={`rounded-lg border px-3 py-2 text-sm ${optionTextClass} ${
-                  option.active ? "designer-accent-border" : "border-neutral-200"
-                }`}
+                selected={option.active}
+                className="px-3 py-2 text-sm"
                 disabled={option.disabled}
                 onClick={() => actions.onSelectLayout(option.code, option.label)}
               >
                 {option.label}
-              </button>
+              </ChoiceTile>
             ))}
           </div>
 

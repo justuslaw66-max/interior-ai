@@ -11,6 +11,7 @@ import { aiLayoutReadinessChecks } from "@/lib/ai-layout-readiness";
 import { AiLayoutReadinessChecklist } from "./AiLayoutReadinessChecklist";
 import { AiLayoutRoomLimit } from "./AiLayoutRoomLimit";
 import { Button } from "@/components/ui/Button";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 type Budget = "$" | "$$" | "$$$";
@@ -114,8 +115,6 @@ export default function DesignControlsAiPanel({
   const [aiLayoutGoal, setAiLayoutGoal] = useState<AiLayoutGoal>("balanced");
   const aiMustHaveOptions = useMemo(() => AI_MUST_HAVE_OPTIONS, []);
   const titleClass = "text-sm font-semibold text-neutral-800";
-  const selectedButtonClass = "bg-neutral-900 text-white";
-  const idleButtonClass = "bg-neutral-100 text-neutral-900";
   const cardClass = "rounded-xl border border-neutral-200 bg-white p-3";
   const mutedClass = "text-neutral-500";
   const roomSizeLabel = formatPlanDimensionsLabel(roomWidth, roomDepth, measurementUnit);
@@ -206,24 +205,19 @@ export default function DesignControlsAiPanel({
           {AI_LAYOUT_GOALS.map((goal) => {
             const selected = goal.id === aiLayoutGoal;
             return (
-              <button
+              <ChoiceTile
                 key={goal.id}
-                type="button"
+                selected={selected}
                 data-testid={`ai-layout-goal-${goal.id}`}
                 data-active={selected ? "true" : "false"}
-                className={[
-                  "rounded-xl border px-3 py-2 text-left transition",
-                  selected
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-950"
-                    : "border-neutral-200 bg-white text-neutral-800",
-                ].join(" ")}
+                className="px-3 py-2 text-left"
                 onClick={() => applyAiLayoutGoal(goal)}
               >
                 <span className="block text-xs font-semibold">{goal.label}</span>
                 <span className="mt-1 block text-xs text-neutral-500">
                   {goal.description}
                 </span>
-              </button>
+              </ChoiceTile>
             );
           })}
         </div>
@@ -236,15 +230,14 @@ export default function DesignControlsAiPanel({
         </div>
         <div className="mt-2 grid grid-cols-2 gap-2">
           {STYLES.map((candidate) => (
-            <button
+            <ChoiceTile
               key={candidate}
-              className={`rounded-lg px-2 py-2 text-xs ${
-                style === candidate ? selectedButtonClass : idleButtonClass
-              }`}
+              selected={style === candidate}
+              className="px-2 py-2 text-xs font-semibold"
               onClick={() => onStyleChange(candidate)}
             >
               {candidate}
-            </button>
+            </ChoiceTile>
           ))}
         </div>
 
@@ -262,16 +255,14 @@ export default function DesignControlsAiPanel({
           {aiMustHaveOptions.map((option) => {
             const selected = aiMustHaves.includes(option.label);
             return (
-              <button
+              <Button
                 key={option.role}
-                type="button"
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                  selected ? selectedButtonClass : idleButtonClass
-                }`}
+                size="compact"
+                pressed={selected}
                 onClick={() => toggleAiMustHave(option.label)}
               >
                 {option.label}
-              </button>
+              </Button>
             );
           })}
         </div>
