@@ -6,6 +6,7 @@ import type {
   SurfaceMaterialTextureSource,
 } from "./surface-material-runtime-types";
 import { expandSurfaceTextureFaces } from "./surface-texture-face-run";
+import { decodeSurfaceSuitability } from "./surface-material-suitability";
 
 export type {
   SurfaceMaterialCatalogRecord,
@@ -64,6 +65,7 @@ export function decodeSurfaceMaterialRenderTuple(
       publish_status: tuple[29],
       publish_blockers: tuple[30],
     },
+    ...(tuple[34] ? { suitability: decodeSurfaceSuitability(tuple[34]) } : {}),
   };
 }
 

@@ -58,6 +58,12 @@ entries' metadata is unchanged): `uses`, `laying` and `indoor_twin_ids`, built b
 go to the YAML's `physical_specs.slip_rating`, which stays class C/E, out of both projections. See
 `docs/architecture/surface-material-abk-documents.md`.
 
+17 Oct 2026: plan review's surface checks need a few of those facts synchronously, for any saved design, so they move to class A
+in the eager render data, as the tuple's trailing field 34 (`[slip, barefoot, sheet, flags]`), only for entries with one: the
+slip class, the barefoot class, the ABK sheet's collection, an outdoor-range flag and a white-body wall tile flag. About 29 KB raw
+(1.2 KB gzip). ABK's sheets themselves stay out of the client: the generator builds the facts. See
+`docs/architecture/surface-suitability-checks.md`.
+
 ## Runtime and loading contract
 
 `lib/surface-material-runtime.ts` synchronously decodes the compact render
