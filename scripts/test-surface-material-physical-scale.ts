@@ -13,6 +13,8 @@ import {
   SURFACE_MATERIAL_RENDER_REGISTRY,
   decodeSurfaceMaterialRenderTuple,
   getRuntimeSurfaceMaterialById,
+  getSurfaceMaterialPreviewSource,
+  getSurfaceMaterialTextureSource,
 } from "../lib/surface-material-runtime";
 import {
   compactSurfaceTextureFaces,
@@ -627,7 +629,20 @@ for (const material of tabulaeChevrons) {
   assert.deepEqual([material.physical_specs.tile_width_mm, material.physical_specs.tile_length_mm], [150, 850], `${id}: 15x85`);
   assert.ok(material.texture_assets.faces?.every((face) => face.width_mm === 150 && face.height_mm === 850), `${id}: face size`);
   assert.deepEqual(getSurfaceMaterialChevronFailures(material), [], `${id}: a valid chevron`);
+  assert.equal(getSurfaceMaterialTextureSource(material)?.kind, "base_color", `${id}: the renderer paints the faces`);
+  assert.deepEqual(
+    getSurfaceMaterialPreviewSource(material),
+    { url: material.texture_assets.swatch_url, kind: "swatch" },
+    `${id}: cards and inspectors show the laid swatch`
+  );
 }
+assert.deepEqual(
+  SURFACE_MATERIAL_RENDER_REGISTRY.filter(
+    (material) => getSurfaceMaterialPreviewSource(material)?.url !== getSurfaceMaterialTextureSource(material)?.url
+  ).map((material) => material.surface_material.material_id),
+  tabulaeChevrons.map((material) => material.surface_material.material_id),
+  "only the chevrons, which can't be laid straight, preview a different picture than the renderer's"
+);
 for (const [colour, mirrored, dropped] of [
   ["chevron-genuine-sabbia", 14, [15]],
   ["chevron-genuine-havana", 15, undefined],
