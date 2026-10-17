@@ -12,6 +12,7 @@ import {
   type ReviewSourcePoint,
 } from "@/lib/floor-plan-import-review-geometry";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanOpeningTracePanelProps = {
   document: FloorPlanDocumentV2;
@@ -115,8 +116,8 @@ export default function FloorPlanOpeningTracePanel({
             Set scale and outline the rooms first.
           </div>
         ) : null}
-        <button
-          className={`${control} w-full font-semibold`}
+        <Button
+          size="compact" pressed={pickingOpening} className="w-full"
           disabled={disabled || !calibration || !floor.walls.length}
           onClick={() => {
             if (pickingOpening) {
@@ -126,12 +127,11 @@ export default function FloorPlanOpeningTracePanel({
             onOpeningPointsChange([]);
             onPickingOpeningChange(true);
           }}
-          type="button"
         >
           {pickingOpening
             ? "Selecting ends — click twice on the plan"
             : `Place ${OPENING_TYPES.find((option) => option.value === kind)?.label.toLowerCase()}`}
-        </button>
+        </Button>
         <div
           className={`rounded-md border p-2 text-xs ${
             openingPoints.length === 2 && analysis?.valid
@@ -146,25 +146,23 @@ export default function FloorPlanOpeningTracePanel({
               : analysis?.message}
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <button
-            className={control}
+          <Button
+            size="compact"
             disabled={disabled || !openingPoints.length}
             onClick={() => onOpeningPointsChange(openingPoints.slice(0, -1))}
-            type="button"
           >
             Undo last point
-          </button>
-          <button
-            className={control}
+          </Button>
+          <Button
+            size="compact"
             disabled={disabled || !openingPoints.length}
             onClick={() => onOpeningPointsChange([])}
-            type="button"
           >
             Start over
-          </button>
+          </Button>
         </div>
-        <button
-          className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+        <Button
+          variant="primary" size="compact"
           disabled={
             disabled ||
             !calibration ||
@@ -193,10 +191,9 @@ export default function FloorPlanOpeningTracePanel({
               onError(userFacingErrorMessage(cause, "The door or window could not be added."));
             }
           }}
-          type="button"
         >
           Add this opening
-        </button>
+        </Button>
         <p className="rounded-md bg-white p-2 text-xs leading-4 text-neutral-600">
           Add every visible opening. If the source truly shows none, skip this
           step and mark the checklist suggestion as reviewed.

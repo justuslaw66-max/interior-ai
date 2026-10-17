@@ -1,4 +1,5 @@
 import type { FloorPlanOpeningKindCorrectionPlan } from "@/lib/floor-plan-opening-kind-correction";
+import { Button } from "@/components/ui/Button";
 
 export function FloorPlanOpeningKindCorrectionNotice({
   plan, subtleClassName, proMode, approved, onApprove,
@@ -14,15 +15,14 @@ export function FloorPlanOpeningKindCorrectionNotice({
       <div className="col-span-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900">
         <div>Changing this window to a door requires changing its documented sill.</div>
         {proMode ? (
-          <button
-            type="button"
-            className="mt-2 rounded bg-amber-900 px-2 py-1 font-semibold text-white"
+          <Button
+            variant="primary" size="compact" className="mt-2"
             data-testid="import-review-opening-kind-approve-override"
             disabled={approved}
             onClick={onApprove}
           >
             {approved ? "Override approved" : "Approve reviewed override"}
-          </button>
+          </Button>
         ) : (
           <div className="mt-1">This source measurement is locked. Open Pro tools to review an override.</div>
         )}

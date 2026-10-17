@@ -3,6 +3,7 @@
 import type { FloorPlanAnnotationV2, FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { applyConsumerTopologyCorrection } from "@/lib/floor-plan-import-review-geometry";
 import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
+import { Button } from "@/components/ui/Button";
 import FloorPlanTracePathFields from "./FloorPlanTracePathFields";
 import { SOURCE_REVIEW_LAYERS, type SourceReviewLayer } from "./useSourceReviewLayers";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
@@ -28,7 +29,7 @@ function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange,
       } catch (error) { onError(userFacingErrorMessage(error, "Drawing correction failed.")); }
     }}>
     <div className="flex justify-between gap-3"><strong>Source {textMark ? "text" : "stroke"}</strong>
-      <button type="button" onClick={onClose}>Close selection</button></div>
+      <Button variant="quiet" size="compact" onClick={onClose}>Close selection</Button></div>
     <p className="my-2">Reference artwork. It stays separate from walls and 3D geometry; clean proposed exports omit it.</p>
     {textMark ? <label>Correct text
       <input aria-label="Correct source text" className="my-2 block w-full rounded border p-2" name="text"
@@ -36,12 +37,12 @@ function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange,
     </label> : <p>{annotation.id.startsWith("source-proposal:")||annotation.id.startsWith("consumer-source:") ? annotation.text : "This unclassified line remains available for review against the original drawing."}</p>}
     {onUseScaleEndpoints && /^source-proposal:\d+:dimension:\d+$/.test(annotation.id) && annotation.geometry.kind === "source_drawing" &&
       annotation.geometry.command === "line" && annotation.geometry.points.length === 2 ?
-      <button type="button" className="mt-2 rounded border px-3 py-1" disabled={disabled} onClick={() => {
+      <Button size="compact" className="mt-2" disabled={disabled} onClick={() => {
         if (annotation.geometry.kind === "source_drawing") onUseScaleEndpoints(annotation.geometry.points);
         onClose();
-      }}>Use these endpoints for scale review</button> : null}
+      }}>Use these endpoints for scale review</Button> : null}
     {isFinalSourceTrace(annotation) ? <FloorPlanTracePathFields annotation={annotation} document={document} floorId={floorId} onChange={onChange} onError={onError} disabled={disabled}/> : null}
-    {textMark && onChange ? <button className="rounded border px-3 py-1" disabled={disabled} type="submit">Save text correction</button> : null}
+    {textMark && onChange ? <Button size="compact" disabled={disabled} type="submit">Save text correction</Button> : null}
   </form>;
 }
 
