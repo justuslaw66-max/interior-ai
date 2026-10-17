@@ -101,7 +101,7 @@
       "limit": 250
     },
     "components/BetaFeedbackWidget.tsx": {
-      "lines": 271,
+      "lines": 255,
       "limit": 250
     },
     "components/catalog/CatalogFilterDrawer.tsx": {
@@ -109,7 +109,7 @@
       "limit": 250
     },
     "components/catalog/CatalogItemDrawer.tsx": {
-      "lines": 471,
+      "lines": 432,
       "limit": 250
     },
     "components/catalog/CatalogPanel.tsx": {
@@ -161,7 +161,7 @@
       "limit": 250
     },
     "components/editor/design-page/ProductFinishControls.tsx": {
-      "lines": 461,
+      "lines": 459,
       "limit": 250
     },
     "components/editor/design-page/ProductModelVariantControls.tsx": {
@@ -1371,7 +1371,7 @@
     "app/share/[shareToken]/export/PlanSvgDownload.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 115
+        "maximum": 109
       }
     },
     "app/share/[shareToken]/export/ShoppingList.tsx": {
@@ -1401,7 +1401,7 @@
     "components/BetaFeedbackWidget.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 220
+        "maximum": 202
       }
     },
     "components/catalog/CatalogActiveFilterChips.tsx": {
@@ -1413,13 +1413,13 @@
     "components/catalog/CatalogFilterDrawer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 230
+        "maximum": 229
       }
     },
     "components/catalog/CatalogItemDrawer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 421
+        "maximum": 380
       },
       "complexFunctions": {
         "count": 1,
@@ -1429,7 +1429,7 @@
     "components/catalog/CatalogItemFinishPicker.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 148
+        "maximum": 140
       }
     },
     "components/catalog/CatalogItemGallery.tsx": {
@@ -2162,22 +2162,10 @@
         "maximum": 235
       }
     },
-    "components/OnboardingChecklist.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 129
-      }
-    },
     "components/ReadOnlyViewer.tsx": {
       "overlongFunctions": {
         "count": 1,
         "maximum": 94
-      }
-    },
-    "components/RoomSwitcher.tsx": {
-      "overlongFunctions": {
-        "count": 2,
-        "maximum": 108
       }
     },
     "components/scene/furniture/resolveFurnitureModelAppearance.ts": {

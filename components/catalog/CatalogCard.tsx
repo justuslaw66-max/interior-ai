@@ -3,6 +3,7 @@ import { Check, Heart, Plus } from "lucide-react";
 import type { CatalogCardView } from "@/lib/catalog/view-builders";
 import LazyImage from "@/components/common/LazyImage";
 import PlaceholderImage from "@/components/common/PlaceholderImage";
+import { Button } from "@/components/ui/Button";
 import { getCatalogDrawerFocusAttributes } from "./useCatalogDrawerFocusRestoration";
 import { formatSgd } from "@/lib/money-format";
 
@@ -120,16 +121,16 @@ export default function CatalogCard(props: Props) {
         </button>
         <span className="mt-0.5 truncate text-xs leading-4 text-neutral-600">{item.dimsLabel}</span>
         <CatalogCardPrice item={item} />
-        <button
-          type="button"
+        <Button
+          size="regular"
           onClick={props.onAdd}
           data-testid={`catalog-add-${item.id}`}
           aria-label={`Add ${item.title} to the ${props.roomLabel}`}
-          className={`mt-auto inline-flex min-h-10 w-full items-center justify-center gap-1 rounded-lg border border-neutral-300 bg-white text-[13px] font-bold text-neutral-900 hover:bg-neutral-50 ${FOCUS_RING}`}
+          className="mt-auto w-full"
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
           Add
-        </button>
+        </Button>
       </div>
     </div>
   );

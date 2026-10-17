@@ -1,3 +1,4 @@
+import { Chip } from "@/components/ui/Chip";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 
 type RelatedSection = {
@@ -21,13 +22,9 @@ export default function CatalogItemRelatedList({ sections, onPreviewRelated }: P
               const item = CATALOG_ITEMS[id];
               if (!item) return null;
               return (
-                <button
-                  key={id}
-                  onClick={() => onPreviewRelated(id)}
-                  className="rounded-full border border-neutral-200 px-2 py-1 text-xs text-neutral-700"
-                >
+                <Chip key={id} onClick={() => onPreviewRelated(id)}>
                   {item.title}
-                </button>
+                </Chip>
               );
             })}
           </div>

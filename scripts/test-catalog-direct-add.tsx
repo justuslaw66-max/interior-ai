@@ -81,7 +81,8 @@ assert.match(pro, /data-testid="catalog-compare-toggle-drawer-winora"[^>]*>Compa
 // While the product lists load (J, 10 Oct 2026), products can be browsed: the panel's cover lets
 // clicks through, so search, filters, details and Compare work. Only adding waits.
 const loading = drawer(true, noop, true);
-assert.match(loading, /<button type="button" disabled=""[^>]*data-testid="catalog-detail-add-to-room"[^>]*>Loading products…</);
+// Add is the app's primary Button (AX10 area b): disabled, with its test id, while products load.
+assert.match(loading, /<button(?=[^>]*disabled="")[^>]*data-testid="catalog-detail-add-to-room"[^>]*>Loading products…</);
 assert.match(loading, /data-testid="catalog-detail-choose-spot" disabled=""/);
 assert.match(loading, /data-testid="catalog-compare-toggle-drawer-winora"[^>]*>Compare</);
 assert.doesNotMatch(consumer, /disabled=""/);

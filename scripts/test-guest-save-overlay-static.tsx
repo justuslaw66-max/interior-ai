@@ -143,7 +143,8 @@ assert.doesNotMatch(
 assert.match(commandBarSource, /id=\{GUEST_SAVE_OPENER_ID\}/);
 assert.match(commandBarSource, /id=\{GUEST_SHARE_OPENER_ID\}/);
 assert.match(aiPanelSource, /id=\{GUEST_AI_LAYOUT_OPENER_ID\}/);
-assert.match(checkoutButtonSource, /id=\{GUEST_CHECKOUT_OPENER_ID\} type="button" data-testid="checkout-shopify"/);
+// Checkout here is the app's Button (AX10 area b), which sets type="button" itself.
+assert.match(checkoutButtonSource, /<Button variant="primary" id=\{GUEST_CHECKOUT_OPENER_ID\} data-testid="checkout-shopify"/);
 assert.match(checkoutSource, /openGuestPrompt\("checkout"/);
 assert.match(checkoutSource, /if \(busy \|\| checkoutLock\.active\(\)\) return;/);
 assert.match(checkoutSource, /await checkoutLock\.run\(async \(\) => \{/);

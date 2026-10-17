@@ -1,5 +1,6 @@
 "use client";
 
+import { Chip } from "@/components/ui/Chip";
 import type { CatalogMemoryScope } from "@/lib/catalog/category-chips";
 
 type CatalogEmptyStateProps = {
@@ -10,9 +11,6 @@ type CatalogEmptyStateProps = {
   onClearSearch: () => void;
   onClearFilters: () => void;
 };
-
-const ACTION_CLASS =
-  "min-h-10 rounded-full border border-neutral-300 bg-white px-3 text-xs font-semibold text-neutral-800 hover:bg-neutral-50 md:min-h-8";
 
 function emptyStateCopy(scope: CatalogMemoryScope, narrowed: boolean) {
   if (scope === "favorites") {
@@ -38,21 +36,9 @@ export function CatalogEmptyState(props: CatalogEmptyStateProps) {
       <div className="text-sm font-semibold text-neutral-900">{copy.title}</div>
       <div className="mt-1 text-xs text-neutral-600">{copy.detail}</div>
       <div className="mt-3 flex flex-wrap justify-center gap-2">
-        {scope !== "all" ? (
-          <button type="button" className={ACTION_CLASS} onClick={props.onBrowseAll}>
-            Browse all products
-          </button>
-        ) : null}
-        {hasSearchTerm ? (
-          <button type="button" className={ACTION_CLASS} onClick={props.onClearSearch}>
-            Clear search
-          </button>
-        ) : null}
-        {hasActiveFilters ? (
-          <button type="button" className={ACTION_CLASS} onClick={props.onClearFilters}>
-            Clear filters
-          </button>
-        ) : null}
+        {scope !== "all" ? <Chip onClick={props.onBrowseAll}>Browse all products</Chip> : null}
+        {hasSearchTerm ? <Chip onClick={props.onClearSearch}>Clear search</Chip> : null}
+        {hasActiveFilters ? <Chip onClick={props.onClearFilters}>Clear filters</Chip> : null}
       </div>
     </div>
   );

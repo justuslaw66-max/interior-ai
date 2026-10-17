@@ -3,6 +3,7 @@
 import { ArrowLeft, ShoppingBag } from "lucide-react";
 import { useRef } from "react";
 import { createPortal } from "react-dom";
+import { Button } from "@/components/ui/Button";
 import { useClientHydrated } from "@/lib/useClientHydrated";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import type { ShoppingList, ShoppingListLine, ShoppingRetailer } from "@/lib/shopping-list";
@@ -45,15 +46,10 @@ function ShoppingListEmpty({ onGoFurnish }: { onGoFurnish: () => void }) {
       <ShoppingBag className="h-7 w-7 text-neutral-500" aria-hidden="true" />
       <h2 className="text-base font-bold text-neutral-900">Nothing to buy yet</h2>
       <p className="max-w-sm text-sm text-neutral-600">Add products in Furnish, and they appear here with their prices.</p>
-      <button
-        type="button"
-        data-testid="shopping-list-go-furnish"
-        onClick={onGoFurnish}
-        className="mt-2 flex min-h-11 items-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 text-sm font-bold text-neutral-900 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
-      >
+      <Button data-testid="shopping-list-go-furnish" onClick={onGoFurnish} className="mt-2">
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Go to Furnish
-      </button>
+      </Button>
     </div>
   );
 }

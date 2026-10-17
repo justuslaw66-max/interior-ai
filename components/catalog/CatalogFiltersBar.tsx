@@ -1,4 +1,5 @@
 import { SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { CATALOG_FILTER_POPOVER_ID } from "./CatalogFilterDrawer";
 
 /** Filters' id: closing the filter popover returns focus here (UX AX5). */
@@ -17,14 +18,14 @@ export default function CatalogFiltersBar({
 }: Props) {
   return (
     <div className="flex min-w-0 items-center gap-2">
-      <button
+      <Button
         id={CATALOG_FILTERS_TOGGLE_ID}
-        type="button"
+        size="regular"
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? CATALOG_FILTER_POPOVER_ID : undefined}
         onClick={onToggleDrawer}
-        className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 transition-colors hover:border-neutral-300 hover:bg-neutral-50"
+        className="shrink-0"
       >
         <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
         Filters
@@ -33,7 +34,7 @@ export default function CatalogFiltersBar({
             {activeFilterCount}
           </span>
         ) : null}
-      </button>
+      </Button>
     </div>
   );
 }

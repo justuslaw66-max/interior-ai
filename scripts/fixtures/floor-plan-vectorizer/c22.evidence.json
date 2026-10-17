@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.30.1",
+ "exporterVersion": "app-evidence-0.31.1",
  "page": {
   "widthPx": 958,
   "heightPx": 1464,
@@ -5389,6 +5389,14 @@
   "cornersStraightened": 0,
   "cutCornersSquared": 0,
   "sidesCutAtDuctJogs": 8,
+  "windowsReadInThePicture": 0,
+  "pictureBandsOnUnbrokenWalls": 0,
+  "roomsClosedByStrokes": 0,
+  "namelessSpacesAsRooms": 0,
+  "smallRoomsBetweenTwoRooms": 0,
+  "sliverWindowsKept": 0,
+  "longCutsUndone": 0,
+  "roomNamesReadPastOcrSlips": 0,
   "unsupportedWallPx": 1193,
   "thickAxisWallPx": 1193,
   "slantedWallPx": 0,
@@ -5405,6 +5413,9 @@
   "standaloneWallsAdded": 12,
   "jogsThicknessChosen": 1,
   "standaloneFacesOnTheWalls": 1,
-  "itemsLeftOutForTheAppsLimits": 0
+  "itemsLeftOutForTheAppsLimits": 0,
+  "round39Withheld": [
+   "doors 11 -> 9"
+  ]
  }
 }

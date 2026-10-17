@@ -147,11 +147,13 @@ assert.doesNotMatch(render(chooserProps({ isAuthenticated: true })), /start-choi
 for (const { key, label } of START_TEMPLATE_FILTERS) {
   assert.match(
     guest,
-    new RegExp(`data-testid="start-template-filter-${key}" aria-pressed="${key === "all"}"[^>]*>${label}<span[^>]*>${countFor(key)}</span>`)
+    new RegExp(`<button(?=[^>]*data-testid="start-template-filter-${key}")(?=[^>]*aria-pressed="${key === "all"}")[^>]*>${label}<span[^>]*>${countFor(key)}</span>`)
   );
 }
-assert.match(guest, /data-testid="start-template-empty" aria-pressed="true"/);
-assert.match(guest, /data-testid="start-template-furnished" aria-pressed="false"/);
+// The filters are the shared Chip and Empty | Furnished the segmented control (AX10 area b): the
+// test id and aria-pressed sit on one button, in whatever order the control writes them.
+assert.match(guest, /<button(?=[^>]*data-testid="start-template-empty")(?=[^>]*aria-pressed="true")/);
+assert.match(guest, /<button(?=[^>]*data-testid="start-template-furnished")(?=[^>]*aria-pressed="false")/);
 assert.match(guest, /data-testid="start-template-address-search"[^>]*>.*Search by HDB address<\/button>/);
 const shownIds = [...guest.matchAll(/data-testid="start-template-([a-z_]+)" aria-label="([^"]+)"/g)];
 assert.deepEqual(

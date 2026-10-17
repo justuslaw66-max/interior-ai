@@ -3,7 +3,7 @@
 import type { ButtonHTMLAttributes, CSSProperties } from "react";
 import { createPortal } from "react-dom";
 
-import { ChoiceTile } from "@/components/ui/ChoiceTile";
+import { CHOSEN_SWATCH_RING, ChoiceTile } from "@/components/ui/ChoiceTile";
 
 type FinishOption = {
   key: string;
@@ -128,8 +128,6 @@ type ProductFinishControlsProps = {
 const sectionHeadingClass = "text-sm font-semibold text-neutral-900";
 
 const selectedLabelClass = "mt-2 text-xs text-neutral-600";
-// The chosen swatch's ring: a white gap, then black (UX 5n, J, 16 Oct). The swatch keeps its colour.
-const SELECTED_SWATCH_RING = "0 0 0 2px #fff, 0 0 0 4px #171717";
 const HOVERED_SWATCH_RING = "0 0 0 2px #fff, 0 0 0 3px #a0a0a0";
 const swatchClass = "shrink-0 h-20 w-20 rounded-sm bg-cover bg-center";
 
@@ -150,7 +148,7 @@ type FinishSwatchButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ar
 
 /** A swatch to choose, in its own colour or texture; the chosen one has the ring. */
 function FinishSwatchButton({ colorHex, swatchTextureUrl, selected, hovered = false, ...props }: FinishSwatchButtonProps) {
-  const ring = selected ? SELECTED_SWATCH_RING : hovered ? HOVERED_SWATCH_RING : "none";
+  const ring = selected ? CHOSEN_SWATCH_RING : hovered ? HOVERED_SWATCH_RING : "none";
   return (
     <button
       type="button"
@@ -267,7 +265,7 @@ export function ProductFinishControls({
               data-testid="selected-single-finish-swatch"
               role="img"
               aria-label={`${state.singleWoodFinish.label} wood swatch`}
-              style={swatchStyle(state.singleWoodFinish.colorHex, state.singleWoodFinish.swatchTextureUrl, SELECTED_SWATCH_RING)}
+              style={swatchStyle(state.singleWoodFinish.colorHex, state.singleWoodFinish.swatchTextureUrl, CHOSEN_SWATCH_RING)}
             />
           </div>
         </div>

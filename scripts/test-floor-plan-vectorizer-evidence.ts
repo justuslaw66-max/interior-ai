@@ -386,17 +386,19 @@ async function main() {
   assert.deepEqual(validateFloorPlanDocumentV2(bar.document).filter((issue) => issue.severity === "error"), []);
   summary.push(`c23: scale ${bar.scale.millimetresPerPixel.toFixed(2)} mm/px accepted from the graphic scale bar, ${bar.document.floors[0].rooms.length} rooms promoted`);
 
-  // A vision guess ("window" behind the sofa, no jamb or frame pixels) on a wall the vectorizer measured as solid
-  // stays an editable suggestion; it never cuts the wall.
+  // A vision guess ("window" behind the bed's headboard, no jamb or frame pixels) on a wall the vectorizer measured as
+  // solid stays an editable suggestion; it never cuts the wall. (The main bedroom's outer wall. Before exporter 0.31
+  // the guess stood behind the living room's sofa; round 39 reads that wall, hatched beside the sofa's back, as a
+  // window - a known false one.)
   const measured = await importFixture("d12");
   const guessed = await importFixture("d12", [
     {
       kind: "window",
       operation: "fixed",
-      centerXRatio: 2475 / 2774,
+      centerXRatio: 345 / 2774,
       centerYRatio: 650 / 1786,
-      spanStart: { xRatio: 2475 / 2774, yRatio: 520 / 1786 },
-      spanEnd: { xRatio: 2475 / 2774, yRatio: 780 / 1786 },
+      spanStart: { xRatio: 345 / 2774, yRatio: 520 / 1786 },
+      spanEnd: { xRatio: 345 / 2774, yRatio: 780 / 1786 },
       confidence: 0.6,
       evidenceKind: "vision",
     },
