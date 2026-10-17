@@ -72,6 +72,53 @@ function activateAvailableIssueRoom(
   return availableRoomId;
 }
 
+function routePlanQualityAction(
+  action: FloorPlanQualityAction,
+  issue: FloorPlanQualityIssue | undefined,
+  room: { targetRoomId: string | undefined; availableTargetRoomId: string | undefined },
+  actions: DesignPagePlanQualityActions
+) {
+  const target = issue?.target;
+  const { targetRoomId, availableTargetRoomId } = room;
+  if (action === "add_window" || action === "add_doorway") {
+    actions.goPlan();
+    actions.setViewMode("2d");
+    actions.clearNonRoomSelection();
+    if (targetRoomId) actions.selectPlanRoom(targetRoomId);
+    actions.setTraceOpeningKind(action === "add_window" ? "window" : "door");
+    actions.showToast(
+      action === "add_window"
+        ? target?.wall
+          ? `Add a window on the ${target.wall} wall`
+          : "Add a window to the highlighted room"
+        : target?.wall
+          ? `Add a door on the ${target.wall} wall`
+          : "Add a door between the highlighted rooms"
+    );
+    return;
+  }
+  if (action === "review_plan_layout") {
+    actions.goPlan();
+    actions.setViewMode("2d");
+    actions.clearNonRoomSelection();
+    selectPlanIssueTarget(availableTargetRoomId, target, actions.selectPlanRoom, actions.updateSelection);
+    actions.showToast("Review the highlighted plan issue");
+    return;
+  }
+  if (action === "review_furniture_fit") {
+    actions.goFurnish();
+    actions.selectPlanRoom(null);
+    if (target?.itemInstanceId) {
+      actions.updateSelection(new Set([target.itemInstanceId]), target.itemInstanceId);
+    }
+    actions.showToast("Review the highlighted furniture fit");
+    return;
+  }
+  actions.goFurnish();
+  if (targetRoomId) actions.selectPlanRoom(null);
+  actions.showToast("Add a storage piece or support space");
+}
+
 export function useDesignPagePlanQualityController({
   state,
   configuration,
@@ -210,46 +257,10 @@ export function useDesignPagePlanQualityController({
         top_issue: report.issues[0]?.id ?? null,
       });
 
-      if (action === "add_window" || action === "add_doorway") {
-        goPlan();
-        setViewMode("2d");
-        clearNonRoomSelection();
-        if (targetRoomId) selectPlanRoom(targetRoomId);
-        setTraceOpeningKind(action === "add_window" ? "window" : "door");
-        showToast(
-          action === "add_window"
-            ? target?.wall
-              ? `Add a window on the ${target.wall} wall`
-              : "Add a window to the highlighted room"
-            : target?.wall
-              ? `Add a door on the ${target.wall} wall`
-              : "Add a door between the highlighted rooms"
-        );
-        return;
-      }
-
-      if (action === "review_plan_layout") {
-        goPlan();
-        setViewMode("2d");
-        clearNonRoomSelection();
-        selectPlanIssueTarget(availableTargetRoomId, target, selectPlanRoom, updateSelection);
-        showToast("Review the highlighted plan issue");
-        return;
-      }
-
-      if (action === "review_furniture_fit") {
-        goFurnish();
-        selectPlanRoom(null);
-        if (target?.itemInstanceId) {
-          updateSelection(new Set([target.itemInstanceId]), target.itemInstanceId);
-        }
-        showToast("Review the highlighted furniture fit");
-        return;
-      }
-
-      goFurnish();
-      if (targetRoomId) selectPlanRoom(null);
-      showToast("Add a storage piece or support space");
+      routePlanQualityAction(action, issue, { targetRoomId, availableTargetRoomId }, {
+        switchRoom, goPlan, goFurnish, setViewMode, clearNonRoomSelection, selectPlanRoom,
+        setTraceOpeningKind, updateSelection, showToast,
+      });
     },
     [
       clearNonRoomSelection,

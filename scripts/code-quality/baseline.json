@@ -4323,11 +4323,7 @@
     "lib/useDesignPagePlanQualityController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 217
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 19
+        "maximum": 181
       }
     },
     "lib/useDesignPagePlanState.ts": {
