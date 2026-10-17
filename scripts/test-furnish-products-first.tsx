@@ -63,8 +63,9 @@ assert.deepEqual(
 );
 const chipMarkup = renderToStaticMarkup(createElement(CatalogCategoryChips, { chips, selected: "all", onSelect: noop }));
 assert.match(chipMarkup, /role="group" aria-label="Filter products"/);
-assert.match(chipMarkup, /data-testid="catalog-memory-all" data-active="true" aria-pressed="true"[^>]*>All</);
-assert.match(chipMarkup, /data-testid="catalog-category-chip-sofa" data-active="false" aria-pressed="false"[^>]*>Sofas</);
+// Each chip is the shared Chip (J, 17 Oct): its test id, data-active and aria-pressed, in any order.
+assert.match(chipMarkup, /<button(?=[^>]*data-testid="catalog-memory-all")(?=[^>]*data-active="true")(?=[^>]*aria-pressed="true")[^>]*>All</);
+assert.match(chipMarkup, /<button(?=[^>]*data-testid="catalog-category-chip-sofa")(?=[^>]*data-active="false")(?=[^>]*aria-pressed="false")[^>]*>Sofas</);
 
 // The card: name, size, price and one Add; the heart saves it; details open from the card.
 const card: CatalogCardView = {

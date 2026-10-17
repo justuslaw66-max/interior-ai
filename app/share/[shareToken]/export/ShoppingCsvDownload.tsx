@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
 import type { ShoppingCsvRow } from "@/lib/share-shopping-csv";
 
@@ -100,15 +101,9 @@ export default function ShoppingCsvDownload({
 
   return (
     <div className="flex flex-col items-end gap-1">
-      <button
-        type="button"
-        data-testid="share-export-shopping-csv-download"
-        onClick={handleDownload}
-        disabled={disabled}
-        className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-50"
-      >
+      <Button size="regular" data-testid="share-export-shopping-csv-download" onClick={handleDownload} disabled={disabled}>
         Download shopping CSV
-      </button>
+      </Button>
       {message ? (
         <div className="text-xs text-neutral-500" role="status">
           {message}

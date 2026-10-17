@@ -1,3 +1,5 @@
+import { X } from "lucide-react";
+import { Chip } from "@/components/ui/Chip";
 import type { CatalogFilterState } from "@/lib/catalog/view-builders";
 
 type Props = {
@@ -40,22 +42,12 @@ export default function CatalogActiveFilterChips({ filters, onClearKey, onClearA
   return (
     <div className="mt-2 flex flex-wrap items-center gap-1.5">
       {chips.map((chip) => (
-        <button
-          type="button"
-          key={chip.key}
-          onClick={() => onClearKey(chip.key)}
-          className="rounded-full border border-neutral-200 bg-white px-2 py-0.5 text-xs text-neutral-700"
-        >
-          {chip.label} x
-        </button>
+        <Chip key={chip.key} aria-label={`Clear ${chip.label}`} onClick={() => onClearKey(chip.key)}>
+          {chip.label}
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
+        </Chip>
       ))}
-      <button
-        type="button"
-        onClick={onClearAll}
-        className="rounded-full border border-neutral-300 bg-neutral-50 px-2 py-0.5 text-xs font-medium text-neutral-800"
-      >
-        Clear all
-      </button>
+      <Chip onClick={onClearAll}>Clear all</Chip>
     </div>
   );
 }

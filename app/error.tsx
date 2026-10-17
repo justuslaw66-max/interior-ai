@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { buttonClassName, Button } from "@/components/ui/Button";
 
 export default function GlobalError({
   error,
@@ -25,17 +26,10 @@ export default function GlobalError({
           problem continues, return to My designs and reopen the design.
         </p>
         <div className="mt-5 flex justify-center gap-2">
-          <button
-            type="button"
-            onClick={reset}
-            className="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-semibold text-white"
-          >
+          <Button variant="primary" onClick={reset}>
             Retry
-          </button>
-          <a
-            href="/dashboard"
-            className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-800"
-          >
+          </Button>
+          <a href="/dashboard" className={buttonClassName()}>
             My designs
           </a>
         </div>

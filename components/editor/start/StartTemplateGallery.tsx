@@ -3,6 +3,9 @@
 import { useMemo, useState, type RefObject } from "react";
 import { ArrowRight, Search } from "lucide-react";
 import { PlanTemplatePreview } from "@/components/editor/start/PlanTemplatePreview";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import {
   buildStartTemplateCards,
   matchesStartTemplateFilter,
@@ -21,14 +24,8 @@ type StartTemplateGalleryProps = {
   onSearchAddress: () => void;
 };
 
-const chipClass = (pressed: boolean) =>
-  `flex h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-bold outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 md:h-8 ${
-    pressed ? "border-neutral-900 bg-neutral-900 text-white" : "border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100"
-  }`;
-const segmentClass = (pressed: boolean) =>
-  `h-11 rounded-lg px-3.5 text-[13px] font-bold text-neutral-900 outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 md:h-[30px] ${
-    pressed ? "bg-white shadow-sm" : "bg-transparent"
-  }`;
+// A link that stands alone: its own target height, 44px on phones.
+const standaloneLinkClass = "h-11 text-sm md:h-9";
 
 /** Templates, with the bedroom filters, Empty or Furnished, and the address search, as in the mockup. */
 export function StartTemplateGallery({ headingRef, ready, furnishedReady, onChooseTemplate, onSearchAddress }: StartTemplateGalleryProps) {
@@ -46,26 +43,29 @@ export function StartTemplateGallery({ headingRef, ready, furnishedReady, onChoo
         </h2>
         <div role="group" aria-label="Filter templates" className="flex flex-wrap items-center gap-2">
           {START_TEMPLATE_FILTERS.map(({ key, label }) => (
-            <button key={String(key)} type="button" data-testid={`start-template-filter-${key}`}
-              aria-pressed={filter === key} className={chipClass(filter === key)}
+            <Chip key={String(key)} data-testid={`start-template-filter-${key}`} pressed={filter === key}
               onClick={() => { setFilter(key); setShowAll(false); }}>
               {label}
               <span className="font-normal opacity-80">{cards.filter((card) => matchesStartTemplateFilter(card, key)).length}</span>
-            </button>
+            </Chip>
           ))}
         </div>
         <div className="hidden flex-1 lg:block" />
-        <div role="group" aria-label="Template contents" className="flex rounded-[10px] bg-neutral-200/70 p-[3px]">
-          <button type="button" data-testid="start-template-empty" aria-pressed={!furnished}
-            className={segmentClass(!furnished)} onClick={() => setFurnished(false)}>Empty</button>
-          <button type="button" data-testid="start-template-furnished" aria-pressed={furnished}
-            className={segmentClass(furnished)} onClick={() => setFurnished(true)}>Furnished</button>
-        </div>
-        <button type="button" data-testid="start-template-address-search" onClick={onSearchAddress}
-          className="flex h-11 items-center gap-1.5 rounded-md text-sm font-bold text-blue-800 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 md:h-9">
+        <SegmentedControl
+          label="Template contents"
+          size="compact"
+          value={furnished ? "furnished" : "empty"}
+          onChange={(contents) => setFurnished(contents === "furnished")}
+          options={[
+            { value: "empty", label: "Empty", testId: "start-template-empty" },
+            { value: "furnished", label: "Furnished", testId: "start-template-furnished" },
+          ]}
+        />
+        <Button variant="link" size="inline" data-testid="start-template-address-search" onClick={onSearchAddress}
+          className={standaloneLinkClass}>
           <Search aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
           Search by HDB address
-        </button>
+        </Button>
       </div>
       {furnished && !furnishedReady ? (
         <p role="status" data-testid="start-template-products-loading" className="mt-3 text-sm text-neutral-600">
@@ -75,11 +75,11 @@ export function StartTemplateGallery({ headingRef, ready, furnishedReady, onChoo
       <StartTemplateCards cards={shown} furnished={furnished} ready={ready} furnishedReady={furnishedReady}
         onChooseTemplate={onChooseTemplate} />
       {!showAll && matching.length > shown.length ? (
-        <button type="button" data-testid="start-templates-see-all" onClick={() => setShowAll(true)}
-          className="mt-2.5 flex h-11 items-center gap-1.5 self-start rounded-md text-sm font-bold text-blue-800 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-blue-600 md:h-9">
+        <Button variant="link" size="inline" data-testid="start-templates-see-all" onClick={() => setShowAll(true)}
+          className={`mt-2.5 self-start ${standaloneLinkClass}`}>
           See all {matching.length} templates
           <ArrowRight aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-        </button>
+        </Button>
       ) : null}
     </section>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { GUEST_CHECKOUT_OPENER_ID } from "@/lib/guest-save-prompt";
 import { formatSgd } from "@/lib/money-format";
 import { productCountLabel, retailerCheckoutNote, type ShoppingList } from "@/lib/shopping-list";
@@ -18,9 +19,6 @@ export type ShoppingSummaryProps = {
   swapAll?: ShoppingSwapAllProps | null;
 };
 
-const PRIMARY =
-  "flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 text-[15px] font-bold text-white hover:bg-neutral-800 disabled:opacity-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2";
-
 function summaryNote(list: ShoppingList) {
   if (list.retailers.length === 1) return retailerCheckoutNote(list.retailers[0]);
   if (list.retailers.length > 1) return "You check out on each shop's website. Prices and stock are confirmed there.";
@@ -31,24 +29,24 @@ function SummaryActions({ list, busy, onBuyAtRetailer, onCheckoutHere }: Shoppin
   return (
     <div className="flex shrink-0 flex-col gap-2 lg:w-full">
       {list.retailers.map((retailer) => (
-        <button
+        <Button
           key={retailer.id}
-          type="button"
+          variant="primary"
           id={shoppingBuyOpenerId(retailer.id)}
           data-testid="shopping-buy"
           data-retailer={retailer.id}
           disabled={busy}
           onClick={() => onBuyAtRetailer(retailer.id)}
-          className={PRIMARY}
+          className="w-full"
         >
           Buy at {retailer.name}
           <ExternalLink className="h-[18px] w-[18px]" aria-hidden="true" />
-        </button>
+        </Button>
       ))}
       {list.checkoutHere ? (
-        <button id={GUEST_CHECKOUT_OPENER_ID} type="button" data-testid="checkout-shopify" disabled={busy} onClick={onCheckoutHere} className={PRIMARY}>
+        <Button variant="primary" id={GUEST_CHECKOUT_OPENER_ID} data-testid="checkout-shopify" disabled={busy} onClick={onCheckoutHere} className="w-full">
           Checkout here ({list.checkoutHere.lines.length})
-        </button>
+        </Button>
       ) : null}
     </div>
   );

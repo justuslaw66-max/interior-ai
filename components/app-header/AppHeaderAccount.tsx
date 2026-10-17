@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { LogIn, UserRound } from "lucide-react";
 import { signIn, signOut } from "next-auth/react";
+import { Button } from "@/components/ui/Button";
 import { useDismissibleMenu } from "@/lib/useDismissibleMenu";
 
 export type AppHeaderAccountInfo = {
@@ -18,12 +19,11 @@ const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-
 export function AppHeaderAccount({ account }: { account: AppHeaderAccountInfo | null }) {
   if (!account) {
     return (
-      <button type="button" data-testid="app-header-sign-in"
-        onClick={() => void signIn("google", { callbackUrl: window.location.href })}
-        className={`flex h-10 items-center gap-2 whitespace-nowrap rounded-lg bg-neutral-900 px-3 text-sm font-bold text-white hover:bg-neutral-800 ${FOCUS_RING}`}>
+      <Button variant="primary" size="regular" data-testid="app-header-sign-in" className="whitespace-nowrap"
+        onClick={() => void signIn("google", { callbackUrl: window.location.href })}>
         <LogIn aria-hidden="true" className="hidden h-4 w-4 sm:block" strokeWidth={1.8} />
         Sign in
-      </button>
+      </Button>
     );
   }
   return <AccountMenu account={account} />;
