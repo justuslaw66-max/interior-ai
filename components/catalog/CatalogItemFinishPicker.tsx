@@ -1,3 +1,4 @@
+import { CHOSEN_SWATCH_RING } from "@/components/ui/ChoiceTile";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { inferCollectionType, shouldShowCollectionGrouping } from "@/lib/catalog/variant-normalization";
 
@@ -78,27 +79,19 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
             title={finish.label}
             aria-label={finish.label}
             aria-pressed={active}
-            className={`group relative h-16 w-full overflow-hidden rounded-xl border shadow-sm transition ${
-              active
-                ? "border-neutral-950 ring-2 ring-neutral-950/20"
-                : "border-neutral-200 hover:border-neutral-400 hover:shadow"
+            className={`h-16 w-full rounded-xl border border-neutral-200 shadow-sm transition ${
+              active ? "" : "hover:border-neutral-400 hover:shadow"
             }`}
             style={{
               backgroundColor: finish.swatchHex ?? "#d1d5db",
               backgroundImage: finish.swatchTextureUrl ? `url(${finish.swatchTextureUrl})` : undefined,
               backgroundSize: "cover",
               backgroundPosition: "center",
+              // The item panel's ring (J, 17 Oct): the chosen swatch shows whole, and its name is above.
+              boxShadow: active ? CHOSEN_SWATCH_RING : undefined,
             }}
           >
             <span className="sr-only">{finish.label}</span>
-            {active ? (
-              <>
-                <span className="pointer-events-none absolute inset-0 rounded-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.75)]" />
-                <span className="pointer-events-none absolute bottom-0 left-0 right-0 bg-neutral-950/85 px-0.5 py-0.5 text-center text-xs font-semibold text-white">
-                  Selected
-                </span>
-              </>
-            ) : null}
           </button>
         );
       })}

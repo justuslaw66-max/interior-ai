@@ -88,6 +88,8 @@ const card = renderToStaticMarkup(createElement(CatalogCard, {
 }));
 assert.match(card, /data-testid="catalog-favorite-toggle-winora"[^>]*class="[^"]*\bh-8 w-8 touch:h-11 touch:w-11\b/);
 assert.match(card, /data-testid="catalog-preview-winora" data-touch-exempt="true"/);
-assert.match(card, /data-testid="catalog-add-winora"[^>]*class="[^"]*\bmin-h-10\b/, "Add grows to 44px in the sheet and still fits the card.");
+// Add is the regular Button (AX10 area b): 36px in the card, 44px on touch screens, and the card's
+// height still fits it.
+assert.match(card, /<button[^>]*class="[^"]*\btouch:min-h-11 min-h-9\b[^"]*"[^>]*data-testid="catalog-add-winora"/, "Add grows to 44px in the sheet and still fits the card.");
 
 console.log("Touch target checks passed.");

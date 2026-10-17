@@ -90,7 +90,8 @@ assert.doesNotMatch(
 
 // Checkout here, once a design has a product sold through Shopify, keeps the guest prompt's opener id.
 const shopify = { ...list, checkoutHere: { lines: list.retailers[0].lines.slice(0, 1), subtotal: 0 } };
-assert.match(page({ list: shopify }), /id="guest-checkout-action" type="button" data-testid="checkout-shopify"[^>]*>Checkout here \(1\)</);
+// Checkout here is the primary Button (AX10 area b): its opener id and test id on one button.
+assert.match(page({ list: shopify }), /<button(?=[^>]*id="guest-checkout-action")[^>]*data-testid="checkout-shopify"[^>]*>Checkout here \(1\)</);
 
 // Remove takes a set's parts with it; swap keeps the place and drops a set purchase option.
 const setItems = [

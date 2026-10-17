@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import type { CatalogCompareItem } from "@/lib/catalog/compare";
 import { getCatalogDrawerFocusAttributes } from "./useCatalogDrawerFocusRestoration";
 
@@ -30,14 +31,14 @@ function UnavailableCompareCard({
           ? "The selected variant is no longer available in the public catalogue."
           : "This product is no longer available in the public catalogue."}
       </div>
-      <button
-        type="button"
+      <Button
+        size="compact"
         onClick={() => onRemove(item.productId)}
-        className="mt-2 w-full rounded border border-red-200 px-1.5 py-1 text-xs text-red-700"
+        className="mt-2 w-full"
         data-testid={`catalog-compare-remove-${item.productId}`}
       >
         Remove
-      </button>
+      </Button>
     </div>
   );
 }
@@ -64,17 +65,16 @@ function AvailableCompareCard({
       <div className="mt-1 line-clamp-1 text-xs text-neutral-500">{card.badges.join(" • ")}</div>
 
       <div className="mt-2 grid grid-cols-3 gap-1">
-        <button
-          type="button"
+        <Button
+          size="compact"
           onClick={(event) => onPreview(card.id, event.currentTarget)}
-          className="rounded border border-neutral-200 px-1.5 py-1 text-xs text-neutral-700"
           data-testid={`catalog-compare-open-${card.id}`}
           {...getCatalogDrawerFocusAttributes({ productId: card.id, action: "details", source: "compare-tray" })}
         >
           Open
-        </button>
-        <button type="button" onClick={() => onAdd(card.id, card.variantId)} className="rounded bg-neutral-900 px-1.5 py-1 text-xs text-white">Add</button>
-        <button type="button" onClick={() => onRemove(card.id)} className="rounded border border-red-200 px-1.5 py-1 text-xs text-red-700" data-testid={`catalog-compare-remove-${card.id}`}>Remove</button>
+        </Button>
+        <Button variant="primary" size="compact" onClick={() => onAdd(card.id, card.variantId)}>Add</Button>
+        <Button size="compact" onClick={() => onRemove(card.id)} data-testid={`catalog-compare-remove-${card.id}`}>Remove</Button>
       </div>
     </div>
   );
@@ -88,14 +88,9 @@ export default function CatalogCompareTray(props: Props) {
     <div className="mt-3 rounded-lg border border-neutral-300 bg-neutral-50 p-2" data-testid="catalog-compare-tray">
       <div className="flex items-center justify-between">
         <div className="text-xs font-semibold text-neutral-900">Quick compare ({items.length}/3)</div>
-        <button
-          type="button"
-          onClick={onClear}
-          className="text-xs text-neutral-600 underline-offset-2 hover:underline"
-          data-testid="catalog-compare-clear"
-        >
+        <Button variant="link" size="inline" onClick={onClear} className="min-h-8 text-xs" data-testid="catalog-compare-clear">
           Clear all
-        </button>
+        </Button>
       </div>
 
       <div className="mt-2 grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-2">
