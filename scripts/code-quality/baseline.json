@@ -2162,22 +2162,10 @@
         "maximum": 235
       }
     },
-    "components/OnboardingChecklist.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 129
-      }
-    },
     "components/ReadOnlyViewer.tsx": {
       "overlongFunctions": {
         "count": 1,
         "maximum": 94
-      }
-    },
-    "components/RoomSwitcher.tsx": {
-      "overlongFunctions": {
-        "count": 2,
-        "maximum": 108
       }
     },
     "components/scene/furniture/resolveFurnitureModelAppearance.ts": {
