@@ -186,23 +186,23 @@ test.describe("6. Catalog Compare", () => {
     await expect(twoSeater.locator("..")).toContainText(/\d+ options?/);
 
     await twoSeater.check();
-    await expect(page.getByRole("button", { name: "Seats: 2 x" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Clear Seats: 2", exact: true })).toBeVisible();
     await expect(filtersButton).toContainText("1");
     await expect(
       page.getByTestId("catalog-preview-sofa-real-castlery-hamilton-2-seater")
     ).toBeVisible({ timeout: 20_000 });
 
     await threeSeater.check();
-    await expect(page.getByRole("button", { name: "Seats: 2, 3 x" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Clear Seats: 2, 3", exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "Close" }).click();
-    await page.getByRole("button", { name: "Seats: 2, 3 x" }).click();
+    await page.getByRole("button", { name: "Clear Seats: 2, 3", exact: true }).click();
     await filtersButton.click();
     await expect(twoSeater).not.toBeChecked();
     await expect(threeSeater).not.toBeChecked();
 
     await fourPlusSeater.check();
-    await expect(page.getByRole("button", { name: "Seats: 4+ x" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Clear Seats: 4+", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Close" }).click();
 
     const searchInput = page.getByRole("textbox", { name: "Search catalogue products" });
@@ -215,7 +215,7 @@ test.describe("6. Catalog Compare", () => {
       page.getByTestId("catalog-preview-sofa-real-castlery-dawson-3s")
     ).toHaveCount(0);
 
-    await page.getByRole("button", { name: "Seats: 4+ x" }).click();
+    await page.getByRole("button", { name: "Clear Seats: 4+", exact: true }).click();
     await expect(
       page.getByTestId("catalog-preview-sofa-real-castlery-dawson-3s")
     ).toBeVisible({ timeout: 20_000 });
@@ -225,7 +225,7 @@ test.describe("6. Catalog Compare", () => {
     await twoSeater.check();
     await page.getByRole("button", { name: "Close" }).click();
     await selectCatalogCategory(page, "coffee_table");
-    await expect(page.getByRole("button", { name: "Seats: 2 x" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Clear Seats: 2", exact: true })).toHaveCount(0);
     await filtersButton.click();
     await expect(page.getByText("Seat capacity")).toHaveCount(0);
   });
@@ -250,7 +250,7 @@ test.describe("6. Catalog Compare", () => {
     await expect(widthMin).toHaveValue("155");
     await expect(widthMax).toHaveValue("165");
     await expect(
-      page.getByRole("button", { name: "Width: 155–165 cm x" })
+      page.getByRole("button", { name: "Clear Width: 155–165 cm", exact: true })
     ).toBeVisible();
     await expect(filtersButton).toContainText("1");
 
@@ -262,7 +262,7 @@ test.describe("6. Catalog Compare", () => {
       page.getByTestId("catalog-preview-dining-real-castlery-forma-oval-150")
     ).toHaveCount(0);
 
-    await page.getByRole("button", { name: "Width: 155–165 cm x" }).click();
+    await page.getByRole("button", { name: "Clear Width: 155–165 cm", exact: true }).click();
     await filtersButton.click();
     await expect(widthMin).toHaveValue("");
     await expect(widthMax).toHaveValue("");
