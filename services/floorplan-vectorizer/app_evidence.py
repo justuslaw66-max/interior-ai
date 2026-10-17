@@ -12,13 +12,29 @@ All positions leave this file in SOURCE-IMAGE pixels (and 0..1 ratios of the sou
 working pixels.  Nothing here imports the vectorizer; it needs numpy and OpenCV (and scikit-image's skeleton, from the
 vectorizer's own requirements, for the sloped strokes of slanted walls).
 """
-import json, math, os, sys
+import json, math, os, re, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.30.1"
+VERSION = "app-evidence-0.31.1"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
+R39_PICTURE_BAND = os.environ.get("AE_R39_PICTURE_BAND", "1") != "0"   # round 39: a window read in the picture where stage 1 has its strokes only in pieces
+R39_BAND_COVER = float(os.environ.get("AE_R39_BAND_COVER", 0.7))
+R39_STROKE_WINDOWS = os.environ.get("AE_R39_STROKE_WINDOWS", "1") != "0"   # round 39: a sliding-partition candidate in an outer wall is a window (s038)
+R39_SPACE_ROOMS = os.environ.get("AE_R39_SPACE_ROOMS", "1") != "0"   # round 39: a nameless space the strokes enclose, room-sized, against the walls: a room (s038)
+R39_SPACE_MIN_M2 = float(os.environ.get("AE_R39_SPACE_MIN_M2", 4.0))
+R39_STROKE_ROOMS = os.environ.get("AE_R39_STROKE_ROOMS", "1") != "0"   # round 39: an indoor name outside every room: the strokes around it close it (s028, s037)
+R39_BAND_SOLID = os.environ.get("AE_R39_BAND_SOLID", "1") != "0"   # round 39: no picture-band window where the wall runs on unbroken beside the gap (c22's bath ledge)
+R39_EXT_NO_WALL = os.environ.get("AE_R39_EXT_NO_WALL", "1") != "0"   # round 39: the outside is looked for beyond a band's face up to the next wall only
+R39_LEAVES_OUT = os.environ.get("AE_R39_LEAVES_OUT", "1") != "0"   # round 39: no picture-band window where a leaf hinged in the gap swings into the flat
+R39_OCR_FIX = os.environ.get("AE_R39_OCR_FIX", "1") != "0"   # round 39: room words the OCR garbled are read as the word they are a letter or two from
+R39_THIN_STROKES = os.environ.get("AE_R39_THIN_STROKES", "0") != "0"   # round 39: the drawn strokes join the thin walls the rooms' sides are traced on, on every plan, not only one with an outdoor name outside the rooms
+R39_GUARD = os.environ.get("AE_R39_GUARD", "1") != "0"   # round 39: its reading is kept only if it places every name round 38's placed on its own
+R39_STROKE_ROOMS_OUT = os.environ.get("AE_R39_STROKE_ROOMS_OUT", "1") != "0"   # round 39: strokes close a named room only where its floor leaks to the page's edge
+R39_JUNCTION_ROOMS = os.environ.get("AE_R39_JUNCTION_ROOMS", "1") != "0"   # round 39: a small nameless face with openings to two rooms is a room (c22's WC), not a sliver
+R39_SLIVER_OUT = os.environ.get("AE_R39_SLIVER_OUT", "1") != "0"   # round 39: a room's opening into a sliver open to the outside stays (s038)
+R39_NO_NEW_GAPS = os.environ.get("AE_R39_NO_NEW_GAPS", "1") != "0"   # round 39b: round 39's reading is kept only if it adds no slot or seam to round 38's (app_flaws.py)
 INNER_SIGN = 1
 ROOM_TYPES = (
     ("shelter", ("SHELTER", "HS", "H.S", "BOMB")),
@@ -308,7 +324,8 @@ CLOSE_SLOTS = float(os.environ.get("AE_CLOSE_SLOTS", "1.5"))   # two rooms' wall
 SLOT_OVERLAP = float(os.environ.get("AE_SLOT_OVERLAP", "0.9"))  # ... where the side carried across faces the other along this share of its length at least
 # A slanted piece of a room outline no longer than this many wall widths, between two level / plumb sides, where the
 # walls' ink makes a square corner (a cut corner) or a square step (a jog): the square corner or step (round 32; 0 = off)
-SQUARE_CUTS = float(os.environ.get("AE_SQUARE_CUTS", "2.0"))
+R39_LONG_CUTS = os.environ.get("AE_R39_LONG_CUTS", "1") != "0"   # round 39: square runs up to 8 wall widths long too (s034's kitchen corner at the refuse chute)
+SQUARE_CUTS = float(os.environ.get("AE_SQUARE_CUTS", "8.0" if R39_LONG_CUTS else "2.0"))
 # ... where a corner another room has only as a split point of one straight side is cut off by the run, it stays (round 33)
 KEEP_SPLITS = os.environ.get("AE_KEEP_SPLITS", "1") != "0"
 # ... and a run that dips off a side and comes back to its line through a short level / plumb side closes (round 33)
@@ -1458,6 +1475,132 @@ def _panels_in_wall(part, g, c, L, mm):
     return False
 
 
+
+
+def _exterior(m, k):
+    """round 39: the page outside the flat - paper connected to the page's edge in the picture's own ink (dimension and
+    extension lines taken out) with the wall mass: a window stage 1 read only in pieces still closes its room here"""
+    if m.get("_ext_mask") is not None:
+        return m["_ext_mask"]
+    H, W = k.shape
+    gray = m.get("_work_gray")
+    if gray is None:
+        return np.zeros((H, W), bool)
+    ink = (gray < int(m.get("ink_threshold") or 180)).astype(np.uint8) * 255
+    for l in m["lines"]:
+        if l.get("role") not in ("dimension", "extension"):
+            continue
+        p0, p1 = ((l["a"], l["c"]), (l["b"], l["c"])) if l["o"] == "h" else ((l["c"], l["a"]), (l["c"], l["b"]))
+        cv2.line(ink, (int(round(p0[0])), int(round(p0[1]))), (int(round(p1[0])), int(round(p1[1]))), 0, int(max(3, 2 * l.get("t", 2) + 2)))
+    s_ = cv2.bitwise_or(ink, (k > 0).astype(np.uint8) * 255)
+    s_ = cv2.morphologyEx(s_, cv2.MORPH_CLOSE, np.ones((3, 3), np.uint8))
+    free = (s_ == 0).astype(np.uint8)
+    n, lab = cv2.connectedComponents(free, connectivity=4)
+    edge = set(np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))) - {0}
+    ext = np.isin(lab, list(edge))
+    m["_ext_mask"] = ext
+    return ext
+
+
+def _swing_side(a_, o, c):
+    """round 39: the side of a wall line at c that an arc swings to (-1 or 1)"""
+    t_ = math.radians(a_["start"] + a_["span"] / 2.0)
+    v_ = (a_["cy"] + a_.get("r", a_.get("ry", 0)) * math.sin(t_)) if o == "h" else (a_["cx"] + a_.get("r", a_.get("rx", 0)) * math.cos(t_))
+    return 1 if v_ > c else -1
+
+
+def _exterior_side(m, k, o, lo, hi, a, b, T, mm):
+    """round 39: -1 or 1 when the outside of the flat lies beyond the band's low or high face along most of the gap (and
+    not beyond the other face), else None"""
+    ext = _exterior(m, k)
+    H, W = ext.shape
+    far = max(int(2000.0 / mm), int(2 * T))
+    found = []
+    for sgn, face in ((-1, lo), (1, hi)):
+        hits = n = 0
+        for f in (0.2, 0.35, 0.5, 0.65, 0.8):
+            t_ = a + f * (b - a); n += 1; run_k = 0
+            for d in range(2, far, 2):
+                v = face + sgn * d
+                x, y = (int(round(t_)), int(round(v))) if o == "h" else (int(round(v)), int(round(t_)))
+                if not (0 <= x < W and 0 <= y < H):
+                    break
+                if ext[y, x]:
+                    hits += 1; break
+                if R39_EXT_NO_WALL and d > 0.6 * T:
+                    # (not through a wall - a counter, a stair, a bath against the outer wall - but through a thin line
+                    #  the wall mass took: a ledge's parapet, a railing - c23's, s056's and s076's windows)
+                    run_k = run_k + 2 if k[y, x] else 0
+                    if run_k >= 0.75 * T:
+                        break
+        found.append(hits / float(n))
+    if found[0] >= 0.6 and found[1] < 0.2:
+        return -1
+    if found[1] >= 0.6 and found[0] < 0.2:
+        return 1
+    return None
+
+
+def _wall_through_band(k, gray, o, lo, hi, a, b, T, thr):
+    """round 39: whether the wall mass runs on unbroken through a gap's band, so that the strokes read there are a wall
+    and not a window: a run of wall mass along the whole gap (80 % of its length at each offset) thicker than a wall
+    (a wall drawn in outline, filled in - p02's and p03's photographs), covering the band (s046), or one wall-thick run
+    over solid ink beside a thin stroke (c22's and room4's baths: the outer wall past the ledge behind the WC).  The
+    window lines a filled plan draws bold are two runs (s053) and stay a window."""
+    H, W = k.shape
+    p0, p1 = max(0, int(math.floor(lo))), int(math.ceil(hi))
+    a0, b0 = max(0, int(a)), int(b)
+    sub = k[a0:min(H, b0), p0:min(W, p1 + 1)] if o == "v" else k[p0:min(H, p1 + 1), a0:min(W, b0)].T
+    if sub.size == 0:
+        return False
+    share = (sub > 0).mean(0)
+    runs, cur = [], None
+    for i_, v_ in enumerate(share):
+        if v_ >= 0.8:
+            cur = [i_, i_] if cur is None else [cur[0], i_]
+        elif cur is not None:
+            runs.append(cur); cur = None
+    if cur is not None:
+        runs.append(cur)
+    if not runs:
+        return False
+    widths = [r_[1] - r_[0] + 1 for r_ in runs]
+    if max(widths) >= 1.2 * T or sum(widths) >= 0.8 * len(share):
+        return True
+    thick = [r_ for r_, w_ in zip(runs, widths) if w_ >= 0.7 * T]
+    if len(runs) == 1 and thick:
+        g_ = gray[a0:min(H, b0), p0:min(W, p1 + 1)] if o == "v" else gray[p0:min(H, p1 + 1), a0:min(W, b0)].T
+        r_ = thick[0]
+        if g_.size and float((g_[:, r_[0]:r_[1] + 1] < thr).mean()) >= 0.85:
+            return True
+    return False
+
+
+def _picture_band(gray, o, lo, hi, a, b, T, thr):
+    """round 39: the share of the stations along a gap where the picture shows two or more separate strokes across the
+    wall's thickness (lo - hi, a little either side) and is not solid ink there"""
+    H, W = gray.shape
+    p0, p1 = int(math.floor(lo - 0.3 * T)), int(math.ceil(hi + 0.3 * T))
+    n = hit = 0
+    for t_ in range(int(a) + 2, int(b) - 1, 2):
+        if o == "h":
+            if not (0 <= t_ < W):
+                continue
+            prof = gray[max(0, p0):min(H, p1 + 1), t_]
+        else:
+            if not (0 <= t_ < H):
+                continue
+            prof = gray[t_, max(0, p0):min(W, p1 + 1)]
+        if prof.size < 4:
+            continue
+        n += 1
+        dark = prof < thr
+        runs = _runs(dark)
+        if len(runs) >= 2 and dark.mean() <= 0.55:
+            hit += 1
+    return hit / float(n) if n else 0.0
+
+
 def classify_gaps(m, k, gaps):
     """door / window / folding door / passage / hidden wall, from what is drawn in the gap"""
     T = float(m["wall_thickness_px"]); mm = pseudo_scale(m)
@@ -1648,6 +1791,28 @@ def classify_gaps(m, k, gaps):
             if dd and dd[0] == "swing":
                 m["_drawn_swings"] = m.get("_drawn_swings", 0) + 1
                 out.append(dict(g, kind="door", operation="swing", hinge=dd[1], swing_side=dd[2], leaf_px=float(L), confidence=0.7, why="pale or dashed swing arc")); continue
+        # round 39: a window whose strokes stage 1 read only in pieces (the leaves of a casement window hinge on them -
+        # s037's main bedroom, s038's bedrooms - or a sill runs through from jamb to jamb past the frames - s028): read
+        # in the picture, two or more strokes across the wall's thickness along most of the gap, no swing hinged in it
+        hinged_in = [a_ for a_ in arcs if a_.get("from") != "curve" and abs(((a_["cy"] if o == "h" else a_["cx"])) - c) <= band + T
+                     and a + 0.5 * T < (a_["cx"] if o == "h" else a_["cy"]) < b_ - 0.5 * T]
+        # (one swing hinged inside the gap is a door standing in it; two or more in a row are the leaves of a casement window)
+        ext_side = None
+        if R39_PICTURE_BAND and 400 <= L * mm <= 6500 and m.get("_work_gray") is not None and len(hinged_in) != 1:
+            ext_side = _exterior_side(m, k, o, g.get("lo", c - T / 2.0), g.get("hi", c + T / 2.0), a, b_, T, mm)
+            # (a casement window's leaves swing out of the flat: a leaf swinging into it is a door - s028's kitchen wall,
+            #  its WC's and bath's doors hinged on it)
+            if ext_side is not None and R39_LEAVES_OUT and any(_swing_side(a_, o, c) != ext_side for a_ in hinged_in):
+                ext_side = None
+        if ext_side is not None:
+            pb = _picture_band(m["_work_gray"], o, g.get("lo", c - T / 2.0), g.get("hi", c + T / 2.0), a, b_, T, int(m.get("ink_threshold") or 180))
+            if R39_BAND_SOLID and pb >= R39_BAND_COVER and _wall_through_band(k, m["_work_gray"], o, g.get("lo", c - T / 2.0), g.get("hi", c + T / 2.0), a, b_, T, int(m.get("ink_threshold") or 180)):
+                m["_picture_bands_solid"] = m.get("_picture_bands_solid", 0) + 1
+                pb = 0.0
+            if pb >= R39_BAND_COVER:
+                m["_picture_bands"] = m.get("_picture_bands", 0) + 1
+                out.append(dict(g, kind="window", operation="fixed", hinge="none", swing_side=0, confidence=0.6, picture_band=round(pb, 2),
+                                why="two or more strokes across the wall's thickness along the gap, read in the picture: a window")); continue
         if len(inside) == 1 and L * mm <= STROKE_PASSAGE_MM and one_end and abs(inside[0]["c"] - c) <= band:
             # (wider than 3.6 m - p03's balcony door - only between two rooms, decided once the rooms are made: a stroke
             #  between two wall ends in the page's margin is no doorway)
@@ -3494,6 +3659,57 @@ def is_number(s):
     return bool(s_) and sum(ch.isdigit() for ch in s_) >= 0.6 * len(s_)
 
 
+# round 39: room names the OCR garbled (s034's 'BEL200M', s046's 'BEDRUIM 3' and 'BEORLIM', s037's 'BATA'): a word a
+# letter or two away from a room word, with the digits it is often read as turned back into letters, is that word
+OCR_ROOM_VOCAB = ("BEDROOM", "BATH", "KITCHEN", "LIVING", "DINING", "STORE", "BALCONY", "FOYER", "STUDY", "MASTER", "TOILET", "SHOWER",
+                  "LAUNDRY", "UTILITY", "SERVICE", "FAMILY", "CORRIDOR", "SHELTER", "PANTRY", "LEDGE", "TERRACE", "PLANTER", "WARDROBE",
+                  "POWDER", "ENTRANCE", "LOBBY")
+OCR_REAL_WORDS = ("STOREY", "STOREYS", "BATHS", "BEDROOMS")
+_OCR_DIGITS = str.maketrans("012586", "OIZSBG")
+
+
+def _lev(a, b):
+    p_ = list(range(len(b) + 1))
+    for i_, ca in enumerate(a, 1):
+        q_ = [i_]
+        for j_, cb in enumerate(b, 1):
+            q_.append(min(p_[j_] + 1, q_[j_ - 1] + 1, p_[j_ - 1] + (ca != cb)))
+        p_ = q_
+    return p_[-1]
+
+
+def _ocr_room_word(t):
+    if len(t) < 4 or not re.fullmatch(r"[A-Z0-9]+", t) or sum(ch.isalpha() for ch in t) < 2 or t in OCR_ROOM_VOCAB or t in OCR_REAL_WORDS:
+        return None
+    u = t.translate(_OCR_DIGITS)
+    best = []
+    for w in OCR_ROOM_VOCAB:
+        if abs(len(w) - len(u)) > 1:
+            continue
+        d = _lev(u, w)
+        if len(w) <= 4:
+            ok = d <= 1 and u[0] == w[0]
+        elif len(w) <= 6:
+            ok = d <= 1 or (d <= 2 and u[:2] == w[:2])
+        else:
+            ok = d <= 2 or (d <= 3 and u[:2] == w[:2] and u[-1] == w[-1])
+        if ok:
+            best.append((d, w))
+    best.sort()
+    if not best or (len(best) > 1 and best[0][0] == best[1][0]):
+        return None
+    return best[0][1]
+
+
+def ocr_room_name(s):
+    """round 39: s with garbled room words put right, or s itself"""
+    if not R39_OCR_FIX:
+        return s
+    parts = re.split(r"(\W+)", s)
+    out = [(_ocr_room_word(t.upper()) or t) if t and re.fullmatch(r"\w+", t) else t for t in parts]
+    return "".join(out)
+
+
 def room_type(label):
     u = label.upper()
     for typ, keys in ROOM_TYPES:
@@ -3511,6 +3727,10 @@ def room_labels(m, k=None):
         s = (t.get("s") or "").strip()
         if not s or is_number(s) or t.get("title") or t.get("angle") is not None:
             continue
+        s_ = ocr_room_name(s)
+        if s_ != s:
+            m["_ocr_fixed"] = m.get("_ocr_fixed", []) + [[s, s_]]
+            s = s_
         x, y, w, h = t["box"]
         if (round(x + w / 2), round(y + h / 2)) in dim_text:
             continue
@@ -4341,8 +4561,26 @@ def build(m, gray=None):
         # Balconies, ledges and yards are closed in by railings and parapets drawn as plain strokes, not by walls.  Where a
         # label of that kind lies outside every room, the strokes around it count as its boundary.
         wanted = [l for l in labels if any(w_ in l["label"].upper() for w_ in OUTDOOR) and not any(at(r_, l) for r_ in inner)]
+        # round 39: an indoor room's name outside every room too - its window drawn as two or three thin lines between
+        # columns, which no gap between wall ends accounts for, left it open to the outside (s028, s037): the strokes
+        # around it close it, after the outdoor rooms have taken theirs
+        wanted_in = [l for l in labels if R39_STROKE_ROOMS and not any(w_ in l["label"].upper() for w_ in OUTDOOR)
+                     and room_type(l["label"]) != "other" and not any(at(r_, l) for r_ in inner)]
+        if wanted_in and R39_STROKE_ROOMS_OUT:
+            # (only a name whose floor runs out to the page's edge: its room leaks to the outside through a window the
+            #  gaps do not account for. A name whose floor is closed in but no room - s002's kitchen, open to the corridor
+            #  at this pass - is left to the openings: closed by strokes, it cut the entrance off the living room)
+            n_, lab_ = cv2.connectedComponents((closed_ == 0).astype(np.uint8), connectivity=4)
+            edge_ = set(np.unique(np.concatenate([lab_[0], lab_[-1], lab_[:, 0], lab_[:, -1]]).tolist())) - {0}
+            def out_(l):
+                x0_, y0_ = int(min(W - 1, max(0, (l["box"][0] + l["box"][2]) / 2))), int(min(H - 1, max(0, (l["box"][1] + l["box"][3]) / 2)))
+                win_ = lab_[max(0, y0_ - 6):y0_ + 7, max(0, x0_ - 6):x0_ + 7]
+                return bool(set(np.unique(win_).tolist()) & edge_)
+            wanted_in = [l for l in wanted_in if out_(l)]
         closed2 = closed_
-        if wanted:
+        added_ = 0                                           # (round 39: rooms the strokes closed for an indoor name, or a nameless space)
+        m["_stroke_rooms"] = m["_space_rooms"] = 0           # (counted for the outlines as last made)
+        if wanted or wanted_in or R39_SPACE_ROOMS:
             closed2 = closed_.copy()
             for l in m["lines"]:
                 if l.get("role") in ("dimension", "extension", "door-leaf") or l.get("dash") or (l["b"] - l["a"]) * mm < 300:
@@ -4368,6 +4606,33 @@ def build(m, gray=None):
                         inner.append(r_); found_.append(r_)
                 return found_
             take_outdoor(closed2, wanted)
+            if wanted_in:
+                n0_ = len(inner)
+                for r_ in room_outlines(m, closed2):
+                    if any(at(r_, l) for l in wanted_in) and not any(at(r_, l) for l in labels if l not in wanted_in) \
+                            and not any((r_["comp"] & q["comp"]).sum() > 0.2 * r_["comp"].sum() for q in inner) and r_["area_px"] * mm * mm <= 60e6:
+                        inner.append(r_)
+                m["_stroke_rooms"] = m.get("_stroke_rooms", 0) + len(inner) - n0_
+                added_ += len(inner) - n0_
+            # (only among named rooms: on a plan where stage 1 read hardly any name - a photo, a blurred copy - every room
+            #  is nameless already, and a space the strokes close is as likely a cupboard as a room: c24's photo copy)
+            if R39_SPACE_ROOMS and sum(1 for l in labels if room_type(l["label"]) != "other") >= 3:
+                # round 39: a space the drawn strokes enclose, as big as a room, mostly against the wall mass, that holds no
+                # name stage 1 read (s038's middle bedroom: its name was not read, its window drawn in pieces) is a room
+                ring_k = np.ones((5, 5), np.uint8)
+                n1_ = len(inner)
+                for r_ in room_outlines(m, closed2):
+                    if any(at(r_, l) for l in labels) or not (R39_SPACE_MIN_M2 * 1e6 <= r_["area_px"] * mm * mm <= 60e6):
+                        continue
+                    if any((r_["comp"] & q["comp"]).sum() > 0.2 * r_["comp"].sum() for q in inner):
+                        continue
+                    comp8 = r_["comp"].astype(np.uint8)
+                    ring = (cv2.dilate(comp8, ring_k) > 0) & (comp8 == 0)
+                    if ring.sum() == 0 or float((closed_[ring] > 0).mean()) < 0.5:
+                        continue
+                    inner.append(r_)
+                m["_space_rooms"] = m.get("_space_rooms", 0) + len(inner) - n1_
+                added_ += len(inner) - n1_
             # a label still outside every room: once more with the gentle slopes drawn (p03's balcony parapet, 3.5
             # degrees off level) - only then, so that a space that closes without them keeps its outline
             left_ = [l for l in wanted if not any(at(r_, l) for r_ in inner)]
@@ -4381,7 +4646,7 @@ def build(m, gray=None):
                     m["_gentle_closed"] = m.get("_gentle_closed", 0) + 1
         m["_withheld_rooms"] = 0; m["_welds"] = 0; m["_withheld_comps"] = []; m["_slots_closed"] = 0
         thin = close_openings(m, k, ops, thin=True)
-        if wanted:
+        if wanted or added_ or R39_THIN_STROKES:              # (round 39: on every plan - s029's and s066's bedrooms)
             thin = cv2.bitwise_or(thin, cv2.bitwise_and(closed2, cv2.bitwise_not(closed_)))   # the strokes that closed the outdoor rooms
         m["_ops"] = ops
         rooms_ = attach_openings(m, centre_lines(m, thin, inner), ops)
@@ -4481,6 +4746,12 @@ def build(m, gray=None):
             if g.get("wide_stroke"):
                 if None in bt or bt[0] == bt[1]:
                     drop.append(g)
+            elif R39_STROKE_WINDOWS and g.get("from_strokes") and (bt[0] is None) != (bt[1] is None):
+                # round 39: strokes along a long gap with the outside on one side are a window drawn in pieces (s038's
+                # middle bedroom: the leaves of its casement window broke the strokes), not a sliding partition
+                g.update(kind="window", operation="fixed", hinge="none", swing_side=0, panels=None, from_strokes=False, confidence=0.55,
+                         why="strokes along a long gap in an outer wall: a window drawn in pieces")
+                m["_stroke_windows"] = m.get("_stroke_windows", 0) + 1
             elif not (None not in bt and bt[0] != bt[1] and indoor(bt[0]) and indoor(bt[1])):
                 drop.append(g)
         if drop:
@@ -4585,6 +4856,12 @@ def build(m, gray=None):
                     panel_pairs += 1
                 else:
                     wide_passages += 1
+            elif R39_STROKE_WINDOWS and g.get("from_strokes") and (bt[0] is None) != (bt[1] is None):
+                # round 39: strokes along a long gap with the outside on one side are a window drawn in pieces (s038's
+                # middle bedroom: the casement leaves broke its strokes), not a sliding partition - the room keeps it
+                g.update(kind="window", operation="fixed", hinge="none", swing_side=0, panels=None, confidence=0.55,
+                         why="strokes along a long gap in an outer wall: a window drawn in pieces")
+                m["_stroke_windows"] = m.get("_stroke_windows", 0) + 1
             else:
                 bad.append(g)
             continue
@@ -4691,7 +4968,32 @@ def build(m, gray=None):
     # 1.3 m2 WC, and it carries its name.  Such faces are left out of the rooms, and an opening that led into one is
     # not an opening (the wall stands solid there); the rooms are rebuilt without it.
     def slivers(rooms_):
-        return [r_ for r_ in rooms_ if scale_work and not r_["labels"] and r_.get("duct") is None and r_["area"] * scale_work * scale_work < SLIVER_M2 * 1e6]
+        cand_ = [r_ for r_ in rooms_ if scale_work and not r_["labels"] and r_.get("duct") is None and r_["area"] * scale_work * scale_work < SLIVER_M2 * 1e6]
+        if R39_JUNCTION_ROOMS and cand_:
+            # (round 39) a small face with a way in from one room and an opening to another is a room whose name was not
+            # read - c22's WC, a door from the kitchen and a window to the air-con ledge.  Left out, its openings would
+            # go and the two rooms join through it (c22's kitchen ran out over the ledge and its foyer was lost).
+            ids_ = {id(r_): n_ for n_, r_ in enumerate(rooms_)}
+            cs_ = {ids_[id(r_)] for r_ in cand_}
+            keep_ = []
+            for r_ in cand_:
+                n_ = ids_[id(r_)]; nb_ = set(); walk_ = False
+                for g in openings:
+                    bt_ = g.get("between", [None, None])
+                    if n_ not in bt_:
+                        continue
+                    other_ = bt_[1] if bt_[0] == n_ else bt_[0]
+                    if other_ is None or other_ == n_ or other_ in cs_:
+                        continue
+                    nb_.add(other_)
+                    walk_ = walk_ or g["kind"] in ("door", "open_passage")
+                P_ = np.array(r_["pts"], float); w_, h_ = P_.max(0) - P_.min(0)
+                if len(nb_) >= 2 and walk_ and r_["area"] * scale_work * scale_work >= 0.9e6 and min(w_, h_) * scale_work >= 700:
+                    keep_.append(r_)
+            if keep_:
+                m["_junction_rooms"] = len(keep_)
+                cand_ = [r_ for r_ in cand_ if not any(r_ is q for q in keep_)]
+        return cand_
     sliver_count = 0
     for _round in range(3):
         sl = slivers(rooms)
@@ -4699,6 +5001,18 @@ def build(m, gray=None):
             break
         gone = {n_ for n_, r_ in enumerate(rooms) if any(r_ is q for q in sl)}
         into = [g for g in openings if any(b_ in gone for b_ in g.get("between", [None, None]) if b_ is not None)]
+        if R39_SLIVER_OUT:
+            # A sliver open to the outside is outside: the strip between a casement window and the arcs of its leaves,
+            # which swing out of the flat (s038's main bedroom).  Its own openings to the outside go with it, but a room's
+            # opening into it is that room's opening to the outside: it stays, so the room stays closed.
+            out_ = {n_ for n_ in gone if any(None in g.get("between", [None, None]) and n_ in g.get("between", []) for g in openings)}
+            # (only a named room's: a nameless face beyond it is the outside closed off by a dimension line - exec's
+            #  strips between the columns and the dimension line over its bay windows)
+            stay = [g for g in into if any(b_ is not None and b_ not in gone and rooms[b_]["labels"] for b_ in g.get("between", [None, None]))
+                    and any(b_ in out_ for b_ in g.get("between", [None, None]))]
+            if stay:
+                m["_sliver_windows_kept"] = m.get("_sliver_windows_kept", 0) + len(stay)
+                into = [g for g in into if not any(g is h_ for h_ in stay)]
         sliver_count += len(sl)
         if not into:
             rooms = [r_ for r_ in rooms if not any(r_ is q for q in sl)]
@@ -4966,15 +5280,46 @@ def build(m, gray=None):
     # outline keeps where it turns round the duct: c21's COMMON) would put three rooms on that stretch of wall: it goes
     # to the duct's corner.
     m["_duct_snaps"] = snap_to_ducts(rooms, T)
-    m["_squared_cuts"] = square_cut_corners(rooms, k, T, SQUARE_CUTS * T, m.get("_work_gray")) if SQUARE_CUTS > 0 else 0
-    # A wall meant level or plumb whose two ends came out a fraction of a pixel apart (c21's WC wall: 950.25 at the void's
-    # corner, 950.09 at the kitchen's) is drawn by the app a hair slanted, and meets the next wall with a step: such ends
-    # are put on one line, everywhere they occur.
-    m["_straightened"] = straighten_axis_sides(rooms, 0.75 * float(m.get("work_scale", 1) or 1))
-    if m["_straightened"]:
-        m["_subpixel_sides"] += drop_subpixel_sides(rooms, 1.0 * float(m.get("work_scale", 1) or 1))
-    # (last: after every step that moves a corner, so the two rooms' ends of one opening stay one end)
-    m["_shared_ends"] = weld_shared_ends(rooms, SHARED_ENDS) if SHARED_ENDS > 0 else 0
+    snap_ = lambda rs: [([type(q)(q) for q in r_["pts"]], [dict(me) for me in r_["meta"]]) for r_ in rs]
+    def put_(rs, saved_):
+        for r_, (P_, M_) in zip(rs, saved_):
+            r_["pts"] = [type(q)(q) for q in P_]; r_["meta"] = [dict(me) for me in M_]
+    def tidy_(rs):
+        # A wall meant level or plumb whose two ends came out a fraction of a pixel apart (c21's WC wall: 950.25 at the
+        # void's corner, 950.09 at the kitchen's) is drawn by the app a hair slanted, and meets the next wall with a step:
+        # such ends are put on one line, everywhere they occur.
+        st_ = straighten_axis_sides(rs, 0.75 * float(m.get("work_scale", 1) or 1))
+        sub_ = drop_subpixel_sides(rs, 1.0 * float(m.get("work_scale", 1) or 1)) if st_ else 0
+        # (last: after every step that moves a corner, so the two rooms' ends of one opening stay one end)
+        we_ = weld_shared_ends(rs, SHARED_ENDS) if SHARED_ENDS > 0 else 0
+        return st_, sub_, we_
+    short_cut_ = None
+    if R39_LONG_CUTS and SQUARE_CUTS > 2.0:
+        # round 39: the runs up to two wall widths first, as before; then the longer ones (s034's kitchen corner at the
+        # refuse chute) - kept only if the app's geometry rules below withhold no more rooms for them (s029's bedroom)
+        m["_squared_cuts"] = square_cut_corners(rooms, k, T, 2.0 * T, m.get("_work_gray"))
+        before_ = snap_(rooms)
+        n_long = square_cut_corners(rooms, k, T, SQUARE_CUTS * T, m.get("_work_gray"))
+        if n_long:
+            short_cut_ = before_
+        m["_squared_cuts"] += n_long
+    else:
+        m["_squared_cuts"] = square_cut_corners(rooms, k, T, SQUARE_CUTS * T, m.get("_work_gray")) if SQUARE_CUTS > 0 else 0
+    m["_straightened"], sub_, m["_shared_ends"] = tidy_(rooms)
+    m["_subpixel_sides"] += sub_
+    if short_cut_ is not None and LAST_CHECK:
+        import copy as copy_
+        mm_src_ = (float(m["mm_per_px"]) / S.k) if m.get("mm_per_px") else None
+        mms_ = ([mm_src_ * f_ for f_ in (0.99, 1.0, 1.01)] if mm_src_ else list(ASSUMED_MM)) if APP_REPLAY else None
+        withheld_ = lambda rs: len(last_legal_check(rs, S, T, 1.0 * float(m.get("work_scale", 1) or 1), mms_)[1])
+        n_long_gone = withheld_(copy_.deepcopy(rooms))
+        alt_ = copy_.deepcopy(rooms); put_(alt_, short_cut_); tidy_(alt_)
+        if n_long_gone > withheld_(alt_):
+            put_(rooms, short_cut_)
+            m["_subpixel_sides"] -= sub_
+            m["_straightened"], sub_, m["_shared_ends"] = tidy_(rooms)
+            m["_subpixel_sides"] += sub_
+            m["_long_cuts_undone"] = m.get("_long_cuts_undone", 0) + 1
     # The app's geometry rules once more, on the outlines as they now leave (round 29): what can be mended is, the rest is
     # withheld; an opening into a withheld room leads into space no room claims (as a door onto such space does above).
     if LAST_CHECK:
@@ -5109,7 +5454,7 @@ def build(m, gray=None):
         "wallEdges": walls_out, "rooms": rooms_out,
         "diagnostics": {"bars": len(bars), "gapsSeen": len(gaps), "openings": {kk: sum(1 for g in openings if g["kind"] == kk and not g.get("_unclaimed")) for kk in ("door", "window", "open_passage", "wall")},
                         "doorSwingsWithoutGap": len(unhosted), "rooms": len(rooms_out), "roomsWithheldAsIllegalGeometry": int(m.get("_withheld_rooms_last", 0)), "roomOutlinesMendedForTheApp": int(m.get("_mended", 0)), "slotsBetweenWallsClosed": int(m.get("_slots_closed", 0)), "facesLeftOutAsSlivers": int(m.get("_slivers", 0)), "leakedWallChannels": int(m.get("_leaked_channels", 0)), "swingsTooNarrowForADoor": int(m.get("_narrow_swings", 0)), "doubleSwingsReadAsCasements": int(m.get("_casements", 0)), "leafRowsReadAsCasements": int(m.get("_casement_rows", 0)), "doorsNotPlacedBeyondOpenSpace": int(m.get("_private_out", 0)) + int(m.get("_mixed_out_doors", 0)), "doorsIntoWithheldRoomsNotPlaced": int(m.get("_withheld_doors", 0)), "secondWaysOutNotPlaced": int(m.get("_second_ways_out", 0)), "doorsBetweenTwoBedroomsNotPlaced": int(m.get("_bedroom_pairs", 0)), "doorsOntoLedgesNotPlaced": int(m.get("_ledge_doors", 0)), "secondDoorsIntoSmallRoomsNotPlaced": int(m.get("_twin_doors", 0)), "thinWallsReadAsWalls": int(m.get("_mixed_cells", 0)) if m.get("_mixed_pass") else 0, "foldingScrapsDropped": int(m.get("_fold_scraps", 0)), "slidingPanelsReadAsWindows": int(m.get("_slide_windows", 0)), "stripsThatAreNoSlidingPanels": int(m.get("_not_panels", 0)), "windowsReadAsPartitions": int(m.get("_partitions", 0)), "openingsRejectedAsNotLeadingAnywhere": int(m.get("_openings_rejected", 0)), "labelsOutsideRooms": [l["label"] for l in labels if l["known"] and id(l) not in in_rooms],
-                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": sum(1 for s_ in m.get("_sloped", []) if not s_.get("gentle")), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "dimensionScrapsDropped": int(m.get("_dim_scraps", 0)), "slidingPartitionsFromStrokes": int(m.get("_panel_pairs", 0)), "wideDoorwaysKept": int(m.get("_wide_passages", 0)), "swingsReadFromTheDrawing": int(m.get("_drawn_swings", 0)), "thresholdDoors": int(m.get("_threshold_doors", 0)), "gentleSlopedStrokes": sum(1 for s_ in m.get("_sloped", []) if s_.get("gentle")), "outdoorSpacesClosedByGentleSlopes": int(m.get("_gentle_closed", 0)), "glassInThinWalls": int(m.get("_glass_windows", 0)), "glassBandsBetweenTwoRooms": int(m.get("_glass_partitions", 0)), "doorwaysToTheOutsideReadAsWindows": int(m.get("_sills", 0)), "cornersWelded": int(m.get("_welded_corners", 0)), "ductsKeptAsSpaces": sum(1 for r_ in rooms if r_.get("duct") is not None), "openingsOnDuctsShut": int(m.get("_duct_openings", 0)), "cornersSnappedToDucts": int(m.get("_duct_snaps", 0)), "subPixelSidesDropped": int(m.get("_subpixel_sides", 0)), "cornersStraightened": int(m.get("_straightened", 0)), "cutCornersSquared": int(m.get("_squared_cuts", 0)), "sidesCutAtDuctJogs": int(m.get("_duct_jogs", 0)), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
+                        "diagonalWallsAdded": int(m.get("_diag_walls", 0)), "gapsAcrossSlantedWallsDropped": int(m.get("_across_slant", 0)), "openingsInSlantedWalls": int(m.get("_slanted_gaps", 0)), "slantedSidesWelded": int(m.get("_welds", 0)), "slopedStrokes": sum(1 for s_ in m.get("_sloped", []) if not s_.get("gentle")), "curvedWalls": len(curve_arcs(m)), "curvedSides": int(curve_sides), "panelPartitionsAsSlidingDoors": int(m.get("_panel_doors", 0)), "foldingDoorsOnTheirPartition": int(m.get("_fold_partition", 0)), "wallGapsOnTheirStrokes": int(m.get("_wall_band", 0)), "sidesSplitAtThicknessChanges": int(m.get("_splits", 0)), "sidesWeldedOntoTheWall": int(m.get("_twin_welds", 0)), "jambChamfersDropped": int(m.get("_chamfers", 0)), "dimensionScrapsDropped": int(m.get("_dim_scraps", 0)), "slidingPartitionsFromStrokes": int(m.get("_panel_pairs", 0)), "wideDoorwaysKept": int(m.get("_wide_passages", 0)), "swingsReadFromTheDrawing": int(m.get("_drawn_swings", 0)), "thresholdDoors": int(m.get("_threshold_doors", 0)), "gentleSlopedStrokes": sum(1 for s_ in m.get("_sloped", []) if s_.get("gentle")), "outdoorSpacesClosedByGentleSlopes": int(m.get("_gentle_closed", 0)), "glassInThinWalls": int(m.get("_glass_windows", 0)), "glassBandsBetweenTwoRooms": int(m.get("_glass_partitions", 0)), "doorwaysToTheOutsideReadAsWindows": int(m.get("_sills", 0)), "cornersWelded": int(m.get("_welded_corners", 0)), "ductsKeptAsSpaces": sum(1 for r_ in rooms if r_.get("duct") is not None), "openingsOnDuctsShut": int(m.get("_duct_openings", 0)), "cornersSnappedToDucts": int(m.get("_duct_snaps", 0)), "subPixelSidesDropped": int(m.get("_subpixel_sides", 0)), "cornersStraightened": int(m.get("_straightened", 0)), "cutCornersSquared": int(m.get("_squared_cuts", 0)), "sidesCutAtDuctJogs": int(m.get("_duct_jogs", 0)), "windowsReadInThePicture": int(m.get("_picture_bands", 0)), "pictureBandsOnUnbrokenWalls": int(m.get("_picture_bands_solid", 0)), "roomsClosedByStrokes": int(m.get("_stroke_rooms", 0)), "namelessSpacesAsRooms": int(m.get("_space_rooms", 0)), "smallRoomsBetweenTwoRooms": int(m.get("_junction_rooms", 0)), "sliverWindowsKept": int(m.get("_sliver_windows_kept", 0)), "longCutsUndone": int(m.get("_long_cuts_undone", 0)), "roomNamesReadPastOcrSlips": len(m.get("_ocr_fixed", [])), "unsupportedWallPx": int(unsupported), "thickAxisWallPx": int(residual["axis"]), "slantedWallPx": int(slanted_px), "otherWallPx": int(residual["slanted"] + residual["curved"] - slanted_px), "workScale": m.get("work_scale"), "skewDeg": m.get("skew_deg"),
                         "pageCrop": {"offsetPx": m.get("crop_offset"), "pageSizePx": m.get("page_size")} if m.get("crop_offset") else None,
                         "scaleBar": ({k_: m["scale_bar"][k_] for k_ in ("mm", "unit", "labelFitErrorMm")} | {"source": "graphic scale bar"}) if m.get("scale_bar") else None,
                         "areaCheck": area_check(m, rooms_out)},
@@ -7875,7 +8220,73 @@ class NoThinWalls(Exception):
     pass
 
 
+R39_GEOMETRY = ("R39_PICTURE_BAND", "R39_STROKE_WINDOWS", "R39_SPACE_ROOMS", "R39_STROKE_ROOMS", "R39_SLIVER_OUT", "R39_JUNCTION_ROOMS",
+                "R39_LONG_CUTS", "R39_THIN_STROKES", "R39_OCR_FIX")   # (round 38's reading is round 38's exactly, names as read)
+
+
+def _named_alone(o):
+    """the room names the export places one to a room, counted (each read past OCR slips, so that round 38's 'BEDRUIM 3'
+    and round 39's 'BEDROOM 3' are one name)"""
+    from collections import Counter
+    known = lambda t: room_type(t) != "other" or any(k_ in t.upper() for k_ in ROOM_WORDS)
+    fix = lambda t: "".join((_ocr_room_word(w_.upper()) or w_) if w_ and re.fullmatch(r"\w+", w_) else w_ for w_ in re.split(r"(\W+)", t))
+    alone = Counter()
+    for r_ in o["rooms"]:
+        names = [fix(t) for t in r_.get("sourceLabels", []) if known(fix(t))]
+        if len(names) == 1:
+            alone[names[0].upper()] += 1
+    return alone
+
+
 def build_best(m, gray=None):
+    """round 39's reading (R39_GEOMETRY) and, when it places a name on its own in no room that round 38's reading did,
+    round 38's instead (R39_GUARD): round 39 never takes away a named room (s066's bedrooms, withheld once a window read
+    in the picture closed the balcony beside them)"""
+    import copy
+    if not R39_GUARD or not any(globals()[n_] for n_ in R39_GEOMETRY):
+        return _build_best(m, gray)
+    m38 = copy.deepcopy(m)
+    out, dbg = _build_best(m, gray)
+    saved = {n_: globals()[n_] for n_ in R39_GEOMETRY}
+    try:
+        for n_ in R39_GEOMETRY:
+            globals()[n_] = False
+        globals()["SQUARE_CUTS"], sq_ = 2.0, globals()["SQUARE_CUTS"]
+        out38, dbg38 = _build_best(m38, None if gray is None else gray.copy())
+    finally:
+        globals().update(saved); globals()["SQUARE_CUTS"] = sq_
+    lost = _named_alone(out38) - _named_alone(out)
+    # (and where it places no more names than round 38, it may not take a door away either: s002's kitchen, closed by
+    #  strokes, cut the entrance off the living room and its door became a window)
+    doors = lambda o: sum(1 for w in o["wallEdges"] if (w.get("opening") or {}).get("kind") in ("door", "open_passage"))
+    fewer_doors = sum(_named_alone(out).values()) <= sum(_named_alone(out38).values()) and doors(out) < doors(out38)
+    gaps = _new_gaps(out, out38) if R39_NO_NEW_GAPS and not (lost or fewer_doors) else []
+    if lost or fewer_doors or gaps:
+        m.clear(); m.update(m38)
+        out38["diagnostics"]["round39Withheld"] = sorted(lost) if lost else ["doors %d -> %d" % (doors(out38), doors(out))] if fewer_doors else gaps
+        return out38, dbg38
+    return out, dbg
+
+
+R39_SEAM_PX = 2.0
+
+
+def _new_gaps(out, out38):
+    """round 39b (J, 13 Oct: "a floor plan should never have a small gap like that"): the slots, and the seams of 2 px or
+    longer, that round 39's walls have and round 38's do not, as the app check finds them (replayed: app_flaws.py) -
+    ["slot x,y", "seam x,y"]; round 39's reading is then withheld.  (A seam of a pixel the replay finds where the app
+    check does not, so only the longer ones count.)"""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import app_flaws
+    try:
+        new = app_flaws.added(app_flaws.flaws(out), app_flaws.flaws(out38))
+    except Exception as e:                                   # (the replay failing withholds nothing: round 39 as before)
+        out["semantics"]["notes"] = (out["semantics"]["notes"] + ["Gap check unavailable: %s" % e])[:30]
+        return []
+    return ["slot %.0f,%.0f" % f[:2] for f in new["slots"]] + ["seam %.0f,%.0f" % f[:2] for f in new["seams"] if f[2] >= R39_SEAM_PX]
+
+
+def _build_best(m, gray=None):
     """build(), and on a filled plan that leaves named rooms out or shares one room between two names, once more with the
     thin walls drawn as two lines read as walls too (round 28, AE_MIXED; see mixed_partition_cells).  The second reading
     is kept only when it gives more names a room of their own and takes that from none: a name the first reading placed
