@@ -128,6 +128,7 @@ function projectSharedRooms(
     "dining",
     "kitchen",
     "toilet",
+    "balcony",
     "custom",
   ]);
 

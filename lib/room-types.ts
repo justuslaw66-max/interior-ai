@@ -37,7 +37,7 @@ import type { FixturePhotometricMetadata } from "@/lib/catalog-schema";
  * Each design contains multiple rooms, each with its own items, zones, and saved views.
  */
 
-export type RoomType = "living" | "bedroom" | "dining" | "kitchen" | "toilet" | "custom";
+export type RoomType = "living" | "bedroom" | "dining" | "kitchen" | "toilet" | "balcony" | "custom";
 export type RoomPlanShape = "rectangle" | "l_shape" | "custom_polygon";
 
 export interface RoomGeometry {

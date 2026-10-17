@@ -368,4 +368,12 @@ assert.equal(
   0
 );
 
+// A balcony (17 Oct 2026) has no room type in this format: it is written as a custom room, under its own name.
+const balconySnapshot = structuredClone(snapshot);
+balconySnapshot.rooms.find((room) => room.id === "bedroom")!.roomType = "balcony";
+const balconyRoom = designSnapshotV3ToFloorPlanDocumentV2(balconySnapshot).document.floors
+  .flatMap((floor) => floor.rooms)
+  .find((room) => room.id === "bedroom");
+assert.deepEqual([balconyRoom?.roomType, balconyRoom?.name], ["custom", "Bedroom"]);
+
 console.log("DesignSnapshot v3 to FloorPlanDocumentV2 migration checks passed.");
