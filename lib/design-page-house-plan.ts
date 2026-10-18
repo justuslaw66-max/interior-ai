@@ -30,28 +30,25 @@ export const ROOM_DIMENSION_DEFAULTS = {
 
 export const HOUSE_ROOM_WALL_SNAP_DISTANCE_METERS = 0.18;
 
-export const HOUSE_ROOM_TYPES: Array<{ type: RoomType; label: string }> = [
-  { type: "living", label: "Living Room" },
-  { type: "bedroom", label: "Bedroom" },
-  { type: "kitchen", label: "Kitchen" },
-  { type: "toilet", label: "Bathroom" },
-  { type: "dining", label: "Dining Room" },
-  { type: "custom", label: "Custom Room" },
-];
-
-export const HOUSE_ROOM_SHAPES: Array<{ shape: RoomPlanShape; label: string }> = [
-  { shape: "rectangle", label: "Rectangle" },
-  { shape: "l_shape", label: "L-shape" },
-];
-
 export const ROOM_TYPE_LABELS: Record<RoomType, string> = {
   living: "Living Room",
   bedroom: "Bedroom",
   dining: "Dining Room",
   kitchen: "Kitchen",
   toilet: "Bathroom",
+  balcony: "Balcony",
   custom: "Custom Room",
 };
+
+/** The room types the pickers offer, in their order; the labels are ROOM_TYPE_LABELS'. Balcony since 17 Oct 2026. */
+export const HOUSE_ROOM_TYPES: Array<{ type: RoomType; label: string }> = (
+  ["living", "bedroom", "kitchen", "toilet", "dining", "balcony", "custom"] satisfies RoomType[]
+).map((type) => ({ type, label: ROOM_TYPE_LABELS[type] }));
+
+export const HOUSE_ROOM_SHAPES: Array<{ shape: RoomPlanShape; label: string }> = [
+  { shape: "rectangle", label: "Rectangle" },
+  { shape: "l_shape", label: "L-shape" },
+];
 
 export type HouseRoomTemplateId = "bedroom" | "kitchen" | "bathroom" | "dining";
 

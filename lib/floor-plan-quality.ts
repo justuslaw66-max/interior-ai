@@ -10,20 +10,12 @@ import { buildOpeningHostQualityIssues, openingHostRoomId } from "@/lib/floor-pl
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignItem, RoomType } from "@/lib/room-types";
 export type FloorPlanQualityLabel = "Looks good" | "Improve" | "Review";
-export type FloorPlanQualityCategory =
-  | "naturalLight"
-  | "connections"
-  | "privacy"
-  | "storageSupport"
-  | "furnitureFit"
-  | "accessibility"
-  | "readiness";
+/** The categories the score weighs. Surface checks (`floor-plan-surface-checks.ts`) are advice and aren't scored. */
+export type FloorPlanQualityScoredCategory =
+  "naturalLight" | "connections" | "privacy" | "storageSupport" | "furnitureFit" | "accessibility" | "readiness";
+export type FloorPlanQualityCategory = FloorPlanQualityScoredCategory | "surfaces";
 export type FloorPlanQualityAction =
-  | "add_window"
-  | "add_doorway"
-  | "review_plan_layout"
-  | "review_furniture_fit"
-  | "add_storage";
+  "add_window" | "add_doorway" | "review_plan_layout" | "review_furniture_fit" | "add_storage" | "review_surface";
 export type FloorPlanQualityIssue = {
   id: string;
   category: FloorPlanQualityCategory;
@@ -88,12 +80,12 @@ export type FloorPlanAiPlanningContext = {
 export type FloorPlanQualityReport = {
   score: number;
   label: FloorPlanQualityLabel;
-  categoryScores: Record<FloorPlanQualityCategory, number>;
+  categoryScores: Record<FloorPlanQualityScoredCategory, number>;
   strengths: string[];
   issues: FloorPlanQualityIssue[];
   suggestedFixes: string[];
   primaryAction: {
-    label: "Add window" | "Add door" | "Review plan" | "Review furniture fit" | "Add storage";
+    label: "Add window" | "Add door" | "Review plan" | "Review furniture fit" | "Add storage" | "Review surfaces";
     action: FloorPlanQualityAction;
   };
   aiPlanningContext: FloorPlanAiPlanningContext;
@@ -274,6 +266,7 @@ function primaryActionForIssues(issues: FloorPlanQualityIssue[]): FloorPlanQuali
     review_plan_layout: "Review plan",
     review_furniture_fit: "Review furniture fit",
     add_storage: "Add storage",
+    review_surface: "Review surfaces",
   };
   return { action, label: labels[action] };
 }

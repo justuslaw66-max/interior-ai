@@ -189,7 +189,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
-      "lines": 2900,
+      "lines": 2899,
       "limit": 250
     },
     "components/editor/DraggableFloatingPanel.tsx": {
@@ -465,7 +465,7 @@
       "limit": 400
     },
     "lib/design-page-house-plan.ts": {
-      "lines": 2800,
+      "lines": 2797,
       "limit": 400
     },
     "lib/design-page-model-maps.ts": {
@@ -565,7 +565,7 @@
       "limit": 400
     },
     "lib/floor-plan-quality.ts": {
-      "lines": 612,
+      "lines": 605,
       "limit": 400
     },
     "lib/floor-plan-tracing.ts": {
@@ -1799,7 +1799,7 @@
     "components/editor/DesignControlsPlanPanel.tsx": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 2770
+        "maximum": 2769
       },
       "complexFunctions": {
         "count": 2,
@@ -4311,11 +4311,7 @@
     "lib/useDesignPagePlanQualityController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 217
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 19
+        "maximum": 181
       }
     },
     "lib/useDesignPagePlanState.ts": {

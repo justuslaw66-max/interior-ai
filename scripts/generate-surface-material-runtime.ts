@@ -19,6 +19,8 @@ import {
   compactSurfaceTextureFaces,
   expandSurfaceTextureFaces,
 } from "../lib/surface-texture-face-run";
+import { decodeSurfaceSuitability, encodeSurfaceSuitability } from "../lib/surface-material-suitability";
+import { buildSurfaceSuitabilityFacts } from "../lib/surface-material-suitability-source";
 
 const GENERATED_RENDER_PATH = path.join(
   process.cwd(),
@@ -111,6 +113,9 @@ function toRenderTuple(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderTu
   // Trailing fields are emitted only when present, so existing tuples stay byte-identical.
   // Numbered faces of one size are written as a run, which the runtime expands to the same list.
   const facesData = faces ? compactSurfaceTextureFaces(faces) ?? faces : null;
+  // Plan review's tile facts (17 Oct 2026) come last, after nulls for the fields a material doesn't have.
+  const suitability = encodeSurfaceSuitability(buildSurfaceSuitabilityFacts(entry));
+  if (suitability) return [...base, imagePhysicalSizeMm, facesData, chevronEndOffsetMm, suitability];
   if (chevronEndOffsetMm) return [...base, imagePhysicalSizeMm, facesData, chevronEndOffsetMm];
   if (faces) return [...base, imagePhysicalSizeMm, facesData];
   if (imagePhysicalSizeMm) return [...base, imagePhysicalSizeMm];
@@ -196,6 +201,7 @@ function toRenderRecord(entry: SurfaceMaterialYamlEntry): SurfaceMaterialRenderR
       available_pattern_layouts: tuple[28] ?? undefined,
     },
     import_governance: { publish_status: tuple[29], publish_blockers: tuple[30] },
+    ...(tuple[34] ? { suitability: decodeSurfaceSuitability(tuple[34]) } : {}),
   };
 }
 

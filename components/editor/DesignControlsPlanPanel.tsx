@@ -1654,6 +1654,7 @@ export default function DesignControlsPlanPanel({
     if (action === "add_doorway") return "Add door";
     if (action === "add_storage") return "Add storage";
     if (action === "review_plan_layout") return "Review plan";
+    if (action === "review_surface") return "Review surfaces";
     return "Review furniture fit";
   };
   const handlePlanQualityAction = (action: FloorPlanQualityAction, issue?: FloorPlanQualityIssue) => {
@@ -1670,9 +1671,7 @@ export default function DesignControlsPlanPanel({
       onGoFurnish();
       return;
     }
-    if (action === "review_plan_layout") {
-      return;
-    }
+    if (action === "review_plan_layout" || action === "review_surface") return;
     onGoFurnish();
   };
   const renderPlanQualityCard = () => {

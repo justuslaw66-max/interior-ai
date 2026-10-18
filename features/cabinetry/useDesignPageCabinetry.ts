@@ -262,7 +262,7 @@ export function buildCabinetryAvailableSpaces({
   const sharedSpaceInput = {
     roomId: activeRoom.id,
     roomName: activeRoom.name,
-    roomType: activeRoom.roomType,
+    roomType: activeRoom.roomType === "balcony" ? "custom" : activeRoom.roomType,
     heightMm,
     baseboardOffsetMm: Math.max(
       0,

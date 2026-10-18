@@ -26,7 +26,30 @@ export type SurfaceMaterialRenderRecord = {
     SurfaceMaterial["import_governance"],
     "publish_status" | "publish_blockers"
   >;
+  /** The tile facts plan review checks a room's surfaces against; set only when one is known. */
+  suitability?: SurfaceSuitabilityFacts;
 };
+
+/**
+ * Plan review's surface checks (17 Oct 2026): a tile's DIN 51130 slip class and DIN 51097 barefoot class, the ABK technical
+ * sheet they come from, whether it is in ABK's outdoor range, and whether that sheet calls it a white-body wall tile.
+ */
+export type SurfaceSuitabilityFacts = {
+  slip_rating: string | null;
+  barefoot_slip_rating: string | null;
+  /** The collection of the ABK technical sheet the facts come from, e.g. "Make". */
+  datasheet: string | null;
+  outdoor_floor: boolean;
+  wall_tile_body: boolean;
+};
+
+/** The same facts in the render tuple: the flags are 1 for an outdoor floor and 2 for a white-body wall tile. */
+export type SurfaceSuitabilityTuple = readonly [
+  slipRating: string | null,
+  barefootSlipRating: string | null,
+  datasheet: string | null,
+  flags: number,
+];
 
 export type SurfaceMaterialCatalogMetadata = {
   material_id: string;
@@ -103,7 +126,8 @@ export type SurfaceMaterialRenderBaseTuple = readonly [
 ];
 
 /**
- * The trailing fields are emitted only for materials with physical-scale image data (and a chevron's end offset).
+ * The trailing fields are emitted only for materials with physical-scale image data (and a chevron's end offset, and the
+ * tile facts plan review checks).
  * Faces are written as a run where their file names allow it (see surface-texture-face-run.ts).
  */
 export type SurfaceMaterialRenderTuple = readonly [
@@ -111,6 +135,7 @@ export type SurfaceMaterialRenderTuple = readonly [
   imagePhysicalSizeMm?: { width: number; height: number } | null,
   faces?: SurfaceTextureFacesData | null,
   chevronEndOffsetMm?: number | null,
+  suitability?: SurfaceSuitabilityTuple | null,
 ];
 
 export type SurfaceMaterialRenderInfo = SurfaceMaterialRenderRecord;
