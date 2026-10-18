@@ -13,7 +13,9 @@ const SHARP_LINUX_NATIVE_FILES = [
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
-  serverExternalPackages: ["stripe", "@napi-rs/canvas"],
+  // tesseract.js starts its OCR worker from a script inside its own package. Bundled into a route, every local OCR
+  // call in the dev server ran to its deadline, while the same code under ts-node read in under a second.
+  serverExternalPackages: ["stripe", "@napi-rs/canvas", "tesseract.js"],
   skipTrailingSlashRedirect: true,
   async rewrites() {
     return [

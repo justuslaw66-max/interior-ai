@@ -3,7 +3,7 @@ import { asEnvelope,type ExtractionEnvelope,type PageScaleSolution } from "./pdf
 import { architecturalLineworkPage,hasSourceDivider } from "./source-wall-linework";
 import { diagnoseSourceScale } from "./source-scale-cross-check";
 import { calibrationScaleFields, fallbackPageScales, scaleEstimateMarksWanted, scaleEvidenceMakesDimensions, scaleSolvedMetrics, scaleUnresolvedIssues } from "./assumed-scale";
-import { applyScaleBarEvidence } from "./scale-bar-evidence";
+import { applyScaleBarEvidence } from "./scale-bar-pages";
 import { createScaleBarStripReader } from "./scale-bar-ocr";
 import { registerRasterDimensionSpans } from "./raster-dimension-spans";
 import { registerRasterOpeningSpans, sourceOpeningSpan } from "./raster-opening-spans";
@@ -2178,7 +2178,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       pages = rasterEvidence.pages;
     }
     const localOcrDiagnostics = await applyLocalOcrEvidence(pages, renderedPages, context, this.localOcrProvider);
-    await applyScaleBarEvidence(rankFloorPlanSemanticPages(pages), createScaleBarStripReader(source, renderedPages, this.localOcrProvider, context));
+    const scaleBarDiagnostics = await applyScaleBarEvidence(rankFloorPlanSemanticPages(pages), createScaleBarStripReader(source, renderedPages, this.localOcrProvider, context));
     const vectorizerDiagnostics = await applyVectorizerEvidence({
       pages: this.vectorizerProvider ? vectorizerCandidatePages(pages, rasterEvidence?.pages ?? [],
         (page) => ownLineworkClosesRooms(page, registerSupportedPageTopology)) : [],
@@ -2269,10 +2269,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
             heightPx: page.heightPx,
             vectorSegmentCount: page.vectorSegments.length,
             vectorPathCount: page.vectorPaths.length,
-            vectorSubpathCount: page.vectorPaths.reduce(
-              (total, path) => total + (path.subpaths?.length ?? 0),
-              0
-            ),
+            vectorSubpathCount: page.vectorPaths.reduce((total, path) => total + (path.subpaths?.length ?? 0), 0),
             nativeCurveCommandCount: page.vectorPaths.reduce(
               (total, path) => total + (path.curves?.length ?? 0),
               0
@@ -2303,6 +2300,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
               elapsedMs: 0,
               truncated: false,
             },
+            scaleBar: scaleBarDiagnostics.get(page.pageNumber) ?? null,
             selectedForSemanticClassification: semanticPages.some(
               (entry) => entry.pageNumber === page.pageNumber
             ),
