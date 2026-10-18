@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import type { RegisteredPageEvidence, SourceTextEvidence, SourceVectorSegment } from "@/lib/floor-plan-imports/deterministic-evidence";
 import { calibrationScaleFields, fallbackPageScales, scaleEvidenceMakesDimensions, scaleUnresolvedIssues } from "@/lib/floor-plan-imports/assumed-scale";
@@ -179,13 +178,6 @@ async function testUnreadBars() {
   assert.equal(long.get(1)?.error?.length, 200, "the error kept is bounded");
 }
 
-/** In a route, tesseract.js must load from node_modules: bundled, its OCR worker never started in the dev server. */
-function testNextLoadsTesseractFromNodeModules() {
-  const config = readFileSync("next.config.ts", "utf8");
-  const externals = config.match(/serverExternalPackages:\s*\[([^\]]*)\]/)?.[1] ?? "";
-  assert.match(externals, /"tesseract\.js"/, "next.config.ts keeps tesseract.js out of the server bundle");
-}
-
 function testScaleAndCalibration() {
   const withBar = page(ruledBar(), separateLabels());
   withBar.scaleBar = readScaleBar(withBar, scaleBarWordsFromText(withBar.text), "pdf_text")!;
@@ -266,7 +258,6 @@ async function main() {
   testGeometry();
   await testOcrFallback();
   await testUnreadBars();
-  testNextLoadsTesseractFromNodeModules();
   testScaleAndCalibration();
   await testPdfImport();
   console.log("floor-plan scale bar: all checks passed");

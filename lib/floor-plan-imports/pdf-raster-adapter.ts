@@ -446,6 +446,7 @@ async function applyLocalOcrEvidence(
     if (context.signal?.aborted) break;
     const rendered = renderedByPage.get(page.pageNumber);
     if (!rendered) continue;
+    const startedAt = Date.now();
     try {
       const derivative = await context.store.readDerivative(rendered.assetKey);
       if (!derivative || derivative.mimeType !== "image/png") continue;
@@ -485,14 +486,9 @@ async function applyLocalOcrEvidence(
       }
     } catch (cause) {
       const status = localOcrFailureStatus(cause);
-      diagnostics.set(page.pageNumber, {
-        providerId: provider.id,
-        elapsedMs: timeoutMs,
-        truncated: false,
-        attempted: true,
-        candidateCount: 0,
-        status,
-      });
+      // The time it took, not the limit: a failure at once is not a timeout.
+      diagnostics.set(page.pageNumber, { providerId: provider.id, elapsedMs: Date.now() - startedAt, truncated: false,
+        attempted: true, candidateCount: 0, status });
       page.semantics.notes.push(
         status === "timed_out"
           ? "Local OCR reached its page time limit. Confirm labels and dimensions manually."
