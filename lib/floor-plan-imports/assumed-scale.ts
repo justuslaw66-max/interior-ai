@@ -1,6 +1,7 @@
 import type { FloorPlanSourceMeasurementV2 } from "@/lib/floor-plan-document-v2";
 import type { RegisteredPageEvidence } from "./deterministic-evidence";
 import type { ExtractionEnvelope, PageScaleSolution } from "./pdf-raster-evidence";
+import { scaleBarMeasurement, scaleBarPageScales } from "./scale-bar-scale";
 import { automaticScaleReviewMessage } from "./source-scale-cross-check";
 import type { FloorPlanReviewIssue } from "./types";
 import { vectorizerScaleEstimate, vectorizerScaleEstimateMessage } from "./vectorizer-scale-estimate";
@@ -26,6 +27,18 @@ export function assumedScaleFallback(pages: RegisteredPageEvidence[]): PageScale
       rmsResidualMm: 0, confidence: 0.3, evidence: [], basis: ASSUMED_BASIS }];
   }
   return [];
+}
+
+/** Scales for pages whose printed dimensions solved nothing: a printed scale bar, else the door-width estimate. */
+export function fallbackPageScales(pages: RegisteredPageEvidence[]): PageScaleSolution[] {
+  const bars = scaleBarPageScales(pages);
+  return bars.length ? bars : assumedScaleFallback(pages);
+}
+
+/** Printed spans become editable dimensions once walls exist; a scale bar's span always does, as a reviewer's
+ *  measurement would, so a plan scaled from its bar keeps the printed length it was scaled by. */
+export function scaleEvidenceMakesDimensions(scale: PageScaleSolution, walls: readonly unknown[]): boolean {
+  return walls.length > 0 || scale.basis === "scale_bar";
 }
 
 /** The critical scale issue for the selected page: none when a printed scale was solved on it. */
@@ -68,11 +81,13 @@ function assumedScaleMeasurement(page: RegisteredPageEvidence): FloorPlanSourceM
   };
 }
 
-/** The accuracy fields of the source calibration built from a solved (or assumed) page scale. */
+/** The accuracy fields of the source calibration built from a solved (or assumed) page scale, with the measurement
+ *  behind it when that is a door width taken as standard or a printed scale bar. */
 export function calibrationScaleFields(page: RegisteredPageEvidence, scale: PageScaleSolution) {
   return {
     rmsErrorPx: scale.rmsResidualMm / scale.millimetresPerPixel,
-    ...(isAssumedScale(scale) ? { primaryMeasurement: assumedScaleMeasurement(page) } : {}),
+    ...(isAssumedScale(scale) ? { primaryMeasurement: assumedScaleMeasurement(page) }
+      : scale.basis === "scale_bar" ? { primaryMeasurement: scaleBarMeasurement(page) } : {}),
   };
 }
 

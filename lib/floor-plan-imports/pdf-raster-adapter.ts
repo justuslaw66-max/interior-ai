@@ -2,7 +2,9 @@ import { extractRasterEvidence,attachRasterSourceArtwork } from "./raster-page-e
 import { asEnvelope,type ExtractionEnvelope,type PageScaleSolution } from "./pdf-raster-evidence";
 import { architecturalLineworkPage,hasSourceDivider } from "./source-wall-linework";
 import { diagnoseSourceScale } from "./source-scale-cross-check";
-import { assumedScaleFallback, calibrationScaleFields, scaleEstimateMarksWanted, scaleSolvedMetrics, scaleUnresolvedIssues } from "./assumed-scale";
+import { calibrationScaleFields, fallbackPageScales, scaleEstimateMarksWanted, scaleEvidenceMakesDimensions, scaleSolvedMetrics, scaleUnresolvedIssues } from "./assumed-scale";
+import { applyScaleBarEvidence } from "./scale-bar-evidence";
+import { createScaleBarStripReader } from "./scale-bar-ocr";
 import { registerRasterDimensionSpans } from "./raster-dimension-spans";
 import { registerRasterOpeningSpans, sourceOpeningSpan } from "./raster-opening-spans";
 import { mergeSemantics } from "./semantic-merge";
@@ -1897,7 +1899,7 @@ function buildCanonicalCandidate(
     }
   }
 
-  if (page && scale && walls.length > 0) {
+  if (page && scale && scaleEvidenceMakesDimensions(scale, walls)) {
     for (const [index, evidence] of (scale.evidence ?? []).entries()) {
       const sourceDx = evidence.end.x - evidence.start.x;
       const sourceDy = evidence.end.y - evidence.start.y;
@@ -2175,12 +2177,8 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       rasterEvidence = await extractRasterEvidence(source, renderedPages, context);
       pages = rasterEvidence.pages;
     }
-    const localOcrDiagnostics = await applyLocalOcrEvidence(
-      pages,
-      renderedPages,
-      context,
-      this.localOcrProvider
-    );
+    const localOcrDiagnostics = await applyLocalOcrEvidence(pages, renderedPages, context, this.localOcrProvider);
+    await applyScaleBarEvidence(rankFloorPlanSemanticPages(pages), createScaleBarStripReader(source, renderedPages, this.localOcrProvider, context));
     const vectorizerDiagnostics = await applyVectorizerEvidence({
       pages: this.vectorizerProvider ? vectorizerCandidatePages(pages, rasterEvidence?.pages ?? [],
         (page) => ownLineworkClosesRooms(page, registerSupportedPageTopology)) : [],
@@ -2438,7 +2436,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
     const scales: PageScaleSolution[] = solutions.flatMap(({ page, solution }) =>
       solution ? [{ pageNumber: page.pageNumber, ...solution }] : []
     );
-    if (!scales.length) scales.push(...assumedScaleFallback(selectedPages));
+    if (!scales.length) scales.push(...fallbackPageScales(selectedPages));
     const next: ExtractionEnvelope = {
       ...envelope,
       scales,
