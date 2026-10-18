@@ -39,8 +39,8 @@ export function registerSelectionTests() {
         .click();
       await moduleButton.click();
       await expect(moduleButton).toHaveAttribute("data-module-id", "module-1");
-      await expect(moduleButton).toHaveClass(/bg-neutral-900/);
-      await expect(moduleBreadcrumb).toHaveClass(/bg-blue-600/);
+      await expect(moduleButton).toHaveAttribute("aria-pressed", "true");
+      await expect(moduleBreadcrumb).toHaveAttribute("aria-pressed", "true");
       await expect(preview.getByText("Selected: Module 1", { exact: true })).toBeVisible();
       await expect(page.getByTestId("cabinet-dimension-width")).toBeVisible();
       await expect(previewRenderer).toHaveAttribute("data-preview-ready", "true");
@@ -104,8 +104,8 @@ export function registerSelectionTests() {
       await openParent.click();
 
       await expect(partInspector).toHaveCount(0);
-      await expect(moduleButton).toHaveClass(/bg-neutral-900/);
-      await expect(moduleBreadcrumb).toHaveClass(/bg-blue-600/);
+      await expect(moduleButton).toHaveAttribute("aria-pressed", "true");
+      await expect(moduleBreadcrumb).toHaveAttribute("aria-pressed", "true");
       await expect(preview.getByText("Selected: Module 1", { exact: true })).toBeVisible();
       await expect(page.getByTestId("cabinet-dimension-width")).toBeVisible();
       await expect

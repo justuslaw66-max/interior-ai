@@ -1,6 +1,7 @@
 "use client";
 
 import { Copy, Download, FileText, Save, Upload } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { useRef, type ChangeEventHandler } from "react";
 
 import type { generateCabinetDocumentation } from "../generateCabinetDocumentation";
@@ -282,7 +283,6 @@ export function CabinetStudioOutputsPanel({
                 disabled={false}
                 onClick={() => onTabChange("outputs")}
                 icon="download"
-                muted
                 label="Export…"
               />
               {canPlaceInPlan ? (
@@ -291,7 +291,6 @@ export function CabinetStudioOutputsPanel({
                   disabled={!valid || interactionDisabled}
                   onClick={onSaveAsCopy}
                   icon="copy"
-                  muted
                   label={busyAction === "copy" ? "Copying…" : "Save as copy"}
                 />
               ) : null}
@@ -301,7 +300,6 @@ export function CabinetStudioOutputsPanel({
                   disabled={(mode === "edit" && !canSaveDefinition) || !valid || interactionDisabled}
                   onClick={onSaveDefinition}
                   icon="save"
-                  strongBorder
                   label={
                     busyAction === "save"
                       ? "Saving…"
@@ -312,14 +310,13 @@ export function CabinetStudioOutputsPanel({
                 />
               ) : null}
               {canPlaceInPlan ? (
-                <button
-                  type="button"
+                <Button
                   data-testid={
                     mode === "edit"
                       ? "cabinet-update-placement"
                       : "cabinet-place-in-plan"
                   }
-                  className="min-h-10 rounded-md bg-blue-600 px-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  variant="primary" size="regular"
                   disabled={!valid || interactionDisabled}
                   onClick={onPlaceInPlan}
                 >
@@ -328,7 +325,7 @@ export function CabinetStudioOutputsPanel({
                     : mode === "edit"
                       ? "Update in plan"
                       : "Place in plan"}
-                </button>
+                </Button>
               ) : null}
             </div>
           </div>
@@ -369,8 +366,6 @@ function OutputButton({
   label,
   icon = "file",
   primary = false,
-  strongBorder = false,
-  muted = false,
 }: {
   testId: string;
   disabled: boolean;
@@ -378,8 +373,6 @@ function OutputButton({
   label: string;
   icon?: "download" | "upload" | "copy" | "save" | "file";
   primary?: boolean;
-  strongBorder?: boolean;
-  muted?: boolean;
 }) {
   const Icon =
     icon === "download"
@@ -392,23 +385,14 @@ function OutputButton({
             ? Save
             : FileText;
   return (
-    <button
-      type="button"
+    <Button
       data-testid={testId}
-      className={`flex min-h-10 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${
-        primary
-          ? "bg-neutral-900 text-white"
-          : strongBorder
-            ? "border border-neutral-900 text-neutral-900"
-            : `border border-neutral-300 ${
-                muted ? "text-neutral-700" : "text-neutral-900"
-              }`
-      }`}
+      variant={primary ? "primary" : "secondary"} size="regular"
       disabled={disabled}
       onClick={onClick}
     >
       <Icon className="h-4 w-4" />
       {label}
-    </button>
+    </Button>
   );
 }

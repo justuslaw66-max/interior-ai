@@ -1,6 +1,9 @@
 "use client";
 
 import { Lock, Unlock } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { CABINET_MATERIALS } from "../catalog/materials";
 import {
   getCabinetParameterState,
@@ -596,9 +599,9 @@ export function CabinetryStudioDetailedView({
 
       <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 lg:hidden">
         <span>Detailed controls work best on a larger screen.</span>
-        <button type="button" className="shrink-0 rounded px-1 font-semibold underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-800" onClick={() => chooseExperienceMode("guided")}>
+        <Button variant="link" size="inline" className="shrink-0" onClick={() => chooseExperienceMode("guided")}>
           Use guided setup
-        </button>
+        </Button>
       </div>
 
       <CabinetDetailedCompactPreview
@@ -784,35 +787,30 @@ export function CabinetryStudioDetailedView({
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
+                    <Button
                       data-testid="cabinet-module-width-lock"
-                      aria-pressed={isCabinetModuleWidthLocked(definition, activeModule.id)}
-                      className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-md border border-neutral-300 px-2 text-xs font-semibold text-neutral-600"
+                      size="compact" pressed={isCabinetModuleWidthLocked(definition, activeModule.id)}
                       onClick={toggleActiveModuleWidthLock}
                     >
                       {isCabinetModuleWidthLocked(definition, activeModule.id) ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
                       {isCabinetModuleWidthLocked(definition, activeModule.id) ? "Width locked" : "Lock width"}
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button
                       data-testid="cabinet-equal-module-sizing"
-                      aria-pressed={automation.equalModuleSizing}
-                      className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-md border border-neutral-300 px-2 text-xs font-semibold text-neutral-600"
+                      size="compact" pressed={automation.equalModuleSizing}
                       onClick={toggleEqualModuleSizing}
                     >
                       {automation.equalModuleSizing ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
                       Equal widths
-                    </button>
+                    </Button>
                   </div>
-                  <button
-                    type="button"
+                  <Button
                     data-testid="cabinet-reset-module"
-                    className="min-h-8 rounded-md border border-neutral-300 px-2 text-xs font-semibold text-neutral-600"
+                    size="compact"
                     onClick={resetActiveModule}
                   >
                     Reset selected module
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="grid gap-3">
@@ -858,32 +856,19 @@ export function CabinetryStudioDetailedView({
                     <div className="grid gap-2 rounded-md border border-neutral-200 bg-neutral-50 p-2">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-semibold text-neutral-700">Shelf spacing</span>
-                        <button
-                          type="button"
+                        <Button
                           data-testid="cabinet-shelf-spacing-lock"
                           aria-pressed={activeShelfSpacingLocked}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700"
+                          variant="link" size="inline" className="text-xs"
                           onClick={toggleActiveShelfSpacingLock}
                         >
                           {activeShelfSpacingLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
                           {activeShelfSpacingLocked ? "Locked" : "Lock layout"}
-                        </button>
+                        </Button>
                       </div>
-                      <div className="grid grid-cols-2 gap-1 rounded-md bg-neutral-200 p-1">
-                        {(["even", "custom"] as const).map((spacingMode) => (
-                          <button
-                            key={spacingMode}
-                            type="button"
-                            data-testid={`cabinet-shelf-spacing-${spacingMode}`}
-                            aria-pressed={activeShelfSpacingMode === spacingMode}
-                            disabled={activeShelfSpacingLocked}
-                            className={`rounded px-2 py-1.5 text-xs font-semibold disabled:opacity-40 ${activeShelfSpacingMode === spacingMode ? "bg-white shadow-sm" : "text-neutral-500"}`}
-                            onClick={() => setActiveShelfSpacingMode(spacingMode)}
-                          >
-                            {spacingMode === "even" ? "Even" : "Custom heights"}
-                          </button>
-                        ))}
-                      </div>
+                      <SegmentedControl label="Shelf spacing" size="compact" fill value={activeShelfSpacingMode} disabled={activeShelfSpacingLocked}
+                        options={[{ value: "even", label: "Even", testId: "cabinet-shelf-spacing-even" }, { value: "custom", label: "Custom heights", testId: "cabinet-shelf-spacing-custom" }]}
+                        onChange={setActiveShelfSpacingMode} />
                       {activeShelfSpacingMode === "custom" ? (
                         <div className="grid grid-cols-2 gap-2">
                           {activeShelfPositions.map((position, index) => (
@@ -966,12 +951,10 @@ export function CabinetryStudioDetailedView({
                               const dimensions = CABINET_WALL_BED_MATTRESS_DIMENSIONS[size];
                               const selected = getCabinetWallBedMattressSize(activeModule) === size;
                               return (
-                                <button
+                                <ChoiceTile
                                   key={size}
-                                  type="button"
                                   data-testid={`cabinet-wall-bed-mattress-${size}`}
-                                  aria-pressed={selected}
-                                  className={`rounded-md border p-2 text-left text-xs ${selected ? "border-blue-700 bg-blue-50 text-blue-950" : "border-neutral-200 text-neutral-600"}`}
+                                  selected={selected} className="p-2 text-left text-xs"
                                   onClick={() => updateWallBedSize(size, getCabinetWallBedOrientation(activeModule))}
                                 >
                                   <CabinetWallBedConfigurationPreview
@@ -983,18 +966,16 @@ export function CabinetryStudioDetailedView({
                                   />
                                   <span className="block font-semibold">{formatCabinetLabel(size)}</span>
                                   <span className="mt-1 block text-xs">{formatProjectMeasurement(dimensions.widthMm)} × {formatProjectMeasurement(dimensions.lengthMm)}</span>
-                                </button>
+                                </ChoiceTile>
                               );
                             })}
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             {(["vertical", "horizontal"] as CabinetWallBedOrientation[]).map((orientation) => (
-                              <button
+                              <ChoiceTile
                                 key={orientation}
-                                type="button"
                                 data-testid={`cabinet-wall-bed-orientation-${orientation}`}
-                                aria-pressed={getCabinetWallBedOrientation(activeModule) === orientation}
-                                className={`grid gap-1 rounded-md border p-2 text-xs font-semibold ${getCabinetWallBedOrientation(activeModule) === orientation ? "border-blue-700 bg-blue-50 text-blue-950" : "border-neutral-200 text-neutral-600"}`}
+                                selected={getCabinetWallBedOrientation(activeModule) === orientation} className="grid gap-1 p-2 text-xs font-semibold"
                                 onClick={() => updateWallBedSize(getCabinetWallBedMattressSize(activeModule), orientation)}
                               >
                                 <CabinetWallBedConfigurationPreview
@@ -1005,17 +986,15 @@ export function CabinetryStudioDetailedView({
                                   className="h-14 w-full"
                                 />
                                 {formatCabinetLabel(orientation)} opening
-                              </button>
+                              </ChoiceTile>
                             ))}
                           </div>
                           <div className="grid grid-cols-2 gap-2">
                             {(["closed", "open"] as CabinetWallBedDisplayState[]).map((displayState) => (
-                              <button
+                              <ChoiceTile
                                 key={displayState}
-                                type="button"
                                 data-testid={`cabinet-wall-bed-state-${displayState}`}
-                                aria-pressed={getCabinetWallBedDisplayState(activeModule) === displayState}
-                                className={`grid gap-1 rounded-md border p-2 text-xs font-semibold ${getCabinetWallBedDisplayState(activeModule) === displayState ? "border-emerald-700 bg-emerald-50 text-emerald-800" : "border-neutral-200 text-neutral-600"}`}
+                                selected={getCabinetWallBedDisplayState(activeModule) === displayState} className="grid gap-1 p-2 text-xs font-semibold"
                                 onClick={() => updateModule(activeModule.id, { wallBedDisplayState: displayState })}
                               >
                                 <CabinetWallBedConfigurationPreview
@@ -1026,7 +1005,7 @@ export function CabinetryStudioDetailedView({
                                   className="h-14 w-full"
                                 />
                                 Show {displayState}
-                              </button>
+                              </ChoiceTile>
                             ))}
                           </div>
                           <label className="flex items-start gap-2 rounded-md bg-sky-50 p-2 text-xs text-sky-900">
@@ -1047,12 +1026,10 @@ export function CabinetryStudioDetailedView({
                               {(["none", "left", "right", "both"] as CabinetWallBedSideStorage[]).map((sideStorage) => {
                                 const selected = getCabinetWallBedSideStorage(activeModule) === sideStorage;
                                 return (
-                                  <button
+                                  <ChoiceTile
                                     key={sideStorage}
-                                    type="button"
                                     data-testid={`cabinet-wall-bed-side-storage-${sideStorage}`}
-                                    aria-pressed={selected}
-                                    className={`grid gap-1 rounded-md border p-2 text-xs font-semibold ${selected ? "border-blue-700 bg-blue-50 text-blue-950" : "border-neutral-200 text-neutral-600"}`}
+                                    selected={selected} className="grid gap-1 p-2 text-xs font-semibold"
                                     onClick={() => updateWallBedSideStorage(sideStorage)}
                                   >
                                     <CabinetWallBedConfigurationPreview
@@ -1063,7 +1040,7 @@ export function CabinetryStudioDetailedView({
                                       className="h-14 w-full"
                                     />
                                     {formatCabinetLabel(sideStorage)}
-                                  </button>
+                                  </ChoiceTile>
                                 );
                               })}
                             </div>
@@ -1387,12 +1364,10 @@ export function CabinetryStudioDetailedView({
                             (activeModule.panelColumnCount ?? 1) === columns &&
                             (activeModule.panelRowCount ?? 1) === rows;
                           return (
-                            <button
+                            <ChoiceTile
                               key={`${columns}x${rows}`}
-                              type="button"
                               data-testid={`cabinet-wall-panel-pattern-${columns}x${rows}`}
-                              aria-pressed={selected}
-                              className={`grid gap-1 rounded-lg border p-2 text-left text-xs font-semibold transition ${selected ? "border-neutral-950 bg-white text-neutral-950 shadow-sm" : "border-neutral-200 bg-white/70 text-neutral-600 hover:border-neutral-400"}`}
+                              selected={selected} className="grid gap-1 p-2 text-left text-xs font-semibold"
                               onClick={() =>
                                 updateModule(activeModule.id, {
                                   panelColumnCount: columns,
@@ -1406,7 +1381,7 @@ export function CabinetryStudioDetailedView({
                                 className="h-14 w-full"
                               />
                               {label}
-                            </button>
+                            </ChoiceTile>
                           );
                         })}
                       </div>
@@ -2240,20 +2215,9 @@ export function CabinetryStudioDetailedView({
                     <>
                   <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
                     <span className="text-xs font-semibold text-neutral-700">Door count</span>
-                    <div className="grid grid-cols-2 gap-1 rounded-md bg-neutral-100 p-1">
-                      {(["recommended", "manual"] as const).map((mode) => (
-                        <button
-                          key={mode}
-                          type="button"
-                          data-testid={`cabinet-door-layout-${mode}`}
-                          aria-pressed={activeDoorLayoutMode === mode}
-                          className={`rounded px-2 py-1.5 text-xs font-semibold ${activeDoorLayoutMode === mode ? "bg-white shadow-sm" : "text-neutral-500"}`}
-                          onClick={() => setActiveDoorLayoutMode(mode)}
-                        >
-                          {mode === "recommended" ? `Recommended · ${activeDoorCount}` : "Manual"}
-                        </button>
-                      ))}
-                    </div>
+                    <SegmentedControl label="Door count" size="compact" fill value={activeDoorLayoutMode} onChange={setActiveDoorLayoutMode}
+                      options={[{ value: "recommended", label: `Recommended · ${activeDoorCount}`, testId: "cabinet-door-layout-recommended" },
+                        { value: "manual", label: "Manual", testId: "cabinet-door-layout-manual" }]} />
                     <p className="text-xs leading-5 text-neutral-500">
                       Manual preserves the current recommendation. Returning to Recommended replaces the override as width changes.
                     </p>
@@ -2313,12 +2277,10 @@ export function CabinetryStudioDetailedView({
                       className="grid grid-cols-3 gap-2"
                     >
                       {(["equal", "recommended", "custom"] as const).map((mode) => (
-                        <button
+                        <ChoiceTile
                           key={mode}
-                          type="button"
                           data-testid={`cabinet-drawer-heights-${mode}`}
-                          aria-pressed={activeDrawerHeightMode === mode}
-                          className={`grid gap-1 rounded-lg border p-2 text-xs font-semibold transition ${activeDrawerHeightMode === mode ? "border-neutral-950 bg-white text-neutral-950 shadow-sm" : "border-neutral-200 bg-neutral-50 text-neutral-500 hover:border-neutral-400"}`}
+                          selected={activeDrawerHeightMode === mode} className="grid gap-1 p-2 text-xs font-semibold"
                           onClick={() => setActiveDrawerHeightMode(mode)}
                         >
                           <CabinetDrawerConfigurationPreview
@@ -2327,7 +2289,7 @@ export function CabinetryStudioDetailedView({
                             proportions={mode === "custom" ? activeDrawerHeightProportions : undefined}
                           />
                           {formatCabinetLabel(mode)}
-                        </button>
+                        </ChoiceTile>
                       ))}
                     </div>
                     <p className="text-xs leading-5 text-neutral-500">
@@ -2426,16 +2388,14 @@ export function CabinetryStudioDetailedView({
 
                 <div className="grid gap-3">
                   {sectionTitle("Materials")}
-                  <button
-                    type="button"
+                  <Button
                     data-testid="cabinet-material-lock"
-                    aria-pressed={activeMaterialLocked}
-                    className={`inline-flex min-h-8 items-center justify-center gap-1.5 rounded-md border px-2 text-xs font-semibold ${activeMaterialLocked ? "border-blue-200 bg-blue-50 text-blue-800" : "border-neutral-300 text-neutral-600"}`}
+                    size="compact" pressed={activeMaterialLocked}
                     onClick={toggleActiveMaterialLock}
                   >
                     {activeMaterialLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
                     {activeMaterialLocked ? "Material assignment locked" : "Lock material assignment"}
-                  </button>
+                  </Button>
                   <Field label="Cabinet structure" helper="Professional term: carcass.">
                     <select data-testid="cabinet-input-material" className={selectClass()} disabled={activeMaterialLocked} value={activeModule.materialId} onChange={(event) => updateModule(activeModule.id, { materialId: event.target.value })}>
                       {CABINET_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}
@@ -2472,21 +2432,9 @@ export function CabinetryStudioDetailedView({
                   {activeHandlePlacementAvailable || activeHandlePlacementMode === "custom" ? (
                     <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
                       <span className="text-xs font-semibold text-neutral-700">Handle placement</span>
-                      <div className="grid grid-cols-2 gap-1 rounded-md bg-neutral-100 p-1">
-                        {(["automatic", "custom"] as const).map((mode) => (
-                          <button
-                            key={mode}
-                            type="button"
-                            data-testid={`cabinet-handle-placement-${mode}`}
-                            aria-pressed={activeHandlePlacementMode === mode}
-                            disabled={mode === "custom" && !activeHandlePlacementAvailable}
-                            className={`rounded px-2 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${activeHandlePlacementMode === mode ? "bg-white shadow-sm" : "text-neutral-500"}`}
-                            onClick={() => setActiveHandlePlacementMode(mode)}
-                          >
-                            {formatCabinetLabel(mode)}
-                          </button>
-                        ))}
-                      </div>
+                      <SegmentedControl label="Handle placement" size="compact" fill value={activeHandlePlacementMode} onChange={setActiveHandlePlacementMode}
+                        options={(["automatic", "custom"] as const).map((mode) => ({ value: mode, label: formatCabinetLabel(mode), testId: `cabinet-handle-placement-${mode}`,
+                          disabled: mode === "custom" && !activeHandlePlacementAvailable }))} />
                       <p className="text-xs leading-5 text-neutral-500">
                         Custom shifts every generated handle from its safe automatic position. Returning to Automatic removes both offsets.
                       </p>
@@ -2711,14 +2659,13 @@ export function CabinetryStudioDetailedView({
                   Advanced {advancedOpen ? "−" : "+"}
                 </button>
                 {advancedOpen ? (
-                  <button
-                    type="button"
+                  <Button
                     data-testid="cabinet-reset-construction-section"
-                    className="text-xs font-semibold text-neutral-500 underline hover:text-neutral-900"
+                    variant="link" size="inline" className="text-xs"
                     onClick={resetConstructionSection}
                   >
                     Reset construction
-                  </button>
+                  </Button>
                 ) : null}
               </div>
               {advancedOpen ? (
@@ -2838,14 +2785,13 @@ export function CabinetryStudioDetailedView({
                                 {formatCabinetLabel(parameterState.source)}
                               </span>
                               {parameterState.source === "user_overridden" || parameterState.locked ? (
-                                <button
-                                  type="button"
+                                <Button
                                   data-testid={`cabinet-reset-parameter-${parameterPath}`}
-                                  className="font-semibold text-blue-700 hover:text-blue-900"
+                                  variant="link" size="inline"
                                   onClick={() => resetParameterToAutomatic(parameterPath)}
                                 >
                                   Reset to auto
-                                </button>
+                                </Button>
                               ) : null}
                             </div>
                           ) : null}

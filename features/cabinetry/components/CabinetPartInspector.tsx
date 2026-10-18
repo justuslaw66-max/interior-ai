@@ -1,6 +1,8 @@
 "use client";
 
 import { Lock, Unlock } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 import { getCabinetParameterState } from "../automation";
 import { formatCabinetLabel } from "../formatCabinetLabel";
@@ -163,11 +165,10 @@ export function CabinetPartInspector({
                 {materialTarget === "front" ? "Front material" : "Part material"}
               </span>
               {materialTarget === "front" || materialTarget === "carcass" ? (
-                <button
-                  type="button"
+                <Button
                   data-testid="cabinet-part-material-lock"
                   aria-pressed={materialLocked || frontMaterialLocked}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700"
+                  variant="link" size="inline" className="text-xs"
                   onClick={onToggleMaterialLock}
                 >
                   {materialLocked || frontMaterialLocked ? (
@@ -176,7 +177,7 @@ export function CabinetPartInspector({
                     <Unlock className="h-3 w-3" />
                   )}
                   {materialLocked || frontMaterialLocked ? "Locked" : "Lock"}
-                </button>
+                </Button>
               ) : null}
             </div>
             {materialTarget ? (
@@ -316,33 +317,11 @@ export function CabinetPartInspector({
                 <legend className="px-1 text-xs font-semibold text-neutral-700">
                   Handle placement
                 </legend>
-                <div className="grid grid-cols-2 gap-1 rounded-md bg-neutral-100 p-1">
-                  {(["automatic", "custom"] as const).map((placementMode) => (
-                    <button
-                      key={placementMode}
-                      type="button"
-                      data-testid={`cabinet-part-handle-placement-${placementMode}`}
-                      aria-pressed={handlePlacementMode === placementMode}
-                      disabled={
-                        Boolean(
-                          getCabinetParameterState(
-                            definition,
-                            `modules.${module.id}.handlePlacementMode`
-                          ).locked
-                        ) ||
-                        (placementMode === "custom" && !handlePlacementAvailable)
-                      }
-                      className={`rounded px-2 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${
-                        handlePlacementMode === placementMode
-                          ? "bg-white shadow-sm"
-                          : "text-neutral-500"
-                      }`}
-                      onClick={() => onSetHandlePlacementMode(placementMode)}
-                    >
-                      {formatCabinetLabel(placementMode)}
-                    </button>
-                  ))}
-                </div>
+                <SegmentedControl label="Handle placement" size="compact" fill value={handlePlacementMode}
+                  disabled={Boolean(getCabinetParameterState(definition, `modules.${module.id}.handlePlacementMode`).locked)}
+                  options={(["automatic", "custom"] as const).map((placementMode) => ({ value: placementMode, label: formatCabinetLabel(placementMode),
+                    testId: `cabinet-part-handle-placement-${placementMode}`, disabled: placementMode === "custom" && !handlePlacementAvailable }))}
+                  onChange={onSetHandlePlacementMode} />
                 {handlePlacementMode === "custom" && handlePlacementAvailable ? (
                   <div className="grid grid-cols-2 gap-2">
                     <GuidedNumberField
@@ -431,11 +410,10 @@ export function CabinetPartInspector({
                 <span className="text-xs font-semibold text-neutral-700">
                   Shelf layout
                 </span>
-                <button
-                  type="button"
+                <Button
                   data-testid="cabinet-part-shelf-spacing-lock"
                   aria-pressed={shelfSpacingLocked}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700"
+                  variant="link" size="inline" className="text-xs"
                   onClick={onToggleShelfSpacingLock}
                 >
                   {shelfSpacingLocked ? (
@@ -444,7 +422,7 @@ export function CabinetPartInspector({
                     <Unlock className="h-3 w-3" />
                   )}
                   {shelfSpacingLocked ? "Locked" : "Lock"}
-                </button>
+                </Button>
               </div>
               <CabinetNumberField
                 label="Shelf count"
@@ -465,25 +443,10 @@ export function CabinetPartInspector({
                   onUpdateModule(module.id, { shelfCount: value })
                 }
               />
-              <div className="grid grid-cols-2 gap-1 rounded-md bg-neutral-100 p-1">
-                {(["even", "custom"] as const).map((spacingMode) => (
-                  <button
-                    key={spacingMode}
-                    type="button"
-                    data-testid={`cabinet-part-shelf-spacing-${spacingMode}`}
-                    aria-pressed={shelfSpacingMode === spacingMode}
-                    disabled={shelfSpacingLocked}
-                    className={`rounded px-2 py-1.5 text-xs font-semibold disabled:opacity-40 ${
-                      shelfSpacingMode === spacingMode
-                        ? "bg-white shadow-sm"
-                        : "text-neutral-500"
-                    }`}
-                    onClick={() => onSetShelfSpacingMode(spacingMode)}
-                  >
-                    {spacingMode === "even" ? "Even spacing" : "Custom heights"}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl label="Shelf spacing" size="compact" fill value={shelfSpacingMode} disabled={shelfSpacingLocked}
+                options={[{ value: "even", label: "Even spacing", testId: "cabinet-part-shelf-spacing-even" },
+                  { value: "custom", label: "Custom heights", testId: "cabinet-part-shelf-spacing-custom" }]}
+                onChange={onSetShelfSpacingMode} />
               {shelfSpacingMode === "custom" ? (
                 <div className="grid grid-cols-2 gap-2">
                   {shelfPositions.map((position, index) => (
@@ -663,14 +626,13 @@ export function CabinetPartInspector({
         </>
       )}
 
-      <button
-        type="button"
+      <Button
         data-testid="cabinet-part-open-parent-module"
-        className="min-h-9 rounded-md border border-blue-300 bg-white px-3 text-xs font-semibold text-blue-800 hover:border-blue-600"
+        size="regular"
         onClick={onOpenParentModule}
       >
         Open parent Module {moduleIndex + 1}
-      </button>
+      </Button>
     </div>
   );
 }

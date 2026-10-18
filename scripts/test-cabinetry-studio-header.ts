@@ -28,11 +28,11 @@ assert.match(guidedMarkup, /^<header/);
 assert.match(guidedMarkup, /Simple to start, powerful when needed\./);
 assert.match(
   guidedMarkup,
-  /data-testid="cabinet-experience-guided" aria-pressed="true"/
+  /<button(?=[^>]*data-testid="cabinet-experience-guided")(?=[^>]*aria-pressed="true")/
 );
 assert.match(
   guidedMarkup,
-  /data-testid="cabinet-experience-detailed" aria-pressed="false"/
+  /<button(?=[^>]*data-testid="cabinet-experience-detailed")(?=[^>]*aria-pressed="false")/
 );
 assert.match(guidedMarkup, /data-testid="cabinet-undo"[^>]*disabled=""/);
 assert.doesNotMatch(guidedMarkup, /data-testid="cabinet-redo"[^>]*disabled=""/);
@@ -65,11 +65,11 @@ assert.match(detailedMarkup, /^<div/);
 assert.match(detailedMarkup, /Edit a built-in/);
 assert.match(
   detailedMarkup,
-  /data-testid="cabinet-experience-guided" aria-pressed="false"/
+  /<button(?=[^>]*data-testid="cabinet-experience-guided")(?=[^>]*aria-pressed="false")/
 );
 assert.match(
   detailedMarkup,
-  /data-testid="cabinet-experience-detailed" aria-pressed="true"/
+  /<button(?=[^>]*data-testid="cabinet-experience-detailed")(?=[^>]*aria-pressed="true")/
 );
 assert.doesNotMatch(detailedMarkup, /data-testid="cabinet-undo"[^>]*disabled=""/);
 assert.match(detailedMarkup, /data-testid="cabinet-redo"[^>]*disabled=""/);
