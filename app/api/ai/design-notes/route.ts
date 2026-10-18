@@ -22,6 +22,9 @@ export const runtime = "nodejs";
 
 type HashableItem = {
   id?: unknown;
+  productId?: unknown;
+  name?: unknown;
+  quantity?: unknown;
   category?: unknown;
   variantId?: unknown;
   locked?: unknown;
@@ -73,6 +76,9 @@ function hashDesign(design: unknown): string {
     room: data.room ?? null,
     items: (data.items ?? []).map((i) => ({
       id: i.id,
+      productId: i.productId,
+      name: i.name,
+      quantity: i.quantity,
       category: i.category,
       variantId: i.variantId,
       locked: !!i.locked,

@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { applyAISuggestionAction, type AISuggestionAction } from "@/lib/ai/applySuggestion";
+import { buildDesignNotesRequest } from "@/lib/ai/design-notes-request";
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { AINotesResponse } from "@/lib/design-page-types";
-import { getItemPrice } from "@/lib/design-page-utils";
 import type { DesignItem } from "@/lib/room-types";
 import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
@@ -70,30 +70,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
       const response = await fetch("/api/ai/design-notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          design: {
-            id: designId,
-            items: items.map((item) => ({
-              productId: item.productId,
-              quantity: item.qty || 1,
-              price: getItemPrice(CATALOG_ITEMS[item.productId]) || 0,
-            })),
-            categories: Array.from(new Set(
-              items
-                .map((item) => CATALOG_ITEMS[item.productId]?.category)
-                .filter(
-                  (category): category is Exclude<typeof category, undefined> =>
-                    Boolean(category)
-                )
-            )),
-            budget: String(items.reduce(
-              (sum, item) =>
-                sum + (getItemPrice(CATALOG_ITEMS[item.productId]) || 0) * (item.qty || 1),
-              0
-            )),
-          },
-          mode: designerMode ? "designer" : "homeowner",
-        }),
+        body: JSON.stringify(buildDesignNotesRequest({ designId, items, catalog: CATALOG_ITEMS, designerMode })),
         signal: controller.signal,
       });
       window.clearTimeout(timeoutId);

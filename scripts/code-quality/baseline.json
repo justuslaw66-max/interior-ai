@@ -2669,13 +2669,9 @@
       }
     },
     "lib/ai/design-notes-contract.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 69
-      },
       "complexFunctions": {
         "count": 2,
-        "maximum": 34
+        "maximum": 23
       }
     },
     "lib/ai/layout-planner.ts": {
@@ -3937,7 +3933,7 @@
     "lib/useDesignPageAiNotes.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 158
+        "maximum": 135
       }
     },
     "lib/useDesignPageAiWorkspaceRegistration.ts": {

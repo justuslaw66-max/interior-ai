@@ -40,6 +40,67 @@ function safeString(value: unknown, maxLength: number) {
     : null;
 }
 
+/** The string fields AI notes keeps for each item, with their longest allowed length. */
+const ITEM_STRING_FIELDS = [
+  ["id", 128],
+  ["productId", 128],
+  ["name", 120],
+  ["category", 80],
+  ["variantId", 128],
+] as const;
+
+/** A whole number of 1 to 999, `undefined` when absent, `null` when invalid. */
+function parseItemQuantity(value: unknown): number | null | undefined {
+  if (value === undefined) return undefined;
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 999 ? value : null;
+}
+
+/** A price of 0 to 1,000,000,000; `undefined` when it isn't a number, `null` when out of range. */
+function parseItemPrice(value: unknown): number | null | undefined {
+  if (typeof value !== "number") return undefined;
+  return Number.isFinite(value) && value >= 0 && value <= 1_000_000_000 ? value : null;
+}
+
+function parseItemSize(value: unknown): Record<string, number> | undefined {
+  if (!isRecord(value)) return undefined;
+  const size: Record<string, number> = {};
+  for (const key of ["width", "height", "depth"]) {
+    const dimension = value[key];
+    if (typeof dimension === "number" && Number.isFinite(dimension) && dimension > 0 && dimension <= 100) {
+      size[key] = dimension;
+    }
+  }
+  return size;
+}
+
+function parseItemTags(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  return value
+    .map((tag) => safeString(tag, 80))
+    .filter((tag): tag is string => Boolean(tag))
+    .slice(0, 30);
+}
+
+function parseDesignNotesItem(rawItem: unknown): Record<string, unknown> | null {
+  if (!isRecord(rawItem)) return null;
+  const item: Record<string, unknown> = {};
+  for (const [key, maxLength] of ITEM_STRING_FIELDS) {
+    const text = safeString(rawItem[key], maxLength);
+    if (text) item[key] = text;
+  }
+  item.locked = rawItem.locked === true;
+  const quantity = parseItemQuantity(rawItem.quantity);
+  const price = parseItemPrice(rawItem.price);
+  if (quantity === null || price === null) return null;
+  if (quantity !== undefined) item.quantity = quantity;
+  if (price !== undefined) item.price = price;
+  const size = parseItemSize(rawItem.size);
+  if (size) item.size = size;
+  const tags = parseItemTags(rawItem.tags);
+  if (tags) item.tags = tags;
+  return item;
+}
+
 export function parseDesignNotesInput(value: unknown): DesignNotesInput | null {
   if (!isRecord(value) || !isRecord(value.design)) return null;
   const mode = value.mode === "designer" ? "designer" : "homeowner";
@@ -52,37 +113,8 @@ export function parseDesignNotesInput(value: unknown): DesignNotesInput | null {
 
   const items: Array<Record<string, unknown>> = [];
   for (const rawItem of rawItems) {
-    if (!isRecord(rawItem)) return null;
-    const item: Record<string, unknown> = {};
-    const id = safeString(rawItem.id, 128);
-    const category = safeString(rawItem.category, 80);
-    const variantId = safeString(rawItem.variantId, 128);
-    if (id) item.id = id;
-    if (category) item.category = category;
-    if (variantId) item.variantId = variantId;
-    item.locked = rawItem.locked === true;
-    if (typeof rawItem.price === "number") {
-      if (!Number.isFinite(rawItem.price) || rawItem.price < 0 || rawItem.price > 1_000_000_000) {
-        return null;
-      }
-      item.price = rawItem.price;
-    }
-    if (isRecord(rawItem.size)) {
-      const size: Record<string, number> = {};
-      for (const key of ["width", "height", "depth"]) {
-        const dimension = rawItem.size[key];
-        if (typeof dimension === "number" && Number.isFinite(dimension) && dimension > 0 && dimension <= 100) {
-          size[key] = dimension;
-        }
-      }
-      item.size = size;
-    }
-    if (Array.isArray(rawItem.tags)) {
-      item.tags = rawItem.tags
-        .map((tag) => safeString(tag, 80))
-        .filter((tag): tag is string => Boolean(tag))
-        .slice(0, 30);
-    }
+    const item = parseDesignNotesItem(rawItem);
+    if (!item) return null;
     items.push(item);
   }
 
