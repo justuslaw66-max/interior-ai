@@ -1,6 +1,6 @@
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { FloorPlanQualityIssue, FloorPlanQualityReport } from "@/lib/floor-plan-quality";
-import type { RoomSurfaceFinishes } from "@/lib/room-types";
+import type { RoomSurfaceFinishes, RoomType } from "@/lib/room-types";
 import { getRuntimeSurfaceMaterialById, type SurfaceMaterialRenderRecord } from "@/lib/surface-material-runtime";
 import { normalizeSurfaceMaterialId } from "@/lib/surface-settings";
 
@@ -18,6 +18,18 @@ import { normalizeSurfaceMaterialId } from "@/lib/surface-settings";
  */
 type CheckedMaterial = { record: SurfaceMaterialRenderRecord | null; name: string };
 
+/** What the checks read of a room: its type, its floor, and every wall, face and panel material. */
+export type SurfaceCheckRoom = {
+  id: string;
+  name: string;
+  roomType: RoomType;
+  floorMaterialId: string | null;
+  wallMaterialIds: string[];
+};
+
+/** A plan room or a design room: both keep their finishes in `surfaces`, or in the older `surfaceFinishes`. */
+export type RoomWithSurfaces = Pick<HousePlanRoom2D, "id" | "name" | "roomType" | "surfaces" | "surfaceFinishes">;
+
 const SOURCES = {
   washroom: "Workplace washrooms and showers need R10 (ASR A1.5); homes aren't regulated.",
   shower: "Shower areas need barefoot class B (DGUV 207-006); homes aren't regulated.",
@@ -29,32 +41,34 @@ export function getSlipClassNumber(slipRating: string | null | undefined): numbe
   return match ? Number(match[1]) : null;
 }
 
-function roomSurfaces(room: HousePlanRoom2D): RoomSurfaceFinishes | undefined {
-  return room.surfaces ?? room.surfaceFinishes;
+export function toSurfaceCheckRoom(room: RoomWithSurfaces): SurfaceCheckRoom {
+  const surfaces: RoomSurfaceFinishes | undefined = room.surfaces ?? room.surfaceFinishes;
+  const walls = surfaces?.walls;
+  const wallMaterialIds = [
+    walls?.default?.materialId ?? surfaces?.wallMaterialId,
+    ...Object.values(walls?.faces ?? {}).map((face) => face.materialId),
+    ...Object.values(walls?.panels ?? {}).map((panel) => panel.materialId),
+  ].map(normalizeSurfaceMaterialId).filter((id): id is string => id !== null);
+  return {
+    id: room.id,
+    name: room.name,
+    roomType: room.roomType,
+    floorMaterialId: normalizeSurfaceMaterialId(surfaces?.floorMaterialId ?? surfaces?.floor?.materialId),
+    wallMaterialIds: [...new Set(wallMaterialIds)],
+  };
 }
 
-function checkedMaterial(materialId: unknown, fallbackName: string): CheckedMaterial {
-  const record = getRuntimeSurfaceMaterialById(normalizeSurfaceMaterialId(materialId));
+function checkedMaterial(materialId: string | null, fallbackName: string): CheckedMaterial {
+  const record = getRuntimeSurfaceMaterialById(materialId);
   return { record, name: record?.surface_material.product_name ?? fallbackName };
 }
 
-function floorMaterial(room: HousePlanRoom2D): CheckedMaterial {
-  const surfaces = roomSurfaces(room);
-  return checkedMaterial(surfaces?.floorMaterialId ?? surfaces?.floor?.materialId, "This floor");
-}
-
-function wallMaterials(room: HousePlanRoom2D): CheckedMaterial[] {
-  const walls = roomSurfaces(room)?.walls;
-  const ids = [
-    walls?.default?.materialId ?? roomSurfaces(room)?.wallMaterialId,
-    ...Object.values(walls?.faces ?? {}).map((face) => face.materialId),
-    ...Object.values(walls?.panels ?? {}).map((panel) => panel.materialId),
-  ];
-  return ids.map((id) => checkedMaterial(id, "This wall")).filter((material) => material.record);
+function wallMaterials(room: SurfaceCheckRoom): CheckedMaterial[] {
+  return room.wallMaterialIds.map((id) => checkedMaterial(id, "This wall")).filter((material) => material.record);
 }
 
 function issue(
-  room: HousePlanRoom2D,
+  room: SurfaceCheckRoom,
   rule: string,
   text: Pick<FloorPlanQualityIssue, "title" | "detail" | "suggestedFix">
 ): FloorPlanQualityIssue {
@@ -73,7 +87,7 @@ function sheetOf(material: CheckedMaterial) {
   return `ABK's ${material.record?.suitability?.datasheet} sheet`;
 }
 
-function bathroomFloorIssues(room: HousePlanRoom2D, floor: CheckedMaterial): FloorPlanQualityIssue[] {
+function bathroomFloorIssues(room: SurfaceCheckRoom, floor: CheckedMaterial): FloorPlanQualityIssue[] {
   const facts = floor.record?.suitability;
   if (!facts?.datasheet) return [];
   const slip = getSlipClassNumber(facts.slip_rating);
@@ -103,7 +117,7 @@ function bathroomFloorIssues(room: HousePlanRoom2D, floor: CheckedMaterial): Flo
   return issues;
 }
 
-function wallTileFloorIssues(room: HousePlanRoom2D, floor: CheckedMaterial): FloorPlanQualityIssue[] {
+function wallTileFloorIssues(room: SurfaceCheckRoom, floor: CheckedMaterial): FloorPlanQualityIssue[] {
   if (!floor.record?.suitability?.wall_tile_body) return [];
   return [issue(room, "wall-tile-floor", {
     title: `${room.name}: a wall tile on the floor`,
@@ -112,45 +126,52 @@ function wallTileFloorIssues(room: HousePlanRoom2D, floor: CheckedMaterial): Flo
   })];
 }
 
-function balconyIssues(room: HousePlanRoom2D, floor: CheckedMaterial): FloorPlanQualityIssue[] {
-  const issues: FloorPlanQualityIssue[] = [];
+function balconyFloorIssues(room: SurfaceCheckRoom, floor: CheckedMaterial): FloorPlanQualityIssue[] {
   const facts = floor.record?.suitability;
-  if (!facts?.outdoor_floor) {
-    const slip = facts?.slip_rating ? ` (it is ${facts.slip_rating})` : "";
-    issues.push(issue(room, "outdoor-floor", {
-      title: `${room.name}: not an outdoor floor`,
-      detail: facts?.datasheet
-        ? `${floor.name} isn't in ABK's outdoor range${slip}. ${SOURCES.outdoor}`
-        : `${floor.name} isn't one of ABK's outdoor tiles. ${SOURCES.outdoor}`,
-      suggestedFix: "Pick an outdoor tile: search \"balcony\" in the floor picker.",
-    }));
-  }
-  const wall = wallMaterials(room).find((material) => material.record?.suitability?.wall_tile_body);
-  if (wall) {
-    issues.push(issue(room, "outdoor-wall", {
-      title: `${room.name}: an indoor wall tile outside`,
-      detail: `${sheetOf(wall)} makes ${wall.name} a white-body wall tile: over 10% water absorption, not for outdoor walls.`,
-      suggestedFix: "Pick a porcelain wall tile for the balcony.",
-    }));
-  }
-  return issues;
+  if (facts?.outdoor_floor) return [];
+  const slip = facts?.slip_rating ? ` (it is ${facts.slip_rating})` : "";
+  return [issue(room, "outdoor-floor", {
+    title: `${room.name}: not an outdoor floor`,
+    detail: facts?.datasheet
+      ? `${floor.name} isn't in ABK's outdoor range${slip}. ${SOURCES.outdoor}`
+      : `${floor.name} isn't one of ABK's outdoor tiles. ${SOURCES.outdoor}`,
+    suggestedFix: "Pick an outdoor tile: search \"balcony\" in the floor picker.",
+  })];
 }
 
-export function buildSurfaceSuitabilityIssues(rooms: readonly HousePlanRoom2D[]): FloorPlanQualityIssue[] {
-  return rooms.flatMap((room) => {
-    const floor = floorMaterial(room);
-    return [
-      ...(room.roomType === "toilet" ? bathroomFloorIssues(room, floor) : []),
-      ...wallTileFloorIssues(room, floor),
-      ...(room.roomType === "balcony" ? balconyIssues(room, floor) : []),
-    ];
-  });
+function balconyWallIssues(room: SurfaceCheckRoom): FloorPlanQualityIssue[] {
+  const wall = wallMaterials(room).find((material) => material.record?.suitability?.wall_tile_body);
+  if (!wall) return [];
+  return [issue(room, "outdoor-wall", {
+    title: `${room.name}: an indoor wall tile outside`,
+    detail: `${sheetOf(wall)} makes ${wall.name} a white-body wall tile: over 10% water absorption, not for outdoor walls.`,
+    suggestedFix: "Pick a porcelain wall tile for the balcony.",
+  })];
+}
+
+/** Checks 1 to 4: what a room's floor gets flagged for. AI notes' floor swaps must clear all of them (18 Oct 2026). */
+export function buildFloorSurfaceIssues(room: SurfaceCheckRoom): FloorPlanQualityIssue[] {
+  const floor = checkedMaterial(room.floorMaterialId, "This floor");
+  return [
+    ...(room.roomType === "toilet" ? bathroomFloorIssues(room, floor) : []),
+    ...wallTileFloorIssues(room, floor),
+    ...(room.roomType === "balcony" ? balconyFloorIssues(room, floor) : []),
+  ];
+}
+
+/** All five checks for one room: its floor's, then its balcony walls'. */
+export function buildRoomSurfaceSuitabilityIssues(room: SurfaceCheckRoom): FloorPlanQualityIssue[] {
+  return [...buildFloorSurfaceIssues(room), ...(room.roomType === "balcony" ? balconyWallIssues(room) : [])];
+}
+
+export function buildSurfaceSuitabilityIssues(rooms: readonly RoomWithSurfaces[]): FloorPlanQualityIssue[] {
+  return rooms.flatMap((room) => buildRoomSurfaceSuitabilityIssues(toSurfaceCheckRoom(room)));
 }
 
 /** The report with the surface checks added after its own issues. They are tips, so the score and label stay as they are. */
 export function withSurfaceSuitabilityIssues(
   report: FloorPlanQualityReport,
-  rooms: readonly HousePlanRoom2D[]
+  rooms: readonly RoomWithSurfaces[]
 ): FloorPlanQualityReport {
   const issues = buildSurfaceSuitabilityIssues(rooms);
   return issues.length === 0 ? report : { ...report, issues: [...report.issues, ...issues] };

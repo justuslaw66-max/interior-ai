@@ -92,13 +92,13 @@ assert.ok(aiFooter && aiFooter.type === AiNotesSection, "Pro has AI notes in Sug
 assert.equal(aiStepFooter("ai", aiTools(false)), null, "AI notes are Pro's.");
 assert.equal(aiStepFooter("furnish", aiTools(true)), null, "Only in Suggest a layout.");
 assert.ok(stepPanelFooters("ai", aiTools(true)).stepFooter, "The AI notes take the step's foot.");
-const aiSection = (loading: boolean, hasItems: boolean) =>
-  renderToStaticMarkup(createElement(AiNotesSection, { loading, hasItems, onGenerate: noop }));
+const aiSection = (loading: boolean, canGenerate: boolean) =>
+  renderToStaticMarkup(createElement(AiNotesSection, { loading, canGenerate, onGenerate: noop }));
 assert.match(aiSection(false, true), /data-testid="ai-notes-section"[\s\S]*<h3 id="ai-notes-heading"[^>]*>AI notes<\/h3>/);
 assert.match(aiSection(false, true), /<button[^>]*data-testid="ai-notes-generate"[^>]*>Get AI notes<\/button>/);
-assert.doesNotMatch(aiSection(false, true), /disabled=""|Add products to the room first/);
+assert.doesNotMatch(aiSection(false, true), /disabled=""|Add products or a floor or wall finish to the room first/);
 assert.match(aiSection(false, false), /data-testid="ai-notes-generate" disabled=""/);
-assert.match(aiSection(false, false), /Add products to the room first\./);
+assert.match(aiSection(false, false), /Add products or a floor or wall finish to the room first\./);
 assert.match(aiSection(true, true), /data-testid="ai-notes-generate" disabled=""[^>]*>Generating…<\/button>/);
 assert.match(
   read("lib/useDesignPagePresentExportController.ts"),

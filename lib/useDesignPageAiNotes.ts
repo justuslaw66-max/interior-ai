@@ -3,10 +3,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { applyAISuggestionAction, type AISuggestionAction } from "@/lib/ai/applySuggestion";
+import { createAiSuggestionEditor, type AiNotesEditorActions } from "@/lib/ai/design-notes-editor";
+import { buildDesignNotesRequest } from "@/lib/ai/design-notes-request";
+import { buildDesignNotesRoom, hasDesignNotesFinish } from "@/lib/ai/design-notes-room";
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { AINotesResponse } from "@/lib/design-page-types";
-import { getItemPrice } from "@/lib/design-page-utils";
+import type { RoomWithSurfaces } from "@/lib/floor-plan-surface-checks";
 import type { DesignItem } from "@/lib/room-types";
 import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 
@@ -16,18 +19,10 @@ type UseDesignPageAiNotesOptions = {
     designId: string | null;
     designerMode: boolean;
     authenticated: boolean;
+    /** The active room: AI notes covers its products and its floor and walls (18 Oct 2026). */
+    room: RoomWithSurfaces | null;
   };
-  actions: {
-    getItems: () => DesignItem[];
-    resizeRugToSofa: (
-      sofa: DesignItem,
-      rug?: DesignItem
-    ) => { items?: Array<{ productId: string }> } | void;
-    makeRoomCheaper: () => void;
-    addItem: (productId: string, position: [number, number, number]) => void;
-    commitItems: (items: DesignItem[], actionName: string) => void;
-    showToast: (message: string) => void;
-  };
+  actions: AiNotesEditorActions;
 };
 
 export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOptions) {
@@ -36,7 +31,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
   const [data, setData] = useState<AINotesResponse | null>(null);
   const requestRef = useRef<AbortController | null>(null);
   const requestEpochRef = useRef(0);
-  const { items, designId, designerMode, authenticated } = state;
+  const { items, designId, designerMode, authenticated, room } = state;
   const {
     getItems,
     resizeRugToSofa,
@@ -44,13 +39,15 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
     addItem,
     commitItems,
     showToast,
+    applyFloorMaterialToRoom,
   } = actions;
 
   const generate = useCallback(async () => {
     requestRef.current?.abort();
     const requestEpoch = ++requestEpochRef.current;
-    if (!items.length) {
-      showToast("Add some items to your design first");
+    const notesRoom = buildDesignNotesRoom(room);
+    if (!items.length && !hasDesignNotesFinish(notesRoom)) {
+      showToast("Add products or a floor or wall finish to the room first");
       return;
     }
 
@@ -70,30 +67,7 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
       const response = await fetch("/api/ai/design-notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          design: {
-            id: designId,
-            items: items.map((item) => ({
-              productId: item.productId,
-              quantity: item.qty || 1,
-              price: getItemPrice(CATALOG_ITEMS[item.productId]) || 0,
-            })),
-            categories: Array.from(new Set(
-              items
-                .map((item) => CATALOG_ITEMS[item.productId]?.category)
-                .filter(
-                  (category): category is Exclude<typeof category, undefined> =>
-                    Boolean(category)
-                )
-            )),
-            budget: String(items.reduce(
-              (sum, item) =>
-                sum + (getItemPrice(CATALOG_ITEMS[item.productId]) || 0) * (item.qty || 1),
-              0
-            )),
-          },
-          mode: designerMode ? "designer" : "homeowner",
-        }),
+        body: JSON.stringify(buildDesignNotesRequest({ designId, items, room: notesRoom, catalog: CATALOG_ITEMS, designerMode })),
         signal: controller.signal,
       });
       window.clearTimeout(timeoutId);
@@ -133,50 +107,24 @@ export function useDesignPageAiNotes({ state, actions }: UseDesignPageAiNotesOpt
         setLoading(false);
       }
     }
-  }, [authenticated, designId, designerMode, items, showToast]);
+  }, [authenticated, designId, designerMode, items, room, showToast]);
 
   useEffect(() => () => requestRef.current?.abort(), []);
 
   const applySuggestion = useCallback(
     async (suggestion: AISuggestionAction) => {
       try {
-        await applyAISuggestionAction({
-          action: suggestion,
-          editor: {
-            getItemById: (id) =>
-              getItems().find((item) => item.instanceId === id) ?? null,
-            findFirstByCategory: (category) =>
-              getItems().find(
-                (item) => CATALOG_ITEMS[item.productId]?.category === category
-              ) ?? null,
-            resizeRugToSofaRule: resizeRugToSofa,
-            makeRoomCheaper,
-            addLampNearReadingCorner: async () => {
-              const lamp = Object.values(CATALOG_ITEMS).find(
-                (item) => item.category === "floor_lamp"
-              );
-              if (!lamp) {
-                showToast("No floor lamp is available in the catalogue yet");
-                return;
-              }
-              addItem(lamp.id, getItems().length > 0 ? [2, 0, 2] : [1.5, 0, 1.5]);
-            },
-            commitDesignSnapshot: (snapshot) => {
-              if (!snapshot.items) return;
-              commitItems(
-                snapshot.items as DesignItem[],
-                "Apply AI suggestion"
-              );
-            },
-            getDesignSnapshot: () => ({ items: getItems() }),
-          },
-        });
+        const editor = createAiSuggestionEditor(
+          { getItems, resizeRugToSofa, makeRoomCheaper, addItem, commitItems, showToast, applyFloorMaterialToRoom },
+          room
+        );
+        await applyAISuggestionAction({ action: suggestion, editor });
         track("ai_suggestion_applied", { action_type: suggestion.type });
       } catch (error) {
         showToast(userFacingErrorMessage(error, "Could not apply suggestion"));
       }
     },
-    [addItem, commitItems, getItems, makeRoomCheaper, resizeRugToSofa, showToast]
+    [addItem, applyFloorMaterialToRoom, commitItems, getItems, makeRoomCheaper, resizeRugToSofa, room, showToast]
   );
 
   return {
