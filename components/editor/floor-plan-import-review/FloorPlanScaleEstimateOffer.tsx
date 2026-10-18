@@ -1,6 +1,7 @@
 "use client";
 
 import type { FloorPlanAnnotationV2, FloorPlanSourceCalibrationV2 } from "@/lib/floor-plan-document-v2";
+import { SCALE_BAR_MEASUREMENT_ID } from "@/lib/floor-plan-imports/scale-bar-scale";
 
 /** Badge and copy for the scale step's header, by what the review has so far; `open` is whether the step starts
  *  expanded and `offerOpenings` whether the measured door openings are still offered (no scale yet, or an assumed one). */
@@ -12,7 +13,8 @@ export function scaleReviewStatus(
   const flags = { assumed, open: hasConflict || !calibration || assumed, offerOpenings: !calibration || assumed };
   if (hasConflict) return { label: "Scale conflict", className: "bg-red-100 text-red-800", ...flags };
   if (assumed) return { label: "Set from an assumed width", className: "bg-amber-100 text-amber-900", ...flags };
-  if (calibration) return { label: "Set", className: "bg-emerald-100 text-emerald-800", ...flags };
+  const fromBar = calibration?.primaryMeasurement?.id === SCALE_BAR_MEASUREMENT_ID;
+  if (calibration) return { label: fromBar ? "Set from the scale bar" : "Set", className: "bg-emerald-100 text-emerald-800", ...flags };
   return { label: "Start here", className: "bg-blue-100 text-blue-800", ...flags };
 }
 

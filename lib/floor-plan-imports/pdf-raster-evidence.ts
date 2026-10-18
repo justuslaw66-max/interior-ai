@@ -12,8 +12,9 @@ export type PageScaleSolution = {
   evidence?: SourceScaleSolution["evidence"];
   diagnostics?: SourceScaleSolution["diagnostics"];
   /** "assumed_opening_width": no printed dimension could be confirmed and the scale is the vectorizer's estimate from
-   *  door swings taken as standard leaves. Geometry built on it is approximate and the scale review stays critical. */
-  basis?: "printed" | "assumed_opening_width";
+   *  door swings taken as standard leaves. Geometry built on it is approximate and the scale review stays critical.
+   *  "scale_bar": no printed dimension solved, and the scale is read from a printed scale bar's numbered ticks. */
+  basis?: "printed" | "assumed_opening_width" | "scale_bar";
 };
 
 export type ExtractionEnvelope = {
