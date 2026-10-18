@@ -9,6 +9,7 @@ import type {
 } from "@/lib/floor-plan-document-v2";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import type { FloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
+import { Button } from "@/components/ui/Button";
 import FloorPlanOpeningAddFields from "./FloorPlanOpeningAddFields";
 import { FloorPlanOpeningEvidenceLockNotice } from "./FloorPlanOpeningEvidenceLockNotice";
 import { FloorPlanOpeningKindCorrectionNotice } from "./FloorPlanOpeningKindCorrectionNotice";
@@ -192,9 +193,8 @@ export default function FloorPlanOpeningCorrectionFields({
                 {HANDINGS.map((value) => <option key={value} value={value}>{value}</option>)}
               </select>
             </label>
-            <button
-              type="button"
-              className={`${controlClassName} col-span-2`}
+            <Button
+              size="compact" className="col-span-2"
               disabled={
                 disabled ||
                 !Number.isSafeInteger(openingOffset) ||
@@ -207,15 +207,14 @@ export default function FloorPlanOpeningCorrectionFields({
               onClick={correction.updateOpening}
             >
               Update opening safely
-            </button>
+            </Button>
             <FloorPlanOpeningKindCorrectionNotice
               plan={kindCorrection} subtleClassName={subtleClassName}
               proMode={proMode} approved={kindOverrideApproved}
               onApprove={() => correction.setKindOverrideApproved(true)}
             />
-            <button
-              type="button"
-              className={`${controlClassName} col-span-2 text-red-700`}
+            <Button
+              variant="danger" size="compact" className="col-span-2"
               disabled={disabled}
               onClick={() => {
                 if (
@@ -231,7 +230,7 @@ export default function FloorPlanOpeningCorrectionFields({
               }}
             >
               Remove this opening
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>

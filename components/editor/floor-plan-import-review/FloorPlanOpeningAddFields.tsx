@@ -10,6 +10,7 @@ import type {
 } from "@/lib/floor-plan-document-v2";
 import { nextFloorPlanReviewEntityId } from "@/lib/floor-plan-review-structure-rectangle";
 import type { FloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
+import { Button } from "@/components/ui/Button";
 
 type Props = {
   document: FloorPlanDocumentV2;
@@ -132,9 +133,8 @@ export default function FloorPlanOpeningAddFields({
           {HANDINGS.map((value) => <option key={value} value={value}>{value}</option>)}
         </select>
       </label>
-      <button
-        type="button"
-        className={`${controlClassName} col-span-2`}
+      <Button
+        size="compact" className="col-span-2"
         disabled={
           disabled || !wallId || !Number.isSafeInteger(offsetMm) ||
           !Number.isSafeInteger(widthMm) || widthMm <= 0 || !optionalValuesValid
@@ -157,7 +157,7 @@ export default function FloorPlanOpeningAddFields({
         }}
       >
         Add opening safely
-      </button>
+      </Button>
     </div>
   );
 }

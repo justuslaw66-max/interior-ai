@@ -6,6 +6,7 @@ import type {
   FloorPlanWallClassificationV2,
 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
+import { Button } from "@/components/ui/Button";
 
 type Props = {
   floor: FloorPlanFloorV2;
@@ -97,9 +98,8 @@ export default function FloorPlanWallCorrectionFields({
               ))}
             </select>
           </label>
-          <button
-            type="button"
-            className={`${controlClassName} col-span-2`}
+          <Button
+            size="compact" className="col-span-2"
             disabled={disabled || !Number.isSafeInteger(thicknessMm)}
             onClick={() =>
               onMutate({
@@ -111,7 +111,7 @@ export default function FloorPlanWallCorrectionFields({
             }
           >
             Update wall safely
-          </button>
+          </Button>
         </div>
       ) : null}
     </div>

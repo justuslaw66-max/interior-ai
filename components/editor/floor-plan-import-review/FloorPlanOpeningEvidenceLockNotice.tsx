@@ -3,6 +3,7 @@ import {
   floorPlanPropertyEvidenceIsEditable,
   floorPlanPropertyEvidenceLabel,
 } from "@/lib/floor-plan-measured-property-mutations";
+import { Button } from "@/components/ui/Button";
 
 export function FloorPlanOpeningEvidenceLockNotice({
   evidence,
@@ -26,15 +27,16 @@ export function FloorPlanOpeningEvidenceLockNotice({
       {floorPlanPropertyEvidenceLabel(evidence)} measurement is locked; other
       opening fields remain editable.
       {proMode ? (
-        <button
-          type="button"
-          className="mt-1 block rounded border border-amber-500 px-1.5 py-0.5 font-semibold"
-          data-testid={`import-review-opening-${field}-approve-override`}
-          disabled={approved}
-          onClick={onApprove}
-        >
-          {approved ? "Reviewed override approved" : "Review and unlock"}
-        </button>
+        <div className="mt-1">
+          <Button
+            size="compact"
+            data-testid={`import-review-opening-${field}-approve-override`}
+            disabled={approved}
+            onClick={onApprove}
+          >
+            {approved ? "Reviewed override approved" : "Review and unlock"}
+          </Button>
+        </div>
       ) : (
         <div>Open Pro tools to review an override.</div>
       )}

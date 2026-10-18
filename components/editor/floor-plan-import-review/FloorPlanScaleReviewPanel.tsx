@@ -5,6 +5,8 @@ import type {
   FloorPlanSourceCalibrationV2,
 } from "@/lib/floor-plan-document-v2";
 import type { ReviewSourcePoint } from "@/lib/floor-plan-import-review-geometry";
+import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import FloorPlanMeasurementInput from "./FloorPlanMeasurementInput";
 import FloorPlanIndependentScaleReview from "./FloorPlanIndependentScaleReview";
@@ -12,6 +14,7 @@ import { useFloorPlanScaleReview } from "./useFloorPlanScaleReview";
 import { FloorPlanScaleAssumedNotice, FloorPlanScaleEstimateOffer, scaleReviewStatus } from "./FloorPlanScaleEstimateOffer";
 
 type RenderedPage = ConsumerFloorPlanImportJob["renderedPagesJson"][number];
+const SCALE_MODES = [{ value: "set", label: "Set scale" }, { value: "check", label: "Cross-check scale" }] as const;
 
 export type FloorPlanScaleReviewPanelProps = {
   document: FloorPlanDocumentV2;
@@ -49,12 +52,10 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
         <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${status.className}`}>{status.label}</span>
       </summary>
       {status.assumed ? <FloorPlanScaleAssumedNotice /> : null}
-      {calibration && <div className="mt-2 flex gap-2">
-        {(["set", "check"] as const).map((value) => <button key={value} type="button" className={control}
-          aria-pressed={mode === value} disabled={disabled} onClick={() => {
-            setMode(value); onScalePointsChange([]); onPickingScaleChange(false);
-          }}>{value === "set" ? "Set scale" : "Cross-check scale"}</button>)}
-      </div>}
+      {calibration && <SegmentedControl label="Set or cross-check the scale" size="compact" className="mt-2" value={mode}
+        options={SCALE_MODES} disabled={disabled} onChange={(value) => {
+          setMode(value); onScalePointsChange([]); onPickingScaleChange(false);
+        }} />}
       {mode === "check" && calibration ? <FloorPlanIndependentScaleReview
         document={document} floorId={floorId} calibration={calibration} scalePoints={scalePoints}
         onScalePointsChange={onScalePointsChange} onPickingScaleChange={onPickingScaleChange}
@@ -67,9 +68,8 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
           <FloorPlanScaleEstimateOffer marks={estimateMarks} assumedMm={assumedMm} control={control}
             disabled={disabled || !page} onPick={applyEstimateMark} />
         ) : null}
-        <button
-          type="button"
-          className={control}
+        <Button
+          size="compact" pressed={pickingScale}
           disabled={disabled || !page}
           onClick={() => {
             onPickingScaleChange(!pickingScale);
@@ -81,7 +81,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
             : scalePoints.length === 2
               ? "Choose different points"
               : "Choose the two endpoints on the plan"}
-        </button>
+        </Button>
         <FloorPlanMeasurementInput input={input} control={control} disabled={disabled} />
         {!calibration && floor && canMapExistingVertices ? (
           <div className="grid grid-cols-2 gap-2">
@@ -139,9 +139,8 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
             measurement first, then outline the rooms in Step 2.
           </div>
         ) : null}
-        <button
-          type="button"
-          className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+        <Button
+          variant="primary" size="compact"
           disabled={!canApply}
           onClick={apply}
         >
@@ -150,7 +149,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
             : canMapExistingVertices
               ? "Apply measurement"
               : "Use this measurement"}
-        </button>
+        </Button>
       </div>}
     </details>
   );

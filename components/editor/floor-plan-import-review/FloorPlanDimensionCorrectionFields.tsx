@@ -8,6 +8,7 @@ import type {
 } from "@/lib/floor-plan-document-v2";
 import { nextFloorPlanReviewEntityId } from "@/lib/floor-plan-review-structure-rectangle";
 import type { FloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
+import { Button } from "@/components/ui/Button";
 
 type Props = {
   document: FloorPlanDocumentV2;
@@ -189,26 +190,23 @@ export default function FloorPlanDimensionCorrectionFields({
             onChange={(event) => setMeasuredMm(Number(event.target.value))}
           />
         </label>
-        <button
-          type="button"
-          className={`${controlClassName} col-span-2`}
+        <Button
+          size="compact" className="col-span-2"
           disabled={disabled || exact === null || exact <= 0}
           onClick={() => exact !== null && setMeasuredMm(exact)}
         >
           Use current geometry{exact !== null ? ` (${exact} mm)` : ""}
-        </button>
-        <button
-          type="button"
-          className={`${controlClassName} col-span-2`}
+        </Button>
+        <Button
+          size="compact" className="col-span-2"
           disabled={disabled || !valid}
           onClick={save}
         >
           {dimensionId ? "Update dimension safely" : "Add dimension safely"}
-        </button>
+        </Button>
         {dimensionId ? (
-          <button
-            type="button"
-            className={`${controlClassName} col-span-2 text-red-700`}
+          <Button
+            variant="danger" size="compact" className="col-span-2"
             disabled={disabled}
             onClick={() => {
               if (
@@ -223,7 +221,7 @@ export default function FloorPlanDimensionCorrectionFields({
             }}
           >
             Remove this dimension
-          </button>
+          </Button>
         ) : null}
       </div>
       <p className={`text-xs ${subtleClassName}`}>

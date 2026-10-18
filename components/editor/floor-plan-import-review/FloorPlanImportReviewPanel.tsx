@@ -15,6 +15,7 @@ import {
   floorPlanPropertyEvidenceIsEditable,
   type FloorPlanConsumerMeasurementEvidenceV2,
 } from "@/lib/floor-plan-measured-property-mutations";
+import { Button } from "@/components/ui/Button";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import FloorPlanPropertyEvidenceControl from "../FloorPlanPropertyEvidenceControl";
 import FloorPlanOptionalConfigurationPanel from "../FloorPlanOptionalConfigurationPanel";
@@ -370,9 +371,8 @@ export default function FloorPlanImportReviewPanel({
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {onRetryDetection ? (
-              <button
-                type="button" data-floor-plan-workspace-focus="primary"
-                className="rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white hover:bg-neutral-700"
+              <Button
+                variant="primary" size="compact" data-floor-plan-workspace-focus="primary"
                 disabled={disabled || submitting || retryingDetection}
                 onClick={onRetryDetection}
               >
@@ -381,26 +381,24 @@ export default function FloorPlanImportReviewPanel({
                   : needsRoomRecovery
                     ? "Retry with improved detection"
                     : "Rerun AI detection"}
-              </button>
+              </Button>
             ) : null}
             {onChooseFile ? (
-              <button
-                type="button"
-                className="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold hover:bg-neutral-50"
+              <Button
+                size="compact"
                 disabled={disabled || submitting}
                 onClick={onChooseFile}
               >
                 Choose another file
-              </button>
+              </Button>
             ) : null}
-            <button
-              type="button"
-              className={control}
+            <Button
+              size="compact"
               disabled={disabled || submitting}
               onClick={openManualTools}
             >
               Review scale and wall outlines
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
@@ -515,9 +513,8 @@ export default function FloorPlanImportReviewPanel({
             </label>
           ))}
         </div>
-        <button
-          type="button"
-          className={`${control} mt-2 w-full font-semibold`}
+        <Button
+          size="compact" className="mt-2 w-full"
           disabled={
             disabled ||
             !Object.values(floor.defaults).some(
@@ -527,7 +524,7 @@ export default function FloorPlanImportReviewPanel({
           onClick={confirmDisplayedHeightDefaults}
         >
           Confirm all displayed defaults
-        </button>
+        </Button>
         <p className={`mt-1 text-xs ${subtle}`}>
           This only records that you checked them; it does not mean the heights
           were read from your floor plan or measured on site.
@@ -660,14 +657,14 @@ export default function FloorPlanImportReviewPanel({
             Continue to run the final check. Your current design will
             not be changed.
           </p>
-          <button
-            type="button" data-floor-plan-workspace-focus="primary"
-            className="mt-3 w-full rounded-lg bg-neutral-900 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          <Button
+            variant="primary" size="touch" data-floor-plan-workspace-focus="primary"
+            className="mt-3 w-full"
             disabled={disabled || submitting}
             onClick={confirmDetectedPlan}
           >
             {submitting ? "Checking your floor plan…" : "Yes, continue"}
-          </button>
+          </Button>
         </div>
       ) : null}
     </>
