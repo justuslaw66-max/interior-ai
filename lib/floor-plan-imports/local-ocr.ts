@@ -22,6 +22,9 @@ export type FloorPlanLocalOcrOptions = {
   maxCandidates: number;
   minSourceConfidence: number;
   signal?: AbortSignal;
+  /** Read the image as one line of text, upright only (a scale bar's numbers); the default reads sparse page text in
+   *  three orientations. */
+  singleLine?: boolean;
 };
 
 export type FloorPlanLocalOcrResult = {
@@ -172,7 +175,7 @@ export class TesseractFloorPlanLocalOcrProvider
       worker = await Promise.race([workerPromise, deadline]);
       await Promise.race([
         worker.setParameters({
-          tessedit_pageseg_mode: PSM.SPARSE_TEXT,
+          tessedit_pageseg_mode: options.singleLine ? PSM.SINGLE_LINE : PSM.SPARSE_TEXT,
           preserve_interword_spaces: "1",
         }),
         deadline,
@@ -185,7 +188,7 @@ export class TesseractFloorPlanLocalOcrProvider
             { text: true, blocks: true }, `floor-plan-ocr-page-${page.pageNumber}`);
           return candidatesFromBlocks(recognized.data.blocks as TesseractBlock[] | null,
             oriented, minimumConfidence, maximum);
-        }), deadline,
+        }, options.singleLine ? [] : undefined), deadline,
       ]);
       if (options.signal?.aborted) throw new Error("LOCAL_OCR_ABORTED");
       return {

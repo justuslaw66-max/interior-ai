@@ -189,7 +189,7 @@ export type RegisteredPageEvidence = {
   /** Spans, wall edges and rooms reported by the local vectorizer; evidence, not accepted geometry. */
   vectorizer?: import("./vectorizer-evidence").RegisteredVectorizerEvidence;
   dimensionSpanEvidence?: RasterDimensionSpanEvidence;
-  openingSpanEvidence?: RasterOpeningSpanEvidence;
+  openingSpanEvidence?: RasterOpeningSpanEvidence; scaleBar?: import("./scale-bar-evidence").ScaleBarEvidence;
 };
 export type { SourceScaleSolution } from "./scale-diagnostics";
 
