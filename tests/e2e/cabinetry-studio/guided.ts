@@ -1,14 +1,17 @@
 import { test, expect } from "../fixtures";
 import {
-  dismissBlockingPrompt,
   mockPlan,
   openDetailedProStudio,
   openMillworkStudioFromWorkspaceMenu,
+  startInMillimetres,
 } from "./helpers";
 
 export function registerGuidedTests() {
   test.describe("Custom Millwork Studio guided", () => {
     test.setTimeout(600000);
+    test.beforeEach(async ({ page }) => {
+      await startInMillimetres(page);
+    });
 
     test("Guided preview chrome does not overlap selection or dimension controls", async ({
       page,
@@ -169,10 +172,8 @@ export function registerGuidedTests() {
     test("returning Pro users keep their chosen entry workspace and dismissed help", async ({ page }) => {
       await mockPlan(page, "pro");
       await page.goto("/design?mode=designer");
-      const openStudio = page.getByTestId("open-custom-millwork-studio");
-      await expect(openStudio).toBeVisible({ timeout: 30000 });
-      await dismissBlockingPrompt(page);
-      await openStudio.click();
+      await openMillworkStudioFromWorkspaceMenu(page);
+      const openStudio = page.getByTestId("editor-workflow-millwork");
 
       await expect(page.getByTestId("cabinet-onboarding-hint")).toBeVisible();
       await page.getByTestId("cabinet-onboarding-dismiss").click();
@@ -223,9 +224,7 @@ export function registerGuidedTests() {
     test("guided Fit, locks, and validation recovery stay reversible", async ({ page }) => {
       await mockPlan(page, "pro");
       await page.goto("/design?mode=designer");
-      await expect(page.getByTestId("open-custom-millwork-studio")).toBeVisible({ timeout: 30000 });
-      await dismissBlockingPrompt(page);
-      await page.getByTestId("open-custom-millwork-studio").click();
+      await openMillworkStudioFromWorkspaceMenu(page);
 
       await page.getByTestId("cabinet-guided-step-space").click();
       const firstMeasuredWall = page.locator('[data-testid^="cabinet-space-"]').first();
@@ -304,9 +303,7 @@ export function registerGuidedTests() {
     test("detailed numeric drafts keep the last valid model and preview until committed", async ({ page }) => {
       await mockPlan(page, "pro");
       await page.goto("/design?mode=designer");
-      await expect(page.getByTestId("open-custom-millwork-studio")).toBeVisible({ timeout: 30000 });
-      await dismissBlockingPrompt(page);
-      await page.getByTestId("open-custom-millwork-studio").click();
+      await openMillworkStudioFromWorkspaceMenu(page);
       await page.getByTestId("cabinet-experience-detailed").click();
 
       const width = page.getByTestId("cabinet-dimension-width");
@@ -346,9 +343,7 @@ export function registerGuidedTests() {
     test("Guided wardrobe arrangements and illustrated choices expose semantic state", async ({ page }) => {
       await mockPlan(page, "pro");
       await page.goto("/design?mode=designer");
-      await expect(page.getByTestId("open-custom-millwork-studio")).toBeVisible({ timeout: 30000 });
-      await dismissBlockingPrompt(page);
-      await page.getByTestId("open-custom-millwork-studio").click();
+      await openMillworkStudioFromWorkspaceMenu(page);
 
       await page.getByTestId("cabinet-guided-step-style").click();
       for (const doorStyle of ["flat_slab", "shaker", "glass", "fluted"] as const) {
@@ -418,9 +413,7 @@ export function registerGuidedTests() {
     test("preview controls remain keyboard-operable across responsive layouts", async ({ page }) => {
       await mockPlan(page, "pro");
       await page.goto("/design?mode=designer");
-      await expect(page.getByTestId("open-custom-millwork-studio")).toBeVisible({ timeout: 30000 });
-      await dismissBlockingPrompt(page);
-      await page.getByTestId("open-custom-millwork-studio").click();
+      await openMillworkStudioFromWorkspaceMenu(page);
       await expect(page.getByTestId("custom-millwork-studio")).toBeVisible({ timeout: 15000 });
 
       const clearanceToggle = page.locator(
@@ -491,10 +484,7 @@ export function registerGuidedTests() {
       });
       await page.goto("/design");
 
-      const openStudio = page.getByTestId("open-custom-millwork-studio");
-      await expect(openStudio).toBeVisible({ timeout: 30000 });
-      await dismissBlockingPrompt(page);
-      await openStudio.click();
+      await openMillworkStudioFromWorkspaceMenu(page);
 
       const studio = page.getByTestId("custom-millwork-studio");
       await expect(studio).toBeVisible({ timeout: 15000 });
