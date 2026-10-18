@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { applyConsumerTopologyCorrection } from "@/lib/floor-plan-import-review-geometry";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
+import { Button } from "@/components/ui/Button";
 import FloorPlanDimensionCorrectionFields from "./FloorPlanDimensionCorrectionFields";
 import FloorPlanOpeningCorrectionFields from "./FloorPlanOpeningCorrectionFields";
 import FloorPlanStructureCorrectionFields from "./FloorPlanStructureCorrectionFields";
@@ -116,9 +117,8 @@ export default function FloorPlanTopologyCorrectionPanel({
                   onChange={(event) => setVertexZ(Number(event.target.value))}
                 />
               </label>
-              <button
-                type="button"
-                className={`${control} col-span-2`}
+              <Button
+                size="compact" className="col-span-2"
                 disabled={
                   disabled ||
                   !Number.isSafeInteger(vertexX) ||
@@ -134,7 +134,7 @@ export default function FloorPlanTopologyCorrectionPanel({
                 }
               >
                 Move wall vertex safely
-              </button>
+              </Button>
             </div>
           ) : null}
         </div>

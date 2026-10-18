@@ -4,6 +4,7 @@ import { useState } from "react";
 import { changeReviewMeasurement } from "@/lib/floor-plan-review-measurements";
 import { evaluateSourceMeasurement } from "@/lib/floor-plan-scale-measurements";
 import type { FloorPlanSourceMeasurementV2 } from "@/lib/floor-plan-document-v2";
+import { Button } from "@/components/ui/Button";
 import type { FloorPlanScaleReviewPanelProps } from "./FloorPlanScaleReviewPanel";
 import FloorPlanMeasurementInput, { useReviewMeasurementInput } from "./FloorPlanMeasurementInput";
 import { scaleReviewFailureMessage } from "./applyScaleReviewMeasurement";
@@ -21,10 +22,12 @@ function SavedChecks({ props, change, edit }: { props: Props; change: (value: { 
         <p>{!result.independent ? "Choose a different dimension from the scale-setting span."
           : Number.isFinite(result.residualPx) ? `Current difference ${result.residualMm.toFixed(1)} mm; ${Math.abs(result.residualPx).toFixed(2)} source pixels (limit ${result.tolerancePx}).`
             : "The registration cannot measure this span. Re-register the source page."}</p>
-        <button type="button" className={props.control} disabled={props.disabled}
-          onClick={() => edit(measurement)}>Edit check {index + 1}</button>
-        <button type="button" className={props.control} disabled={props.disabled}
-          onClick={() => change({ removeId: measurement.id })}>Remove check {index + 1}</button>
+        <div className="mt-1 flex flex-wrap gap-2">
+          <Button size="compact" disabled={props.disabled}
+            onClick={() => edit(measurement)}>Edit check {index + 1}</Button>
+          <Button size="compact" disabled={props.disabled}
+            onClick={() => change({ removeId: measurement.id })}>Remove check {index + 1}</Button>
+        </div>
       </li>;
     })}
   </ul>;
@@ -45,14 +48,14 @@ export default function FloorPlanIndependentScaleReview(props: Props) {
   };
   return <section className="mt-3 grid gap-2" aria-label="Independent scale check">
     <p className="text-xs">Choose a different printed dimension, preferably in the other direction. A disagreement needs correction before creating a design. This check does not resize the plan.</p>
-    <button type="button" className={props.control} disabled={props.disabled} onClick={() => {
+    <Button size="compact" disabled={props.disabled} onClick={() => {
       props.onScalePointsChange([]); props.onPickingScaleChange(true);
-    }}>Choose check endpoints</button>
+    }}>Choose check endpoints</Button>
     <FloorPlanMeasurementInput input={input} control={props.control} disabled={props.disabled} />
-    <button type="button" className={props.control} disabled={props.disabled || props.scalePoints.length !== 2 || !Number.isFinite(input.confirmedMm)}
+    <Button size="compact" disabled={props.disabled || props.scalePoints.length !== 2 || !Number.isFinite(input.confirmedMm)}
       onClick={() => change({ id: editingId ?? `check-${crypto.randomUUID()}`, firstPx: props.scalePoints[0], secondPx: props.scalePoints[1],
         confirmedLengthMm: input.confirmedMm, inputUnit: input.unit, sourceQuality: input.sourceQuality, confirmedAt: new Date().toISOString() })}>
-      {editingId ? "Save check correction" : "Save independent check"}</button>
+      {editingId ? "Save check correction" : "Save independent check"}</Button>
     {!props.calibration?.independentMeasurements?.length && <p className="text-xs">No independent check recorded. If another dimension is available, check it before continuing. A single measurement cannot establish accuracy across the whole plan.</p>}
     <SavedChecks props={props} change={change} edit={(measurement) => {
       setEditingId(measurement.id); input.load(measurement);

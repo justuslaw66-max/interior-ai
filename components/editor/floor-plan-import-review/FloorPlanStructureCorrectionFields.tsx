@@ -12,6 +12,7 @@ import {
   nextFloorPlanReviewEntityId,
 } from "@/lib/floor-plan-review-structure-rectangle";
 import type { FloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
+import { Button } from "@/components/ui/Button";
 
 type Props = {
   document: FloorPlanDocumentV2;
@@ -220,18 +221,16 @@ export default function FloorPlanStructureCorrectionFields({
           />
           Lock this structural element against casual editor moves
         </label>
-        <button
-          type="button"
-          className={`${controlClassName} col-span-2`}
+        <Button
+          size="compact" className="col-span-2"
           disabled={disabled || !boundsAreValid}
           onClick={save}
         >
           {structureId ? "Update structure safely" : "Add structure safely"}
-        </button>
+        </Button>
         {structureId ? (
-          <button
-            type="button"
-            className={`${controlClassName} col-span-2 text-red-700`}
+          <Button
+            variant="danger" size="compact" className="col-span-2"
             disabled={disabled}
             onClick={() => {
               if (
@@ -246,7 +245,7 @@ export default function FloorPlanStructureCorrectionFields({
             }}
           >
             Remove this structure
-          </button>
+          </Button>
         ) : null}
       </div>
       <p className={`text-xs ${subtleClassName}`}>

@@ -197,7 +197,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
-      "lines": 675,
+      "lines": 672,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
@@ -205,7 +205,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanStructureCorrectionFields.tsx": {
-      "lines": 258,
+      "lines": 257,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
@@ -1121,11 +1121,11 @@
     "app/api/ai/design-notes/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 232
+        "maximum": 191
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 29
+        "maximum": 27
       }
     },
     "app/api/ai/layout/route.ts": {
@@ -1827,13 +1827,13 @@
     "components/editor/floor-plan-import-review/FloorPlanDimensionCorrectionFields.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 194
+        "maximum": 191
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 564
+        "maximum": 560
       },
       "complexFunctions": {
         "count": 2,
@@ -1843,19 +1843,19 @@
     "components/editor/floor-plan-import-review/FloorPlanOpeningAddFields.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 123
+        "maximum": 122
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanOpeningCorrectionFields.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 199
+        "maximum": 197
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanOpeningTracePanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 168
+        "maximum": 164
       },
       "complexFunctions": {
         "count": 1,
@@ -1865,7 +1865,7 @@
     "components/editor/floor-plan-import-review/FloorPlanRoomTracePanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 170
+        "maximum": 166
       },
       "complexFunctions": {
         "count": 1,
@@ -1875,7 +1875,7 @@
     "components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 126
+        "maximum": 122
       },
       "complexFunctions": {
         "count": 1,
@@ -1895,13 +1895,13 @@
     "components/editor/floor-plan-import-review/FloorPlanStructureCorrectionFields.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 211
+        "maximum": 209
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanTopologyCorrectionPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 166
+        "maximum": 165
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
@@ -1917,7 +1917,7 @@
     "components/editor/floor-plan-import-review/FloorPlanWallCorrectionFields.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 93
+        "maximum": 92
       }
     },
     "components/editor/FloorPlanAddressFields.tsx": {
@@ -2669,13 +2669,9 @@
       }
     },
     "lib/ai/design-notes-contract.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 69
-      },
       "complexFunctions": {
         "count": 2,
-        "maximum": 34
+        "maximum": 19
       }
     },
     "lib/ai/layout-planner.ts": {
@@ -3937,7 +3933,7 @@
     "lib/useDesignPageAiNotes.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 158
+        "maximum": 111
       }
     },
     "lib/useDesignPageAiWorkspaceRegistration.ts": {

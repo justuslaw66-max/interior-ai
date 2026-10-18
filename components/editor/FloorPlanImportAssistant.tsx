@@ -623,7 +623,7 @@ export default function FloorPlanImportAssistant({
         </p>
       ) : null}
       <FloorPlanReviewDraftSave disabled={disabled} submitting={submitting} deletingSource={deletingSource}
-        savedVersion={savedDraftVersion} control={control} subtle={subtle} onSave={() => void submitReview(issues, true)} />
+        savedVersion={savedDraftVersion} subtle={subtle} onSave={() => void submitReview(issues, true)} />
       <SourceTraceAction.Provider value={{candidateVersion:activeJob.candidateVersion,saved:parseFloorPlanImportDocument(activeJob.candidateJson),onAccept:request=>void retryDetection(undefined,request)}}>
       <PhotoReviewAction.Provider value={(request)=>void retryDetection(request)}><FloorPlanImportReviewPanel
         candidate={candidate}

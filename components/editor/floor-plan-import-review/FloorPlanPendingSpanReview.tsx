@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { saveSourceReviewSpan,INTERIOR_ITEM_REVIEW_CONFIGURATION,type SourceSpanKind } from "@/lib/floor-plan-source-span-review";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
+import { Button } from "@/components/ui/Button";
 
 type Props={document:FloorPlanDocumentV2;floorId:string;sourceId:string;
   page:{pageNumber:number;widthPx:number;heightPx:number}|null;points:Array<{x:number;y:number}>;
@@ -35,10 +36,10 @@ export default function FloorPlanPendingSpanReview(props:Props) {
         const value=e.target.value;if(value==="boundary"||value==="door"||value==="window"||value==="interior_item"||value==="unknown")setKind(value);
       }}><option value="boundary">Boundary</option><option value="door">Door</option><option value="window">Window</option><option value="interior_item">Interior item (not an opening)</option><option value="unknown">Uncertain mark</option></select></label>
       {kind==="interior_item"?<p>{/^source-proposal:\d+:opening:\d+$/.test(selected)?"This excludes the selected opening proposal from a separate corrected review.":"This records an interior item as a reference mark."} Nearby marks and existing geometry stay unchanged.</p>:null}
-      <button type="button" className={control} onClick={props.onPick}>Pick pending span endpoints</button>
+      <Button size="compact" onClick={props.onPick}>Pick pending span endpoints</Button>
       <p>{props.points.length}/2 endpoints selected on the source above. Selecting a proposal highlights it and loads its endpoints; pick again to adjust them.</p>
       <label>Review note<input aria-label="Pending source span note" className={`${control} block w-full`} value={note} maxLength={500} onChange={e=>setNote(e.target.value)}/></label>
-      <button type="button" className={control} disabled={props.points.length!==2||!props.page||!note.trim()} onClick={save}>Record pending source correction</button>
+      <Button size="compact" disabled={props.points.length!==2||!props.page||!note.trim()} onClick={save}>Record pending source correction</Button>
       {message?<p role="status">{message}</p>:null}
     </fieldset>
   </details>;
