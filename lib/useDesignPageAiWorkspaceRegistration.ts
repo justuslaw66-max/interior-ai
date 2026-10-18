@@ -60,7 +60,7 @@ export function useDesignPageAiWorkspaceRegistration({
           sceneRoomRead.derived.room.activeSelectedWallFaceId,
         items,
       },
-      notes: { designerMode: coreShell.derived.access.isDesigner },
+      notes: { designerMode: coreShell.derived.access.isDesigner, activeRoom: activeRoom ?? null },
     },
     actions: {
       layout: {
@@ -90,7 +90,7 @@ export function useDesignPageAiWorkspaceRegistration({
         resetCeilingSurface:
           surfaceWorkspace.actions.resetActiveCeilingSurface,
       },
-      notes: { addItem: itemDocument.actions.addItem },
+      notes: { addItem: itemDocument.actions.addItem, applyFloorMaterialToRoom: surfaceWorkspace.actions.applyFloorMaterialToRoom },
     },
     configuration: {
       isAuthenticated: Boolean(base.state.identity.session?.user),

@@ -1121,11 +1121,11 @@
     "app/api/ai/design-notes/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 232
+        "maximum": 191
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 29
+        "maximum": 27
       }
     },
     "app/api/ai/layout/route.ts": {
@@ -2671,7 +2671,7 @@
     "lib/ai/design-notes-contract.ts": {
       "complexFunctions": {
         "count": 2,
-        "maximum": 23
+        "maximum": 19
       }
     },
     "lib/ai/layout-planner.ts": {
@@ -3933,7 +3933,7 @@
     "lib/useDesignPageAiNotes.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 135
+        "maximum": 111
       }
     },
     "lib/useDesignPageAiWorkspaceRegistration.ts": {

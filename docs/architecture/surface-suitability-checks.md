@@ -53,3 +53,20 @@ J, 17 Oct 2026, chose "Build all five" checks and "Yes, add balcony". Plan revie
   - imports still turn a BALCONY label into a custom room (`toLegacyRoomType`);
   - there is no balcony tile among "add one room";
   - there is no outdoor default floor for a new balcony, so a new balcony starts with the check 4 tip.
+
+## AI notes: the room's surfaces and checked floor swaps (18 Oct 2026)
+
+J, 18 Oct 2026, step 2 of the AI tile plan: "Floors only", "Allow finishes alone", and fix the item data in the same PR.
+
+- **What the page sends** (`lib/ai/design-notes-request.ts`): the active room's id, name, type, floor material id and wall, face and panel material ids (`toSurfaceCheckRoom`), with its products (instance id, product id, name, category, quantity, unit price, size in metres). The contract parses the room strictly (`parseDesignNotesRoom`); one outside it is dropped.
+- **What the model is told** (`describeDesignNotesRoom`, `lib/ai/design-notes-prompt.ts`): the floor's and walls' facts, looked up by the server in its own render data (slip class, barefoot class, sheet, outdoor range, white-body wall tile), plan review's surface findings, and up to three floor swap candidates. The system prompt repeats that homes aren't regulated and that a swap may name only a candidate.
+- **Candidates** (`lib/surface-floor-swaps.ts`): published catalogue floors, not the one laid, that the room's floor checks don't flag, and whose sheet says positively that they suit the room:
+  - a bathroom floor is R10 or more and barefoot B (275 published floors today);
+  - a balcony floor is in ABK's outdoor range (106);
+  - any other room's floor has a sheet that doesn't make it a white-body wall tile.
+  - A floor with no facts never qualifies. A room whose floor isn't flagged gets none. The nearest come first: the same ABK collection, then the same colour family, then the same size.
+- **SWAP_SURFACE** `{ roomId, surface: "floor", materialId, fromMaterialId }`. The server keeps one only when it names the room and one of its candidates, for fresh and cached notes alike (`parseCheckedDesignNotes`), and sets `fromMaterialId` to the floor it replaces. Walls are never swapped; their findings are only explained.
+- **Applying** (`lib/ai/design-notes-editor.ts`): the page checks the swap again against the active room as it is now (`floorSwapProblem`): the same room, the same floor as when the notes were made, and a tile that still qualifies. Then the surface workspace's `applyFloorMaterialToRoom` lays it: one undo step, its toast and its `floor_finish_applied` event. Applying stays Pro's, like the other suggestions.
+- **Finishes alone:** AI notes runs when the room has products or a floor or wall from the tile catalogue; the starter floor doesn't count. The section says "Add products or a floor or wall finish to the room first."
+- **Without an AI provider** the fallback offers the nearest candidate for a flagged floor, and the furniture suggestions only when the room has products.
+- **Tests:** `scripts/test-ai-design-notes.ts` (`test:ai-design-notes`, in `test:critical-required`).

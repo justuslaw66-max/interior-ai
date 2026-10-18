@@ -3,25 +3,28 @@ import type { DesignItem } from "@/lib/room-types";
 export type AISuggestionAction =
   | { type: "RUG_RESIZE_TO_SOFA"; sofaItemId?: string }
   | { type: "MAKE_CHEAPER"; percent?: number }
-  | { type: "ADD_LAMP_NEAR_READING" };
+  | { type: "ADD_LAMP_NEAR_READING" }
+  | { type: "SWAP_SURFACE"; roomId: string; surface: "floor"; materialId: string; fromMaterialId?: string | null };
 
 type DesignSnapshot = {
   items?: Array<{ productId: string }>;
 };
 
-type EditorContext = {
+export type AISuggestionEditor = {
   getItemById: (id: string) => DesignItem | null;
   findFirstByCategory: (cat: string) => DesignItem | null;
   resizeRugToSofaRule: (sofa: DesignItem, rug?: DesignItem) => DesignSnapshot | void;
   makeRoomCheaper: (percent?: number) => Promise<void> | void;
   addLampNearReadingCorner: () => Promise<void> | void;
+  /** Lays a checked floor swap; throws a user-facing error when the room or its floor has changed. */
+  swapFloorMaterial: (action: Extract<AISuggestionAction, { type: "SWAP_SURFACE" }>) => void;
   commitDesignSnapshot: (next: DesignSnapshot) => void;
   getDesignSnapshot: () => DesignSnapshot;
 };
 
 export async function applyAISuggestionAction(opts: {
   action: AISuggestionAction;
-  editor: EditorContext;
+  editor: AISuggestionEditor;
 }) {
   const { action, editor } = opts;
 
@@ -45,6 +48,11 @@ export async function applyAISuggestionAction(opts: {
 
     case "ADD_LAMP_NEAR_READING": {
       await editor.addLampNearReadingCorner();
+      return;
+    }
+
+    case "SWAP_SURFACE": {
+      editor.swapFloorMaterial(action);
       return;
     }
 

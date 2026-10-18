@@ -11,11 +11,14 @@ import {
   createOperationId,
   readJsonRequest,
 } from "@/lib/api-boundary";
+import { DESIGN_NOTES_MAX_BODY_BYTES, parseDesignNotesInput } from "@/lib/ai/design-notes-contract";
 import {
-  DESIGN_NOTES_MAX_BODY_BYTES,
-  parseDesignNotesInput,
-  parseDesignNotesOutput,
-} from "@/lib/ai/design-notes-contract";
+  buildDesignNotesUserContent,
+  buildFallbackDesignNotes,
+  DESIGN_NOTES_RESPONSE_SCHEMA,
+  DESIGN_NOTES_SYSTEM_PROMPT,
+  parseCheckedDesignNotes,
+} from "@/lib/ai/design-notes-prompt";
 import { logOperationalEvent } from "@/lib/observability";
 
 export const runtime = "nodejs";
@@ -92,50 +95,6 @@ function hashDesign(design: unknown): string {
   return crypto.createHash("sha256").update(str).digest("hex");
 }
 
-/**
- * Output schema the UI expects.
- * Structured output ensures consistent response shape.
- */
-const responseSchema = {
-  name: "design_notes",
-  schema: {
-    type: "object" as const,
-    additionalProperties: false,
-    properties: {
-      summary: { type: "array", items: { type: "string" }, minItems: 3, maxItems: 6 },
-      rationale: { type: "string" },
-      suggestions: {
-        type: "array",
-        minItems: 1,
-        maxItems: 6,
-        items: {
-          type: "object",
-          additionalProperties: false,
-          properties: {
-            id: { type: "string" },
-            label: { type: "string" },
-            action: {
-              type: "object",
-              additionalProperties: true,
-              properties: {
-                type: {
-                  type: "string",
-                  enum: ["RUG_RESIZE_TO_SOFA", "MAKE_CHEAPER", "ADD_LAMP_NEAR_READING"],
-                },
-                percent: { type: "number" },
-                sofaItemId: { type: "string" },
-              },
-              required: ["type"],
-            },
-          },
-          required: ["id", "label", "action"],
-        },
-      },
-    },
-    required: ["summary", "rationale", "suggestions"],
-  },
-};
-
 export async function POST(req: Request) {
   const startTime = Date.now();
   const operation = "ai.design_notes";
@@ -190,7 +149,7 @@ export async function POST(req: Request) {
           },
         });
 
-        const parsedCached = cached ? parseDesignNotesOutput(cached.resultJson) : null;
+        const parsedCached = cached ? parseCheckedDesignNotes(cached.resultJson, design.room) : null;
         if (parsedCached) {
           const ms = Date.now() - startTime;
           logOperationalEvent({
@@ -219,49 +178,8 @@ export async function POST(req: Request) {
     if (!process.env.OPENAI_API_KEY) {
       console.warn("OPENAI_API_KEY not configured, returning local fallback response");
       // Deterministic fallback while AI is unavailable.
-      return NextResponse.json({
-        summary: [
-          "Good furniture layout with clear zones for different activities.",
-          "Rug placement anchors conversation area effectively.",
-          "Consider adding accent lighting near seating areas.",
-        ],
-        rationale:
-          "The current layout provides functional flow and visual balance. Adding texture and varied lighting would enhance the space.",
-        suggestions: [
-          {
-            id: "fallback_rug_resize_to_sofa",
-            label: "Resize rug to better proportion with the sofa.",
-            action: { type: "RUG_RESIZE_TO_SOFA" },
-          },
-          {
-            id: "fallback_budget_optimize",
-            label: "Lower the total by swapping items for cheaper alternatives.",
-            action: { type: "MAKE_CHEAPER", percent: 10 },
-          },
-          {
-            id: "fallback_add_task_lighting",
-            label: "Add task lighting near the reading corner.",
-            action: { type: "ADD_LAMP_NEAR_READING" },
-          },
-        ],
-      }, { headers: apiSuccessHeaders(operationId) });
+      return NextResponse.json(buildFallbackDesignNotes(design), { headers: apiSuccessHeaders(operationId) });
     }
-
-    // Build a compact prompt that includes only the data we have
-    const systemPrompt =
-      "You are an interior design assistant. Provide practical, client-safe notes and suggestions. " +
-      "Never claim you can see images. Use only the provided design data. " +
-      "Return 3–5 concise, actionable summary points, a brief rationale paragraph, and 1–6 suggestions " +
-      "that map to one of these action types: RUG_RESIZE_TO_SOFA, MAKE_CHEAPER, or ADD_LAMP_NEAR_READING.";
-
-    const userContent = JSON.stringify({
-      mode,
-      design: {
-        items: design.items ?? [],
-        categories: design.categories,
-        budget: design.budget ?? null,
-      },
-    });
 
     if (config.logLevel === "debug") {
       console.log("Calling AI design-notes provider", { itemCount: design.items.length });
@@ -279,16 +197,16 @@ export async function POST(req: Request) {
       messages: [
         {
           role: "system",
-          content: systemPrompt,
+          content: DESIGN_NOTES_SYSTEM_PROMPT,
         },
         {
           role: "user",
-          content: userContent,
+          content: buildDesignNotesUserContent(parsedInput),
         },
       ],
       response_format: {
         type: "json_schema",
-        json_schema: responseSchema,
+        json_schema: DESIGN_NOTES_RESPONSE_SCHEMA,
       },
     };
 
@@ -316,7 +234,7 @@ export async function POST(req: Request) {
       throw new Error("Empty AI response text");
     }
 
-    const result = parseDesignNotesOutput(JSON.parse(textContent) as unknown);
+    const result = parseCheckedDesignNotes(JSON.parse(textContent) as unknown, design.room);
     if (!result) {
       throw new Error("AI provider returned a response outside the required contract");
     }

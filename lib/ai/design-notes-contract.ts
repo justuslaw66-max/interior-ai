@@ -1,14 +1,19 @@
+import { parseDesignNotesRoom } from "@/lib/ai/design-notes-room";
+import type { SurfaceCheckRoom } from "@/lib/floor-plan-surface-checks";
+
 export const DESIGN_NOTES_MAX_BODY_BYTES = 512 * 1024;
 
 type DesignNotesActionType =
   | "RUG_RESIZE_TO_SOFA"
   | "MAKE_CHEAPER"
-  | "ADD_LAMP_NEAR_READING";
+  | "ADD_LAMP_NEAR_READING"
+  | "SWAP_SURFACE";
 
 export type DesignNotesInput = {
   design: {
     id: string | null;
-    room: unknown;
+    /** The active room's type and finishes (18 Oct 2026); `null` when the page sent none. */
+    room: SurfaceCheckRoom | null;
     items: Array<Record<string, unknown>>;
     categories: string[];
     budget: string | null;
@@ -26,6 +31,11 @@ export type DesignNotesOutput = {
       type: DesignNotesActionType;
       percent?: number;
       sofaItemId?: string;
+      /** SWAP_SURFACE: the room, the surface (only "floor"), the tile to lay and the floor it replaces. */
+      roomId?: string;
+      surface?: string;
+      materialId?: string;
+      fromMaterialId?: string | null;
     };
   }>;
 };
@@ -133,7 +143,7 @@ export function parseDesignNotesInput(value: unknown): DesignNotesInput | null {
   return {
     design: {
       id,
-      room: isRecord(value.design.room) ? value.design.room : null,
+      room: parseDesignNotesRoom(value.design.room),
       items,
       categories,
       budget: safeString(value.design.budget, 40),
@@ -146,7 +156,29 @@ const ACTION_TYPES = new Set<DesignNotesActionType>([
   "RUG_RESIZE_TO_SOFA",
   "MAKE_CHEAPER",
   "ADD_LAMP_NEAR_READING",
+  "SWAP_SURFACE",
 ]);
+
+type DesignNotesAction = DesignNotesOutput["suggestions"][number]["action"];
+
+function parseDesignNotesAction(raw: Record<string, unknown>): DesignNotesAction | null {
+  const type = raw.type;
+  if (typeof type !== "string" || !ACTION_TYPES.has(type as DesignNotesActionType)) return null;
+  const action: DesignNotesAction = { type: type as DesignNotesActionType };
+  if (raw.percent !== undefined) {
+    const percent = raw.percent;
+    if (typeof percent !== "number" || !Number.isFinite(percent) || percent < 0 || percent > 100) return null;
+    action.percent = percent;
+  }
+  for (const key of ["sofaItemId", "roomId", "surface"] as const) {
+    const text = safeString(raw[key], 128);
+    if (text) action[key] = text;
+  }
+  const materialId = safeString(raw.materialId, 200);
+  if (materialId) action.materialId = materialId;
+  if (type === "SWAP_SURFACE" && (!action.roomId || !action.surface || !action.materialId)) return null;
+  return action;
+}
 
 export function parseDesignNotesOutput(value: unknown): DesignNotesOutput | null {
   if (!isRecord(value) || !Array.isArray(value.summary) || !Array.isArray(value.suggestions)) {
@@ -163,24 +195,8 @@ export function parseDesignNotesOutput(value: unknown): DesignNotesOutput | null
     if (!isRecord(entry) || !isRecord(entry.action)) return null;
     const id = safeString(entry.id, 128);
     const label = safeString(entry.label, 500);
-    const type = entry.action.type;
-    if (!id || !label || typeof type !== "string" || !ACTION_TYPES.has(type as DesignNotesActionType)) {
-      return null;
-    }
-    const action: DesignNotesOutput["suggestions"][number]["action"] = {
-      type: type as DesignNotesActionType,
-    };
-    if (entry.action.percent !== undefined) {
-      if (
-        typeof entry.action.percent !== "number" ||
-        !Number.isFinite(entry.action.percent) ||
-        entry.action.percent < 0 ||
-        entry.action.percent > 100
-      ) return null;
-      action.percent = entry.action.percent;
-    }
-    const sofaItemId = safeString(entry.action.sofaItemId, 128);
-    if (sofaItemId) action.sofaItemId = sofaItemId;
+    const action = parseDesignNotesAction(entry.action);
+    if (!id || !label || !action) return null;
     suggestions.push({ id, label, action });
   }
 
