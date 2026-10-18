@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import sharp from "sharp";
 import { recognizeLocalOcrOrientations, sourceTextEvidenceFromLocalOcr } from "@/lib/floor-plan-imports/local-ocr-rotation";
 import { createCanvas } from "@napi-rs/canvas";
@@ -214,9 +215,10 @@ async function testPageBudgetAndTimeoutFallback() {
   const extracted = await adapter.extract(source(bytes), rendered, context(bytes));
   assert.equal(calls, 8, "Local OCR must obey the bounded eight-page budget.");
   const manifest = extracted.sourceManifest as {
-    pages: Array<{ localOcr: { attempted: boolean; status: string } }>;
+    pages: Array<{ localOcr: { attempted: boolean; status: string; elapsedMs: number } }>;
   };
   assert.equal(manifest.pages[0].localOcr.status, "timed_out");
+  assert.ok(manifest.pages[0].localOcr.elapsedMs < 5_000, "a failure records the time it took, not the time limit");
   assert.equal(manifest.pages[8].localOcr.attempted, false);
   const envelope = extracted.candidate as {
     pages: Array<{ semantics: { notes: string[] } }>;
@@ -299,7 +301,20 @@ async function testSingleLineNumbers() {
   assert.ok(result.candidates.every((candidate) => !candidate.rotationDegrees), "no sideways readings in single-line mode");
 }
 
+/**
+ * Local OCR must also load inside a Next route: Node's module API is imported at run time (webpack rewrote a static
+ * createRequire, and every call failed with "ocrRequire is not a function"), and tesseract.js stays out of the bundle.
+ */
+function testLoadsInNextRoutes() {
+  for (const file of ["lib/floor-plan-imports/local-ocr.ts", "lib/floor-plan-imports/pdf-runtime.ts"]) {
+    assert.doesNotMatch(readFileSync(file, "utf8"), /^import[^;]*from "(node:)?module";/m, `${file} imports Node's module API at run time`);
+  }
+  const externals = readFileSync("next.config.ts", "utf8").match(/serverExternalPackages:\s*\[([^\]]*)\]/)?.[1] ?? "";
+  assert.match(externals, /"tesseract\.js"/, "next.config.ts keeps tesseract.js out of the server bundle");
+}
+
 async function main() {
+  testLoadsInNextRoutes();
   await testSingleLineNumbers();
   await testPackagedRuntime();
   await testPackagedRuntime(true);

@@ -1,6 +1,7 @@
 import type { FloorPlanSourceMeasurementV2 } from "@/lib/floor-plan-document-v2";
 import type { RegisteredPageEvidence } from "./deterministic-evidence";
 import type { ExtractionEnvelope, PageScaleSolution } from "./pdf-raster-evidence";
+import { scaleBarUnreadMessage } from "./scale-bar-pages";
 import { scaleBarMeasurement, scaleBarPageScales } from "./scale-bar-scale";
 import { automaticScaleReviewMessage } from "./source-scale-cross-check";
 import type { FloorPlanReviewIssue } from "./types";
@@ -46,7 +47,7 @@ export function scaleUnresolvedIssues(envelope: ExtractionEnvelope, page: Regist
   scale: PageScaleSolution | null): FloorPlanReviewIssue[] {
   const issue = (message: string): FloorPlanReviewIssue[] =>
     [{ id: "scale-review", code: "scale_unresolved", message, severity: "critical", resolved: false }];
-  const estimateMessage = () => vectorizerScaleEstimateMessage(page) ?? automaticScaleReviewMessage(page);
+  const estimateMessage = () => vectorizerScaleEstimateMessage(page) ?? scaleBarUnreadMessage(page) ?? automaticScaleReviewMessage(page);
   if (page && isAssumedScale(scale)) {
     return issue(`${estimateMessage()} The rooms below were placed at that estimated scale; every length is approximate until a width is confirmed.`);
   }

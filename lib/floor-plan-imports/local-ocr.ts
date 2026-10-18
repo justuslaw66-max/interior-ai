@@ -1,5 +1,4 @@
 import { recognizeLocalOcrOrientations } from "./local-ocr-rotation";
-import { createRequire } from "node:module";
 
 export type FloorPlanLocalOcrCandidate = {
   text: string;
@@ -135,6 +134,20 @@ function candidatesFromBlocks(
   return { candidates, truncated: false };
 }
 
+/**
+ * The packaged English data, found from the app's own package.json. Node's module API is loaded at run time, as in
+ * pdf-runtime.ts: imported statically, Next's webpack rewrote createRequire, and every local OCR call in a route
+ * failed with "ocrRequire is not a function".
+ */
+async function packagedEnglishData() {
+  const { default: nodeModule } = await import("node:module");
+  return nodeModule.createRequire(`${process.cwd()}/package.json`)("@tesseract.js-data/eng") as {
+    code: string;
+    gzip: boolean;
+    langPath: string;
+  };
+}
+
 export class TesseractFloorPlanLocalOcrProvider
   implements FloorPlanLocalOcrProvider
 {
@@ -148,12 +161,7 @@ export class TesseractFloorPlanLocalOcrProvider
     const timeoutMs = boundedInteger(options.timeoutMs, 12_000, 1_000, 30_000);
     const maximum = boundedInteger(options.maxCandidates, 600, 1, 2_000);
     const minimumConfidence = Math.max(0, Math.min(100, options.minSourceConfidence));
-    const ocrRequire = createRequire(`${process.cwd()}/package.json`);
-    const language = ocrRequire("@tesseract.js-data/eng") as {
-      code: string;
-      gzip: boolean;
-      langPath: string;
-    };
+    const language = await packagedEnglishData();
     const { createWorker, OEM, PSM } = await import("tesseract.js");
     const startedAt = Date.now();
     const workerPromise = createWorker(language.code, OEM.LSTM_ONLY, {

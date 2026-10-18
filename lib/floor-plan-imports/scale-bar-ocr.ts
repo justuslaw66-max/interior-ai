@@ -1,7 +1,8 @@
 import type { RegisteredPageEvidence } from "./deterministic-evidence";
 import type { FloorPlanLocalOcrProvider } from "./local-ocr";
 import { loadFloorPlanPdfRuntime } from "./pdf-runtime";
-import type { ScaleBarStripReader, ScaleBarWord } from "./scale-bar-evidence";
+import type { ScaleBarWord } from "./scale-bar-evidence";
+import type { ScaleBarStripReader } from "./scale-bar-pages";
 import type { FloorPlanAdapterContext, StoredFloorPlanSource } from "./source-adapter";
 import type { FloorPlanRenderedPage } from "./types";
 
