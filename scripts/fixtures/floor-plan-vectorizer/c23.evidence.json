@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.32.0",
+ "exporterVersion": "app-evidence-0.32.1",
  "page": {
   "widthPx": 776,
   "heightPx": 1400,
@@ -4266,6 +4266,7 @@
   "jogFacesFlushed": 0,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 50,
+  "wallRunsNoRoomTracedAgainst": 0,
   "standaloneWallsAdded": 6,
   "jogsThicknessChosen": 0,
   "standaloneFacesOnTheWalls": 0,

@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.32.0",
+ "exporterVersion": "app-evidence-0.32.1",
  "page": {
   "widthPx": 958,
   "heightPx": 1464,
@@ -4251,6 +4251,23 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
+     170.75,
+     544.0
+    ],
+    [
+     170.75,
+     888.5
+    ]
+   ],
+   "thicknessPx": 16.5,
+   "thicknessMm": 186,
+   "opening": null
+  },
+  {
+   "id": "e130",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
      189.0,
      688.25
     ],
@@ -4264,7 +4281,7 @@
    "opening": null
   },
   {
-   "id": "e130",
+   "id": "e131",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4281,7 +4298,7 @@
    "opening": null
   },
   {
-   "id": "e131",
+   "id": "e132",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4298,7 +4315,7 @@
    "opening": null
   },
   {
-   "id": "e132",
+   "id": "e133",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4315,7 +4332,7 @@
    "opening": null
   },
   {
-   "id": "e133",
+   "id": "e134",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4332,7 +4349,7 @@
    "opening": null
   },
   {
-   "id": "e134",
+   "id": "e135",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -5413,7 +5430,8 @@
   "jogFacesFlushed": 0,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 49,
-  "standaloneWallsAdded": 12,
+  "wallRunsNoRoomTracedAgainst": 1,
+  "standaloneWallsAdded": 13,
   "jogsThicknessChosen": 1,
   "standaloneFacesOnTheWalls": 1,
   "itemsLeftOutForTheAppsLimits": 0,
