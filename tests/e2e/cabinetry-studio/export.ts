@@ -1,10 +1,13 @@
 import fs from "node:fs";
 import { test, expect } from "../fixtures";
-import { openDetailedProStudio, placeCabinetRun } from "./helpers";
+import { openDetailedProStudio, placeCabinetRun, startInMillimetres } from "./helpers";
 
 export function registerExportTests() {
   test.describe("Custom Millwork Studio export", () => {
     test.setTimeout(600000);
+    test.beforeEach(async ({ page }) => {
+      await startInMillimetres(page);
+    });
 
     test("Pro designer can export a cabinet-run fabrication package", async ({ page }) => {
       await openDetailedProStudio(page);
@@ -39,9 +42,9 @@ export function registerExportTests() {
       await expect(page.getByTestId("cabinet-material-schedule")).toHaveAttribute("data-material-schedule-count", "4");
       await expect(page.getByTestId("cabinet-hardware-schedule")).toHaveAttribute("data-hardware-schedule-count", "3");
       await expect(page.getByTestId("cabinet-edge-banding-schedule")).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(page.getByTestId("cabinet-edge-banding-schedule")).toHaveAttribute("data-edge-banding-total-m", "28.23");
+      await expect(page.getByTestId("cabinet-edge-banding-schedule")).toHaveAttribute("data-edge-banding-total-m", "27.36");
       await expect(page.getByTestId("cabinet-edge-banding-row")).toHaveCount(4);
-      await expect(page.getByTestId("cabinet-cut-list")).toHaveAttribute("data-cut-list-count", "30");
+      await expect(page.getByTestId("cabinet-cut-list")).toHaveAttribute("data-cut-list-count", "27");
       await expect(page.getByTestId("cabinet-installer-notes")).toHaveAttribute("data-installer-note-count", /\d+/);
       await expect(page.getByTestId("cabinet-release-checklist")).toHaveAttribute("data-release-checklist-count", "7");
       await expect(page.getByTestId("cabinet-release-checklist")).toHaveAttribute("data-release-blocker-count", "0");
@@ -82,7 +85,7 @@ export function registerExportTests() {
       await expect(page.getByTestId("cabinet-module-3")).toBeVisible();
       await expect(page.getByTestId("cabinet-dimension-schedule")).toHaveAttribute("data-dimension-schedule-count", "4");
       await expect(page.getByTestId("cabinet-edge-banding-schedule")).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(page.getByTestId("cabinet-cut-list")).toHaveAttribute("data-cut-list-count", "30");
+      await expect(page.getByTestId("cabinet-cut-list")).toHaveAttribute("data-cut-list-count", "27");
 
       const docsDownloadPromise = page.waitForEvent("download");
       await page.getByTestId("cabinet-download-documentation").click();
@@ -151,7 +154,7 @@ export function registerExportTests() {
       expect(rfqJson.artifacts.some((item: { type: string; fileName: string }) => item.type === "source_definition" && item.fileName.endsWith("source-definition.json"))).toBe(true);
       expect(rfqJson.artifacts.some((item: { type: string; fileName: string }) => item.type === "fabrication_dxf" && item.fileName.endsWith("cut-layout.dxf"))).toBe(true);
       expect(rfqJson.artifacts.some((item: { type: string; fileName: string }) => item.type === "shop_drawing_svg" && item.fileName.endsWith("shop-drawing.svg"))).toBe(true);
-      expect(rfqJson.documentation.cutList).toHaveLength(30);
+      expect(rfqJson.documentation.cutList).toHaveLength(27);
       expect(rfqJson.documentation.edgeBandingSchedule).toHaveLength(4);
       expect(rfqJson.documentation.releaseChecklist).toHaveLength(7);
 
@@ -176,7 +179,7 @@ export function registerExportTests() {
       expect(packageJson.documentation.drawingViewSchedule.some((item: { viewType: string }) => item.viewType === "side_section")).toBe(true);
       expect(packageJson.documentation.drawingViewSchedule.some((item: { viewType: string }) => item.viewType === "plan_footprint")).toBe(true);
       expect(packageJson.documentation.edgeBandingSchedule).toHaveLength(4);
-      expect(packageJson.documentation.edgeBandingSchedule.reduce((sum: number, item: { totalLengthM: number }) => sum + item.totalLengthM, 0)).toBeCloseTo(28.23, 2);
+      expect(packageJson.documentation.edgeBandingSchedule.reduce((sum: number, item: { totalLengthM: number }) => sum + item.totalLengthM, 0)).toBeCloseTo(27.36, 2);
       expect(packageJson.documentation.supplierSkuMappings).toHaveLength(10);
       expect(packageJson.documentation.supplierReadiness.status).toBe("ready_for_fabricator_review");
       expect(packageJson.documentation.supplierReadiness.mappedSkuCount).toBe(7);
@@ -298,7 +301,7 @@ export function registerExportTests() {
       expect(projectFinishScheduleJson.totals.materialCount).toBeGreaterThan(0);
       expect(projectFinishScheduleJson.totals.hardwareCount).toBeGreaterThan(0);
       expect(projectFinishScheduleJson.totals.edgeBandingCount).toBe(4);
-      expect(projectFinishScheduleJson.totals.edgeBandingTotalM).toBe(28.23);
+      expect(projectFinishScheduleJson.totals.edgeBandingTotalM).toBe(27.37);
       expect(projectFinishScheduleJson.totals.mappedSkuCount).toBe(7);
       expect(projectFinishScheduleJson.totals.customQuoteRequiredCount).toBe(3);
       expect(projectFinishScheduleJson.materials.every((item: { assetIds: string[] }) => item.assetIds.includes(instanceId!))).toBe(true);
@@ -328,7 +331,7 @@ export function registerExportTests() {
       expect(projectScheduleJson.schema).toBe("custom_millwork.project_schedule.v1");
       expect(projectScheduleJson.totals.assetCount).toBe(1);
       expect(projectScheduleJson.totals.roomCount).toBe(1);
-      expect(projectScheduleJson.totals.edgeBandingTotalM).toBe(28.23);
+      expect(projectScheduleJson.totals.edgeBandingTotalM).toBe(27.37);
       expect(projectScheduleJson.assets[0].id).toBe(instanceId);
       expect(projectScheduleJson.assets[0].sourceDefinitionFingerprint).toBe(sourceJson.sourceDefinitionFingerprint);
       expect(projectScheduleJson.assetManifests[0].schema).toBe("custom_millwork.asset_manifest.v1");
@@ -345,7 +348,7 @@ export function registerExportTests() {
       expect(projectScheduleCsv).toContain("Rooms");
       expect(projectScheduleCsv).toContain("Placed Millwork Assets");
       expect(projectScheduleCsv).toContain(instanceId!);
-      expect(projectScheduleCsv).toContain("28.23");
+      expect(projectScheduleCsv).toContain("27.37");
       const projectScopeDownloadPromise = page.waitForEvent("download");
       await page.getByTestId("selected-cabinet-download-project-scope").click();
       const projectScopeDownload = await projectScopeDownloadPromise;
@@ -574,13 +577,13 @@ export function registerExportTests() {
       expect(projectCutListJson.drawingSetPackage.schema).toBe("custom_millwork.project_drawing_set.v1");
       expect(projectCutListJson.revisionPackage.schema).toBe("custom_millwork.project_revision_package.v1");
       expect(projectCutListJson.totals.assetCount).toBe(1);
-      expect(projectCutListJson.totals.partRowCount).toBe(30);
-      expect(projectCutListJson.totals.totalQuantity).toBe(30);
-      expect(projectCutListJson.totals.edgeBandingTotalM).toBe(28.23);
+      expect(projectCutListJson.totals.partRowCount).toBe(27);
+      expect(projectCutListJson.totals.totalQuantity).toBe(27);
+      expect(projectCutListJson.totals.edgeBandingTotalM).toBe(27.37);
       expect(projectCutListJson.assets[0].id).toBe(instanceId);
       expect(projectCutListJson.assets[0].fabricationDxfFileName).toMatch(/cut-layout\.dxf$/);
       expect(projectCutListJson.assets[0].shopDrawingFileName).toMatch(/shop-drawing\.svg$/);
-      expect(projectCutListJson.parts).toHaveLength(30);
+      expect(projectCutListJson.parts).toHaveLength(27);
       expect(projectCutListJson.parts.every((item: { assetId: string }) => item.assetId === instanceId)).toBe(true);
       expect(projectCutListJson.parts.some((item: { edgeBandingM: number }) => item.edgeBandingM > 0)).toBe(true);
       expect(projectCutListJson.materials.length).toBeGreaterThan(0);
@@ -646,7 +649,7 @@ export function registerExportTests() {
       expect(projectRfqJson.schema).toBe("custom_millwork.project_rfq.v1");
       expect(projectRfqJson.schedule.schema).toBe("custom_millwork.project_schedule.v1");
       expect(projectRfqJson.totals.assetCount).toBe(1);
-      expect(projectRfqJson.totals.edgeBandingTotalM).toBe(28.23);
+      expect(projectRfqJson.totals.edgeBandingTotalM).toBe(27.37);
       expect(projectRfqJson.assets[0].id).toBe(instanceId);
       expect(projectRfqJson.assetQuoteRequests).toHaveLength(1);
       expect(projectRfqJson.assetQuoteRequests[0].schema).toBe("custom_millwork.rfq.v1");
@@ -687,8 +690,8 @@ export function registerExportTests() {
       expect(projectHandoffJson.packages.rfqPackage.schema).toBe("custom_millwork.project_rfq.v1");
       expect(projectHandoffJson.totals.assetCount).toBe(1);
       expect(projectHandoffJson.totals.packageCount).toBe(15);
-      expect(projectHandoffJson.totals.cutListCount).toBe(30);
-      expect(projectHandoffJson.totals.edgeBandingTotalM).toBe(28.23);
+      expect(projectHandoffJson.totals.cutListCount).toBe(27);
+      expect(projectHandoffJson.totals.edgeBandingTotalM).toBe(27.37);
       expect(projectHandoffJson.totals.estimatedTotal).toBe(projectQuoteJson.totals.estimatedTotal);
       expect(projectHandoffJson.assets[0].id).toBe(instanceId);
       expect(projectHandoffJson.assets[0].sourceDefinitionFingerprint).toBe(sourceJson.sourceDefinitionFingerprint);
