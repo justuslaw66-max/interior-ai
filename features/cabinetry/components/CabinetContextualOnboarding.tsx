@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/Button";
 import {
   type CabinetGuidedStepId,
   getCabinetOnboardingActionsForStep,
@@ -29,14 +30,13 @@ export function CabinetContextualOnboarding({
 
   if (!visible) {
     return (
-      <button
-        type="button"
+      <Button
         data-testid={testIdFor(step, "show")}
-        className="justify-self-start text-xs font-semibold text-blue-700 underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+        variant="link" size="inline" className="justify-self-start text-xs"
         onClick={onShow}
       >
         Show me how
-      </button>
+      </Button>
     );
   }
 

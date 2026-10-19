@@ -1,6 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 import {
   CabinetPreviewViewSelector,
@@ -63,22 +64,16 @@ export function CabinetGuidedPreviewPanel({
         >
           <CabinetPreviewViewSelector value={view} onChange={onViewChange} />
           {isProWorkspace ? (
-            <button
-              type="button"
+            <Button
               data-testid="cabinet-preview-clearance-toggle"
-              aria-pressed={showClearances}
-              className={`inline-flex items-center gap-1.5 rounded-lg border border-white/60 px-2.5 py-2 text-xs font-semibold shadow-sm backdrop-blur focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 ${
-                showClearances
-                  ? "bg-blue-600 text-white"
-                  : "bg-white/90 text-neutral-700"
-              }`}
+              size="compact" pressed={showClearances} className="shadow-sm"
               onClick={onToggleClearances}
             >
               {showClearances ? (
                 <Check aria-hidden="true" className="h-3 w-3" />
               ) : null}
               Clearances
-            </button>
+            </Button>
           ) : null}
         </div>
         <div

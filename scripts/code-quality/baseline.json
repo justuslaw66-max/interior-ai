@@ -313,7 +313,7 @@
       "limit": 250
     },
     "features/cabinetry/components/CabinetPartInspector.tsx": {
-      "lines": 676,
+      "lines": 638,
       "limit": 250
     },
     "features/cabinetry/components/CabinetPreviewCameraController.tsx": {
@@ -329,11 +329,11 @@
       "limit": 250
     },
     "features/cabinetry/components/CabinetryStudioDetailedView.tsx": {
-      "lines": 3375,
+      "lines": 3321,
       "limit": 250
     },
     "features/cabinetry/components/CabinetryStudioGuidedView.tsx": {
-      "lines": 1896,
+      "lines": 1749,
       "limit": 250
     },
     "features/cabinetry/components/CabinetSceneItem.tsx": {
@@ -345,11 +345,11 @@
       "limit": 250
     },
     "features/cabinetry/components/CabinetStudioNavigator.tsx": {
-      "lines": 365,
+      "lines": 318,
       "limit": 250
     },
     "features/cabinetry/components/CabinetStudioOutputsPanel.tsx": {
-      "lines": 414,
+      "lines": 398,
       "limit": 250
     },
     "features/cabinetry/components/CabinetTemplateDiagrams.tsx": {
@@ -2251,7 +2251,7 @@
     "features/cabinetry/components/CabinetAssemblyInspector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 86
+        "maximum": 79
       }
     },
     "features/cabinetry/components/CabinetConfigurationPreviews.tsx": {
@@ -2263,7 +2263,7 @@
     "features/cabinetry/components/CabinetGuidedActionFooter.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 136
+        "maximum": 129
       },
       "complexFunctions": {
         "count": 1,
@@ -2273,7 +2273,7 @@
     "features/cabinetry/components/CabinetGuidedPreviewPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 121
+        "maximum": 115
       }
     },
     "features/cabinetry/components/CabinetGuidedReviewPanel.tsx": {
@@ -2311,7 +2311,7 @@
     "features/cabinetry/components/CabinetPartInspector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 597
+        "maximum": 557
       },
       "complexFunctions": {
         "count": 1,
@@ -2371,21 +2371,21 @@
     "features/cabinetry/components/CabinetryStudioDetailedView.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 2968
+        "maximum": 2911
       },
       "complexFunctions": {
         "count": 7,
-        "maximum": 274
+        "maximum": 273
       }
     },
     "features/cabinetry/components/CabinetryStudioGuidedView.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 1683
+        "maximum": 1532
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 98
+        "maximum": 91
       }
     },
     "features/cabinetry/components/CabinetSceneItem.tsx": {
@@ -2408,26 +2408,26 @@
     },
     "features/cabinetry/components/CabinetStudioDetailedPreviews.tsx": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 78
+        "count": 1,
+        "maximum": 72
       }
     },
     "features/cabinetry/components/CabinetStudioHeader.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 173
+        "maximum": 135
       }
     },
     "features/cabinetry/components/CabinetStudioNavigator.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 300
+        "maximum": 249
       }
     },
     "features/cabinetry/components/CabinetStudioOutputsPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 261
+        "maximum": 257
       },
       "complexFunctions": {
         "count": 1,
@@ -2449,7 +2449,7 @@
     "features/cabinetry/components/CabinetValidationFeedback.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 87
+        "maximum": 85
       }
     },
     "features/cabinetry/createCabinetThreeGroup.ts": {

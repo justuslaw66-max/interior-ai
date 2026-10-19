@@ -19,19 +19,20 @@ the first editor paint. The Tailwind scanner continues to cover `app`,
 
 Each scoped stylesheet contains the sorted Tailwind candidate list that is
 valid in, and exclusive to, its owner. Those inline lists are the canonical
-exact selector inventories: on 18 Oct 2026, 54 admin utilities, 26 tools
-utilities, and 112 Cabinetry Studio utilities. Twelve more utilities are used by
+exact selector inventories: on 19 Oct 2026, 56 admin utilities, 26 tools
+utilities, and 86 Cabinetry Studio utilities. Ten more utilities are used by
 two or more of those excluded owners but nowhere in the remaining global scan:
-`bg-amber-900`, `bg-blue-700`, `gap-5`, `gap-6`, `max-h-40`, `min-w-[760px]`, `sm:col-span-2`,
-`text-3xl`, `text-neutral-100`, `text-neutral-300`, `text-red-950`, and `xl:grid-cols-2`. They remain once in
+`gap-5`, `gap-6`, `max-h-40`, `min-w-[760px]`, `sm:col-span-2`, `text-3xl`,
+`text-neutral-100`, `text-neutral-300`, `text-red-950`, and `xl:grid-cols-2`. They remain once in
 `app/globals.css` rather than being duplicated into scoped chunks. These
 counts move whenever a class enters or leaves an owner (UX phase 5's 12px
 steps moved `text-[10px]` from the global scan to the cross-owner set, then to
 Cabinetry, then out, and left `text-green-900` to Admin alone; UX 5l's removal of the unused
 designer theme took eleven dark-palette utilities out of the global scan, so `bg-black/20`,
 `bg-white/10` and `border-l` moved to Cabinetry, seven to tools, and `text-neutral-100` to
-the cross-owner set; UX 5m's shared buttons left `bg-sky-700` to Cabinetry, and AX10's later areas left
-`text-neutral-300` and `bg-amber-900` to the cross-owner set); the guard below recomputes them, so it, not this
+the cross-owner set; UX 5m's shared buttons left `bg-sky-700` to Cabinetry, AX10's later areas left
+`text-neutral-300` and `bg-amber-900` to the cross-owner set, and AX10's Built-ins area left `bg-amber-900`
+and `bg-blue-700` to Admin alone); the guard below recomputes them, so it, not this
 paragraph, is authoritative.
 
 `scripts/test-phase8-performance-boundaries.ts` recomputes all four

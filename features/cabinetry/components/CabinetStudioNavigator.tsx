@@ -8,6 +8,10 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { DragEvent } from "react";
 
 import { CABINET_PRESET_OPTIONS, type CabinetPresetId } from "../presets";
@@ -101,20 +105,14 @@ export function CabinetStudioNavigator({
         {sectionTitle("Built-in type")}
         <div className="grid grid-cols-2 gap-2">
           {CABINET_PRESET_OPTIONS.map((preset) => (
-            <button
+            <ChoiceTile
               key={preset.id}
-              type="button"
               data-testid={`cabinet-preset-${preset.id}`}
-              aria-pressed={preset.id === activePresetId}
-              className={`min-h-9 rounded-md border px-2 text-left text-xs font-medium ${
-                preset.id === activePresetId
-                  ? "border-neutral-900 bg-neutral-900 text-white"
-                  : "border-neutral-200 text-neutral-700 hover:border-neutral-900"
-              }`}
+              selected={preset.id === activePresetId} className="min-h-9 px-2 text-left text-xs font-medium"
               onClick={() => onApplyPreset(preset.id)}
             >
               {preset.label}
-            </button>
+            </ChoiceTile>
           ))}
         </div>
         {savedTemplates.length ? (
@@ -123,18 +121,13 @@ export function CabinetStudioNavigator({
               My templates
             </span>
             {savedTemplates.map((template) => (
-              <button
+              <ChoiceTile
                 key={template.id}
-                type="button"
-                className={`min-h-8 rounded-md border px-2 text-left text-xs font-medium ${
-                  activeSavedTemplateId === template.id
-                    ? "border-blue-700 bg-blue-700 text-white"
-                    : "border-neutral-200 text-neutral-700 hover:border-blue-500"
-                }`}
+                selected={activeSavedTemplateId === template.id} className="min-h-8 px-2 text-left text-xs font-medium"
                 onClick={() => onApplySavedTemplate(template.id)}
               >
                 {template.name}
-              </button>
+              </ChoiceTile>
             ))}
           </div>
         ) : null}
@@ -144,18 +137,13 @@ export function CabinetStudioNavigator({
         {sectionTitle("Modules")}
         <div className="grid gap-2">
           {modules.map((module, index) => (
-            <button
+            <ChoiceTile
               key={module.id}
-              type="button"
               draggable={modules.length > 1}
               data-testid={`cabinet-module-${index + 1}`}
               data-module-id={module.id}
               data-module-index={String(index)}
-              className={`min-h-9 rounded-md border px-2 text-left text-xs ${
-                module.id === activeModuleId
-                  ? "border-neutral-900 bg-neutral-900 text-white"
-                  : "border-neutral-200 text-neutral-700 hover:border-neutral-500"
-              } ${draggedModuleId === module.id ? "opacity-50" : ""}`}
+              selected={module.id === activeModuleId} className={`min-h-9 px-2 text-left text-xs ${draggedModuleId === module.id ? "opacity-50" : ""}`}
               title="Select this module, or drag it to reorder the run"
               onClick={() => onSelectModule(module.id)}
               onDragStart={(event) => onModuleDragStart(module.id, event)}
@@ -169,58 +157,53 @@ export function CabinetStudioNavigator({
                 </span>
                 <ModuleIssueBadges issues={getIssuesForModule(module.id)} />
               </span>
-            </button>
+            </ChoiceTile>
           ))}
         </div>
         <div className="grid grid-cols-5 gap-2">
-          <button
-            type="button"
+          <Button
             data-testid="cabinet-module-add"
-            className="grid h-8 place-items-center rounded-md bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+            size="compact"
             onClick={onAddModule}
             disabled={structuralModuleChangeDisabled}
             title={structuralModuleChangeTitle}
             aria-label="Add module"
           >
             <Plus className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="cabinet-module-duplicate"
-            className="grid h-8 place-items-center rounded-md bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+            size="compact"
             onClick={onDuplicateModule}
             disabled={structuralModuleChangeDisabled}
             title={structuralModuleChangeTitle}
             aria-label="Duplicate selected module"
           >
             <Copy className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="cabinet-module-move-left"
             aria-label="Move selected module left"
-            className="grid h-8 place-items-center rounded-md bg-neutral-100 disabled:opacity-40"
+            size="compact"
             onClick={() => onMoveActiveModule(-1)}
             disabled={activeModuleIndex <= 0}
             title="Move module left"
           >
             <ArrowLeft className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="cabinet-module-move-right"
             aria-label="Move selected module right"
-            className="grid h-8 place-items-center rounded-md bg-neutral-100 disabled:opacity-40"
+            size="compact"
             onClick={() => onMoveActiveModule(1)}
             disabled={activeModuleIndex < 0 || activeModuleIndex >= modules.length - 1}
             title="Move module right"
           >
             <ArrowRight className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="cabinet-module-delete"
-            className="grid h-8 place-items-center rounded-md bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
+            size="compact"
             onClick={onDeleteModule}
             disabled={structuralModuleChangeDisabled || modules.length <= 1}
             title={
@@ -231,31 +214,11 @@ export function CabinetStudioNavigator({
             aria-label="Delete selected module"
           >
             <Trash2 className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
         <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-2">
-          <div
-            role="group"
-            className="grid grid-cols-2 rounded-md bg-neutral-200/70 p-0.5"
-            aria-label="Module sizing mode"
-          >
-            {(["automatic", "manual"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                data-testid={`cabinet-module-sizing-${value}`}
-                aria-pressed={moduleSizingMode === value}
-                className={`rounded px-2 py-1.5 text-xs font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 ${
-                  moduleSizingMode === value
-                    ? "bg-white text-neutral-950 shadow-sm"
-                    : "text-neutral-600"
-                }`}
-                onClick={() => onChangeModuleSizingMode(value)}
-              >
-                {formatCabinetLabel(value)}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl label="Module sizing mode" size="compact" fill value={moduleSizingMode} onChange={onChangeModuleSizingMode}
+            options={(["automatic", "manual"] as const).map((value) => ({ value, label: formatCabinetLabel(value), testId: `cabinet-module-sizing-${value}` }))} />
           <p className="mt-2 text-xs leading-4 text-neutral-500">
             {moduleSizingMode === "automatic"
               ? "Structural changes preserve the overall target and redistribute unlocked bays."
@@ -267,33 +230,23 @@ export function CabinetStudioNavigator({
       <div className="grid gap-2" data-testid="cabinet-selection-breadcrumb">
         {sectionTitle("Editing")}
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-          <button
-            type="button"
-            className={`rounded-md px-2 py-1.5 font-semibold ${
-              selection.scope === "assembly"
-                ? "bg-blue-600 text-white"
-                : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-            }`}
+          <Chip
+            pressed={selection.scope === "assembly"}
             onClick={onSelectAssembly}
           >
             Complete assembly
-          </button>
+          </Chip>
           {activeModuleId ? (
             <>
               <span aria-hidden="true" className="text-neutral-300">
                 /
               </span>
-              <button
-                type="button"
-                className={`rounded-md px-2 py-1.5 font-semibold ${
-                  selection.scope === "module"
-                    ? "bg-blue-600 text-white"
-                    : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
-                }`}
+              <Chip
+                pressed={selection.scope === "module"}
                 onClick={() => onSelectModule(activeModuleId)}
               >
                 Module {activeModuleIndex + 1}
-              </button>
+              </Chip>
             </>
           ) : null}
           {selection.scope === "part" ? (
