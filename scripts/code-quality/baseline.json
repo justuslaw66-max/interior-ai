@@ -529,7 +529,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/pdf-raster-adapter.ts": {
-      "lines": 2658,
+      "lines": 2652,
       "limit": 400
     },
     "lib/floor-plan-imports/planar-face-evidence.ts": {
@@ -3317,7 +3317,7 @@
     "lib/floor-plan-imports/local-ocr.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 69
+        "maximum": 64
       }
     },
     "lib/floor-plan-imports/object-storage-config.ts": {

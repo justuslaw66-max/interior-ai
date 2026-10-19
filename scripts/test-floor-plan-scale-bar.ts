@@ -1,17 +1,17 @@
 import assert from "node:assert/strict";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import type { RegisteredPageEvidence, SourceTextEvidence, SourceVectorSegment } from "@/lib/floor-plan-imports/deterministic-evidence";
-import { calibrationScaleFields, fallbackPageScales, scaleEvidenceMakesDimensions } from "@/lib/floor-plan-imports/assumed-scale";
+import { calibrationScaleFields, fallbackPageScales, scaleEvidenceMakesDimensions, scaleUnresolvedIssues } from "@/lib/floor-plan-imports/assumed-scale";
+import type { ExtractionEnvelope } from "@/lib/floor-plan-imports/pdf-raster-evidence";
 import { PdfRasterFloorPlanSourceAdapter } from "@/lib/floor-plan-imports/pdf-raster-adapter";
 import {
-  applyScaleBarEvidence,
   findScaleBarGeometry,
   readScaleBar,
   scaleBarLabelStrips,
   scaleBarWordsFromText,
-  type ScaleBarStripReader,
   type ScaleBarWord,
 } from "@/lib/floor-plan-imports/scale-bar-evidence";
+import { applyScaleBarEvidence, scaleBarUnreadMessage, type ScaleBarStripReader } from "@/lib/floor-plan-imports/scale-bar-pages";
 import { SCALE_BAR_MEASUREMENT_ID } from "@/lib/floor-plan-imports/scale-bar-scale";
 import type { FloorPlanAdapterContext, StoredFloorPlanSource } from "@/lib/floor-plan-imports/source-adapter";
 
@@ -117,6 +117,10 @@ function testGeometry() {
   assert.deepEqual(findScaleBarGeometry(page(treads)), [], "stair treads are tall for their spacing, not a bar");
 }
 
+function pageNumbered(pageNumber: number, segments: SourceVectorSegment[], labels: SourceTextEvidence[] = []) {
+  return { ...page(segments, labels), pageNumber };
+}
+
 async function testOcrFallback() {
   const asked: number[] = [];
   let closed = 0;
@@ -126,23 +130,52 @@ async function testOcrFallback() {
     async read(_page, strip) { asked.push(strip.top); return strip.bottom <= BAR_TOP ? words : []; },
     async close() { closed += 1; },
   };
-  const outlined = page(ruledBar());
+  const outlined = pageNumbered(2, ruledBar());
   const plain = page([segment(100, 100, 400, 100)]);
-  await applyScaleBarEvidence([plain, outlined], reader);
+  const found = await applyScaleBarEvidence([plain, outlined], reader);
   assert.equal(plain.scaleBar, undefined, "a page without a bar is left alone and costs no OCR");
   assert.equal(outlined.scaleBar?.labelSource, "local_ocr", "outlined numbers are read from the strip above the bar");
   assert.deepEqual(outlined.scaleBar?.values, [0, 1, 2, 3, 4, 5]);
   assert.equal(asked.length, 1, "the first strip read is enough");
   assert.equal(closed, 1, "the reader is closed once");
+  assert.deepEqual(found.get(1), { status: "no_bar", barCount: 0, stripsRead: 0, error: null });
+  assert.deepEqual(found.get(2), { status: "read_by_ocr", barCount: 1, stripsRead: 1, error: null });
+  assert.equal(scaleBarUnreadMessage(outlined), null, "a reading leaves no note");
 
   const labelled = page(ruledBar(), separateLabels());
   const untouched: ScaleBarStripReader = { async read() { return assert.fail("text labels need no OCR"); }, async close() {} };
-  await applyScaleBarEvidence([labelled], untouched);
+  assert.equal((await applyScaleBarEvidence([labelled], untouched)).get(1)?.status, "read_from_text");
   assert.equal(labelled.scaleBar?.labelSource, "pdf_text");
-  const failing: ScaleBarStripReader = { async read() { throw new Error("ocr down"); }, async close() { throw new Error("close down"); } };
-  const unread = page(ruledBar());
-  await applyScaleBarEvidence([unread], failing);
+  assert.equal((await applyScaleBarEvidence([page(ruledBar())], null)).get(1)?.status, "ocr_unavailable", "no OCR on this server");
+}
+
+/** Why a ruled bar was not read is kept, so a page without a scale says so. */
+async function testUnreadBars() {
+  let reads = 0;
+  const failing: ScaleBarStripReader = {
+    async read() { reads += 1; throw new Error("LOCAL_OCR_TIMEOUT\n  at worker"); },
+    async close() { throw new Error("close down"); },
+  };
+  const unread = pageNumbered(1, ruledBar()), later = pageNumbered(2, ruledBar());
+  const found = await applyScaleBarEvidence([unread, later], failing);
   assert.equal(unread.scaleBar, undefined, "an OCR failure leaves the page for the reviewer");
+  assert.deepEqual(found.get(1), { status: "ocr_failed", barCount: 1, stripsRead: 1, error: "LOCAL_OCR_TIMEOUT at worker" });
+  assert.equal(found.get(2)?.status, "ocr_skipped", "a failure is not repeated on the next page");
+  assert.equal(reads, 1);
+  assert.equal(scaleBarUnreadMessage(unread), "Scale bar not read: what looks like a scale bar was found, but reading its numbers failed. " +
+    "Confirm one known distance, such as two of its numbered ticks.", "the error itself stays in the manifest");
+  const [issue] = scaleUnresolvedIssues({ pages: [unread] } as unknown as ExtractionEnvelope, unread, null);
+  assert.equal(issue.message, scaleBarUnreadMessage(unread), "the scale review says why the bar did not set the scale");
+  assert.equal(scaleBarUnreadMessage(later), null, "a skipped page gets no note");
+
+  const blank: ScaleBarStripReader = { async read() { return []; }, async close() {} };
+  const pages = [1, 2, 3].map((pageNumber) => pageNumbered(pageNumber, ruledBar()));
+  const blanks = await applyScaleBarEvidence(pages, blank);
+  assert.deepEqual(blanks.get(1), { status: "bar_unread", barCount: 1, stripsRead: 2, error: null }, "both strips were read");
+  assert.match(scaleBarUnreadMessage(pages[0]) ?? "", /its numbers did not line up with its ticks/);
+  assert.deepEqual([2, 3].map((pageNumber) => blanks.get(pageNumber)?.status), ["bar_unread", "ocr_skipped"], "OCR is spent on two pages at most");
+  const long = await applyScaleBarEvidence([page(ruledBar())], { async read() { throw new Error("x".repeat(500)); }, async close() {} });
+  assert.equal(long.get(1)?.error?.length, 200, "the error kept is bounded");
 }
 
 function testScaleAndCalibration() {
@@ -199,6 +232,8 @@ async function testPdfImport() {
   const pixelsPerMetre = 30 * (rendered[0].widthPx / 595);
   const bar = envelope.pages[0].scaleBar;
   assert.ok(bar, "the PDF's bar is read during extraction");
+  const manifest = extracted.sourceManifest as { pages: Array<{ scaleBar: { status: string } | null }> };
+  assert.equal(manifest.pages[0].scaleBar?.status, "read_from_text", "the source manifest says how the bar was read");
   assert.deepEqual(bar.values, [0, 1, 2, 3, 4, 5]);
   assert.ok(Math.abs(bar.millimetresPerPixel - 1000 / pixelsPerMetre) / (1000 / pixelsPerMetre) < 0.005, "scale within half a percent");
   envelope.selectedPageNumber = 1;
@@ -222,6 +257,7 @@ async function main() {
   testRowsThatAreNotBars();
   testGeometry();
   await testOcrFallback();
+  await testUnreadBars();
   testScaleAndCalibration();
   await testPdfImport();
   console.log("floor-plan scale bar: all checks passed");

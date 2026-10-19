@@ -1,9 +1,12 @@
 import { test, expect } from "../fixtures";
-import { mockPlan, openMillworkStudioFromWorkspaceMenu } from "./helpers";
+import { mockPlan, openMillworkStudioFromWorkspaceMenu, startInMillimetres } from "./helpers";
 
 export function registerSelectionTests() {
   test.describe("Custom Millwork Studio selection", () => {
     test.setTimeout(600000);
+    test.beforeEach(async ({ page }) => {
+      await startInMillimetres(page);
+    });
 
     test("Detailed wardrobe selection stays coherent from module to shelf and back", async ({
       page,
