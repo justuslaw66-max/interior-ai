@@ -56,10 +56,10 @@ export function CabinetGuidedPreviewPanel({
       }`}
     >
       <CabinetStudioPreviewInteractionController {...interaction} />
-      <div className="absolute inset-x-5 top-5 z-30 grid gap-2">
+      <div className="pointer-events-none absolute inset-x-5 top-5 z-30 grid gap-2">
         <div
           data-testid="cabinet-guided-preview-controls"
-          className="flex max-w-full flex-wrap items-center justify-end gap-2"
+          className="pointer-events-auto flex max-w-full flex-wrap items-center justify-end gap-2 justify-self-end"
         >
           <CabinetPreviewViewSelector value={view} onChange={onViewChange} />
           {isProWorkspace ? (

@@ -1,9 +1,12 @@
 import { test, expect } from "../fixtures";
-import { EDITOR_STORAGE_KEY, dismissBlockingPrompt, placeCabinetRun } from "./helpers";
+import { EDITOR_STORAGE_KEY, dismissBlockingPrompt, placeCabinetRun, startInMillimetres } from "./helpers";
 
 export function registerPlacementTests() {
   test.describe("Custom Millwork Studio placement", () => {
     test.setTimeout(600000);
+    test.beforeEach(async ({ page }) => {
+      await startInMillimetres(page);
+    });
 
     test("Pro designer can place a cabinet run with complete project metadata", async ({
       page,
@@ -27,8 +30,8 @@ export function registerPlacementTests() {
       await expect(placedCabinet).toHaveAttribute("data-material-schedule-count", "4");
       await expect(placedCabinet).toHaveAttribute("data-hardware-schedule-count", "3");
       await expect(placedCabinet).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(placedCabinet).toHaveAttribute("data-edge-banding-total-m", "28.23");
-      await expect(placedCabinet).toHaveAttribute("data-cut-list-count", "30");
+      await expect(placedCabinet).toHaveAttribute("data-edge-banding-total-m", "27.36");
+      await expect(placedCabinet).toHaveAttribute("data-cut-list-count", "27");
       await expect(placedCabinet).toHaveAttribute("data-dimension-schedule-count", "4");
       await expect(placedCabinet).toHaveAttribute("data-drawing-view-schedule-count", "9");
       await expect(placedCabinet).toHaveAttribute("data-installer-note-count", /\d+/);
@@ -60,8 +63,8 @@ export function registerPlacementTests() {
       await expect(projectSchedule).toHaveAttribute("data-asset-count", "1");
       await expect(projectSchedule).toHaveAttribute("data-module-count", "3");
       await expect(projectSchedule).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(projectSchedule).toHaveAttribute("data-edge-banding-total-m", "28.23");
-      await expect(projectSchedule).toHaveAttribute("data-cut-list-count", "30");
+      await expect(projectSchedule).toHaveAttribute("data-edge-banding-total-m", "27.37");
+      await expect(projectSchedule).toHaveAttribute("data-cut-list-count", "27");
       const projectReadiness = page.getByTestId("project-millwork-readiness");
       await expect(projectReadiness).toHaveAttribute("data-schema", "custom_millwork.project_handoff_package.v1");
       await expect(projectReadiness).toHaveAttribute("data-handoff-status", "needs_review");
@@ -91,8 +94,8 @@ export function registerPlacementTests() {
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-material-schedule-count", "4");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-hardware-schedule-count", "3");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-total-m", "28.23");
-      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-cut-list-count", "30");
+      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-total-m", "27.36");
+      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-cut-list-count", "27");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-dimension-schedule-count", "4");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-drawing-view-schedule-count", "9");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-release-checklist-count", "7");
@@ -184,7 +187,7 @@ export function registerPlacementTests() {
       await expect(placedCabinet).toHaveAttribute("data-instance-id", instanceId!);
       await expect(placedCabinet).toHaveAttribute("data-width-mm", "2800");
       await expect(placedCabinet).toHaveAttribute("data-module-count", "3");
-      await expect(placedCabinet).toHaveAttribute("data-cut-list-count", "30");
+      await expect(placedCabinet).toHaveAttribute("data-cut-list-count", "27");
       await expect(placedCabinet).toHaveAttribute("data-dimension-schedule-count", "4");
       await expect(placedCabinet).toHaveAttribute("data-drawing-view-schedule-count", "9");
       await expect(placedCabinet).toHaveAttribute("data-release-checklist-count", "7");
@@ -192,15 +195,15 @@ export function registerPlacementTests() {
       await expect(placedCabinet).toHaveAttribute("data-supplier-readiness-status", "ready_for_fabricator_review");
       await expect(placedCabinet).toHaveAttribute("data-supplier-sku-mapping-count", "10");
       await expect(placedCabinet).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(placedCabinet).toHaveAttribute("data-edge-banding-total-m", "32.23");
+      await expect(placedCabinet).toHaveAttribute("data-edge-banding-total-m", "30.96");
       await expect(placedCabinet).toHaveAttribute("data-fabrication-release-status", "needs_review");
       await expect(placedCabinet).toHaveAttribute("data-assembly-profile-schema", "custom_millwork.assembly_profile.v1");
       await expect(placedCabinet).toHaveAttribute("data-assembly-profile-placement-kind", "built_in_wall");
       await expect(placedCabinet).toHaveAttribute("data-assembly-profile-complexity", "moderate");
       await expect(projectSchedule).toHaveAttribute("data-asset-count", "1");
       await expect(projectSchedule).toHaveAttribute("data-module-count", "3");
-      await expect(projectSchedule).toHaveAttribute("data-edge-banding-total-m", "32.23");
-      await expect(projectSchedule).toHaveAttribute("data-cut-list-count", "30");
+      await expect(projectSchedule).toHaveAttribute("data-edge-banding-total-m", "30.97");
+      await expect(projectSchedule).toHaveAttribute("data-cut-list-count", "27");
       await expect(projectReadiness).toHaveAttribute("data-schema", "custom_millwork.project_handoff_package.v1");
       await expect(projectReadiness).toHaveAttribute("data-handoff-status", "needs_review");
       await expect(projectReadiness).toHaveAttribute("data-asset-count", "1");
@@ -221,9 +224,9 @@ export function registerPlacementTests() {
       await expect(placedCabinet).toHaveAttribute("data-transform-rotation-y", beforeRotation!);
       await expect(placedCabinet).toHaveAttribute("data-asset-manifest-transform-position", beforePosition!);
       await expect(placedCabinet).toHaveAttribute("data-asset-manifest-transform-rotation-y", beforeRotation!);
-      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-cut-list-count", "30");
+      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-cut-list-count", "27");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-total-m", "32.23");
+      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-total-m", "30.96");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-supplier-readiness-status", "ready_for_fabricator_review");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-fabrication-release-status", "needs_review");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-assembly-profile-schema", "custom_millwork.assembly_profile.v1");
@@ -262,7 +265,7 @@ export function registerPlacementTests() {
                 cabinet.cabinetDefinition?.totalWidth === 2800 &&
                 cabinet.cabinetDefinition.modules?.length === 3 &&
                 (cabinet.bomSnapshot?.length ?? 0) > 0 &&
-                cabinet.cutListSnapshot?.length === 30 &&
+                cabinet.cutListSnapshot?.length === 27 &&
                 Array.isArray(cabinet.transform?.position) &&
                 cabinet.glbAssetUrl === undefined &&
                 !cabinet.millworkAssetManifest?.generatedOutput?.url?.startsWith("blob:") &&
@@ -322,7 +325,7 @@ export function registerPlacementTests() {
       expect(storedCabinetSnapshot).toMatchObject({
         assetType: "parametric_cabinet",
         widthMm: 2800,
-        cutListCount: 30,
+        cutListCount: 27,
         transformPosition: beforePosition,
         transformRotationY: beforeRotation,
         glbAssetUrl: null,
@@ -338,19 +341,20 @@ export function registerPlacementTests() {
       expect(storedCabinetSnapshot.bomCount).toBeGreaterThan(0);
 
       await page.reload({ waitUntil: "domcontentloaded" });
-      await expect(page.getByTestId("open-custom-millwork-studio")).toBeVisible({ timeout: 30000 });
+      // The editor reopens on Plan, and Built-ins' entry only shows in Furnish, so wait for the steps.
+      await expect(page.getByTestId("editor-workflow-furnish")).toBeVisible({ timeout: 30000 });
       const restoredCabinet = page.getByTestId("placed-millwork-asset").first();
       await expect(restoredCabinet).toHaveCount(1, { timeout: 30000 });
 
       await expect(restoredCabinet).toHaveAttribute("data-width-mm", "2800");
       await expect(restoredCabinet).toHaveAttribute("data-module-count", "3");
-      await expect(restoredCabinet).toHaveAttribute("data-cut-list-count", "30");
+      await expect(restoredCabinet).toHaveAttribute("data-cut-list-count", "27");
       await expect(restoredCabinet).toHaveAttribute("data-dimension-schedule-count", "4");
       await expect(restoredCabinet).toHaveAttribute("data-drawing-view-schedule-count", "9");
       await expect(restoredCabinet).toHaveAttribute("data-release-checklist-count", "7");
       await expect(restoredCabinet).toHaveAttribute("data-release-blocker-count", "0");
       await expect(restoredCabinet).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(restoredCabinet).toHaveAttribute("data-edge-banding-total-m", "32.23");
+      await expect(restoredCabinet).toHaveAttribute("data-edge-banding-total-m", "30.96");
       await expect(restoredCabinet).toHaveAttribute("data-fabrication-release-status", "needs_review");
       await expect(restoredCabinet).toHaveAttribute("data-assembly-profile-schema", "custom_millwork.assembly_profile.v1");
       await expect(restoredCabinet).toHaveAttribute("data-assembly-profile-placement-kind", "built_in_wall");
@@ -358,7 +362,7 @@ export function registerPlacementTests() {
       const restoredProjectSchedule = page.getByTestId("project-millwork-schedule");
       await expect(restoredProjectSchedule).toHaveAttribute("data-schema", "custom_millwork.project_schedule.v1");
       await expect(restoredProjectSchedule).toHaveAttribute("data-asset-count", "1");
-      await expect(restoredProjectSchedule).toHaveAttribute("data-edge-banding-total-m", "32.23");
+      await expect(restoredProjectSchedule).toHaveAttribute("data-edge-banding-total-m", "30.97");
       const restoredProjectReadiness = page.getByTestId("project-millwork-readiness");
       await expect(restoredProjectReadiness).toHaveAttribute("data-schema", "custom_millwork.project_handoff_package.v1");
       await expect(restoredProjectReadiness).toHaveAttribute("data-handoff-status", "needs_review");
@@ -388,8 +392,11 @@ export function registerPlacementTests() {
       const canvasBox = await sceneCanvas.boundingBox();
       expect(canvasBox).toBeTruthy();
 
-      const startX = canvasBox!.x + canvasBox!.width * 0.5;
-      const startY = canvasBox!.y + canvasBox!.height * 0.45;
+      // The scene fills the window behind the floating panels, so at 1280x720 the run sits a little
+      // below the canvas's middle. Its front face is at about 49% across and 58% down; 45% down is
+      // the back wall just above it, where a drag orbits the camera instead.
+      const startX = canvasBox!.x + canvasBox!.width * 0.49;
+      const startY = canvasBox!.y + canvasBox!.height * 0.58;
       await page.mouse.move(startX, startY);
       await page.mouse.down();
       await page.mouse.move(startX - 90, startY + 30, { steps: 8 });

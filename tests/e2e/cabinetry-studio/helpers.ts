@@ -3,6 +3,17 @@ import { expect } from "../fixtures";
 
 export const EDITOR_STORAGE_KEY = "interior-ai:v1:livingroom-design";
 
+// The suite's values are millimetres, and new projects open in centimetres
+// (DEFAULT_DISPLAY_UNIT), so each test starts in millimetres. A unit the test
+// or the app has already stored is kept, so the free-plan test's centimetres win.
+export async function startInMillimetres(page: import("@playwright/test").Page) {
+  await page.addInitScript(() => {
+    if (window.localStorage.getItem("plan_measurement_unit") === null) {
+      window.localStorage.setItem("plan_measurement_unit", "mm");
+    }
+  });
+}
+
 export async function mockPlan(page: import("@playwright/test").Page, plan: "free" | "pro") {
   await page.route("**/api/me", async (route) => {
     await route.fulfill({
