@@ -341,7 +341,8 @@ export function registerPlacementTests() {
       expect(storedCabinetSnapshot.bomCount).toBeGreaterThan(0);
 
       await page.reload({ waitUntil: "domcontentloaded" });
-      await expect(page.getByTestId("open-custom-millwork-studio")).toBeVisible({ timeout: 30000 });
+      // The editor reopens on Plan, and Built-ins' entry only shows in Furnish, so wait for the steps.
+      await expect(page.getByTestId("editor-workflow-furnish")).toBeVisible({ timeout: 30000 });
       const restoredCabinet = page.getByTestId("placed-millwork-asset").first();
       await expect(restoredCabinet).toHaveCount(1, { timeout: 30000 });
 
