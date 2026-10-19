@@ -16,7 +16,7 @@ import json, math, os, re, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.32.0"
+VERSION = "app-evidence-0.32.1"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 R39_PICTURE_BAND = os.environ.get("AE_R39_PICTURE_BAND", "1") != "0"   # round 39: a window read in the picture where stage 1 has its strokes only in pieces
@@ -5651,9 +5651,7 @@ def build(m, gray=None):
     out["diagnostics"]["facesFitToTheDrawing"] = fit_drawn_faces(out, gray, S, T * k_len, FIT_FACES) if FIT_FACES > 0 else 0
     jogs = out.pop("_jogs", [])
     chosen = choose_jog_thickness(out, jogs)                 # (before the standalone walls, which fit the walls as built)
-    out["diagnostics"]["standaloneWallsAdded"] = leftover_walls(out, m, S, T, gray) if LEFTOVER else 0
-    out["diagnostics"]["jogsThicknessChosen"] = len(chosen | choose_jog_thickness(out, jogs))
-    out["diagnostics"]["standaloneFacesOnTheWalls"] = standalone_faces_on_walls(out, out["diagnostics"]["standaloneWallsAdded"])
+    _standalone_walls(out, m, S, T, gray, jogs, chosen)
     if SCHEMA_CAPS:
         out["diagnostics"]["itemsLeftOutForTheAppsLimits"] = fit_app_limits(out)
     dbg = {"k": k, "closed": closed, "bars": bars, "blobs": blobs, "gaps": gaps, "openings": openings, "rooms": rooms, "labels": labels, "unhosted": list(unhosted)}
@@ -6835,6 +6833,24 @@ LEFTOVER_LOG = os.environ.get("AE_LEFTOVER_LOG")
 LEFTOVER_MAX = 60
 LEFTOVER_SLIVER_T = float(os.environ.get("AE_LEFTOVER_SLIVER_T", "0.35"))
 LEFTOVER_SLIVERS = 12
+# Round 40b - walls no room is traced against (J, 19 Oct: "proceed", after round 40; the column on s022's living-room
+# wall).  The app check's drawn wall left out was, on the open plans, mostly whole runs of solid wall with no room traced
+# on either side: a refuse chute's or a DB cupboard's walls, the outer walls of a room that was not traced (s005's study,
+# s066, s073, s081), and s022's two columns, joined into one long part by the strip of wall between them.  Round 36 left a
+# long part outside every room alone (a neighbour's wall, a parapet, a wall drawn wider than traced).  Now such a part
+# becomes standalone walls when it is solid ink and most of it stands away from the app's walls - what lies within half a
+# wall of them (a wall drawn wider than traced) is left to the pieces' growth into the walls they meet - in at most
+# R40B_MAX_RECTS level / plumb rectangles covering nine tenths of it (not a slanted or ragged run).  J, 19 Oct: "keep it
+# to the unit walls only but ensure not to detect wrongly and leave things out from the unit" - so a long piece of it is
+# laid only where it is the unit's (_r40b_unit: the unit's envelope along one of its faces, or a room name in front of
+# one); a stub standing out past the unit (a neighbour's wall, a corridor's) stays out, a column or fin on a wall is laid
+# as round 36 lays columns.  Each part's pieces are kept only where the app check's replay (app_flaws.py) finds no new
+# slot, notch, seam or step and no centre-line crossing, and the page's once every later pass is done
+# (_standalone_walls).  (Notches too: the first full run added 26 at the runs' joints, most on the photographed copies;
+# runs are laid only on a page drawn level, not turned or rectified, for the same reason.)
+R40B_MISSING = os.environ.get("AE_R40B_MISSING_WALLS", "1") != "0"
+R40B_REST = float(os.environ.get("AE_R40B_REST", "0.3"))     # (the share of a part standing half a wall off the walls)
+R40B_MAX_RECTS = 6
 
 
 def _work_wall_mask(out, S, shape, centre_only=False, joints=None):
@@ -7033,12 +7049,14 @@ def _wall_vertices(out, S):
     return verts
 
 
-def _join_vertex(rect, verts, lines, T, reach):
+def _join_vertex(rect, verts, lines, T, reach, face_tol=None):
     """A piece standing on the end of a wall line or on a corner ends on that vertex - one joint, as the app builds a
     corner, instead of a step and a hairline beside it - and takes the faces of the wall it continues when they are a
     step away (J's BEDROOM 2, right column).  Returns (rectangle, vertex at its start or None, vertex at its end or None):
     unchanged when no vertex qualifies: near the piece's centre-line (within a quarter of its width, at most half a wall
-    thickness), within reach of its end, no wall leaving it into the piece, and no other centre-line on the way."""
+    thickness), within reach of its end, no wall leaving it into the piece, and no other centre-line on the way.
+    face_tol: how far a face may move out to the continued wall's (default a fifth of a wall, for a column; round 40b's
+    runs of wall pass 2 px - s008's bedroom wall took the air-con ledge's faces, 60 mm past its own ink)."""
     x0, y0, x1, y1 = rect
     plumb = y1 - y0 > x1 - x0
     lo, hi, c0, c1 = (y0, y1, x0, x1) if plumb else (x0, x1, y0, y1)     # (along, across)
@@ -7057,7 +7075,7 @@ def _join_vertex(rect, verts, lines, T, reach):
     _, v, at_lo, va, vc, back = best
     h = max(vc - c0, c1 - vc)
     tw = v[3].get(back)                                      # the wall this piece continues, straight on past the vertex
-    if tw is not None and h <= tw / 2.0 + 2.0 and tw / 2.0 - h <= max(2.0, 0.2 * T):
+    if tw is not None and h <= tw / 2.0 + 2.0 and tw / 2.0 - h <= (max(2.0, 0.2 * T) if face_tol is None else face_tol):
         h = tw / 2.0                                         # (that wall's faces: traced from the same ink)
     elif max(c0 - (vc - h), vc + h - c1) > 2.0:
         return _flush_faces(rect, verts, plumb, lo, hi, c0, c1, reach), None, None   # (centred on the vertex it would
@@ -7536,8 +7554,61 @@ def _align_after(out, S, first, mm_src):
             _app_face_ends(out, S, None, pa, pb, float(mm_src), free, own=e, across=(c - h, c + h))
 
 
-def leftover_walls(out, m, S, T, gray):
-    """Round 36 (see above).  Returns the number of standalone wall edges added."""
+def _standalone_pass(out, m, S, T, gray, jogs, chosen, runs, skip=()):
+    out["diagnostics"]["standaloneWallsAdded"] = leftover_walls(out, m, S, T, gray, runs, skip) if LEFTOVER else 0
+    out["diagnostics"]["jogsThicknessChosen"] = len(chosen | choose_jog_thickness(out, jogs))
+    out["diagnostics"]["standaloneFacesOnTheWalls"] = standalone_faces_on_walls(out, out["diagnostics"]["standaloneWallsAdded"])
+
+
+def _standalone_walls(out, m, S, T, gray, jogs, chosen):
+    """The standalone walls (rounds 36, 37 and 40b).  Round 40b's runs of wall are kept only where the page, with every
+    later pass done, has no slot, notch, seam or step the same reading without them lacks (app_flaws.py): a run near a new one
+    is left out and the rest tried again, twice at most (the run itself was checked as it was laid, but a column or a
+    pocket laid after it, or the faces put on the walls, can still meet it badly - s060's kitchen)."""
+    import copy
+    if not (LEFTOVER and R40B_MISSING) or S.Hi is not None or S.b != 0:
+        _standalone_pass(out, m, S, T, gray, jogs, set(chosen), False)
+        return                                               # (a page turned level or rectified: a level piece would lean
+                                                             # in the source's pixels and leave wedges at its joints - the
+                                                             # photographed copies' notches)
+    before = copy.deepcopy(out)
+    work = copy.deepcopy(before)
+    _standalone_pass(work, m, S, T, gray, jogs, set(chosen), True)
+    if work.get("_runs"):
+        ref = copy.deepcopy(before)
+        _standalone_pass(ref, m, S, T, gray, jogs, set(chosen), False)
+        f_ref, skip, Tf = _r40b_flaws(ref), set(), None
+        for attempt in range(3):
+            f_w = _r40b_flaws(work)
+            if f_ref is None or f_w is None:
+                break
+            import app_flaws
+            new = app_flaws.added(f_w, f_ref)
+            bad = [f for k_ in ("slots", "notches", "seams", "steps") for f in new[k_]]
+            if not bad:
+                break
+            Tf = Tf or app_flaws.wall_T(work)
+            near = {r_["part"] for r_ in work["_runs"] if any(r_["box"][0] - 2 * Tf <= f[0] <= r_["box"][2] + 2 * Tf
+                                                             and r_["box"][1] - 2 * Tf <= f[1] <= r_["box"][3] + 2 * Tf for f in bad)}
+            if attempt == 2 or not near:
+                n_runs = len(work["_runs"])
+                work = ref
+                work["diagnostics"]["wallRunsNoRoomTracedAgainst"] = 0
+                work["diagnostics"]["wallRunsWithheldAtTheEnd"] = n_runs
+                break
+            skip |= near
+            work = copy.deepcopy(before)
+            _standalone_pass(work, m, S, T, gray, jogs, set(chosen), True, skip)
+            work["diagnostics"]["wallRunsLeftOutAtFlaws"] = len(skip)
+            if not work.get("_runs"):
+                break
+    work.pop("_runs", None)
+    out.clear(); out.update(work)
+
+
+def leftover_walls(out, m, S, T, gray, runs=False, skip=()):
+    """Round 36 (see above), with round 40b's runs of wall (runs: on; skip: the parts, by their box in working px, not
+    to lay).  Returns the number of standalone wall edges added."""
     W, H = int(m["size"][0]), int(m["size"][1])
     app = _work_wall_mask(out, S, (H, W))
     lines = cv2.dilate(_work_wall_mask(out, S, (H, W), centre_only=True), np.ones((3, 3), np.uint8))
@@ -7565,6 +7636,9 @@ def leftover_walls(out, m, S, T, gray):
     next_id = max((int(e["id"][1:]) for e in out["wallEdges"] if e["id"][1:].isdigit()), default=0) + 1
     reach = int(math.ceil(T)) + 3
     added, rects = 0, []
+    zone = flaws_before = unit = None
+    flaws_at = -1
+    missing = 0
     for i in range(1, n):
         x, y, w, h, area = (int(v) for v in st[i])
         if area < 0.25 * T * T:
@@ -7574,9 +7648,32 @@ def leftover_walls(out, m, S, T, gray):
             continue                                         # (standing apart from every wall: not this pass's)
         inside = float((rooms_mask[y:y + h, x:x + w][comp > 0] > 0).mean())
         compact = max(w, h) <= LEFTOVER_COMPACT_T * T and area <= 2.0 * LEFTOVER_COMPACT_T * T * T
-        if inside < 0.7 and not compact:
+        long_out = inside < 0.7 and not compact
+        if long_out and not (runs and ink is not None) or (long_out and (x, y, w, h) in skip):
             continue
-        for x0, y0, x1, y1 in _rectangles(comp, 0.25 * T * T, max(3.0, 0.2 * T)):
+        part_rects, crossed = None, False
+        if long_out:                                         # (round 40b: a run of wall no room is traced against)
+            if zone is None:
+                zone = cv2.dilate(app, np.ones((2 * int(math.ceil(0.5 * T)) + 1,) * 2, np.uint8))
+            rest = ((comp > 0) & (zone[y:y + h, x:x + w] == 0)).astype(np.uint8)
+            if rest.sum() < R40B_REST * comp.sum() or ink[y:y + h, x:x + w][rest > 0].mean() < 0.6:
+                continue                                     # (a strip along a wall's face; lines, not a solid wall)
+            if unit is None:
+                unit = _r40b_unit(m, H, W, drawn, app, rooms_mask, T)
+            rest = _r40b_unit_rest(rest, x, y, comp, unit, drawn, app, T)
+            if rest.sum() < R40B_REST * comp.sum():
+                continue                                     # (not the unit's: a neighbour's wall, a parapet)
+            part_rects = _rectangles(rest, 0.25 * T * T, max(3.0, 0.2 * T))
+            cover = np.zeros_like(rest)
+            for x0, y0, x1, y1 in part_rects:
+                cover[y0:y1, x0:x1] = 1
+            if (not part_rects or len(part_rects) > R40B_MAX_RECTS
+                    or float((cover & rest).sum()) < 0.9 * float(rest.sum())):
+                continue                                     # (slanted or ragged: not level / plumb pieces)
+            if flaws_before is None or flaws_at != len(out["wallEdges"]):
+                flaws_before, flaws_at = _r40b_flaws(out), len(out["wallEdges"])   # (with every piece laid so far)
+            undo = (len(out["wallEdges"]), lines.copy(), app_near.copy(), len(rects), next_id, added)
+        for x0, y0, x1, y1 in (part_rects if part_rects is not None else _rectangles(comp, 0.25 * T * T, max(3.0, 0.2 * T))):
             if added >= LEFTOVER_MAX:
                 break
             box = (slice(y + y0, y + y1), slice(x + x0, x + x1))
@@ -7592,22 +7689,214 @@ def leftover_walls(out, m, S, T, gray):
             rect = _reach_walls(app_near, drawn, lines, x0 + x, y0 + y, x1 + x, y1 + y, reach)
             rect = _through_mass(rect, drawn, app_j, lines, 2 * reach)
             rect = _touch_walls(_meet_across(rect, app_j, lines, T), app_j, room_lines)
-            rect, sv, ev = _join_vertex(rect, verts, lines, T, reach)
+            rect, sv, ev = _join_vertex(rect, verts, lines, T, reach, 2.0 if long_out else None)
             if sv is None and ev is None:
                 rect = _overlap_walls(rect, walls + rects, lines)
+            if long_out and _crosses(rect, lines, _shared_ends(out, S, rect)):
+                crossed = True                               # (its centre-line would cross a wall's: the app refuses it)
+                break
             rects.append(rect)
             a, b, ts = _emit(out, S, rect, next_id, mm_src, sv, ev)
             _mark(lines, app_near, rect, a, b)
             _log("part", x, y, w, h, "%s, inside %.0f%%" % ("compact" if compact else "long", 100 * inside), T, rect,
                  next_id, S, a, b, ts)
             next_id += 1; added += 1
+        if long_out and not crossed and added > undo[5] and added < LEFTOVER_MAX:
+            added, next_id = _r40b_between(out, S, T, comp, x, y, w, h, rects[undo[3]:], rects, walls, app_j, app_near,
+                                           drawn, lines, ink_raw, mm_src, next_id, added)
+        if long_out:
+            after = None if crossed or added == undo[5] else _r40b_flaws(out)
+            new_ = ["a centre-line crossing"] if crossed else _r40b_new(after, flaws_before)
+            if new_ or added == undo[5]:
+                del out["wallEdges"][undo[0]:]
+                lines[:], app_near[:] = undo[1], undo[2]
+                del rects[undo[3]:]
+                next_id, added = undo[4], undo[5]
+                if new_ and LEFTOVER_LOG:
+                    print("leftover: run at %d,%d %dx%d withheld (%s)" % (x, y, w, h, ", ".join(new_)), file=sys.stderr)
+            else:
+                flaws_before, flaws_at = (after, len(out["wallEdges"])) if after is not None else (flaws_before, -1)
+                missing += 1
+                pts = [q for e in out["wallEdges"][undo[0]:] for q in e["sourcePx"][:2]]
+                out.setdefault("_runs", []).append({"part": (x, y, w, h), "box": (min(q[0] for q in pts), min(q[1] for q in pts),
+                                                                                 max(q[0] for q in pts), max(q[1] for q in pts))})
     if ink_raw is not None and added < LEFTOVER_MAX:
         added += _slivers(out, S, T, drawn, ink_raw, lines, verts, rects, next_id, mm_src,
                           min(LEFTOVER_MAX - added, LEFTOVER_SLIVERS))
     if ink_raw is not None and added < LEFTOVER_MAX:
         added += _pockets(out, S, T, drawn, ink_raw, lines, rooms_mask, mm_src, min(LEFTOVER_MAX - added, LEFTOVER_SLIVERS))
     _align_after(out, S, len(out["wallEdges"]) - added, mm_src)
+    if runs:
+        out["diagnostics"]["wallRunsNoRoomTracedAgainst"] = missing
     return added
+
+
+def _r40b_between(out, S, T, comp, x, y, w, h, run_rects, rects, walls, app_j, app_near, drawn, lines, ink_raw, mm_src,
+                  next_id, added):
+    """A strip of a run's part left between two of its pieces, along a wall's face (s022: the wall drawn wider between
+    its two columns than the room's wall was traced) - solid ink, at most 0.6 of a wall deep, a wall long or longer, both
+    its ends on pieces of this run - gets a piece of its own, carried into the wall and the pieces it meets.  A strip
+    along a wall's face with no piece at an end stays out (round 36: window frames, fixtures)."""
+    H, W = app_j.shape
+    pad = int(math.ceil(T)) + 3
+    X0, Y0, X1, Y1 = max(0, x - pad), max(0, y - pad), min(W, x + w + pad), min(H, y + h + pad)
+    pieces = np.zeros((Y1 - Y0, X1 - X0), np.uint8)
+    for a0, b0, a1, b1 in run_rects:
+        pieces[max(0, int(math.floor(b0)) - Y0):max(0, int(math.ceil(b1)) - Y0), max(0, int(math.floor(a0)) - X0):max(0, int(math.ceil(a1)) - X0)] = 1
+    part = np.zeros_like(pieces)
+    part[y - Y0:y - Y0 + h, x - X0:x - X0 + w] = comp
+    left = ((part > 0) & (pieces == 0) & (app_j[Y0:Y1, X0:X1] == 0)).astype(np.uint8)
+    left = cv2.morphologyEx(left, cv2.MORPH_OPEN, np.ones((2, 2), np.uint8))
+    n, lab, st, _ = cv2.connectedComponentsWithStats(left, 8)
+    for i in range(1, n):
+        bx, by, bw, bh, area = (int(v) for v in st[i])
+        short, long_ = min(bw, bh), max(bw, bh)
+        if area < 0.5 * T * T or short > 0.6 * T + 1 or long_ < T or added >= LEFTOVER_MAX:
+            continue
+        sel = lab[by:by + bh, bx:bx + bw] == i
+        if float(sel.mean()) < 0.8 or float(ink_raw[Y0 + by:Y0 + by + bh, X0 + bx:X0 + bx + bw][sel].mean()) < 0.75:
+            continue                                         # (not a solid strip)
+        plumb = bh > bw
+        ends = ((pieces[max(0, by - 2):by, bx:bx + bw], pieces[by + bh:by + bh + 2, bx:bx + bw]) if plumb else
+                (pieces[by:by + bh, max(0, bx - 2):bx], pieces[by:by + bh, bx + bw:bx + bw + 2]))
+        if not all(e_.size and float(e_.mean()) >= 0.5 for e_ in ends):
+            continue                                         # (not between two of the run's pieces)
+        rect = _reach_walls(app_near, drawn, lines, X0 + bx, Y0 + by, X0 + bx + bw, Y0 + by + bh, 3)
+        rect = _overlap_walls(rect, walls + rects, lines)
+        if _crosses(rect, lines, _shared_ends(out, S, rect)):
+            continue
+        rects.append(rect)
+        a, b, ts = _emit(out, S, rect, next_id, mm_src)
+        _mark(lines, app_near, rect, a, b)
+        _log("strip between a run's pieces", X0 + bx, Y0 + by, bw, bh, "", T, rect, next_id, S, a, b, ts)
+        next_id += 1; added += 1
+    return added, next_id
+
+
+R40B_ROOM_WORDS = ("BED", "ROOM", "KITCHEN", "LIVING", "DINING", "BATH", "WC", "W.C", "TOILET", "STORE", "BALCONY", "STUDY",
+                   "FAMILY", "UTILITY", "YARD", "LEDGE", "SHELTER", "FOYER", "HALL", "MASTER", "MAID", "POWDER", "PANTRY",
+                   "LAUNDRY", "CLOSET", "WIC", "SERVICE", "LOUNGE", "OFFICE", "GUEST", "PES", "TERRACE", "PATIO")
+R40B_COMMON = ("ACCESS", "CORRIDOR", "LOBBY", "LANDING", "LIFT", "STAIR", "COMMON")
+R40B_TITLE = ("TYPE", "MODEL", "APARTMENT", "FLAT", "SCALE", "PLAN")
+
+
+def _r40b_unit(m, H, W, drawn, app, rooms_mask, T):
+    """J, 19 Oct: "keep it to the unit walls only but ensure not to detect wrongly and leave things out from the unit".
+    The unit, for round 40b's runs: (a) its envelope - stage 1's walls, partitions, lines (not dimension or extension
+    lines), slanted walls, arcs and door leaves, with the app's walls and rooms, closed over a metre (a door, a narrow
+    window) and filled - less the common areas in it (the free space round an ACCESS BALCONY, CORRIDOR, LOBBY ...
+    label, closed over 80 mm); and (b) the room names stage 1 read (not a plan's title or a common area).  Returns
+    (envelope mask, names [(x, y)], mm per working px)."""
+    mm = float(m.get("mm_per_px") or 0) or 200.0 / max(T, 1.0)
+    s_ = drawn.copy()
+    for l in m.get("lines", []):
+        if l.get("role") in ("dimension", "extension"):
+            continue
+        t = max(2, int(round(l.get("w", 2))))
+        a, b = (int(round(l["a"])), int(round(l["c"]))), (int(round(l["b"])), int(round(l["c"])))
+        if l["o"] == "v":
+            a, b = (a[1], a[0]), (b[1], b[0])
+        cv2.line(s_, a, b, 255, t)
+    for d in m.get("diagonals", []):
+        P = np.round(np.array(d, float).reshape(-1, 2)).astype(np.int32)
+        if len(P) >= 2:
+            cv2.polylines(s_, [P], False, 255, 3)
+    for a in m.get("arcs", []):
+        rx, ry = a.get("rx", a["r"]), a.get("ry", a["r"])
+        cv2.ellipse(s_, (int(round(a["cx"])), int(round(a["cy"]))), (int(round(rx)), int(round(ry))), 0, a["start"],
+                    a["start"] + a.get("span", 90.0), 255, 3)
+    for d in m.get("doors", []):
+        hx, hy = d["hinge"]; L = d.get("leaf_px", 0); ang = math.radians(d.get("leaf_angle_deg", 0))
+        cv2.line(s_, (int(round(hx)), int(round(hy))), (int(round(hx + L * math.cos(ang))), int(round(hy + L * math.sin(ang)))), 255, 3)
+    s_ = s_ | app | rooms_mask
+    k = max(3, int(round(1000.0 / mm)) | 1)
+    closed = cv2.morphologyEx(s_, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k)))
+    ff = np.pad((closed > 0).astype(np.uint8), 1)
+    cv2.floodFill(ff, None, (0, 0), 2)
+    env = (ff[1:-1, 1:-1] != 2).astype(np.uint8)            # (the closed structure and every hole in it)
+    names, common = [], []
+    for t in m.get("texts", []):
+        s_t = t.get("s", "").upper()
+        b = t.get("box") or [0, 0, 0, 0]
+        c = (int(b[0] + b[2] / 2), int(b[1] + b[3] / 2))
+        if not (0 <= c[0] < W and 0 <= c[1] < H):
+            continue
+        if any(w_ in s_t for w_ in R40B_COMMON):
+            common.append(c)
+        elif (any(w_ in s_t for w_ in R40B_ROOM_WORDS) and len(s_t) <= 24 and not re.search(r"\d\s*-?\s*ROOM", s_t)
+              and not any(w_ in s_t for w_ in R40B_TITLE)):
+            names.append(c)
+    if common:
+        kf = max(3, int(round(80.0 / mm)) | 1)
+        free = (cv2.morphologyEx(s_, cv2.MORPH_CLOSE, np.ones((kf, kf), np.uint8)) == 0).astype(np.uint8)
+        n, lab, _st, _c = cv2.connectedComponentsWithStats(free, 4)
+        for cx, cy in common:
+            if lab[cy, cx] > 0 and not (rooms_mask[lab == lab[cy, cx]] > 0).any():
+                env[lab == lab[cy, cx]] = 0                  # (a common area: not the unit, though walls close it in)
+    return env, names, mm
+
+
+def _r40b_unit_rest(rest, x, y, comp, unit, drawn, app, T):
+    """the rest of a run's part, less its long pieces that are not the unit's: a long piece is the unit's where the
+    unit's envelope lies along half of one of its long sides (within 1.5 wall thicknesses), or a room name stage 1 read
+    lies in front of one of them, within 4 m, before any wall.  A compact piece (a column, a fin) stays, as round 36's
+    columns do."""
+    env, names, mm = unit
+    H, W = env.shape
+    n, lab, st, _ = cv2.connectedComponentsWithStats(rest, 8)
+    out = rest.copy()
+    D = int(math.ceil(1.5 * T)); Ld = int(4000.0 / mm)
+    for j in range(1, n):
+        bx, by, bw, bh, ba = (int(v) for v in st[j])
+        if max(bw, bh) <= LEFTOVER_COMPACT_T * T and ba <= 2.0 * LEFTOVER_COMPACT_T * T * T:
+            continue
+        X0, Y0, X1, Y1 = x + bx, y + by, x + bx + bw, y + by + bh
+        plumb = bh > bw
+        sides = ((env[Y0:Y1, max(0, X0 - D):X0], env[Y0:Y1, X1:X1 + D]) if plumb else
+                 (env[max(0, Y0 - D):Y0, X0:X1], env[Y1:Y1 + D, X0:X1]))
+        if any(s_.size and float(s_.mean()) >= 0.5 for s_ in sides):
+            continue
+        own = np.zeros((H, W), np.uint8)
+        own[y:y + comp.shape[0], x:x + comp.shape[1]] = comp
+        named = False
+        for sd in (-1, 1):
+            swept = np.zeros((H, W), np.uint8)
+            for f in np.linspace(0.0, 1.0, max(3, max(bw, bh) // 4)):
+                if plumb:
+                    yy, xx = int(Y0 + f * (Y1 - Y0 - 1)), (X0 - 1 if sd < 0 else X1)
+                else:
+                    xx, yy = int(X0 + f * (X1 - X0 - 1)), (Y0 - 1 if sd < 0 else Y1)
+                for k_ in range(1, Ld):
+                    px, py = (xx + sd * k_, yy) if plumb else (xx, yy + sd * k_)
+                    if not (0 <= px < W and 0 <= py < H) or ((drawn[py, px] or app[py, px]) and not own[py, px]):
+                        break
+                    swept[py, px] = 1
+            swept = cv2.dilate(swept, np.ones((5, 5), np.uint8))
+            if any(swept[cy, cx] for cx, cy in names):
+                named = True
+                break
+        if not named:
+            out[lab == j] = 0
+    return out
+
+
+def _r40b_flaws(out):
+    """the app check's slots, seams and steps, replayed (app_flaws.py), or None when it cannot run"""
+    try:
+        import app_flaws
+        return app_flaws.flaws(out)
+    except Exception:
+        return None
+
+
+def _r40b_new(after, before):
+    """what a part's pieces add: new slots, notches, seams or steps (app_flaws.added) - or nothing to compare (kept)"""
+    if after is None or before is None:
+        return []
+    import app_flaws
+    new = app_flaws.added(after, before)
+    return ["%d %s %s" % (len(new[k]), k, " ".join("(%s)" % ",".join("%g" % v for v in f) for f in new[k][:4]))
+            for k in ("slots", "notches", "seams", "steps") if new[k]]
 
 
 def weld_shared_ends(rooms, tol):

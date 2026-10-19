@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.32.0",
+ "exporterVersion": "app-evidence-0.32.1",
  "page": {
   "widthPx": 2774,
   "heightPx": 1786,
@@ -3669,6 +3669,23 @@
    "kind": "wall_centerline",
    "sourcePx": [
     [
+     1228.0,
+     187.5
+    ],
+    [
+     1431.0,
+     187.5
+    ]
+   ],
+   "thicknessPx": 49.0,
+   "thicknessMm": 317,
+   "opening": null
+  },
+  {
+   "id": "e90",
+   "kind": "wall_centerline",
+   "sourcePx": [
+    [
      1818.0,
      187.5
     ],
@@ -3682,7 +3699,7 @@
    "opening": null
   },
   {
-   "id": "e90",
+   "id": "e91",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3699,7 +3716,7 @@
    "opening": null
   },
   {
-   "id": "e91",
+   "id": "e92",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -3716,7 +3733,7 @@
    "opening": null
   },
   {
-   "id": "e92",
+   "id": "e93",
    "kind": "wall_centerline",
    "sourcePx": [
     [
@@ -4533,7 +4550,8 @@
   "jogFacesFlushed": 0,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 65,
-  "standaloneWallsAdded": 5,
+  "wallRunsNoRoomTracedAgainst": 1,
+  "standaloneWallsAdded": 6,
   "jogsThicknessChosen": 3,
   "standaloneFacesOnTheWalls": 0,
   "itemsLeftOutForTheAppsLimits": 0
