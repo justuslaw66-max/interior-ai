@@ -9,6 +9,7 @@ import {
   type StagingSmokeEvidenceRecord,
   type StagingSmokeStatus,
 } from "@/lib/beta-staging-evidence";
+import { Button } from "@/components/ui/Button";
 
 type Props = {
   bundle: StagingSmokeEvidenceBundle;
@@ -226,30 +227,27 @@ export default function StagingSmokeEvidencePanel({ bundle }: Props) {
           <div className="mt-2 text-xs text-neutral-500">Generated: {bundle.generatedAt}</div>
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-semibold">
-          <button
-            type="button"
+          <Button
             data-testid="staging-smoke-evidence-copy-json"
             onClick={() => copyEvidence(json, "JSON evidence")}
-            className="rounded-lg border px-3 py-2 hover:bg-neutral-50"
+            size="compact"
           >
             Copy JSON
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="staging-smoke-evidence-copy-markdown"
             onClick={() => copyEvidence(markdown, "Markdown evidence")}
-            className="rounded-lg border px-3 py-2 hover:bg-neutral-50"
+            size="compact"
           >
             Copy Markdown
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             data-testid="staging-smoke-evidence-reset"
             onClick={resetDraft}
-            className="rounded-lg border px-3 py-2 hover:bg-neutral-50"
+            size="compact"
           >
             Reset
-          </button>
+          </Button>
           <a
             data-testid="staging-smoke-evidence-json"
             href={jsonHref}

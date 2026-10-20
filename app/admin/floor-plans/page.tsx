@@ -12,6 +12,7 @@ import AdminFloorPlanFixturePanel from "./AdminFloorPlanFixturePanel";
 import AdminFloorPlanIntakeForm from "./AdminFloorPlanIntakeForm";
 import AdminFloorPlanQueueTable from "./AdminFloorPlanQueueTable";
 import { loadFloorPlanQueue } from "./load-floor-plan-queue";
+import { Button } from "@/components/ui/Button";
 
 const SECTION = adminSection("/admin/floor-plans");
 
@@ -78,9 +79,9 @@ export default async function AdminFloorPlansPage({
           <input defaultChecked={overdue} name="overdue" type="checkbox" value="1" />
           Action overdue
         </label>
-        <button className="h-10 self-end rounded-lg bg-neutral-900 px-4 text-sm font-semibold text-white">
+        <Button variant="primary" size="regular" type="submit" className="h-10 self-end">
           Apply filters
-        </button>
+        </Button>
       </form>
 
       <section className="grid grid-cols-2 gap-3 md:grid-cols-6">

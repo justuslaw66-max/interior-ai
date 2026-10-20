@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 type CreatedReviewJob = {
   job?: { id: string };
@@ -112,15 +113,14 @@ export default function PingYiReviewJobButton({
 
   return (
     <div className="mt-3">
-      <button
-        className="rounded-md bg-amber-900 px-3 py-2 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+      <Button
+        variant="primary" size="compact"
         data-testid={`create-review-job-${layoutId}`}
         disabled={pending}
         onClick={createReviewJob}
-        type="button"
       >
         {pending ? "Preparing review…" : "Create editable review job"}
-      </button>
+      </Button>
       {feedback ? (
         <div className="mt-2 text-xs text-amber-950" role="status">
           {feedback}

@@ -2,6 +2,7 @@ import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import FloorPlanVisualReviewTools from "@/components/editor/floor-plan-import-review/FloorPlanVisualReviewTools";
 import type { AdminJob, RenderedPage, RoomRow } from "./floorPlanReviewTypes";
+import { Button } from "@/components/ui/Button";
 
 export function FloorPlanCandidateReviewPanel({
   candidateText,
@@ -210,14 +211,13 @@ export function FloorPlanCandidateReviewPanel({
         />
       </details>
 
-      <button
-        className="mt-3 w-full rounded-lg bg-black px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-40"
+      <Button
+        variant="primary" size="regular" className="mt-3 w-full"
         disabled={!reviewable || Boolean(pending) || missingResolution}
         onClick={onSave}
-        type="button"
       >
         {pending === "save" ? "Checking plan…" : "Save and check plan"}
-      </button>
+      </Button>
       <div className="mt-2 text-xs text-neutral-500">
         {hasUnsavedChanges
           ? "You have unsaved changes."

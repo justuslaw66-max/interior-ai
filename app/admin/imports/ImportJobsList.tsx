@@ -3,6 +3,7 @@ import { IMPORT_JOB_STATUS_SEQUENCE } from "@/lib/import-jobs/status";
 import { AdminStatusBadge } from "../AdminStatusBadge";
 import { describeAdminStatus } from "../admin-status";
 import { IMPORT_JOB_SORTS, type ImportJobListFilters, type ImportJobListItem } from "./import-jobs-list";
+import { Button } from "@/components/ui/Button";
 
 const FIELD = "mt-1 block h-10 w-full rounded-lg border bg-white px-3 text-sm";
 const PROCESSING = ["normalizing", "optimized", "preview_generated", "metadata_extracted"];
@@ -36,9 +37,9 @@ export function ImportJobsFilters({ filters }: { filters: ImportJobListFilters }
           ))}
         </select>
       </label>
-      <button className="h-10 self-end rounded-lg bg-neutral-900 px-4 text-sm font-semibold text-white">
+      <Button variant="primary" size="regular" type="submit" className="h-10 self-end">
         Apply filters
-      </button>
+      </Button>
     </form>
   );
 }

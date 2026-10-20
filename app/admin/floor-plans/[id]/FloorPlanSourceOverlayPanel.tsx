@@ -4,6 +4,7 @@ import type {
   RenderedPage,
   ReviewOverlay,
 } from "./floorPlanReviewTypes";
+import { Chip } from "@/components/ui/Chip";
 
 export function FloorPlanSourceOverlayPanel({
   job,
@@ -45,18 +46,13 @@ export function FloorPlanSourceOverlayPanel({
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
           {pages.map((page) => (
-            <button
-              className={`rounded border px-2 py-1 ${
-                page.pageNumber === selectedPageNumber
-                  ? "border-blue-600 bg-blue-50 text-blue-700"
-                  : ""
-              }`}
+            <Chip
+              pressed={page.pageNumber === selectedPageNumber}
               key={page.pageNumber}
               onClick={() => onPageChange(page.pageNumber)}
-              type="button"
             >
               Page {page.pageNumber}
-            </button>
+            </Chip>
           ))}
         </div>
       </div>

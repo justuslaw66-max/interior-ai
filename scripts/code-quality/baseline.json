@@ -13,7 +13,7 @@
       "limit": 250
     },
     "app/admin/catalog/[catalogItemId]/CatalogAuthoringEditor.tsx": {
-      "lines": 414,
+      "lines": 413,
       "limit": 250
     },
     "app/admin/clicks/page.tsx": {
@@ -25,7 +25,7 @@
       "limit": 250
     },
     "app/admin/floor-plans/[id]/FloorPlanApprovalPanel.tsx": {
-      "lines": 318,
+      "lines": 317,
       "limit": 250
     },
     "app/admin/floor-plans/[id]/FloorPlanCandidateReviewPanel.tsx": {
@@ -37,15 +37,15 @@
       "limit": 250
     },
     "app/admin/floor-plans/[id]/SupplementarySourceEvidencePanel.tsx": {
-      "lines": 339,
+      "lines": 333,
       "limit": 250
     },
     "app/admin/models/[id]/model-edit-form.tsx": {
-      "lines": 404,
+      "lines": 401,
       "limit": 250
     },
     "app/admin/models/[id]/viewer.tsx": {
-      "lines": 565,
+      "lines": 543,
       "limit": 250
     },
     "app/admin/operations-data.ts": {
@@ -97,7 +97,7 @@
       "limit": 250
     },
     "components/admin/StagingSmokeEvidencePanel.tsx": {
-      "lines": 437,
+      "lines": 435,
       "limit": 250
     },
     "components/BetaFeedbackWidget.tsx": {
@@ -699,7 +699,7 @@
     "app/admin/catalog/[catalogItemId]/CatalogAuthoringEditor.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 286
+        "maximum": 284
       },
       "complexFunctions": {
         "count": 1,
@@ -733,7 +733,7 @@
     "app/admin/floor-plans/[id]/AddressBindingEditor.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 326
+        "maximum": 325
       },
       "complexFunctions": {
         "count": 1,
@@ -743,13 +743,13 @@
     "app/admin/floor-plans/[id]/ApprovedRevisionPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 196
+        "maximum": 194
       }
     },
     "app/admin/floor-plans/[id]/FloorPlanApprovalPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 301
+        "maximum": 299
       },
       "complexFunctions": {
         "count": 1,
@@ -759,13 +759,13 @@
     "app/admin/floor-plans/[id]/FloorPlanCandidateReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 270
+        "maximum": 269
       }
     },
     "app/admin/floor-plans/[id]/FloorPlanJobSummary.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 88
+        "maximum": 87
       }
     },
     "app/admin/floor-plans/[id]/FloorPlanMvpChecklist.tsx": {
@@ -781,7 +781,7 @@
     "app/admin/floor-plans/[id]/FloorPlanReviewIssuesPanel.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 257
+        "maximum": 256
       },
       "complexFunctions": {
         "count": 1,
@@ -813,13 +813,13 @@
     "app/admin/floor-plans/[id]/FloorPlanSourceOverlayPanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 213
+        "maximum": 208
       }
     },
     "app/admin/floor-plans/[id]/PingYiReviewSeedIntake.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 138
+        "maximum": 137
       }
     },
     "app/admin/floor-plans/[id]/SourceObservationManifestEditor.tsx": {
@@ -831,7 +831,7 @@
     "app/admin/floor-plans/[id]/SupplementarySourceEvidencePanel.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 278
+        "maximum": 270
       }
     },
     "app/admin/floor-plans/[id]/useFloorPlanReviewDraftGuard.ts": {
@@ -873,7 +873,7 @@
     "app/admin/floor-plans/PingYiReviewJobButton.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 108
+        "maximum": 107
       },
       "complexFunctions": {
         "count": 1,
@@ -883,7 +883,7 @@
     "app/admin/imports/[id]/ImportJobActions.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 155
+        "maximum": 152
       }
     },
     "app/admin/imports/[id]/page.tsx": {
@@ -899,7 +899,7 @@
     "app/admin/models/[id]/model-edit-form.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 354
+        "maximum": 350
       },
       "complexFunctions": {
         "count": 1,
@@ -909,11 +909,11 @@
     "app/admin/models/[id]/viewer.tsx": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 287
+        "maximum": 253
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 28
+        "maximum": 22
       }
     },
     "app/admin/operations-data.ts": {
@@ -1389,7 +1389,7 @@
     "components/admin/StagingSmokeEvidencePanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 317
+        "maximum": 314
       }
     },
     "components/AdminTestPanel.tsx": {
