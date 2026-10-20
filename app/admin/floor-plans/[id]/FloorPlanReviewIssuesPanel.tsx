@@ -9,6 +9,7 @@ import {
   issueTone,
 } from "./floorPlanReviewModel";
 import type { ReviewIssue } from "./floorPlanReviewTypes";
+import { Button } from "@/components/ui/Button";
 
 type RequiredActionDefinition = {
   id: string;
@@ -283,8 +284,8 @@ export function FloorPlanReviewIssuesPanel({
                       {prerequisite}
                     </p>
                   ) : null}
-                  <button
-                    className="mt-3 w-full rounded-md bg-white px-3 py-2 text-xs font-semibold text-neutral-900 shadow-sm disabled:opacity-50"
+                  <Button
+                    size="compact" className="mt-3 w-full"
                     disabled={
                       !reviewable || Boolean(pending) || Boolean(prerequisite)
                     }
@@ -303,10 +304,9 @@ export function FloorPlanReviewIssuesPanel({
                         )
                       )
                     }
-                    type="button"
                   >
                     Confirm complete
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <p className="mt-3 text-xs font-medium text-emerald-800">

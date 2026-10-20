@@ -7,6 +7,7 @@ import {
   requestFloorPlanAdminJobMutation,
   subscribeToFloorPlanAdminJobUpdates,
 } from "@/lib/floor-plan-admin-review-events";
+import { Button } from "@/components/ui/Button";
 
 type SeedFixture = {
   layoutId: string;
@@ -135,14 +136,13 @@ export default function PingYiReviewSeedIntake({ jobId }: { jobId: string }) {
               ))}
             </select>
           </label>
-          <button
-            className="rounded-lg bg-amber-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+          <Button
+            variant="primary" size="regular"
             disabled={!availability.eligible || !selected || pending}
             onClick={applySeed}
-            type="button"
           >
             {pending ? "Applying…" : "Apply review seed"}
-          </button>
+          </Button>
         </div>
       </div>
       {selected ? (

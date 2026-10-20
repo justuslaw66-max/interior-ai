@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getModelAssetStatus } from "@/lib/modelAssetStatus";
 import { ModelStatusField } from "./ModelStatusField";
 import { ModelApprovalBlockers, useModelApprovalConfirmation } from "./modelApproval";
+import { Button } from "@/components/ui/Button";
 
 type EditableModelAsset = {
   id: string;
@@ -387,13 +388,9 @@ export default function ModelEditForm({
       </label>
 
       <div className="flex items-center gap-2">
-        <button
-          className="rounded-md bg-black px-3 py-1.5 text-xs text-white disabled:opacity-50"
-          disabled={!hasChanges || saving}
-          onClick={() => requestSave(form.assetStatus, () => void save())}
-        >
+        <Button variant="primary" size="compact" disabled={!hasChanges || saving} onClick={() => requestSave(form.assetStatus, () => void save())}>
           {saving ? "Saving..." : "Save changes"}
-        </button>
+        </Button>
         {status && <div className="text-xs opacity-80">{status}</div>}
       </div>
 

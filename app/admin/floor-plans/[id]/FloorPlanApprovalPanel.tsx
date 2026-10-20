@@ -14,6 +14,7 @@ import type {
 } from "./floorPlanReviewTypes";
 import { SourceObservationManifestEditor } from "./SourceObservationManifestEditor";
 import { PublicDisplayMetadataEditor } from "./PublicDisplayMetadataEditor";
+import { Button } from "@/components/ui/Button";
 
 export function FloorPlanApprovalPanel({
   approve,
@@ -162,13 +163,12 @@ export function FloorPlanApprovalPanel({
                 blank to create a starter layout that is not searchable by address.
               </p>
             </div>
-            <button
-              className="rounded-lg border px-3 py-1.5 text-xs font-medium"
+            <Button
+              size="compact"
               onClick={() => setBindings((current) => [...current, emptyBinding()])}
-              type="button"
             >
               Add binding
-            </button>
+            </Button>
           </div>
           <div className="mt-3 space-y-3">
             {bindings.map((binding, index) => (
@@ -267,18 +267,17 @@ export function FloorPlanApprovalPanel({
           </details>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <button
-              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+            <Button
+              variant="primary" size="regular"
               disabled={approvalDisabled}
               onClick={approve}
-              type="button"
             >
               {pending === "approve"
                 ? "Checking floor plan…"
                 : supersedesRevisionId.trim()
                   ? "Approve replacement floor plan"
                   : "Approve searchable floor plan"}
-            </button>
+            </Button>
             {job.status !== "ready" ? (
               <span className="text-xs text-amber-700">
                 Finish the required 2D plan checks first.
