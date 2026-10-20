@@ -142,6 +142,33 @@ R34_CRISP_GRAY = os.environ.get("FV_R34_CRISP_GRAY", "1") != "0"
 #               alone because window dashes are that size too: its level runs are offered to name_unread_labels only -
 #               nothing there is read, erased or traced differently
 R34_SMALL_WORDS = os.environ.get("FV_R34_SMALL_WORDS", "1") != "0"
+# round 41: line work drawn pale.  HDB brochure plans draw only the structure solid; every partition, window frame and door
+# jamb is a hairline that comes out 15 - 70 grey levels below the paper once the small picture is enlarged (s018: 235 - 241
+# on white), lighter than the threshold every later step reads ink by, so no wall or window is traced there and the rooms
+# run into each other.  On a clean, crisp page, a straight valley at least a long line's length (each side lighter by 6 or
+# more, its floor between the threshold and the paper) is that line: it is darkened to the depth the page's dark lines
+# have, the rest of the picture is not touched.  Not on a blurred picture (edges less steep than RESTORE_EDGE): its lines
+# are pale by the blur, and darkening them cost c22's and d11's low-res copies rooms and doors.  A dimension line drawn
+# pale between two dots is left pale (see deepen_pale_lines).  PALE_MIN: wall thicknesses of such line work a page must
+# have (the open plans have under 20, or 29 and more); 0 = off.
+PALE_MIN = float(os.environ.get("FV_PALE_LINES", "23"))
+# round 41: a soft page drawn with pale thin walls (PALE_MIN) and no scale read (s004, s078), or a scale that makes its
+# structural walls thinner than 120 mm or thicker than 450 mm (s007), still has its thin walls paired - at the spacing of a
+# 250 mm structural wall's page.  "0" = off.
+R41_PAIR = os.environ.get("FV_R41_PAIR", "1") != "0"
+# round 41, on the pages it brings thin walls to (pale line work darkened, or thin walls paired with no scale): a thin wall is
+# kept only where it reaches a wall or a grey solid, itself or through the drawing's lines and thin walls meeting it (a line
+# within a wall's thickness of a wall reaches it: a window's lines stop short of the column).  Furniture outlines nested a
+# thin wall apart float free (p05's rug round its sofa), and so do the two strokes of a letter (s074's LIVING).  "0" = off.
+R41_TIED = os.environ.get("FV_R41_TIED", "1") != "0"
+# round 41: a page whose pale line work is darkened is also read as round 40b read it - the plain reading, a second run of
+# this program with FV_PALE_LINES=0, written beside it as <page>.plain.json / .plain.work.png / .plain.svg - so that the
+# exporter can export the darkened reading only where it beats that one (app_evidence.py, R41_GATE).  The darkened reading
+# takes its scale from the plain one wherever it would only estimate its own (no written dimension or scale bar of its
+# own): darkened jambs make a door's swing traceable, and one traced swing is taken over the several like-sized ones the
+# plain reading's swing search finds (s081: 1 traced against 4 found; s074: a single one that gave a 2 m flat, so no scale
+# at all; s073: the shelter's door).  "0" = off.
+R41_PLAIN = os.environ.get("FV_R41_PLAIN", "1") != "0"
 
 # The learned reader (round 23), behind a switch.  FV_SEG_MODEL=<model.onnx> (made by the untracked tools/train/train.py) reads
 # the picture into a class per pixel - other / wall / door / window / text / rack / railing - and FV_SEG_USE says which of
@@ -1330,6 +1357,79 @@ def restore_contrast(g, sigma=1.2, amount=1.5):
     return np.rint(us).astype(np.uint8), rep
 
 
+def deepen_pale_lines(gray, T, ws, thr, target=110):
+    """-> (image, report).  The straight pale line work of a clean page darkened (see PALE_MIN): each long straight valley
+    whose floor lies between thr and the paper is remapped about the paper, paper - (paper - g) * k, so its floor lands at
+    `target`; only the line's own pixels (within its stroke, a little past its ends) change."""
+    hist = np.bincount(gray.ravel(), minlength=256)
+    paper = 128 + int(np.argmax(hist[128:]))
+    rep = {"paper": paper}
+    near = gray[gray > paper - 12].astype(np.float32)
+    noise = float(np.std(near)) if near.size else 99.0
+    rep["noise"] = round(noise, 2)
+    if paper < 245 or noise > 2.5 or thr >= paper - 10:
+        rep["applied"] = False
+        return gray, rep
+    L = int(max(40, 1.5 * T)); d = ws + 1; r = max(2, ws + 1)
+    out = gray.astype(np.float32)
+    total = 0; runs = []
+    for horiz in (True, False):
+        G = gray.astype(np.float32) if horiz else gray.astype(np.float32).T.copy()
+        dep = np.minimum(np.roll(G, d, 0), np.roll(G, -d, 0)) - G
+        lm = (G <= np.roll(G, 1, 0)) & (G <= np.roll(G, -1, 0))
+        V = ((dep >= 6) & lm & (G >= thr) & (G <= paper - 8)).astype(np.uint8) * 255
+        V[:d] = 0; V[-d:] = 0
+        V = cv2.dilate(V, np.ones((3, 1), np.uint8))
+        V = cv2.morphologyEx(V, cv2.MORPH_CLOSE, np.ones((1, 3), np.uint8))
+        O = cv2.morphologyEx(V, cv2.MORPH_OPEN, np.ones((1, L), np.uint8))
+        n, lab, st, _ = cv2.connectedComponentsWithStats(O)
+        for i in range(1, n):
+            x, y, w, h, _a = (int(v) for v in st[i])
+            if h > 7:
+                continue                                    # not one straight valley
+            blk = G[y:y + h, x:x + w]
+            floor = float(np.median(blk.min(0)))
+            if floor < thr or floor > paper - 8:
+                continue
+            runs.append((horiz, x, y, w, h, floor)); total += w
+    if runs:
+        # a dimension line is drawn pale too, between two round dots (s081's 2040 / 1010 inside the bedroom): left pale, or
+        # the room's side runs along it where its numbers go unread.  A dot: a small round solid blob, a disc not a square
+        n_d, _lab_d, st_d, cen_d = cv2.connectedComponentsWithStats((gray < thr).astype(np.uint8), 8)
+        dots = [(float(cen_d[i][0]), float(cen_d[i][1]), max(st_d[i][2], st_d[i][3]) / 2.0) for i in range(1, n_d)
+                if 4 <= st_d[i][2] <= max(6.0, 0.8 * T) and 4 <= st_d[i][3] <= max(6.0, 0.8 * T)
+                and max(st_d[i][2], st_d[i][3]) <= 1.4 * min(st_d[i][2], st_d[i][3])
+                and 0.6 <= st_d[i][4] / float(st_d[i][2] * st_d[i][3]) <= 0.9]
+        def dotted(rn):
+            horiz, x, y, w, h, floor = rn
+            c = y + h / 2.0
+            for dx_, dy_, r_ in dots:
+                along, across = (dx_, dy_) if horiz else (dy_, dx_)
+                if abs(across - c) <= 2.5 and min(abs(along - x), abs(along - (x + w))) <= r_ + 3 * ws:
+                    return True
+            return False
+        kept_ = [rn for rn in runs if not dotted(rn)]
+        rep["dimension_runs"] = len(runs) - len(kept_)
+        runs = kept_; total = sum(rn[3] for rn in runs)
+    rep["pale_T"] = round(total / max(1.0, T), 1)
+    if not PALE_MIN or total < PALE_MIN * T:
+        rep["applied"] = False
+        return gray, rep
+    for horiz, x, y, w, h, floor in runs:
+        k = (paper - target) / max(1.0, paper - floor)
+        e = 3 * ws
+        y0, y1, x0, x1 = y - r, y + h + r, x - e, x + w + e
+        if horiz:
+            ys, xs = slice(max(0, y0), y1), slice(max(0, x0), x1)
+        else:
+            ys, xs = slice(max(0, x0), x1), slice(max(0, y0), y1)
+        g0 = gray[ys, xs].astype(np.float32)
+        dk = np.clip(paper - (paper - g0) * k, 0, 255)
+        out[ys, xs] = np.minimum(out[ys, xs], np.where(g0 <= paper - 2, dk, g0))
+    rep["applied"] = True; rep["runs"] = len(runs)
+    return np.rint(out).astype(np.uint8), rep
+
+
 def extract(path):
     bgr0 = cv2.imread(path, cv2.IMREAD_COLOR)
     if bgr0 is None:
@@ -1339,6 +1439,9 @@ def extract(path):
     if not flattened:
         gray0 = cv2.imread(path, cv2.IMREAD_GRAYSCALE)      # (exactly the decode used so far: a JPEG's own grey differs by 1 from BGR->grey)
     soft_edges = WM_SOFT and ink_paper_edge(gray0)[2] < RESTORE_EDGE
+    # (how crisp the picture is as it came, before its background is flattened - flattening steepens a blurred copy's
+    #  edges: c23's low-res copy measures 0.78 as it came, 1.0 flattened)
+    edge_steep = ink_paper_edge(cv2.cvtColor(bgr0, cv2.COLOR_BGR2GRAY))[2] if PALE_MIN else 0.0
     gray0, wm_frac = remove_watermark(gray0, 7 if soft_edges else 0)
     gray0, wall_tone = normalise_wall_paint(gray0)
     restored = None
@@ -1424,9 +1527,14 @@ def extract(path):
     soft = work_scale > 1 or soft_R > 1.4
     peak = soft_R
     thr = (max(otsu, 180 if soft else 215)) if clean_bg else otsu
+    pale_rep = None
+    if PALE_MIN and clean_bg and edge_steep >= RESTORE_EDGE:   # (a blurred picture's lines fade by the blur: restore_contrast's case, not this)
+        gray, pale_rep = deepen_pale_lines(gray, T0 * work_scale, work_scale, thr)
     ink = ((gray < thr) * 255).astype(np.uint8)
     model = {"size": [W, H], "source_size": [W0, H0], "work_scale": work_scale, "skew_deg": round(skew, 3),
              "ink_threshold": int(thr), "edge_softness": round(soft_R, 2), "soft_input": bool(soft)}
+    if pale_rep is not None and pale_rep.get("applied"):
+        model["pale_lines"] = pale_rep
     if keystone is not None:
         # the page (pixels of the picture as read, before the working scale) -> the straightened page: the exporter maps
         # every position back through its inverse, so the evidence stays on the picture as it was taken
@@ -4762,6 +4870,54 @@ def scale_from_bar(m):
     m["_dim_items"] = (m.get("_dim_items") or []) + items
 
 
+def start_plain_reading(src, base):
+    """round 41 (R41_PLAIN): this program once more on the page with the darkening off, into <base>.plain.* - started now,
+    waited for where its scale is wanted (scale_from_plain_reading).  -> the process"""
+    import subprocess
+    env_ = dict(os.environ, FV_PALE_LINES="0")
+    flags_ = [a_ for a_ in sys.argv[1:] if a_.startswith("--") and not a_.startswith("--dump")]
+    log_ = open(base + ".plain.log", "w")                   # (its own report, as this run's goes to the caller)
+    try:
+        run = subprocess.Popen([sys.executable, os.path.abspath(__file__), src, base + ".plain"] + flags_, env=env_,
+                               stdout=log_, stderr=subprocess.STDOUT)
+    finally:
+        log_.close()
+    import signal
+    def stop_(signum, _frame):                              # (a caller that stops this run - the app's page budget - stops both)
+        try:
+            run.kill()
+        finally:
+            sys.exit(128 + signum)
+    signal.signal(signal.SIGTERM, stop_)
+    return run
+
+
+def scale_from_plain_reading(m, run, base):
+    """round 41 (R41_PLAIN): waits for the plain reading; where this reading has no scale of its own (no written dimension,
+    no scale bar) and the plain one has a scale, this reading takes it - the door swings the darkening makes traceable do
+    not move a page's scale"""
+    run.wait()
+    rep = m.setdefault("pale_lines", {})
+    if run.returncode != 0 or not os.path.exists(base + ".plain.json"):
+        last_ = open(base + ".plain.log", errors="replace").read().strip().splitlines()[-1:] if os.path.exists(base + ".plain.log") else []
+        rep["plain_reading"] = "failed (%s): %s" % (run.returncode, " ".join(last_)[:200])
+        return
+    rep["plain_reading"] = "written"
+    if m.get("mm_per_px"):
+        return
+    pm = json.load(open(base + ".plain.json"))
+    if not pm.get("mm_per_px"):
+        return
+    m["mm_per_px"] = pm["mm_per_px"]
+    src_ = dict(pm.get("scale_source") or {"estimated": False, "from": "written dimensions"})
+    src_["of_the_plain_reading"] = True
+    m["scale_source"] = src_
+    m.setdefault("dimension_report", {}).setdefault("labels_tied_to_geometry", 0)
+    if src_.get("estimated"):
+        m["dimension_report"]["scale_estimated"] = src_
+    rep["scale_of_the_plain_reading"] = round(float(pm["mm_per_px"]), 4)
+
+
 def estimate_scale(m):
     """A plan without written dimensions has no scale, and every clean-up stage that thinks in millimetres is skipped.  The one
     object of known size that nearly every plan draws is a door: the largest group of like-sized swings is taken as 850 mm
@@ -6981,6 +7137,13 @@ def partition_network(m):
     becomes a rectangle, the rectangles are united, and the outline of the union is drawn - closed ends at door jambs, clean
     L- and T-junctions, nothing crossing inside a wall."""
     scale = m.get("mm_per_px")
+    if R41_PAIR and m.get("soft_input") and m.get("pale_lines") and (not scale or not 120.0 <= m["wall_thickness_px"] * scale <= 450.0):
+        # a page drawn with pale thin walls (see deepen_pale_lines) and no scale read, or one that makes the structural wall
+        # thinner than 120 mm or thicker than 450 (s007: 2.3 mm/px, its 46 px walls 106 mm): the thin walls are paired at
+        # the spacing a thin wall has beside a 250 mm structural wall.  (Not on other pages: a condo sheet's furniture and
+        # fittings pair as readily as walls - p02, p03 - and the old pages are as they were)
+        scale = 250.0 / m["wall_thickness_px"]
+        m["thin_walls_paired_by_thickness"] = round(scale, 4)
     if not m.get("soft_input") or not scale:
         return
     dmin, dmax = 60.0 / scale, 210.0 / scale
@@ -7281,6 +7444,44 @@ def partition_network(m):
                 x_, y_ = (pos, mid) if r["o"] == "h" else (mid, pos)
                 if in_wall(x_, y_):
                     r[end] = pos + sgn * 1.0; break
+    if R41_TIED and rects and (m.get("pale_lines") or m.get("thin_walls_paired_by_thickness")) and float((wmask > 0).sum()) >= 20.0 * T_ * T_:
+        # (see R41_TIED.  Only on a page whose thin walls round 41 brings in - pale line work darkened, or paired with no
+        # scale: elsewhere the pairs are as before; and not on a page whose walls are all thin walls, which has nothing else
+        # to tie to: c23.)  A thin wall belongs to the structure: its rectangle reaches a wall or a grey solid, itself or
+        # through the lines and thin walls meeting it.  Two outlines nested a thin wall apart inside a room - a rug round a
+        # sofa (p05) - float free, and their lines stay lines
+        tol_ = max(3.0, 0.25 * T_); tl_ = max(3.0, 0.12 * T_)
+        def box_(o, c0, c1, a, b, t):
+            x0, x1, y0, y1 = (a, b, c0, c1) if o == "h" else (c0, c1, a, b)
+            return x0 - t, x1 + t, y0 - t, y1 + t
+        def on_wall(bx):
+            x0, x1, y0, y1 = (int(round(v)) for v in bx)
+            blk = wmask[max(0, y0):max(0, y1) + 1, max(0, x0):max(0, x1) + 1]
+            return blk.size > 0 and bool(blk.any())
+        def meet(b1, b2):
+            return min(b1[1], b2[1]) >= max(b1[0], b2[0]) and min(b1[3], b2[3]) >= max(b1[2], b2[2])
+        # (the drawing's own lines tie too: a thin wall meeting a line that runs on to a wall - a bathroom's wall drawn as two
+        # lines between two columns, left as lines by the pairing, holds the thin wall between two bathrooms (s073); a window's
+        # lines hold the bedroom walls that meet them (s074))
+        cand_ = [box_(q["o"], q["c"], q["c"], q["a"], q["b"], 0.0) for q in m["lines"]
+                 if q.get("role") not in ("dimension", "extension") and q["b"] - q["a"] >= 0.5 * T_]
+        nodes_ = [box_(r["o"], r["c0"], r["c1"], r["a"], r["b"], 0.0) for r in rects] + cand_
+        tied_ = [on_wall((b_[0] - t_, b_[1] + t_, b_[2] - t_, b_[3] + t_))
+                 for k_, b_ in enumerate(nodes_) for t_ in [tol_ if k_ < len(rects) else T_]]
+        bxs = [(b_[0] - tl_, b_[1] + tl_, b_[2] - tl_, b_[3] + tl_) for b_ in nodes_]
+        grew_ = True
+        while grew_:
+            grew_ = False
+            new_ = list(tied_)
+            for i_ in range(len(nodes_)):
+                if not tied_[i_] and any(tied_[j_] and meet(bxs[i_], bxs[j_]) for j_ in range(len(nodes_))):
+                    new_[i_] = grew_ = True
+            tied_ = new_
+        tied_ = tied_[:len(rects)]
+        if not all(tied_):
+            m.setdefault("partitions_left_out", []).extend(
+                [{"o": r["o"], "c0": round(r["c0"], 1), "c1": round(r["c1"], 1), "a": round(r["a"], 1), "b": round(r["b"], 1)} for r, t_ in zip(rects, tied_) if not t_])
+            rects = [r for r, t_ in zip(rects, tied_) if t_]
     xs = sorted({v for r in rects for v in ((r["a"], r["b"]) if r["o"] == "h" else (r["c0"], r["c1"]))})
     ys = sorted({v for r in rects for v in ((r["c0"], r["c1"]) if r["o"] == "h" else (r["a"], r["b"]))})
     if len(xs) < 2 or len(ys) < 2:
@@ -10414,6 +10615,7 @@ if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     src, base = args[0], args[1]
     m = extract(src)
+    plain_run = start_plain_reading(src, base) if R41_PLAIN and PALE_MIN and (m.get("pale_lines") or {}).get("applied") else None
     if "--dump-extract" in sys.argv:
         import pickle; pickle.dump(m, open(base + ".extract.pkl", "wb"))
     read_title_lines(m)
@@ -10424,6 +10626,8 @@ if __name__ == "__main__":
     vote_verify_numbers(m)
     solve_dimensions(m)
     scale_from_bar(m)
+    if plain_run is not None:
+        scale_from_plain_reading(m, plain_run, base)
     estimate_scale(m)
     diagonal_dimensions(m)
     complete_labels(m)
@@ -10451,6 +10655,8 @@ if __name__ == "__main__":
     m["dim_spans"] = m.pop("_dim_items", None) or []        # which number measures which two positions (for the app export)
     build_free_symbols(m)
     tidy_soft(m)
+    if os.environ.get("FV_DUMP_PRE_PN"):                    # (development: the model just before partition_network)
+        import pickle; pickle.dump(m, open(os.environ["FV_DUMP_PRE_PN"], "wb"))
     partition_network(m)
     finish_soft(m)
     if ARC_DIAG:

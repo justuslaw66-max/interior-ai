@@ -16,7 +16,7 @@ import json, math, os, re, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.32.1"
+VERSION = "app-evidence-0.34.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 R39_PICTURE_BAND = os.environ.get("AE_R39_PICTURE_BAND", "1") != "0"   # round 39: a window read in the picture where stage 1 has its strokes only in pieces
@@ -43,6 +43,9 @@ R40_MIXED_ALL = os.environ.get("AE_R40_MIXED_ALL", "0") != "0"   # round 40: the
 R40_NEEDS_GAIN = os.environ.get("AE_R40_NEEDS_GAIN", "1") != "0"   # round 40: its reading is kept only where it places more names (p02's low-res copy)
 R40_CELL_PIECES = os.environ.get("AE_R40_CELL_PIECES", "1") != "0"   # round 40: a network of thin walls drawn as two lines is tested piece by piece (s009)
 R40_LEAF_STUBS = os.environ.get("AE_R40_LEAF_STUBS", "1") != "0"   # round 40: a door leaf drawn open against a wall stub the wall mass lost (s054's main bedroom) - the stub is wall
+R41_SHELTER_FRONT = os.environ.get("AE_R41_SHELTER_FRONT", "1") != "0"   # round 41: on a page whose pale line work stage 1 darkened, a closed shelter leaf only where the shelter's name stands in front of the opening (p05's bath window)
+R41_JOG_FACES = os.environ.get("AE_R41_JOG_FACES", "1") != "0"   # round 41: a room side's pixel jog a pixel off the face of the wall it meets moves onto that face, where the replay then finds fewer steps (s018's front)
+R41_GATE = os.environ.get("AE_R41_GATE", "1") != "0"   # round 41: a page whose pale line work stage 1 darkened is exported from that reading only where it beats the plain one (stage 1's <page>.plain.json) - round 41 never undoes round 40b
 R39_NO_NEW_GAPS = os.environ.get("AE_R39_NO_NEW_GAPS", "1") != "0"   # round 39b: round 39's reading is kept only if it adds no slot or seam to round 38's (app_flaws.py)
 INNER_SIGN = 1
 ROOM_TYPES = (
@@ -1840,6 +1843,15 @@ def classify_gaps(m, k, gaps):
             mid_ = ((a + b_) / 2.0, c) if o == "h" else (c, (a + b_) / 2.0)
             shelter = any(room_type(t.get("s", "")) == "shelter" and math.hypot(t["box"][0] + t["box"][2] / 2 - mid_[0], t["box"][1] + t["box"][3] / 2 - mid_[1]) * mm <= 2500
                           for t in m.get("texts", []))
+            if shelter and R41_SHELTER_FRONT and (m.get("pale_lines") or {}).get("applied"):
+                # round 41: on a page whose pale line work stage 1 darkened, the shelter's name in front of the opening -
+                # across the wall from it, within three wall thicknesses of its width (exec, c21, h2: 0.5 - 2) - not just
+                # near it: p05's bath window to the air-con ledge, drawn as three strokes in the wall's outer half once its
+                # glass line is read, has the shelter's name four wall thicknesses past its end, and is no blast door.
+                # (Only there - the rule was made for that reading; every other page reads its doors as round 40b did)
+                shelter = any(room_type(t.get("s", "")) == "shelter" and math.hypot(t["box"][0] + t["box"][2] / 2 - mid_[0], t["box"][1] + t["box"][3] / 2 - mid_[1]) * mm <= 2500
+                              and a - 3.0 * T <= (t["box"][0] + t["box"][2] / 2 if o == "h" else t["box"][1] + t["box"][3] / 2) <= b_ + 3.0 * T
+                              for t in m.get("texts", []))
             if leaf and one_side and shelter and 600 <= L * mm <= 1300 and (hi_ - lo_) * mm >= 150:
                 out.append(dict(g, kind="door", operation="swing", hinge="unknown", swing_side=0, confidence=0.55, why="a closed leaf drawn across the opening, against one face of the wall")); continue
             # Only the wall's own face lines run across the gap (a threshold drawn at both faces, p05's entrance), nothing
@@ -8935,7 +8947,223 @@ def build_best(m, gray=None):
             notes["round40Withheld"] = d
     m.clear(); m.update(bm)
     base["diagnostics"].update(notes)
+    if R41_JOG_FACES:
+        moved_ = jogs_onto_faces(base)
+        if moved_:
+            base["diagnostics"]["jogsMovedOntoFaces"] = moved_
     return base, bdbg
+
+
+def _r41_point_in(pt, poly):
+    x, y = pt; hit = False
+    for i in range(len(poly)):
+        (x1, y1), (x2, y2) = poly[i], poly[i - 1]
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            hit = not hit
+    return hit
+
+
+def _r41_known(t):
+    return room_type(t) != "other" or any(k_ in t.upper() for k_ in ROOM_WORDS)
+
+
+def _r41_fix(t):
+    return "".join((_ocr_room_word(w_.upper()) or w_) if w_ and re.fullmatch(r"\w+", w_) else w_ for w_ in re.split(r"(\W+)", t))
+
+
+def _r41_named_rooms(ev):
+    """[(name, the points its label stands at)] for each room the export places one known name in"""
+    W, H = float(ev["page"]["widthPx"]), float(ev["page"]["heightPx"])
+    labels = [(_r41_fix(l["label"]).upper(), (l["centerXRatio"] * W, l["centerYRatio"] * H)) for l in ev["semantics"].get("roomLabels", [])]
+    out = []
+    for r_ in ev["rooms"]:
+        names = [_r41_fix(t) for t in r_.get("sourceLabels", []) if _r41_known(_r41_fix(t))]
+        if len(names) != 1:
+            continue
+        poly = [(q["x"], q["y"]) for q in r_["sourcePoints"]]
+        own = {_r41_fix(t).upper() for t in r_.get("sourceLabels", [])}
+        out.append((names[0], [p_ for t_, p_ in labels if t_ in own and _r41_point_in(p_, poly)]))
+    return out
+
+
+def _r41_openings(ev, kinds):
+    return sum(1 for w in ev["wallEdges"] if (w.get("opening") or {}).get("kind") in kinds)
+
+
+def _r41_against(o, ref):
+    """round 41: why the darkened reading o may not replace the plain one ref - [] when it may.  It keeps every name ref
+    places alone (in the room standing where ref's label stands, as one name of the same kind: the two readings read a
+    label's letters a little differently - s005's BEDROOM 3 as BEDROOM - so a name is followed by where it stands),
+    every door and window, the scale, and adds no slot, seam (R39_NO_NEW_GAPS) or step the replay finds; and it gains
+    something: a name placed alone, a name fewer outside every room or sharing one, a door or a window."""
+    why = []
+    if (ref.get("scale") or {}).get("millimetresPerPixel") and not (o.get("scale") or {}).get("millimetresPerPixel"):
+        why.append("scale lost")
+    for name, pts in _r41_named_rooms(ref):
+        kept = False
+        for p_ in pts:
+            for r_ in o["rooms"]:
+                if _r41_point_in(p_, [(q["x"], q["y"]) for q in r_["sourcePoints"]]):
+                    nb = [_r41_fix(t) for t in r_.get("sourceLabels", []) if _r41_known(_r41_fix(t))]
+                    kept = len(nb) == 1 and room_type(nb[0]) == room_type(name)
+                    break
+            if kept:
+                break
+        if not kept:
+            why.append("name " + name)
+    for kinds, tag in ((("door", "open_passage"), "doors"), (("window",), "windows")):
+        a_, b_ = _r41_openings(ref, kinds), _r41_openings(o, kinds)
+        if b_ < a_:
+            why.append("%s %d -> %d" % (tag, a_, b_))
+    if (ref.get("scale") or {}).get("millimetresPerPixel") and (o.get("scale") or {}).get("millimetresPerPixel"):
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import app_flaws
+        try:
+            why += _new_gaps(o, ref) if R39_NO_NEW_GAPS else []
+            sa, sb = len(app_flaws.flaws(ref)["steps"]), len(app_flaws.flaws(o)["steps"])
+            if sb > sa:
+                why.append("steps %d -> %d" % (sa, sb))
+        except Exception as e:                               # (no replay: no judgment of the walls - the plain reading stands)
+            why.append("replay failed: %s" % e)
+    if not why and not (_gain(o, ref) or _r41_openings(o, ("door", "open_passage")) > _r41_openings(ref, ("door", "open_passage"))
+                        or _r41_openings(o, ("window",)) > _r41_openings(ref, ("window",))):
+        why.append("no gain")
+    return why
+
+
+JOG_REACH_PX = 2.5
+JOG_MAX_STEP_PX = 1.9
+
+
+def jogs_onto_faces(out):
+    """Round 41: a room side that jogs by a pixel or so (a window band drawn thinner than the walls at its two ends, s018's
+    living-room front: the corner pieces take the walls' thickness, the band its own) leaves a step where the jog stands
+    a pixel off the face of the wall it meets - the app check's step, a ledge the drawing does not have.  The jog is moved
+    along its side onto that face (at most JOG_REACH_PX), in every room and wall edge that has it, and kept only where the
+    app check's replay (app_flaws.py) then finds fewer steps and no new slot, notch or seam, and the app's room rules
+    still pass.  A jog at a door's edge is left alone (a window's edge may stretch by the jog).  A step the replay
+    measures at JOG_MAX_STEP_PX or more is left alone: the app check counts steps up to 2 px, and where the replay
+    makes one 2.0 px the app may make it just over - s038's, which the app did not count, and which moved came out
+    1.8 px in the app.  A standalone wall's free end is only drawn back onto a face, never carried on to one: s049's,
+    carried 2 px on onto the face across it, made the app leave the whole wall out (it would cross that wall's centre
+    line).  -> the number of jogs moved"""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import app_flaws
+    mm = (out.get("scale") or {}).get("millimetresPerPixel")
+    if not mm or not out.get("rooms"):
+        return 0
+    try:
+        f0 = app_flaws.flaws(out)
+    except Exception:
+        return 0
+    if not f0["steps"]:
+        return 0
+    key = lambda p: (round(p[0], 6), round(p[1], 6))
+    edges = out["wallEdges"]
+
+    def faces_across(o, at, lo, hi):
+        """the faces of walls standing across a side of orientation o, near `at` along it, reaching [lo, hi] across"""
+        fs = []
+        for e in edges:
+            P = e.get("sourcePx") or []
+            if len(P) < 2 or not e.get("thicknessPx"):
+                continue
+            (ax, ay), (bx, by) = P[0], P[-1]
+            t = float(e["thicknessPx"]) / 2.0
+            if o == "h" and abs(ax - bx) < 1e-6 and min(ay, by) - t <= hi and max(ay, by) + t >= lo:
+                fs += [ax - t, ax + t]
+            if o == "v" and abs(ay - by) < 1e-6 and min(ax, bx) - t <= hi and max(ax, bx) + t >= lo:
+                fs += [ay - t, ay + t]
+        return [f for f in fs if 0.05 < abs(f - at) <= JOG_REACH_PX]
+
+    def move(pts_from, pts_to):
+        for r in out["rooms"]:
+            for q in r.get("sourcePoints", []):
+                k_ = key((q["x"], q["y"]))
+                if k_ in pts_from:
+                    q["x"], q["y"] = pts_to[pts_from.index(k_)]
+        for e in edges:
+            P = e.get("sourcePx") or []
+            for i, v in enumerate(P):
+                k_ = key(v)
+                if k_ in pts_from:
+                    P[i] = list(pts_to[pts_from.index(k_)])
+
+    import copy
+    moved = 0
+    for sx, sy, _size in f0["steps"]:
+        if _size >= JOG_MAX_STEP_PX:
+            continue
+        # the jog: a room side shorter than 2 px across a level or plumb side, within reach of the step
+        cand = None; back_from = None
+        for r in out["rooms"]:
+            P = [(q["x"], q["y"]) for q in r.get("sourcePoints", [])]
+            n = len(P)
+            for i in range(n):
+                b, c = P[i], P[(i + 1) % n]
+                if math.hypot(c[0] - b[0], c[1] - b[1]) >= 2.0 or math.hypot((b[0] + c[0]) / 2 - sx, (b[1] + c[1]) / 2 - sy) > 12.0:
+                    continue
+                if abs(b[0] - c[0]) < 1e-6:                   # a plumb jog in a level side: moves along x
+                    o, at, lo, hi = "h", b[0], min(b[1], c[1]) - 8.0, max(b[1], c[1]) + 8.0
+                elif abs(b[1] - c[1]) < 1e-6:
+                    o, at, lo, hi = "v", b[1], min(b[0], c[0]) - 8.0, max(b[0], c[0]) + 8.0
+                else:
+                    continue
+                cand = (b, c, o, at, lo, hi)
+                break
+            if cand:
+                break
+        if not cand:
+            # ... or a standalone wall's free end standing a pixel past the face of the wall it meets (s004: a wall laid by
+            # round 40b ran 0.9 px past the main bedroom's wall, more than the 0.75 px its ends are lined up within)
+            used_ = {i_ for r in out["rooms"] for i_ in r.get("edgeIds", [])}
+            ends_ = {}
+            for e in edges:
+                for v in (e.get("sourcePx") or [])[:2]:
+                    ends_[key(v)] = ends_.get(key(v), 0) + 1
+            for e in edges:
+                P = e.get("sourcePx") or []
+                if e["id"] in used_ or len(P) < 2 or e.get("opening") or not e.get("thicknessPx"):
+                    continue
+                t_ = float(e["thicknessPx"]) / 2.0
+                for v in (P[0], P[-1]):
+                    if ends_.get(key(v), 0) != 1 or math.hypot(v[0] - sx, v[1] - sy) > 12.0:
+                        continue
+                    w_ = P[-1] if v is P[0] else P[0]                # (the wall's other end: the free end only comes back)
+                    if abs(P[0][1] - P[-1][1]) < 1e-6:
+                        cand = (tuple(v), tuple(v), "h", v[0], v[1] - t_, v[1] + t_); back_from = w_[0]
+                    elif abs(P[0][0] - P[-1][0]) < 1e-6:
+                        cand = (tuple(v), tuple(v), "v", v[1], v[0] - t_, v[0] + t_); back_from = w_[1]
+                    if cand:
+                        break
+                if cand:
+                    break
+        if not cand:
+            continue
+        b, c, o, at, lo, hi = cand
+        kb, kc = key(b), key(c)
+        if any(e.get("opening") and (e["opening"].get("kind") != "window" or e["opening"].get("hingeSourcePx"))
+               and any(key(v) in (kb, kc) for v in (e.get("sourcePx") or [])) for e in edges):
+            continue                                         # (a door's hinge stays where it is drawn; a window may stretch)
+        for f in sorted(faces_across(o, at, lo, hi), key=lambda f_: abs(f_ - at)):
+            if back_from is not None and abs(f - back_from) >= abs(at - back_from):
+                continue                                     # (a standalone wall is never made longer)
+            saved = copy.deepcopy((out["rooms"], out["wallEdges"]))
+            to = [(f, b[1]), (f, c[1])] if o == "h" else [(b[0], f), (c[0], f)]
+            move(list(dict.fromkeys([kb, kc])), to[:len(dict.fromkeys([kb, kc]))])
+            ok = False
+            try:
+                f1 = app_flaws.flaws(out)
+                outl = [[(q["x"], q["y"]) for q in r["sourcePoints"]] for r in out["rooms"]]
+                ok = (len(f1["steps"]) < len(f0["steps"]) and len(f1["slots"]) <= len(f0["slots"]) and len(f1["notches"]) <= len(f0["notches"])
+                      and len(f1["seams"]) <= len(f0["seams"]) and not app_geometry_problems(outl))
+            except Exception:
+                ok = False
+            if ok:
+                f0 = f1; moved += 1
+                break
+            out["rooms"], out["wallEdges"] = saved; edges = out["wallEdges"]
+    return moved
 
 
 R39_SEAM_PX = 2.0
@@ -9063,8 +9291,24 @@ if __name__ == "__main__":
     m = json.load(open(args[0]))
     work = opt.get("--work") or (args[0][:-5] + ".work.png" if args[0].endswith(".json") else None)
     gray = cv2.imread(work, 0) if work and os.path.exists(work) else None
+    svg_path = opt.get("--svg") or (args[0][:-5] + ".svg" if args[0].endswith(".json") else None)
+    pale_ = bool((m.get("pale_lines") or {}).get("applied"))
     out, dbg = build_best(m, gray)
-    add_drawing(out, m, opt.get("--svg") or (args[0][:-5] + ".svg" if args[0].endswith(".json") else None))
+    if pale_:
+        # round 41: stage 1 darkened this page's pale line work and wrote the page as round 40b read it beside it
+        # (<page>.plain.json, .work.png, .svg): the darkened reading is exported only where it beats that one
+        plain_ = args[0][:-5] + ".plain.json" if args[0].endswith(".json") else None
+        why_ = None
+        if R41_GATE and plain_ and os.path.exists(plain_):
+            mA = json.load(open(plain_))
+            gA = cv2.imread(plain_[:-5] + ".work.png", 0) if os.path.exists(plain_[:-5] + ".work.png") else None
+            outA, dbgA = build_best(mA, gA)
+            why_ = _r41_against(out, outA)
+            if why_:
+                out, dbg, m, svg_path = outA, dbgA, mA, plain_[:-5] + ".svg"
+                out["diagnostics"]["round41Withheld"] = why_
+        out["diagnostics"]["stage1Reading"] = "plain" if why_ else "pale"
+    add_drawing(out, m, svg_path)
     json.dump(out, open(args[1], "w"), indent=1)
     if opt.get("--check"):
         check_picture(m, out, dbg, opt["--check"], opt.get("--source"))

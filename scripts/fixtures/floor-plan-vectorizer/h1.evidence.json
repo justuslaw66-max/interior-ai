@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.32.1",
+ "exporterVersion": "app-evidence-0.34.0",
  "page": {
   "widthPx": 1220,
   "heightPx": 1046,
@@ -5830,7 +5830,7 @@
     ],
     [
      632.0,
-     851.0
+     850.25
     ]
    ],
    "thicknessPx": 18.0,
@@ -6963,6 +6963,7 @@
   ],
   "round40Withheld": [
    "doors 13 -> 12"
-  ]
+  ],
+  "jogsMovedOntoFaces": 1
  }
 }
