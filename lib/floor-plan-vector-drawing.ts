@@ -8,7 +8,9 @@ import { buildFloorPlanFurnitureDrawing, type PlanFurnitureDrawingSource } from 
 import { namedFloorPlanRooms, voidRoomCrossDashes } from "@/lib/floor-plan-void-rooms";
 
 export type PlanDrawingPrimitive =
-  | { id: string; kind: "path"; path: string; fill: boolean; points: Point[]; role: string; strokeWidth?: number; strokeInsetNormal?: { x: number; z: number } }
+  | { id: string; kind: "path"; path: string; fill: boolean; points: Point[]; role: string; strokeWidth?: number; strokeInsetNormal?: { x: number; z: number };
+      /** The grey traced source artwork is drawn in (0 black - 255 white), where the trace gave one. */
+      tone?: number }
   | { id: string; kind: "text"; text: string; point: Point; role: string };
 export type PlanDrawingOptions = { floorId: string; dimensions: boolean; labels: boolean; fixtures: boolean };
 export type PlanVectorDrawing = { coordinateSpace?: "source_pixels"; sourceSize?: { width: number; height: number }; geometryHash: string; primitives: PlanDrawingPrimitive[]; unsupported: string[] };

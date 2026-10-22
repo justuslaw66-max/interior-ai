@@ -11,6 +11,8 @@ export type FloorPlanSourceDrawingGeometryV2 = {
   strokeWidthPx?: number;
   fill?: boolean;
   groupId?: string;
+  /** The grey it is drawn in (0 black - 255 white), where the trace knows it (the faithful trace). */
+  tone?: number;
   points: Array<{ x: number; y: number }>;
 };
 
@@ -23,7 +25,7 @@ export function sourceDrawingGeometryError(geometry: FloorPlanSourceDrawingGeome
     (!Number.isFinite(geometry.textRotationDegrees) || Math.abs(geometry.textRotationDegrees) > 360)) {
     return "Source text rotation must be a finite angle in degrees.";
   }
-  const commandError = sourceCommandError(geometry);
+  const commandError = sourceCommandError(geometry) ?? sourceToneError(geometry.tone);
   if (commandError) return commandError;
   if (!geometry.sourceId || !Number.isSafeInteger(geometry.pageNumber) || geometry.pageNumber < 1 ||
     ![geometry.widthPx, geometry.heightPx].every(validPageLength)) {
@@ -52,6 +54,12 @@ export function sourceDrawingSvgPath(geometry: FloorPlanSourceDrawingGeometryV2)
   return `M ${start.x} ${start.y}${points.length ? ` ${command} ${points.map((point) => `${point.x} ${point.y}`).join(" ")}` : ""}`;
 }
 
+/** The colour a source shape is drawn in: its own grey where the trace gave one, else the view's own ink. */
+export function sourceDrawingInk(geometry: Pick<FloorPlanSourceDrawingGeometryV2, "tone">, fallback: string): string {
+  const tone = geometry.tone;
+  return tone === undefined ? fallback : `rgb(${tone},${tone},${tone})`;
+}
+
 export function sourceDrawingSvgPoints(points: FloorPlanSourceDrawingGeometryV2["points"]) {
   return points.map((point) => `${point.x},${point.y}`).join(" ");
 }
@@ -69,3 +77,9 @@ function sourceCommandError(geometry: FloorPlanSourceDrawingGeometryV2): string 
 }
 
 const validStrokeWidth = (value:number) => Number.isFinite(value) && value > 0 && value <= 100;
+
+/** A grey, 0 black - 255 white, where the trace gave one. */
+function sourceToneError(tone: number | undefined): string | null {
+  if (tone === undefined) return null;
+  return Number.isInteger(tone) && tone >= 0 && tone <= 255 ? null : "Invalid source tone.";
+}
