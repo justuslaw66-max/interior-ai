@@ -1286,9 +1286,12 @@ def merge_lines(segs, ink=None):
                             if min(Le, Lf) >= 5 * PX and max(e["w"], f["w"]) > 1.6 * min(e["w"], f["w"]) + 0.3 * PX:
                                 continue
                             if across and not (gap <= 1.6 * PX or (node > 0 and node == nodej and gap <= 6 * PX)) and (
-                                    min(Le, Lf) < 6 * PX or max(e["w"], f["w"]) > 1.6 * min(e["w"], f["w"]) + 0.3 * PX):
+                                    min(Le, Lf) < 6 * PX or max(e["w"], f["w"]) > 1.6 * min(e["w"], f["w"]) + 0.3 * PX
+                                    or max(abs(cross2(u, q - far_e)) for q in (p, f[endj])) > 0.5 * PX):
                                 continue                                # (across a crossing: one line's two long pieces of
-                                                                        # one weight, not a line and a dot beyond a band)
+                                                                        # one weight, in line - not a line and a dot beyond
+                                                                        # a band, nor two lines a pixel apart, which a
+                                                                        # join would draw slanted)
                             if e.get("axis") and f.get("axis") and max(e["w"], f["w"]) > 1.3 * min(e["w"], f["w"]):
                                 continue                                # a line's pieces of different weight stay apart
                             if e.get("axis") and f.get("axis") and abs(cross2(_dir(e), f["a"] - e["a"])) > 0.5 * PX:
