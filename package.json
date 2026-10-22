@@ -149,6 +149,8 @@
     "test:ai-design-notes": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-ai-design-notes.ts",
     "generate:surface-material-runtime": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/generate-surface-material-runtime.ts",
     "check:surface-material-runtime": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/generate-surface-material-runtime.ts --check",
+    "generate:cabinet-laminates": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/generate-cabinet-laminate-runtime.ts",
+    "check:cabinet-laminates": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' scripts/generate-cabinet-laminate-runtime.ts --check",
     "test:surface-material-schema": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-surface-material-schema.ts",
     "test:surface-material-browser-semantics": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-surface-material-browser-semantics.ts",
     "test:surface-material-runtime-boundary": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-phase8-performance-boundaries.ts --surface-material-contract-only",
