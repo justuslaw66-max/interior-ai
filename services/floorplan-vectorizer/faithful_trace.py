@@ -610,12 +610,15 @@ def marks_on_lines(segs, weak, d, g):
 RUN = 10               # a level (plumb) line: ink running at least this far along a row (column)
 
 
-def _level_fit(cx, cy, w):
-    """the band's centre line: for a short band, fitted on its middle (its ends lean with the anti-aliasing and the
-    lines that meet it there)"""
-    if w < 4 * RUN and len(cx) >= 10:
+def _level_fit(cx, cy, w, across=0.0):
+    """the band's centre line: for a short heavy band (`across`: its ink across, per column), fitted on its middle (its
+    ends lean with the anti-aliasing and the lines that meet it there); a thin line is fitted whole"""
+    if os.environ.get("FT_LEVELFIT", "1") == "1" and w < 4 * RUN and len(cx) >= 10 and across >= 3 * PX:
         a, b = int(0.2 * len(cx)), int(0.8 * len(cx))
-        cx, cy = cx[a:b], cy[a:b]
+        k, c0 = np.polyfit(cx[a:b], cy[a:b], 1)
+        # (held to all but its very ends: a slightly slanted short line's middle can lie in one step of its staircase)
+        a, b = int(0.1 * len(cx)), int(math.ceil(0.9 * len(cx)))
+        return k, c0, np.abs(cy[a:b] - (k * cx[a:b] + c0))
     k, c0 = np.polyfit(cx, cy, 1)
     return k, c0, np.abs(cy - (k * cx + c0))
 
@@ -670,7 +673,7 @@ def _level_pieces(dd, x0, y0, w, h, band):
     ys = np.arange(y0, y0 + h)[:, None] + 0.5
     cy = np.where(ok, (dv * ys).sum(0) / np.maximum(colw, 1e-9), np.nan)
     cx = np.arange(x0, x0 + w)[ok] + 0.5
-    k, c0, res = _level_fit(cx, cy[ok], w)
+    k, c0, res = _level_fit(cx, cy[ok], w, float(band.sum()) / max(1, w))
     if not (abs(k) > math.tan(math.radians(SNAP_DEG)) or abs(k) * w > 2 * SNAP_PX or np.percentile(res, 90) > FIT_PX) \
             or os.environ.get("FT_SPLIT", "1") != "1":
         return [(x0, y0, w, h, band)]
@@ -773,7 +776,7 @@ def axis_lines(stroke, d, fill=None, run=None, min_h=0):
                 ys = np.arange(y0, y0 + h)[:, None] + 0.5
                 cy = (dv * ys).sum(0)[ok] / colw[ok]
                 cx = np.arange(x0, x0 + w)[ok] + 0.5
-                k, c0, res = _level_fit(cx, cy, w)
+                k, c0, res = _level_fit(cx, cy, w, float(band.sum()) / max(1, w))
                 if abs(k) > math.tan(math.radians(SNAP_DEG)) or abs(k) * w > 2 * SNAP_PX or np.percentile(res, 90) > FIT_PX:
                     _axdbg(level, x0, y0, w, h, "not level: k %.3f res90 %.2f" % (k, np.percentile(res, 90)))
                     continue
@@ -1282,6 +1285,10 @@ def merge_lines(segs, ink=None):
                             Le, Lf = length(e), length(f)
                             if min(Le, Lf) >= 5 * PX and max(e["w"], f["w"]) > 1.6 * min(e["w"], f["w"]) + 0.3 * PX:
                                 continue
+                            if across and not (gap <= 1.6 * PX or (node > 0 and node == nodej and gap <= 6 * PX)) and (
+                                    min(Le, Lf) < 6 * PX or max(e["w"], f["w"]) > 1.6 * min(e["w"], f["w"]) + 0.3 * PX):
+                                continue                                # (across a crossing: one line's two long pieces of
+                                                                        # one weight, not a line and a dot beyond a band)
                             if e.get("axis") and f.get("axis") and max(e["w"], f["w"]) > 1.3 * min(e["w"], f["w"]):
                                 continue                                # a line's pieces of different weight stay apart
                             if e.get("axis") and f.get("axis") and abs(cross2(_dir(e), f["a"] - e["a"])) > 0.5 * PX:
