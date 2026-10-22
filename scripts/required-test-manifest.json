@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 325,
-      "expectedPathSha256": "4b5da5b14570a90aac11f9f64a2f06e5fdd4c0b2fa38253fbf2f32711f6a3702"
+      "expectedFileCount": 326,
+      "expectedPathSha256": "c8958d0705857bc48d1bd4827be2f9436bcdff553ecc860ac1910ccbd3183307"
     },
     {
       "id": "browser-specs",
@@ -423,7 +423,7 @@
       "blocking": true,
       "command": "npm run test:critical-required",
       "packageScript": "test:critical-required",
-      "packageClosure": { "expectedScriptCount": 43, "expectedSha256": "2032d71fcfc49b651238d0b807fa05a54049539a718ca1c5e95f168351766422" },
+      "packageClosure": { "expectedScriptCount": 44, "expectedSha256": "d6ad7ef2dee5a3897b8655d1d6e5e83c0512680c2497a049a7130b16bd15c090" },
       "runner": "npm-chain",
       "supportingInventories": ["cabinetry-script-modules"],
       "requiredSources": [
