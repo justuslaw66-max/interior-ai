@@ -1210,6 +1210,26 @@ def fit_chains(chains):
                 cx, cy, r, a0, a1 = s_[1]
                 e.update(k="arc", c=np.array([cx, cy]), r=r, a0=a0, a1=a1)
             run.append(e)
+        # a short piece leaning into a level or plumb neighbour (a heavy outline's step: its centre line bends into the
+        # corner) is a step: set square to that neighbour, its far end kept, so the corner closes square
+        if len(run) > 1:
+            ax_ = lambda e: (abs(_dir(e)[0]) >= math.cos(math.radians(SNAP_DEG))) or (abs(_dir(e)[1]) >= math.cos(math.radians(SNAP_DEG)))
+            for i_, e in enumerate(run):
+                if e["k"] != "line" or np.linalg.norm(e["b"] - e["a"]) > 6 * PX or ax_(e):
+                    continue
+                for j_, far in ((i_ - 1, "b"), (i_ + 1, "a")):
+                    if not (0 <= j_ < len(run)) or run[j_]["k"] != "line" or not ax_(run[j_]) or \
+                            np.linalg.norm(run[j_]["b"] - run[j_]["a"]) < 2 * PX:
+                        continue
+                    n_ = run[j_]; nd = _dir(n_)
+                    if abs(float(np.dot(_dir(e), nd))) > math.cos(math.radians(65)):
+                        continue                                # (not across its neighbour)
+                    keep = e[far]                               # the end away from the neighbour
+                    if abs(nd[0]) > abs(nd[1]):                 # neighbour level: the step is plumb
+                        x_ = keep[0]; e["a"], e["b"] = np.array([x_, e["a"][1]]), np.array([x_, e["b"][1]])
+                    else:                                       # neighbour plumb: the step is level
+                        y_ = keep[1]; e["a"], e["b"] = np.array([e["a"][0], y_]), np.array([e["b"][0], y_])
+                    break
         # one run, no breaks: two straight pieces meet where their lines cross (when that is near), a straight piece
         # ends where the arc after or before it ends
         arc_end = lambda e, k: e["c"] + e["r"] * np.array([math.cos(e[k]), math.sin(e[k])])
