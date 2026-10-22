@@ -147,7 +147,7 @@ def programs_directory():
 
 def check_programs(directory, note):
     ok = True
-    for name in ("floorplan_vectorize.py", "app_evidence.py"):
+    for name in ("floorplan_vectorize.py", "app_evidence.py", "faithful_drawing.py", "faithful_trace.py"):
         path = os.path.join(directory, name)
         present = os.path.isfile(path)
         if present:
@@ -163,6 +163,8 @@ def check_programs(directory, note):
 def check_settings():
     enabled = os.environ.get("FLOOR_PLAN_VECTORIZER_ENABLED")
     check("FLOOR_PLAN_VECTORIZER_ENABLED", enabled == "1", "%r -- the vectorizer runs only when this is exactly \"1\" on the process that runs imports" % enabled, warn=True)
+    faithful = os.environ.get("FLOOR_PLAN_FAITHFUL_TRACE")
+    check("FLOOR_PLAN_FAITHFUL_TRACE", True, "%r -- a clean page is drawn by the faithful trace only when this is exactly \"1\"" % faithful)
     timeout = os.environ.get("FLOOR_PLAN_VECTORIZER_TIMEOUT_MS")
     check("FLOOR_PLAN_VECTORIZER_TIMEOUT_MS", True, (timeout or "unset -> 420000 (7 min per page; clamped to 10 s - 15 min)"))
     try:
