@@ -136,7 +136,7 @@ const startActions = renderToStaticMarkup(createElement(RoomSetupStartActions, {
 }));
 assert.match(
   startActions,
-  new RegExp(`Have a floor plan\\?[^<]*<button type="button" class="[^"]*\\btext-accent\\b[^"]*" id="${FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID}" data-testid="plan-tool-import-2d"[^>]*>Upload floor plan</button>`)
+  new RegExp(`Have a floor plan\\?[^<]*<button type="button" class="[^"]*\\btext-link\\b[^"]*" id="${FLOOR_PLAN_CONSUMER_IMPORT_ACTION_ID}" data-testid="plan-tool-import-2d"[^>]*>Upload floor plan</button>`)
 );
 assert.ok(startActions.indexOf("plan-start-template") < startActions.indexOf("plan-tool-import-2d"));
 
