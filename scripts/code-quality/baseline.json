@@ -2452,12 +2452,6 @@
         "maximum": 85
       }
     },
-    "features/cabinetry/createCabinetThreeGroup.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 68
-      }
-    },
     "features/cabinetry/designItemAdapters.ts": {
       "overlongFunctions": {
         "count": 2,
