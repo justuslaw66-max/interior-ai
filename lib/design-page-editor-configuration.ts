@@ -27,8 +27,9 @@ export const EDITOR_3D_MAX_POLAR_ANGLE = Math.PI - 0.02;
 export const EDITOR_BAR_HEIGHT_PX = 56;
 
 export const PLAN_FLOATING_OVERLAY_DESKTOP_MIN_WIDTH = 1024;
-export const PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX = 4;
-export const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = EDITOR_BAR_HEIGHT_PX + 268;
+// The right rail sits 8px inside the canvas card's right and top edges (the rounded inset frame).
+export const PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX = 12;
+export const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = EDITOR_BAR_HEIGHT_PX + 276;
 export const PLAN_FLOATING_OVERLAY_STACK_WIDTH_PX = 264;
 export const PLAN_FLOATING_OVERLAY_STACK_GAP_PX = 8;
 

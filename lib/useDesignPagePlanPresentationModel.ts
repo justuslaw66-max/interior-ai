@@ -7,7 +7,7 @@ import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { LightingPreset } from "@/lib/lightingPresets";
 import { buildExportReadinessItems, getExportReadinessScore } from "@/lib/design-page-export-readiness";
 import { getPlan2DRoomFitBounds } from "@/lib/design-page-floor-plan-utils";
-import { EDITOR_BAR_HEIGHT_PX, resolveCanvasLeftInsetPx } from "@/lib/editor-canvas-insets";
+import { EDITOR_BAR_HEIGHT_PX, resolveCanvasFrameBox, resolveCanvasLeftInsetPx } from "@/lib/editor-canvas-insets";
 import {
   buildHousePlan2D,
   type HouseRoomConnectionChecklistItem,
@@ -94,12 +94,11 @@ export function resolveDesignPageViewportLayout({
     floorPropertiesPanelEligible && !floatingFloorPropertiesPanelVisible;
   const primaryLeftPanelVisible =
     designControlsPanelVisible || shoppingPanelVisible;
+  const leftPanel = { shopping: shoppingPanelVisible, collapsed: designPanelCollapsed, isDesigner };
   const plan2DSafeAreaLeftPx = resolveCanvasLeftInsetPx({
-    panelVisible: primaryLeftPanelVisible && !isClientPreview && viewportWidth >= 768,
-    shopping: shoppingPanelVisible,
-    collapsed: designPanelCollapsed,
-    isDesigner,
+    panelVisible: primaryLeftPanelVisible && !isClientPreview && viewportWidth >= 768, ...leftPanel,
   });
+  const canvasFrame = resolveCanvasFrameBox({ wide: viewportWidth >= 768, clientPreview: isClientPreview, panelVisible: primaryLeftPanelVisible, ...leftPanel });
   const selectionInspectorDockedWithPlanStack =
     floatingPlanOverlayStackVisible &&
     viewMode === "3d" &&
@@ -131,7 +130,7 @@ export function resolveDesignPageViewportLayout({
     floatingFloorPropertiesPanelVisible,
     inlineFloorPropertiesPanelVisible,
     primaryLeftPanelVisibleForLayout: primaryLeftPanelVisible,
-    plan2DSafeAreaLeftPx,
+    plan2DSafeAreaLeftPx, canvasFrame,
     selectionInspectorDockedWithPlanStack,
     selectionInspectorDockedWithRightRail,
     selectionInspectorRightPx,
@@ -277,8 +276,8 @@ export function useDesignPagePlanPresentationModel({
     () => getExportReadinessScore(exportReadinessItems),
     [exportReadinessItems]
   );
-  const sceneBackgroundColor =
-    layout.viewMode === "3d" ? "#f4f2ed" : "#ffffff";
+  // The canvas card is warm in 2D too, so it stands out from the white frame (J, 23 Oct).
+  const sceneBackgroundColor = "#f4f2ed";
   const effectivePlanLayers = presentation.simplePlanControls
     ? simplePlanLayers
     : presentation.planLayers;

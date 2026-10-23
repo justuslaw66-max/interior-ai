@@ -11,7 +11,7 @@ import { BetaStartPanel } from "@/components/editor/design-page/BetaStartPanel";
 import { DesignPageEditorCommandBar } from "@/components/editor/design-page/DesignPageEditorCommandBar";
 import { LeaveAtDesignLimitDialog } from "@/components/editor/design-page/LeaveAtDesignLimitDialog";
 import type { LeaveAtDesignLimitPrompt } from "@/lib/useLeaveForMyDesigns";
-import { resolveCanvasLeftInsetPx } from "@/lib/editor-canvas-insets";
+import { resolveCanvasFrameBox } from "@/lib/editor-canvas-insets";
 import { TABLET_MEDIA_QUERY, useTabletPanelPolicy } from "@/lib/tablet-panel-policy";
 import { isDesignControlsPanelMode } from "@/lib/useDesignPagePanelMode";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
@@ -68,7 +68,9 @@ function CanvasControls({ state, actions }: Omit<DesignPageEditorChromeProps, "c
   const onCanvas = wide && overCanvas;
   const tablet = useTabletPanelPolicy(useMediaQuery(TABLET_MEDIA_QUERY), bar.designSidebarCollapsed);
   const savedViews = { ...state.savedViews, ...actions.savedViews };
-  const leftInsetPx = resolveCanvasLeftInsetPx({
+  const frame = resolveCanvasFrameBox({
+    wide,
+    clientPreview: bar.isClientPreview,
     panelVisible: !bar.millworkActive && isDesignControlsPanelMode(bar.editorMode),
     shopping: false,
     collapsed: tablet.collapsed,
@@ -78,7 +80,7 @@ function CanvasControls({ state, actions }: Omit<DesignPageEditorChromeProps, "c
     <>
       {onCanvas ? (
         <CanvasViewToolbar
-          leftInsetPx={leftInsetPx}
+          frame={frame}
           viewMode={bar.viewMode}
           onViewModeChange={barActions.onViewModeChange}
           canFit={Boolean(state.commandBar.room)}

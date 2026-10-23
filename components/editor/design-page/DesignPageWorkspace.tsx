@@ -458,7 +458,7 @@ export function DesignPageWorkspace() {
         {viewMode === "2d" &&
         editorMode === "adjust" &&
         sourceReferenceUnderlay ? (
-          <div className="pointer-events-auto absolute bottom-4 left-4 z-40 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur md:left-[304px]">
+          <div className="pointer-events-auto absolute bottom-4 left-4 z-40 flex items-center gap-3 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 shadow-lg backdrop-blur md:left-[318px]">
             <div>
               <div className="text-xs font-semibold text-neutral-900">
                 Floor plan image

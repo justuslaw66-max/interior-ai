@@ -14,7 +14,7 @@ import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
 import { cameraViewChanged } from "@/lib/design-page-live-camera-view";
 import { EDITOR_BAR_HEIGHT_PX, resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
-import { resolvePlanFitInsetsPx } from "@/lib/editor-canvas-insets";
+import { isWideEditor, resolvePlanFitInsetsPx, type CanvasFrameBox } from "@/lib/editor-canvas-insets";
 import { resolveCameraViewForFloorWorldY, resolveCameraViewForRoomOrigin, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { track } from "@/lib/analytics";
 import {
@@ -72,7 +72,7 @@ export type DesignPageCameraNavigationConfiguration = {
   planSafeAreaRightPx: number; // automatic 2D fits: the floating overlay stack as of the last fit
   planSafeAreaLiveRightPx: number; // explicit 2D fits (Fit, a room's fit): the stack as it is now
   planSafeAreaTopPx: number;
-  planSafeAreaBottomPx: number;
+  planSafeAreaBottomPx: number; planCanvasFrame: CanvasFrameBox; // the insets count from the editor's sides
   floatingPlanOverlayStackVisible: boolean;
   floatingPlanOverlayStackWidthPx: number;
   activeRoomFloorWorldY: number;
@@ -160,7 +160,7 @@ export function useDesignPageCameraNavigation({
     designId,
     viewportSize,
     planFitBounds,
-    planSafeAreaLeftPx, planSafeAreaRightPx, planSafeAreaLiveRightPx, planSafeAreaTopPx, planSafeAreaBottomPx,
+    planSafeAreaLeftPx, planSafeAreaRightPx, planSafeAreaLiveRightPx, planSafeAreaTopPx, planSafeAreaBottomPx, planCanvasFrame,
     floatingPlanOverlayStackVisible,
     floatingPlanOverlayStackWidthPx,
     activeRoomFloorWorldY, activeRoomPlanOffset: { x: activeRoomPlanX, z: activeRoomPlanZ }, roomHeight,
@@ -221,13 +221,13 @@ export function useDesignPageCameraNavigation({
       PLAN_2D_WHOLE_HOME_FIT_PADDING_RATIO
   );
   const planFitInsets = useMemo(
-    () => ({ leftPx: planSafeAreaLeftPx, rightPx: planSafeAreaRightPx, topPx: planSafeAreaTopPx, bottomPx: planSafeAreaBottomPx }),
-    [planSafeAreaBottomPx, planSafeAreaLeftPx, planSafeAreaRightPx, planSafeAreaTopPx]
+    () => ({ leftPx: planSafeAreaLeftPx, rightPx: planSafeAreaRightPx, topPx: planSafeAreaTopPx, bottomPx: planSafeAreaBottomPx, frame: planCanvasFrame }),
+    [planCanvasFrame, planSafeAreaBottomPx, planSafeAreaLeftPx, planSafeAreaRightPx, planSafeAreaTopPx]
   );
   const planFitLiveInsets = useMemo(() => ({ ...planFitInsets, rightPx: planSafeAreaLiveRightPx }), [planFitInsets, planSafeAreaLiveRightPx]);
   const plan2DWholeHomeViewFit = useMemo(() => {
-    const viewportWidthPx = viewportSize.width;
-    const viewportHeightPx = viewportSize.height;
+    const viewportWidthPx = viewportSize.width - planFitInsets.frame.leftPx - planFitInsets.frame.rightPx;
+    const viewportHeightPx = viewportSize.height - planFitInsets.frame.topPx - planFitInsets.frame.bottomPx;
     const insets = resolvePlanFitInsetsPx(viewportWidthPx, planFitInsets);
     return resolvePlan2DViewFit({
       centerX: planFitBounds.centerX,
@@ -386,15 +386,14 @@ export function useDesignPageCameraNavigation({
   const getWholeHome3DView = useCallback((): CameraView => {
     const fov = 46;
     const canvas = canvasRef.current;
-    const viewportWidthPx = canvas?.clientWidth ?? viewportSize.width;
-    const viewportHeightPx = canvas?.clientHeight ?? viewportSize.height;
-    const leftInsetPx = viewportWidthPx >= 768 ? planSafeAreaLeftPx : 0;
-    const rightInsetPx =
-      viewportWidthPx >= 768 && floatingPlanOverlayStackVisible
-        ? floatingPlanOverlayStackWidthPx + 32
-        : 0;
-    const topInsetPx = viewportWidthPx >= 768 ? EDITOR_BAR_HEIGHT_PX + 60 : Math.max(72, planFitInsets.topPx);
-    const bottomInsetPx = viewportWidthPx < 768 ? Math.max(96, planFitInsets.bottomPx) : 48;
+    const { frame } = planFitInsets; // the canvas's place: the left and top insets count from its edges
+    const viewportWidthPx = canvas?.clientWidth ?? viewportSize.width - frame.leftPx - frame.rightPx;
+    const viewportHeightPx = canvas?.clientHeight ?? viewportSize.height - frame.topPx - frame.bottomPx;
+    const wide = isWideEditor(viewportWidthPx, frame);
+    const leftInsetPx = wide ? Math.max(0, planSafeAreaLeftPx - frame.leftPx) : 0;
+    const rightInsetPx = wide && floatingPlanOverlayStackVisible ? floatingPlanOverlayStackWidthPx + 32 : 0;
+    const topInsetPx = wide ? EDITOR_BAR_HEIGHT_PX + 60 - frame.topPx : Math.max(72, planFitInsets.topPx);
+    const bottomInsetPx = wide ? 48 : Math.max(96, planFitInsets.bottomPx);
     const effectiveWidthPx = Math.max(320, viewportWidthPx - leftInsetPx - rightInsetPx);
     const effectiveHeightPx = Math.max(260, viewportHeightPx - topInsetPx - bottomInsetPx);
     const aspect = Math.max(0.65, effectiveWidthPx / effectiveHeightPx);
