@@ -305,7 +305,7 @@
       "limit": 250
     },
     "features/cabinetry/components/CabinetNumberField.tsx": {
-      "lines": 390,
+      "lines": 388,
       "limit": 250
     },
     "features/cabinetry/components/CabinetOverallDimensionHandles.tsx": {

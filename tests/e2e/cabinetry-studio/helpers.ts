@@ -18,10 +18,10 @@ export async function startInMillimetres(page: import("@playwright/test").Page) 
  * Picks a laminate in one of the Detailed editor's finish fields: opens it, searches by the
  * supplier's code and chooses the design, then checks the field took it.
  *
- * A value typed just before is committed first, as tabbing away would. Its commit can bring up a
- * field warning above the finish (laminates r3, 23 Oct: a 1,200 mm module's "Width needs
- * attention"), which moves "Change" between the press and the release and loses the click. The
- * drop-down this replaced opened on the press, so it never showed.
+ * It presses "Change" straight after any typing, as a person would: placement.ts types a 1,200 mm
+ * module width first, whose "Width needs attention" used to appear during the press, move the
+ * button and lose the click (laminates r3, 23 Oct). Number fields now hold a new message until the
+ * press's click has landed (useHeldDuringPointerPress).
  */
 export async function chooseCabinetFinish(
   page: import("@playwright/test").Page,
@@ -30,7 +30,6 @@ export async function chooseCabinetFinish(
   materialId: string
 ) {
   const field = page.getByTestId(fieldTestId);
-  await page.evaluate(() => (document.activeElement instanceof HTMLElement ? document.activeElement.blur() : undefined));
   if ((await page.getByTestId(`${fieldTestId}-picker`).count()) === 0) {
     await page.getByTestId(`${fieldTestId}-change`).click();
   }
