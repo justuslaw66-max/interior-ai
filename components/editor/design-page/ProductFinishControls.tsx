@@ -1,6 +1,9 @@
 "use client";
 
+import type { ButtonHTMLAttributes, CSSProperties } from "react";
 import { createPortal } from "react-dom";
+
+import { CHOSEN_SWATCH_RING, ChoiceTile } from "@/components/ui/ChoiceTile";
 
 type FinishOption = {
   key: string;
@@ -125,12 +128,42 @@ type ProductFinishControlsProps = {
 const sectionHeadingClass = "text-sm font-semibold text-neutral-900";
 
 const selectedLabelClass = "mt-2 text-xs text-neutral-600";
+const HOVERED_SWATCH_RING = "0 0 0 2px #fff, 0 0 0 3px #a0a0a0";
+const swatchClass = "shrink-0 h-20 w-20 rounded-sm bg-cover bg-center";
+
+function swatchStyle(colorHex: string, swatchTextureUrl: string | null, ring = "none"): CSSProperties {
+  return {
+    backgroundColor: colorHex,
+    backgroundImage: swatchTextureUrl ? `url(${swatchTextureUrl})` : undefined,
+    boxShadow: ring,
+  };
+}
+
+type FinishSwatchButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "aria-pressed" | "className" | "style"> & {
+  colorHex: string;
+  swatchTextureUrl: string | null;
+  selected: boolean;
+  hovered?: boolean;
+};
+
+/** A swatch to choose, in its own colour or texture; the chosen one has the ring. */
+function FinishSwatchButton({ colorHex, swatchTextureUrl, selected, hovered = false, ...props }: FinishSwatchButtonProps) {
+  const ring = selected ? CHOSEN_SWATCH_RING : hovered ? HOVERED_SWATCH_RING : "none";
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      className={`${swatchClass} transition-all`}
+      style={swatchStyle(colorHex, swatchTextureUrl, ring)}
+      {...props}
+    />
+  );
+}
 
 export function ProductFinishControls({
   state,
   actions,
 }: ProductFinishControlsProps) {
-
   return (
     <>
       {state.finish ? (
@@ -156,48 +189,31 @@ export function ProductFinishControls({
           >
             {state.finish.options.map((option) =>
               state.finish?.layout === "swatches" ? (
-                <button
+                <FinishSwatchButton
                   key={option.key}
-                  className="shrink-0 h-20 w-20 rounded-sm bg-cover bg-center transition-all"
-                  style={{
-                    backgroundColor: option.colorHex,
-                    backgroundImage: option.swatchTextureUrl
-                      ? `url(${option.swatchTextureUrl})`
-                      : undefined,
-                    boxShadow: option.active
-                      ? "0 0 0 2px #fff, 0 0 0 4px #5a2135"
-                      : "none",
-                  }}
-                  onClick={() =>
-                    actions.onSelectFinishSwatch(
-                      option.key,
-                      option.label,
-                      option.variantId,
-                      option.productId,
-                    )
-                  }
+                  colorHex={option.colorHex}
+                  swatchTextureUrl={option.swatchTextureUrl}
+                  selected={option.active}
+                  onClick={() => actions.onSelectFinishSwatch(option.key, option.label, option.variantId, option.productId)}
                   title={option.label}
                   aria-label={`Select fabric colour ${option.label}`}
                 />
               ) : (
-                <button
+                <ChoiceTile
                   key={option.key}
-                  className={`w-full border transition ${
+                  selected={option.active}
+                  className={
                     state.finish?.layout === "compact-buttons"
-                      ? "min-h-12 rounded-lg px-2 py-2 text-sm leading-tight"
-                      : "rounded-2xl px-4 py-1 text-base"
-                  } ${
-                    option.active
-                      ? "border-[#4b1427] bg-[#4b1427] text-white"
-                      : "border-neutral-300 bg-white text-[#4b2635]"
-                  }`}
+                      ? "min-h-12 w-full px-2 py-2 text-sm leading-tight"
+                      : "w-full px-4 py-1 text-base"
+                  }
                   onClick={() =>
                     actions.onSelectFinishButton(option.key, option.label, option.variantId)
                   }
                   title={option.label}
                 >
                   {option.label}
-                </button>
+                </ChoiceTile>
               ),
             )}
           </div>
@@ -215,21 +231,14 @@ export function ProductFinishControls({
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {state.legFinish.options.map((option) => (
-              <button
+              <FinishSwatchButton
                 key={`leg-finish-${option.key}`}
                 data-testid={`leg-finish-swatch-${option.key}`}
                 data-active={option.active ? "true" : "false"}
-                className="shrink-0 h-20 w-20 rounded-sm bg-cover bg-center transition-all"
+                colorHex={option.colorHex}
+                swatchTextureUrl={option.swatchTextureUrl}
+                selected={option.active}
                 disabled={option.disabled}
-                style={{
-                  backgroundColor: option.colorHex,
-                  backgroundImage: option.swatchTextureUrl
-                    ? `url(${option.swatchTextureUrl})`
-                    : undefined,
-                  boxShadow: option.active
-                    ? "0 0 0 2px #fff, 0 0 0 4px #5a2135"
-                    : "none",
-                }}
                 onClick={() => actions.onSelectLegFinish(option.variantId, option.label)}
                 title={option.label}
                 aria-label={`Select wood colour ${option.label}`}
@@ -252,17 +261,11 @@ export function ProductFinishControls({
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             <div
-              className="shrink-0 h-20 w-20 rounded-sm bg-cover bg-center"
+              className={swatchClass}
               data-testid="selected-single-finish-swatch"
               role="img"
               aria-label={`${state.singleWoodFinish.label} wood swatch`}
-              style={{
-                backgroundColor: state.singleWoodFinish.colorHex,
-                backgroundImage: state.singleWoodFinish.swatchTextureUrl
-                  ? `url(${state.singleWoodFinish.swatchTextureUrl})`
-                  : undefined,
-                boxShadow: "0 0 0 2px #fff, 0 0 0 4px #5a2135",
-              }}
+              style={swatchStyle(state.singleWoodFinish.colorHex, state.singleWoodFinish.swatchTextureUrl, CHOSEN_SWATCH_RING)}
             />
           </div>
         </div>
@@ -276,18 +279,19 @@ export function ProductFinishControls({
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {state.sloaneBench.options.map((option) => (
-              <button
+              <ChoiceTile
                 key={`variant-swatch-sloane-bench-${option.key}`}
                 data-testid={`variant-swatch-sloane-bench-${option.key}`}
                 data-active={option.active ? "true" : "false"}
-                className={`rounded-lg border px-3 py-2 text-sm text-neutral-900 ${option.active ? "designer-accent-border" : "border-neutral-200"}`}
+                selected={option.active}
+                className="px-3 py-2 text-sm"
                 disabled={option.disabled}
                 onClick={() =>
                   actions.onSelectSloaneBenchCushion(option.key, option.label)
                 }
               >
                 {option.label}
-              </button>
+              </ChoiceTile>
             ))}
           </div>
         </div>
@@ -299,15 +303,16 @@ export function ProductFinishControls({
 
           <div className="mt-2 flex flex-wrap gap-2">
             {state.size.options.map((option) => (
-              <button
+              <ChoiceTile
                 key={option.key}
-                className={`rounded-lg border px-3 py-2 text-sm text-neutral-900 ${option.active ? "designer-accent-border" : "border-neutral-200"}`}
+                selected={option.active}
+                className="px-3 py-2 text-sm"
                 disabled={option.disabled}
                 onClick={() => actions.onSelectSize(option.variantId, option.label)}
                 title={option.label}
               >
                 {option.label}
-              </button>
+              </ChoiceTile>
             ))}
           </div>
         </div>
@@ -347,7 +352,7 @@ export function ProductFinishControls({
                     }}
                   />
                   <div className="space-y-1 bg-white px-4 py-3">
-                    <div className="font-serif text-[18px] leading-snug text-[#4b2635]">
+                    <div className="text-base font-semibold leading-snug text-neutral-900">
                       {state.structuredColour.preview.title}
                     </div>
                     {state.structuredColour.preview.subtitle ? (
@@ -360,7 +365,7 @@ export function ProductFinishControls({
                         {state.structuredColour.preview.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-sm bg-[#f4f1eb] px-2 py-1 text-xs text-[#5b2d3c]"
+                            className="rounded-sm bg-neutral-100 px-2 py-1 text-xs text-neutral-700"
                           >
                             {tag}
                           </span>
@@ -368,19 +373,19 @@ export function ProductFinishControls({
                       </div>
                     ) : null}
                     {state.structuredColour.preview.finishCode ? (
-                      <div className="text-xs uppercase tracking-[0.18em] text-[#8f4b31]">
+                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                         {state.structuredColour.preview.finishCode}
                       </div>
                     ) : null}
                     {state.structuredColour.preview.compositionHeading ? (
                       <>
-                        <div className="mt-3 text-xs uppercase tracking-[0.18em] text-[#8f4b31]">
+                        <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                           {state.structuredColour.preview.compositionHeading}
                         </div>
                         <div className="text-[12px] leading-snug text-neutral-700">
                           {state.structuredColour.preview.composition}
                         </div>
-                        <div className="mt-2 text-xs uppercase tracking-[0.18em] text-[#8f4b31]">
+                        <div className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
                           Care
                         </div>
                         <div className="text-[12px] leading-snug text-neutral-700">
@@ -398,7 +403,7 @@ export function ProductFinishControls({
             {state.structuredColour.groups.map((group) => (
               <div key={group.key}>
                 {group.label ? (
-                  <div className="mb-2 text-[15px] font-medium tracking-tight text-[#4b2635]">
+                  <div className="mb-2 text-[15px] font-medium tracking-tight text-neutral-900">
                     {group.label}
                   </div>
                 ) : null}
@@ -409,21 +414,12 @@ export function ProductFinishControls({
                 ) : null}
                 <div className="flex flex-wrap gap-2">
                   {group.options.map((option) => (
-                    <button
+                    <FinishSwatchButton
                       key={option.variantId}
-                      type="button"
-                      className="shrink-0 h-20 w-20 rounded-sm bg-cover bg-center transition-all"
-                      style={{
-                        backgroundColor: option.colorHex,
-                        backgroundImage: option.swatchTextureUrl
-                          ? `url(${option.swatchTextureUrl})`
-                          : undefined,
-                        boxShadow: option.active
-                          ? "0 0 0 2px #fff, 0 0 0 4px #5a2135"
-                          : option.hovered
-                            ? "0 0 0 2px #fff, 0 0 0 3px #a0a0a0"
-                            : "none",
-                      }}
+                      colorHex={option.colorHex}
+                      swatchTextureUrl={option.swatchTextureUrl}
+                      selected={option.active}
+                      hovered={option.hovered}
                       onClick={() =>
                         actions.onSelectStructuredColour(option.variantId, option.label)
                       }

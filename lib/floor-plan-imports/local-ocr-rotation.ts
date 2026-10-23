@@ -36,11 +36,12 @@ function mergeRotatedCandidates(current: FloorPlanLocalOcrCandidate[], proposed:
   }
 }
 
-/** Three local passes share their caller's worker, deadline and abort boundary. */
+/** Three local passes (upright, then turned each way) share their caller's worker, deadline and abort boundary. */
 export async function recognizeLocalOcrOrientations(page: FloorPlanLocalOcrPage, maximum: number,
-  recognize: (page: FloorPlanLocalOcrPage) => Promise<Candidates>): Promise<Candidates> {
+  recognize: (page: FloorPlanLocalOcrPage) => Promise<Candidates>,
+  angles: readonly (90 | 270)[] = [90, 270]): Promise<Candidates> {
   const result = await recognize(page);
-  for (const angle of [90, 270] as const) {
+  for (const angle of angles) {
     if (result.candidates.length >= maximum) return { ...result, truncated: true };
     const bytes = await sharp(Buffer.from(page.bytes)).rotate(angle).png().toBuffer();
     const rotated = await recognize({ ...page, bytes, widthPx: page.heightPx, heightPx: page.widthPx });

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { ReactNode } from 'react';
+import { Button } from '@/components/ui/Button';
 
 interface CanvasErrorBoundaryProps {
   children: ReactNode;
@@ -93,18 +94,10 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
                 If this keeps happening, turn off hardware acceleration in your browser settings.
               </p>
               <div className="flex gap-2">
-                <button
-                  onClick={this.handleRetry}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                >
+                <Button variant="primary" onClick={this.handleRetry}>
                   Retry
-                </button>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Reload page
-                </button>
+                </Button>
+                <Button onClick={() => window.location.reload()}>Reload page</Button>
               </div>
             </div>
           </div>

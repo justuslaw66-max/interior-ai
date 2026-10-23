@@ -14,6 +14,12 @@ import {
 } from "@/lib/public-share-saved-views";
 import { usePublicShareLayout } from "@/components/public-share/PublicShareShell";
 import { ShareScene } from "@/components/public-share/ShareScene";
+import { Chip } from "@/components/ui/Chip";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
+
+// The share page shows the focus ring on any focus, not only :focus-visible: the rooms' arrow keys
+// move focus by script, which WebKit doesn't count as focus-visible (its responsive gate checks).
+const SHARE_FOCUS_RING = "outline-offset-2 focus:outline-2 focus:outline-focus";
 
 function focusAdjacentRoom(event: KeyboardEvent<HTMLButtonElement>) {
   if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
@@ -50,23 +56,19 @@ function RoomNavigation({
       data-testid="share-room-navigation"
     >
       {rooms.map((room) => (
-        <button
+        <Chip
           key={room.id}
-          type="button"
+          size="touch"
           aria-controls="public-share-preview-surface"
-          aria-pressed={room.id === selectedRoomId}
+          pressed={room.id === selectedRoomId}
           data-testid={publicShareRoomActionTestId(room.id)}
           data-share-touch-target="true"
           onClick={() => selectRoom(room.id)}
           onKeyDown={focusAdjacentRoom}
-          className={
-            room.id === selectedRoomId
-              ? "min-h-11 min-w-11 shrink-0 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white outline-offset-2 focus:outline-2"
-              : "min-h-11 min-w-11 shrink-0 rounded-lg border bg-white px-4 py-2 text-sm font-medium text-gray-700 outline-offset-2 hover:bg-gray-50 focus:outline-2"
-          }
+          className={SHARE_FOCUS_RING}
         >
           {room.name}
-        </button>
+        </Chip>
       ))}
     </nav>
   );
@@ -153,21 +155,16 @@ function SavedViewNavigation({
       <h3 className="mb-2 text-sm font-semibold text-gray-800">Saved views</h3>
       <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:grid-cols-3">
         {savedViews.map((view) => (
-          <button
-            type="button"
+          <ChoiceTile
             key={view.id}
-            aria-pressed={view.id === selectedSavedViewId}
+            selected={view.id === selectedSavedViewId}
             data-testid={publicShareSavedViewActionTestId(view.id)}
             data-share-touch-target="true"
             onClick={() => selectSavedView(view.id)}
-            className={
-              view.id === selectedSavedViewId
-                ? "min-h-11 rounded-lg border border-neutral-900 bg-neutral-900 p-3 text-center text-white outline-offset-2 focus:outline-2"
-                : "min-h-11 rounded-lg border bg-gray-50 p-3 text-center text-gray-700 outline-offset-2 transition hover:border-neutral-400 hover:bg-white focus:outline-2"
-            }
+            className={`min-h-11 p-3 text-center ${SHARE_FOCUS_RING}`}
           >
             <span className="text-sm font-medium">{view.name}</span>
-          </button>
+          </ChoiceTile>
         ))}
       </div>
     </nav>

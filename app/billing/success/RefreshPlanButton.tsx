@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
 
 type ActivationState = "checking" | "active" | "delayed" | "error";
@@ -96,9 +97,9 @@ function ActivationActions({ state, onRetry }: { state: ActivationState; onRetry
   }
   if (state === "checking") return null;
   return (
-    <button type="button" className="mt-3 w-full rounded-xl border px-4 py-2 text-center text-sm" onClick={onRetry}>
+    <Button className="mt-3 w-full" onClick={onRetry}>
       Check again
-    </button>
+    </Button>
   );
 }
 

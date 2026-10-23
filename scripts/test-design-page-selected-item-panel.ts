@@ -364,10 +364,10 @@ assert.match(
   /getCastleryConfigurationIconDescriptor\(productId\)[\s\S]*<img[\s\S]*src=\{descriptor\.src\}/,
   "Hamilton and Dawson diagrams should render typed local icon descriptors.",
 );
-assert.match(
+assert.doesNotMatch(
   modelVariantControlsSource,
-  /filter:\s*active\s*\?\s*"brightness\(0\) invert\(1\)"/,
-  "Selected configuration artwork should be recoloured white.",
+  /brightness\(0\) invert\(1\)/,
+  "Configuration artwork keeps its own colours on the chosen tile's white (UX 5n, J, 16 Oct).",
 );
 assert.doesNotMatch(
   modelVariantControlsSource,
@@ -381,7 +381,7 @@ assert.match(
 );
 assert.match(
   modelVariantControlsSource,
-  /className=\{`flex h-12 min-w-0/,
+  /className="flex h-12 min-w-0/,
   "Castlery configuration cards should retain the compact 48px height.",
 );
 assert.match(
@@ -672,6 +672,11 @@ assert.match(
   finishControlsSource,
   /state\.structuredColour\.preview[\s\S]{0,160}\?\s*createPortal\(/,
   "Structured-colour previews should still portal from ProductFinishControls.",
+);
+assert.doesNotMatch(
+  finishControlsSource,
+  /font-serif|#4b2635|#5a2135|#5b2d3c|#8f4b31/,
+  "Finishes, swatch rings and the material preview use the app's type and colours, not a brand's (UX 5n, J, 17 Oct).",
 );
 
 console.log("Design-page selected-item panel ownership checks passed.");

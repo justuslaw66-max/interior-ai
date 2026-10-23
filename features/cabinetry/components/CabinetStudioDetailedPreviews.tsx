@@ -1,6 +1,8 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
 
 import type {
   CabinetDefinition,
@@ -76,20 +78,14 @@ export function CabinetDetailedCompactPreview({
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {definition.modules.map((module, index) => (
-            <button
+            <Chip
               key={module.id}
-              type="button"
               data-testid={`cabinet-compact-module-${index + 1}`}
-              aria-pressed={module.id === activeModuleId}
-              className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 ${
-                module.id === activeModuleId
-                  ? "border-neutral-950 bg-neutral-950 text-white"
-                  : "border-neutral-300 bg-white text-neutral-700"
-              }`}
+              pressed={module.id === activeModuleId}
               onClick={() => onSelectModule(module.id)}
             >
               Bay {index + 1} · {formatMeasurement(module.width)}
-            </button>
+            </Chip>
           ))}
         </div>
       </div>
@@ -134,7 +130,7 @@ export function CabinetDetailedPreviewPanel({
       className="relative min-h-0 bg-[#e8ece7] [&_[data-dimension-field=depth]]:!top-28"
     >
       <CabinetStudioPreviewInteractionController {...interaction} />
-      <div className="absolute inset-x-4 top-4 z-30 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">
+      <div className="pointer-events-none absolute inset-x-4 top-4 z-30 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">
         <div
           data-testid="cabinet-preview-summary"
           className="pointer-events-none min-w-0 max-w-full justify-self-start rounded-md bg-white/90 px-3 py-2 text-xs text-neutral-700 shadow-sm"
@@ -146,25 +142,19 @@ export function CabinetDetailedPreviewPanel({
         </div>
         <div
           data-testid="cabinet-preview-controls"
-          className="flex items-center gap-2"
+          className="pointer-events-auto flex items-center gap-2"
         >
           <CabinetPreviewViewSelector value={view} onChange={onViewChange} />
-          <button
-            type="button"
+          <Button
             data-testid="cabinet-preview-clearance-toggle"
-            aria-pressed={showClearances}
-            className={`inline-flex items-center gap-1.5 rounded-lg border border-white/60 px-2.5 py-2 text-xs font-semibold shadow-sm backdrop-blur focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 ${
-              showClearances
-                ? "bg-blue-600 text-white"
-                : "bg-white/90 text-neutral-700"
-            }`}
+            size="compact" pressed={showClearances} className="shadow-sm"
             onClick={onToggleClearances}
           >
             {showClearances ? (
               <Check aria-hidden="true" className="h-3 w-3" />
             ) : null}
             Clearances
-          </button>
+          </Button>
         </div>
         <div
           data-testid="cabinet-preview-status"

@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.30.0",
+ "exporterVersion": "app-evidence-0.34.0",
  "page": {
   "widthPx": 776,
   "heightPx": 1400,
@@ -4197,6 +4197,7 @@
   "doorsOntoLedgesNotPlaced": 0,
   "secondDoorsIntoSmallRoomsNotPlaced": 0,
   "thinWallsReadAsWalls": 0,
+  "leafStubsReadAsWalls": 0,
   "foldingScrapsDropped": 0,
   "slidingPanelsReadAsWindows": 0,
   "stripsThatAreNoSlidingPanels": 0,
@@ -4237,6 +4238,16 @@
   "cornersStraightened": 0,
   "cutCornersSquared": 0,
   "sidesCutAtDuctJogs": 0,
+  "windowsReadInThePicture": 0,
+  "pictureBandsOnUnbrokenWalls": 0,
+  "roomsClosedByStrokes": 0,
+  "namedSpacesClosedByStrokes": 0,
+  "outdoorRoomsClosedByStrokes": 0,
+  "namelessSpacesAsRooms": 0,
+  "smallRoomsBetweenTwoRooms": 0,
+  "sliverWindowsKept": 0,
+  "longCutsUndone": 0,
+  "roomNamesReadPastOcrSlips": 0,
   "unsupportedWallPx": 22490,
   "thickAxisWallPx": 19772,
   "slantedWallPx": 0,
@@ -4255,9 +4266,16 @@
   "jogFacesFlushed": 0,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 50,
+  "wallRunsNoRoomTracedAgainst": 0,
   "standaloneWallsAdded": 6,
   "jogsThicknessChosen": 0,
   "standaloneFacesOnTheWalls": 0,
-  "itemsLeftOutForTheAppsLimits": 0
+  "itemsLeftOutForTheAppsLimits": 0,
+  "round39Withheld": [
+   "slot 498,342"
+  ],
+  "round40Withheld": [
+   "slot 498,342"
+  ]
  }
 }

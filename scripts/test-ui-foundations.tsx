@@ -5,6 +5,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { EditorDialogButton } from "../components/editor/design-system/EditorDialog";
 import { Button, buttonClassName } from "../components/ui/Button";
+import { Chip } from "../components/ui/Chip";
+import { CHOSEN_SWATCH_RING, ChoiceTile } from "../components/ui/ChoiceTile";
 import { SegmentedControl, segmentClassName } from "../components/ui/SegmentedControl";
 import { nextMenuItemIndex } from "../lib/useDismissibleMenu";
 
@@ -81,15 +83,15 @@ assert.match(
 // Button (AX10): one component, 44px for touch and 30px compact, black primary, the accent focus ring.
 const markup = (element: Parameters<typeof renderToStaticMarkup>[0]) => renderToStaticMarkup(element);
 const primary = markup(<Button variant="primary">Save</Button>);
-assert.match(primary, /^<button type="button" class="[^"]*\bbg-neutral-900\b[^"]*\btext-white\b[^"]*">Save<\/button>$/);
+assert.match(primary, /^<button type="button" class="[^"]*\bbg-control-primary\b[^"]*\btext-control-on-primary\b[^"]*">Save<\/button>$/);
 assert.match(primary, /\bmin-h-11\b/);
 assert.match(primary, /\bfocus-visible:ring-2\b[^"]*\bfocus-visible:ring-focus\b/);
 assert.match(primary, /\boutline-hidden\b/);
-assert.match(markup(<Button size="compact">More</Button>), /\bh-\[30px\][^"]*\bborder-neutral-300\b/);
+assert.match(markup(<Button size="compact">More</Button>), /\bh-\[30px\][^"]*\bborder-control-secondary-border\b/);
 assert.match(markup(<Button variant="quiet" type="submit">Go</Button>), /^<button type="submit" class="[^"]*\bborder-transparent\b/);
-assert.match(markup(<Button variant="danger">Delete</Button>), /\bbg-red-600\b/);
+assert.match(markup(<Button variant="danger">Delete</Button>), /\bbg-control-danger\b/);
 assert.match(markup(<Button variant="quiet" size="icon" aria-label="Undo">U</Button>), /\bh-9 w-9 shrink-0 rounded-lg p-0 border-transparent\b/);
-assert.match(markup(<Button size="round" aria-label="Keyboard shortcuts">?</Button>), /\bh-10 w-10 shrink-0 rounded-full p-0 border-neutral-300\b/);
+assert.match(markup(<Button size="round" aria-label="Keyboard shortcuts">?</Button>), /\bh-10 w-10 shrink-0 rounded-full p-0 border-control-secondary-border\b/);
 assert.equal(EditorDialogButton, Button, "Dialog actions are the shared Button.");
 assert.equal(
   buttonClassName({ variant: "primary", size: "compact", className: "w-full" }).split(" ").at(-1),
@@ -98,15 +100,15 @@ assert.equal(
 );
 // An on/off toggle (UX 5n, J's choice on 14 Oct): pressed is the primary look, off its variant.
 const toggledOn = markup(<Button size="compact" pressed>Grid</Button>);
-assert.match(toggledOn, /^<button type="button" aria-pressed="true" class="[^"]*\bbg-neutral-900\b[^"]*\btext-white\b/);
+assert.match(toggledOn, /^<button type="button" aria-pressed="true" class="[^"]*\bbg-control-primary\b[^"]*\btext-control-on-primary\b/);
 const toggledOff = markup(<Button size="compact" pressed={false}>Snap</Button>);
-assert.match(toggledOff, /aria-pressed="false"[^>]*\bborder-neutral-300\b[^"]*\bbg-white\b/);
+assert.match(toggledOff, /aria-pressed="false"[^>]*\bborder-control-secondary-border\b[^"]*\bbg-control-secondary\b/);
 assert.doesNotMatch(primary, /aria-pressed/, "A plain button isn't a toggle.");
 // The link look and the 24px docked size (UX 5n, J's choices on 16 Oct).
 const link = markup(<Button variant="link" size="inline">See pricing</Button>);
-assert.match(link, /\brounded-sm p-0 border-transparent bg-transparent text-accent\b[^"]*\bhover:underline\b[^"]*\bfocus-visible:underline\b/);
+assert.match(link, /\brounded-sm p-0 border-transparent bg-transparent text-link\b[^"]*\bhover:underline\b[^"]*\bfocus-visible:underline\b/);
 assert.doesNotMatch(link, /\bmin-h-|\bh-\d|\btext-(?:xs|sm)\b/, "An inline link keeps the text's size and line.");
-assert.match(markup(<Button size="mini" aria-label="Zoom in">+</Button>), /\btouch:h-11 touch:w-11 h-6 w-6 shrink-0 rounded-md p-0 border-neutral-300\b/);
+assert.match(markup(<Button size="mini" aria-label="Zoom in">+</Button>), /\btouch:h-11 touch:w-11 h-6 w-6 shrink-0 rounded-md p-0 border-control-secondary-border\b/);
 
 // One segmented control (UX 5n, J's choice on 14 Oct): a labelled group of aria-pressed segments in
 // a grey track, the pressed one black, in the Button's heights; 44px segments on touch screens.
@@ -122,17 +124,38 @@ const segmented = markup(
     ]}
   />
 );
-assert.match(segmented, /^<div role="group" aria-label="Design view" data-testid="view" class="inline-flex gap-0\.5 rounded-\[10px\] bg-neutral-100 p-0\.5">/);
+assert.match(segmented, /^<div role="group" aria-label="Design view" data-testid="view" class="inline-flex gap-0\.5 rounded-\[10px\] bg-control-track p-0\.5">/);
 assert.equal(segmented.match(/<button type="button"/g)?.length, 2, "Each segment is a button.");
-assert.match(segmented, /aria-pressed="true" data-testid="view-2d" class="[^"]*\bh-8 touch:h-11\b[^"]*\bbg-neutral-900 text-white\b/);
-assert.match(segmented, /aria-pressed="false" data-testid="view-3d" disabled="" class="[^"]*\btext-neutral-700\b/);
+assert.match(segmented, /aria-pressed="true" data-testid="view-2d" class="[^"]*\bh-8 touch:h-11\b[^"]*\bbg-control-primary text-control-on-primary\b/);
+assert.match(segmented, /aria-pressed="false" data-testid="view-3d" disabled="" class="[^"]*\btext-control-label-idle\b/);
 assert.doesNotMatch(segmented, /outline-hidden|focus-visible:ring/, "Segments show the shared focus ring.");
 const filled = markup(
   <SegmentedControl label="Surface" value={1} onChange={() => undefined} size="compact" fill options={[1, 2, 3, 4].map((value) => ({ value, label: String(value) }))} />
 );
-assert.match(filled, /class="flex w-full gap-0\.5 rounded-lg bg-neutral-100 p-0\.5"/);
+assert.match(filled, /class="flex w-full gap-0\.5 rounded-lg bg-control-track p-0\.5"/);
 assert.equal(filled.match(/\bh-\[26px\] touch:h-11\b[^"]*\bflex-1 basis-0\b/g)?.length, 4, "Filling, the segments share the width equally.");
 assert.doesNotMatch(filled, /\bmin-w-0\b/, "A label never shrinks below its own width: it stays on one line.");
+
+// An option tile (UX 5n, J's choice on 16 Oct): white, and the chosen one has a black edge whose
+// second pixel is drawn inside, so choosing moves nothing; it reports aria-pressed.
+const chosenTile = markup(<ChoiceTile selected className="px-3 py-2 text-sm">3 seater</ChoiceTile>);
+assert.match(chosenTile, /^<button type="button" aria-pressed="true" class="[^"]*\bborder bg-surface-secondary\b[^"]*\bborder-control-primary text-label inset-ring inset-ring-control-primary px-3 py-2 text-sm">3 seater<\/button>$/);
+const idleTile = markup(<ChoiceTile selected={false}>Chaise left</ChoiceTile>);
+assert.match(idleTile, /aria-pressed="false" class="[^"]*\bborder-separator text-control-label-idle\b/);
+assert.doesNotMatch(idleTile, /inset-ring|outline-hidden|focus-visible:ring/, "An idle tile has a 1px edge and the shared focus ring.");
+assert.equal(CHOSEN_SWATCH_RING, "0 0 0 2px #fff, 0 0 0 4px #171717", "A chosen swatch has a white gap, then a black ring.");
+
+// A chip (AX10 area b, J's choice on 17 Oct): the pill, with a grey edge and the chosen one black;
+// in a one-of row it reports aria-pressed, as an action chip it doesn't. 32px, 44px on touch
+// screens; the share page's chips are 44px everywhere.
+const chosenChip = markup(<Chip pressed>Sofas</Chip>);
+assert.match(chosenChip, /^<button type="button" aria-pressed="true" class="[^"]*\brounded-full border\b[^"]*\bh-8 touch:h-11 px-3 border-control-primary bg-control-primary text-control-on-primary">Sofas<\/button>$/);
+const idleChip = markup(<Chip pressed={false}>Chairs</Chip>);
+assert.match(idleChip, /aria-pressed="false" class="[^"]*\bborder-control-secondary-border bg-control-secondary text-control-label\b/);
+const actionChip = markup(<Chip>Clear all</Chip>);
+assert.doesNotMatch(actionChip, /aria-pressed/, "An action chip isn't a toggle.");
+assert.doesNotMatch(chosenChip + idleChip, /outline-hidden|focus-visible:ring/, "Chips show the shared focus ring.");
+assert.match(markup(<Chip size="touch" pressed={false}>Bedroom</Chip>), /\bmin-h-11 min-w-11 px-4\b/);
 const bare = markup(
   <SegmentedControl label="Pill" value="a" onChange={() => undefined} size="touch" track={false} options={[{ value: "a", label: "A" }]} />
 );
@@ -196,13 +219,20 @@ const emojiButtons = sources
       ).length,
     0
   );
-const LIMITS = { rawButtons: 437, emojiButtons: 3 };
-const counts = { rawButtons, emojiButtons };
+// Hard-coded neutral, white and black colour classes (dark mode, plan step 5): screens move onto the
+// colour tokens in globals.css, which have a dark value, so the count only goes down.
+const NEUTRAL_COLOUR_CLASS =
+  /(?<![\w-])(?:[a-z0-9-]+:)*(?:bg|text|border|ring|divide|from|to|via|outline|fill|stroke|placeholder|inset-ring|ring-offset|shadow|decoration|caret|accent)-(?:(?:neutral|gray|slate|zinc|stone)-\d{2,3}|white|black)(?:\/[\d.]+|\/\[[^\]]+\])?(?![\w-])/g;
+const neutralColours = sources.reduce((count, { text }) => count + (text.match(NEUTRAL_COLOUR_CLASS)?.length ?? 0), 0);
+assert.equal("hover:bg-white md:bg-neutral-900/80 text-neutral-50 bg-neutral-950 border-black/10".match(NEUTRAL_COLOUR_CLASS)?.length, 5);
+assert.equal("bg-control-primary text-label bg-white-ish text-whitespace".match(NEUTRAL_COLOUR_CLASS), null);
+const LIMITS = { rawButtons: 150, emojiButtons: 3, neutralColours: 2851 };
+const counts = { rawButtons, emojiButtons, neutralColours };
 for (const [name, limit] of Object.entries(LIMITS) as Array<[keyof typeof LIMITS, number]>) {
   assert.ok(counts[name] <= limit, `${name} rose to ${counts[name]} (limit ${limit}); it can only go down.`);
   if (counts[name] < limit) console.log(`${name} fell to ${counts[name]}: lower its limit here to keep it there.`);
 }
 
 console.log(
-  `UI foundation checks passed: no text under 12px, ${rawButtons} raw buttons, ${emojiButtons} buttons with emoji.`
+  `UI foundation checks passed: no text under 12px, ${rawButtons} raw buttons, ${emojiButtons} buttons with emoji, ${neutralColours} hard-coded neutral colour classes.`
 );

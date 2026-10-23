@@ -47,9 +47,9 @@ export type SegmentedControlProps<T extends string | number> = {
 };
 
 const TRACK_CLASS: Record<SegmentedControlSize, string> = {
-  compact: "gap-0.5 rounded-lg bg-neutral-100 p-0.5",
-  regular: "gap-0.5 rounded-[10px] bg-neutral-100 p-0.5",
-  touch: "gap-0.5 rounded-xl bg-neutral-100 p-0.5",
+  compact: "gap-0.5 rounded-lg bg-control-track p-0.5",
+  regular: "gap-0.5 rounded-[10px] bg-control-track p-0.5",
+  touch: "gap-0.5 rounded-xl bg-control-track p-0.5",
 };
 
 const SEGMENT_SIZE_CLASS: Record<SegmentedControlSize, string> = {
@@ -69,8 +69,9 @@ const BARE_SEGMENT_SIZE_CLASS: Record<SegmentedControlSize, string> = {
 const SEGMENT_BASE_CLASS =
   "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold leading-none transition-colors disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
 
-const SEGMENT_PRESSED_CLASS = "bg-neutral-900 text-white";
-const SEGMENT_IDLE_CLASS = "text-neutral-700 enabled:hover:bg-white enabled:hover:text-neutral-900";
+// The control tokens in globals.css: the pressed segment is the primary's black, near-white in dark.
+const SEGMENT_PRESSED_CLASS = "bg-control-primary text-control-on-primary";
+const SEGMENT_IDLE_CLASS = "text-control-label-idle enabled:hover:bg-control-track-hover enabled:hover:text-label";
 
 /** The class list for one segment, for a control that can't be a `<SegmentedControl>`. */
 export function segmentClassName({

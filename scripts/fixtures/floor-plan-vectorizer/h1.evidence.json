@@ -1,6 +1,6 @@
 {
  "kind": "floorplan_vectorizer_evidence_v1",
- "exporterVersion": "app-evidence-0.30.0",
+ "exporterVersion": "app-evidence-0.34.0",
  "page": {
   "widthPx": 1220,
   "heightPx": 1046,
@@ -5830,7 +5830,7 @@
     ],
     [
      632.0,
-     851.0
+     850.25
     ]
    ],
    "thicknessPx": 18.0,
@@ -6892,6 +6892,7 @@
   "doorsOntoLedgesNotPlaced": 0,
   "secondDoorsIntoSmallRoomsNotPlaced": 0,
   "thinWallsReadAsWalls": 0,
+  "leafStubsReadAsWalls": 0,
   "foldingScrapsDropped": 0,
   "slidingPanelsReadAsWindows": 0,
   "stripsThatAreNoSlidingPanels": 1,
@@ -6929,6 +6930,16 @@
   "cornersStraightened": 0,
   "cutCornersSquared": 2,
   "sidesCutAtDuctJogs": 0,
+  "windowsReadInThePicture": 0,
+  "pictureBandsOnUnbrokenWalls": 0,
+  "roomsClosedByStrokes": 0,
+  "namedSpacesClosedByStrokes": 0,
+  "outdoorRoomsClosedByStrokes": 1,
+  "namelessSpacesAsRooms": 0,
+  "smallRoomsBetweenTwoRooms": 0,
+  "sliverWindowsKept": 0,
+  "longCutsUndone": 0,
+  "roomNamesReadPastOcrSlips": 0,
   "unsupportedWallPx": 9907,
   "thickAxisWallPx": 9907,
   "slantedWallPx": 0,
@@ -6942,9 +6953,17 @@
   "jogFacesFlushed": 1,
   "faceLinesThatFailed": 0,
   "facesFitToTheDrawing": 76,
+  "wallRunsNoRoomTracedAgainst": 0,
   "standaloneWallsAdded": 17,
   "jogsThicknessChosen": 2,
   "standaloneFacesOnTheWalls": 0,
-  "itemsLeftOutForTheAppsLimits": 0
+  "itemsLeftOutForTheAppsLimits": 0,
+  "round39Withheld": [
+   "doors 13 -> 12"
+  ],
+  "round40Withheld": [
+   "doors 13 -> 12"
+  ],
+  "jogsMovedOntoFaces": 1
  }
 }

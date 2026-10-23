@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
 
 function slugify(value: string) {
@@ -182,23 +183,17 @@ export default function PlanSvgDownload({
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="flex flex-wrap justify-end gap-2">
-        <button
-          type="button"
+        <Button
+          size="compact"
           data-testid="share-export-plan-png-download"
           onClick={handleDownloadPng}
           disabled={isPngExporting}
-          className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPngExporting ? "Preparing PNG…" : "Download 2D PNG"}
-        </button>
-        <button
-          type="button"
-          data-testid="share-export-plan-svg-download"
-          onClick={handleDownloadSvg}
-          className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-neutral-50"
-        >
+        </Button>
+        <Button size="compact" data-testid="share-export-plan-svg-download" onClick={handleDownloadSvg}>
           Download 2D SVG
-        </button>
+        </Button>
       </div>
       {message ? (
         <div className="text-xs text-neutral-500" role="status">

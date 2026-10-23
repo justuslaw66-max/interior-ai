@@ -1,5 +1,6 @@
 import { isRecord } from "./floorPlanReviewModel";
 import type { AdminJob } from "./floorPlanReviewTypes";
+import { Button } from "@/components/ui/Button";
 
 export function ApprovedRevisionPanel({
   job,
@@ -123,14 +124,13 @@ export function ApprovedRevisionPanel({
               for the public library.
             </span>
           </label>
-          <button
-            className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+          <Button
+            variant="primary" size="regular"
             disabled={!publishConfirmed || Boolean(pending)}
             onClick={publish}
-            type="button"
           >
             {pending === "publish" ? "Publishing…" : "Publish approved revision"}
-          </button>
+          </Button>
         </>
       ) : job.revision.publicationStatus === "published" ? (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800">
@@ -180,18 +180,17 @@ export function ApprovedRevisionPanel({
               value={retireConfirmation}
             />
           </label>
-          <button
-            className="mt-3 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+          <Button
+            variant="danger" size="regular" className="mt-3"
             disabled={
               Boolean(pending) ||
               retireReason.trim().length < 10 ||
               retireConfirmation.trim() !== requiredRetirementConfirmation
             }
             onClick={retire}
-            type="button"
           >
             {pending === "retire" ? "Withdrawing…" : "Withdraw revision"}
-          </button>
+          </Button>
         </details>
       ) : null}
     </div>

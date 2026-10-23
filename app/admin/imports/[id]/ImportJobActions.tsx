@@ -6,6 +6,7 @@ import { allowedImportStatusesFrom } from "@/lib/import-jobs/status";
 import type { ImportJobStatus } from "@/lib/import-jobs/types";
 import { describeAdminStatus } from "../../admin-status";
 import { useImportStatusChange } from "./useImportStatusChange";
+import { Button } from "@/components/ui/Button";
 
 type ImportJobActionsProps = {
   jobId: string;
@@ -133,38 +134,35 @@ export default function ImportJobActions(props: ImportJobActionsProps) {
           />
         </label>
 
-        <div className="md:col-span-2 flex items-center gap-3">
-          <button
+        <div className="md:col-span-2 flex flex-wrap items-center gap-3">
+          <Button
             type="submit"
-            className="rounded bg-black px-3 py-2 text-xs font-medium text-white disabled:opacity-60"
+            variant="primary" size="compact"
             disabled={isPending}
           >
             {isPending ? "Saving..." : "Save workflow update"}
-          </button>
-          <button
-            type="button"
-            className="rounded border px-3 py-2 text-xs font-medium disabled:opacity-60"
+          </Button>
+          <Button
+            size="compact"
             disabled={isPending || !statusOptions.includes("needs_review")}
             onClick={() => requestUpdate("needs_review")}
           >
             Mark needs review
-          </button>
-          <button
-            type="button"
-            className="rounded border px-3 py-2 text-xs font-medium disabled:opacity-60"
+          </Button>
+          <Button
+            size="compact"
             disabled={isPending || !statusOptions.includes("approved")}
             onClick={() => requestUpdate("approved")}
           >
             Mark approved
-          </button>
-          <button
-            type="button"
-            className="rounded border px-3 py-2 text-xs font-medium disabled:opacity-60"
+          </Button>
+          <Button
+            size="compact"
             disabled={isPending || !statusOptions.includes("published")}
             onClick={() => requestUpdate("published")}
           >
             Mark published
-          </button>
+          </Button>
           {feedback && <span className="text-xs text-neutral-600">{feedback}</span>}
         </div>
       </form>

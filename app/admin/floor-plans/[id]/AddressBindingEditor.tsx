@@ -10,6 +10,7 @@ import type {
   BindingDraft,
   RenderedPage,
 } from "./floorPlanReviewTypes";
+import { Button } from "@/components/ui/Button";
 
 const MANUAL_ADDRESS_FIELDS: Array<[string, keyof BindingDraft, string]> = [
   ["Country *", "countryCode", "SG"],
@@ -356,18 +357,17 @@ export function AddressBindingEditor({
           </div>
         </details>
       </div>
-      <button
-        className="mt-3 text-xs font-medium text-red-700 disabled:opacity-40"
+      <Button
+        variant="danger" size="compact" className="mt-3"
         disabled={!canRemove}
         onClick={() =>
           setBindings((current) =>
             current.filter((_, entryIndex) => entryIndex !== index)
           )
         }
-        type="button"
       >
         Remove binding
-      </button>
+      </Button>
     </div>
   );
 }

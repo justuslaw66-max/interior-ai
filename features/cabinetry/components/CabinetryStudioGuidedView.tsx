@@ -1,6 +1,10 @@
 "use client";
 
 import { Check, Clock3, Lock, MapPin, Plus, Search, Trash2, Unlock } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { CABINET_HARDWARE, isCabinetFrontHardwareType } from "../catalog/hardware";
 import { CABINET_MATERIALS } from "../catalog/materials";
 import {
@@ -483,20 +487,14 @@ export function CabinetryStudioGuidedView({
 
                     <div role="group" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" aria-label="Template categories">
                       {(["Featured", "All", ...GUIDED_TEMPLATE_CATEGORIES] as const).map((category) => (
-                        <button
+                        <Chip
                           key={category}
-                          type="button"
                           data-testid={`cabinet-template-category-${category.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                          aria-pressed={templateCategory === category}
-                          className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                            templateCategory === category
-                              ? "border-neutral-950 bg-neutral-950 text-white"
-                              : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-600 hover:text-neutral-950"
-                          }`}
+                          pressed={templateCategory === category}
                           onClick={() => setTemplateCategory(category)}
                         >
                           {category === "Featured" ? "Recommended" : category === "All" ? "All templates" : category}
-                        </button>
+                        </Chip>
                       ))}
                     </div>
 
@@ -506,20 +504,14 @@ export function CabinetryStudioGuidedView({
                           const previewDefinition = createCabinetPreset(preset.id, `preview-${preset.id}`);
                           const isSelected = preset.id === activePresetId;
                           return (
-                            <button
+                            <ChoiceTile
                               key={preset.id}
-                              type="button"
                               data-testid={`cabinet-preset-${preset.id}`}
                               data-required-host={preset.requiredHostType}
                               data-safety-classification={preset.safetyClassification}
                               data-applicable-room-types={preset.applicableRoomTypes.join(",")}
                               data-supported-options={preset.supportedCustomizationOptions.join(",")}
-                              aria-pressed={isSelected}
-                              className={`group grid gap-3 rounded-2xl border bg-white p-3 text-left transition hover:-translate-y-0.5 hover:shadow-md ${
-                                isSelected
-                                  ? "border-neutral-950 ring-2 ring-neutral-950/10"
-                                  : "border-neutral-200 hover:border-neutral-400"
-                              }`}
+                              selected={isSelected} className="group grid gap-3 p-3 text-left"
                               onClick={() => applyPreset(preset.id)}
                             >
                               <CabinetTemplateDiagram
@@ -551,23 +543,22 @@ export function CabinetryStudioGuidedView({
                               <span className="line-clamp-2 text-xs text-neutral-400" title={preset.applicableRoomTypes.map(formatCabinetLabel).join(", ")}>
                                 Best for {preset.applicableRoomTypes.slice(0, 3).map(formatCabinetLabel).join(", ")}
                               </span>
-                            </button>
+                            </ChoiceTile>
                           );
                         })}
                       </div>
                     ) : visibleSavedTemplates.length === 0 ? (
                       <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-8 text-center">
                         <p className="text-sm font-semibold text-neutral-800">No templates match that search.</p>
-                        <button
-                          type="button"
-                          className="mt-3 text-sm font-semibold text-amber-700 hover:text-amber-800"
+                        <Button
+                          variant="link" size="inline" className="mt-3 text-sm"
                           onClick={() => {
                             setTemplateQuery("");
                             setTemplateCategory("All");
                           }}
                         >
                           Show all templates
-                        </button>
+                        </Button>
                       </div>
                     ) : null}
                     {visibleSavedTemplates.length ? (
@@ -604,14 +595,13 @@ export function CabinetryStudioGuidedView({
                                   </span>
                                 </span>
                               </button>
-                              <button
-                                type="button"
-                                className="justify-self-end text-xs font-semibold text-red-700 hover:text-red-900"
+                              <Button
+                                variant="quiet" size="compact" className="justify-self-end"
                                 aria-label={`Delete reusable template ${template.name}`}
                                 onClick={() => deleteSavedTemplate(template.id)}
                               >
                                 Delete
-                              </button>
+                              </Button>
                             </div>
                           ))}
                         </div>
@@ -626,13 +616,12 @@ export function CabinetryStudioGuidedView({
                           <span className="font-semibold">{deletedTemplateUndo.template.name}</span>{" "}
                           was removed.
                         </span>
-                        <button
-                          type="button"
-                          className="rounded-lg bg-amber-900 px-3 py-2 text-xs font-semibold text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-amber-900 focus-visible:ring-offset-2"
+                        <Button
+                          variant="primary" size="compact"
                           onClick={restoreDeletedTemplate}
                         >
                           Undo delete
-                        </button>
+                        </Button>
                       </div>
                     ) : null}
                   </div>
@@ -648,14 +637,13 @@ export function CabinetryStudioGuidedView({
                             Choose a wall from the current room. Doors and windows divide it into usable fitting segments automatically.
                           </p>
                         </div>
-                        <button
-                          type="button"
+                        <Button
                           data-testid="cabinet-reset-space-section"
-                          className="shrink-0 text-xs font-semibold text-neutral-500 underline hover:text-neutral-900"
+                          variant="link" size="inline" className="shrink-0 text-xs"
                           onClick={resetSpaceSection}
                         >
                           Reset Space &amp; Fit
-                        </button>
+                        </Button>
                       </div>
 
                       {allAvailableSpaces.length ? (
@@ -689,16 +677,10 @@ export function CabinetryStudioGuidedView({
                             );
                             return (
                               <div key={space.id} className="grid gap-2">
-                                <button
-                                  type="button"
+                                <ChoiceTile
                                   data-testid={`cabinet-space-${space.wallId ?? space.id}`}
-                                  aria-pressed={isSelected}
                                   data-host-compatibility={hostCompatibility?.status ?? "unknown"}
-                                  className={`grid h-full w-full gap-3 rounded-2xl border p-4 text-left transition ${
-                                    isSelected
-                                      ? "border-neutral-950 bg-neutral-950 text-white ring-2 ring-neutral-950/10"
-                                      : "border-neutral-200 bg-neutral-50 text-neutral-700 hover:border-neutral-500"
-                                  }`}
+                                  selected={isSelected} className="grid h-full w-full gap-3 p-4 text-left"
                                   onClick={() => {
                                     setSelectedSpaceId(space.id);
                                     setMountingHeightDraft(
@@ -720,27 +702,27 @@ export function CabinetryStudioGuidedView({
                                 <span className="flex items-start justify-between gap-3">
                                   <span>
                                     <span className="block text-sm font-semibold">{space.label}</span>
-                                    <span className={`mt-1 block text-xs ${isSelected ? "text-white/65" : "text-neutral-500"}`}>
+                                    <span className="mt-1 block text-xs text-neutral-500">
                                       {space.roomName ?? "Current room"}
                                     </span>
                                   </span>
                                   {isSelected ? (
-                                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white text-neutral-950">
+                                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-neutral-950 text-white">
                                       <Check className="h-3.5 w-3.5" />
                                     </span>
                                   ) : null}
                                 </span>
                                 <span className="grid grid-cols-2 gap-2 text-xs">
-                                  <span className={`rounded-lg px-2.5 py-2 ${isSelected ? "bg-white/10" : "bg-white"}`}>
+                                  <span className="rounded-lg bg-neutral-50 px-2.5 py-2">
                                     <span className="block text-xs uppercase tracking-wide opacity-60">Wall</span>
                                     <span className="mt-0.5 block font-semibold">{formatProjectMeasurement(space.availableWidthMm)} × {formatProjectMeasurement(space.availableHeightMm)}</span>
                                   </span>
-                                  <span className={`rounded-lg px-2.5 py-2 ${isSelected ? "bg-white/10" : "bg-white"}`}>
+                                  <span className="rounded-lg bg-neutral-50 px-2.5 py-2">
                                     <span className="block text-xs uppercase tracking-wide opacity-60">Usable segment</span>
                                     <span className="mt-0.5 block font-semibold">{formatProjectMeasurement(largestSegmentMm)}</span>
                                   </span>
                                 </span>
-                                <span className={`text-xs ${isSelected ? "text-white/65" : "text-neutral-500"}`}>
+                                <span className="text-xs text-neutral-500">
                                   {space.openings.length
                                     ? `${space.openings.length} ${space.openings.length === 1 ? "opening" : "openings"} considered`
                                     : "Clear wall · no recorded openings"}
@@ -748,9 +730,7 @@ export function CabinetryStudioGuidedView({
                                 {hostCompatibility ? (
                                   <span
                                     className={`rounded-lg px-2.5 py-2 text-xs font-medium ${
-                                      isSelected
-                                        ? "bg-white/10 text-white"
-                                        : hostCompatibility.status === "incompatible"
+                                      hostCompatibility.status === "incompatible"
                                           ? "bg-red-50 text-red-800"
                                           : hostCompatibility.status === "review_required"
                                             ? "bg-amber-50 text-amber-800"
@@ -767,10 +747,9 @@ export function CabinetryStudioGuidedView({
                                       : ""}
                                   </span>
                                 ) : null}
-                                </button>
+                                </ChoiceTile>
                                 {isProWorkspace && savedCustomSpace ? (
-                                  <button
-                                    type="button"
+                                  <Button
                                     data-testid={`cabinet-custom-space-delete-${space.id}`}
                                     disabled={customSpaceDeleteDisabled}
                                     title={
@@ -778,12 +757,12 @@ export function CabinetryStudioGuidedView({
                                         ? "Apply a different host before deleting this active fitted host"
                                         : `Remove ${space.label} from saved measured hosts`
                                     }
-                                    className="flex min-h-9 items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-600 hover:border-red-300 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    size="compact"
                                     onClick={() => removeCustomMeasuredSpace(space)}
                                   >
                                     <Trash2 className="h-3.5 w-3.5" />
                                     Remove saved host
-                                  </button>
+                                  </Button>
                                 ) : null}
                               </div>
                             );
@@ -795,15 +774,9 @@ export function CabinetryStudioGuidedView({
                         </div>
                       )}
 
-                      <button
-                        type="button"
+                      <ChoiceTile
                         data-testid="cabinet-space-manual"
-                        aria-pressed={selectedSpaceId === null}
-                        className={`mt-3 flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm ${
-                          selectedSpaceId === null
-                            ? "border-neutral-950 bg-neutral-950 text-white"
-                            : "border-neutral-300 bg-white text-neutral-700 hover:border-neutral-500"
-                        }`}
+                        selected={selectedSpaceId === null} className="mt-3 flex w-full items-center justify-between px-4 py-3 text-left text-sm"
                         onClick={() => {
                           setSelectedSpaceId(null);
                           setFitFeedback(null);
@@ -812,12 +785,12 @@ export function CabinetryStudioGuidedView({
                       >
                         <span>
                           <span className="font-semibold">Enter dimensions manually</span>
-                          <span className={`mt-0.5 block text-xs ${selectedSpaceId === null ? "text-white/65" : "text-neutral-500"}`}>
+                          <span className="mt-0.5 block text-xs text-neutral-500">
                             Create without a host and place it freely later.
                           </span>
                         </span>
                         {selectedSpaceId === null ? <Check className="h-4 w-4" /> : null}
-                      </button>
+                      </ChoiceTile>
 
                       {isProWorkspace ? (
                         <button
@@ -905,14 +878,13 @@ export function CabinetryStudioGuidedView({
                               />
                             </label>
                           ))}
-                          <button
-                            type="button"
+                          <Button
                             data-testid="cabinet-custom-space-add"
-                            className="min-h-10 rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white sm:self-end"
+                            variant="primary" size="regular" className="sm:self-end"
                             onClick={addCustomMeasuredSpace}
                           >
                             Use this measured area
-                          </button>
+                          </Button>
                           <p className="text-xs leading-5 text-blue-700 sm:col-span-2">
                             Custom areas coordinate dimensions and clearances. Without a modelled wall face, final plan position remains manual.
                           </p>
@@ -934,42 +906,28 @@ export function CabinetryStudioGuidedView({
                         <div className="grid gap-5 sm:grid-cols-3">
                           <fieldset className="grid gap-2">
                             <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Fit</legend>
-                            <div className="grid grid-cols-2 rounded-xl bg-neutral-100 p-1">
+                            <div className="grid grid-cols-2 gap-1">
                               {([
                                 ["fit_width", "Width only"],
                                 ["fit_height", "Height only"],
                                 ["fit_both", "Width & height"],
                                 ["between_boundaries", "Between boundaries"],
                               ] as const).map(([value, label]) => (
-                                <button
+                                <ChoiceTile
                                   key={value}
-                                  type="button"
                                   data-testid={`cabinet-fit-mode-${value}`}
-                                  aria-pressed={fitMode === value}
-                                  className={`rounded-lg px-2 py-2 text-xs font-semibold ${fitMode === value ? "bg-white text-neutral-950 shadow-sm" : "text-neutral-500"}`}
+                                  selected={fitMode === value} className="px-2 py-2 text-xs font-semibold"
                                   onClick={() => setFitMode(value)}
                                 >
                                   {label}
-                                </button>
+                                </ChoiceTile>
                               ))}
                             </div>
                           </fieldset>
                           <fieldset className="grid gap-2">
                             <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Alignment</legend>
-                            <div className="grid grid-cols-3 rounded-xl bg-neutral-100 p-1">
-                              {(["left", "center", "right"] as const).map((value) => (
-                                <button
-                                  key={value}
-                                  type="button"
-                                  data-testid={`cabinet-fit-align-${value}`}
-                                  aria-pressed={fitAlignment === value}
-                                  className={`rounded-lg px-2 py-2 text-xs font-semibold ${fitAlignment === value ? "bg-white text-neutral-950 shadow-sm" : "text-neutral-500"}`}
-                                  onClick={() => setFitAlignment(value)}
-                                >
-                                  {formatCabinetLabel(value)}
-                                </button>
-                              ))}
-                            </div>
+                            <SegmentedControl label="Alignment" size="compact" fill value={fitAlignment} onChange={setFitAlignment}
+                              options={(["left", "center", "right"] as const).map((value) => ({ value, label: formatCabinetLabel(value), testId: `cabinet-fit-align-${value}` }))} />
                           </fieldset>
                           <label className="grid gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
                             Bottom above floor
@@ -993,8 +951,7 @@ export function CabinetryStudioGuidedView({
                           </label>
                         </div>
 
-                        <button
-                          type="button"
+                        <Button
                           data-testid="cabinet-fit-to-space"
                           disabled={selectedSpaceHostCompatibility?.status === "incompatible"}
                           title={
@@ -1002,11 +959,11 @@ export function CabinetryStudioGuidedView({
                               ? formatProjectFeedback(selectedSpaceHostCompatibility.message)
                               : undefined
                           }
-                          className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-600"
+                          variant="primary" size="touch" className="mt-5 w-full"
                           onClick={handleApplyFit}
                         >
                           <MapPin className="h-4 w-4" /> Fit to {selectedSpace.label}
-                        </button>
+                        </Button>
 
                         <p className="mt-3 text-xs leading-5 text-neutral-500">
                           The current plan provides wall, ceiling, door, and window measurements. Outlet and baseboard locations are only considered when recorded.
@@ -1028,18 +985,16 @@ export function CabinetryStudioGuidedView({
                             <div key={`${issue.code}-${issue.message}`} className="rounded-xl bg-white/70 px-3 py-2 text-xs leading-5">
                               <span className="font-semibold">{formatCabinetLabel(issue.severity)}:</span> {formatProjectFeedback(issue.message)}
                               {issue.moduleIds?.length && issue.suggestedAction === "unlock_modules" ? (
-                                <button
-                                  type="button"
-                                  className="ml-2 font-semibold text-blue-700 underline"
+                                <Button
+                                  variant="link" size="inline" className="ml-2"
                                   onClick={() => unlockModules(issue.moduleIds ?? [])}
                                 >
                                   Unlock affected modules
-                                </button>
+                                </Button>
                               ) : null}
                               {issue.suggestedAction === "unlock_overall_width" ? (
-                                <button
-                                  type="button"
-                                  className="ml-2 font-semibold text-blue-700 underline"
+                                <Button
+                                  variant="link" size="inline" className="ml-2"
                                   onClick={() =>
                                     updateDefinition((previous) =>
                                       setCabinetOverallWidthLocked(previous, false)
@@ -1047,7 +1002,7 @@ export function CabinetryStudioGuidedView({
                                   }
                                 >
                                   Unlock overall width
-                                </button>
+                                </Button>
                               ) : null}
                             </div>
                           ))}
@@ -1105,14 +1060,13 @@ export function CabinetryStudioGuidedView({
                         <span className="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
                           {activePreset?.host ?? "Flexible"} placement
                         </span>
-                        <button
-                          type="button"
+                        <Button
                           data-testid="cabinet-reset-size-section"
-                          className="shrink-0 text-xs font-semibold text-neutral-500 underline hover:text-neutral-900"
+                          variant="link" size="inline" className="shrink-0 text-xs"
                           onClick={resetSizeSection}
                         >
                           Reset size
-                        </button>
+                        </Button>
                       </div>
                       <div className="grid gap-4 sm:grid-cols-3">
                         <GuidedNumberField
@@ -1152,16 +1106,14 @@ export function CabinetryStudioGuidedView({
                       </div>
                       {isProWorkspace ? (
                         <>
-                          <button
-                            type="button"
+                          <Button
                             data-testid="cabinet-overall-width-lock"
-                            aria-pressed={overallWidthLocked}
-                            className={`mt-4 inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold ${overallWidthLocked ? "border-blue-200 bg-blue-50 text-blue-800" : "border-neutral-300 text-neutral-600"}`}
+                            size="compact" pressed={overallWidthLocked} className="mt-4"
                             onClick={toggleOverallWidthLock}
                           >
                             {overallWidthLocked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
                             {overallWidthLocked ? "Overall width locked" : "Lock overall width"}
-                          </button>
+                          </Button>
                           {overallWidthBlockedByModuleLocks ? (
                             <p className="mt-2 text-xs text-amber-700">
                               All bay widths are constrained by locks. Unlock a bay or release equal sizing before resizing the assembly.
@@ -1189,22 +1141,17 @@ export function CabinetryStudioGuidedView({
                       </div>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {definition.modules.map((module, index) => (
-                          <button
+                          <ChoiceTile
                             key={module.id}
-                            type="button"
-                            className={`flex items-center justify-between rounded-xl border px-3 py-3 text-left text-sm ${
-                              module.id === activeModule?.id
-                                ? "border-neutral-950 bg-neutral-950 text-white"
-                                : "border-neutral-200 bg-neutral-50 text-neutral-700 hover:border-neutral-400"
-                            }`}
+                            selected={module.id === activeModule?.id} className="flex items-center justify-between px-3 py-3 text-left text-sm"
                             onClick={() => selectStudioModule(module.id)}
                           >
                             <span className="font-semibold">Bay {index + 1}</span>
-                            <span className={module.id === activeModule?.id ? "text-white/70" : "text-neutral-500"}>
+                            <span className="text-neutral-500">
                               {formatProjectMeasurement(module.width)}
                             </span>
                             <ModuleIssueBadges issues={getIssuesForModule(module.id)} />
-                          </button>
+                          </ChoiceTile>
                         ))}
                       </div>
                     </div>
@@ -1227,74 +1174,46 @@ export function CabinetryStudioGuidedView({
                           Automatic mode preserves the overall target and shares available width across unlocked bays. Returning to it can replace unlocked manual width overrides.
                         </p>
                       </div>
-                      <div className="grid grid-cols-2 rounded-xl bg-neutral-100 p-1">
-                        {(["automatic", "manual"] as const).map((value) => (
-                          <button
-                            key={value}
-                            type="button"
-                            data-testid={`cabinet-module-sizing-${value}`}
-                            aria-pressed={automation.moduleSizingMode === value}
-                            className={`rounded-lg px-3 py-2 text-xs font-semibold ${automation.moduleSizingMode === value ? "bg-white text-neutral-950 shadow-sm" : "text-neutral-500"}`}
-                            onClick={() => changeModuleSizingMode(value)}
-                          >
-                            {formatCabinetLabel(value)}
-                          </button>
-                        ))}
-                      </div>
-                      <button
-                        type="button"
+                      <SegmentedControl label="Module sizing" size="compact" value={automation.moduleSizingMode} onChange={changeModuleSizingMode}
+                        options={(["automatic", "manual"] as const).map((value) => ({ value, label: formatCabinetLabel(value), testId: `cabinet-module-sizing-${value}` }))} />
+                      <Button
                         data-testid="cabinet-equal-module-sizing"
-                        aria-pressed={automation.equalModuleSizing}
-                        className={`inline-flex min-h-9 items-center gap-2 rounded-xl border px-3 text-xs font-semibold ${automation.equalModuleSizing ? "border-blue-200 bg-blue-50 text-blue-800" : "border-neutral-300 bg-white text-neutral-600"}`}
+                        size="compact" pressed={automation.equalModuleSizing}
                         onClick={toggleEqualModuleSizing}
                       >
                         {equalModuleSizingLocked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
                         Equal widths
-                      </button>
+                      </Button>
                     </div>
                     ) : null}
 
                     <div className="flex flex-wrap items-center gap-2">
                       {definition.modules.map((module, index) => (
-                        <button
+                        <Chip
                           key={module.id}
-                          type="button"
                           data-testid={`cabinet-guided-module-${index + 1}`}
-                          aria-pressed={module.id === activeModule.id}
-                          className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                            module.id === activeModule.id
-                              ? "border-neutral-950 bg-neutral-950 text-white"
-                              : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-600"
-                          }`}
+                          pressed={module.id === activeModule.id}
                           onClick={() => selectStudioModule(module.id)}
                         >
                           <span className="flex items-center gap-1.5">
                             Bay {index + 1} · {formatProjectMeasurement(module.width)}
                             <ModuleIssueBadges issues={getIssuesForModule(module.id)} />
                           </span>
-                        </button>
+                        </Chip>
                       ))}
                       {isProWorkspace ? (
                         <>
-                          <button
-                            type="button"
+                          <Chip
                             data-testid="cabinet-guided-add-module"
-                            className="inline-flex items-center gap-1 rounded-full border border-dashed border-neutral-400 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:border-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
                             disabled={structuralModuleChangeDisabled}
                             title={structuralModuleChangeTitle}
                             onClick={addModule}
                           >
                             <Plus className="h-3.5 w-3.5" /> Add bay
-                          </button>
-                          <button
-                            type="button"
+                          </Chip>
+                          <Button
                             data-testid="cabinet-guided-module-width-lock"
-                            aria-pressed={isCabinetModuleWidthLocked(definition, activeModule.id)}
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold ${
-                              isCabinetModuleWidthLocked(definition, activeModule.id)
-                                ? "border-amber-400 bg-amber-50 text-amber-900"
-                                : "border-neutral-300 bg-white text-neutral-600 hover:border-neutral-600"
-                            }`}
+                            size="compact" pressed={isCabinetModuleWidthLocked(definition, activeModule.id)}
                             onClick={toggleActiveModuleWidthLock}
                           >
                             {isCabinetModuleWidthLocked(definition, activeModule.id) ? (
@@ -1303,7 +1222,7 @@ export function CabinetryStudioGuidedView({
                               <Unlock className="h-3.5 w-3.5" />
                             )}
                             {isCabinetModuleWidthLocked(definition, activeModule.id) ? "Width locked" : "Lock width"}
-                          </button>
+                          </Button>
                         </>
                       ) : null}
                     </div>
@@ -1325,31 +1244,24 @@ export function CabinetryStudioGuidedView({
                                   : "Choose a recognizable starting layout."}
                               </p>
                             </div>
-                            <button
-                              type="button"
+                            <Button
                               data-testid="cabinet-reset-module"
-                              className="text-xs font-semibold text-neutral-500 hover:text-neutral-950"
+                              variant="link" size="inline" className="text-xs"
                               onClick={resetActiveModule}
                             >
                               Reset bay
-                            </button>
+                            </Button>
                           </div>
                           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                             {supportsGuidedWardrobeArrangements
                               ? CABINET_WARDROBE_ARRANGEMENTS.map((option) => {
                                   const isSelected = activeWardrobeArrangementId === option.id;
                                   return (
-                                    <button
+                                    <ChoiceTile
                                       key={option.id}
-                                      type="button"
                                       data-testid={`cabinet-guided-wardrobe-${option.id}`}
                                       aria-label={`${option.label}. ${option.accessibilityLabel}. ${option.description}`}
-                                      aria-pressed={isSelected}
-                                      className={`grid gap-2 rounded-xl border p-2.5 text-left transition ${
-                                        isSelected
-                                          ? "border-neutral-950 bg-neutral-50 ring-2 ring-neutral-950/10"
-                                          : "border-neutral-200 hover:border-neutral-500"
-                                      }`}
+                                      selected={isSelected} className="grid gap-2 p-2.5 text-left"
                                       onClick={() => applyGuidedWardrobeArrangement(option.id)}
                                     >
                                       <CabinetWardrobeArrangementDiagram option={option} />
@@ -1359,7 +1271,7 @@ export function CabinetryStudioGuidedView({
                                       <span className="text-xs leading-4 text-neutral-500">
                                         {option.description}
                                       </span>
-                                    </button>
+                                    </ChoiceTile>
                                   );
                                 })
                               : frontTypes.map((frontType) => {
@@ -1369,16 +1281,10 @@ export function CabinetryStudioGuidedView({
                                     ...guidedFrontPatch(frontType),
                                   };
                                   return (
-                                    <button
+                                    <ChoiceTile
                                       key={frontType}
-                                      type="button"
                                       data-testid={`cabinet-guided-layout-${frontType}`}
-                                      aria-pressed={isSelected}
-                                      className={`grid gap-2 rounded-xl border p-2.5 text-left transition ${
-                                        isSelected
-                                          ? "border-neutral-950 bg-neutral-50 ring-2 ring-neutral-950/10"
-                                          : "border-neutral-200 hover:border-neutral-500"
-                                      }`}
+                                      selected={isSelected} className="grid gap-2 p-2.5 text-left"
                                       onClick={() =>
                                         updateModule(activeModule.id, guidedFrontPatch(frontType))
                                       }
@@ -1389,7 +1295,7 @@ export function CabinetryStudioGuidedView({
                                       <span className="text-xs font-semibold text-neutral-800">
                                         {formatCabinetLabel(frontType)}
                                       </span>
-                                    </button>
+                                    </ChoiceTile>
                                   );
                                 })}
                           </div>
@@ -1399,16 +1305,14 @@ export function CabinetryStudioGuidedView({
                           <div className="mb-4 flex items-center justify-between gap-3">
                             <h3 className="text-sm font-semibold">Storage details</h3>
                             {isProWorkspace ? (
-                            <button
-                              type="button"
+                            <Button
                               data-testid="cabinet-shelf-spacing-lock"
-                              aria-pressed={activeShelfSpacingLocked}
-                              className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold ${activeShelfSpacingLocked ? "border-blue-200 bg-blue-50 text-blue-800" : "border-neutral-300 text-neutral-600"}`}
+                              size="compact" pressed={activeShelfSpacingLocked}
                               onClick={toggleActiveShelfSpacingLock}
                             >
                               {activeShelfSpacingLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
                               {activeShelfSpacingLocked ? "Shelf layout locked" : "Lock shelf layout"}
-                            </button>
+                            </Button>
                             ) : null}
                           </div>
                           {isProWorkspace ? (
@@ -1419,25 +1323,9 @@ export function CabinetryStudioGuidedView({
                                 Custom starts from the current even layout. Returning to Even replaces custom heights.
                               </p>
                             </div>
-                            <div className="grid grid-cols-2 rounded-lg bg-neutral-200/70 p-1">
-                              {(["even", "custom"] as const).map((spacingMode) => (
-                                <button
-                                  key={spacingMode}
-                                  type="button"
-                                  data-testid={`cabinet-shelf-spacing-${spacingMode}`}
-                                  aria-pressed={activeShelfSpacingMode === spacingMode}
-                                  disabled={activeShelfSpacingLocked}
-                                  className={`rounded-md px-3 py-1.5 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${
-                                    activeShelfSpacingMode === spacingMode
-                                      ? "bg-white text-neutral-950 shadow-sm"
-                                      : "text-neutral-500"
-                                  }`}
-                                  onClick={() => setActiveShelfSpacingMode(spacingMode)}
-                                >
-                                  {spacingMode === "even" ? "Even" : "Custom"}
-                                </button>
-                              ))}
-                            </div>
+                            <SegmentedControl label="Shelf spacing" size="compact" value={activeShelfSpacingMode} disabled={activeShelfSpacingLocked}
+                              options={[{ value: "even", label: "Even", testId: "cabinet-shelf-spacing-even" }, { value: "custom", label: "Custom", testId: "cabinet-shelf-spacing-custom" }]}
+                              onChange={setActiveShelfSpacingMode} />
                           </div>
                           ) : null}
                           <div className={`grid gap-4 ${isProWorkspace ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}>
@@ -1522,20 +1410,9 @@ export function CabinetryStudioGuidedView({
                                   Manual starts with the current recommendation. Returning to Recommended replaces the manual count.
                                 </p>
                               </div>
-                              <div className="grid grid-cols-2 rounded-lg bg-neutral-100 p-1">
-                                {(["recommended", "manual"] as const).map((mode) => (
-                                  <button
-                                    key={mode}
-                                    type="button"
-                                    data-testid={`cabinet-door-layout-${mode}`}
-                                    aria-pressed={activeDoorLayoutMode === mode}
-                                    className={`rounded-md px-3 py-1.5 text-xs font-semibold ${activeDoorLayoutMode === mode ? "bg-white text-neutral-950 shadow-sm" : "text-neutral-500"}`}
-                                    onClick={() => setActiveDoorLayoutMode(mode)}
-                                  >
-                                    {mode === "recommended" ? `Recommended · ${activeDoorCount}` : "Manual count"}
-                                  </button>
-                                ))}
-                              </div>
+                              <SegmentedControl label="Door layout" size="compact" value={activeDoorLayoutMode} onChange={setActiveDoorLayoutMode}
+                                options={[{ value: "recommended", label: `Recommended · ${activeDoorCount}`, testId: "cabinet-door-layout-recommended" },
+                                  { value: "manual", label: "Manual count", testId: "cabinet-door-layout-manual" }]} />
                             </div>
                           ) : null}
                           {isProWorkspace && activeHasDrawerFront ? (
@@ -1553,12 +1430,10 @@ export function CabinetryStudioGuidedView({
                                   className="grid grid-cols-3 gap-2"
                                 >
                                   {(["equal", "recommended", "custom"] as const).map((mode) => (
-                                    <button
+                                    <ChoiceTile
                                       key={mode}
-                                      type="button"
                                       data-testid={`cabinet-drawer-heights-${mode}`}
-                                      aria-pressed={activeDrawerHeightMode === mode}
-                                      className={`grid gap-1 rounded-lg border p-2 text-xs font-semibold transition ${activeDrawerHeightMode === mode ? "border-neutral-950 bg-white text-neutral-950 shadow-sm" : "border-neutral-200 bg-neutral-50 text-neutral-500 hover:border-neutral-400"}`}
+                                      selected={activeDrawerHeightMode === mode} className="grid gap-1 p-2 text-xs font-semibold"
                                       onClick={() => setActiveDrawerHeightMode(mode)}
                                     >
                                       <CabinetDrawerConfigurationPreview
@@ -1569,7 +1444,7 @@ export function CabinetryStudioGuidedView({
                                         }
                                       />
                                       {formatCabinetLabel(mode)}
-                                    </button>
+                                    </ChoiceTile>
                                   ))}
                                 </div>
                               </div>
@@ -1633,13 +1508,12 @@ export function CabinetryStudioGuidedView({
                             : "Its internal arrangement stays coordinated automatically while you choose the size and finish."}
                         </p>
                         {isProWorkspace ? (
-                          <button
-                            type="button"
-                            className="mt-4 rounded-xl bg-amber-900 px-4 py-2 text-sm font-semibold text-white"
+                          <Button
+                            variant="primary" size="regular" className="mt-4"
                             onClick={() => chooseExperienceMode("detailed")}
                           >
                             Open detailed controls
-                          </button>
+                          </Button>
                         ) : null}
                       </div>
                     )}
@@ -1652,14 +1526,13 @@ export function CabinetryStudioGuidedView({
                       <p className="text-xs leading-5 text-neutral-500">
                         Finish, fronts, and opening hardware are one reversible style section.
                       </p>
-                      <button
-                        type="button"
+                      <Button
                         data-testid="cabinet-reset-style-section"
-                        className="shrink-0 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 hover:border-neutral-600 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600"
+                        size="compact" className="shrink-0"
                         onClick={resetStyleSection}
                       >
                         Reset style
-                      </button>
+                      </Button>
                     </div>
                     <div className="rounded-2xl border border-neutral-200 bg-white p-5">
                       <div className="mb-4 flex items-start justify-between gap-4">
@@ -1672,32 +1545,24 @@ export function CabinetryStudioGuidedView({
                           </p>
                         </div>
                         {isProWorkspace ? (
-                          <button
-                            type="button"
+                          <Button
                             data-testid="cabinet-material-lock"
-                            aria-pressed={activeMaterialLocked}
-                            className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold ${activeMaterialLocked ? "border-blue-200 bg-blue-50 text-blue-800" : "border-neutral-300 text-neutral-600"}`}
+                            size="compact" pressed={activeMaterialLocked} className="shrink-0"
                             onClick={toggleActiveMaterialLock}
                           >
                             {activeMaterialLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
                             {activeMaterialLocked ? "Finish locked" : "Lock this finish"}
-                          </button>
+                          </Button>
                         ) : null}
                       </div>
                       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         {GUIDED_MATERIALS.map((material) => {
                           const isSelected = activeModule.frontMaterialId === material.id;
                           return (
-                            <button
+                            <ChoiceTile
                               key={material.id}
-                              type="button"
                               data-testid={`cabinet-guided-material-${material.id}`}
-                              aria-pressed={isSelected}
-                              className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm font-semibold transition ${
-                                isSelected
-                                  ? "border-neutral-950 bg-neutral-50 ring-2 ring-neutral-950/10"
-                                  : "border-neutral-200 hover:border-neutral-500"
-                              }`}
+                              selected={isSelected} className="flex items-center gap-3 p-3 text-left text-sm font-semibold"
                               onClick={() => applyGuidedMaterial(material.id)}
                             >
                               <span
@@ -1705,7 +1570,7 @@ export function CabinetryStudioGuidedView({
                                 style={{ backgroundColor: material.color ?? "#d6d3d1" }}
                               />
                               <span>{material.name}</span>
-                            </button>
+                            </ChoiceTile>
                           );
                         })}
                       </div>
@@ -1717,16 +1582,10 @@ export function CabinetryStudioGuidedView({
                           <h3 className="mb-4 text-sm font-semibold">Door style</h3>
                           <div className="grid grid-cols-2 gap-2">
                             {doorStyles.map((doorStyle) => (
-                              <button
+                              <ChoiceTile
                                 key={doorStyle}
-                                type="button"
                                 data-testid={`cabinet-guided-door-style-${doorStyle}`}
-                                aria-pressed={activeModule.doorStyle === doorStyle}
-                                className={`grid gap-2 rounded-xl border px-3 py-3 text-left text-xs font-semibold ${
-                                  activeModule.doorStyle === doorStyle
-                                    ? "border-neutral-950 bg-neutral-950 text-white"
-                                    : "border-neutral-200 text-neutral-700 hover:border-neutral-500"
-                                }`}
+                                selected={activeModule.doorStyle === doorStyle} className="grid gap-2 px-3 py-3 text-left text-xs font-semibold"
                                 onClick={() =>
                                   updateDefinition((previous) => ({
                                     ...previous,
@@ -1739,7 +1598,7 @@ export function CabinetryStudioGuidedView({
                                   className="h-16 w-full"
                                 />
                                 <span>{formatCabinetLabel(doorStyle)}</span>
-                              </button>
+                              </ChoiceTile>
                             ))}
                           </div>
                         </div>
@@ -1748,16 +1607,10 @@ export function CabinetryStudioGuidedView({
                           <h3 className="mb-4 text-sm font-semibold">Handles & opening</h3>
                           <div className="grid gap-2">
                             {guidedHardwareOptions.map((hardware) => (
-                              <button
+                              <ChoiceTile
                                 key={hardware.id}
-                                type="button"
                                 data-testid={`cabinet-guided-hardware-${hardware.id}`}
-                                aria-pressed={isGuidedHardwareSelected(hardware.id)}
-                                className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-left text-xs font-semibold ${
-                                  isGuidedHardwareSelected(hardware.id)
-                                    ? "border-neutral-950 bg-neutral-950 text-white"
-                                    : "border-neutral-200 text-neutral-700 hover:border-neutral-500"
-                                }`}
+                                selected={isGuidedHardwareSelected(hardware.id)} className="flex items-center justify-between px-3 py-2.5 text-left text-xs font-semibold"
                                 onClick={() =>
                                   updateDefinition((previous) => ({
                                     ...previous,
@@ -1778,7 +1631,7 @@ export function CabinetryStudioGuidedView({
                                   <span>{hardware.name}</span>
                                 </span>
                                 {isGuidedHardwareSelected(hardware.id) ? <Check className="h-3.5 w-3.5" /> : null}
-                              </button>
+                              </ChoiceTile>
                             ))}
                           </div>
                         </div>

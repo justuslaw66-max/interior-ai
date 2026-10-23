@@ -1,5 +1,7 @@
 "use client";
 
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type {
   JaronConfigurationArmKey,
   JaronConfigurationDiagramKey,
@@ -19,10 +21,8 @@ const JARON_CONFIGURATION_ICON_BY_DIAGRAM: Record<JaronConfigurationDiagramKey, 
 
 function JaronConfigurationDiagram({
   diagram,
-  active,
 }: {
   diagram: JaronConfigurationDiagramKey;
-  active: boolean;
 }) {
   const iconSrc = JARON_CONFIGURATION_ICON_BY_DIAGRAM[diagram];
 
@@ -37,7 +37,6 @@ function JaronConfigurationDiagram({
       loading="lazy"
       src={iconSrc}
       style={{
-        filter: active ? "brightness(0) invert(1)" : undefined,
         transform: "scale(1.85)",
         transformOrigin: "center",
       }}
@@ -91,71 +90,49 @@ export function JaronConfigurationSelector({
         Configuration
       </div>
 
-      <div className="mt-2 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
-        <div
-          className="grid border-b border-neutral-200"
-          style={{
-            gridTemplateColumns: `repeat(${state.groups.length}, minmax(0, 1fr))`,
-          }}
-        >
-          {state.groups.map((group) => {
-            const active = group.key === state.activeGroupKey;
+      <SegmentedControl
+        label="Configuration type"
+        size="compact"
+        fill
+        className="mt-2"
+        value={state.activeGroupKey}
+        onChange={actions.onSelectGroup}
+        options={state.groups.map((group) => ({
+          value: group.key,
+          label: group.label,
+          testId: `jaron-config-tab-${group.key}`,
+          disabled: group.disabled,
+        }))}
+      />
 
-            return (
-              <button
-                key={group.key}
-                data-testid={`jaron-config-tab-${group.key}`}
-                data-active={active ? "true" : "false"}
-                className={`px-3 py-2 text-xs font-semibold ${
-                  active
-                    ? "bg-neutral-900 text-white"
-                    : "bg-white text-neutral-900"
-                }`}
-                disabled={group.disabled}
-                onClick={() => actions.onSelectGroup(group.key)}
-              >
-                {group.label}
-              </button>
-            );
-          })}
-        </div>
+      <div className="mt-2 space-y-2">
+        {activeGroup?.options.map((option) => {
+          const active = option.key === state.activeOptionKey;
 
-        <div className="space-y-2 p-2">
-          {activeGroup?.options.map((option) => {
-            const active = option.key === state.activeOptionKey;
-
-            return (
-              <button
-                key={option.key}
-                data-testid={`jaron-config-option-${option.key}`}
-                data-active={active ? "true" : "false"}
-                className={`block w-full rounded-lg border px-3 py-3 text-left ${
-                  active
-                    ? "bg-neutral-900 text-white"
-                    : "border-neutral-200 bg-white text-neutral-900"
-                }`}
-                disabled={option.disabled}
-                onClick={() => actions.onSelectOption(option.key)}
-              >
-                <span className="flex items-center gap-3">
-                  <span className="flex h-14 w-24 shrink-0 items-center justify-center">
-                    <JaronConfigurationDiagram diagram={option.diagram} active={active} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold">{option.label}</span>
-                    <span
-                      className={`mt-1 block text-xs ${
-                        active ? "text-white/80" : "text-neutral-500"
-                      }`}
-                    >
-                      {option.description}
-                    </span>
+          return (
+            <ChoiceTile
+              key={option.key}
+              selected={active}
+              data-testid={`jaron-config-option-${option.key}`}
+              data-active={active ? "true" : "false"}
+              className="block w-full px-3 py-3 text-left"
+              disabled={option.disabled}
+              onClick={() => actions.onSelectOption(option.key)}
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-14 w-24 shrink-0 items-center justify-center">
+                  <JaronConfigurationDiagram diagram={option.diagram} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">{option.label}</span>
+                  <span className="mt-1 block text-xs text-neutral-500">
+                    {option.description}
                   </span>
                 </span>
-              </button>
-            );
-          })}
-        </div>
+              </span>
+            </ChoiceTile>
+          );
+        })}
       </div>
 
       {state.armOptions.length ? (
@@ -168,17 +145,18 @@ export function JaronConfigurationSelector({
               const active = option.key === state.activeArmKey;
 
               return (
-                <button
+                <ChoiceTile
                   key={option.key}
+                  selected={active}
                   data-testid={`jaron-arm-${option.key}`}
                   data-active={active ? "true" : "false"}
-                  className={`rounded-lg border px-3 py-2 text-sm text-neutral-900 ${active ? "designer-accent-border" : "border-neutral-200"}`}
+                  className="px-3 py-2 text-sm"
                   disabled={option.disabled}
                   onClick={() => actions.onSelectArm(option.key)}
                   title={option.label}
                 >
                   {option.label}
-                </button>
+                </ChoiceTile>
               );
             })}
           </div>

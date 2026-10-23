@@ -7,11 +7,11 @@
 @source "../features";
 @source not "../features/cabinetry";
 @source "../lib";
-@source inline("bg-blue-700 gap-5 gap-6 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-neutral-100 text-red-950 xl:grid-cols-2");
+@source inline("gap-5 gap-6 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-neutral-100 text-neutral-300 text-red-950 xl:grid-cols-2");
 
 /* Dark mode is opt-in. The UI is designed light-first; left on Tailwind's
    default, dark: utilities follow the OS setting and half-theme dialogs
-   (UX audit 2026-09-23, SX3). Nothing sets the attribute yet. */
+   (UX audit 2026-09-23, SX3). The colour tokens below use the same switch. */
 @custom-variant dark (&:where([data-color-scheme="dark"], [data-color-scheme="dark"] *));
 
 /* Touch (UX 4d, audit AX1): phones, and screens whose main pointer is a finger. touch:min-h-11
@@ -22,7 +22,14 @@
   }
 }
 
-:root {
+/* The colours, by role (dark mode step 3, after Apple: claude/dark-mode-plan-2026-10-13.md). Each
+   has a light value, today's, and a dark one. Dark applies only under data-color-scheme="dark" until
+   the editor is on these tokens; then the app follows the device (J, 22 Oct). data-color-scheme="light"
+   holds a subtree light: Admin stays light (plan decision 7). */
+:root,
+[data-color-scheme="light"] {
+  color-scheme: light;
+  /* The page's own tokens, from before the roles. Screens fold into the roles as they move. */
   --bg-canvas: #ffffff;
   --bg-panel: #ffffff;
   --bg-panel-hover: #f6f7fb;
@@ -37,6 +44,83 @@
   --danger: #dc2626;
   --background: var(--bg-canvas);
   --foreground: var(--text-primary);
+  /* Surfaces: panels and the bar; cards and fields on them; dialogs, menus and popovers, and the
+     fields in those; the bars that float over the canvas. */
+  --surface: var(--color-white);
+  --surface-secondary: var(--color-white);
+  --surface-elevated: var(--color-white);
+  --surface-elevated-secondary: var(--color-white);
+  --surface-floating: var(--color-white);
+  --label: var(--color-neutral-900);
+  --label-secondary: #525252;
+  --separator: var(--color-neutral-200);
+  --link: #275fcb;
+  /* The shared controls (components/ui): Button, SegmentedControl, Chip and ChoiceTile. */
+  --control-primary: var(--color-neutral-900);
+  --control-primary-hover: var(--color-neutral-800);
+  --control-on-primary: var(--color-white);
+  --control-secondary: var(--color-white);
+  --control-secondary-hover: var(--color-neutral-50);
+  --control-secondary-border: var(--color-neutral-300);
+  --control-quiet-hover: var(--color-neutral-100);
+  --control-label: var(--color-neutral-800);
+  --control-label-idle: var(--color-neutral-700);
+  --control-track: var(--color-neutral-100);
+  --control-track-hover: var(--color-white);
+  --control-edge-hover: var(--color-neutral-400);
+  --control-danger: var(--color-red-600);
+  --control-danger-hover: var(--color-red-700);
+  --control-danger-border: var(--color-red-600);
+  --control-on-danger: var(--color-white);
+}
+
+/* Dark: black panels and bar, #1C1C1E cards, fields, dialogs and menus, #2C2C2E floating bars and
+   the fields in dialogs (J, 13 and 22 Oct); white text with Apple's 60% grey; near-white primaries
+   and pressed controls, grey fills for secondary ones, a red tint for deleting (J, 13–14 Oct). */
+[data-color-scheme="dark"] {
+  color-scheme: dark;
+  --bg-canvas: #000000;
+  --bg-panel: #000000;
+  --bg-panel-hover: #1c1c1e;
+  --border-subtle: rgba(84, 84, 88, 0.65);
+  --border-strong: rgba(235, 235, 245, 0.3);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(235, 235, 245, 0.6);
+  --text-muted: rgba(235, 235, 245, 0.6);
+  --accent: #0a84ff;
+  --focus: #0a84ff;
+  --success: #30d158;
+  --danger: #ff6961;
+  --background: var(--bg-canvas);
+  --foreground: var(--text-primary);
+  --surface: #000000;
+  --surface-secondary: #1c1c1e;
+  --surface-elevated: #1c1c1e;
+  --surface-elevated-secondary: #2c2c2e;
+  --surface-floating: #2c2c2e;
+  --label: #ffffff;
+  --label-secondary: rgba(235, 235, 245, 0.6);
+  --separator: rgba(84, 84, 88, 0.65);
+  --link: #409cff;
+  --control-primary: #f5f5f7;
+  --control-primary-hover: #e5e5ea;
+  --control-on-primary: #1c1c1e;
+  --control-secondary: rgba(118, 118, 128, 0.24);
+  --control-secondary-hover: rgba(118, 118, 128, 0.32);
+  --control-secondary-border: transparent;
+  --control-quiet-hover: rgba(118, 118, 128, 0.24);
+  --control-label: #ffffff;
+  --control-label-idle: rgba(235, 235, 245, 0.8);
+  --control-track: rgba(118, 118, 128, 0.24);
+  --control-track-hover: rgba(118, 118, 128, 0.24);
+  --control-edge-hover: rgba(235, 235, 245, 0.3);
+  --control-danger: rgba(255, 69, 58, 0.18);
+  --control-danger-hover: rgba(255, 69, 58, 0.26);
+  --control-danger-border: transparent;
+  --control-on-danger: #ff6961;
+}
+
+:root {
   --font-geist-sans: Arial, Helvetica, sans-serif;
   --font-geist-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   /* The editor's command bar from md (UX 4c, 56px as in the TopBar mockup). What sits under it is
@@ -58,6 +142,31 @@
   --color-focus: var(--focus);
   --color-success: var(--success);
   --color-danger: var(--danger);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-elevated-secondary: var(--surface-elevated-secondary);
+  --color-surface-floating: var(--surface-floating);
+  --color-label: var(--label);
+  --color-label-secondary: var(--label-secondary);
+  --color-separator: var(--separator);
+  --color-link: var(--link);
+  --color-control-primary: var(--control-primary);
+  --color-control-primary-hover: var(--control-primary-hover);
+  --color-control-on-primary: var(--control-on-primary);
+  --color-control-secondary: var(--control-secondary);
+  --color-control-secondary-hover: var(--control-secondary-hover);
+  --color-control-secondary-border: var(--control-secondary-border);
+  --color-control-quiet-hover: var(--control-quiet-hover);
+  --color-control-label: var(--control-label);
+  --color-control-label-idle: var(--control-label-idle);
+  --color-control-track: var(--control-track);
+  --color-control-track-hover: var(--control-track-hover);
+  --color-control-edge-hover: var(--control-edge-hover);
+  --color-control-danger: var(--control-danger);
+  --color-control-danger-hover: var(--control-danger-hover);
+  --color-control-danger-border: var(--control-danger-border);
+  --color-control-on-danger: var(--control-on-danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -184,22 +293,6 @@ body {
 
 .designer-grid-pulse {
   animation: gridPulse 240ms ease-out;
-}
-
-@keyframes pulseOnce {
-  0% {
-    transform: scale(1);
-  }
-  40% {
-    transform: scale(1.03);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.pulse-once {
-  animation: pulseOnce 700ms ease-out;
 }
 
 @keyframes toastIn {

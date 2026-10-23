@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
-import { sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
+import { sourceDrawingInk, sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { SourceReviewLayer } from "./useSourceReviewLayers";
 
 /** Before / after for the traced drawing: what the tracer took from the floor plan, and what it left out. */
@@ -21,13 +22,8 @@ export function FloorPlanSourceCompareToggle({ layer, onLayer, wipe, onWipe, dis
     <div className="mb-2 rounded border border-neutral-200 bg-white p-2 text-xs text-neutral-700" data-testid="floor-plan-source-compare">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-semibold">Before / after</span>
-        <div role="group" aria-label="Original or traced drawing" className="inline-flex overflow-hidden rounded border border-neutral-300">
-          {VIEWS.map((view) => (
-            <button key={view.value} type="button" title={view.title} aria-pressed={layer === view.value} disabled={disabled}
-              className={`px-3 py-1 ${layer === view.value ? "bg-neutral-900 text-white" : "bg-white hover:bg-neutral-100"}`}
-              onClick={() => onLayer(view.value)}>{view.label}</button>
-          ))}
-        </div>
+        <SegmentedControl label="Original or traced drawing" size="compact" value={layer} options={VIEWS} disabled={disabled}
+          onChange={onLayer} />
         <span className="text-neutral-500">Anything visible on the original but missing from the trace was not picked up.</span>
       </div>
       {layer === "compare" ? (
@@ -58,8 +54,8 @@ export function FloorPlanSourceCompareWipe({ layer, wipe, onWipe, annotations, w
       <div className="absolute inset-0 bg-white" style={{ clipPath: `inset(0 0 0 ${wipe}%)` }} aria-hidden="true">
         <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 ${widthPx} ${heightPx}`}>
           {annotations.map((annotation) => annotation.geometry.kind === "source_drawing" && annotation.geometry.command !== "text" ? (
-            <path key={annotation.id} d={sourceDrawingSvgPath(annotation.geometry)} fill={annotation.geometry.fill ? "#222" : "none"}
-              stroke={annotation.geometry.fill ? "none" : "#222"} strokeWidth={annotation.geometry.strokeWidthPx} vectorEffect="non-scaling-stroke" />
+            <path key={annotation.id} d={sourceDrawingSvgPath(annotation.geometry)} fill={annotation.geometry.fill ? sourceDrawingInk(annotation.geometry, "#222") : "none"}
+              stroke={annotation.geometry.fill ? "none" : sourceDrawingInk(annotation.geometry, "#222")} strokeWidth={annotation.geometry.strokeWidthPx} vectorEffect="non-scaling-stroke" />
           ) : null)}
         </svg>
       </div>

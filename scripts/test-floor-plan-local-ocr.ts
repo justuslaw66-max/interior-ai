@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import sharp from "sharp";
 import { recognizeLocalOcrOrientations, sourceTextEvidenceFromLocalOcr } from "@/lib/floor-plan-imports/local-ocr-rotation";
 import { createCanvas } from "@napi-rs/canvas";
@@ -214,9 +215,10 @@ async function testPageBudgetAndTimeoutFallback() {
   const extracted = await adapter.extract(source(bytes), rendered, context(bytes));
   assert.equal(calls, 8, "Local OCR must obey the bounded eight-page budget.");
   const manifest = extracted.sourceManifest as {
-    pages: Array<{ localOcr: { attempted: boolean; status: string } }>;
+    pages: Array<{ localOcr: { attempted: boolean; status: string; elapsedMs: number } }>;
   };
   assert.equal(manifest.pages[0].localOcr.status, "timed_out");
+  assert.ok(manifest.pages[0].localOcr.elapsedMs < 5_000, "a failure records the time it took, not the time limit");
   assert.equal(manifest.pages[8].localOcr.attempted, false);
   const envelope = extracted.candidate as {
     pages: Array<{ semantics: { notes: string[] } }>;
@@ -275,7 +277,45 @@ async function testConflictingRotatedReadings() {
   assert.ok(built.reviewIssues.some((issue) => issue.code === "source_text_conflict" && (issue.entityIds?.length ?? 0) === 2));
 }
 
+/** A scale bar's numbers, read as one upright line (no sideways passes): every number and the unit, in place. */
+async function testSingleLineNumbers() {
+  const canvas = createCanvas(900, 80);
+  const drawing = canvas.getContext("2d");
+  drawing.fillStyle = "white";
+  drawing.fillRect(0, 0, canvas.width, canvas.height);
+  drawing.fillStyle = "black";
+  drawing.font = "22px sans-serif";
+  for (let metre = 0; metre <= 5; metre += 1) drawing.fillText(String(metre), 150 + metre * 110, 52);
+  drawing.fillText("metres", 150 + 5 * 110 + 30, 52);
+  const provider = new TesseractFloorPlanLocalOcrProvider();
+  const result = await provider.recognizePage(
+    { pageNumber: 1, widthPx: 900, heightPx: 80, mimeType: "image/png", bytes: new Uint8Array(canvas.toBuffer("image/png")) },
+    { timeoutMs: 10_000, maxCandidates: 40, minSourceConfidence: 45, singleLine: true });
+  const words = result.candidates.filter((candidate) => !/\s/.test(candidate.text));
+  for (const metre of [1, 2, 3, 4, 5]) {
+    const word = words.find((candidate) => candidate.text === String(metre) || candidate.text.startsWith(`${metre}m`));
+    assert.ok(word, `single-line OCR reads ${metre}`);
+    assert.ok(Math.abs(word.bbox.left - (150 + metre * 110)) < 25, `${metre} is placed where it is drawn`);
+  }
+  assert.ok(words.some((candidate) => /metres$/.test(candidate.text)), "single-line OCR reads the unit");
+  assert.ok(result.candidates.every((candidate) => !candidate.rotationDegrees), "no sideways readings in single-line mode");
+}
+
+/**
+ * Local OCR must also load inside a Next route: Node's module API is imported at run time (webpack rewrote a static
+ * createRequire, and every call failed with "ocrRequire is not a function"), and tesseract.js stays out of the bundle.
+ */
+function testLoadsInNextRoutes() {
+  for (const file of ["lib/floor-plan-imports/local-ocr.ts", "lib/floor-plan-imports/pdf-runtime.ts"]) {
+    assert.doesNotMatch(readFileSync(file, "utf8"), /^import[^;]*from "(node:)?module";/m, `${file} imports Node's module API at run time`);
+  }
+  const externals = readFileSync("next.config.ts", "utf8").match(/serverExternalPackages:\s*\[([^\]]*)\]/)?.[1] ?? "";
+  assert.match(externals, /"tesseract\.js"/, "next.config.ts keeps tesseract.js out of the server bundle");
+}
+
 async function main() {
+  testLoadsInNextRoutes();
+  await testSingleLineNumbers();
   await testPackagedRuntime();
   await testPackagedRuntime(true);
   await testConflictingRotatedReadings();

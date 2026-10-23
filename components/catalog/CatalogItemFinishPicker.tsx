@@ -1,3 +1,5 @@
+import { CHOSEN_SWATCH_RING } from "@/components/ui/ChoiceTile";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { inferCollectionType, shouldShowCollectionGrouping } from "@/lib/catalog/variant-normalization";
 
 type MaterialType = "Fabric" | "Leather" | "Wood";
@@ -55,6 +57,14 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
       ? selectedFinish.materialType
       : upholsteryMaterialTypes[0];
   const activeCollectionType = selectedFinish ? resolveCollectionType(selectedFinish) : undefined;
+  // A material's first finish in the chosen collection (stocked or custom), else its first finish.
+  const firstFinishOf = (materialType: MaterialType) => {
+    const matchingOptions = finishOptions.filter((finish) => finish.materialType === materialType);
+    return (
+      matchingOptions.find((finish) => resolveCollectionType(finish) === activeCollectionType) ??
+      matchingOptions[0]
+    );
+  };
 
   const renderSwatches = (sectionKey: string, items: FinishOption[]) => (
     <div className="mt-3 grid grid-cols-4 gap-2.5">
@@ -69,27 +79,19 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
             title={finish.label}
             aria-label={finish.label}
             aria-pressed={active}
-            className={`group relative h-16 w-full overflow-hidden rounded-xl border shadow-sm transition ${
-              active
-                ? "border-neutral-950 ring-2 ring-neutral-950/20"
-                : "border-neutral-200 hover:border-neutral-400 hover:shadow"
+            className={`h-16 w-full rounded-xl border border-neutral-200 shadow-sm transition ${
+              active ? "" : "hover:border-neutral-400 hover:shadow"
             }`}
             style={{
               backgroundColor: finish.swatchHex ?? "#d1d5db",
               backgroundImage: finish.swatchTextureUrl ? `url(${finish.swatchTextureUrl})` : undefined,
               backgroundSize: "cover",
               backgroundPosition: "center",
+              // The item panel's ring (J, 17 Oct): the chosen swatch shows whole, and its name is above.
+              boxShadow: active ? CHOSEN_SWATCH_RING : undefined,
             }}
           >
             <span className="sr-only">{finish.label}</span>
-            {active ? (
-              <>
-                <span className="pointer-events-none absolute inset-0 rounded-xl shadow-[inset_0_0_0_1px_rgba(255,255,255,0.75)]" />
-                <span className="pointer-events-none absolute bottom-0 left-0 right-0 bg-neutral-950/85 px-0.5 py-0.5 text-center text-xs font-semibold text-white">
-                  Selected
-                </span>
-              </>
-            ) : null}
           </button>
         );
       })}
@@ -113,7 +115,7 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
           data-testid={`catalog-finish-section-${sectionKey}`}
         >
           <div className="flex items-baseline justify-between gap-3">
-            <h4 className="text-sm font-semibold text-[#4b2635]">
+            <h4 className="text-sm font-semibold text-neutral-900">
               {section.collectionType
                 ? getCollectionLabel(section.collectionType, materialType)
                 : getMaterialLabel(materialType)}
@@ -155,38 +157,17 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
       </div>
 
       {upholsteryMaterialTypes.length > 1 && activeUpholsteryMaterialType ? (
-        <div className="mt-4 grid grid-cols-2 gap-2" role="tablist" aria-label="Material">
-          {upholsteryMaterialTypes.map((materialType) => {
-            const active = materialType === activeUpholsteryMaterialType;
-            const matchingOptions = finishOptions.filter(
-              (finish) => finish.materialType === materialType
-            );
-            const nextFinish =
-              matchingOptions.find(
-                (finish) => resolveCollectionType(finish) === activeCollectionType
-              ) ?? matchingOptions[0];
-
-            return (
-              <button
-                key={`material-tab-${materialType}`}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => {
-                  if (nextFinish) onSetFinish(nextFinish.id, nextFinish);
-                }}
-                className={[
-                  "rounded-full border px-3 py-2 text-xs font-semibold transition",
-                  active
-                    ? "border-[#5a2135] bg-[#5a2135] text-white"
-                    : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400",
-                ].join(" ")}
-              >
-                {materialType}
-              </button>
-            );
-          })}
-        </div>
+        <SegmentedControl
+          label="Material"
+          fill
+          className="mt-4"
+          value={activeUpholsteryMaterialType}
+          onChange={(materialType) => {
+            const nextFinish = firstFinishOf(materialType);
+            if (nextFinish) onSetFinish(nextFinish.id, nextFinish);
+          }}
+          options={upholsteryMaterialTypes.map((value) => ({ value, label: value }))}
+        />
       ) : null}
 
       {activeUpholsteryMaterialType && activeUpholsteryOptions.length > 0

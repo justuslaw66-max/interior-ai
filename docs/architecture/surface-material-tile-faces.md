@@ -83,6 +83,8 @@ physical_specs:
   (`getSurfaceMaterialChevronFailures`). `scripts/test-surface-material-schema.ts` pins the geometry, the face order and the
   painting; `scripts/test-surface-material-physical-scale.ts` pins Tabulae's entries.
 - The pattern controls offer Chevron only to materials that list it (`lib/surface-settings.ts`), with its own preview.
+- **Cards and inspectors** show the swatch, painted laid, for a material that can't be laid straight. Its base colour is one
+  piece's face, which reads as plain wood (`getSurfaceMaterialPreviewSource`, 17 Oct 2026). The renderer still paints the faces.
 
 ## Resolution: the stored faces are deliberately smaller than the originals
 

@@ -9,6 +9,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { getModelAssetStatus } from "@/lib/modelAssetStatus";
 import { AdminStatusBadge } from "../../AdminStatusBadge";
+import { SegmentedControl, type SegmentedControlOption } from "@/components/ui/SegmentedControl";
 
 // Accept objects with the required properties (matches Prisma ModelAsset)
 type Asset = {
@@ -58,6 +59,17 @@ type MaterialDiagnostic = {
 };
 
 type RenderMode = "pbr" | "albedo" | "roughness";
+
+const LIGHTING_OPTIONS: SegmentedControlOption<LightingMode>[] = [
+  { value: "studio", label: "Studio" },
+  { value: "day", label: "Day" },
+  { value: "warm", label: "Warm" },
+];
+const RENDER_MODE_OPTIONS: SegmentedControlOption<RenderMode>[] = [
+  { value: "pbr", label: "PBR" },
+  { value: "albedo", label: "Albedo" },
+  { value: "roughness", label: "Roughness" },
+];
 
 const MATERIAL_TEXTURE_KEYS = [
   "map",
@@ -401,24 +413,7 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
     <div className="relative h-full w-full">
       <div className="absolute left-3 top-3 z-20 flex flex-wrap items-center gap-2 rounded-xl border bg-white/90 p-2 text-xs backdrop-blur">
         <span className="font-semibold">Lighting</span>
-        <button
-          className={`rounded px-2 py-1 ${lightingMode === "studio" ? "bg-black text-white" : "bg-white border"}`}
-          onClick={() => setLightingMode("studio")}
-        >
-          Studio
-        </button>
-        <button
-          className={`rounded px-2 py-1 ${lightingMode === "day" ? "bg-black text-white" : "bg-white border"}`}
-          onClick={() => setLightingMode("day")}
-        >
-          Day
-        </button>
-        <button
-          className={`rounded px-2 py-1 ${lightingMode === "warm" ? "bg-black text-white" : "bg-white border"}`}
-          onClick={() => setLightingMode("warm")}
-        >
-          Warm
-        </button>
+        <SegmentedControl label="Lighting" size="compact" value={lightingMode} onChange={setLightingMode} options={LIGHTING_OPTIONS} />
 
         <label className="ml-2 inline-flex items-center gap-1">
           <input type="checkbox" checked={showBounds} onChange={(e) => setShowBounds(e.target.checked)} />
@@ -446,24 +441,7 @@ export default function ModelViewer({ asset }: { asset: Asset }) {
         </label>
 
         <span className="ml-2 font-semibold">Mode</span>
-        <button
-          className={`rounded px-2 py-1 ${renderMode === "pbr" ? "bg-black text-white" : "bg-white border"}`}
-          onClick={() => setRenderMode("pbr")}
-        >
-          PBR
-        </button>
-        <button
-          className={`rounded px-2 py-1 ${renderMode === "albedo" ? "bg-black text-white" : "bg-white border"}`}
-          onClick={() => setRenderMode("albedo")}
-        >
-          Albedo
-        </button>
-        <button
-          className={`rounded px-2 py-1 ${renderMode === "roughness" ? "bg-black text-white" : "bg-white border"}`}
-          onClick={() => setRenderMode("roughness")}
-        >
-          Roughness
-        </button>
+        <SegmentedControl label="Render mode" size="compact" value={renderMode} onChange={setRenderMode} options={RENDER_MODE_OPTIONS} />
       </div>
 
       <div className="absolute bottom-3 right-3 z-20 w-85 max-h-[70%] overflow-auto rounded-xl border bg-white/90 p-3 text-xs backdrop-blur">

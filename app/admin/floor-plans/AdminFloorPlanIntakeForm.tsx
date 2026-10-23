@@ -2,6 +2,7 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 
 export default function AdminFloorPlanIntakeForm() {
   const router = useRouter();
@@ -69,13 +70,13 @@ export default function AdminFloorPlanIntakeForm() {
             type="file"
           />
         </label>
-        <button
-          className="rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50"
+        <Button
+          variant="primary" size="regular"
           disabled={pending}
           type="submit"
         >
           {pending ? "Processing…" : "Upload and detect"}
-        </button>
+        </Button>
       </div>
       <p className="mt-2 text-xs text-blue-900">
         Uses the same private, owner-scoped source store and detection pipeline as consumer uploads.

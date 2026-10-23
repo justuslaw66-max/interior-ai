@@ -26,6 +26,37 @@ When the local vectorizer read the page, its evidence carries `drawing` (exporte
 
 Without a drawing the trace is `source-strokes-v2`, unchanged. Both the upload's trace (`attachRasterSourceArtwork`, after the vectorizer) and a retrace preview (`previewSourceTrace`, from the retained review extraction of the same frame) use the drawing when the page has one. The clean shapes carry the vectorizer's reading only as drawing: no building meaning or metric scale. Measured on the 13 sharp corpus plans (paper cleared, within 2 px): 98.5 % or more of the page's ink is drawn, and 96.9 % or more of the drawing lies on ink (walls painted grey or hatched, drawn solid, account for the rest).
 
+## Faithful trace (faithful-trace-v1)
+
+J, 22 Oct 2026: "get the app to produce these blurry lines as clean sharp vectors". With `FLOOR_PLAN_FAITHFUL_TRACE=1`
+on the process that runs imports, a clean page is drawn by the faithful trace (`services/floorplan-vectorizer/
+faithful_trace.py`, r6, run by `faithful_drawing.py` after stage 1 and the exporter): what is drawn, copied as clean
+vectors - solid fills as polygons with straight edges, every line, arc and dot fitted at its own width and grey,
+lettering and small marks copied by their outline. Nothing is read as a room, a door or a wall. Its drawing replaces
+stage 1's in the evidence (`version: "faithful-trace-r6"`), with each item's grey as `tone` (0 black - 255 white) and
+no `textBoxes`.
+
+`extractSourceArtwork` takes such a drawing as the trace itself (`source-trace-faithful.ts`): its items become the
+paths (`faithful-<kind>-<n>`) as they are, with their tone. None of the v3 passes run - the drawing is not moved
+against the picture, and no lettering, marks or leftovers are traced from it - because the faithful trace already lies
+on the page's ink and copies the lettering itself. The tone is carried into the source-drawing annotations
+(`tone`, validated 0-255), drawn by the review overlay, the compare wipe and the retrace preview
+(`sourceDrawingInk`), and by the SVG and PDF export; a path without a tone keeps the view's own ink. The retrace
+preview reuses the retained drawing, so it needs no Python.
+
+How the trace is carried: fills one item per polygon, rings wound by nesting depth so the nonzero rule fills them as
+the trace's even-odd rule does; lines carried on by half their width at both ends (the trace draws square caps, the app
+butt caps), lines of one width and grey grouped as separate sub-paths; arcs as cubics of at most 90 degrees; dots as
+filled circles; lighter strokes listed first so darker lines lie over them, light lines through dark fills last. On ten
+test plans, the app's drawing of the trace (drawn as the review overlay draws it) differs from the trace's own SVG, at
+1x and 3x, on at most 0.12 % of the ink pixels by more than 64 grey levels; the differences are that order (a dark band
+drawn over light stipple dots the trace had left on top of it).
+
+Only a clean picture: crisp (stage 1's edge softness at most 1.4) and at most `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS`
+(default 4,000,000; about 400 MB of memory per million pixels, 30-50 s per page on one core). Otherwise, and on a
+failure or timeout (`FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS`, default 240000), the page keeps stage 1's drawing (v3) and
+its notes say why. Stage 1's rooms, walls, openings and scale are unchanged either way.
+
 ## Storage and review
 
 Final artwork uses existing source-drawing annotations with configuration `source-artwork-trace-v1`, M/L/C/Z commands, fills, source dimensions and grouping IDs. Raw extraction candidates, OCR text and semantic proposals remain separate configurations/layers. This is not a second canonical wall model.

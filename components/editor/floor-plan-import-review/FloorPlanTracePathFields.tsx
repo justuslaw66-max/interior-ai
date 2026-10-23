@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { FloorPlanAnnotationV2,FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { editSourceTrace } from "@/lib/floor-plan-source-trace";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
+import { Button } from "@/components/ui/Button";
 export default function FloorPlanTracePathFields({annotation,document,floorId,onChange,onError,disabled}:{
   annotation:FloorPlanAnnotationV2;document:FloorPlanDocumentV2;floorId:string;onChange?:(doc:FloorPlanDocumentV2)=>void;onError:(error:string|null)=>void;disabled:boolean;
 }) {
@@ -18,7 +19,7 @@ export default function FloorPlanTracePathFields({annotation,document,floorId,on
     <label>Y <input aria-label="Trace point Y" type="number" step="0.1" key={`y:${index}:${point.y}`} defaultValue={point.y} className="w-24 border" onBlur={e=>{if(Number.isFinite(e.target.valueAsNumber)&&e.target.valueAsNumber!==point.y)apply(points.map((p,i)=>i===index?{...p,y:e.target.valueAsNumber}:p));}}/></label>
     <div><label>Move X <input aria-label="Move trace X" type="number" step="0.1" className="w-20 border" value={dx} onChange={e=>setDx(e.target.value)}/></label>
       <label>Y <input aria-label="Move trace Y" type="number" step="0.1" className="w-20 border" value={dy} onChange={e=>setDy(e.target.value)}/></label>
-      <button type="button" className="ml-2 rounded border px-2 py-1" onClick={()=>apply(points.map(p=>({x:p.x+Number(dx),y:p.y+Number(dy)})))}>Move selected path</button></div>
-    <button type="button" className="rounded border px-2 py-1" disabled={!undo||undo.after!==document.revisionId} onClick={()=>{if(undo&&undo.after===document.revisionId){onChange?.(undo.before);setUndo(null);}}}>Undo path edit</button>
+      <Button size="compact" className="ml-2" onClick={()=>apply(points.map(p=>({x:p.x+Number(dx),y:p.y+Number(dy)})))}>Move selected path</Button></div>
+    <Button size="compact" disabled={!undo||undo.after!==document.revisionId} onClick={()=>{if(undo&&undo.after===document.revisionId){onChange?.(undo.before);setUndo(null);}}}>Undo path edit</Button>
   </fieldset>;
 }

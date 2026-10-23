@@ -12,10 +12,16 @@ const UNDERLAY_NOTE = "Reference underlay included; source marks are historical.
 const POINTS_PER_MM = 72 / 25.4;
 const xml = (text: string) => text.replace(/[<>&"']/g, (value) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[value] ?? value);
 
+/** Traced source artwork in its own grey (0 black - 255 white), where the trace gave one. */
+const svgTone = (tone: number | undefined) => (tone === undefined ? null : `rgb(${tone},${tone},${tone})`);
+const pdfTone = (tone: number | undefined, fallback: ReturnType<typeof rgb>) => (tone === undefined ? fallback : rgb(tone / 255, tone / 255, tone / 255));
+
 function svgPrimitive(primitive: PlanDrawingPrimitive, scale: number) {
   const id = xml(primitive.id);
   if (primitive.kind === "text") return `<text id="${id}" x="${primitive.point.xMm}" y="${primitive.point.zMm}" stroke="none" text-anchor="middle">${xml(primitive.text)}</text>`;
-  return `<path id="${id}" d="${vectorInkPath(primitive, scale)}" fill="${primitive.fill ? "#454545" : "none"}"${(primitive.role === "wall" || primitive.role === "source_fill") ? ' stroke="none"' : primitive.strokeWidth !== undefined ? ` stroke-width="${primitive.strokeWidth}"` : ""}/>`;
+  const tone = svgTone(primitive.tone);
+  const toned = tone && !primitive.fill ? ` stroke="${tone}"` : "";
+  return `<path id="${id}" d="${vectorInkPath(primitive, scale)}" fill="${primitive.fill ? tone ?? "#454545" : "none"}"${(primitive.role === "wall" || primitive.role === "source_fill") ? ' stroke="none"' : primitive.strokeWidth !== undefined ? ` stroke-width="${primitive.strokeWidth}"` : ""}${toned}/>`;
 }
 
 export async function exportFloorPlanVectorSvg(drawing: PlanVectorDrawing, options: PlanVectorExportOptions, resources: PlanVectorExportResources = {}) {
@@ -52,7 +58,8 @@ export async function exportFloorPlanVectorPdf(drawing: PlanVectorDrawing, optio
     if (primitive.kind === "path") {
       page.drawSvgPath(vectorInkPath(primitive, layout.scale), { x: layout.offsetX * POINTS_PER_MM, y: (layout.heightMm - layout.offsetY) * POINTS_PER_MM,
         scale: POINTS_PER_MM / layout.scale, borderWidth: primitive.role === "wall" || primitive.role === "source_fill" ? 0 : primitive.strokeWidth ?? 0.18 * layout.scale,
-        borderColor: primitive.role === "wall" || primitive.role === "source_fill" ? undefined : rgb(0.13, 0.13, 0.13), color: primitive.fill ? rgb(0.27, 0.27, 0.27) : undefined });
+        borderColor: primitive.role === "wall" || primitive.role === "source_fill" ? undefined : pdfTone(primitive.tone, rgb(0.13, 0.13, 0.13)),
+        color: primitive.fill ? pdfTone(primitive.tone, rgb(0.27, 0.27, 0.27)) : undefined });
     } else {
       const size = 2.6 * POINTS_PER_MM;
       page.drawText(primitive.text, { x: (layout.offsetX + primitive.point.xMm / layout.scale) * POINTS_PER_MM - font.widthOfTextAtSize(primitive.text, size) / 2,

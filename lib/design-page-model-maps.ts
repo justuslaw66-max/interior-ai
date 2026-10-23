@@ -139,7 +139,7 @@ export type JaronConfigurationGroup = {
 export const JARON_CONFIGURATION_GROUPS: JaronConfigurationGroup[] = [
   {
     key: "standard",
-    label: "STANDARD",
+    label: "Standard",
     options: [
       {
         key: "3-seater",
@@ -161,7 +161,7 @@ export const JARON_CONFIGURATION_GROUPS: JaronConfigurationGroup[] = [
   },
   {
     key: "l-shaped",
-    label: "L-SHAPED",
+    label: "L-shaped",
     options: [
       {
         key: "chaise-sectional",
@@ -183,7 +183,7 @@ export const JARON_CONFIGURATION_GROUPS: JaronConfigurationGroup[] = [
   },
   {
     key: "armchair",
-    label: "ARMCHAIR",
+    label: "Armchair",
     options: [
       {
         key: "recliner-armchair",
@@ -243,7 +243,7 @@ export type AuburnConfigurationGroup = {
 export const AUBURN_CONFIGURATION_GROUPS: AuburnConfigurationGroup[] = [
   {
     key: "standard",
-    label: "STANDARD",
+    label: "Standard",
     options: [
       {
         key: "3-seater",
@@ -277,7 +277,7 @@ export const AUBURN_CONFIGURATION_GROUPS: AuburnConfigurationGroup[] = [
   },
   {
     key: "curve",
-    label: "CURVE",
+    label: "Curve",
     options: [
       {
         key: "curve-3-seater",
@@ -311,7 +311,7 @@ export const AUBURN_CONFIGURATION_GROUPS: AuburnConfigurationGroup[] = [
   },
   {
     key: "sectional",
-    label: "SECTIONAL",
+    label: "Sectional",
     options: [
       {
         key: "chaise-sectional",

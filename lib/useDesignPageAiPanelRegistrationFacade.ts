@@ -2,6 +2,7 @@
 
 import { useCallback, type MutableRefObject } from "react";
 
+import type { RoomWithSurfaces } from "@/lib/floor-plan-surface-checks";
 import type { DesignItem } from "@/lib/room-types";
 import {
   useDesignPageAiLayout,
@@ -23,6 +24,7 @@ export type UseDesignPageAiPanelRegistrationFacadeInput = {
     panel: DesignPagePanelActionsState;
     notes: {
       designerMode: boolean;
+      activeRoom: RoomWithSurfaces | null;
     };
   };
   actions: {
@@ -30,6 +32,7 @@ export type UseDesignPageAiPanelRegistrationFacadeInput = {
     panel: Omit<PanelActionAdapters, "runAiLayout" | "regenerateAiLayout">;
     notes: {
       addItem: (productId: string, position: [number, number, number]) => void;
+      applyFloorMaterialToRoom: (materialId: string, roomId?: string | null) => void;
     };
   };
   configuration: UseDesignPageAiLayoutParams["configuration"];
@@ -92,6 +95,7 @@ export function useDesignPageAiPanelRegistrationFacade({
       designId: configuration.designId,
       designerMode: state.notes.designerMode,
       authenticated: configuration.isAuthenticated,
+      room: state.notes.activeRoom,
     },
     actions: {
       getItems: getAiNotesItems,
@@ -101,6 +105,7 @@ export function useDesignPageAiPanelRegistrationFacade({
       commitItems: (nextItems, actionName) =>
         actions.layout.commitItems(nextItems, actionName),
       showToast: actions.layout.showRuleToast,
+      applyFloorMaterialToRoom: actions.notes.applyFloorMaterialToRoom,
     },
   });
 

@@ -223,14 +223,14 @@ export function registerWorkspaceTests() {
     await selectWorkspace(page, "furnish");
     await expect(page.getByTestId("ai-notes-section")).toHaveCount(0);
 
-    // An empty room has nothing to review.
+    // An empty room has nothing to review: no products, and only the starter floor (18 Oct: finishes alone count).
     await clickWithFallback(page.getByTestId("editor-workflow-ai"));
     const section = page.getByTestId("ai-notes-section");
     await expect(section).toBeVisible({ timeout: 10_000 });
     await expect(section.getByRole("heading", { name: "AI notes" })).toBeVisible();
     const generate = section.getByTestId("ai-notes-generate");
     await expect(generate).toBeDisabled();
-    await expect(section).toContainText("Add products to the room first.");
+    await expect(section).toContainText("Add products or a floor or wall finish to the room first.");
 
     // With a product in the room, the notes open in their dialog.
     await clickWithFallback(page.getByTestId("furnish-step-back-to-products"));

@@ -11,6 +11,8 @@ import CatalogItemRelatedList from "./CatalogItemRelatedList";
 import CatalogComfortProfile from "./CatalogComfortProfile";
 import { CatalogItemDrawerAddSection, type CatalogItemDrawerFavourite } from "./CatalogItemDrawerAddSection";
 import LazyImage from "@/components/common/LazyImage";
+import { Button } from "@/components/ui/Button";
+import { ChoiceTile } from "@/components/ui/ChoiceTile";
 import { useCatalogDrawerDialog, type CatalogDrawerFocusRestorationRequest } from "./useCatalogDrawerFocusRestoration";
 
 type RelatedSection = {
@@ -142,15 +144,9 @@ export default function CatalogItemDrawer({
             Review exact variant
           </div>
         </div>
-        <button
-          ref={closeButtonRef}
-          type="button"
-          onClick={requestClose}
-          data-testid="catalog-item-drawer-close"
-          className="rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
-        >
+        <Button ref={closeButtonRef} size="compact" onClick={requestClose} data-testid="catalog-item-drawer-close">
           Close
-        </button>
+        </Button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
@@ -282,45 +278,24 @@ export default function CatalogItemDrawer({
                 const compareAt = formatPrice(option.compareAtPriceHint);
                 const savings = formatPrice(option.savingsHint);
                 return (
-                  <button
+                  <ChoiceTile
                     key={option.id}
-                    type="button"
+                    selected={isSelected}
                     onClick={() => setSelectedPurchaseOptionId(option.id)}
-                    aria-pressed={isSelected}
-                    className={[
-                      "rounded-xl border p-3 text-left transition-colors",
-                      isSelected
-                        ? "border-neutral-900 bg-neutral-950 text-white"
-                        : "border-neutral-200 bg-neutral-50 text-neutral-800 hover:border-neutral-300",
-                    ].join(" ")}
+                    className="p-3 text-left"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-semibold">{option.label}</span>
-                      <span
-                        className={[
-                          "rounded-full px-2 py-0.5 text-xs font-semibold",
-                          isSelected ? "bg-white/15 text-white" : "bg-white text-neutral-600",
-                        ].join(" ")}
-                      >
+                      <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-600">
                         x{option.quantity}
                       </span>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
                       {price ? <span className="font-semibold">{price}</span> : null}
-                      {compareAt ? (
-                        <span
-                          className={isSelected ? "text-white/60 line-through" : "text-neutral-400 line-through"}
-                        >
-                          {compareAt}
-                        </span>
-                      ) : null}
-                      {savings ? (
-                        <span className={isSelected ? "text-emerald-100" : "text-emerald-700"}>
-                          Save {savings}
-                        </span>
-                      ) : null}
+                      {compareAt ? <span className="text-neutral-400 line-through">{compareAt}</span> : null}
+                      {savings ? <span className="text-emerald-700">Save {savings}</span> : null}
                     </div>
-                  </button>
+                  </ChoiceTile>
                 );
               })}
             </div>
@@ -374,21 +349,15 @@ export default function CatalogItemDrawer({
                 {configurationOptions.map((option) => {
                   const isSelected = option.productId === detail.id;
                   return (
-                    <button
+                    <ChoiceTile
                       key={option.productId}
-                      type="button"
+                      selected={isSelected}
                       onClick={() => onSetConfiguration?.(option.productId)}
-                      aria-pressed={isSelected}
                       data-testid={`catalog-configuration-${option.productId}`}
-                      className={[
-                        "overflow-hidden rounded-xl border text-left transition-colors",
-                        isSelected
-                          ? "border-neutral-900 bg-neutral-900 text-white"
-                          : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300",
-                      ].join(" ")}
+                      className="overflow-hidden text-left"
                     >
                       {option.thumbUrl ? (
-                        <div className={isSelected ? "bg-white" : "bg-neutral-50"}>
+                        <div className="bg-neutral-50">
                           <LazyImage
                             src={option.thumbUrl}
                             alt=""
@@ -398,11 +367,9 @@ export default function CatalogItemDrawer({
                       ) : null}
                       <div className="px-3 py-2">
                         <div className="text-sm font-semibold">{option.label}</div>
-                        <div className={isSelected ? "mt-0.5 text-xs text-white/70" : "mt-0.5 text-xs text-neutral-500"}>
-                          {option.dimsLabel}
-                        </div>
+                        <div className="mt-0.5 text-xs text-neutral-500">{option.dimsLabel}</div>
                       </div>
-                    </button>
+                    </ChoiceTile>
                   );
                 })}
               </div>
@@ -421,20 +388,14 @@ export default function CatalogItemDrawer({
                 {detail.sizeOptions.map((size) => {
                   const isSelected = size.id === detail.activeSizeId;
                   return (
-                    <button
+                    <ChoiceTile
                       key={size.id}
-                      type="button"
+                      selected={isSelected}
                       onClick={() => onSetSize?.(size.id)}
-                      aria-pressed={isSelected}
-                      className={[
-                        "rounded-xl border px-3 py-2 text-left text-sm font-semibold transition-colors",
-                        isSelected
-                          ? "border-neutral-900 bg-neutral-900 text-white"
-                          : "border-neutral-200 text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50",
-                      ].join(" ")}
+                      className="px-3 py-2 text-left text-sm font-semibold"
                     >
                       {size.label}
-                    </button>
+                    </ChoiceTile>
                   );
                 })}
               </div>

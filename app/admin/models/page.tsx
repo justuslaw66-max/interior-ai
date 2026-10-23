@@ -15,6 +15,7 @@ import {
   parseModelListFilters,
   type ModelListFilters,
 } from "./models-list";
+import { Button } from "@/components/ui/Button";
 
 const SECTION = adminSection("/admin/models");
 
@@ -40,9 +41,9 @@ function ModelFilters({ filters }: { filters: ModelListFilters }) {
         Search model ID or file
         <input className={FIELD} defaultValue={filters.query} maxLength={120} name="q" />
       </label>
-      <button className="h-10 self-end rounded-lg bg-neutral-900 px-4 text-sm font-semibold text-white">
+      <Button variant="primary" size="regular" type="submit" className="h-10 self-end">
         Apply filters
-      </button>
+      </Button>
     </form>
   );
 }

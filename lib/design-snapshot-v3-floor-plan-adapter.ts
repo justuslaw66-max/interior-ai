@@ -260,7 +260,7 @@ function buildSyntheticCatalog(
         return {
           id: room.id,
           name: room.name,
-          room_type: room.roomType,
+          room_type: room.roomType === "balcony" ? "custom" : room.roomType,
           shape: room.planPolygon ? "custom_polygon" as const : "rectangle" as const,
           width: room.geometry.width,
           depth: room.geometry.depth,

@@ -2470,6 +2470,16 @@ function unownedRawAbsoluteReportFields(
   return result;
 }
 
+// Under GitHub Actions, Playwright copies the pull request's title into config.metadata.ci.prTitle. A title is
+// text someone typed, not evidence: on 16 Oct 2026 "/api/catalog lists …" read as an absolute path and failed
+// this check. The portable report leaves the title out, so the path checks never see it.
+function withoutPullRequestTitle(report) {
+  if (typeof report?.config?.metadata?.ci?.prTitle !== "string") return report;
+  const copy = structuredClone(report);
+  delete copy.config.metadata.ci.prTitle;
+  return copy;
+}
+
 function canonicalizeExternalRuntimeReport({
   repositoryRoot,
   report,
@@ -2556,7 +2566,8 @@ function canonicalizeExternalRuntimeReport({
   }
   const outputFile = reporters[jsonReporterIndex][1].outputFile;
   const markerPath = reporters[startReporterIndex][1].markerPath;
-  const rawUnownedAbsoluteFields = unownedRawAbsoluteReportFields(report, {
+  const evidenceReport = withoutPullRequestTitle(report);
+  const rawUnownedAbsoluteFields = unownedRawAbsoluteReportFields(evidenceReport, {
     repositoryRoots,
     explicitlyOwnedFields: new Map([
       [
@@ -2616,7 +2627,7 @@ function canonicalizeExternalRuntimeReport({
   ) {
     throw new Error("runtime report metadata contradicts its authorization owner");
   }
-  const portableReport = replaceRepositoryPaths(report, repositoryRoots);
+  const portableReport = replaceRepositoryPaths(evidenceReport, repositoryRoots);
   portableReport.config.reporter[jsonReporterIndex][1].outputFile =
     reportRelativePath;
   portableReport.config.reporter[startReporterIndex][1].markerPath =

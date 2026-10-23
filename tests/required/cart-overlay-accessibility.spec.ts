@@ -68,7 +68,14 @@ function watchCatalogRequests(page: Page) {
   });
   page.on("requestfinished", async (request) => {
     const path = watched(request.url());
-    if (path) step(`${path} answered ${(await request.response())?.status() ?? "without a response"}`);
+    if (!path) return;
+    try {
+      step(`${path} answered ${(await request.response())?.status() ?? "without a response"}`);
+    } catch {
+      // The test ended, and closed the page, while this waited. The timeline is only a record,
+      // so that mustn't fail the test: on #162's CI (16 Oct) it failed WebKit's "Removing the only
+      // product" after every check had passed.
+    }
   });
   page.on("requestfailed", (request) => {
     const path = watched(request.url());

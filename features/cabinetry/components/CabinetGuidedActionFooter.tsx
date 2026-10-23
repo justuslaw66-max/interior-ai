@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 import type { CabinetryStudioProps } from "./CabinetryStudio.contract";
 import type { CabinetStudioBusyAction } from "./CabinetStudioOutputsPanel";
@@ -51,23 +52,21 @@ export function CabinetGuidedActionFooter({
   return (
     <footer className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-t border-neutral-200 bg-white px-4 py-2 sm:px-6">
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <Button
           data-testid="cabinet-guided-back"
-          className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-neutral-300 px-3 text-sm font-semibold text-neutral-700 hover:border-neutral-500 disabled:cursor-not-allowed disabled:opacity-35"
+          size="regular"
           disabled={currentStep === 0}
           onClick={onBack}
         >
           <ChevronLeft className="h-4 w-4" /> Back
-        </button>
+        </Button>
         {isProWorkspace ? (
-          <button
-            type="button"
-            className="min-h-10 rounded-xl px-3 text-sm font-semibold text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950 sm:hidden"
+          <Button
+            variant="quiet" size="regular" className="sm:hidden"
             onClick={onOpenDetailed}
           >
             Detailed editor
-          </button>
+          </Button>
         ) : null}
       </div>
 
@@ -91,42 +90,38 @@ export function CabinetGuidedActionFooter({
           </span>
         ) : null}
         {currentStep < lastStep ? (
-          <button
-            type="button"
+          <Button
             data-testid="cabinet-guided-next"
-            className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-neutral-950 px-4 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
+            variant="primary" size="regular"
             onClick={onNext}
           >
             Continue <ChevronRight className="h-4 w-4" />
-          </button>
+          </Button>
         ) : (
           <>
             {isProWorkspace ? (
-              <button
-                type="button"
+              <Button
                 data-testid="cabinet-open-outputs"
-                className="min-h-10 rounded-xl border border-neutral-300 px-4 text-sm font-semibold text-neutral-700"
+                size="regular"
                 onClick={onOpenOutputs}
               >
                 Export…
-              </button>
+              </Button>
             ) : null}
             {canPlaceInPlan ? (
-              <button
-                type="button"
+              <Button
                 data-testid="cabinet-save-as-copy"
-                className="min-h-10 rounded-xl border border-neutral-300 px-4 text-sm font-semibold text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+                size="regular"
                 disabled={!valid || interactionDisabled}
                 onClick={onSaveAsCopy}
               >
                 {busyAction === "copy" ? "Copying…" : "Save as copy"}
-              </button>
+              </Button>
             ) : null}
             {mode === "create" || (!canPlaceInPlan && canSaveDefinition) ? (
-              <button
-                type="button"
+              <Button
                 data-testid="cabinet-save-definition"
-                className="min-h-10 rounded-xl border border-neutral-300 px-4 text-sm font-semibold text-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+                size="regular"
                 disabled={!valid || interactionDisabled}
                 onClick={onSaveDefinition}
               >
@@ -135,17 +130,16 @@ export function CabinetGuidedActionFooter({
                   : mode === "create"
                     ? "Save as template"
                     : "Save built-in"}
-              </button>
+              </Button>
             ) : null}
             {canPlaceInPlan ? (
-              <button
-                type="button"
+              <Button
                 data-testid={
                   mode === "edit"
                     ? "cabinet-update-placement"
                     : "cabinet-place-in-plan"
                 }
-                className="min-h-10 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+                variant="primary" size="regular"
                 disabled={!valid || interactionDisabled}
                 onClick={onPlaceInPlan}
               >
@@ -154,7 +148,7 @@ export function CabinetGuidedActionFooter({
                   : mode === "edit"
                     ? "Update in plan"
                     : "Place in plan"}
-              </button>
+              </Button>
             ) : null}
           </>
         )}

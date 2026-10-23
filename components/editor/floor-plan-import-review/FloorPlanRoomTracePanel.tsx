@@ -10,6 +10,7 @@ import {
   type ReviewSourcePoint,
 } from "@/lib/floor-plan-import-review-geometry";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
+import { Button } from "@/components/ui/Button";
 
 type FloorPlanRoomTracePanelProps = {
   document: FloorPlanDocumentV2;
@@ -72,16 +73,15 @@ export default function FloorPlanRoomTracePanel({
             Set scale above before tracing rooms.
           </div>
         ) : null}
-        <button
-          className={`${control} w-full font-semibold`}
+        <Button
+          size="compact" pressed={pickingRoom} className="w-full"
           disabled={disabled || !calibration}
           onClick={() => onPickingRoomChange(!pickingRoom)}
-          type="button"
         >
           {pickingRoom
             ? "Selecting corners — click on the plan"
             : "Start outlining a room"}
-        </button>
+        </Button>
         <div className="rounded-md bg-white p-2 text-xs text-neutral-700">
           {pickingRoom
             ? roomPoints.length < 3
@@ -90,25 +90,23 @@ export default function FloorPlanRoomTracePanel({
             : "The selected corners will appear directly on the plan."}
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <button
-            className={control}
+          <Button
+            size="compact"
             disabled={disabled || !roomPoints.length}
             onClick={() => onRoomPointsChange(roomPoints.slice(0, -1))}
-            type="button"
           >
             Undo last point
-          </button>
-          <button
-            className={control}
+          </Button>
+          <Button
+            size="compact"
             disabled={disabled || !roomPoints.length}
             onClick={() => onRoomPointsChange([])}
-            type="button"
           >
             Start over
-          </button>
+          </Button>
         </div>
-        <button
-          className="rounded-md bg-neutral-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+        <Button
+          variant="primary" size="compact"
           disabled={
             disabled ||
             !calibration ||
@@ -139,10 +137,9 @@ export default function FloorPlanRoomTracePanel({
               onError(userFacingErrorMessage(cause, "The traced room could not be added."));
             }
           }}
-          type="button"
         >
           Add this room
-        </button>
+        </Button>
         <details className="rounded-md border border-emerald-200 bg-white p-2">
           <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
             Room details (optional)

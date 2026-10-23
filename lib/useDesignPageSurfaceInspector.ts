@@ -20,7 +20,7 @@ import {
 import {
   SURFACE_MATERIAL_RENDER_REGISTRY,
   getRuntimeSurfaceMaterialById,
-  getSurfaceMaterialTextureSource,
+  getSurfaceMaterialPreviewSource,
 } from "@/lib/surface-material-runtime";
 import {
   DEFAULT_FLOOR_JOINT_COLOR,
@@ -149,7 +149,7 @@ export function useDesignPageSurfaceInspectorContext({
     (floorInspectorSurfaceMaterial
       ? getFlooringInspectorProductName(floorInspectorSurfaceMaterial)
       : null) ?? floorInspectorStarterMaterial.name;
-  const floorInspectorTextureSource = getSurfaceMaterialTextureSource(
+  const floorInspectorTextureSource = getSurfaceMaterialPreviewSource(
     floorInspectorSurfaceMaterial
   );
   const floorInspectorMaterialFamily = floorInspectorSurfaceMaterial
@@ -311,7 +311,7 @@ export function useDesignPageSurfaceInspectorContext({
           : "No ceiling paint"
       : floorInspectorDisplayName;
   const surfaceInspectorTextureSource = surfaceInspectorSurfaceMaterial
-    ? getSurfaceMaterialTextureSource(surfaceInspectorSurfaceMaterial)
+    ? getSurfaceMaterialPreviewSource(surfaceInspectorSurfaceMaterial)
     : null;
   const surfaceInspectorMaterialFamily = surfaceInspectorSurfaceMaterial
     ? formatFlooringInspectorValue(

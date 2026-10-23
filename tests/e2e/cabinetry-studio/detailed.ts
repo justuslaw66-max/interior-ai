@@ -1,9 +1,12 @@
 import { test, expect } from "../fixtures";
-import { dismissBlockingPrompt, mockPlan, openDetailedProStudio } from "./helpers";
+import { dismissBlockingPrompt, mockPlan, openDetailedProStudio, startInMillimetres } from "./helpers";
 
 export function registerDetailedTests() {
   test.describe("Custom Millwork Studio detailed", () => {
     test.setTimeout(600000);
+    test.beforeEach(async ({ page }) => {
+      await startInMillimetres(page);
+    });
 
     test("Pro designer can enter Detailed mode and validate the template catalog", async ({
       page,

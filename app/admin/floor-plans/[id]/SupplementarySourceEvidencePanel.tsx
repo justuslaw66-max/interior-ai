@@ -8,6 +8,8 @@ import {
   requestFloorPlanAdminJobMutation,
   subscribeToFloorPlanAdminJobUpdates,
 } from "@/lib/floor-plan-admin-review-events";
+import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
 
 type RenderedPage = {
   pageNumber: number;
@@ -230,14 +232,13 @@ export default function SupplementarySourceEvidencePanel({
               onChange={(event) => setFile(event.target.files?.[0] ?? null)}
               type="file"
             />
-            <button
-              className="rounded-lg bg-black px-3 py-2 text-xs font-medium text-white disabled:opacity-40"
+            <Button
+              variant="primary" size="compact"
               disabled={!file || Boolean(pending)}
               onClick={upload}
-              type="button"
             >
               {pending === "upload" ? "Rendering…" : "Upload evidence"}
-            </button>
+            </Button>
           </div>
         ) : (
           <span className="rounded-full bg-neutral-100 px-2 py-1 text-xs">Immutable</span>
@@ -278,12 +279,8 @@ export default function SupplementarySourceEvidencePanel({
                 {pages.length > 1 ? (
                   <div className="mt-2 flex max-h-24 flex-wrap gap-1 overflow-auto">
                     {pages.map((page) => (
-                      <button
-                        className={`rounded border px-1.5 py-1 text-xs ${
-                          preview?.pageNumber === page.pageNumber
-                            ? "border-blue-600 bg-blue-50 text-blue-700"
-                            : ""
-                        }`}
+                      <Chip
+                        pressed={preview?.pageNumber === page.pageNumber}
                         key={page.pageNumber}
                         onClick={() =>
                           setSelectedPages((current) => ({
@@ -291,10 +288,9 @@ export default function SupplementarySourceEvidencePanel({
                             [source.id]: page.pageNumber,
                           }))
                         }
-                        type="button"
                       >
                         Page {page.pageNumber}
-                      </button>
+                      </Chip>
                     ))}
                   </div>
                 ) : null}
@@ -307,22 +303,20 @@ export default function SupplementarySourceEvidencePanel({
                   >
                     Open source
                   </a>
-                  <button
-                    className="rounded border px-2 py-1 text-xs font-medium disabled:opacity-40"
+                  <Button
+                    size="compact"
                     disabled={immutable || Boolean(source.attachedToCandidateAt) || Boolean(pending)}
                     onClick={() => attach(source)}
-                    type="button"
                   >
                     {source.attachedToCandidateAt ? "Attached to candidate" : "Attach to candidate"}
-                  </button>
-                  <button
-                    className="rounded border border-red-200 px-2 py-1 text-xs font-medium text-red-700 disabled:opacity-40"
+                  </Button>
+                  <Button
+                    variant="danger" size="compact"
                     disabled={immutable || Boolean(pending)}
                     onClick={() => remove(source)}
-                    type="button"
                   >
                     Remove
-                  </button>
+                  </Button>
                 </div>
               </div>
             </article>

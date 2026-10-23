@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 type EnumFieldMap = {
   shape?: string[];
@@ -404,9 +405,7 @@ export default function CatalogAuthoringEditor({ initialDb, initialYaml, initial
       </section>
 
       <div className="flex items-center gap-3">
-        <button type="button" className="rounded bg-black px-3 py-2 text-sm text-white disabled:opacity-50" disabled={saving} onClick={save}>
-          {saving ? "Saving..." : "Save catalog authoring"}
-        </button>
+        <Button variant="primary" size="regular" disabled={saving} onClick={save}>{saving ? "Saving..." : "Save catalog authoring"}</Button>
         {message && <div className="text-sm text-neutral-600">{message}</div>}
       </div>
     </div>

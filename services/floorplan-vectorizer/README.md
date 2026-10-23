@@ -5,6 +5,12 @@ Run by `PythonFloorPlanVectorizerProvider` (`lib/floor-plan-imports/vectorizer-e
     python3 floorplan_vectorize.py page.png out/page --px-size     # image → model JSON (+ SVG, cleaned work image)
     python3 app_evidence.py out/page.json out/page.evidence.json   # model → evidence in the import pipeline's types
 
+With the faithful trace on (`FLOOR_PLAN_FAITHFUL_TRACE=1`) a third program runs after them, on the page itself:
+
+    python3 faithful_drawing.py page.png out/page.faithful.json --max-pixels=4000000   # clean page → the faithful drawing
+
+See "The faithful trace" below.
+
 Off unless `FLOOR_PLAN_VECTORIZER_ENABLED=1`. Other settings: `FLOOR_PLAN_VECTORIZER_DIR` (default
 `<cwd>/services/floorplan-vectorizer`), `FLOOR_PLAN_VECTORIZER_PYTHON` (default `python3`),
 `FLOOR_PLAN_VECTORIZER_TIMEOUT_MS` (default 420000, 10 s – 15 min), `FLOOR_PLAN_VECTORIZER_EXPORT_FLOOR_MS` (the least
@@ -81,6 +87,24 @@ When the runtime is missing or a program fails, an import still completes from t
 provider fails soft, the page's diagnostics carry `vectorizer.status: "failed"` with the last line the program wrote,
 and its notes say `Local vectorizer unavailable: …` (a missing interpreter reads `spawn … ENOENT`; a missing
 `tesseract` reads `the tesseract program is not on PATH …`). `npm run test:floor-plan-vectorizer-evidence` covers both.
+
+## The faithful trace
+
+`faithful_trace.py` (version r6) copies a clean plan as it is drawn, as clean vectors: solid fills as polygons, every
+line, arc and dot at its own width and grey, lettering and small marks by their outline. It reads nothing as a room, a
+door or a wall. `faithful_drawing.py` runs it on the page and writes it in the evidence's `drawing` form
+(`version: "faithful-trace-r6"`, items with a `tone`, no `textBoxes`); the provider puts it in place of stage 1's
+drawing, and the app draws it as the page's traced drawing as it is (`faithful-trace-v1`: nothing is moved against the
+picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and the rest of the evidence are unchanged.
+
+- Off unless `FLOOR_PLAN_FAITHFUL_TRACE=1` on the process that runs imports (with the vectorizer on).
+- Only a clean picture: crisp edges (stage 1's own softness measure, at most 1.4; a blurred scan or photo keeps stage
+  1's drawing) and at most `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS` pixels (default 4,000,000). The trace works at twice
+  the picture's size: about 400 MB of memory per million pixels of the picture (700–760 MB for a 1,400 px brochure
+  page) and 30–50 s per page on one core. A page it leaves, a failure or a timeout (`FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS`,
+  default 240000) keeps stage 1's drawing, and the page's notes say why (`Faithful trace not used: …`,
+  `Faithful trace unavailable: …`).
+- It needs numpy, OpenCV 4 and scikit-image from `requirements.txt`; not tesseract.
 
 Everything runs on the worker; page bytes are written to a private temporary folder that is removed afterwards.
 Development history, scoring tools, truth files and test plans live in the main checkout's copy of this folder

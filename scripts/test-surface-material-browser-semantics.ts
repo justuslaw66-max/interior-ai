@@ -163,6 +163,14 @@ assert.match(
   ),
   "browser swatches must preserve the canonical base-color texture identity"
 );
+// A chevron can't be laid straight, so its card shows its swatch, painted laid, not one piece's face (17 Oct 2026).
+const chevronCards = records.filter((record) => record.rendering.available_pattern_layouts?.includes("chevron"));
+assert.equal(chevronCards.length, 8, "Tabulae's 8 chevrons are in the browser catalog");
+for (const chevron of chevronCards) {
+  const style = getSurfaceMaterialSwatchStyle(chevron);
+  assert.equal(style.backgroundImage, `url("${chevron.texture_assets.swatch_url}")`, `${chevron.surface_material.material_id}: laid swatch`);
+  assert.equal(style.backgroundSize, "cover", `${chevron.surface_material.material_id}: the swatch fills the card`);
+}
 
 const panelSource = readFileSync("components/editor/DesignControlsPlanPanel.tsx", "utf8");
 assert.match(

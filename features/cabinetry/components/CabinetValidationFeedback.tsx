@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/Button";
 import {
   formatCabinetMeasurement,
   formatCabinetMeasurementTokens,
@@ -71,16 +72,15 @@ export function ValidationIssueCard({
       {issue.fixes?.length ? (
         <div className="mt-3 flex flex-wrap gap-2 border-t border-current/10 pt-3">
           {issue.fixes.map((fix) => (
-            <button
+            <Button
               key={fix.id}
-              type="button"
               data-testid="cabinet-validation-fix"
               data-validation-fix-id={fix.id}
-              className="rounded-lg bg-white px-2.5 py-1.5 font-semibold text-neutral-900 shadow-sm ring-1 ring-black/10 hover:bg-neutral-50"
+              size="compact"
               onClick={() => onRequestFix(issue, fix)}
             >
               {formatFeedback(fix.label)}
-            </button>
+            </Button>
           ))}
         </div>
       ) : null}
@@ -179,22 +179,20 @@ export function ValidationFixPreview({
         </div>
       </div>
       <div className="mt-3 flex flex-wrap justify-end gap-2">
-        <button
-          type="button"
+        <Button
           data-testid="cabinet-fix-preview-cancel"
-          className="rounded-lg border border-blue-300 bg-white px-3 py-2 text-xs font-semibold"
+          size="compact"
           onClick={onCancel}
         >
           Cancel
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           data-testid="cabinet-fix-preview-apply"
-          className="rounded-lg bg-blue-700 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-800"
+          variant="primary" size="compact"
           onClick={onApply}
         >
           Apply change
-        </button>
+        </Button>
       </div>
     </div>
   );

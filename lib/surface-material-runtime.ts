@@ -6,6 +6,7 @@ import type {
   SurfaceMaterialTextureSource,
 } from "./surface-material-runtime-types";
 import { expandSurfaceTextureFaces } from "./surface-texture-face-run";
+import { decodeSurfaceSuitability } from "./surface-material-suitability";
 
 export type {
   SurfaceMaterialCatalogRecord,
@@ -64,6 +65,7 @@ export function decodeSurfaceMaterialRenderTuple(
       publish_status: tuple[29],
       publish_blockers: tuple[30],
     },
+    ...(tuple[34] ? { suitability: decodeSurfaceSuitability(tuple[34]) } : {}),
   };
 }
 
@@ -92,6 +94,19 @@ export function getSurfaceMaterialTextureSource(
   const swatchUrl = material.texture_assets.swatch_url?.trim();
   if (swatchUrl) return { url: swatchUrl, kind: "swatch" };
   return null;
+}
+
+/**
+ * The picture a card or an inspector shows. A material that can't be laid straight (Tabulae's chevrons) shows its swatch,
+ * which is painted laid: its base colour is one piece's face, which reads as plain wood. Others show what the renderer uses.
+ */
+export function getSurfaceMaterialPreviewSource(
+  material: SurfaceMaterialRenderInfo | null
+): SurfaceMaterialTextureSource | null {
+  const layouts = material?.rendering.available_pattern_layouts ?? [];
+  const swatchUrl = material?.texture_assets.swatch_url?.trim();
+  if (swatchUrl && layouts.length > 0 && !layouts.includes("straight")) return { url: swatchUrl, kind: "swatch" };
+  return getSurfaceMaterialTextureSource(material);
 }
 
 export function shouldUseSingleSurfaceSwatch(

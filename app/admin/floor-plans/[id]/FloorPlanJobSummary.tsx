@@ -1,6 +1,7 @@
 import { describeAdminStatus } from "../../admin-status";
 import { formatBytes, REVIEW_STAGES } from "./floorPlanReviewModel";
 import type { AdminJob } from "./floorPlanReviewTypes";
+import { Button } from "@/components/ui/Button";
 
 export function FloorPlanJobSummary({
   job,
@@ -38,14 +39,13 @@ export function FloorPlanJobSummary({
           >
             Open source
           </a>
-          <button
-            className="rounded-lg border px-3 py-2 text-xs font-medium disabled:opacity-50"
+          <Button
+            size="compact"
             disabled={Boolean(pending)}
             onClick={onRefresh}
-            type="button"
           >
             {pending === "reload" ? "Refreshing…" : "Refresh"}
-          </button>
+          </Button>
         </div>
       </div>
       <div className="mt-5 overflow-x-auto pb-2">

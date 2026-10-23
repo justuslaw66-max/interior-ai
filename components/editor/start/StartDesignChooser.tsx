@@ -7,6 +7,7 @@ import { useEditorDialogLifecycle } from "@/components/editor/design-system/useE
 import { StartChoiceCards } from "@/components/editor/start/StartChoiceCards";
 import { StartTemplateGallery } from "@/components/editor/start/StartTemplateGallery";
 import { UploadSignInDialog, type UploadSignInDialogProps } from "@/components/editor/start/UploadSignInDialog";
+import { Button } from "@/components/ui/Button";
 import type { StartTemplateCard } from "@/lib/start-design";
 import { CLIENT_PREVIEW_FALLBACK_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
 
@@ -107,11 +108,10 @@ export function StartDesignChooser(props: StartDesignChooserProps) {
               Choose how to begin. You can change the rooms and products at any time.
             </p>
           </div>
-          <button ref={closeButtonRef} type="button" aria-label="Close" data-testid="start-design-close"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-neutral-700 outline-hidden hover:bg-neutral-200/60 focus-visible:ring-2 focus-visible:ring-blue-600"
+          <Button ref={closeButtonRef} variant="quiet" size="icon" aria-label="Close" data-testid="start-design-close"
             onClick={requestClose}>
             <X aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />
-          </button>
+          </Button>
         </div>
         <StartChoiceCards isAuthenticated={isAuthenticated} ready={props.ready} onTemplates={showTemplates}
           onDraw={props.onChooseDraw} onUpload={props.onChooseUpload} onBlank={props.onChooseBlank} />

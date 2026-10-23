@@ -1,10 +1,10 @@
+import { Button } from "@/components/ui/Button";
 import { usePhotoCorrectionReview,type PhotoReviewProps } from "./usePhotoCorrectionReview";
 import FloorPlanPhotoComparison from "./FloorPlanPhotoComparison";
 import { useContext } from "react";
 import { PhotoReviewAction } from "./photo-review-action";
 
 type Model=ReturnType<typeof usePhotoCorrectionReview>;
-const button="rounded border px-2 py-1 text-xs disabled:opacity-50";
 
 function Measurements({model:m}:{model:Model}) {
   return <div className="mt-3 space-y-2">{m.measurements.map((span,i)=><div key={span.id} className="flex flex-wrap items-center gap-2 rounded border p-2">
@@ -13,8 +13,8 @@ function Measurements({model:m}:{model:Model}) {
     <select aria-label={`Photo measurement ${i+1} purpose`} value={span.use} onChange={(e)=>m.edit(i,{use:e.target.value==="fit"?"fit":"check"})}>
       <option value="fit">Use to fit</option><option value="check">Independent check</option>
     </select>
-    <button type="button" className={button} onClick={()=>m.replace(i)}>Replace endpoints {i+1}</button>
-    <button type="button" className={button} onClick={()=>m.remove(i)}>Remove measurement {i+1}</button>
+    <Button size="compact" onClick={()=>m.replace(i)}>Replace endpoints {i+1}</Button>
+    <Button size="compact" onClick={()=>m.remove(i)}>Remove measurement {i+1}</Button>
   </div>)}</div>;
 }
 
@@ -31,8 +31,8 @@ function Result({model:m,url}:{model:Model;url:string}) {
     </li>)}</ul>
     {r.correction?<FloorPlanPhotoComparison url={url} correction={r.correction}/>:null}
     <div className="mt-3 flex gap-2">
-      <button type="button" className={button} disabled={!r.correction} onClick={m.accept}>Accept photo correction</button>
-      <button type="button" className={button} onClick={m.cancel}>Cancel proposed correction</button>
+      <Button size="compact" disabled={!r.correction} onClick={m.accept}>Accept photo correction</Button>
+      <Button size="compact" onClick={m.cancel}>Cancel proposed correction</Button>
     </div>
   </div>;
 }
@@ -46,22 +46,22 @@ function PhotoReviewContents(props:PhotoReviewProps) {
     <fieldset disabled={props.disabled} className="mt-2 text-xs">
       <p>Check the actual dimension end ticks first. A camera correction uses six printed spans and a square corner; at least two other spans check the result independently. Your original stays unchanged.</p>
       {props.calibration?.photoCorrection?<p role="status" className="mt-2">Photo correction accepted in this review. Save the review draft to keep it.</p>:null}
-      <button type="button" className={`${button} mt-2`} onClick={props.onPicking}>Pick photo anchor endpoints</button>
+      <Button size="compact" className="mt-2" onClick={props.onPicking}>Pick photo anchor endpoints</Button>
       <p className="my-2">Selected endpoints: {props.scalePoints.length}/2. Pick on the source above; you can also use a printed-dimension proposal.</p>
       <div className="flex flex-wrap gap-2">
         <label>Printed length (mm) <input aria-label="Photo printed length mm" type="number" min="100" className="w-24 rounded border p-1" value={m.length} onChange={(e)=>m.setLength(e.target.value)}/></label>
         <select aria-label="New photo measurement purpose" value={m.use} onChange={(e)=>m.setUse(e.target.value==="fit"?"fit":"check")}><option value="fit">Use to fit</option><option value="check">Independent check</option></select>
-        <button type="button" className={button} onClick={m.add}>Add photo measurement</button>
+        <Button size="compact" onClick={m.add}>Add photo measurement</Button>
       </div>
       <Measurements model={m}/>
       <p className="mt-3">For one known square corner, select two points along each straight edge. The edges do not have to meet in the photo.</p>
-      <div className="mt-2 flex gap-2"><button type="button" className={button} onClick={()=>m.setEdge("first")}>Set corner edge A{m.first?" ✓":""}</button>
-        <button type="button" className={button} onClick={()=>m.setEdge("second")}>Set corner edge B{m.second?" ✓":""}</button></div>
+      <div className="mt-2 flex gap-2"><Button size="compact" onClick={()=>m.setEdge("first")}>Set corner edge A{m.first?" ✓":""}</Button>
+        <Button size="compact" onClick={()=>m.setEdge("second")}>Set corner edge B{m.second?" ✓":""}</Button></div>
       <label className="mt-2 flex gap-2"><input type="checkbox" checked={m.confirmed} onChange={(e)=>m.confirm(e.target.checked)}/>I confirm this corner is 90°. This does not assume every room is rectangular.</label>
-      <button type="button" className={`${button} mt-3`} onClick={m.propose}>Preview photo correction</button>
+      <Button size="compact" className="mt-3" onClick={m.propose}>Preview photo correction</Button>
       <Result model={m} url={url}/>{m.error?<p role="alert" className="mt-2 text-red-700">{m.error}</p>:null}
       {recompute&&reviewed?<div className="mt-3"><p>Re-extract locally into a separate review. Your earlier draft, geometry and saved design stay available.</p>
-        <button type="button" className={`${button} mt-2`} onClick={()=>recompute({constraints:reviewed,pageNumber:props.page.pageNumber})}>Create separate corrected review</button></div>:null}
+        <Button size="compact" className="mt-2" onClick={()=>recompute({constraints:reviewed,pageNumber:props.page.pageNumber})}>Create separate corrected review</Button></div>:null}
     </fieldset>
   </details>;
 }
