@@ -1,3 +1,4 @@
+import { findCabinetLaminate } from "./catalog/laminates";
 import { generateCabinetParts } from "./generateCabinetParts";
 import { generateCabinetBOM } from "./generateCabinetBOM";
 import { resolveCabinetPartFabricationSpec } from "./fabricationSemantics";
@@ -2044,9 +2045,8 @@ function materialRate(materialId: string): number {
   if (materialId.includes("glass")) return 140;
   if (materialId.includes("walnut")) return 115;
   if (materialId.includes("oak")) return 95;
-  if (materialId.includes("laminate")) return 80;
-  if (materialId.includes("painted")) return 70;
-  return 55;
+  if (materialId.includes("laminate") || findCabinetLaminate(materialId)) return 80;
+  return materialId.includes("painted") ? 70 : 55;
 }
 
 function hardwareRate(hardwareType: string): number {

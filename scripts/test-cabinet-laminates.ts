@@ -134,9 +134,15 @@ assert.deepEqual(
   { heightAxis: "x", widthAxis: "z" }
 );
 
-// The eight built-in materials keep Three.js's own coordinates: one picture per face, as before.
-const builtIn = createCabinetPreset("wardrobe", "laminate-built-in");
+// The built-in materials (kept for older designs) have no real size, so they keep Three.js's own
+// coordinates: one picture per face, as before.
+const wardrobe = createCabinetPreset("wardrobe", "laminate-built-in");
+const builtIn: CabinetDefinition = {
+  ...wardrobe,
+  modules: wardrobe.modules.map((module) => ({ ...module, materialId: "oak_veneer", frontMaterialId: "oak_veneer" })),
+};
 const builtInPart = generateCabinetParts(builtIn)[0];
+assert.equal(builtInPart.materialId, "oak_veneer");
 const builtInMesh = createCabinetThreeGroup(builtIn, [builtInPart]).children[0] as THREE.Mesh;
 const defaultBox = new THREE.BoxGeometry(builtInPart.size.width / 1000, builtInPart.size.height / 1000, builtInPart.size.depth / 1000);
 assert.deepEqual(Array.from(builtInMesh.geometry.getAttribute("uv").array), Array.from(defaultBox.getAttribute("uv").array));

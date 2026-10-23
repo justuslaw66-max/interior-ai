@@ -14,6 +14,27 @@ export async function startInMillimetres(page: import("@playwright/test").Page) 
   });
 }
 
+/**
+ * Picks a laminate in one of the Detailed editor's finish fields: opens it, searches by the
+ * supplier's code and chooses the design, then checks the field took it.
+ */
+export async function chooseCabinetFinish(
+  page: import("@playwright/test").Page,
+  fieldTestId: string,
+  code: string,
+  materialId: string
+) {
+  const field = page.getByTestId(fieldTestId);
+  if ((await page.getByTestId(`${fieldTestId}-picker`).count()) === 0) {
+    await page.getByTestId(`${fieldTestId}-change`).click();
+  }
+  await page.getByTestId(`${fieldTestId}-picker-search`).fill(code);
+  await page.getByTestId(`${fieldTestId}-picker-${materialId}`).click();
+  await expect(field).toHaveAttribute("data-value", materialId);
+  await page.getByTestId(`${fieldTestId}-change`).click();
+  await expect(page.getByTestId(`${fieldTestId}-picker`)).toHaveCount(0);
+}
+
 export async function mockPlan(page: import("@playwright/test").Page, plan: "free" | "pro") {
   await page.route("**/api/me", async (route) => {
     await route.fulfill({

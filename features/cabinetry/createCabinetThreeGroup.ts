@@ -1,17 +1,18 @@
 import * as THREE from "three";
+import { currentCabinetMaterials } from "./catalog/finishes";
 import { resolveCabinetPartFabricationSpec } from "./fabricationSemantics";
 import {
   computeCabinetPartTextureUv,
   hasCabinetMaterialRealSizeTexture,
   resolveCabinetPartGrainWorldAxis,
 } from "./materialTexture";
-import type { CabinetDefinition, CabinetPart } from "./types";
+import type { CabinetDefinition, CabinetMaterialRef, CabinetPart } from "./types";
 import { CABINET_SERVICE_ZONE_MATERIAL_ID } from "./vanityServiceLayout";
 
 const MM_TO_METERS = 0.001;
 
 function createCabinetMaterialResolver(
-  definition: CabinetDefinition,
+  materials: readonly CabinetMaterialRef[],
   parts: CabinetPart[]
 ): (materialId: string) => THREE.Material {
   const materialById = new Map<string, THREE.Material>();
@@ -19,7 +20,7 @@ function createCabinetMaterialResolver(
     const cached = materialById.get(materialId);
     if (cached) return cached;
 
-    const materialRef = definition.materials.find((material) => material.id === materialId);
+    const materialRef = materials.find((material) => material.id === materialId);
     const isHardware = materialId === "hardware_metal" || parts.some((part) => part.materialId === materialId && part.type === "handle");
     const isServiceZone = materialId === CABINET_SERVICE_ZONE_MATERIAL_ID;
     const material = new THREE.MeshStandardMaterial({
@@ -36,13 +37,17 @@ function createCabinetMaterialResolver(
 }
 
 /** A part's box; a material with a real-size texture gets texture coordinates in sheet units. */
-function createCabinetPartGeometry(definition: CabinetDefinition, part: CabinetPart): THREE.BoxGeometry {
+function createCabinetPartGeometry(
+  definition: CabinetDefinition,
+  materials: readonly CabinetMaterialRef[],
+  part: CabinetPart
+): THREE.BoxGeometry {
   const geometry = new THREE.BoxGeometry(
     part.size.width * MM_TO_METERS,
     part.size.height * MM_TO_METERS,
     part.size.depth * MM_TO_METERS
   );
-  const materialRef = definition.materials.find((material) => material.id === part.materialId);
+  const materialRef = materials.find((material) => material.id === part.materialId);
   if (!hasCabinetMaterialRealSizeTexture(materialRef)) return geometry;
 
   const fabrication = resolveCabinetPartFabricationSpec(definition, part);
@@ -62,10 +67,11 @@ function createCabinetPartGeometry(definition: CabinetDefinition, part: CabinetP
 
 function createCabinetPartMesh(
   definition: CabinetDefinition,
+  materials: readonly CabinetMaterialRef[],
   part: CabinetPart,
   material: THREE.Material
 ): THREE.Mesh {
-  const mesh = new THREE.Mesh(createCabinetPartGeometry(definition, part), material);
+  const mesh = new THREE.Mesh(createCabinetPartGeometry(definition, materials, part), material);
   mesh.name = part.id;
   mesh.castShadow = true;
   mesh.receiveShadow = true;
@@ -105,9 +111,11 @@ export function createCabinetThreeGroup(definition: CabinetDefinition, parts: Ca
     generatedAt: new Date().toISOString(),
   };
 
-  const resolveMaterial = createCabinetMaterialResolver(definition, parts);
+  // Catalogue laminates draw from the current catalogue, so saved designs pick up corrections.
+  const materials = currentCabinetMaterials(definition.materials);
+  const resolveMaterial = createCabinetMaterialResolver(materials, parts);
   for (const part of parts) {
-    group.add(createCabinetPartMesh(definition, part, resolveMaterial(part.materialId)));
+    group.add(createCabinetPartMesh(definition, materials, part, resolveMaterial(part.materialId)));
   }
 
   return group;

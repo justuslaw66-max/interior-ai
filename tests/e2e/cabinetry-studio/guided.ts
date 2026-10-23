@@ -144,7 +144,12 @@ export function registerGuidedTests() {
       await expect(page.getByTestId("cabinet-drawer-proportion-1")).toBeHidden();
 
       await page.getByTestId("cabinet-guided-step-style").click();
-      await page.getByTestId("cabinet-guided-material-oak_veneer").click();
+      await expect(page.getByTestId("cabinet-guided-material-category-woodgrains")).toContainText("Woodgrains");
+      await page.getByTestId("cabinet-guided-material-search").fill("5308");
+      await page.getByTestId("cabinet-guided-material-greenlam-woodgrains-5308").click();
+      await expect(page.getByTestId("cabinet-guided-material-greenlam-woodgrains-5308")).toHaveAttribute("aria-pressed", "true");
+      await expect(page.getByTestId("cabinet-guided-material-selected")).toContainText("Greenlam 5308 Rift Oak");
+      await expect(page.getByTestId("cabinet-guided-material-white_melamine")).toHaveCount(0);
       await page.getByTestId("cabinet-guided-hardware-brushed_steel_bar_pull").click();
 
       await page.getByTestId("cabinet-guided-step-review").click();

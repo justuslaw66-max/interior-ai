@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures";
-import { EDITOR_STORAGE_KEY, dismissBlockingPrompt, placeCabinetRun, startInMillimetres } from "./helpers";
+import { EDITOR_STORAGE_KEY, chooseCabinetFinish, dismissBlockingPrompt, placeCabinetRun, startInMillimetres } from "./helpers";
 
 export function registerPlacementTests() {
   test.describe("Custom Millwork Studio placement", () => {
@@ -165,7 +165,7 @@ export function registerPlacementTests() {
       await page.getByTestId("edit-placed-millwork").click();
       await expect(page.getByTestId("custom-millwork-studio")).toHaveAttribute("data-mode", "edit");
       await page.getByTestId("cabinet-dimension-width").fill("1200");
-      await page.getByTestId("cabinet-input-front-material").selectOption("matte_black_laminate");
+      await chooseCabinetFinish(page, "cabinet-input-front-material", "9861", "greenlam-solids-9861");
       const updatePlacedMillwork = page.getByRole("button", {
         name: "Update in plan",
         exact: true,

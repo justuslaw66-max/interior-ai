@@ -4,6 +4,7 @@ import { useThree } from "@react-three/fiber";
 import { useEffect } from "react";
 import * as THREE from "three";
 
+import { currentCabinetMaterials } from "../catalog/finishes";
 import type { CabinetMaterialRef } from "../types";
 
 export function disposeCabinetObject3DResources(object: THREE.Object3D): void {
@@ -38,6 +39,8 @@ function attachCabinetMaterialTexture(
     const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     for (const material of materials) {
       if (!(material instanceof THREE.MeshStandardMaterial)) continue;
+      // The picture carries the design's colour; the mean colour was only its stand-in.
+      material.color.set(0xffffff);
       material.map = texture;
       material.needsUpdate = true;
     }
@@ -68,7 +71,8 @@ export function useCabinetSceneResourceOwnership({
   }, [previewFrontEdges]);
 
   useEffect(() => {
-    const texturedMaterials = materials.filter(
+    // A catalogue laminate loads its current picture, even in a design saved before a correction.
+    const texturedMaterials = currentCabinetMaterials(materials).filter(
       (material) => typeof material.textureUrl === "string" && material.textureUrl.length > 0
     );
     if (!texturedMaterials.length) return;

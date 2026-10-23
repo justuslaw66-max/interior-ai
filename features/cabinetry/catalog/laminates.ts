@@ -1,6 +1,7 @@
 import type {
   CabinetLaminateCategory,
   CabinetLaminateCollection,
+  CabinetLaminateGrain,
   CabinetLaminateTuple,
 } from "@/lib/cabinet-laminate-runtime-types";
 import { CABINET_LAMINATE_COLLECTIONS } from "@/lib/generated/cabinet-laminates.generated";
@@ -10,8 +11,13 @@ import type { CabinetMaterialCatalogItem } from "./materials";
 export type CabinetLaminateCatalogItem = CabinetMaterialCatalogItem & {
   supplier: string;
   supplierCode: string;
+  /** The supplier's name for the design, without the supplier or code. */
+  designName: string;
   collectionId: string;
   laminateCategory: CabinetLaminateCategory;
+  laminateGrain: CabinetLaminateGrain;
+  /** The sheet the design is sold on, in mm. */
+  sheetSizeMm: { width: number; height: number };
   /** A small picture of the middle of the sheet, for pickers; flat colours have none. */
   swatchUrl?: string;
 };
@@ -44,8 +50,11 @@ function toCabinetLaminate(
     supportedEdgeTreatments: ["matching_edge_band", "contrasting_edge_band", "solid_lipping", "none"],
     supplier: collection.supplier,
     supplierCode: code,
+    designName: name,
     collectionId: collection.id,
     laminateCategory: category,
+    laminateGrain: grain,
+    sheetSizeMm: { width: collection.sheetMm.width, height: collection.sheetMm.height },
     ...(swatchUrl ? { swatchUrl } : {}),
   };
 }

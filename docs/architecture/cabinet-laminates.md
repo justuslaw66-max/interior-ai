@@ -1,6 +1,8 @@
 # Cabinet laminates
 
-Cabinet fronts, bodies and countertops can be made from a supplier's laminate sheets, drawn at their real size. The first catalogue is Greenlam's 4'×8' HPL collection (22 Oct 2026): 342 designs.
+Cabinet fronts, bodies and countertops are made from a supplier's laminate sheets, drawn at their real size. The first catalogue is Greenlam's 4'×8' HPL collection (22 Oct 2026): 342 designs.
+
+**Real products only (J, 23 Oct 2026).** The pickers offer only real laminate designs, and every template starts from them. The app's first five finishes (white melamine, oak veneer, walnut veneer, matte black laminate, painted shaker white) were placeholders with invented codes. They are kept so older saved designs still open unchanged, where each is marked as a placeholder with a Change button; they are never swapped silently.
 
 ## Where the data lives
 
@@ -11,7 +13,9 @@ Cabinet fronts, bodies and countertops can be made from a supplier's laminate sh
 | The runtime catalogue (generated) | `lib/generated/cabinet-laminates.generated.ts`, from `scripts/generate-cabinet-laminate-runtime.ts` |
 | Laminates as cabinet materials | `features/cabinetry/catalog/laminates.ts` (`CABINET_LAMINATES`, `findCabinetLaminate`) |
 | How a picture lies on a part | `features/cabinetry/materialTexture.ts`, used by `features/cabinetry/createCabinetThreeGroup.ts` |
-| Checks | `scripts/test-cabinet-laminates.ts` (`npm run test:cabinet-laminates`, part of `test:cabinetry`) |
+| Which finishes are offered, search, and keeping a design's materials in step | `features/cabinetry/catalog/finishes.ts` |
+| The picker | `features/cabinetry/components/CabinetFinishPicker.tsx` (Guided Main finish) and `CabinetFinishField.tsx` (each Detailed choice, and the part inspector) |
+| Checks | `scripts/test-cabinet-laminates.ts` and `scripts/test-cabinet-finishes.ts` (both part of `test:cabinetry`) |
 
 - The JSON and the WebP pictures are made from the manufacturer's files by `make_app_copies.py`, which is kept with the originals in `~/Developer/material-masters/greenlam/`. The masters folder also keeps the inventory of every picture (`tracking/hpl-1220x2440-pictures.csv`) and its contact sheets.
 - After changing the JSON, run `npm run generate:cabinet-laminates`. `npm run check:cabinet-laminates` and the test fail when the generated file is out of date.
@@ -41,6 +45,21 @@ Cabinet fronts, bodies and countertops can be made from a supplier's laminate sh
   - A design whose grain runs across its sheet defaults to horizontal grain (`fabricationSemantics.ts`), since that is what it is chosen for. Its picture stays upright.
   - Choosing horizontal grain for an `along` design turns its picture a quarter turn.
 - The eight built-in cabinet materials have no real size, so they keep one picture per face, as before.
+
+## In a design
+
+- **Choosing a laminate lists it in the design.** Every Studio edit passes through `syncCabinetFinishMaterials`: each laminate the design names (module bodies, fronts and edges; countertop, splash and face frame) is listed in `definition.materials`, and one it no longer names leaves. The built-in materials always stay listed: glass fronts, seat upholstery, service-zone markers and black handles still draw from them.
+- **The catalogue is the source of truth for a laminate's picture and size.** Rendering and texture loading use `currentCabinetMaterials`, so a design saved before a correction (the real-life scale check is still to come) draws the current catalogue entry, not its saved copy.
+- **Templates** name laminate ids in `presetData.ts`; each placeholder was replaced by the closest Greenlam design by name and colour: 101 White (white melamine), 107 Wool (painted shaker white), 5308 Rift Oak (oak veneer), 791 Milwakee Walnut (walnut veneer) and 9861 AFX Black X (matte black laminate).
+- **Edge bands** are matching by default, ordered in the laminate's own design code. A contrasting edge band or lipping is chosen from the same picker; its first suggestion is 9861 black, or 101 white on black fronts.
+- **Quotes** price laminates at the app's existing laminate placeholder rate; they are still not supplier prices.
+- Glass and seat upholstery stay generic until there is a real catalogue for them; they are not offered as finishes.
+
+## The picker
+
+- Designs by kind (Woodgrains, Solid colours, Stone & abstract, Pearlescent, Metallic, Unicore), 24 at a time with "Show all", and a search: a word matches a code from its start, or the design's name, supplier or kind.
+- The chosen design is always in view: it takes the first place when it would be further on.
+- Tiles show the middle of the sheet (`_swatch.webp`) or the flat colour, the code and name, and a label for a horizontal grain or a pattern. The summary says how the design is drawn.
 
 ## Pictures that needed care (Greenlam 4'×8')
 

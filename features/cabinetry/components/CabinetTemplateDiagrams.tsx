@@ -1,4 +1,4 @@
-import { CABINET_MATERIALS } from "../catalog/materials";
+import { findCabinetFinishMaterial, resolveCabinetModuleFinishId } from "../catalog/finishes";
 import type { CabinetTemplateVisualThumbnailKind } from "../presets";
 import type { CabinetDefinition } from "../types";
 import type { CabinetWardrobeArrangementOption } from "../wardrobeArrangements";
@@ -153,7 +153,6 @@ export function CabinetTemplateDiagram({
   thumbnailKind?: CabinetTemplateVisualThumbnailKind;
   testId?: string;
 }) {
-  const materialById = new Map(CABINET_MATERIALS.map((material) => [material.id, material]));
   const modules = definition.modules.slice(0, 5);
 
   return (
@@ -166,7 +165,7 @@ export function CabinetTemplateDiagram({
       {thumbnailKind !== "casework" ? (
         <CabinetSpecialtyTemplateDiagram kind={thumbnailKind} />
       ) : modules.map((module) => {
-        const frontColor = materialById.get(module.frontMaterialId ?? module.materialId)?.color ?? "#d6d3d1";
+        const frontColor = findCabinetFinishMaterial(resolveCabinetModuleFinishId(module), definition.materials)?.color ?? "#d6d3d1";
         const heightRatio = Math.max(0.32, module.height / Math.max(...modules.map((item) => item.height)));
         return (
           <div

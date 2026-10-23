@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures";
-import { dismissBlockingPrompt, mockPlan, openDetailedProStudio, startInMillimetres } from "./helpers";
+import { chooseCabinetFinish, dismissBlockingPrompt, mockPlan, openDetailedProStudio, startInMillimetres } from "./helpers";
 
 export function registerDetailedTests() {
   test.describe("Custom Millwork Studio detailed", () => {
@@ -617,7 +617,7 @@ export function registerDetailedTests() {
       await page.getByTestId("cabinet-input-face-frame-stile-width").fill("42");
       await page.getByTestId("cabinet-input-face-frame-rail-height").fill("50");
       await page.getByTestId("cabinet-input-face-frame-depth").fill("20");
-      await page.getByTestId("cabinet-input-face-frame-material").selectOption("walnut_veneer");
+      await chooseCabinetFinish(page, "cabinet-input-face-frame-material", "791", "greenlam-woodgrains-791");
       await expect(page.getByTestId("cabinet-input-face-frame-enabled")).toBeChecked();
       await expect(page.getByTestId("cabinet-input-face-frame-stile-width")).toHaveValue("42");
       await page.getByTestId("cabinet-input-left-filler").fill("50");
@@ -641,11 +641,11 @@ export function registerDetailedTests() {
       await page.getByTestId("cabinet-input-countertop-overhang-right").fill("30");
       await page.getByTestId("cabinet-input-countertop-overhang-front").fill("35");
       await page.getByTestId("cabinet-input-countertop-overhang-back").fill("5");
-      await page.getByTestId("cabinet-input-countertop-material").selectOption("walnut_veneer");
+      await chooseCabinetFinish(page, "cabinet-input-countertop-material", "5574", "greenlam-abstracts-5574");
       await page.getByTestId("cabinet-input-backsplash-enabled").check();
       await page.getByTestId("cabinet-input-backsplash-height").fill("120");
       await page.getByTestId("cabinet-input-backsplash-thickness").fill("16");
-      await page.getByTestId("cabinet-input-backsplash-material").selectOption("painted_shaker_white");
+      await chooseCabinetFinish(page, "cabinet-input-backsplash-material", "107", "greenlam-solids-107");
       await expect(page.getByTestId("cabinet-input-backsplash-enabled")).toBeChecked();
       await expect(page.getByTestId("cabinet-input-backsplash-height")).toHaveValue("120");
       await expect(page.getByTestId("cabinet-input-backsplash-thickness")).toHaveValue("16");
