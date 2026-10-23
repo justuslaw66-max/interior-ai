@@ -3,7 +3,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { CanvasFrameCard } from "../components/editor/canvas/CanvasFrameCard";
+import * as THREE from "three";
+
+import { CanvasFrameCard, applyCanvasLensShift } from "../components/editor/canvas/CanvasFrameCard";
 import { CanvasViewToolbar, canvasToolbarLeft } from "../components/editor/canvas/CanvasViewToolbar";
 import { KeyboardShortcutsButton, KeyboardShortcutsList } from "../components/editor/canvas/KeyboardShortcutsSheet";
 import { PhoneCanvasPills } from "../components/editor/canvas/PhoneCanvasPills";
@@ -18,8 +20,10 @@ import {
   FULL_WINDOW_CANVAS,
   WIDE_PLAN_TOP_INSET_PX,
   isWideEditor,
+  resolveCanvas3DInsetsPx,
   resolveCanvasFrameBox,
   resolveCanvasLeftInsetPx,
+  resolveCanvasLensShiftPx,
   resolvePlanFitInsetsPx,
 } from "../lib/editor-canvas-insets";
 import {
@@ -151,6 +155,30 @@ assert.match(
   /data-canvas-framed="false" class="absolute overflow-hidden" style="left:0;top:0;right:0;bottom:0"/
 );
 assert.match(read("components/editor/design-page/DesignSceneCanvas.tsx"), /<CanvasFrameCard frame=\{configuration\.planSafeArea\.frame\}>\s*<Canvas\s/, "The scene sizes itself to the card.");
+
+// 3D's lens (23 Oct, after the Mac's screenshots): the right rail floats inside the card, so a 3D
+// view centred on the card's middle sat partly under it. The picture's centre moves left instead,
+// between the step panel's margin and the rail, and the camera keeps its angle.
+const docked3DInsets = resolveCanvas3DInsetsPx({ wide: true, planLeftInsetPx: 318, frame: dockedFrame, overlayStackVisible: true, overlayStackWidthPx: 264 });
+assert.deepEqual(docked3DInsets, { leftPx: 16, rightPx: 296 }, "The step panel's margin, and the rail's 264px with room round it.");
+assert.equal(resolveCanvasLensShiftPx(docked3DInsets), 140, "1440 wide: the picture's centre at 727, midway between 318 and 1136.");
+assert.equal(resolveCanvasLensShiftPx(resolveCanvas3DInsetsPx({ wide: true, planLeftInsetPx: 318, frame: dockedFrame, overlayStackVisible: false, overlayStackWidthPx: 264 })), -8, "Under 1024 there's no rail.");
+assert.deepEqual(resolveCanvas3DInsetsPx({ wide: false, planLeftInsetPx: 0, frame: FULL_WINDOW_CANVAS, overlayStackVisible: false, overlayStackWidthPx: 264 }), { leftPx: 0, rightPx: 0 }, "Phones and Client Preview: none.");
+const lensCamera = new THREE.PerspectiveCamera(46, 1130 / 828, 0.1, 300);
+lensCamera.position.set(4, 3, 6);
+lensCamera.lookAt(0, 1, 0);
+lensCamera.updateMatrixWorld();
+const targetScreenX = () => ((new THREE.Vector3(0, 1, 0).project(lensCamera).x + 1) / 2) * 1130;
+assert.equal(applyCanvasLensShift(lensCamera, 1130, 828, 140), true);
+assert.ok(Math.abs(targetScreenX() - (565 - 140)) < 1e-6, "What the camera looks at shows 140px left of the middle.");
+assert.deepEqual(lensCamera.position.toArray(), [4, 3, 6], "The camera stays put.");
+assert.equal(applyCanvasLensShift(lensCamera, 1130, 828, 0), true);
+assert.ok(Math.abs(targetScreenX() - 565) < 1e-6, "Back in the middle.");
+assert.equal(applyCanvasLensShift(lensCamera, 1130, 828, 0), false, "Nothing to put back.");
+assert.equal(applyCanvasLensShift(new THREE.OrthographicCamera(), 1130, 828, 140), false, "2D's camera fits itself.");
+assert.match(read("components/editor/design-page/DesignSceneCanvas.tsx"), /<CanvasLensShift shiftPx=\{configuration\.planSafeArea\.lensShiftPx\} \/>/);
+assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const canvasLensShiftPx = resolveCanvasLensShiftPx\(resolveCanvas3DInsetsPx\(\{ wide: viewportWidth >= 768, planLeftInsetPx: plan2DSafeAreaLeftPx, frame: canvasFrame,/);
+assert.match(read("lib/useDesignPageCameraNavigation.ts"), /resolveCanvas3DInsetsPx\(\{[\s\S]*?\}\);[\s\S]*?const desiredCenterXPx = viewportWidthPx \/ 2;/, "The whole-home view fits between the insets and centres on the lens.");
 
 // The phone's pills (UX 4d, the PhonePlan mockup): 2D | 3D top left, Undo and Redo top right, 12px
 // under the bar, with 44px targets that keep the controls' test ids.

@@ -14,7 +14,7 @@ import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CameraView } from "@/lib/design-page-types";
 import { cameraViewChanged } from "@/lib/design-page-live-camera-view";
 import { EDITOR_BAR_HEIGHT_PX, resolveEditorInitial3DFitKey } from "@/lib/design-page-editor-configuration";
-import { isWideEditor, resolvePlanFitInsetsPx, type CanvasFrameBox } from "@/lib/editor-canvas-insets";
+import { isWideEditor, resolveCanvas3DInsetsPx, resolvePlanFitInsetsPx, type CanvasFrameBox } from "@/lib/editor-canvas-insets";
 import { resolveCameraViewForFloorWorldY, resolveCameraViewForRoomOrigin, resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { track } from "@/lib/analytics";
 import {
@@ -390,8 +390,10 @@ export function useDesignPageCameraNavigation({
     const viewportWidthPx = canvas?.clientWidth ?? viewportSize.width - frame.leftPx - frame.rightPx;
     const viewportHeightPx = canvas?.clientHeight ?? viewportSize.height - frame.topPx - frame.bottomPx;
     const wide = isWideEditor(viewportWidthPx, frame);
-    const leftInsetPx = wide ? Math.max(0, planSafeAreaLeftPx - frame.leftPx) : 0;
-    const rightInsetPx = wide && floatingPlanOverlayStackVisible ? floatingPlanOverlayStackWidthPx + 32 : 0;
+    const { leftPx: leftInsetPx, rightPx: rightInsetPx } = resolveCanvas3DInsetsPx({
+      wide, planLeftInsetPx: planSafeAreaLeftPx, frame,
+      overlayStackVisible: floatingPlanOverlayStackVisible, overlayStackWidthPx: floatingPlanOverlayStackWidthPx,
+    });
     const topInsetPx = wide ? EDITOR_BAR_HEIGHT_PX + 60 - frame.topPx : Math.max(72, planFitInsets.topPx);
     const bottomInsetPx = wide ? 48 : Math.max(96, planFitInsets.bottomPx);
     const effectiveWidthPx = Math.max(320, viewportWidthPx - leftInsetPx - rightInsetPx);
@@ -416,12 +418,9 @@ export function useDesignPageCameraNavigation({
     const target = new THREE.Vector3(planFitBounds.centerX, targetY, planFitBounds.centerZ);
     const position = target.clone().addScaledVector(direction, cameraDistance);
 
-    const visibleLeftPx = Math.min(viewportWidthPx, Math.max(0, leftInsetPx));
-    const visibleRightPx = Math.max(
-      visibleLeftPx,
-      viewportWidthPx - Math.max(0, rightInsetPx)
-    );
-    const desiredCenterXPx = (visibleLeftPx + visibleRightPx) / 2;
+    // The lens (CanvasLensShift) puts the picture's centre between the insets, so the home only
+    // needs centring on it: the camera moves sideways just for perspective, and keeps its angle.
+    const desiredCenterXPx = viewportWidthPx / 2;
     const actualAspect = Math.max(0.1, viewportWidthPx / Math.max(1, viewportHeightPx));
     const fitCamera = new THREE.PerspectiveCamera(fov, actualAspect, 0.1, 300);
     fitCamera.position.copy(position);

@@ -50,7 +50,8 @@ function framedCanvas(besidePx: number): CanvasFrameBox {
  * The rounded inset frame (the dark-mode plan's edge; J, 13 Oct, and 23 Oct: dock the step panel).
  * From md the canvas is a card with 12px corners set 8px into the frame: under the bar, beside the
  * docked step panel (or Pro's tool rail while the panel is hidden), and in from the right and the
- * bottom, so the 2D plan and the 3D room centre in what's visible. Phones (the sheet and the bottom
+ * bottom. The 2D fit and 3D's lens keep the plan and the room clear of what floats over the card
+ * (Plan's tools, the right rail), so they centre in what's visible. Phones (the sheet and the bottom
  * nav) and Client Preview keep the whole window. Shop keeps the panel's place, so leaving it
  * doesn't resize the canvas.
  */
@@ -73,6 +74,39 @@ export function resolveCanvasFrameBox({
   const panelOpen = panelVisible && (shopping || !collapsed);
   // The step panel's cards end 294px in (Pro's, beside the tool rail, 366px); Pro's rail, 72px.
   return framedCanvas(panelOpen ? (isDesigner ? 366 : 294) : isDesigner ? 72 : 0);
+}
+
+/**
+ * What 3D keeps clear in the card, from md: the step panel's margin at the left (the 2D fit's left
+ * inset, from the card's edge) and, at the right, the rail (Levels, the inspector), which floats
+ * inside the card. The whole-home view fits the home between them.
+ */
+export function resolveCanvas3DInsetsPx({
+  wide,
+  planLeftInsetPx,
+  frame,
+  overlayStackVisible,
+  overlayStackWidthPx,
+}: {
+  wide: boolean;
+  planLeftInsetPx: number;
+  frame: CanvasFrameBox;
+  overlayStackVisible: boolean;
+  overlayStackWidthPx: number;
+}) {
+  return {
+    leftPx: wide ? Math.max(0, planLeftInsetPx - frame.leftPx) : 0,
+    rightPx: wide && overlayStackVisible ? overlayStackWidthPx + 32 : 0,
+  };
+}
+
+/**
+ * How far 3D's picture centre sits left of the card's middle, so every 3D view centres between
+ * the insets: the camera's lens shifts (`CanvasLensShift`), and the camera stays where the view
+ * put it, so the view keeps its angle.
+ */
+export function resolveCanvasLensShiftPx(insets: { leftPx: number; rightPx: number }) {
+  return Math.round((insets.rightPx - insets.leftPx) / 2);
 }
 
 /** Whether the editor is md or wider, from a canvas this wide in this frame. */
