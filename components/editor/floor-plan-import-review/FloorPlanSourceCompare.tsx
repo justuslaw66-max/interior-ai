@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
-import { sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
+import { sourceDrawingInk, sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { SourceReviewLayer } from "./useSourceReviewLayers";
 
@@ -54,8 +54,8 @@ export function FloorPlanSourceCompareWipe({ layer, wipe, onWipe, annotations, w
       <div className="absolute inset-0 bg-white" style={{ clipPath: `inset(0 0 0 ${wipe}%)` }} aria-hidden="true">
         <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 ${widthPx} ${heightPx}`}>
           {annotations.map((annotation) => annotation.geometry.kind === "source_drawing" && annotation.geometry.command !== "text" ? (
-            <path key={annotation.id} d={sourceDrawingSvgPath(annotation.geometry)} fill={annotation.geometry.fill ? "#222" : "none"}
-              stroke={annotation.geometry.fill ? "none" : "#222"} strokeWidth={annotation.geometry.strokeWidthPx} vectorEffect="non-scaling-stroke" />
+            <path key={annotation.id} d={sourceDrawingSvgPath(annotation.geometry)} fill={annotation.geometry.fill ? sourceDrawingInk(annotation.geometry, "#222") : "none"}
+              stroke={annotation.geometry.fill ? "none" : sourceDrawingInk(annotation.geometry, "#222")} strokeWidth={annotation.geometry.strokeWidthPx} vectorEffect="non-scaling-stroke" />
           ) : null)}
         </svg>
       </div>

@@ -52,7 +52,9 @@ const edgeOpening = z.object({
 
 // The vectorizer's own clean drawing of the page (exporter 0.28.1+): every wall it read, rooms or not, and the other
 // shapes it recognised, in source pixels, for the clean traced drawing. Lettering is only located (`textBoxes`), never
-// redrawn: the trace keeps the source's own letters. Absent from older exporters.
+// redrawn: the trace keeps the source's own letters. Absent from older exporters. The faithful trace of a clean page
+// (faithful_drawing.py, version faithful-trace-*) is a drawing too: it copies the lettering itself (no textBoxes) and
+// gives each item the grey it is drawn in (`tone`, 0 black - 255 white).
 const drawingCommand = z.enum(["M", "L", "C", "Z"]);
 const drawingSchema = z.object({
   version: z.string().max(40),
@@ -62,6 +64,7 @@ const drawingSchema = z.object({
         kind: z.string().max(40),
         fill: z.boolean(),
         strokeWidthPx: z.number().min(0).max(200),
+        tone: z.number().int().min(0).max(255).optional(),
         commands: z.array(drawingCommand).max(4_000),
         points: z.array(point).min(1).max(12_000),
       })
@@ -204,4 +207,9 @@ export type FloorPlanVectorizerEvidence = z.infer<typeof vectorizerEvidenceSchem
 
 export function parseFloorPlanVectorizerEvidence(value: unknown): FloorPlanVectorizerEvidence {
   return vectorizerEvidenceSchema.parse(value);
+}
+
+/** A drawing on its own (the faithful trace's, faithful_drawing.py), held to the evidence's own drawing limits. */
+export function parseFloorPlanVectorizerDrawing(value: unknown): NonNullable<FloorPlanVectorizerEvidence["drawing"]> {
+  return drawingSchema.parse(value);
 }

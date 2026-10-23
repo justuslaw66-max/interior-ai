@@ -272,6 +272,9 @@ What it contributes, and how far it is trusted:
     - A standalone wall's free end is only drawn back onto a face, never carried on to one: s049's, carried 2 px on onto the face across it, would have crossed that wall's centre line, and the app left the whole wall out.
   - Not yet: the replay does not split a wall where another wall's end lands on it, as the app's topology does. On s081's darkened reading the kitchen's and the ledge's sides overlap on one wall line; the app splits the kitchen's wall into a piece shorter than its thickness, which keeps a plain rectangle beside the thick wall's end and leaves a 1.3 px step that neither the gate nor `jogs_onto_faces` sees.
 - The evidence also carries the vectorizer's own drawing of the page (`drawing`, exporter 0.28.1+, `app_drawing.py`; switch `AE_DRAWING`, 0 = none): stage 1's `<plan>.svg` - every wall it read whether or not it closes a room, doors, windows, fixtures and lines - as path items in source pixels, and the boxes of the lettering it found. It is drawing only, never geometry: the source trace redraws it as the clean traced drawing (`source-strokes-v3`, see `scan-to-editable-plan-v1/SOURCE_VECTOR_TRACING.md`), with the lettering traced from the picture.
+- With `FLOOR_PLAN_FAITHFUL_TRACE=1` a clean page's `drawing` is the faithful trace instead (`faithful_drawing.py`,
+  version `faithful-trace-r6`, each item's grey as `tone`): what is drawn, copied as clean vectors, drawn by the app as
+  it is (`faithful-trace-v1`, see `scan-to-editable-plan-v1/SOURCE_VECTOR_TRACING.md`). It fails soft to stage 1's drawing.
 - Everything stays `needs_review` with the usual confirmation issues.
 
 `npm run test:floor-plan-vectorizer-evidence` drives real exporter output for four drawing styles through `solveScale`, `buildTopology`, `validate`, the canonical validator and the compiler, and exercises the process boundary with stand-in programs.

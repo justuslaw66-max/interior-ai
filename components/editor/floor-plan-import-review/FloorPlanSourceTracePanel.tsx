@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { SourceTraceAction } from "./source-trace-action";
 import { floorPlanImportResponseJson } from "../useConsumerFloorPlanImportSession";
 import { sourceTraceAnnotations } from "@/lib/floor-plan-source-trace";
-import { sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
+import { sourceDrawingInk, sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 
 type Preview={assetId:string;trace:SourceArtworkTrace};
@@ -42,7 +42,7 @@ function SourceTracePanelSession({document,jobId,pageNumber,sourceId,assetUrl,di
         <option value="source">Source only</option><option value="vectors">Final vectors only</option><option value="overlay">Source + final vectors</option></select></label>
       <div className="my-2 max-h-[60vh] overflow-auto border bg-white"><svg aria-label="Local trace replacement preview" width={preview.trace.widthPx} height={preview.trace.heightPx} viewBox={`0 0 ${preview.trace.widthPx} ${preview.trace.heightPx}`}>
         {view!=="vectors"?<image href={assetUrl} width="100%" height="100%" opacity={view==="overlay"?0.6:1}/>:null}
-        {view!=="source"?sourceTraceAnnotations(preview.trace,sourceId,pageNumber).map(a=>a.geometry.kind==="source_drawing"?<path key={a.id} d={sourceDrawingSvgPath(a.geometry)} fill={a.geometry.fill?"#222":"none"} stroke={a.geometry.fill?"none":"#222"} strokeWidth={a.geometry.strokeWidthPx}/>:null):null}
+        {view!=="source"?sourceTraceAnnotations(preview.trace,sourceId,pageNumber).map(a=>a.geometry.kind==="source_drawing"?<path key={a.id} d={sourceDrawingSvgPath(a.geometry)} fill={a.geometry.fill?sourceDrawingInk(a.geometry,"#222"):"none"} stroke={a.geometry.fill?"none":sourceDrawingInk(a.geometry,"#222")} strokeWidth={a.geometry.strokeWidthPx}/>:null):null}
       </svg></div>
       <Button size="compact" disabled={disabled||!saved} onClick={()=>action.onAccept({assetId:preview.assetId,pageNumber})}>Keep trace in separate review</Button>
       <Button size="compact" className="ml-2" onClick={cancel}>Discard trace preview</Button>

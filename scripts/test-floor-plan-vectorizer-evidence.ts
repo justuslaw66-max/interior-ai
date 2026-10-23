@@ -548,6 +548,38 @@ async function main() {
       );
       summary.push("provider: stand-in programs run, evidence parsed, temporary folder removed, slow program killed, exporter floor kept");
 
+      // The faithful trace (FLOOR_PLAN_FAITHFUL_TRACE=1) runs third, on the page itself, and its drawing replaces stage 1's.
+      // It fails soft: a page it leaves (not crisp, too large), a failure or a timeout keeps stage 1's drawing and says why.
+      const faithfulDrawing = { version: "faithful-trace-r6", textBoxes: [],
+        items: [{ kind: "line", fill: false, strokeWidthPx: 1.5, tone: 120, commands: ["L"], points: [[10, 10], [90, 10]] }] };
+      const faithfulConfig = { ...floorPlanVectorizerRuntimeConfiguration({ FLOOR_PLAN_VECTORIZER_ENABLED: "1", FLOOR_PLAN_FAITHFUL_TRACE: "1",
+        FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS: "10000" }), directory };
+      assert.equal(floorPlanVectorizerRuntimeConfiguration({}).faithfulTrace, false, "off unless set");
+      const page = { pageNumber: 1, widthPx: 828, heightPx: 957, mimeType: "image/png", bytes: new Uint8Array([1, 2, 3]) };
+      const stage1Drawing = JSON.stringify(parseFloorPlanVectorizerEvidence(JSON.parse(readFileSync(fixture, "utf8"))).drawing);
+      const faithfulRun = async (program: string, config = faithfulConfig) => {
+        writeFileSync(path.join(directory, "faithful_drawing.py"), program);
+        return new PythonFloorPlanVectorizerProvider(config).analyzePage(page, { timeoutMs: 30_000 });
+      };
+      const traced = await faithfulRun(`import sys, json, os\nassert os.path.getsize(sys.argv[1]) > 0 and sys.argv[3].startswith('--max-pixels=')\njson.dump(json.loads(${JSON.stringify(JSON.stringify(faithfulDrawing))}), open(sys.argv[2], 'w'))\n`);
+      assert.equal(traced.drawing?.version, "faithful-trace-r6");
+      assert.equal(traced.drawing?.items[0].tone, 120, "the faithful drawing replaces stage 1's, tones and all");
+      assert.equal(traced.rooms.length > 0, true, "the rest of the evidence is stage 1's");
+      const skipped = await faithfulRun("import sys, json\njson.dump({'skipped': 'picture not crisp enough'}, open(sys.argv[2], 'w'))\n");
+      assert.equal(JSON.stringify(skipped.drawing), stage1Drawing, "a page it leaves keeps stage 1's drawing");
+      assert.ok(skipped.semantics.notes.includes("Faithful trace not used: picture not crisp enough"));
+      const broken = await faithfulRun("import sys\nsys.exit('no OpenCV')\n");
+      assert.equal(JSON.stringify(broken.drawing), stage1Drawing);
+      assert.ok(broken.semantics.notes.some((note) => /^Faithful trace unavailable: .*no OpenCV/.test(note)));
+      const invalid = await faithfulRun("import sys, json\njson.dump({'version': 'faithful-trace-r6', 'items': [{'kind': 'line'}], 'textBoxes': []}, open(sys.argv[2], 'w'))\n");
+      assert.equal(JSON.stringify(invalid.drawing), stage1Drawing, "a drawing outside the evidence's limits is not used");
+      const slow = await faithfulRun("import time\ntime.sleep(30)\n", { ...faithfulConfig, faithfulTimeoutMs: 400 });
+      assert.ok(slow.semantics.notes.some((note) => /^Faithful trace unavailable: .*exceeded 400 ms/.test(note)));
+      const off = await faithfulRun("import sys\nsys.exit('must not run')\n", config);
+      assert.equal(JSON.stringify(off.drawing), stage1Drawing);
+      assert.ok(!off.semantics.notes.some((note) => note.startsWith("Faithful trace")), "off: not run");
+      summary.push("provider: the faithful trace replaces stage 1's drawing when on; a page it leaves, a failure, an invalid drawing or a timeout keeps stage 1's, noted");
+
       // Without the runtime the import goes on: a missing interpreter, or a program that stops with a message
       // (no OpenCV, no tesseract), leaves the page exactly as the other sources made it and records why.
       writeFileSync(path.join(directory, "floorplan_vectorize.py"), "import sys\nsys.exit('the tesseract program is not on PATH')\n");
