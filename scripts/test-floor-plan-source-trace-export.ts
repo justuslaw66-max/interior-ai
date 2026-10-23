@@ -12,16 +12,21 @@ async function main() {
   const document = replaceSourceTrace(input, {
     version: TRACE_SETTINGS.version, settings: TRACE_SETTINGS, widthPx: 1000, heightPx: 1000,
     diagnostics: { inkPixels: 0, removedSpeckPixels: 0, rawChains: 1, fillContours: 0, curves: 1, elapsedMs: 0, glyphPixels: 0 },
-    paths: [{ points: [{x:20,y:20},{x:40,y:20},{x:80,y:50},{x:80,y:90}], commands: ["C"], fill: false, strokeWidthPx: 1, groupId: "curve" }],
+    paths: [{ points: [{x:20,y:20},{x:40,y:20},{x:80,y:50},{x:80,y:90}], commands: ["C"], fill: false, strokeWidthPx: 1, groupId: "curve" },
+      // the faithful trace's shapes keep their own grey (0 black - 255 white)
+      { points: [{x:100,y:100},{x:200,y:100}], commands: ["L"], fill: false, strokeWidthPx: 1.5, groupId: "faithful-line-2", tone: 153 },
+      { points: [{x:100,y:120},{x:200,y:120},{x:200,y:130},{x:100,y:130}], commands: ["L","L","L","Z"], fill: true, strokeWidthPx: 1, groupId: "faithful-fill-3", tone: 17 }],
   }, sourceId, 1);
   const before = JSON.stringify(document), drawing = sourceArtworkDrawing(document, sourceId, 1);
-  assert.equal(drawing.primitives.length, 1, "Raw candidates and architecture cannot leak into final artwork export");
+  assert.equal(drawing.primitives.length, 3, "Raw candidates and architecture cannot leak into final artwork export");
   assert.equal(drawing.coordinateSpace, "source_pixels");
   const resources = { fontBytes: await vectorExportFontBytes() };
   const options = { paper: "A4", orientation: "portrait", scale: 100 } as const;
   const svg = await exportFloorPlanVectorSvg(drawing, options, resources);
   assert.ok(svg.includes("uncalibrated image coordinates | no physical scale"));
   assert.ok(!svg.includes(" | 1:100 | ") && !svg.includes("<image"));
+  assert.ok(svg.includes('stroke="rgb(153,153,153)"') && svg.includes('fill="rgb(17,17,17)"'), "Traced shapes keep their own grey");
+  assert.equal((svg.match(/rgb\(/g) ?? []).length, 2, "A trace without a grey keeps the export's ink");
   const pdf = await PDFDocument.load(await exportFloorPlanVectorPdf(drawing, options, resources));
   assert.equal(pdf.getPageCount(), 1);
   assert.ok(vectorPdfPageContent(pdf).match(/\bc\b/), "Native cubic paths survive PDF export");

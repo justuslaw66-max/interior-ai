@@ -26,8 +26,10 @@ const CHIP_SIZE_CLASS: Record<ChipSize, string> = {
   regular: "h-8 touch:h-11 px-3",
   touch: "min-h-11 min-w-11 px-4",
 };
-const CHIP_PRESSED_CLASS = "border-neutral-900 bg-neutral-900 text-white";
-const CHIP_IDLE_CLASS = "border-neutral-300 bg-white text-neutral-800 enabled:hover:bg-neutral-50";
+// The control tokens in globals.css: pressed is the primary, idle the secondary.
+const CHIP_PRESSED_CLASS = "border-control-primary bg-control-primary text-control-on-primary";
+const CHIP_IDLE_CLASS =
+  "border-control-secondary-border bg-control-secondary text-control-label enabled:hover:bg-control-secondary-hover";
 
 function chipClassName({ pressed, size, className }: { pressed: boolean; size: ChipSize; className: string }) {
   return [CHIP_BASE_CLASS, CHIP_SIZE_CLASS[size], pressed ? CHIP_PRESSED_CLASS : CHIP_IDLE_CLASS, className]

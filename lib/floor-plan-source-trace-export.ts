@@ -7,6 +7,7 @@ export function sourceArtworkDrawing(document:FloorPlanDocumentV2,sourceId:strin
   const annotations=document.floors.flatMap(f=>f.annotations).filter(a=>isFinalSourceTrace(a)&&a.geometry.kind==="source_drawing"&&a.geometry.sourceId===sourceId&&a.geometry.pageNumber===pageNumber);
   const geometry=annotations[0]?.geometry;if(!geometry||geometry.kind!=="source_drawing")throw new Error("Trace this source before exporting artwork.");
   const primitives:PlanDrawingPrimitive[]=annotations.flatMap(a=>a.geometry.kind==="source_drawing"?[{id:a.id,kind:"path",path:sourceDrawingSvgPath(a.geometry),
-    fill:Boolean(a.geometry.fill),strokeWidth:a.geometry.strokeWidthPx??1,points:a.geometry.points.map(p=>({xMm:p.x,zMm:p.y})),role:a.geometry.fill?"source_fill":"source_stroke"}]:[]);
+    fill:Boolean(a.geometry.fill),strokeWidth:a.geometry.strokeWidthPx??1,points:a.geometry.points.map(p=>({xMm:p.x,zMm:p.y})),role:a.geometry.fill?"source_fill":"source_stroke",
+    ...(a.geometry.tone===undefined?{}:{tone:a.geometry.tone})}]:[]);
   return{coordinateSpace:"source_pixels",sourceSize:{width:geometry.widthPx,height:geometry.heightPx},geometryHash:document.revisionId,primitives,unsupported:[]};
 }

@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import {
+  parseFloorPlanVectorizerDrawing,
   parseFloorPlanVectorizerEvidence,
   type FloorPlanVectorizerEvidence,
 } from "./vectorizer-evidence-schema";
@@ -9,7 +10,8 @@ import {
 /**
  * Process boundary for the local floor-plan vectorizer (services/floorplan-vectorizer).
  * Nothing leaves the machine: the page is written to a private temporary folder,
- * the two Python programs run there with a bounded timeout, and the folder is removed.
+ * the two Python programs run there with a bounded timeout, and the folder is removed. With the faithful trace on
+ * (FLOOR_PLAN_FAITHFUL_TRACE=1) a third program draws a clean page as it is drawn, in place of stage 1's drawing.
  */
 
 export type FloorPlanVectorizerPage = {
@@ -41,6 +43,8 @@ export function floorPlanVectorizerRuntimeConfiguration(
 ) {
   const timeout = Number.parseInt(environment.FLOOR_PLAN_VECTORIZER_TIMEOUT_MS ?? "", 10);
   const exportFloor = Number.parseInt(environment.FLOOR_PLAN_VECTORIZER_EXPORT_FLOOR_MS ?? "", 10);
+  const faithfulTimeout = Number.parseInt(environment.FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS ?? "", 10);
+  const faithfulPixels = Number.parseInt(environment.FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS ?? "", 10);
   return Object.freeze({
     enabled: environment.FLOOR_PLAN_VECTORIZER_ENABLED === "1",
     pythonPath: environment.FLOOR_PLAN_VECTORIZER_PYTHON || "python3",
@@ -49,6 +53,11 @@ export function floorPlanVectorizerRuntimeConfiguration(
     // The exporter always gets at least this long, whatever the tracer left of the page's budget: a page
     // whose trace took the whole budget would otherwise lose its result in the last, short step.
     exportFloorMs: Number.isFinite(exportFloor) ? Math.max(10_000, Math.min(exportFloor, 300_000)) : 60_000,
+    // The faithful trace of a clean page (faithful_drawing.py) as the page's drawing. Off unless set; it fails soft, with
+    // its own time limit, and keeps to pictures of at most this many pixels (it needs about 400 MB per million).
+    faithfulTrace: environment.FLOOR_PLAN_FAITHFUL_TRACE === "1",
+    faithfulTimeoutMs: Number.isFinite(faithfulTimeout) ? Math.max(10_000, Math.min(faithfulTimeout, 600_000)) : 240_000,
+    faithfulMaxPixels: Number.isFinite(faithfulPixels) ? Math.max(100_000, Math.min(faithfulPixels, 16_000_000)) : 4_000_000,
   });
 }
 
@@ -126,13 +135,40 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
           signal: options.signal,
         }
       );
-      return parseFloorPlanVectorizerEvidence(
+      const evidence = parseFloorPlanVectorizerEvidence(
         JSON.parse(await readFile(`${base}.evidence.json`, "utf8"))
       );
+      return this.config.faithfulTrace ? await this.withFaithfulDrawing(evidence, input, base, options.signal) : evidence;
     } finally {
       await rm(workDirectory, { recursive: true, force: true });
     }
   }
+
+  /** The faithful trace of a clean page as its drawing (J, 22 Oct: "clean sharp vectors"). It fails soft: a picture
+   * that is not crisp or is too large, a failure or a timeout leaves stage 1's drawing, and the notes say why. Cancelling
+   * the import still cancels it. */
+  private async withFaithfulDrawing(evidence: FloorPlanVectorizerEvidence, input: string, base: string, signal?: AbortSignal) {
+    try {
+      await runProcess(
+        this.config.pythonPath,
+        [`${this.config.directory}/faithful_drawing.py`, input, `${base}.faithful.json`, `--max-pixels=${this.config.faithfulMaxPixels}`],
+        { timeoutMs: this.config.faithfulTimeoutMs, signal }
+      );
+      const result: unknown = JSON.parse(await readFile(`${base}.faithful.json`, "utf8"));
+      if (result && typeof result === "object" && "skipped" in result) {
+        return withNote(evidence, `Faithful trace not used: ${String(result.skipped)}`);
+      }
+      return { ...evidence, drawing: parseFloorPlanVectorizerDrawing(result) };
+    } catch (cause) {
+      if (signal?.aborted) throw cause;
+      return withNote(evidence, `Faithful trace unavailable: ${cause instanceof Error ? cause.message : "unknown error"}`);
+    }
+  }
+}
+
+function withNote(evidence: FloorPlanVectorizerEvidence, note: string): FloorPlanVectorizerEvidence {
+  const notes = [...evidence.semantics.notes, note.slice(0, 240)].slice(0, 30);
+  return { ...evidence, semantics: { ...evidence.semantics, notes } };
 }
 
 export function createDefaultFloorPlanVectorizerProvider(): FloorPlanVectorizerProvider | null {

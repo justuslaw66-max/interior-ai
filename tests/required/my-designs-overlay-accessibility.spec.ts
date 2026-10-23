@@ -192,15 +192,20 @@ async function openMoreMenu(page: Page) {
 }
 
 // Rename design keeps focus on the dialog itself until its first frame has run, then hands it to
-// the name field (EditorDialog, AX5). A fill sent before that frame lost its text in WebKit, so Save
-// kept the old name. Wait for the field, as command-bar-design-name and my-designs-page do, and
-// check the name took.
-async function renameDesign(page: Page, name: string) {
-  await page.getByTestId("editor-design-title").click();
+// the name field (EditorDialog, AX5), in the editor and on My designs alike. A fill sent before that
+// frame lost its text in WebKit, so Save kept the old name (in the editor, #170) or closed without
+// renaming (on the page, where an unchanged name saves nothing). Wait for the field, as
+// command-bar-design-name and my-designs-page do, and check the name took.
+async function typeDesignName(page: Page, name: string) {
   const input = page.getByTestId("design-rename-input");
   await expect(input).toBeFocused();
   await input.fill(name);
   await expect(input).toHaveValue(name);
+}
+
+async function renameDesign(page: Page, name: string) {
+  await page.getByTestId("editor-design-title").click();
+  await typeDesignName(page, name);
   await page.getByTestId("design-rename-save").click();
   await expect(page.getByTestId("design-rename-dialog")).toHaveCount(0);
   await expect(page.getByTestId("editor-design-title")).toHaveText(name);
@@ -240,8 +245,9 @@ test.afterAll(async () => {
 
 // Where a test's time went, and what the database and the pages were doing, printed when a test fails
 // or runs over 10 s. It showed the switch to the Pro user racing the consumer's page (see
-// openSecondUserPage). It stays for the stalls not yet explained: runs that reached the 30 s limit with
-// nothing pending, and WebKit's "Rename and Share" failing the same way.
+// openSecondUserPage), and WebKit's "Rename and Share" stuck at its second rename (typeDesignName). It
+// stays for the stalls not yet explained, such as WebKit's guest editor that loaded but never showed its
+// canvas (20 Oct, run 39490137232).
 const phases: Array<{ name: string; at: number }> = [];
 const pageEvents: Array<{ name: string; at: number }> = [];
 const openRequests = new Map<Request, { at: number; prefix: string }>();
@@ -259,13 +265,19 @@ function pathOf(url: string) {
   }
 }
 
-/** The page's address, its cards and its limit line, or why they couldn't be read within 3 s. */
+/**
+ * The page's address, its cards and its limit line, and the editor's canvas and loading screen, or why
+ * they couldn't be read within 3 s.
+ */
 async function myDesignsShown(page: Page) {
   const read = async () => {
     const cards = await page.locator('[data-testid^="my-design-card-"]').evaluateAll((elements) =>
       elements.map((element) => element.getAttribute("data-testid") ?? ""));
     const limit = await page.getByTestId("my-designs-limit").textContent({ timeout: 1_000 }).catch(() => null);
-    return `${cards.length} cards (${cards.slice(0, 3).join(", ")}), limit: ${limit ?? "none"}`;
+    const canvases = await page.getByTestId("scene-canvas").count();
+    const opening = await page.getByTestId("design-page-loading").count();
+    return `${cards.length} cards (${cards.slice(0, 3).join(", ")}), limit: ${limit ?? "none"}, scene canvas: ${canvases}, ` +
+      `"Opening your design…": ${opening > 0 ? "showing" : "not showing"}`;
   };
   let timer: ReturnType<typeof setTimeout> | undefined;
   const late = new Promise<string>((resolve) => {
@@ -280,10 +292,15 @@ async function myDesignsShown(page: Page) {
   }
 }
 
-/** Records a page's document requests, load events, errors and open requests for the report. */
+/**
+ * Records a page's document requests, load events, errors and open requests for the report, and any
+ * script or stylesheet that fails to load: a chunk that never arrives leaves the editor on its loading
+ * screen.
+ */
 function watchPage(page: Page, prefix: string) {
   const note = (name: string) => pageEvents.push({ name: `${prefix}${name}`, at: Date.now() });
   const isDocument = (request: Request) => request.resourceType() === "document";
+  const isPageCode = (request: Request) => ["document", "script", "stylesheet"].includes(request.resourceType());
   page.on("request", (request) => {
     openRequests.set(request, { at: Date.now(), prefix });
     if (isDocument(request)) note(`${request.method()} ${pathOf(request.url())} sent`);
@@ -291,10 +308,13 @@ function watchPage(page: Page, prefix: string) {
   page.on("requestfinished", (request) => openRequests.delete(request));
   page.on("requestfailed", (request) => {
     openRequests.delete(request);
-    if (isDocument(request)) note(`${pathOf(request.url())} failed: ${request.failure()?.errorText ?? "no reason given"}`);
+    if (isPageCode(request)) note(`${pathOf(request.url())} failed: ${request.failure()?.errorText ?? "no reason given"}`);
   });
   page.on("response", (response) => {
-    if (isDocument(response.request())) note(`${response.status()} ${pathOf(response.url())}`);
+    const request = response.request();
+    if (isDocument(request) || (isPageCode(request) && response.status() >= 400)) {
+      note(`${response.status()} ${pathOf(response.url())}`);
+    }
   });
   page.on("domcontentloaded", () => note("DOMContentLoaded"));
   page.on("load", () => note("load"));
@@ -560,7 +580,7 @@ test("Rename and Share hide the page, keep focus inside, and return it to the ca
 
     phase("rename and save");
     await chooseFromCardMenu(page, target.actions, "Rename");
-    await page.getByTestId("design-rename-input").fill("Renamed On The Page");
+    await typeDesignName(page, "Renamed On The Page");
     await page.getByTestId("design-rename-save").click();
     await expect(page.getByTestId("my-designs-status")).toHaveText("Renamed to Renamed On The Page");
     await expect(target.root).toContainText("Renamed On The Page");

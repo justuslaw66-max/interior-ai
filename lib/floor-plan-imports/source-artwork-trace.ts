@@ -15,7 +15,8 @@ import type { TracePath } from "./source-trace-fit";
 import type { SourcePointPx as Point } from "./deterministic-evidence";
 import { fitTraceStrokes } from "./source-trace-strokes";
 import { preserveTraceGlyphs, type TraceTextRegion } from "./source-trace-glyphs";
-import type { RegisteredVectorizerDrawing } from "./vectorizer-drawing";
+import { isFaithfulDrawing, type RegisteredVectorizerDrawing } from "./vectorizer-drawing";
+import { FAITHFUL_TRACE_VERSION,faithfulDrawingPaths } from "./source-trace-faithful";
 import { setImmediate as yieldTracing } from "node:timers/promises";
 export type SourceArtworkTrace = {version:string;widthPx:number;heightPx:number;paths:TracePath[];
   diagnostics:{inkPixels:number;removedSpeckPixels:number;rawChains:number;fillContours:number;curves:number;elapsedMs:number;glyphPixels:number;
@@ -82,15 +83,27 @@ async function paperGray(sharp:(typeof import("sharp"))["default"],bytes:Uint8Ar
   return clearPaper(gray,new Uint8Array(data),width,height,own).gray;
 }
 
+/** The faithful trace (faithful-trace-v1): the vectorizer's faithful drawing of a clean page, as it is. It already lies on
+ * the page's ink and copies the lettering too, so nothing is reworked or traced from the picture (no ink is counted). */
+function faithfulArtwork(drawing:RegisteredVectorizerDrawing,width:number,height:number,started:number):SourceArtworkTrace {
+  const paths=faithfulDrawingPaths(drawing);
+  if(paths.length>20_000)throw new Error("Source artwork exceeds the bounded editable path limit.");
+  return{version:FAITHFUL_TRACE_VERSION,widthPx:width,heightPx:height,paths,settings:{...TRACE_SETTINGS,version:FAITHFUL_TRACE_VERSION},
+    diagnostics:{inkPixels:0,removedSpeckPixels:0,rawChains:0,fillContours:0,curves:paths.reduce((s,p)=>s+p.commands.filter(c=>c==="C").length,0),
+      elapsedMs:Date.now()-started,glyphPixels:0,cleanItems:drawing.items.length}};
+}
+
 /** Artwork extraction. Without `clean` (v2) it is artwork only: architectural proposals and OCR never supply pixels or
  * shape templates. With `clean` (v3) the vectorizer's own drawing of the page supplies the walls, openings and lines as
- * clean shapes; the ink it does not explain - the lettering above all - is still traced from the picture. */
+ * clean shapes; the ink it does not explain - the lettering above all - is still traced from the picture. A faithful
+ * drawing (the faithful trace of a clean page) is the trace itself. */
 export async function extractSourceArtwork(bytes:Uint8Array,options:TraceOptions={}):Promise<SourceArtworkTrace> {
   const started=Date.now(),{default:sharp}=await import("sharp");
   const signal=AbortSignal.any([AbortSignal.timeout(30_000),...(options.signal?[options.signal]:[])]);signal.throwIfAborted();
   const {data,info}=await sharp(bytes,{limitInputPixels:16_000_000}).flatten({background:"white"}).greyscale().raw().toBuffer({resolveWithObject:true});
   const width=info.width,height=info.height;
   if((options.widthPx&&options.widthPx!==width)||(options.heightPx&&options.heightPx!==height))throw new Error("Source trace frame changed.");
+  if(options.clean?.items.length&&isFaithfulDrawing(options.clean))return faithfulArtwork(options.clean,width,height,started);
   const gray=options.clean?.items.length?await paperGray(sharp,bytes,new Uint8Array(data),width,height,options.clean):new Uint8Array(data);
   const {mask}=traceInkMask({gray,width,height,signal});
   await yieldTracing();signal.throwIfAborted();

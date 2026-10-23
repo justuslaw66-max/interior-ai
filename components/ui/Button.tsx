@@ -16,6 +16,9 @@ import { forwardRef, type ButtonHTMLAttributes } from "react";
  * surrounding text's size and line; a link that stands alone adds its own target height. `mini` is
  * a 24px square for controls docked to a map or a panel's edge (the room navigator, the floating
  * panels' rail), 44px on touch screens like every other size.
+ *
+ * Its colours are the control tokens in globals.css (dark mode step 3, J, 22 Oct): in dark the
+ * primary is near-white, secondary a grey fill, danger a red tint, and the link a lighter blue.
  */
 export type ButtonVariant = "primary" | "secondary" | "quiet" | "danger" | "link";
 export type ButtonSize = "touch" | "regular" | "compact" | "icon" | "round" | "mini" | "inline";
@@ -31,11 +34,11 @@ const BUTTON_BASE_CLASS =
   "inline-flex items-center justify-center gap-2 border font-semibold outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
 
 const BUTTON_VARIANT_CLASS: Record<ButtonVariant, string> = {
-  primary: "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800",
-  secondary: "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50",
-  quiet: "border-transparent bg-transparent text-neutral-800 hover:bg-neutral-100",
-  danger: "border-red-600 bg-red-600 text-white hover:bg-red-700",
-  link: "border-transparent bg-transparent text-accent underline-offset-2 hover:underline focus-visible:underline",
+  primary: "border-control-primary bg-control-primary text-control-on-primary hover:bg-control-primary-hover",
+  secondary: "border-control-secondary-border bg-control-secondary text-label hover:bg-control-secondary-hover",
+  quiet: "border-transparent bg-transparent text-control-label hover:bg-control-quiet-hover",
+  danger: "border-control-danger-border bg-control-danger text-control-on-danger hover:bg-control-danger-hover",
+  link: "border-transparent bg-transparent text-link underline-offset-2 hover:underline focus-visible:underline",
 };
 
 const BUTTON_SIZE_CLASS: Record<ButtonSize, string> = {

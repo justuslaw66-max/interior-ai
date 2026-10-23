@@ -3,7 +3,7 @@
 import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
 import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
 import type { ReviewOverlay } from "@/lib/floor-plan-import-review-overlay";
-import { sourceDrawingSvgPath, sourceDrawingSvgPoints as points } from "@/lib/floor-plan-source-drawing";
+import { sourceDrawingInk, sourceDrawingSvgPath, sourceDrawingSvgPoints as points } from "@/lib/floor-plan-source-drawing";
 
 function SourceArtwork({ annotations, selectedId, picking, onSelect, focused }: {
   annotations: FloorPlanAnnotationV2[]; selectedId: string; picking: boolean; onSelect: (id: string) => void; focused: Set<string>;
@@ -60,7 +60,7 @@ function SourceArtworkShape({geometry,selected,trace,proposal,picking}:{geometry
   return <>
           <path d={sourceDrawingSvgPath(geometry)} fill="none" stroke="transparent" strokeWidth={12}
             vectorEffect="non-scaling-stroke" pointerEvents={picking ? "none" : "stroke"} aria-hidden="true" />
-          <path data-source-artwork-shape data-final-trace={trace||undefined} d={sourceDrawingSvgPath(geometry)} fill={geometry.fill ? (selected?"#dc2626":"#333") : "none"} stroke={geometry.fill?"none":selected ? "#dc2626" : trace ? "#333" : "#7c3aed"}
+          <path data-source-artwork-shape data-final-trace={trace||undefined} d={sourceDrawingSvgPath(geometry)} fill={geometry.fill ? (selected?"#dc2626":sourceDrawingInk(geometry,"#333")) : "none"} stroke={geometry.fill?"none":selected ? "#dc2626" : trace ? sourceDrawingInk(geometry,"#333") : "#7c3aed"}
             strokeDasharray={proposal ? "4 3" : undefined}
             strokeWidth={trace ? geometry.strokeWidthPx ?? 1 : selected ? 4 : 1.5} vectorEffect={trace?undefined:"non-scaling-stroke"} pointerEvents="none" />
           {trace && selected ? geometry.points.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r={1.4} fill="white" stroke="#dc2626" strokeWidth={0.4}/>) : null}
