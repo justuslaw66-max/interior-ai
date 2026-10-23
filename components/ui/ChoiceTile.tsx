@@ -23,11 +23,13 @@ export type ChoiceTileProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "ari
  */
 export const CHOSEN_SWATCH_RING = "0 0 0 2px #fff, 0 0 0 4px #171717";
 
+// The colour tokens in globals.css: a card with a hairline edge, and the primary's colour for the
+// chosen edge (near-white in dark).
 const CHOICE_TILE_BASE_CLASS =
-  "rounded-lg border bg-white transition-colors disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
-const CHOICE_TILE_SELECTED_CLASS = "border-neutral-900 text-neutral-900 inset-ring inset-ring-neutral-900";
+  "rounded-lg border bg-surface-secondary transition-colors disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none";
+const CHOICE_TILE_SELECTED_CLASS = "border-control-primary text-label inset-ring inset-ring-control-primary";
 const CHOICE_TILE_IDLE_CLASS =
-  "border-neutral-200 text-neutral-700 enabled:hover:border-neutral-400 enabled:hover:text-neutral-900";
+  "border-separator text-control-label-idle enabled:hover:border-control-edge-hover enabled:hover:text-label";
 
 function choiceTileClassName({ selected, className = "" }: { selected: boolean; className?: string }): string {
   return [CHOICE_TILE_BASE_CLASS, selected ? CHOICE_TILE_SELECTED_CLASS : CHOICE_TILE_IDLE_CLASS, className]
