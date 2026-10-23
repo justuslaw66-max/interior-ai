@@ -27,10 +27,10 @@ export function CabinetFinishSummary({
     <span data-testid={testId} className="flex min-w-0 flex-1 items-center gap-3">
       <CabinetFinishSwatch material={swatch} className={large ? "h-24 w-12" : "h-14 w-7"} />
       <span className="grid min-w-0 gap-0.5">
-        <span className="text-xs font-semibold text-neutral-500">{label}</span>
-        <span className={`${large ? "text-[15px]" : "text-sm"} font-semibold text-neutral-900`}>{choice.title}</span>
+        <span className="text-xs font-semibold text-label-secondary">{label}</span>
+        <span className={`${large ? "text-[15px]" : "text-sm"} font-semibold text-label`}>{choice.title}</span>
         {choice.detail ? (
-          <span className={`text-xs leading-4 ${choice.placeholder ? "text-amber-700" : "text-neutral-600"}`}>
+          <span className={`text-xs leading-4 ${choice.placeholder ? "text-amber-700" : "text-label-secondary"}`}>
             {choice.detail}
           </span>
         ) : null}
@@ -74,7 +74,7 @@ export function CabinetFinishField({
         </Button>
       </div>
       {open ? (
-        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+        <div className="rounded-lg border border-separator bg-surface p-3">
           <CabinetFinishPicker value={value} onChange={onChange} testIdPrefix={`${testId}-picker`} disabled={disabled} compact />
         </div>
       ) : null}

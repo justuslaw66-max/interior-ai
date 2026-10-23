@@ -1556,7 +1556,7 @@ export function CabinetryStudioGuidedView({
                         ) : null}
                       </div>
                       <CabinetFinishPicker value={currentFinishId} onChange={applyGuidedMaterial} testIdPrefix="cabinet-guided-material" />
-                      <div aria-live="polite" className="mt-4 border-t border-neutral-200 pt-4">
+                      <div aria-live="polite" className="mt-4 border-t border-separator pt-4">
                         <CabinetFinishSummary materialId={currentFinishId} materials={definition.materials} label="Selected" large testId="cabinet-guided-material-selected" />
                       </div>
                     </div>

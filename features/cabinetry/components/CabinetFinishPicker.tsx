@@ -29,7 +29,7 @@ export function CabinetFinishSwatch({
   return (
     <span
       aria-hidden="true"
-      className={`block shrink-0 rounded-md border border-black/10 bg-cover bg-center ${className}`}
+      className={`block shrink-0 rounded-md border border-separator bg-cover bg-center ${className}`}
       style={{
         backgroundColor: material.color ?? "#d6d3d1",
         backgroundImage: material.swatchUrl ? `url(${material.swatchUrl})` : undefined,
@@ -65,10 +65,10 @@ function CabinetFinishTile({
       onClick={onPick}
     >
       <CabinetFinishSwatch material={finish} className={compact ? "h-16 w-full" : "h-24 w-full"} />
-      <span className="text-xs font-bold text-neutral-900">{finish.supplierCode}</span>
-      {compact ? null : <span className="text-xs leading-4 text-neutral-600">{finish.designName}</span>}
+      <span className="text-xs font-bold text-label">{finish.supplierCode}</span>
+      {compact ? null : <span className="text-xs leading-4 text-label-secondary">{finish.designName}</span>}
       {badge && !compact ? (
-        <span className="self-start rounded bg-neutral-100 px-1.5 py-0.5 text-xs font-semibold text-neutral-700">
+        <span className="self-start rounded bg-control-track px-1.5 py-0.5 text-xs font-semibold text-label-secondary">
           {badge}
         </span>
       ) : null}
@@ -148,7 +148,7 @@ function CabinetFinishResults({
         ))}
       </div>
       {matches.length === 0 ? (
-        <p className="text-sm text-neutral-500">No design matches. Try a code like 5003, or a word like oak.</p>
+        <p className="text-sm text-label-secondary">No design matches. Try a code like 5003, or a word like oak.</p>
       ) : null}
       {limited && matches.length > FIRST_PAGE ? (
         <Button data-testid={`${testIdPrefix}-show-all`} size="compact" className="justify-self-start" onClick={onShowAll}>
@@ -188,7 +188,7 @@ export function CabinetFinishPicker({
 
   return (
     <div data-testid={testIdPrefix} className="grid gap-3">
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-label-secondary">
         {CABINET_FINISHES.length} real laminate designs, drawn at their real size.
       </p>
       <CabinetFinishCategoryChips
@@ -199,12 +199,12 @@ export function CabinetFinishPicker({
           setQuery("");
         }}
       />
-      <label className="grid gap-1.5 text-xs font-semibold text-neutral-600">
+      <label className="grid gap-1.5 text-xs font-semibold text-label-secondary">
         Search by code or name
         <input
           type="search"
           data-testid={`${testIdPrefix}-search`}
-          className="h-9 rounded-md border border-neutral-300 bg-white px-3 text-sm font-normal text-neutral-900 focus:border-neutral-900"
+          className="h-9 rounded-md border border-control-secondary-border bg-surface-secondary px-3 text-sm font-normal text-label focus:border-control-primary"
           placeholder="For example 5003 or walnut"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
