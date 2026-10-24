@@ -2,7 +2,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import "../cabinetry-tailwind.css";
 import { CABINET_HARDWARE } from "../catalog/hardware";
-import { CABINET_MATERIALS } from "../catalog/materials";
+import { findCabinetFinishMaterial, syncCabinetFinishMaterials } from "../catalog/finishes";
 import {
   CABINET_EQUAL_MODULE_WIDTHS_PARAMETER_PATH,
   getCabinetAutomationState,
@@ -518,8 +518,7 @@ export default function CabinetryStudio({
             ? activeModule?.materialId ?? ""
             : selectedPart?.materialId ?? "";
   const selectedPartMaterialName =
-    definition.materials.find((material) => material.id === selectedPartMaterialId)?.name ??
-    CABINET_MATERIALS.find((material) => material.id === selectedPartMaterialId)?.name ??
+    findCabinetFinishMaterial(selectedPartMaterialId, definition.materials)?.name ??
     formatCabinetLabel(selectedPartMaterialId || "not assigned");
   const allAvailableSpaces = useMemo(
     () => [
@@ -760,7 +759,8 @@ export default function CabinetryStudio({
     return true;
   };
 
-  const replaceDefinition = (nextDefinition: CabinetDefinition, recordHistory = true) => {
+  const replaceDefinition = (candidate: CabinetDefinition, recordHistory = true) => {
+    const nextDefinition = syncCabinetFinishMaterials(candidate); // laminates follow the choices
     if (rejectNonFiniteDefinition(nextDefinition)) return false;
     const previousDefinition = definitionRef.current;
     if (recordHistory) {

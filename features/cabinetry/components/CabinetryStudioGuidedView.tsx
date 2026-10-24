@@ -6,7 +6,9 @@ import { Chip } from "@/components/ui/Chip";
 import { ChoiceTile } from "@/components/ui/ChoiceTile";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { CABINET_HARDWARE, isCabinetFrontHardwareType } from "../catalog/hardware";
-import { CABINET_MATERIALS } from "../catalog/materials";
+import { describeCabinetFinishChoice, resolveCabinetModuleFinishId } from "../catalog/finishes";
+import { CabinetFinishPicker } from "./CabinetFinishPicker";
+import { CabinetFinishSummary } from "./CabinetFinishField";
 import {
   isCabinetModuleWidthLocked,
   setCabinetModuleWidth,
@@ -53,7 +55,6 @@ import { CabinetDoorStylePreview, CabinetHandleTypePreview } from "./CabinetChoi
 import { CabinetDrawerConfigurationPreview } from "./CabinetConfigurationPreviews";
 import { CabinetContextualOnboarding } from "./CabinetContextualOnboarding";
 import {
-  GUIDED_MATERIALS,
   GUIDED_TEMPLATE_CATEGORIES,
   doorStyles,
   frontTypes,
@@ -367,9 +368,8 @@ export function CabinetryStudioGuidedView({
   ] = bindings;
 
     const currentStep = CABINET_GUIDED_STEPS[guidedStep];
-    const currentMaterial = CABINET_MATERIALS.find(
-      (material) => material.id === (activeModule?.frontMaterialId ?? activeModule?.materialId)
-    );
+    const currentFinishId = resolveCabinetModuleFinishId(activeModule);
+    const currentFinish = describeCabinetFinishChoice(currentFinishId, definition.materials);
     const currentHardware = CABINET_HARDWARE.find(
       (hardware) => hardware.id === (activeModule?.hardwareId ?? "none")
     );
@@ -1555,24 +1555,9 @@ export function CabinetryStudioGuidedView({
                           </Button>
                         ) : null}
                       </div>
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        {GUIDED_MATERIALS.map((material) => {
-                          const isSelected = activeModule.frontMaterialId === material.id;
-                          return (
-                            <ChoiceTile
-                              key={material.id}
-                              data-testid={`cabinet-guided-material-${material.id}`}
-                              selected={isSelected} className="flex items-center gap-3 p-3 text-left text-sm font-semibold"
-                              onClick={() => applyGuidedMaterial(material.id)}
-                            >
-                              <span
-                                className="h-9 w-9 shrink-0 rounded-lg border border-black/10 shadow-inner"
-                                style={{ backgroundColor: material.color ?? "#d6d3d1" }}
-                              />
-                              <span>{material.name}</span>
-                            </ChoiceTile>
-                          );
-                        })}
+                      <CabinetFinishPicker value={currentFinishId} onChange={applyGuidedMaterial} testIdPrefix="cabinet-guided-material" />
+                      <div aria-live="polite" className="mt-4 border-t border-separator pt-4">
+                        <CabinetFinishSummary materialId={currentFinishId} materials={definition.materials} label="Selected" large testId="cabinet-guided-material-selected" />
                       </div>
                     </div>
 
@@ -1647,7 +1632,7 @@ export function CabinetryStudioGuidedView({
                     templateLabel={activePreset?.label ?? definition.name}
                     overallSizeLabel={`${formatProjectMeasurement(definition.totalWidth)} × ${formatProjectMeasurement(definition.height)} × ${formatProjectMeasurement(definition.depth)}`}
                     moduleCount={definition.modules.length}
-                    finishLabel={currentMaterial?.name ?? "Custom finish"}
+                    finishLabel={currentFinish.title}
                     quoteSummary={consumerEstimate}
                     definition={definition}
                     errors={errors}
@@ -1705,7 +1690,7 @@ export function CabinetryStudioGuidedView({
               presetLabel={activePreset?.label ?? definition.name}
               dimensionsLabel={`W ${formatProjectMeasurement(definition.totalWidth)} · H ${formatProjectMeasurement(definition.height)} · D ${formatProjectMeasurement(definition.depth)}`}
               selectionLabel={semanticSelectionLabel}
-              materialLabel={currentMaterial?.name ?? "Custom finish"}
+              materialLabel={currentFinish.title}
               hardwareLabel={currentHardware?.name ?? "No handles"}
               errorCount={errors.length}
               warningCount={warnings.length}

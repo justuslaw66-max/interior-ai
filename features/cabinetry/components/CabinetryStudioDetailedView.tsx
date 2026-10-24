@@ -4,7 +4,12 @@ import { Lock, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ChoiceTile } from "@/components/ui/ChoiceTile";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
-import { CABINET_MATERIALS } from "../catalog/materials";
+import {
+  CABINET_DEFAULT_FINISH_ID,
+  defaultCabinetContrastingFinishId,
+  inheritCabinetFinishId,
+  resolveCabinetModuleFinishId,
+} from "../catalog/finishes";
 import {
   getCabinetParameterState,
   isCabinetModuleWidthLocked,
@@ -210,6 +215,7 @@ import type {
 } from "../types";
 import type { CabinetOverallDimensionField } from "./CabinetOverallDimensionHandles";
 import { CabinetAssemblyInspector } from "./CabinetAssemblyInspector";
+import { CabinetFinishField } from "./CabinetFinishField";
 import { CabinetPartInspector } from "./CabinetPartInspector";
 import type { CabinetPreviewView } from "./CabinetPreviewCameraController";
 import {
@@ -2396,30 +2402,8 @@ export function CabinetryStudioDetailedView({
                     {activeMaterialLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
                     {activeMaterialLocked ? "Material assignment locked" : "Lock material assignment"}
                   </Button>
-                  <Field label="Cabinet structure" helper="Professional term: carcass.">
-                    <select data-testid="cabinet-input-material" className={selectClass()} disabled={activeMaterialLocked} value={activeModule.materialId} onChange={(event) => updateModule(activeModule.id, { materialId: event.target.value })}>
-                      {CABINET_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}
-                    </select>
-                  </Field>
-                  <Field label="Front">
-                    <select data-testid="cabinet-input-front-material" className={selectClass()} disabled={activeMaterialLocked} value={activeModule.frontMaterialId ?? activeModule.materialId} onChange={(event) => updateModule(activeModule.id, { frontMaterialId: event.target.value })}>
-                      {CABINET_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}
-                    </select>
-                  </Field>
-                  <div className="flex gap-1.5">
-                    {CABINET_MATERIALS.map((material) => (
-                      <button
-                        key={material.id}
-                        type="button"
-                        disabled={activeMaterialLocked}
-                        className="h-6 w-6 rounded-full border border-neutral-300"
-                        style={{ background: material.color }}
-                        title={material.name}
-                        aria-label={`Use ${material.name} as the front material`}
-                        onClick={() => updateModule(activeModule.id, { frontMaterialId: material.id })}
-                      />
-                    ))}
-                  </div>
+                  <CabinetFinishField key={`${activeModule.id}:material`} label="Cabinet structure (carcass)" testId="cabinet-input-material" value={activeModule.materialId} materials={definition.materials} disabled={activeMaterialLocked} onChange={(materialId) => updateModule(activeModule.id, { materialId })} />
+                  <CabinetFinishField key={`${activeModule.id}:front`} label="Doors and drawer fronts" testId="cabinet-input-front-material" value={resolveCabinetModuleFinishId(activeModule)} materials={definition.materials} disabled={activeMaterialLocked} onChange={(frontMaterialId) => updateModule(activeModule.id, { frontMaterialId })} />
                 </div>
 
                 <div hidden={!activeIsCabinetComponent} className="grid gap-3">
@@ -2552,7 +2536,7 @@ export function CabinetryStudioDetailedView({
                                 value === "automatic" ? undefined : (value as CabinetEdgeTreatment),
                               edgeMaterialId:
                                 value === "contrasting_edge_band"
-                                  ? activeModule.edgeMaterialId ?? CABINET_MATERIALS.find((material) => material.id !== activeModule.materialId)?.id
+                                  ? activeModule.edgeMaterialId ?? defaultCabinetContrastingFinishId(activeModule)
                                   : activeModule.edgeMaterialId,
                             });
                           }}
@@ -2563,19 +2547,7 @@ export function CabinetryStudioDetailedView({
                         </select>
                       </Field>
                       {activeModule.edgeTreatment === "contrasting_edge_band" || activeModule.edgeTreatment === "solid_lipping" ? (
-                        <Field label={activeModule.edgeTreatment === "contrasting_edge_band" ? "Contrasting edge finish" : "Lipping material"}>
-                          <select
-                            data-testid="cabinet-input-edge-material"
-                            className={selectClass()}
-                            value={activeModule.edgeMaterialId ?? ""}
-                            onChange={(event) => updateModule(activeModule.id, { edgeMaterialId: event.target.value || undefined })}
-                          >
-                            <option value="">Choose a material</option>
-                            {CABINET_MATERIALS.filter((material) => !["service_zone_marker", "upholstery_neutral", "glass"].includes(material.id)).map((material) => (
-                              <option key={material.id} value={material.id}>{material.name}</option>
-                            ))}
-                          </select>
-                        </Field>
+                        <CabinetFinishField key={`${activeModule.id}:edge`} label={activeModule.edgeTreatment === "contrasting_edge_band" ? "Contrasting edge finish" : "Lipping material"} testId="cabinet-input-edge-material" value={activeModule.edgeMaterialId} materials={definition.materials} onChange={(edgeMaterialId) => updateModule(activeModule.id, { edgeMaterialId })} />
                       ) : null}
                       <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
                         <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
@@ -2910,10 +2882,7 @@ export function CabinetryStudioDetailedView({
                               ? prev.faceFrameDepth ?? CABINET_DEFAULT_FACE_FRAME_DEPTH
                               : prev.faceFrameDepth,
                             faceFrameMaterialId: event.target.checked
-                              ? prev.faceFrameMaterialId ??
-                                activeModule?.frontMaterialId ??
-                                activeModule?.materialId ??
-                                CABINET_MATERIALS[0]?.id
+                              ? prev.faceFrameMaterialId ?? inheritCabinetFinishId(activeModule)
                               : prev.faceFrameMaterialId,
                           }))
                         }
@@ -2945,27 +2914,7 @@ export function CabinetryStudioDetailedView({
                             </Field>
                           ))}
                         </div>
-                        <Field label="Frame material">
-                          <select
-                            data-testid="cabinet-input-face-frame-material"
-                            className={selectClass()}
-                            value={
-                              definition.faceFrameMaterialId ??
-                              activeModule?.frontMaterialId ??
-                              activeModule?.materialId ??
-                              CABINET_MATERIALS[0]?.id ??
-                              ""
-                            }
-                            onChange={(event) =>
-                              updateDefinition((prev) => ({
-                                ...prev,
-                                faceFrameMaterialId: event.target.value,
-                              }))
-                            }
-                          >
-                            {CABINET_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}
-                          </select>
-                        </Field>
+                        <CabinetFinishField label="Frame material" testId="cabinet-input-face-frame-material" value={definition.faceFrameMaterialId ?? resolveCabinetModuleFinishId(activeModule) ?? CABINET_DEFAULT_FINISH_ID} materials={definition.materials} onChange={(faceFrameMaterialId) => updateDefinition((prev) => ({ ...prev, faceFrameMaterialId }))} />
                       </>
                     ) : null}
                   </div>
@@ -2997,7 +2946,7 @@ export function CabinetryStudioDetailedView({
                               ? prev.countertopOverhangBack ?? 0
                               : prev.countertopOverhangBack,
                             countertopMaterialId: event.target.checked
-                              ? prev.countertopMaterialId ?? activeModule?.frontMaterialId ?? activeModule?.materialId ?? CABINET_MATERIALS[0]?.id
+                              ? prev.countertopMaterialId ?? inheritCabinetFinishId(activeModule)
                               : prev.countertopMaterialId,
                           }))
                         }
@@ -3043,21 +2992,7 @@ export function CabinetryStudioDetailedView({
                             </Field>
                           ))}
                         </div>
-                        <Field label="Top material">
-                          <select
-                            data-testid="cabinet-input-countertop-material"
-                            className={selectClass()}
-                            value={definition.countertopMaterialId ?? activeModule?.frontMaterialId ?? activeModule?.materialId ?? CABINET_MATERIALS[0]?.id ?? ""}
-                            onChange={(event) =>
-                              updateDefinition((prev) => ({
-                                ...prev,
-                                countertopMaterialId: event.target.value,
-                              }))
-                            }
-                          >
-                            {CABINET_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}
-                          </select>
-                        </Field>
+                        <CabinetFinishField label="Top material" testId="cabinet-input-countertop-material" value={definition.countertopMaterialId ?? resolveCabinetModuleFinishId(activeModule) ?? CABINET_DEFAULT_FINISH_ID} materials={definition.materials} onChange={(countertopMaterialId) => updateDefinition((prev) => ({ ...prev, countertopMaterialId }))} />
                         <div className="grid gap-2 rounded-md border border-neutral-200 bg-neutral-50 p-2">
                           <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
                             <input
@@ -3075,11 +3010,7 @@ export function CabinetryStudioDetailedView({
                                     ? prev.backsplashThickness ?? CABINET_DEFAULT_BACKSPLASH_THICKNESS
                                     : prev.backsplashThickness,
                                   backsplashMaterialId: event.target.checked
-                                    ? prev.backsplashMaterialId ??
-                                      prev.countertopMaterialId ??
-                                      activeModule?.frontMaterialId ??
-                                      activeModule?.materialId ??
-                                      CABINET_MATERIALS[0]?.id
+                                    ? prev.backsplashMaterialId ?? prev.countertopMaterialId ?? inheritCabinetFinishId(activeModule)
                                     : prev.backsplashMaterialId,
                                 }))
                               }
@@ -3114,28 +3045,7 @@ export function CabinetryStudioDetailedView({
                                   />
                                 </Field>
                               </div>
-                              <Field label="Splash material">
-                                <select
-                                  data-testid="cabinet-input-backsplash-material"
-                                  className={selectClass()}
-                                  value={
-                                    definition.backsplashMaterialId ??
-                                    definition.countertopMaterialId ??
-                                    activeModule?.frontMaterialId ??
-                                    activeModule?.materialId ??
-                                    CABINET_MATERIALS[0]?.id ??
-                                    ""
-                                  }
-                                  onChange={(event) =>
-                                    updateDefinition((prev) => ({
-                                      ...prev,
-                                      backsplashMaterialId: event.target.value,
-                                    }))
-                                  }
-                                >
-                                  {CABINET_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}
-                                </select>
-                              </Field>
+                              <CabinetFinishField label="Splash material" testId="cabinet-input-backsplash-material" value={definition.backsplashMaterialId ?? definition.countertopMaterialId ?? resolveCabinetModuleFinishId(activeModule) ?? CABINET_DEFAULT_FINISH_ID} materials={definition.materials} onChange={(backsplashMaterialId) => updateDefinition((prev) => ({ ...prev, backsplashMaterialId }))} />
                             </>
                           ) : null}
                         </div>
@@ -3162,10 +3072,7 @@ export function CabinetryStudioDetailedView({
                                 )
                               : prev.countertopOverhangBack,
                             countertopMaterialId: event.target.checked
-                              ? prev.countertopMaterialId ??
-                                activeModule?.frontMaterialId ??
-                                activeModule?.materialId ??
-                                CABINET_MATERIALS[0]?.id
+                              ? prev.countertopMaterialId ?? inheritCabinetFinishId(activeModule)
                               : prev.countertopMaterialId,
                             islandSeatingOverhangEnabled: event.target.checked,
                             islandSeatingOverhangDepth: event.target.checked

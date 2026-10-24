@@ -1645,7 +1645,7 @@ export function runSpecialtyPresetContractTests(): void {
     "cut list should include generated slat strips"
   );
   assert(
-    slatWallDocumentation.materialSchedule.some((item) => item.materialId === "walnut_veneer"),
+    slatWallDocumentation.materialSchedule.some((item) => item.materialId === "greenlam-woodgrains-791"),
     "material schedule should include slat material"
   );
   assert(

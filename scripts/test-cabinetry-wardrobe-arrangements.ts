@@ -65,8 +65,8 @@ function apply(
   assert.equal(JSON.stringify(result.definition.modules[1]), untouchedModuleJson, "the unselected module must remain byte-for-byte unchanged");
   assert.equal(result.definition.totalWidth, 3000);
   assert.equal(result.definition.modules[0].width, 1500);
-  assert.equal(result.definition.modules[0].materialId, "white_melamine");
-  assert.equal(result.definition.modules[0].frontMaterialId, "white_melamine");
+  assert.equal(result.definition.modules[0].materialId, "greenlam-solids-101");
+  assert.equal(result.definition.modules[0].frontMaterialId, "greenlam-solids-101");
   assert.equal(result.definition.modules[0].grainDirection, "none");
   assert.deepEqual(result.definition.modules[0].exposedFaces, ["front", "left"]);
   assert.equal(getMatchingCabinetWardrobeArrangementId(result.definition, MODULE_ID), arrangementId);
