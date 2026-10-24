@@ -135,6 +135,7 @@ const LIGHT_ROLE_TOKENS = {
   "danger-tint-border": "var(--color-red-200)",
   "on-danger-tint": "var(--color-red-700)",
   "surface-floating-edge": "transparent",
+  "floating-card": "var(--color-white)",
   "floating-field": "var(--color-white)",
   "floating-tile": "var(--color-neutral-50)",
   "floating-elevated": "var(--color-white)",
@@ -183,6 +184,7 @@ const DARK_CHOICES = {
   "surface-band": "transparent",
   "surface-floating-secondary": "#3a3a3c",
   "surface-floating-edge": "rgba(84, 84, 88, 0.65)",
+  "floating-card": "#3a3a3c",
   "floating-field": "#3a3a3c",
   "floating-tile": "#3a3a3c",
   "floating-on-danger": "#ff8a84",
@@ -194,6 +196,7 @@ for (const [name, value] of Object.entries(DARK_CHOICES)) {
 // A floating surface (data-surface="floating") swaps these tokens for their floating values. In light
 // the floating values are the ones they replace, so a floating surface looks as it did.
 const FLOATING_SWAPS = {
+  "surface-secondary": "floating-card",
   field: "floating-field",
   tile: "floating-tile",
   "surface-elevated": "floating-elevated",
@@ -300,14 +303,17 @@ const TEXT_PAIRS: ReadonlyArray<readonly [text: string, fill: string | null, gro
   ["on-success-tint", "success-tint", ["surface-floating"]],
   ["on-warning-tint", "warning-tint", ["surface-floating"]],
   ["on-success-tint", null, ["floating-tile"]],
-  ["label", null, ["floating-field", "floating-tile", "floating-elevated"]],
-  ["label-secondary", null, ["floating-field", "floating-tile", "floating-elevated"]],
+  ["label", null, ["floating-card", "floating-field", "floating-tile", "floating-elevated"]],
+  ["label-secondary", null, ["floating-card", "floating-field", "floating-tile", "floating-elevated"]],
+  ["control-label-idle", null, ["floating-card"]],
   ["control-label", null, ["floating-field", "floating-tile"]],
   ["control-label-idle", "control-track", ["floating-tile"]],
 ];
 // The focus ring and the primary's black (or near-white) edge need 3:1 against what's around them.
 const EDGE_PAIRS: ReadonlyArray<readonly [edge: string, grounds: readonly string[]]> = [
   ["control-primary", CONTROL_GROUNDS],
+  // A chosen ChoiceTile's edge on a floating surface's card.
+  ["control-primary", ["floating-card"]],
 ];
 for (const [mode, tokens, focus] of [
   ["light", lightTokens, readConsumerHexToken("focus")],

@@ -90,6 +90,7 @@
   /* On a floating surface (dark mode step 5.2b): see [data-surface="floating"] below. In light they
      are the usual values, so a floating surface looks as before. */
   --surface-floating-edge: transparent;
+  --floating-card: var(--color-white);
   --floating-field: var(--color-white);
   --floating-tile: var(--color-neutral-50);
   --floating-elevated: var(--color-white);
@@ -174,6 +175,7 @@
   --danger-tint-border: transparent;
   --on-danger-tint: #ff6961;
   --surface-floating-edge: rgba(84, 84, 88, 0.65);
+  --floating-card: #3a3a3c;
   --floating-field: #3a3a3c;
   --floating-tile: #3a3a3c;
   --floating-elevated: #3a3a3c;
@@ -202,11 +204,13 @@
 
 /* A floating surface: the right rail's cards, the item panel and the bars over the canvas
    (data-surface="floating", on a surface-floating background). In dark it is #2C2C2E, so what sits on
-   it goes a step up: fields, tiles and popovers are #3A3A3C (J, 24 Oct). Red and blue words on their
+   it goes a step up: cards (a ChoiceTile's surface-secondary), fields, tiles and popovers are #3A3A3C
+   (J, 24 Oct). Red and blue words on their
    tints lighten to #FF8A84 and #64B0FF, where #FF6961 and #409CFF read only 4.1:1 and 4.0:1 (J chose
    #FF8A84 for Delete there). A phone's step sheet is not floating: its inspector keeps the panel's
    values. */
 [data-surface="floating"] {
+  --surface-secondary: var(--floating-card);
   --field: var(--floating-field);
   --tile: var(--floating-tile);
   --surface-elevated: var(--floating-elevated);
