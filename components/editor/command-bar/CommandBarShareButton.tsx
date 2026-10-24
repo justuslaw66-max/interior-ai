@@ -27,7 +27,7 @@ export function CommandBarShareButton({ isSharing, onShare }: CommandBarShareBut
       title="Copy a link to this design"
       aria-busy={isSharing}
       aria-disabled={isSharing}
-      className="inline-flex h-11 w-11 shrink-0 items-center justify-center gap-2 rounded-[10px] text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-100 aria-disabled:cursor-wait aria-disabled:opacity-70 md:h-9 md:w-9 md:rounded-lg md:border md:border-neutral-900 md:bg-neutral-900 md:text-white md:hover:bg-neutral-800 lg:w-auto lg:pl-3.5 lg:pr-4"
+      className="inline-flex h-11 w-11 shrink-0 items-center justify-center gap-2 rounded-[10px] text-sm font-bold leading-none text-label hover:bg-control-quiet-hover aria-disabled:cursor-wait aria-disabled:opacity-70 md:h-9 md:w-9 md:rounded-lg md:border md:border-control-primary md:bg-control-primary md:text-control-on-primary md:hover:bg-control-primary-hover lg:w-auto lg:pl-3.5 lg:pr-4"
       onClick={isSharing ? undefined : onShare}
     >
       <Share2 className="h-5 w-5 md:h-4 md:w-4" aria-hidden="true" />

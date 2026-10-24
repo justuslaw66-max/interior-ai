@@ -56,7 +56,7 @@ function DesignSidebarToggle({
       }
       aria-expanded={!designSidebarCollapsed}
       title="Toggle design sidebar (Ctrl/⌘ B)"
-      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-950"
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-control-secondary-border bg-control-secondary text-control-label-idle hover:bg-control-secondary-hover hover:text-label"
       onClick={() => toggleStepPanel(policy, storedCollapsed, setCollapsed)}
     >
       <PanelLeft className="h-4 w-4" aria-hidden="true" />

@@ -50,7 +50,7 @@ export function CommandBarAccountMenu(props: CommandBarAccountMenuProps) {
         aria-label="Account"
         aria-haspopup="menu"
         aria-expanded={open}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-300 bg-neutral-100 text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-200"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-control-secondary-border bg-control-track text-sm font-bold leading-none text-label hover:bg-control-badge"
         onClick={onToggle}
       >
         {initial ? <span aria-hidden="true">{initial}</span> : <UserRound className="h-4 w-4" aria-hidden="true" />}
@@ -80,7 +80,7 @@ export function AccountMenuItems(props: AccountMenuItemsProps) {
     <>
       <div
         data-testid="editor-account-plan"
-        className="mb-1 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-600"
+        className="mb-1 rounded-lg border border-separator px-3 py-2 text-xs font-semibold text-label-secondary"
       >
         {props.planLabel}
       </div>
@@ -149,7 +149,7 @@ function CommandBarSignInButton({ menuButtonClass }: { menuButtonClass?: string 
       aria-label="Sign in"
       className={
         menuButtonClass ??
-        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 lg:w-auto lg:px-3.5"
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-control-secondary-border bg-control-secondary text-sm font-bold leading-none text-label hover:bg-control-secondary-hover lg:w-auto lg:px-3.5"
       }
       onClick={signInWithReturn}
     >

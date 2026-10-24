@@ -52,7 +52,7 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
           <MoreMenuViewItems {...props} />
           <MoreMenuFooter {...props} />
           {phone && props.accountSlot ? (
-            <div data-testid="editor-command-overflow-account" className="mt-1 border-t border-neutral-200 pt-1">
+            <div data-testid="editor-command-overflow-account" className="mt-1 border-t border-separator pt-1">
               {props.accountSlot}
             </div>
           ) : null}
@@ -185,11 +185,11 @@ function MoreMenuFooter({ menuButtonClass, onClose, overflowSlot, onFeedback }: 
   return (
     <>
       {overflowSlot ? (
-        <div className="mt-1 border-t border-neutral-200 pt-1">
+        <div className="mt-1 border-t border-separator pt-1">
           {overflowSlot}
         </div>
       ) : null}
-      <div className="mt-1 border-t border-neutral-200 pt-1">
+      <div className="mt-1 border-t border-separator pt-1">
         <button
           type="button"
           data-testid="beta-feedback-open"

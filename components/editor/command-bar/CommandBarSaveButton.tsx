@@ -24,7 +24,7 @@ export function CommandBarSaveButton({ isSaving, cloudBacked, onSave }: CommandB
       type="button"
       data-testid="save-design"
       aria-label={label}
-      className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-100 disabled:cursor-wait disabled:opacity-70 md:h-9 md:w-auto md:rounded-lg md:border md:border-neutral-300 md:bg-white md:px-4 md:hover:bg-neutral-50"
+      className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] text-sm font-bold leading-none text-label hover:bg-control-quiet-hover disabled:cursor-wait disabled:opacity-70 md:h-9 md:w-auto md:rounded-lg md:border md:border-control-secondary-border md:bg-control-secondary md:px-4 md:hover:bg-control-secondary-hover"
       onClick={onSave}
       disabled={isSaving}
     >

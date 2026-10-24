@@ -15,11 +15,11 @@ const NAME_CLASS = "hidden h-9 shrink-0 items-center rounded-lg px-2 text-base f
  * middle click opens My designs in a new tab and leaves this design open here.
  */
 export function CommandBarHomeLink({ myDesignsAvailable, onOpenMyDesigns }: CommandBarHomeLinkProps) {
-  const divider = <span aria-hidden="true" className="hidden h-7 w-px shrink-0 bg-neutral-200 xl:block" />;
+  const divider = <span aria-hidden="true" className="hidden h-7 w-px shrink-0 bg-separator xl:block" />;
   if (!myDesignsAvailable) {
     return (
       <>
-        <span data-testid="editor-command-home" className={`${NAME_CLASS} text-neutral-900`}>Interior AI</span>
+        <span data-testid="editor-command-home" className={`${NAME_CLASS} text-label`}>Interior AI</span>
         {divider}
       </>
     );
@@ -30,7 +30,7 @@ export function CommandBarHomeLink({ myDesignsAvailable, onOpenMyDesigns }: Comm
         href="/dashboard"
         data-testid="editor-command-home"
         aria-label="Interior AI, My designs"
-        className={`${NAME_CLASS} no-underline text-neutral-900 hover:bg-neutral-100`}
+        className={`${NAME_CLASS} no-underline text-label hover:bg-control-quiet-hover`}
         onClick={(event) => {
           if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
           event.preventDefault();

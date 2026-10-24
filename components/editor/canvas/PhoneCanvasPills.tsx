@@ -27,8 +27,8 @@ const PILL_CLASS =
  */
 export function PhoneCanvasPills(props: PhoneCanvasPillsProps) {
   const { undoName, redoName } = props;
-  const pillClass = `${PILL_CLASS} border-neutral-200 bg-white text-neutral-900`;
-  const historyClass = "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[9px] disabled:cursor-not-allowed disabled:opacity-40 text-neutral-800 hover:bg-neutral-100";
+  const pillClass = `${PILL_CLASS} border-separator bg-surface-floating text-label`;
+  const historyClass = "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[9px] disabled:cursor-not-allowed disabled:opacity-40 text-control-label hover:bg-control-quiet-hover";
   return (
     <>
       <div data-testid="canvas-view-pill" className={`${pillClass} left-3`}>

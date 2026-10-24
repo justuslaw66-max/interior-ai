@@ -22,7 +22,7 @@ export function CommandBarGetProButton({ accountReady, canUpgrade, onGetPro }: C
       type="button"
       data-testid="editor-command-get-pro"
       aria-haspopup="dialog"
-      className="hidden h-9 shrink-0 items-center justify-center rounded-lg border border-neutral-300 bg-white px-3 text-sm font-bold leading-none text-blue-700 hover:bg-neutral-50 lg:inline-flex"
+      className="hidden h-9 shrink-0 items-center justify-center rounded-lg border border-control-secondary-border bg-control-secondary px-3 text-sm font-bold leading-none text-on-accent-tint hover:bg-control-secondary-hover lg:inline-flex"
       onClick={onGetPro}
     >
       Get Pro

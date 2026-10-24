@@ -107,7 +107,7 @@ export default function EditorToolRail({
   return (
     <div
       data-testid="editor-tool-rail"
-      className="absolute left-4 top-bar-17 z-40 md:top-bar-6 flex w-12 touch:w-14 flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white/95 p-2 shadow-xl backdrop-blur"
+      className="absolute left-4 top-bar-17 z-40 md:top-bar-6 flex w-12 touch:w-14 flex-col items-center gap-2 rounded-2xl border border-separator bg-surface-floating/95 p-2 shadow-xl backdrop-blur"
       aria-label="Editor tools"
     >
       <ToolButton
@@ -148,7 +148,7 @@ export default function EditorToolRail({
       >
         <CartIcon />
       </ToolButton>
-      <div className="my-1 h-px w-7 bg-neutral-200" />
+      <div className="my-1 h-px w-7 bg-separator" />
       <ToolButton
         label="Fit to screen"
         testId="editor-rail-fit-plan"

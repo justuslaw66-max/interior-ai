@@ -15,9 +15,9 @@ type CommandBarMenuTriggerProps = {
 
 function triggerClass(phone: boolean) {
   if (phone) {
-    return "inline-flex h-11 w-11 items-center justify-center rounded-[10px] text-neutral-900 hover:bg-neutral-100";
+    return "inline-flex h-11 w-11 items-center justify-center rounded-[10px] text-label hover:bg-control-quiet-hover";
   }
-  return "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50";
+  return "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-control-secondary-border bg-control-secondary text-sm font-bold leading-none text-label hover:bg-control-secondary-hover";
 }
 
 /**
