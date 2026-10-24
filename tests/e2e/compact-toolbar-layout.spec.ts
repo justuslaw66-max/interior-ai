@@ -187,7 +187,7 @@ test.describe("compact top toolbar", () => {
     await expectCompactToolbarGeometry(page);
     await expectCanvasToolbarGeometry(page);
     await expect(page.getByTestId("editor-command-bar")).toHaveClass(
-      /bg-white\/95/,
+      /bg-surface\/95/,
     );
 
     await page.screenshot({

@@ -186,9 +186,9 @@ export type RegisteredPageEvidence = {
   vectorPaths: SourceVectorPath[];
   text: SourceTextEvidence[];
   semantics: PageSemanticEvidence;
-  /** Spans, wall edges and rooms reported by the local vectorizer; evidence, not accepted geometry. */
+  /** Vectorizer spans, wall edges and rooms (evidence, not accepted geometry); else the faithful trace alone, if drawn. */
   vectorizer?: import("./vectorizer-evidence").RegisteredVectorizerEvidence;
-  dimensionSpanEvidence?: RasterDimensionSpanEvidence;
+  faithfulDrawing?: import("./vectorizer-drawing").RegisteredVectorizerDrawing; dimensionSpanEvidence?: RasterDimensionSpanEvidence;
   openingSpanEvidence?: RasterOpeningSpanEvidence; scaleBar?: import("./scale-bar-evidence").ScaleBarEvidence;
 };
 export type { SourceScaleSolution } from "./scale-diagnostics";

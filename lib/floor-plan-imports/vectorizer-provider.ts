@@ -11,7 +11,8 @@ import {
  * Process boundary for the local floor-plan vectorizer (services/floorplan-vectorizer).
  * Nothing leaves the machine: the page is written to a private temporary folder,
  * the two Python programs run there with a bounded timeout, and the folder is removed. With the faithful trace on
- * (FLOOR_PLAN_FAITHFUL_TRACE=1) a third program draws a clean page as it is drawn, in place of stage 1's drawing.
+ * (FLOOR_PLAN_FAITHFUL_TRACE=1) a third program draws a clean page as it is drawn, in place of stage 1's drawing, and
+ * on its own (`drawPage`) for a page stage 1 could not read.
  */
 
 export type FloorPlanVectorizerPage = {
@@ -22,13 +23,22 @@ export type FloorPlanVectorizerPage = {
   bytes: Uint8Array;
 };
 
+type FaithfulDrawing = NonNullable<FloorPlanVectorizerEvidence["drawing"]>;
+
+/** The faithful trace of a page, or why there is none ("Faithful trace not used: …" / "… unavailable: …"). */
+export type FaithfulDrawingResult = { drawing: FaithfulDrawing } | { note: string };
+
 /** Server-local boundary. Implementations must not upload page bytes. */
 export interface FloorPlanVectorizerProvider {
   readonly id: string;
+  /** True when pages are drawn by the faithful trace: a page's traced drawing is then the faithful trace or none. */
+  readonly drawsFaithfully?: boolean;
   analyzePage(
     page: FloorPlanVectorizerPage,
     options: { timeoutMs: number; signal?: AbortSignal }
   ): Promise<FloorPlanVectorizerEvidence>;
+  /** The faithful trace alone, for a page the vectorizer could not read (stage 1 failed or ran out of time). */
+  drawPage?(page: FloorPlanVectorizerPage, options: { signal?: AbortSignal }): Promise<FaithfulDrawingResult>;
 }
 
 // The Python programs are run from the repository, never bundled. The directory is kept relative
@@ -54,7 +64,8 @@ export function floorPlanVectorizerRuntimeConfiguration(
     // whose trace took the whole budget would otherwise lose its result in the last, short step.
     exportFloorMs: Number.isFinite(exportFloor) ? Math.max(10_000, Math.min(exportFloor, 300_000)) : 60_000,
     // The faithful trace of a clean page (faithful_drawing.py) as the page's drawing. Off unless set; it fails soft, with
-    // its own time limit, and keeps to pictures of at most this many pixels (it needs about 400 MB per million).
+    // its own time limit. It works at twice the picture's size up to this many pixels (about 400 MB per million), and at
+    // the picture's own size up to three times as many (about 110 MB per million); a larger picture keeps stage 1's.
     faithfulTrace: environment.FLOOR_PLAN_FAITHFUL_TRACE === "1",
     faithfulTimeoutMs: Number.isFinite(faithfulTimeout) ? Math.max(10_000, Math.min(faithfulTimeout, 600_000)) : 240_000,
     faithfulMaxPixels: Number.isFinite(faithfulPixels) ? Math.max(100_000, Math.min(faithfulPixels, 16_000_000)) : 4_000_000,
@@ -104,21 +115,19 @@ function runProcess(
 /** Runs the two Python programs on a private temporary copy of the page and removes it afterwards. */
 export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerProvider {
   readonly id = "python-floorplan-vectorizer";
+  readonly drawsFaithfully: boolean;
 
-  constructor(private readonly config = floorPlanVectorizerRuntimeConfiguration()) {}
+  constructor(private readonly config = floorPlanVectorizerRuntimeConfiguration()) {
+    this.drawsFaithfully = config.faithfulTrace;
+  }
 
   async analyzePage(
     page: FloorPlanVectorizerPage,
     options: { timeoutMs: number; signal?: AbortSignal }
   ) {
-    // Plain string paths, not path.join(): a join of an unknowable temporary directory with a
-    // literal tail makes the output file tracer glob the repository for that tail.
     const workDirectory = await mkdtemp(`${tmpdir()}/vectorizer-run-`);
     try {
-      const extension = page.mimeType === "image/webp" ? "webp" : "png";
-      const input = `${workDirectory}/page.${extension}`;
-      const base = `${workDirectory}/page`;
-      await writeFile(input, page.bytes, { mode: 0o600 });
+      const { input, base } = await writePage(workDirectory, page);
       const started = Date.now();
       // The programs run in the server's own working directory (the repository), where the
       // relative default directory resolves; every file they read or write is passed absolute.
@@ -144,10 +153,29 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
     }
   }
 
+  /** With the faithful trace on, a page the vectorizer could not read is still drawn by it (J, 24 Oct: the older pixel
+   * trace is not shown while the faithful trace is on). Its own time limit; cancelling the import cancels it. */
+  async drawPage(page: FloorPlanVectorizerPage, options: { signal?: AbortSignal }): Promise<FaithfulDrawingResult> {
+    if (!this.config.faithfulTrace) return { note: "Faithful trace not used: it is off" };
+    const workDirectory = await mkdtemp(`${tmpdir()}/vectorizer-run-`);
+    try {
+      const { input, base } = await writePage(workDirectory, page);
+      return await this.faithfulDrawing(input, base, options.signal);
+    } finally {
+      await rm(workDirectory, { recursive: true, force: true });
+    }
+  }
+
   /** The faithful trace of a clean page as its drawing (J, 22 Oct: "clean sharp vectors"). It fails soft: a picture
-   * that is not crisp or is too large, a failure or a timeout leaves stage 1's drawing, and the notes say why. Cancelling
-   * the import still cancels it. */
+   * that is not crisp or is too large, a failure or a timeout leaves stage 1's drawing, and the notes say why. */
   private async withFaithfulDrawing(evidence: FloorPlanVectorizerEvidence, input: string, base: string, signal?: AbortSignal) {
+    const result = await this.faithfulDrawing(input, base, signal);
+    return "drawing" in result ? { ...evidence, drawing: result.drawing } : withNote(evidence, result.note);
+  }
+
+  /** Runs faithful_drawing.py on the page; a page it leaves, a failure or a timeout comes back as a note. Cancelling the
+   * import still cancels it. */
+  private async faithfulDrawing(input: string, base: string, signal?: AbortSignal): Promise<FaithfulDrawingResult> {
     try {
       await runProcess(
         this.config.pythonPath,
@@ -156,14 +184,23 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
       );
       const result: unknown = JSON.parse(await readFile(`${base}.faithful.json`, "utf8"));
       if (result && typeof result === "object" && "skipped" in result) {
-        return withNote(evidence, `Faithful trace not used: ${String(result.skipped)}`);
+        return { note: `Faithful trace not used: ${String(result.skipped)}` };
       }
-      return { ...evidence, drawing: parseFloorPlanVectorizerDrawing(result) };
+      return { drawing: parseFloorPlanVectorizerDrawing(result) };
     } catch (cause) {
       if (signal?.aborted) throw cause;
-      return withNote(evidence, `Faithful trace unavailable: ${cause instanceof Error ? cause.message : "unknown error"}`);
+      return { note: `Faithful trace unavailable: ${cause instanceof Error ? cause.message : "unknown error"}` };
     }
   }
+}
+
+/** The page in a private folder, as the programs read it. Plain string paths, not path.join(): a join of an unknowable
+ * temporary directory with a literal tail makes the output file tracer glob the repository for that tail. */
+async function writePage(workDirectory: string, page: FloorPlanVectorizerPage) {
+  const extension = page.mimeType === "image/webp" ? "webp" : "png";
+  const input = `${workDirectory}/page.${extension}`;
+  await writeFile(input, page.bytes, { mode: 0o600 });
+  return { input, base: `${workDirectory}/page` };
 }
 
 function withNote(evidence: FloorPlanVectorizerEvidence, note: string): FloorPlanVectorizerEvidence {

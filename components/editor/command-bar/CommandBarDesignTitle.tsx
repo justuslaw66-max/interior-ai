@@ -24,7 +24,7 @@ export function CommandBarDesignTitle({ title, onRename }: CommandBarDesignTitle
       aria-haspopup="dialog"
       aria-label={`Rename design, ${title}`}
       title={title}
-      className="-ml-1.5 flex h-6 min-w-0 max-w-full items-center gap-1.5 rounded-md px-1.5 text-[15px] font-bold leading-none md:max-w-[240px] md:text-sm text-neutral-900 hover:bg-neutral-100"
+      className="-ml-1.5 flex h-6 min-w-0 max-w-full items-center gap-1.5 rounded-md px-1.5 text-[15px] font-bold leading-none md:max-w-[240px] md:text-sm text-label hover:bg-control-quiet-hover"
       onClick={onRename}
     >
       <span className="truncate">{title}</span>

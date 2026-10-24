@@ -4,10 +4,11 @@ import { Maximize, Redo2, Undo2 } from "lucide-react";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { CanvasSavedViews, type CanvasSavedViewsActions, type CanvasSavedViewsState } from "@/components/editor/canvas/CanvasSavedViews";
 import { Button } from "@/components/ui/Button";
+import type { CanvasFrameBox } from "@/lib/editor-canvas-insets";
 
 export type CanvasViewToolbarProps = {
-  /** The step panel's reach into the canvas: the toolbar centres itself on the rest. */
-  leftInsetPx: number;
+  /** The canvas card's place in the editor: the toolbar centres itself on the card. */
+  frame: CanvasFrameBox;
   viewMode: EditorViewMode;
   onViewModeChange: (next: EditorViewMode) => void;
   /** Fit waits for a room to frame, and doesn't act in the Present step. */
@@ -24,13 +25,13 @@ export type CanvasViewToolbarProps = {
 };
 
 /**
- * The toolbar's centre: the middle of the canvas right of the step panel, as in the mockup, but
- * never so far right that a right panel (the item panel, 340px at right-4) would cover Undo and
- * Redo, and never over the step panel. In 3D, with Views (UX 4e), half the toolbar is about 160px,
- * 172px on touch screens.
+ * The toolbar's centre: the middle of the canvas card beside the step panel (the rounded inset
+ * frame), but never so far right that a right panel (the item panel, 340px at right-4) would cover
+ * Undo and Redo, and never over the step panel. In 3D, with Views (UX 4e), half the toolbar is about
+ * 160px, 172px on touch screens.
  */
-export function canvasToolbarLeft(leftInsetPx: number): string {
-  return `clamp(${leftInsetPx + 188}px, calc(50% + ${leftInsetPx / 2}px), calc(100% - 540px))`;
+export function canvasToolbarLeft(frame: CanvasFrameBox): string {
+  return `clamp(${frame.leftPx + 188}px, calc(50% + ${(frame.leftPx - frame.rightPx) / 2}px), calc(100% - 540px))`;
 }
 
 const TOOLBAR_CLASS =
@@ -49,12 +50,12 @@ export function CanvasViewToolbar(props: CanvasViewToolbarProps) {
       role="group"
       aria-label="Canvas controls"
       data-testid="canvas-view-toolbar"
-      className={`${TOOLBAR_CLASS} border-neutral-200 bg-white text-neutral-900`}
-      style={{ left: canvasToolbarLeft(props.leftInsetPx) }}
+      className={`${TOOLBAR_CLASS} border-separator bg-surface-floating text-label`}
+      style={{ left: canvasToolbarLeft(props.frame) }}
     >
       <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} variant="canvas" />
       {props.viewMode === "3d" ? <CanvasSavedViews {...props.savedViews} size="toolbar" /> : null}
-      <div aria-hidden="true" className="mx-1 h-6 w-px bg-neutral-200" />
+      <div aria-hidden="true" className="mx-1 h-6 w-px bg-separator" />
       <Button
         variant="quiet"
         size="icon"

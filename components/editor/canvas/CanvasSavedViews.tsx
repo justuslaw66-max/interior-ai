@@ -31,7 +31,7 @@ function SavedViewRow({ view, onOpen, onDelete }: { view: SavedView; onOpen: () 
       <button
         type="button"
         data-testid={`saved-camera-view-open-${view.id}`}
-        className="min-h-9 min-w-0 flex-1 truncate rounded-lg px-2 text-left text-sm font-medium text-neutral-900 hover:bg-neutral-100 touch:min-h-11"
+        className="min-h-9 min-w-0 flex-1 truncate rounded-lg px-2 text-left text-sm font-medium text-label hover:bg-control-quiet-hover touch:min-h-11"
         onClick={onOpen}
       >
         {view.name}
@@ -59,7 +59,7 @@ function SavedViewsPanel(props: CanvasSavedViewsProps & { id: string; headingId:
       aria-labelledby={props.headingId}
       data-testid="canvas-saved-views-panel"
       data-touch-area
-      className="absolute left-0 top-full z-50 mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl border border-neutral-200 bg-white p-3 text-neutral-900 shadow-lg"
+      className="absolute left-0 top-full z-50 mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-xl border border-separator bg-surface-floating p-3 text-label shadow-lg"
     >
       <h2 id={props.headingId} className="text-sm font-semibold">
         Saved views
@@ -76,10 +76,10 @@ function SavedViewsPanel(props: CanvasSavedViewsProps & { id: string; headingId:
           ))}
         </ul>
       ) : (
-        <p className="mt-1 text-xs text-neutral-600">Saved views appear on share links and export packs.</p>
+        <p className="mt-1 text-xs text-label-secondary">Saved views appear on share links and export packs.</p>
       )}
       <form
-        className="mt-3 grid grid-cols-[1fr_auto] gap-2 border-t border-neutral-200 pt-3"
+        className="mt-3 grid grid-cols-[1fr_auto] gap-2 border-t border-separator pt-3"
         onSubmit={(event) => {
           event.preventDefault();
           props.onSave();
@@ -94,7 +94,7 @@ function SavedViewsPanel(props: CanvasSavedViewsProps & { id: string; headingId:
           value={props.nameInput}
           onChange={(event) => props.onNameChange(event.target.value)}
           placeholder={`View ${views.length + 1}`}
-          className="min-h-9 min-w-0 rounded-lg border border-neutral-300 px-2 text-sm placeholder:text-neutral-500 touch:min-h-11"
+          className="min-h-9 min-w-0 rounded-lg border border-control-secondary-border bg-control-secondary px-2 text-sm text-label placeholder:text-ink-muted touch:min-h-11"
         />
         <Button type="submit" variant="primary" size="compact" data-testid="save-named-camera-view" className="h-9 touch:h-11">
           Save view
@@ -136,7 +136,7 @@ export function CanvasSavedViews(props: CanvasSavedViewsProps) {
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         className={`${buttonClass} ${
-          open ? "bg-neutral-900 text-white" : "text-neutral-800 hover:bg-neutral-100"
+          open ? "bg-control-primary text-control-on-primary" : "text-control-label hover:bg-control-quiet-hover"
         }`}
         onClick={() => setOpen((value) => !value)}
       >

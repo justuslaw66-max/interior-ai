@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { CABINET_HARDWARE } from "../features/cabinetry/catalog/hardware";
-import { CABINET_MATERIALS } from "../features/cabinetry/catalog/materials";
+import { CABINET_FINISHES } from "../features/cabinetry/catalog/finishes";
 import {
   CABINET_PRESET_OPTIONS,
   cabinetPresetMatchesCatalogFilters,
@@ -59,7 +59,9 @@ const allowedSafetyClassifications = new Set([
   "structural_review_required",
   "specialist_installation_required",
 ]);
-const materialIds = new Set(CABINET_MATERIALS.map((material) => material.id));
+// Templates start from real products (J, 23 Oct 2026); glass fronts stay generic until there is a glass catalogue.
+const realFinishIds = new Set(CABINET_FINISHES.map((finish) => finish.id));
+const genericMaterialIds = new Set(["glass"]);
 const hardwareIds = new Set(CABINET_HARDWARE.map((hardware) => hardware.id));
 const specialtyThumbnailKinds: Partial<
   Record<CabinetPresetId, (typeof CABINET_PRESET_OPTIONS)[number]["visualThumbnail"]["kind"]>
@@ -144,9 +146,16 @@ for (const option of CABINET_PRESET_OPTIONS) {
   );
   assert(option.defaultMaterialIds.length > 0, `${option.id} must declare a default material`);
   assert(
-    option.defaultMaterialIds.every((materialId) => materialIds.has(materialId)),
-    `${option.id} default materials must resolve in the material catalog`,
+    option.defaultMaterialIds.every((materialId) => realFinishIds.has(materialId) || genericMaterialIds.has(materialId)),
+    `${option.id} default materials must be real laminate designs`,
   );
+  assert(
+    option.defaultMaterialIds.every((materialId) => definition.materials.some((material) => material.id === materialId)),
+    `${option.id} must list its default materials in the design`,
+  );
+  for (const materialId of [definition.countertopMaterialId, definition.backsplashMaterialId, definition.faceFrameMaterialId]) {
+    assert(!materialId || realFinishIds.has(materialId), `${option.id} surfaces must use real laminate designs`);
+  }
   assert(option.defaultHardwareIds.length > 0, `${option.id} must declare default hardware`);
   assert(
     option.defaultHardwareIds.every((hardwareId) => hardwareIds.has(hardwareId)),
@@ -268,7 +277,7 @@ assert(
 assert(
   cabinetPresetMatchesCatalogFilters(
     CABINET_PRESET_OPTIONS.find((option) => option.id === "slat_wall")!,
-    "walnut-veneer wall",
+    "milwakee-walnut wall",
     "All",
   ),
   "material names and punctuation-normalized phrases must be searchable",

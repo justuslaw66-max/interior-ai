@@ -2,14 +2,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 import { CABINET_HARDWARE } from "../features/cabinetry/catalog/hardware";
-import { CABINET_MATERIALS } from "../features/cabinetry/catalog/materials";
 import { CABINET_PRESET_OPTIONS } from "../features/cabinetry/presets";
 import {
   CABINET_CONSTRUCTION_RESET_FIELDS,
   CABINET_GUIDED_DIMENSION_INCREMENT_MM,
   CABINET_SHELF_LAYOUT_FIELDS,
   GUIDED_HARDWARE,
-  GUIDED_MATERIALS,
   GUIDED_TEMPLATE_CATEGORIES,
   componentTypes,
   doorStyles,
@@ -114,13 +112,6 @@ assert.deepEqual(CABINET_SHELF_LAYOUT_FIELDS, [
 assert.deepEqual(
   GUIDED_TEMPLATE_CATEGORIES,
   Array.from(new Set(CABINET_PRESET_OPTIONS.map((preset) => preset.category)))
-);
-assert.deepEqual(
-  GUIDED_MATERIALS.map((material) => material.id),
-  CABINET_MATERIALS.filter(
-    (material) =>
-      !["service_zone_marker", "upholstery_neutral", "glass"].includes(material.id)
-  ).map((material) => material.id)
 );
 assert.deepEqual(
   GUIDED_HARDWARE.map((hardware) => hardware.id),

@@ -71,8 +71,9 @@ function usePanelToggleShortcut(onCollapsedChange: ((collapsed: boolean) => void
 }
 
 /**
- * The step panel's frame. From md, a column beside the canvas: collapsed, a left-edge strip that
- * reveals it on hover, with Keep open to pin it; on tablets it also steps aside for a right panel
+ * The step panel's frame. From md, a column docked in the frame beside the canvas card (the rounded
+ * inset frame, lib/editor-canvas-insets): collapsed, a left-edge strip that reveals it over the
+ * canvas on hover, with Keep open to pin it; on tablets it also steps aside for a right panel
  * (lib/tablet-panel-policy.ts). On phones, a sheet over the canvas (UX 4d), whose peek is the
  * collapsed state. Ctrl/⌘ B shows or hides it at every width.
  */
@@ -142,17 +143,21 @@ type PanelColumnProps = Omit<DesignControlsPanelFrameProps, "children"> & {
   onKeepOpen: () => void;
 };
 
-/** The column from md: its place and look, and its header (the step's title and Keep open). */
+/**
+ * The column from md: its place and look, and its header (the step's title and Keep open). Docked,
+ * it runs from under the bar to 8px above the bottom, beside the canvas card (Pro's beside the tool
+ * rail); revealed from the edge strip, it floats over the canvas as tall as its cards.
+ */
 function panelColumn({ isDesigner, title, subtitle, temporarilyRevealed, cancelEdgePreviewClose, scheduleEdgePreviewClose, onKeepOpen }: PanelColumnProps): StepPanelColumn {
   const panelLeftClass = temporarilyRevealed
     ? "left-0"
     : isDesigner
       ? "left-20"
-      : "left-1";
+      : "left-2";
   const panelShellClass = `absolute top-bar-2 z-20 w-[18.15rem] space-y-3 pr-1 ${panelLeftClass}`;
   return {
-    className: `${panelShellClass} max-h-[calc(100vh-var(--editor-bar-h)-2.5rem)] overflow-y-auto pb-4 ${
-      temporarilyRevealed ? "z-40 drop-shadow-2xl" : ""
+    className: `${panelShellClass} overflow-y-auto ${
+      temporarilyRevealed ? "max-h-[calc(100vh-var(--editor-bar-h)-2.5rem)] pb-4 z-40 drop-shadow-2xl" : "bottom-2"
     }`,
     temporarilyRevealed,
     header: <PanelColumnHeader title={title} subtitle={subtitle} temporarilyRevealed={temporarilyRevealed} onKeepOpen={onKeepOpen} />,
@@ -165,7 +170,8 @@ function panelColumn({ isDesigner, title, subtitle, temporarilyRevealed, cancelE
 
 function PanelColumnHeader({ title, subtitle, temporarilyRevealed, onKeepOpen }: { title: string; subtitle: string; temporarilyRevealed: boolean; onKeepOpen: () => void;
 }) {
-  const panelHeaderClass = "rounded-xl border border-neutral-200 bg-white/95 p-3 text-neutral-900 shadow-lg backdrop-blur";
+  // Docked in the frame, the header is a card like the step's own: no shadow (the inset frame).
+  const panelHeaderClass = "rounded-xl border border-separator bg-surface-secondary p-3 text-label";
   return (
     <div className={panelHeaderClass}>
       <div className="flex items-start justify-between gap-3">

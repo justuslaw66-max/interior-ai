@@ -8,6 +8,7 @@ import { PrismaFloorPlanImportJobRepository } from "./prisma-repository";
 import { lockFloorPlanImportSource } from "./source-retention-lock";
 import { compileCandidateFloorPlanDocumentV2,parseRenderedPages } from "./validation";
 import { asEnvelope } from "./pdf-raster-evidence";
+import { pageCleanDrawing } from "./vectorizer-drawing";
 const load=(id:string,userId:string)=>prisma.floorPlanImportJob.findFirst({where:{id,userId,historyDeletedAt:null},include:{sourceAsset:true}});
 type Job=NonNullable<Awaited<ReturnType<typeof load>>>;
 type Input={jobId:string;userId:string;candidateVersion:number;pageNumber:number;signal?:AbortSignal};
@@ -50,7 +51,7 @@ async function retainedPageEvidence(job:Job,page:ReturnType<typeof parseRendered
   const evidence=asEnvelope(JSON.parse(new TextDecoder().decode(asset.bytes))).pages.find(p=>p.pageNumber===page.pageNumber);
   // Never use text boxes or a drawing registered to a different source frame.
   if(evidence?.widthPx!==page.widthPx||evidence.heightPx!==page.heightPx)return none;
-  return {textRegions:evidence.text,clean:evidence.vectorizer?.drawing};
+  return {textRegions:evidence.text,clean:pageCleanDrawing(evidence)};
 }
 
 const privacy=(job:Job)=>({trainingBenchmarkOptIn:job.trainingBenchmarkOptIn,trainingBenchmarkOptInAt:job.trainingBenchmarkOptInAt,

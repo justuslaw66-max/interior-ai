@@ -164,6 +164,25 @@ async function failSoftPass(config: ConstructorParameters<typeof PythonFloorPlan
   return result;
 }
 
+/** The vectorizer pass over one 10 x 10 px page whose rendered picture is 100 x 100 px; returns the page and its diagnostics. */
+async function passOnePage(provider: PythonFloorPlanVectorizerProvider) {
+  const page: RegisteredPageEvidence = {
+    pageNumber: 1, widthPx: 10, heightPx: 10, vectorSegments: [], vectorPaths: [], text: [],
+    semantics: { roomLabels: [], dimensionLabels: [], openingSymbols: [], notes: [] },
+  };
+  const store = { readDerivative: async () => ({ id: "d", fileName: "page.png", mimeType: "image/png", byteLength: 1, sha256: "0".repeat(64), bytes: new Uint8Array([1]) }) };
+  const diagnostics = await applyVectorizerEvidence({
+    pages: [page],
+    renderedPages: [{ pageNumber: 1, widthPx: 100, heightPx: 100, assetKey: "d" }],
+    context: { ...context, store: store as unknown as FloorPlanAdapterContext["store"] },
+    provider,
+    pageLimit: 1,
+    rankPages: (pages) => pages,
+    mergeSemantics: () => assert.fail("nothing to merge when stage 1 failed"),
+  });
+  return { page, diagnostics: diagnostics.get(1) };
+}
+
 /** Standalone walls on a 1000 mm square room (1 mm per px): kept clear of the compiler's crossing rule. */
 function testStandaloneWalls() {
   const vertices: FloorPlanVertexV2[] = [];
@@ -579,6 +598,29 @@ async function main() {
       assert.equal(JSON.stringify(off.drawing), stage1Drawing);
       assert.ok(!off.semantics.notes.some((note) => note.startsWith("Faithful trace")), "off: not run");
       summary.push("provider: the faithful trace replaces stage 1's drawing when on; a page it leaves, a failure, an invalid drawing or a timeout keeps stage 1's, noted");
+
+      // A page the vectorizer could not read (stage 1 failed or ran out of time) is still drawn by the faithful trace,
+      // on its own (J, 24 Oct): it does not need stage 1.
+      const writesDrawing = `import sys, json\njson.dump(json.loads(${JSON.stringify(JSON.stringify(faithfulDrawing))}), open(sys.argv[2], 'w'))\n`;
+      writeFileSync(path.join(directory, "faithful_drawing.py"), writesDrawing);
+      const faithfulProvider = new PythonFloorPlanVectorizerProvider(faithfulConfig);
+      assert.equal(faithfulProvider.drawsFaithfully, true);
+      assert.equal(new PythonFloorPlanVectorizerProvider(config).drawsFaithfully, false);
+      const alone = await faithfulProvider.drawPage(page, {});
+      assert.ok("drawing" in alone && alone.drawing.version === "faithful-trace-r6", "drawn without stage 1");
+      assert.ok("note" in (await new PythonFloorPlanVectorizerProvider(config).drawPage(page, {})), "off: not drawn");
+      writeFileSync(path.join(directory, "floorplan_vectorize.py"), "import sys\nsys.exit('stage 1 gave up')\n");
+      const unread = await passOnePage(faithfulProvider);
+      assert.equal(unread.diagnostics?.status, "failed");
+      assert.equal(unread.page.vectorizer, undefined, "no vectorizer evidence");
+      assert.equal(unread.page.faithfulDrawing?.version, "faithful-trace-r6", "the faithful trace drawn on its own");
+      assert.equal(unread.page.faithfulDrawing?.items[0].points[1].x, 9, "in the page's pixels (the picture is 10x the page)");
+      assert.ok(unread.page.semantics.notes.some((note) => note.startsWith("Faithful trace drawn on its own")));
+      writeFileSync(path.join(directory, "faithful_drawing.py"), "import sys\nsys.exit('no OpenCV')\n");
+      const neither = await passOnePage(faithfulProvider);
+      assert.equal(neither.page.faithfulDrawing, undefined);
+      assert.ok(neither.page.semantics.notes.some((note) => /^Faithful trace unavailable: .*no OpenCV/.test(note)), "why, noted");
+      summary.push("provider: with the faithful trace on, a page stage 1 could not read is still drawn by it, on its own; or says why");
 
       // Without the runtime the import goes on: a missing interpreter, or a program that stops with a message
       // (no OpenCV, no tesseract), leaves the page exactly as the other sources made it and records why.

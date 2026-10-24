@@ -317,6 +317,9 @@ function resolveGrainDirection(
 ): CabinetGrainDirection {
   if (resolveMaterialGrainBehavior(definition, part) === "non_directional") return "none";
   if (module?.grainDirection) return module.grainDirection;
+  // A decor whose grain runs across its sheet (Greenlam's "horizonte" woods) is chosen to read horizontal.
+  const material = definition.materials.find((candidate) => candidate.id === part.materialId);
+  if (material?.textureGrain === "across") return "horizontal";
   return VERTICAL_GRAIN_PART_TYPES.has(part.type) ? "vertical" : "horizontal";
 }
 

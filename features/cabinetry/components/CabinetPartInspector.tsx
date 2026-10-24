@@ -6,10 +6,8 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 import { getCabinetParameterState } from "../automation";
 import { formatCabinetLabel } from "../formatCabinetLabel";
-import {
-  CABINET_MATERIALS,
-} from "../catalog/materials";
 import type { CabinetHardwareCompatibilityResult } from "../hardwareCompatibility";
+import { CabinetFinishField } from "./CabinetFinishField";
 import type {
   CabinetDefinition,
   CabinetModuleDefinition,
@@ -181,23 +179,14 @@ export function CabinetPartInspector({
               ) : null}
             </div>
             {materialTarget ? (
-              <select
-                data-testid="cabinet-part-material"
-                aria-label={`Material for selected ${formatCabinetLabel(selectedPart.type)}`}
-                className={selectClass()}
+              <CabinetFinishField key={selectedPart.id}
+                label={`Material for selected ${formatCabinetLabel(selectedPart.type)}`}
+                testId="cabinet-part-material"
                 value={materialId}
+                materials={definition.materials}
                 disabled={selectedMaterialLocked}
-                onChange={(event) => onUpdatePartMaterial(event.target.value)}
-              >
-                {!CABINET_MATERIALS.some((material) => material.id === materialId) ? (
-                  <option value={materialId}>{materialName}</option>
-                ) : null}
-                {CABINET_MATERIALS.map((material) => (
-                  <option key={material.id} value={material.id}>
-                    {material.name}
-                  </option>
-                ))}
-              </select>
+                onChange={onUpdatePartMaterial}
+              />
             ) : (
               <div className="rounded-md border border-neutral-200 bg-white px-2.5 py-2 text-xs text-neutral-700">
                 <span className="block font-semibold">{materialName}</span>

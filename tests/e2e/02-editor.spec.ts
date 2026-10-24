@@ -345,6 +345,12 @@ test.describe("2. Editor Correctness", () => {
       force: true,
     });
     await expectRendererPlateau(page);
+    // The table is in the middle of the studio's Living room, which the whole-home view sees past the
+    // bathroom core only from some camera positions (it just cleared the bathroom wall's corner before
+    // the canvas became a card). Focusing the room leaves nothing between the camera and the table.
+    await page.getByTestId("active-room-focus-toggle").click();
+    await expect(page.getByTestId("active-room-focus-toolbar")).toHaveAttribute("data-focus-enabled", "true");
+    await expectRendererPlateau(page);
 
     const canvas = page.getByTestId("scene-canvas").first();
     const canvasBox = await canvas.boundingBox();

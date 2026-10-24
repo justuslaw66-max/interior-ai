@@ -7,10 +7,8 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 
-import {
-  validateCabinetNumberDraft,
-  type CabinetNumberConstraints,
-} from "../numericInput";
+import { useHeldDuringPointerPress } from "../hooks/useHeldDuringPointerPress";
+import { validateCabinetNumberDraft, type CabinetNumberConstraints } from "../numericInput";
 import {
   cabinetMillimetresToDisplay,
   formatCabinetMeasurement,
@@ -177,8 +175,8 @@ export function CabinetNumberField({
       ? validation.message
       : modelIssueMessage
     : null;
-  const message = internalMessage ?? (externalIssue ? issueText(externalIssue) : null);
-  const severity = internalMessage ? "error" : externalIssue?.severity;
+  const message = useHeldDuringPointerPress(internalMessage ?? (externalIssue ? issueText(externalIssue) : null));
+  const severity = useHeldDuringPointerPress(internalMessage ? "error" : externalIssue?.severity);
   const invalid = Boolean(internalMessage || externalIssue?.severity === "error");
   const describedBy = [
     statusId,

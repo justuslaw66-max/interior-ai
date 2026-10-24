@@ -6,7 +6,7 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 
 `app/globals.css` holds every token twice:
 - **`:root, [data-color-scheme="light"]`:** the light values. They are today's colours, and most point at the Tailwind colour they replaced (`--control-primary: var(--color-neutral-900)`), so light renders the same pixels.
-- **`[data-color-scheme="dark"]`:** the dark values. They are J's choices: black panels and bar, `#1C1C1E` cards, fields, dialogs and menus, `#2C2C2E` floating bars and the fields in dialogs, white text with Apple's 60% grey, near-white primaries, grey fills for secondary controls, a red tint for deleting.
+- **`[data-color-scheme="dark"]`:** the dark values. They are J's choices: black panels and bar, `#1C1C1E` cards, fields and dialogs, `#2C2C2E` floating bars, the menus over the canvas and the fields in dialogs, white text with Apple's 60% grey, near-white primaries, grey fills for secondary controls, a red tint for deleting.
 
 `@theme inline` maps each token to a Tailwind colour, so it's a utility: `bg-surface`, `text-label`, `border-separator`, `bg-control-primary` and so on.
 
@@ -15,7 +15,11 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
   - `surface`, `surface-secondary`, `surface-elevated`, `surface-elevated-secondary` and `surface-floating`;
   - `label` and `label-secondary`;
   - `separator` and `link`.
-- **The shared controls' colours,** `control-*`, which `components/ui` (Button, SegmentedControl, Chip, ChoiceTile) draw with: the primary and its hover and text; the secondary and its hover and border; the quiet hover; idle labels; the segmented track; the hover edge; the danger fill, hover, border and text.
+- **The shared controls' colours,** `control-*`, which `components/ui` (Button, SegmentedControl, Chip, ChoiceTile) draw with: the primary and its hover and text; the secondary and its hover and border; the quiet hover; idle labels; the segmented track; the hover edge; the danger fill, hover, border and text. Also `control-badge`, a stronger grey (a step's number, the avatar's hover), and `control-handle` (the phone sheet's handle).
+- **The editor's shell (step 5.1, 24 Oct):**
+  - `surface-toast` and `on-surface-toast`, the Undo toast (`#171717` in light, `#3A3A3C` in dark), with `toast-control` and its hover for its Undo;
+  - `accent-tint`, `accent-tint-border` and `on-accent-tint`, Pro's blue: the Pro tools pill, and Get Pro's word;
+  - `surface-tab-bar`, the phone's steps along the bottom. It's opaque (the canvas can sit under it), so the translucent `control-track` can't stand in; the current step is a `surface-floating` card.
 - **The page tokens from before** (`--bg-canvas`, `--text-primary`, `--accent`, `--focus`…), with dark values too. Screens fold into the roles as they move.
 
 ## The switch
@@ -35,8 +39,16 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
   - the focus ring and the primary edge reach 3:1.
 - **The delete look's red reads 4.1:1 over a floating bar in dark,** so deletes stay off the floating bars.
 
+## Which surface
+
+- **Panels and the bar:** `surface`. **Cards and fields on them:** `surface-secondary`.
+- **Dialogs:** `surface-elevated`, with their fields `surface-elevated-secondary`.
+- **Anything over the canvas** (the canvas toolbar, the phone's pills, Pro's tool rail, the right rail) **and the menus that open over it** (More, Account, Saved views): `surface-floating`. Since the inset frame the canvas is `#1C1C1E` in dark, the same as `surface-elevated`, so a menu on the elevated surface would only be told from the canvas by its line (J, 24 Oct).
+
 ## Moving screens
 
 - **Screens move folder by folder** (plan step 5). Replace hard-coded `bg-white`, `bg-neutral-*`, `text-neutral-*`, `border-neutral-*`, `text-white` and `bg-black` with roles.
-- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3), and the count can only go down.
+- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3, 2,848 after the inset frame, 2,738 after the laminate picker and the editor's shell), and the count can only go down.
 - **The `.text-neutral-400`, `-500` and `-600` overrides** at the end of `globals.css` are a light-only fix. They go once their users have moved.
+
+The edge between the panels and the canvas, the rounded inset frame, is in `editor-canvas-frame.md`.

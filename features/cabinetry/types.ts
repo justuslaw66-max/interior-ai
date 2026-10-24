@@ -5,6 +5,7 @@ import type {
   MillworkDefinition,
   MillworkFamily,
 } from "@/features/millwork/types";
+import type { CabinetMaterialTexture } from "./materialTexture";
 
 export type CabinetUnitType =
   | "base"
@@ -89,11 +90,10 @@ export type CabinetWallBedOrientation = "vertical" | "horizontal";
 export type CabinetWallBedDisplayState = "closed" | "open";
 export type CabinetWallBedSideStorage = "none" | "left" | "right" | "both";
 
-export interface CabinetMaterialRef {
+export interface CabinetMaterialRef extends CabinetMaterialTexture {
   id: string;
   name: string;
   color?: string;
-  textureUrl?: string;
   roughness?: number;
   metalness?: number;
   skuId?: string;
