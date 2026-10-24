@@ -48,6 +48,9 @@ const nextConfig: NextConfig = {
     "/api/designs": SHARP_LINUX_NATIVE_FILES,
     "/api/designs/**": SHARP_LINUX_NATIVE_FILES,
     "/api/floor-plans/**": SHARP_LINUX_NATIVE_FILES,
+    // The admin condo map reads its developments from catalog/condo-map at run time (lib/condo-map/condo-map-files).
+    "/api/admin/condo-map/**": ["./catalog/condo-map/**/*"],
+    "/admin/condo-map": ["./catalog/condo-map/index.json"],
   },
   outputFileTracingExcludes: {
     "/*": [

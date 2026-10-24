@@ -248,6 +248,7 @@
     "test:floor-plan-durable-telemetry": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-durable-telemetry.ts",
     "test:floor-plan-admin-queue": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-admin-queue.ts",
     "test:floor-plan-admin-review-workspace": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-admin-review-workspace.ts",
+    "test:condo-map": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-condo-map.ts",
     "test:floor-plan-object-storage": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-object-storage.ts",
     "test:floor-plan-object-store-compensation": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-object-store-compensation.ts",
     "test:floor-plan-asset-route-storage": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-asset-route-storage.ts",

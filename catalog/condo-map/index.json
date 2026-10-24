@@ -1,0 +1,105 @@
+{
+ "schema": "interior-ai.condo-map.index.v1",
+ "generator": "export_condo_map.py v1 (24 Oct 2026)",
+ "developments": [
+  {
+   "slug": "10-evelyn",
+   "name": "10 Evelyn",
+   "subtitle": "10 Evelyn Road, Singapore 309312 \u00b7 freehold \u00b7 TOP 2022",
+   "centre": [
+    103.8405867,
+    1.3162855
+   ],
+   "units": 56,
+   "detailed": false
+  },
+  {
+   "slug": "12-on-shan",
+   "name": "12 On Shan",
+   "subtitle": "12 Shan Road, Singapore 328105 \u00b7 freehold \u00b7 completed 2018 \u00b7 now Weave Suites \u2013 Novena",
+   "centre": [
+    103.8463584,
+    1.3247761
+   ],
+   "units": 78,
+   "detailed": false
+  },
+  {
+   "slug": "183-longhaus",
+   "name": "183 LongHaus",
+   "subtitle": "183 Upper Thomson Road, Singapore 574429 \u00b7 freehold \u00b7 completed 2019",
+   "centre": [
+    103.8355004,
+    1.3509623
+   ],
+   "units": 40,
+   "detailed": false
+  },
+  {
+   "slug": "19-nassim",
+   "name": "19 Nassim",
+   "subtitle": "19 Nassim Hill, Singapore 258482 \u00b7 99-year leasehold \u00b7 completed 2023",
+   "centre": [
+    103.8213195,
+    1.3065902
+   ],
+   "units": 101,
+   "detailed": false
+  },
+  {
+   "slug": "1919",
+   "name": "1919",
+   "subtitle": "110 Sophia Road, Singapore 228175 \u00b7 freehold \u00b7 completed 2015",
+   "centre": [
+    103.8467047,
+    1.3027097
+   ],
+   "units": 75,
+   "detailed": false
+  },
+  {
+   "slug": "1953",
+   "name": "1953",
+   "subtitle": "1 Tessensohn Road, Singapore 217701 \u00b7 freehold \u00b7 completed 2023",
+   "centre": [
+    103.8578343,
+    1.3164718
+   ],
+   "units": 58,
+   "detailed": false
+  },
+  {
+   "slug": "21-richards",
+   "name": "21 Richards",
+   "subtitle": "21 Richards Avenue, Singapore 546430 \u00b7 freehold \u00b7 TOP 2014",
+   "centre": [
+    103.8813945,
+    1.3618728
+   ],
+   "units": 31,
+   "detailed": false
+  },
+  {
+   "slug": "24-one-residences",
+   "name": "24 One Residences",
+   "subtitle": "241 Pasir Panjang Road, Singapore 118596 \u00b7 freehold",
+   "centre": [
+    103.7848307,
+    1.2801802
+   ],
+   "units": 24,
+   "detailed": false
+  },
+  {
+   "slug": "33-residences",
+   "name": "33 Residences",
+   "subtitle": "33 Lorong 30 Geylang, Singapore 398366 \u00b7 freehold \u00b7 completed 2021",
+   "centre": [
+    103.8865414,
+    1.3119774
+   ],
+   "units": 27,
+   "detailed": true
+  }
+ ]
+}

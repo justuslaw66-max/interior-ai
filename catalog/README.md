@@ -45,6 +45,9 @@ An outdoor floor (`physical_specs.suitable_for_outdoor: true`) lists where it go
 ## Manufacturer Technical Sheets
 Gardenia entries take `physical_specs.slip_rating` (DIN 51130) and, when missing, `total_thickness_mm` from ABK's technical sheets (`lib/surface-material-abk-data/datasheets.json`), and note the sheet. `scripts/test-surface-material-physical-scale.ts` checks every Gardenia entry against `findAbkDatasheetMatch`, so an entry that contradicts its sheet fails. See `docs/architecture/surface-material-abk-documents.md`.
 
+## Condo Map (admin)
+`catalog/condo-map/` holds the developments for the admin condo map (`/admin/condo-map`), generated from the floor-plan masters; only the admin page and its data route read it. See `catalog/condo-map/README.md` and `docs/architecture/condo-map.md`.
+
 ## Recommended Folder Pattern
 ```text
 /catalog
