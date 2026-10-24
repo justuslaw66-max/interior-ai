@@ -3,16 +3,26 @@ import { extractRasterLinework, normalizeRasterForLinework,type RasterLineworkDi
 import type { FloorPlanAdapterContext,StoredFloorPlanSource } from "./source-adapter";
 import type { FloorPlanRenderedPage } from "./types";
 import type { RegisteredPageEvidence,PageSemanticEvidence } from "./deterministic-evidence";
+import { isFaithfulDrawing,pageCleanDrawing } from "./vectorizer-drawing";
 const emptySemantics=():PageSemanticEvidence=>({planRegion:null,unitSystem:"unknown",roomLabels:[],roomBoundaries:[],dimensionLabels:[],openingSymbols:[],fixtureSymbols:[],entrance:null,notes:[]});
-export async function attachRasterSourceArtwork(pages:RegisteredPageEvidence[], rendered:FloorPlanRenderedPage[],context:FloorPlanAdapterContext) {
+/**
+ * A traced drawing for every page read from its picture, and for a PDF page the faithful trace drew (a brochure page
+ * whose plan is a picture but whose headings are vector text). With the vectorizer's own drawing the trace is the clean
+ * traced drawing (source-strokes-v3, or the faithful trace as it is); without one, the artwork trace. With the faithful
+ * trace on (`faithfulOnly`), a page's traced drawing is the faithful trace or none: the older traces are not drawn
+ * (J, 24 Oct), and the page's picture shows as it is.
+ */
+export async function attachSourceArtwork(pages:RegisteredPageEvidence[],rasterPages:RegisteredPageEvidence[],rendered:FloorPlanRenderedPage[],
+  context:FloorPlanAdapterContext,faithfulOnly:boolean) {
   for(const page of pages) {
+    const clean=pageCleanDrawing(page),faithful=isFaithfulDrawing(clean);
+    if(!rasterPages.includes(page)&&!faithful)continue;
+    if(faithfulOnly&&!faithful){page.semantics.notes.push("No traced drawing: the faithful trace did not draw this page, and the older traces are not drawn while it is on.");continue;}
     const preview=rendered.find(p=>p.pageNumber===page.pageNumber);
     try {
       const asset=preview&&context.store.readDerivative?await context.store.readDerivative(preview.assetKey):null;
       if(!asset)continue;
-      // With the vectorizer's own drawing of the page, the clean traced drawing (source-strokes-v3); else the artwork trace.
-      page.sourceArtwork=await extractSourceArtwork(asset.bytes,{widthPx:page.widthPx,heightPx:page.heightPx,signal:context.signal,textRegions:page.text,
-        clean:page.vectorizer?.drawing});
+      page.sourceArtwork=await extractSourceArtwork(asset.bytes,{widthPx:page.widthPx,heightPx:page.heightPx,signal:context.signal,textRegions:page.text,clean});
     }catch(cause){page.semantics.notes.push(`Source artwork trace unavailable: ${cause instanceof Error?cause.message:"unknown error"}. Architectural evidence is retained.`);}
   }
 }

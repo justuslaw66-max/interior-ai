@@ -98,19 +98,21 @@ drawing, and the app draws it as the page's traced drawing as it is (`faithful-t
 picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and the rest of the evidence are unchanged.
 
 - Off unless `FLOOR_PLAN_FAITHFUL_TRACE=1` on the process that runs imports (with the vectorizer on).
-- Only a clean picture: dark ink on light paper, with crisp edges by both stage 1's own softness measure (at most 1.4)
-  and the median steepness of the strong ink edges (at least 0.6; it sees soft pictures with no solid black, such as a
-  low-resolution JPEG plan enlarged into a brochure page). A blurred scan or photo, or a plan drawn light on a dark
-  ground, keeps stage 1's drawing. On 80 real uploads that passed the softness check (no sealed plan), graded blind for
-  use as the plan's drawing (31 good, 37 rough, 12 bad), the two newer checks leave out 7 of the bad traces, 2 of the
-  rough ones and none of the good; the 5 bad ones they keep are small, low-resolution web plans.
+- Only dark ink on light paper (a plan drawn light on a dark ground traces as one black sheet) and a picture that is not
+  blurred (stage 1's own softness measure, at most 1.4: a blurred scan or photo is left). A picture that is only soft,
+  without solid black (a low-resolution JPEG plan enlarged into a brochure page), is traced: its lettering may blob
+  where it sits on hatching, but walls and light lines are copied as drawn (J, 24 Oct).
 - Up to `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS` pixels (default 4,000,000) the trace works at twice the picture's size:
   about 350–400 MB of memory per million pixels of the picture (700–760 MB for a 1,400 px brochure page) and 30–50 s
   per page on one core. A larger page, up to three times that limit, is traced at its own size: about 110 MB per
   million pixels, so no more memory than the largest page at twice its size (a 10 MP brochure page: 29 s, 0.93 GB);
-  lines a pixel apart may merge. A larger page still keeps stage 1's drawing.
-- A page it leaves, a failure or a timeout (`FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS`, default 240000) keeps stage 1's
-  drawing, and the page's notes say why (`Faithful trace not used: …`, `Faithful trace unavailable: …`).
+  lines a pixel apart may merge. A larger page still is left.
+- When stage 1 or the exporter fails or runs out of time, the faithful trace still runs on the page on its own
+  (`drawPage`); it does not need stage 1.
+- The app shows the faithful trace on every page it drew, a PDF page with vector headings and a picture plan included,
+  and nothing older: a page it leaves, a failure or a timeout (`FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS`, default 240000)
+  gets no traced drawing (its picture shows as it is), and the page's notes say why (`Faithful trace not used: …`,
+  `Faithful trace unavailable: …`, `No traced drawing: …`).
 - It needs numpy, OpenCV 4 and scikit-image from `requirements.txt`; not tesseract.
 
 Everything runs on the worker; page bytes are written to a private temporary folder that is removed afterwards.
