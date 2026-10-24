@@ -1,5 +1,5 @@
 import { test, expect } from "../fixtures";
-import { EDITOR_STORAGE_KEY, chooseCabinetFinish, dismissBlockingPrompt, placeCabinetRun, startInMillimetres } from "./helpers";
+import { EDITOR_STORAGE_KEY, chooseCabinetFinish, dismissBlockingPrompt, locateSelectedCabinetRun, placeCabinetRun, startInMillimetres } from "./helpers";
 
 export function registerPlacementTests() {
   test.describe("Custom Millwork Studio placement", () => {
@@ -386,17 +386,10 @@ export function registerPlacementTests() {
       page,
     }) => {
       const { placedCabinet, beforePosition } = await placeCabinetRun(page);
-      const sceneCanvases = page.getByTestId("scene-canvas");
-      await expect(sceneCanvases).toHaveCount(1);
-      const sceneCanvas = sceneCanvases.first();
-      const canvasBox = await sceneCanvas.boundingBox();
-      expect(canvasBox).toBeTruthy();
+      await expect(page.getByTestId("scene-canvas")).toHaveCount(1);
 
-      // The scene fills the window behind the floating panels, so at 1280x720 the run sits a little
-      // below the canvas's middle. Its front face is at about 49% across and 58% down; 45% down is
-      // the back wall just above it, where a drag orbits the camera instead.
-      const startX = canvasBox!.x + canvasBox!.width * 0.49;
-      const startY = canvasBox!.y + canvasBox!.height * 0.58;
+      // The press must land on the run: anywhere else, a drag turns the camera.
+      const { x: startX, y: startY } = await locateSelectedCabinetRun(page);
       await page.mouse.move(startX, startY);
       await page.mouse.down();
       await page.mouse.move(startX - 90, startY + 30, { steps: 8 });
