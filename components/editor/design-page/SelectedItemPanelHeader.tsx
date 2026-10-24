@@ -16,8 +16,8 @@ type SelectedItemPanelHeaderProps = {
 /** "Selected", Pro's Lock, and Deselect (the mockup's ×), kept in view while the panel scrolls. */
 export function SelectedItemPanelHeader({ title, isDesigner, canEdit, lockLabel, onToggleLock, onDeselect }: SelectedItemPanelHeaderProps) {
   return (
-    <div className="sticky top-0 z-20 -mx-4 -mt-4 flex items-center justify-between gap-3 rounded-t-xl border-b border-neutral-200 bg-white/95 px-4 py-2 backdrop-blur">
-      <span className="text-[13px] font-bold text-neutral-600">Selected</span>
+    <div className="sticky top-0 z-20 -mx-4 -mt-4 flex items-center justify-between gap-3 rounded-t-xl border-b border-separator bg-surface-floating/95 px-4 py-2 backdrop-blur">
+      <span className="text-[13px] font-bold text-label-secondary">Selected</span>
       <div className="flex items-center gap-1">
         {isDesigner ? (
           <Button

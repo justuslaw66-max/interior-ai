@@ -92,14 +92,14 @@ export function DesignPageSelectionInspector({
   const frame = inspectorFrame(configuration, placement);
   const inspector = (
     <div data-testid="selection-inspector" data-touch-area data-in-sheet={placement.inSheet ? "true" : undefined}
-      className={frame.className} style={frame.style}>
+      data-surface={frame.dataSurface} className={frame.className} style={frame.style}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-xs font-semibold uppercase text-neutral-500">
+          <div className="text-xs font-semibold uppercase text-label-secondary">
             {state.summary.kind}
           </div>
           <div className="mt-1 truncate text-sm font-semibold">{state.summary.title}</div>
-          <div className="mt-0.5 truncate text-neutral-500">
+          <div className="mt-0.5 truncate text-label-secondary">
             {state.summary.detail}
           </div>
         </div>
@@ -130,7 +130,7 @@ export function DesignPageSelectionInspector({
           {state.summary.metrics.map((metric) => (
             <div
               key={metric}
-              className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 font-semibold text-neutral-800"
+              className="rounded-lg border border-box-border bg-tile px-2.5 py-2 font-semibold text-control-label"
             >
               {metric}
             </div>
@@ -141,10 +141,10 @@ export function DesignPageSelectionInspector({
       {roomSelectionActive && state.selectedRoom ? (
         <div
           data-testid="selection-inspector-room-dimensions"
-          className="mt-3 border-t border-neutral-200 pt-3"
+          className="mt-3 border-t border-separator pt-3"
         >
           <div className="flex items-end justify-between gap-3">
-            <div className="text-xs font-semibold uppercase text-neutral-500">
+            <div className="text-xs font-semibold uppercase text-label-secondary">
               Dimensions
             </div>
             <DisplayUnitSelect
@@ -188,11 +188,11 @@ export function DesignPageSelectionInspector({
               }
             />
           </div>
-          <div className="mt-1.5 text-xs text-neutral-500">
+          <div className="mt-1.5 text-xs text-label-secondary">
             Resize keeps the room centre when space allows. Enter applies; Esc cancels.
           </div>
 
-          <div className="mt-3 border-t border-neutral-200 pt-3">
+          <div className="mt-3 border-t border-separator pt-3">
             <MeasurementField
               label="Wall height"
               valueMm={state.activeRoomHeightMm}

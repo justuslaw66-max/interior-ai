@@ -30,17 +30,17 @@ export function SelectedPlanOpeningActions({
 }: SelectedPlanOpeningActionsProps) {
   return (
     <div
-      data-testid="selected-plan-opening-actions" data-touch-area
-      className="absolute left-1/2 top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2 text-xs text-neutral-800 shadow-xl backdrop-blur md:flex"
+      data-testid="selected-plan-opening-actions" data-touch-area data-surface="floating"
+      className="absolute left-1/2 top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-separator bg-surface-floating/95 px-3 py-2 text-xs text-control-label shadow-xl backdrop-blur md:flex"
       style={{ maxWidth: "calc(100% - 2rem)" }}
     >
       <span className="font-semibold">
         {state.kind === "door" ? "Door" : "Window"} selected
       </span>
-      <span className="text-neutral-500">
+      <span className="text-label-secondary">
         {state.wall}
       </span>
-      <span className="text-neutral-500">
+      <span className="text-label-secondary">
         Width
       </span>
       <MeasurementField

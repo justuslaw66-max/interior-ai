@@ -23,8 +23,8 @@ export function FloorStackControl({
 }: FloorStackControlProps) {
   return (
     <div
-      className="absolute right-[17.5rem] top-24 z-30 hidden flex-col gap-1 rounded-lg border border-neutral-200 bg-white/90 p-1 shadow-xl backdrop-blur md:flex"
-      data-testid="floor-stack-control"
+      className="absolute right-[17.5rem] top-24 z-30 hidden flex-col gap-1 rounded-lg border border-separator bg-surface-floating/90 p-1 shadow-xl backdrop-blur md:flex"
+      data-testid="floor-stack-control" data-surface="floating"
       aria-label="Levels"
     >
       {state.floors
@@ -39,8 +39,8 @@ export function FloorStackControl({
                     floor.active
                       ? "bg-blue-600 text-white"
                       : floor.hidden
-                        ? "text-neutral-400 hover:bg-neutral-100"
-                        : "text-neutral-700 hover:bg-neutral-100"
+                        ? "text-label-secondary hover:bg-control-quiet-hover"
+                        : "text-control-label-idle hover:bg-control-quiet-hover"
                   }`
             }
             title={floor.hidden ? `${floor.label} hidden` : floor.label}

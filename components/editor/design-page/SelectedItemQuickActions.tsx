@@ -4,7 +4,7 @@ import { ChevronRight, Copy, RotateCw, Trash2 } from "lucide-react";
 import type { SelectedItemSwap } from "@/lib/selected-item-summary";
 
 const ACTION_CLASS =
-  "flex min-h-14 flex-col items-center justify-center gap-1 rounded-[10px] border bg-white text-xs font-bold text-neutral-900 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:cursor-not-allowed disabled:opacity-50";
+  "flex min-h-14 flex-col items-center justify-center gap-1 rounded-[10px] border bg-control-secondary text-xs font-bold text-label hover:bg-control-secondary-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-control-primary disabled:cursor-not-allowed disabled:opacity-50";
 
 type SelectedItemActionRowProps = {
   rotationOpen: boolean;
@@ -29,7 +29,7 @@ export function SelectedItemActionRow({ rotationOpen, canRotate, disabled, onRot
         aria-expanded={rotationOpen}
         disabled={!canRotate}
         onClick={onRotate}
-        className={`${ACTION_CLASS} ${rotationOpen ? "border-neutral-900" : "border-neutral-200"}`}
+        className={`${ACTION_CLASS} ${rotationOpen ? "border-control-primary" : "border-box-border"}`}
       >
         <RotateCw className="h-[18px] w-[18px]" aria-hidden="true" />
         Rotate
@@ -40,7 +40,7 @@ export function SelectedItemActionRow({ rotationOpen, canRotate, disabled, onRot
         title="Duplicate (Cmd/Ctrl+D)"
         disabled={disabled}
         onClick={onDuplicate}
-        className={`${ACTION_CLASS} border-neutral-200`}
+        className={`${ACTION_CLASS} border-box-border`}
       >
         <Copy className="h-[18px] w-[18px]" aria-hidden="true" />
         Duplicate
@@ -51,7 +51,7 @@ export function SelectedItemActionRow({ rotationOpen, canRotate, disabled, onRot
         title="Remove from the design (Delete)"
         disabled={disabled}
         onClick={onRemove}
-        className={`${ACTION_CLASS} border-neutral-200`}
+        className={`${ACTION_CLASS} border-box-border`}
       >
         <Trash2 className="h-[18px] w-[18px]" aria-hidden="true" />
         Remove
@@ -79,17 +79,17 @@ function SelectedItemSwapButton({
       data-testid={testId}
       disabled={disabled}
       onClick={onSwap}
-      className="flex min-h-[52px] items-center gap-2.5 rounded-[10px] border border-neutral-200 bg-white py-2 pl-3 pr-2.5 text-left text-neutral-900 hover:bg-neutral-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 disabled:cursor-not-allowed disabled:opacity-50"
+      className="flex min-h-[52px] items-center gap-2.5 rounded-[10px] border border-box-border bg-control-secondary py-2 pl-3 pr-2.5 text-left text-label hover:bg-control-secondary-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-control-primary disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-sm font-bold">{label}</span>
         {/* A long name gives way; the price always shows. */}
-        <span className="flex min-w-0 gap-1 text-xs text-neutral-600">
+        <span className="flex min-w-0 gap-1 text-xs text-label-secondary">
           <span className="truncate">{swap.title}</span>
           <span className="shrink-0">· {swap.priceLabel}</span>
         </span>
       </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-neutral-500" aria-hidden="true" />
+      <ChevronRight className="h-4 w-4 shrink-0 text-label-secondary" aria-hidden="true" />
     </button>
   );
 }
@@ -110,7 +110,7 @@ export function SelectedItemSwaps({ cheaper, pricier, disabled, onSwapToCheaper,
   if (!cheaper && !pricier) return null;
   return (
     <div data-testid="selected-item-swaps" className="flex flex-col gap-2">
-      <span className="text-[13px] font-bold text-neutral-900">Swap</span>
+      <span className="text-[13px] font-bold text-label">Swap</span>
       {cheaper ? (
         <SelectedItemSwapButton
           testId="selected-item-swap-cheaper"

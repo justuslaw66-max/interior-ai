@@ -99,7 +99,7 @@ const SECONDARY = "min-h-8 touch:min-h-11";
 
 function WallHeightRow({ wallHeight, actions }: { wallHeight: WallHeightState; actions: SelectedSurfaceInspectorActions }) {
   return (
-    <div data-testid="selection-inspector-wall-height" className="mb-3 border-b border-neutral-200 pb-3">
+    <div data-testid="selection-inspector-wall-height" className="mb-3 border-b border-separator pb-3">
       <div className="flex items-end gap-2">
         <MeasurementField
           className="min-w-0 flex-1"
@@ -127,21 +127,21 @@ function WallHeightRow({ wallHeight, actions }: { wallHeight: WallHeightState; a
 function SurfaceHeader({ header, pro }: { header: SelectedSurfaceInspectorState["header"]; pro: boolean }) {
   return (
     <div className="flex items-start gap-2">
-      <span aria-hidden="true" className="h-10 w-10 shrink-0 rounded-md border border-black/10" style={header.swatchStyle} />
+      <span aria-hidden="true" className="h-10 w-10 shrink-0 rounded-md border border-swatch-edge" style={header.swatchStyle} />
       <div className="min-w-0 flex-1">
-        <h3 data-testid="surface-inspector-heading" className="text-xs font-semibold text-neutral-700">
+        <h3 data-testid="surface-inspector-heading" className="text-xs font-semibold text-control-label-idle">
           {header.label}
         </h3>
         <div className="mt-0.5 truncate text-sm font-semibold">{header.displayName}</div>
-        <div className="mt-0.5 truncate text-neutral-600">{header.metadata}</div>
+        <div className="mt-0.5 truncate text-label-secondary">{header.metadata}</div>
       </div>
       {pro ? (
         <span
           data-testid="surface-inspector-publish-status"
           className={
             header.draft
-              ? "rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800"
-              : "rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-700"
+              ? "rounded-full bg-warning-tint px-2 py-0.5 text-xs font-semibold text-on-warning-tint"
+              : "rounded-full bg-control-track px-2 py-0.5 text-xs font-semibold text-control-label-idle"
           }
         >
           {header.publishStatus}
@@ -153,8 +153,8 @@ function SurfaceHeader({ header, pro }: { header: SelectedSurfaceInspectorState[
 
 function SizeOptions({ options, onSelect }: { options: SurfaceSizeOption[]; onSelect: (materialId: string) => void }) {
   return (
-    <div data-testid="selection-inspector-floor-size-options" className="mt-2 border-t border-neutral-100 pt-2">
-      <div className="text-xs font-semibold text-neutral-700">Size</div>
+    <div data-testid="selection-inspector-floor-size-options" className="mt-2 border-t border-separator-subtle pt-2">
+      <div className="text-xs font-semibold text-control-label-idle">Size</div>
       <div className="mt-1.5 grid grid-cols-2 gap-1.5">
         {options.map((option) => (
           <button
@@ -164,8 +164,8 @@ function SizeOptions({ options, onSelect }: { options: SurfaceSizeOption[]; onSe
             aria-pressed={option.selected}
             className={
               option.selected
-                ? `${SECONDARY} rounded-lg border border-emerald-400 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900`
-                : `${SECONDARY} rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-100`
+                ? `${SECONDARY} rounded-lg border border-emerald-400 bg-success-tint px-2 py-1 text-xs font-semibold text-on-success-tint`
+                : `${SECONDARY} rounded-lg border border-box-border bg-tile px-2 py-1 text-xs font-semibold text-control-label-idle hover:bg-control-track`
             }
             title={option.title}
             disabled={option.disabled}
@@ -249,13 +249,13 @@ export function SelectedSurfaceInspector({
       </div>
 
       {hasAdjustments ? (
-        <details data-testid="surface-adjust-pattern" open={configuration.pro || undefined} className="mt-2 border-t border-neutral-100 pt-2">
-          <summary className="min-h-8 cursor-pointer text-xs font-semibold text-neutral-800 touch:min-h-11">Adjust pattern</summary>
+        <details data-testid="surface-adjust-pattern" open={configuration.pro || undefined} className="mt-2 border-t border-separator-subtle pt-2">
+          <summary className="min-h-8 cursor-pointer text-xs font-semibold text-control-label touch:min-h-11">Adjust pattern</summary>
           <Button size="compact" data-testid="selection-inspector-floor-rotate" className="mt-2 w-full" disabled={state.controls.rotateDisabled} onClick={actions.onRotate}>
             Rotate 90°
           </Button>
           {state.wallGrout ? (
-            <div data-testid="selection-inspector-wall-grout" className="mt-2 border-t border-neutral-100 pt-1">
+            <div data-testid="selection-inspector-wall-grout" className="mt-2 border-t border-separator-subtle pt-1">
               <SurfaceGroutControls grout={state.wallGrout} actions={actions} testIdPrefix="wall-surface" />
             </div>
           ) : null}
@@ -263,9 +263,9 @@ export function SelectedSurfaceInspector({
         </details>
       ) : null}
 
-      <div className="mt-1 text-xs text-neutral-600">{state.footer}</div>
+      <div className="mt-1 text-xs text-label-secondary">{state.footer}</div>
       {state.blockers ? (
-        <div className="mt-2 rounded-md bg-amber-50 px-2 py-1.5 text-xs font-semibold text-amber-800">{state.blockers}</div>
+        <div className="mt-2 rounded-md bg-warning-tint px-2 py-1.5 text-xs font-semibold text-on-warning-tint">{state.blockers}</div>
       ) : null}
     </div>
   );

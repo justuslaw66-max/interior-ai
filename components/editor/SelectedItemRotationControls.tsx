@@ -44,9 +44,9 @@ export default function SelectedItemRotationControls({
   onRotationInputChange,
   onApplyRotationInput,
 }: SelectedItemRotationControlsProps) {
-  const textPrimaryClass = "text-sm font-semibold text-neutral-900";
-  const textSecondaryClass = "mt-1 text-xs text-neutral-600";
-  const hintClass = "mt-2 text-xs text-neutral-500";
+  const textPrimaryClass = "text-sm font-semibold text-label";
+  const textSecondaryClass = "mt-1 text-xs text-label-secondary";
+  const hintClass = "mt-2 text-xs text-label-secondary";
 
   return (
     <div className="pt-3">
@@ -62,7 +62,7 @@ export default function SelectedItemRotationControls({
             Snap locks rotation to common angles. Disable for fine control.
           </div>
           {isDesigner ? (
-            <div className="mt-1 text-xs text-neutral-500">
+            <div className="mt-1 text-xs text-label-secondary">
               Pro tip: hold Option/Alt while dragging the rotate handle for free rotation.
             </div>
           ) : null}
@@ -143,7 +143,7 @@ export default function SelectedItemRotationControls({
               <div className="mt-2 flex items-center gap-2">
                 <input
                   data-testid="rotation-input"
-                  className="min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs text-neutral-900"
+                  className="min-h-11 w-full rounded-lg border border-box-border bg-field px-2 py-1.5 text-xs text-label"
                   type="number"
                   step="0.1"
                   value={rotationInputValue}

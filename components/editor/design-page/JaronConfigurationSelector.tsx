@@ -86,7 +86,7 @@ export function JaronConfigurationSelector({
 
   return (
     <div className="pt-3" data-testid="jaron-configuration-selector">
-      <div className="text-sm font-semibold text-neutral-900">
+      <div className="text-sm font-semibold text-label">
         Configuration
       </div>
 
@@ -125,7 +125,7 @@ export function JaronConfigurationSelector({
                 </span>
                 <span className="min-w-0">
                   <span className="block text-sm font-semibold">{option.label}</span>
-                  <span className="mt-1 block text-xs text-neutral-500">
+                  <span className="mt-1 block text-xs text-label-secondary">
                     {option.description}
                   </span>
                 </span>
@@ -137,7 +137,7 @@ export function JaronConfigurationSelector({
 
       {state.armOptions.length ? (
         <div className="mt-3">
-          <div className="text-sm font-semibold text-neutral-900">
+          <div className="text-sm font-semibold text-label">
             Arm style
           </div>
           <div className="mt-2 grid grid-cols-2 gap-2">
