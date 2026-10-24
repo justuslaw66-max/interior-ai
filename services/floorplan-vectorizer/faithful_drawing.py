@@ -1,18 +1,18 @@
-"""faithful_drawing.py <page image> <out.json> [--max-softness=1.4] [--min-sharpness=0.6] [--max-pixels=4000000]: the
-faithful trace of a clean plan (faithful_trace.py) as the evidence's `drawing`, in the page's pixels.
+"""faithful_drawing.py <page image> <out.json> [--max-softness=1.4] [--max-pixels=4000000]: the faithful trace of a
+clean plan (faithful_trace.py) as the evidence's `drawing`, in the page's pixels.
 
 The faithful trace copies what is drawn - solid fills as polygons, every line, arc and dot at its own width and tone,
 lettering and small marks by their outline - and reads nothing as a room, a door or a wall. The app draws it as the
 plan's clean vector drawing in place of stage 1's reading of the page.
 
-Only for a clean picture: dark ink on light paper (a plan drawn light on a dark ground traces as one black sheet), with
-crisp edges by both measures - stage 1's softness around solid black (at most --max-softness) and the median steepness
-of every strong ink edge (at least --min-sharpness; it also sees a soft picture that has no solid black, such as a
-low-resolution JPEG plan enlarged into a brochure page, whose lettering the trace turns into blobs). A blurred scan or
-photo is left to stage 1. The trace works at twice the picture's size up to --max-pixels (about
-350-400 MB of memory per million pixels of the picture); a larger picture, up to three times --max-pixels, is traced at
-its own size (about 110 MB per million pixels: the same memory at most), and a larger one still is left. Otherwise,
-and on any error, the output is {"skipped": <why>} and the app keeps stage 1's drawing.
+Only for dark ink on light paper (a plan drawn light on a dark ground traces as one black sheet) and a picture that is
+not blurred (stage 1's softness measure around solid black, at most --max-softness: a blurred scan or photo is left).
+A picture that is merely soft without solid black (a low-resolution JPEG plan enlarged into a brochure page) is traced:
+its lettering may blob, but the rest is copied as drawn, which is better than the app's older pixel trace (J, 24 Oct).
+The trace works at twice the picture's size up to --max-pixels (about 350-400 MB of memory per million pixels of the
+picture); a larger picture, up to three times --max-pixels, is traced at its own size (about 110 MB per million pixels:
+the same memory at most), and a larger one still is left. Otherwise, and on any error, the output is {"skipped": <why>}
+and the app draws no traced drawing for the page (its picture is shown as it is), with a note saying why.
 
 Output (the evidence's `drawing`, see vectorizer-evidence-schema.ts):
   {"version": "faithful-trace-r6", "items": [{"kind", "fill", "strokeWidthPx", "tone", "commands", "points"}],
@@ -52,24 +52,6 @@ def softness(g):
 def paper_tone(g):
     """the picture's most common grey: its paper (dark for a plan drawn in light lines on a dark ground)"""
     return int(np.argmax(np.bincount(g.ravel(), minlength=256)))
-
-
-def edge_sharpness(g):
-    """the median steepness of the picture's strong ink edges: where a 5 px window spans at least half the paper-to-ink
-    range, the local peak of the gradient, per unit of that range. About 1 for a crisp render; 0.4-0.6 for a picture
-    whose edges are spread over two pixels or more. A picture with too few strong edges to judge counts as crisp."""
-    hist = np.bincount(g.ravel(), minlength=256)
-    paper = 128 + int(np.argmax(hist[128:]))
-    dark = g[g < 160]
-    black = float(np.percentile(dark, 1)) if dark.size >= 200 else 0.0
-    span = max(1.0, paper - black)
-    gf = g.astype(np.float32)
-    mag = np.hypot(cv2.Sobel(gf, cv2.CV_32F, 1, 0, ksize=3), cv2.Sobel(gf, cv2.CV_32F, 0, 1, ksize=3)) / (4.0 * span)
-    k = np.ones((5, 5), np.uint8)
-    strong = (cv2.dilate(gf, k) - cv2.erode(gf, k)) >= 0.5 * span
-    peak = (mag >= cv2.dilate(mag, np.ones((3, 3), np.uint8)) - 1e-6) & strong & (mag > 0.05)
-    v = mag[peak]
-    return float(np.median(v)) if v.size >= 200 else 1.0
 
 
 def read_gray(path):
@@ -232,7 +214,6 @@ def main(argv):
     opt = dict(a[2:].split("=", 1) for a in argv if a.startswith("--") and "=" in a)
     src, out_path = args[0], args[1]
     max_soft = float(opt.get("max-softness", "1.4")); max_px = int(float(opt.get("max-pixels", "4000000")))
-    min_sharp = float(opt.get("min-sharpness", "0.6"))
     result = None
     try:
         g = read_gray(src)
@@ -242,13 +223,8 @@ def main(argv):
             reason = "picture too large for the faithful trace (%d x %d px)" % (W, H)
         elif paper_tone(g) < 128:
             reason = "picture drawn light on a dark ground; the faithful trace needs dark ink on light paper"
-        else:
-            soft = softness(g)
-            sharp = edge_sharpness(g) if soft <= max_soft else None
-            if soft > max_soft:
-                reason = "picture not crisp enough for the faithful trace (edge softness %.2f)" % soft
-            elif sharp < min_sharp:
-                reason = "picture not sharp enough for the faithful trace (edge sharpness %.2f)" % sharp
+        elif softness(g) > max_soft:
+            reason = "picture not crisp enough for the faithful trace (edge softness %.2f)" % softness(g)
         if reason:
             result = {"skipped": reason}
         else:

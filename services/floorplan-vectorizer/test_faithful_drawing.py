@@ -102,18 +102,18 @@ class FaithfulDrawing(unittest.TestCase):
         cv2.imwrite(os.path.join(folder, "dark.png"), 255 - img)
         fd.main([os.path.join(folder, "dark.png"), out])
         self.assertIn("dark ground", result(out)["skipped"])
-        # thin lines blurred: no solid black, so stage 1's softness measure sees nothing, but the edges are spread
+        # thin lines blurred: no solid black, so the softness measure sees nothing; such a picture is traced
+        # (its lettering may blob, but that is better than the app's older pixel trace)
         grid = np.full((200, 200), 255, np.uint8)
         for x in range(30, 180, 20):
             cv2.line(grid, (x, 20), (x, 180), 0, 2)
         for y in range(30, 180, 30):
             cv2.line(grid, (20, y), (180, y), 0, 2)
-        self.assertGreater(fd.edge_sharpness(grid), 0.95, "crisp lines are sharp")
         soft_grid = cv2.GaussianBlur(grid, (0, 0), 1.5)
         self.assertEqual(fd.softness(soft_grid), 0.0)
         cv2.imwrite(os.path.join(folder, "grid.png"), soft_grid)
         fd.main([os.path.join(folder, "grid.png"), out])
-        self.assertIn("not sharp enough", result(out)["skipped"])
+        self.assertNotIn("skipped", result(out))
 
     def test_traces_a_page_over_the_limit_at_its_own_size(self):
         with tempfile.TemporaryDirectory() as folder:

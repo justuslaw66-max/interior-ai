@@ -24,7 +24,7 @@ When the local vectorizer read the page, its evidence carries `drawing` (exporte
 - **Marks** (`source-trace-marks.ts`, `source-trace-mark-shapes.ts`): of the ink left, each piece up to 250 px across is cut, four times finer, at its own strokes' mid-tone (a light line running into a black dot keeps its weight); a round core (a dimension's dot, the line ends running into it) becomes a true circle, a core that fills its box (a frame's square post) a rectangle carried onto the drawing beside it; thin pieces become sharp strokes along their centres at the weight of their ink - a dash, a door's swing, a window's glazing lines and mullions, a frame's step - fitted with straight lines meeting at sharp corners unless they curve (a swing); the rest are smooth filled shapes (`mark-<n>`). A stroke running along the drawing's own ink (median within 1.5 px) is a line the drawing already has and is left out; faint pieces and the drawing's soft edges (within 3.5 px, no dark core) are left out; beside the lettering nothing is turned into strokes.
 - **The general pass** traces what is left (pieces bigger than a mark, thinned to their mid-tone first) as before, without a traced line that doubles a drawn one or is only its soft edge. A piece the fitting cannot bound is fitted on its own or left out, rather than failing the trace.
 
-Without a drawing the trace is `source-strokes-v2`, unchanged. Both the upload's trace (`attachRasterSourceArtwork`, after the vectorizer) and a retrace preview (`previewSourceTrace`, from the retained review extraction of the same frame) use the drawing when the page has one. The clean shapes carry the vectorizer's reading only as drawing: no building meaning or metric scale. Measured on the 13 sharp corpus plans (paper cleared, within 2 px): 98.5 % or more of the page's ink is drawn, and 96.9 % or more of the drawing lies on ink (walls painted grey or hatched, drawn solid, account for the rest).
+Without a drawing the trace is `source-strokes-v2`, unchanged. Both the upload's trace (`attachSourceArtwork`, after the vectorizer) and a retrace preview (`previewSourceTrace`, from the retained review extraction of the same frame) use the drawing when the page has one. The clean shapes carry the vectorizer's reading only as drawing: no building meaning or metric scale. Measured on the 13 sharp corpus plans (paper cleared, within 2 px): 98.5 % or more of the page's ink is drawn, and 96.9 % or more of the drawing lies on ink (walls painted grey or hatched, drawn solid, account for the rest).
 
 ## Faithful trace (faithful-trace-v1)
 
@@ -52,13 +52,25 @@ test plans, the app's drawing of the trace (drawn as the review overlay draws it
 1x and 3x, on at most 0.12 % of the ink pixels by more than 64 grey levels; the differences are that order (a dark band
 drawn over light stipple dots the trace had left on top of it).
 
-Only a clean picture: dark ink on light paper, crisp by stage 1's edge softness (at most 1.4) and by the median
-steepness of its strong ink edges (at least 0.6; a soft picture with no solid black, such as a low-resolution JPEG plan
-enlarged into a brochure page, otherwise traces with its lettering in blobs). Up to `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS`
-(default 4,000,000) it is traced at twice its size (about 400 MB of memory per million pixels, 30-50 s per page on one
-core); up to three times that, at its own size (about 110 MB per million pixels; lines a pixel apart may merge).
-Otherwise, and on a failure or timeout (`FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS`, default 240000), the page keeps stage
-1's drawing (v3) and its notes say why. Stage 1's rooms, walls, openings and scale are unchanged either way.
+Only dark ink on light paper (a plan drawn light on a dark ground traces as one black sheet) and a picture that is not
+blurred (stage 1's edge softness at most 1.4). A picture that is only soft without solid black (a low-resolution JPEG
+plan enlarged into a brochure page) is traced: its lettering may blob where it sits on hatching, but walls and light
+lines are copied as drawn (J, 24 Oct: "faithful trace anyway"). Up to `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS` (default
+4,000,000) it is traced at twice its size (about 400 MB of memory per million pixels, 30-50 s per page on one core); up
+to three times that, at its own size (about 110 MB per million pixels; lines a pixel apart may merge). Stage 1's rooms,
+walls, openings and scale are unchanged in every case.
+
+Which pages show it (J, 24 Oct, after a test window: "it should just work for the consumer"):
+- **Every page it drew**, including a PDF page counted as vector because its headings are vector text while its plan
+  is a picture (a raster brochure page): `attachSourceArtwork` draws a page read from its picture, and any page whose
+  drawing is the faithful trace.
+- **A page stage 1 could not read.** When stage 1 or the exporter fails or runs out of time, the faithful trace is still
+  run on the page on its own (`drawPage`, `faithfulDrawing` on the page); it does not need stage 1.
+- **The faithful trace or nothing.** While it is on, a page it did not draw (it left the page, failed or timed out, or
+  the vectorizer did not analyse the page) gets no traced drawing, and the note says why: its picture shows as it is.
+  The older traces (`source-strokes-v2`/`-v3`) are not drawn: graded blind on 12 clean plans they reached B on none
+  (10 C, 2 D), and on a soft brochure page they draw faint floor lines heavy and black. A retrace preview the person
+  asks for still uses them.
 
 ## Storage and review
 
