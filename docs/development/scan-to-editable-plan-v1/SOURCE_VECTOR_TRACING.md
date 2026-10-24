@@ -52,10 +52,11 @@ test plans, the app's drawing of the trace (drawn as the review overlay draws it
 1x and 3x, on at most 0.12 % of the ink pixels by more than 64 grey levels; the differences are that order (a dark band
 drawn over light stipple dots the trace had left on top of it).
 
-Only a clean picture: crisp (stage 1's edge softness at most 1.4) and at most `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS`
-(default 4,000,000; about 400 MB of memory per million pixels, 30-50 s per page on one core). Otherwise, and on a
-failure or timeout (`FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS`, default 240000), the page keeps stage 1's drawing (v3) and
-its notes say why. Stage 1's rooms, walls, openings and scale are unchanged either way.
+Only a clean picture: crisp (stage 1's edge softness at most 1.4). Up to `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS`
+(default 4,000,000) it is traced at twice its size (about 400 MB of memory per million pixels, 30-50 s per page on one
+core); up to three times that, at its own size (about 110 MB per million pixels; lines a pixel apart may merge).
+Otherwise, and on a failure or timeout (`FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS`, default 240000), the page keeps stage
+1's drawing (v3) and its notes say why. Stage 1's rooms, walls, openings and scale are unchanged either way.
 
 ## Storage and review
 

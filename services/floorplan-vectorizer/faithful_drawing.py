@@ -6,9 +6,10 @@ lettering and small marks by their outline - and reads nothing as a room, a door
 plan's clean vector drawing in place of stage 1's reading of the page.
 
 Only for a clean picture: one whose ink has crisp edges (stage 1's own softness measure, at most --max-softness; a
-blurred scan or photo is left to stage 1) and that is no larger than --max-pixels (the trace works at twice the
-picture's size; about 400 MB of memory per million pixels of the picture). Otherwise, and on any error, the output is
-{"skipped": <why>} and the app keeps stage 1's drawing.
+blurred scan or photo is left to stage 1). The trace works at twice the picture's size up to --max-pixels (about
+350-400 MB of memory per million pixels of the picture); a larger picture, up to three times --max-pixels, is traced at
+its own size (about 110 MB per million pixels: the same memory at most), and a larger one still is left. Otherwise,
+and on any error, the output is {"skipped": <why>} and the app keeps stage 1's drawing.
 
 Output (the evidence's `drawing`, see vectorizer-evidence-schema.ts):
   {"version": "faithful-trace-r6", "items": [{"kind", "fill", "strokeWidthPx", "tone", "commands", "points"}],
@@ -185,6 +186,21 @@ def drawing(t):
     return {"version": VERSION, "items": items, "textBoxes": []}
 
 
+ONE_X_SHARE = 3              # at its own size the trace needs about a third of the memory it needs at twice the size
+
+
+def trace_at(g, up):
+    """the faithful trace of g, worked at `up` x its size (2 as built; 1 for a page over the 2x limit)"""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import faithful_trace
+    was = faithful_trace.UP
+    faithful_trace.UP = up
+    try:
+        return faithful_trace.trace_gray(g)
+    finally:
+        faithful_trace.UP = was
+
+
 def main(argv):
     args = [a for a in argv if not a.startswith("--")]
     opt = dict(a[2:].split("=", 1) for a in argv if a.startswith("--") and "=" in a)
@@ -195,14 +211,14 @@ def main(argv):
         g = read_gray(src)
         H, W = g.shape
         soft = softness(g)
-        if H * W > max_px:
+        if H * W > ONE_X_SHARE * max_px:
             result = {"skipped": "picture too large for the faithful trace (%d x %d px)" % (W, H)}
         elif soft > max_soft:
             result = {"skipped": "picture not crisp enough for the faithful trace (edge softness %.2f)" % soft}
         else:
-            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-            import faithful_trace
-            d = drawing(faithful_trace.trace_gray(g))
+            # over the limit at twice its size, a page is traced at its own size (close lines a pixel apart may merge,
+            # but it is drawn) rather than left to stage 1
+            d = drawing(trace_at(g, 1 if H * W > max_px else 2))
             result = d if d else {"skipped": "faithful trace has too many shapes"}
     except Exception as cause:                                   # the app keeps stage 1's drawing
         result = {"skipped": "faithful trace failed: %s" % (str(cause)[:160] or type(cause).__name__)}

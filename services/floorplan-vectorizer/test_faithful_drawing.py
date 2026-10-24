@@ -99,6 +99,30 @@ class FaithfulDrawing(unittest.TestCase):
         fd.main([os.path.join(folder, "missing.png"), out])
         self.assertIn("failed", result(out)["skipped"])
 
+    def test_traces_a_page_over_the_limit_at_its_own_size(self):
+        with tempfile.TemporaryDirectory() as folder:
+            import faithful_trace
+            img = np.full((200, 200), 255, np.uint8)
+            cv2.rectangle(img, (40, 40), (160, 160), 0, -1)
+            path, out = os.path.join(folder, "page.png"), os.path.join(folder, "out.json")
+            cv2.imwrite(path, img)
+            seen, orig = [], faithful_trace.trace_gray
+            faithful_trace.trace_gray = lambda g, *a: (seen.append(faithful_trace.UP), orig(g, *a))[1]
+            try:
+                fd.main([path, out, "--max-pixels=20000"])       # 40,000 px: over the 2x limit, within 3x it
+                fd.main([path, os.path.join(folder, "out2.json"), "--max-pixels=40000"])   # within the 2x limit
+            finally:
+                faithful_trace.trace_gray = orig
+            self.assertEqual(seen, [1, 2], "traced at its own size over the limit, at twice its size within it")
+            with open(out) as f:
+                d = json.load(f)
+            self.assertNotIn("skipped", d)
+            fills = [i for i in d["items"] if i["kind"] == "fill"]
+            self.assertEqual(len(fills), 1, "the black square is one fill")
+            xs = [p[0] for p in fills[0]["points"]]
+            self.assertAlmostEqual(min(xs), 40, delta=1.0); self.assertAlmostEqual(max(xs), 161, delta=1.0)
+            self.assertEqual(faithful_trace.UP, 2, "the working scale is put back for the next page")
+
 
 if __name__ == "__main__":
     unittest.main()
