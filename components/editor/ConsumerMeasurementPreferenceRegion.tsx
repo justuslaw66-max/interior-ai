@@ -21,7 +21,7 @@ type ConsumerMeasurementPreferenceRegionProps = {
 };
 
 function MeasurementPreferencePlaceholder() {
-  const blockClass = "bg-neutral-200";
+  const blockClass = "bg-control-badge";
   return (
     <div
       data-testid="room-setup-measurement-placeholder"
@@ -73,7 +73,7 @@ function ReadyMeasurementPreference({
       ))}
     </div>
     <div data-testid="room-setup-scale-summary" role="status" aria-live="polite"
-      className="mt-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600">
+      className="mt-2 rounded-lg border border-box-border bg-field px-3 py-2 text-xs text-label-secondary">
       <span className="font-semibold">Visible scale:</span>{" "}
       {formatDisplayLength(widthMm, measurementUnit)} ×{" "}
       {formatDisplayLength(depthMm, measurementUnit)} ·{" "}

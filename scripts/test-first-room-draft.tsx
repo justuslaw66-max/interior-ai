@@ -77,7 +77,7 @@ assert.deepEqual(checks(true).map((check) => check.label), ["Living room", "Meas
 const checklist = renderToStaticMarkup(createElement(AiLayoutReadinessChecklist, { checks: checks(true) }));
 assert.match(checklist, /data-testid="ai-layout-readiness"/);
 assert.match(checklist, />Ready to generate</);
-assert.match(checklist, /Measured room<\/span><span class="[^"]*bg-amber-50[^"]*">Default size</);
+assert.match(checklist, /Measured room<\/span><span class="[^"]*bg-warning-tint[^"]*">Default size</);
 const aiPanel = read("components/editor/DesignControlsAiPanel.tsx");
 assert.match(aiPanel, /const briefReady = aiMustHaves\.length > 0 && roomArea > 0 && roomSupported;/, "A draft room can still get a layout.");
 assert.match(aiPanel, /aiLayoutReadinessChecks\(\{\s*roomSupported, roomArea, roomIsDraft,/);

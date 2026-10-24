@@ -119,7 +119,7 @@ function PanelEdgeReveal({ openEdgePreview, onShow }: { openEdgePreview: () => v
       onMouseEnter={openEdgePreview}
     >
       <div
-        className="absolute bottom-3 left-0 top-3 w-1 rounded-r-full transition-colors bg-neutral-300 group-hover:bg-blue-500"
+        className="absolute bottom-3 left-0 top-3 w-1 rounded-r-full transition-colors bg-control-handle group-hover:bg-blue-500"
         aria-hidden="true"
       />
       <button
@@ -127,7 +127,7 @@ function PanelEdgeReveal({ openEdgePreview, onShow }: { openEdgePreview: () => v
         data-testid="design-controls-edge-toggle"
         aria-label="Show design sidebar"
         title="Show design sidebar (Ctrl/⌘ B)"
-        className="absolute left-1 top-4 flex h-9 w-9 touch:h-11 touch:w-11 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-800 opacity-0 touch:opacity-100 shadow-xl transition-opacity hover:bg-neutral-50 focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100"
+        className="absolute left-1 top-4 flex h-9 w-9 touch:h-11 touch:w-11 items-center justify-center rounded-xl border border-separator bg-surface-floating text-control-label opacity-0 touch:opacity-100 shadow-xl transition-opacity hover:bg-control-secondary-hover focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100"
         onClick={onShow}
       >
         <PanelLeftOpen className="h-4 w-4" aria-hidden="true" />
@@ -171,15 +171,15 @@ function panelColumn({ isDesigner, title, subtitle, temporarilyRevealed, cancelE
 function PanelColumnHeader({ title, subtitle, temporarilyRevealed, onKeepOpen }: { title: string; subtitle: string; temporarilyRevealed: boolean; onKeepOpen: () => void;
 }) {
   // Docked in the frame, the header is a card like the step's own: no shadow (the inset frame).
-  const panelHeaderClass = "rounded-xl border border-separator bg-surface-secondary p-3 text-label";
+  const panelHeaderClass = "rounded-xl border border-box-border bg-surface-secondary p-3 text-label";
   return (
     <div className={panelHeaderClass}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-lg font-semibold text-neutral-950">
+          <div className="text-lg font-semibold text-label">
             {title}
           </div>
-          <div className="mt-1 text-xs text-neutral-500">{subtitle}</div>
+          <div className="mt-1 text-xs text-label-secondary">{subtitle}</div>
         </div>
         {temporarilyRevealed ? (
           <Button

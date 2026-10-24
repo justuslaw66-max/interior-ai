@@ -4,7 +4,7 @@ import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
 import type { RoomOpening2D } from "@/lib/editorScene";
 
-const warningClass = "rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900";
+const warningClass = "rounded-lg border border-warning-tint-border bg-warning-tint p-2 text-xs text-on-warning-tint";
 
 function HostWarning({
   opening,
@@ -30,7 +30,7 @@ function HostWarning({
         Requested wall
         <select
           data-testid="plan-opening-wall-repair-input"
-          className="mt-1 w-full rounded-md border border-amber-300 bg-white px-2 py-2 text-xs text-gray-900"
+          className="mt-1 w-full rounded-md border border-warning-tint-border bg-field px-2 py-2 text-xs text-label"
           value={opening.wall}
           onChange={(event) => onChange(opening.id, {
             wall: event.currentTarget.value as RoomOpening2D["wall"],

@@ -42,8 +42,8 @@ export default function FloorPlanToolStrip({
         : activeTool === "window"
           ? "Click a wall for the window."
           : "Move or adjust what you select.";
-  const shellClass = "mt-2 rounded-lg border border-neutral-200 bg-white p-2.5 text-neutral-900";
-  const headerClass = "text-sm font-semibold text-neutral-800";
+  const shellClass = "mt-2 rounded-lg border border-box-border bg-field p-2.5 text-label";
+  const headerClass = "text-sm font-semibold text-control-label";
   const toolsClass = "mt-2 grid grid-cols-2 gap-1.5";
 
   return (
@@ -77,7 +77,7 @@ export default function FloorPlanToolStrip({
           );
         })}
       </div>
-      <div className="mt-2 text-xs text-neutral-500">
+      <div className="mt-2 text-xs text-label-secondary">
         {helperText}
       </div>
     </div>

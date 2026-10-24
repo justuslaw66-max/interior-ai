@@ -18,12 +18,12 @@ export function AddRoomTemplateTiles({ canEdit, measurementUnit, onAddRoomTempla
     <div
       role="group"
       aria-labelledby="add-room-templates-title"
-      className="border-t border-neutral-100 bg-white p-2"
+      className="border-t border-separator-subtle bg-surface-secondary p-2"
     >
-      <div id="add-room-templates-title" className="text-xs font-semibold text-neutral-800">
+      <div id="add-room-templates-title" className="text-xs font-semibold text-control-label">
         Add one room
       </div>
-      <div className="mt-0.5 text-xs text-neutral-500">
+      <div className="mt-0.5 text-xs text-label-secondary">
         Use these when you only need one extra room.
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2">
@@ -34,10 +34,10 @@ export function AddRoomTemplateTiles({ canEdit, measurementUnit, onAddRoomTempla
             data-testid={`add-room-template-${template.id}`}
             onClick={() => onAddRoomTemplate(template)}
             disabled={!canEdit}
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left text-sm font-medium text-neutral-800 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg border border-box-border bg-field px-3 py-2 text-left text-sm font-medium text-control-label hover:bg-control-quiet-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="block">{template.label}</span>
-            <span className="mt-0.5 block text-xs text-neutral-500">
+            <span className="mt-0.5 block text-xs text-label-secondary">
               {formatPlanDimensionsLabel(template.width, template.depth, measurementUnit)}
             </span>
           </button>
