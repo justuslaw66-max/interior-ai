@@ -715,7 +715,7 @@ assert.match(
 );
 assert.match(
   editorCommandBarSource,
-  /md:gap-4 md:border-b-0 md:px-4 md:shadow-none border-neutral-200 bg-white\/95 md:bg-surface /,
+  /md:gap-4 md:border-b-0 md:px-4 md:shadow-none border-separator bg-surface\/95 md:bg-surface /,
   "From md the bar sits on the frame with no line under it (the rounded inset frame)."
 );
 assert.doesNotMatch(

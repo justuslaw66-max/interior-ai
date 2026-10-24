@@ -106,7 +106,7 @@ function SheetTop({ title, subtitle, inspecting, handle }: { title: string; subt
       <div className="flex shrink-0 justify-center">{handle}</div>
       <div hidden={inspecting} className="-mt-1.5 shrink-0 px-4 pb-2">
         <h2 className="text-lg font-bold leading-6">{title}</h2>
-        <p className="truncate text-xs text-neutral-600">{subtitle}</p>
+        <p className="truncate text-xs text-label-secondary">{subtitle}</p>
       </div>
     </>
   );
@@ -144,7 +144,7 @@ export function PhoneStepSheet({ title, subtitle, collapsed, onCollapsedChange, 
     <Button variant="quiet" data-testid="design-controls-panel-handle" aria-label={handleLabel} aria-expanded={snap === "full"}
       aria-controls={SHEET_BODY_ID} title={handleLabel} className="h-11 w-24 touch-none px-0 py-0" {...handlers}
       onClick={() => { if (!consumeDragClick()) settle(nextPhoneSheetSnap(snap)); }}>
-      <span aria-hidden="true" className="block h-[5px] w-9 rounded-full bg-neutral-300" />
+      <span aria-hidden="true" className="block h-[5px] w-9 rounded-full bg-control-handle" />
     </Button>
   );
 
@@ -175,7 +175,7 @@ function panelShellProps(column: StepPanelColumn | null, sheet: { title: string;
     "data-sheet-snap": sheet.snap,
     "aria-label": sheet.title,
     style: { height: sheet.heightPx },
-    className: "absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 flex flex-col rounded-t-[20px] shadow-[0_-6px_24px_rgba(23,23,23,0.12)] transition-[height] duration-200 data-[dragging=true]:transition-none motion-reduce:transition-none bg-white text-neutral-900",
+    className: "absolute inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 flex flex-col rounded-t-[20px] shadow-[0_-6px_24px_rgba(23,23,23,0.12)] transition-[height] duration-200 data-[dragging=true]:transition-none motion-reduce:transition-none bg-surface text-label",
   };
 }
 

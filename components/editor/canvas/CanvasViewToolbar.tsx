@@ -50,12 +50,12 @@ export function CanvasViewToolbar(props: CanvasViewToolbarProps) {
       role="group"
       aria-label="Canvas controls"
       data-testid="canvas-view-toolbar"
-      className={`${TOOLBAR_CLASS} border-neutral-200 bg-white text-neutral-900`}
+      className={`${TOOLBAR_CLASS} border-separator bg-surface-floating text-label`}
       style={{ left: canvasToolbarLeft(props.frame) }}
     >
       <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} variant="canvas" />
       {props.viewMode === "3d" ? <CanvasSavedViews {...props.savedViews} size="toolbar" /> : null}
-      <div aria-hidden="true" className="mx-1 h-6 w-px bg-neutral-200" />
+      <div aria-hidden="true" className="mx-1 h-6 w-px bg-separator" />
       <Button
         variant="quiet"
         size="icon"

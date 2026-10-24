@@ -44,8 +44,8 @@
   --danger: #dc2626;
   --background: var(--bg-canvas);
   --foreground: var(--text-primary);
-  /* Surfaces: panels and the bar; cards and fields on them; dialogs, menus and popovers, and the
-     fields in those; the bars that float over the canvas. */
+  /* Surfaces: panels and the bar; cards and fields on them; dialogs and popovers, and the fields in
+     those; the bars that float over the canvas, and the menus that open over it. */
   --surface: var(--color-white);
   --surface-secondary: var(--color-white);
   --surface-elevated: var(--color-white);
@@ -55,7 +55,19 @@
   --label-secondary: #525252;
   --separator: var(--color-neutral-200);
   --link: #275fcb;
-  /* The shared controls (components/ui): Button, SegmentedControl, Chip and ChoiceTile. */
+  /* The editor's shell (dark mode step 5.1): the Undo toast after an action, and its Undo; Pro's
+     blue, for the Pro tools pill and Get Pro's word; the phone's steps along the bottom, opaque, as
+     the canvas can sit under them. */
+  --surface-toast: var(--color-neutral-900);
+  --on-surface-toast: var(--color-white);
+  --toast-control: rgba(255, 255, 255, 0.15);
+  --toast-control-hover: rgba(255, 255, 255, 0.25);
+  --accent-tint: var(--color-blue-50);
+  --accent-tint-border: var(--color-blue-200);
+  --on-accent-tint: var(--color-blue-700);
+  --surface-tab-bar: var(--color-neutral-100);
+  /* The shared controls (components/ui): Button, SegmentedControl, Chip and ChoiceTile; a step's
+     number and the avatar's hover (control-badge), and the phone sheet's handle. */
   --control-primary: var(--color-neutral-900);
   --control-primary-hover: var(--color-neutral-800);
   --control-on-primary: var(--color-white);
@@ -68,15 +80,19 @@
   --control-track: var(--color-neutral-100);
   --control-track-hover: var(--color-white);
   --control-edge-hover: var(--color-neutral-400);
+  --control-badge: var(--color-neutral-200);
+  --control-handle: var(--color-neutral-300);
   --control-danger: var(--color-red-600);
   --control-danger-hover: var(--color-red-700);
   --control-danger-border: var(--color-red-600);
   --control-on-danger: var(--color-white);
 }
 
-/* Dark: black panels and bar, #1C1C1E cards, fields, dialogs and menus, #2C2C2E floating bars and
-   the fields in dialogs (J, 13 and 22 Oct); white text with Apple's 60% grey; near-white primaries
-   and pressed controls, grey fills for secondary ones, a red tint for deleting (J, 13–14 Oct). */
+/* Dark: black panels and bar, #1C1C1E cards, fields and dialogs, #2C2C2E floating bars and the
+   fields in dialogs (J, 13 and 22 Oct); white text with Apple's 60% grey; near-white primaries and
+   pressed controls, grey fills for secondary ones, a red tint for deleting (J, 13–14 Oct). The
+   shell (J, 24 Oct): the menus over the canvas float too (#2C2C2E), the toast is #3A3A3C, and the
+   phone's steps are a #1C1C1E bar with the current one a #2C2C2E card. */
 [data-color-scheme="dark"] {
   color-scheme: dark;
   --bg-canvas: #000000;
@@ -102,6 +118,14 @@
   --label-secondary: rgba(235, 235, 245, 0.6);
   --separator: rgba(84, 84, 88, 0.65);
   --link: #409cff;
+  --surface-toast: #3a3a3c;
+  --on-surface-toast: #ffffff;
+  --toast-control: rgba(255, 255, 255, 0.14);
+  --toast-control-hover: rgba(255, 255, 255, 0.22);
+  --accent-tint: rgba(10, 132, 255, 0.18);
+  --accent-tint-border: transparent;
+  --on-accent-tint: #409cff;
+  --surface-tab-bar: #1c1c1e;
   --control-primary: #f5f5f7;
   --control-primary-hover: #e5e5ea;
   --control-on-primary: #1c1c1e;
@@ -114,6 +138,8 @@
   --control-track: rgba(118, 118, 128, 0.24);
   --control-track-hover: rgba(118, 118, 128, 0.24);
   --control-edge-hover: rgba(235, 235, 245, 0.3);
+  --control-badge: rgba(118, 118, 128, 0.32);
+  --control-handle: #48484a;
   --control-danger: rgba(255, 69, 58, 0.18);
   --control-danger-hover: rgba(255, 69, 58, 0.26);
   --control-danger-border: transparent;
@@ -151,6 +177,14 @@
   --color-label-secondary: var(--label-secondary);
   --color-separator: var(--separator);
   --color-link: var(--link);
+  --color-surface-toast: var(--surface-toast);
+  --color-on-surface-toast: var(--on-surface-toast);
+  --color-toast-control: var(--toast-control);
+  --color-toast-control-hover: var(--toast-control-hover);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-tint-border: var(--accent-tint-border);
+  --color-on-accent-tint: var(--on-accent-tint);
+  --color-surface-tab-bar: var(--surface-tab-bar);
   --color-control-primary: var(--control-primary);
   --color-control-primary-hover: var(--control-primary-hover);
   --color-control-on-primary: var(--control-on-primary);
@@ -163,6 +197,8 @@
   --color-control-track: var(--control-track);
   --color-control-track-hover: var(--control-track-hover);
   --color-control-edge-hover: var(--control-edge-hover);
+  --color-control-badge: var(--control-badge);
+  --color-control-handle: var(--control-handle);
   --color-control-danger: var(--control-danger);
   --color-control-danger-hover: var(--control-danger-hover);
   --color-control-danger-border: var(--control-danger-border);

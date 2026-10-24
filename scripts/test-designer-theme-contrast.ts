@@ -109,6 +109,14 @@ const LIGHT_ROLE_TOKENS = {
   "label-secondary": "#525252",
   separator: "var(--color-neutral-200)",
   link: "#275fcb",
+  "surface-toast": "var(--color-neutral-900)",
+  "on-surface-toast": "var(--color-white)",
+  "toast-control": "rgba(255, 255, 255, 0.15)",
+  "toast-control-hover": "rgba(255, 255, 255, 0.25)",
+  "accent-tint": "var(--color-blue-50)",
+  "accent-tint-border": "var(--color-blue-200)",
+  "on-accent-tint": "var(--color-blue-700)",
+  "surface-tab-bar": "var(--color-neutral-100)",
   "control-primary": "var(--color-neutral-900)",
   "control-primary-hover": "var(--color-neutral-800)",
   "control-on-primary": "var(--color-white)",
@@ -121,6 +129,8 @@ const LIGHT_ROLE_TOKENS = {
   "control-track": "var(--color-neutral-100)",
   "control-track-hover": "var(--color-white)",
   "control-edge-hover": "var(--color-neutral-400)",
+  "control-badge": "var(--color-neutral-200)",
+  "control-handle": "var(--color-neutral-300)",
   "control-danger": "var(--color-red-600)",
   "control-danger-hover": "var(--color-red-700)",
   "control-danger-border": "var(--color-red-600)",
@@ -130,7 +140,8 @@ for (const [name, value] of Object.entries(LIGHT_ROLE_TOKENS)) {
   assert.equal(lightTokens.get(name), value, `Light --${name} keeps the colour it drew with before.`);
 }
 // J's dark surfaces (13 Oct: black panels, #1C1C1E cards; 22 Oct: dialogs #1C1C1E with #2C2C2E
-// fields, Apple's 60% grey) and the near-white primary (14 Oct).
+// fields, Apple's 60% grey), the near-white primary (14 Oct), and the shell's toast and the phone's
+// steps (24 Oct: a #3A3A3C toast; a #1C1C1E bar with the current step a #2C2C2E card).
 const DARK_CHOICES = {
   surface: "#000000",
   "surface-secondary": "#1c1c1e",
@@ -139,6 +150,8 @@ const DARK_CHOICES = {
   "surface-floating": "#2c2c2e",
   "label-secondary": "rgba(235, 235, 245, 0.6)",
   "control-primary": "#f5f5f7",
+  "surface-toast": "#3a3a3c",
+  "surface-tab-bar": "#1c1c1e",
 } as const;
 for (const [name, value] of Object.entries(DARK_CHOICES)) {
   assert.equal(darkTokens.get(name), value, `Dark --${name} is the value J chose.`);
@@ -157,6 +170,9 @@ const TAILWIND_SRGB: Record<string, string> = {
   "neutral-900": "#171717",
   "red-600": "#e7000b",
   "red-700": "#c10007",
+  "blue-50": "#eff6ff",
+  "blue-200": "#bedbff",
+  "blue-700": "#1447e6",
 };
 function parseColour(value: string): Rgba {
   const tailwind = value.match(/^var\(--color-([a-z]+(?:-\d+)?)\)$/)?.[1];
@@ -197,6 +213,15 @@ const TEXT_PAIRS: ReadonlyArray<readonly [text: string, fill: string | null, gro
   ["control-label-idle", "control-track", CONTROL_GROUNDS],
   ["control-label-idle", null, ["surface-secondary"]],
   ["control-on-danger", "control-danger", DANGER_GROUNDS],
+  // The editor's shell: the toast and its Undo; Pro's blue, on its tint and as Get Pro's word, on
+  // the bar; an idle step on the phone's bar; a step's number, on the track over the bar (in dark
+  // the track over black is surface-secondary's grey; in light the number's grey is opaque).
+  ["on-surface-toast", "surface-toast", ["surface"]],
+  ["on-surface-toast", "toast-control", ["surface-toast"]],
+  ["on-accent-tint", "accent-tint", ["surface"]],
+  ["on-accent-tint", "control-secondary", ["surface"]],
+  ["label-secondary", null, ["surface-tab-bar"]],
+  ["control-label-idle", "control-badge", ["surface-secondary"]],
 ];
 // The focus ring and the primary's black (or near-white) edge need 3:1 against what's around them.
 const EDGE_PAIRS: ReadonlyArray<readonly [edge: string, grounds: readonly string[]]> = [
@@ -274,7 +299,7 @@ assert.match(
 );
 assert.match(
   commandBarSource,
-  /if \(saveStatus\.tone === "error"\) return "text-red-700";[\s\S]*?return "text-success";/,
+  /if \(saveStatus\.tone === "error"\) return "text-danger";[\s\S]*?return "text-success";/,
   "The save status line keeps red for Not saved and green for Saved (UX 4c)."
 );
 assert.match(

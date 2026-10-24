@@ -71,12 +71,13 @@ export function CommandBarStepTabs({ steps, focusFallbackStepId }: CommandBarSte
   );
 }
 
-// Phones: a bar fixed to the bottom of the screen. From md: the centre of the bar, as a segmented
-// control of 36px steps with the current one black (UX 4c, the approved TopBar mockup).
+// Phones: a bar fixed to the bottom of the screen, with the current step a raised card (in dark, a
+// #1C1C1E bar and a #2C2C2E card: J, 24 Oct). From md: the centre of the bar, as a segmented control
+// of 36px steps with the current one black, near-white in dark (UX 4c, the approved TopBar mockup).
 function stepNavClass() {
   const shape =
     "fixed inset-x-0 bottom-0 z-50 grid h-[calc(4rem+env(safe-area-inset-bottom))] grid-cols-3 gap-1 border-t p-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))] md:static md:inline-flex md:h-11 md:shrink-0 md:items-center md:gap-1 md:rounded-xl md:p-1";
-  return `${shape} border-neutral-200 bg-neutral-100 md:border-0`;
+  return `${shape} border-separator bg-surface-tab-bar md:border-0 md:bg-control-track`;
 }
 
 function stepButtonClass(active: boolean) {
@@ -84,13 +85,13 @@ function stepButtonClass(active: boolean) {
     "flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg text-xs font-semibold leading-none md:h-9 md:flex-row md:gap-2 md:rounded-[9px] md:px-3 md:text-sm md:font-bold xl:pl-2.5 xl:pr-4";
   return `${shape} ${
     active
-      ? "bg-white text-neutral-950 shadow-sm md:bg-neutral-900 md:text-white md:shadow-none"
-      : "text-neutral-600 hover:bg-white/70 hover:text-neutral-900 md:text-neutral-700"
+      ? "bg-surface-floating text-label shadow-sm md:bg-control-primary md:text-control-on-primary md:shadow-none"
+      : "text-label-secondary hover:bg-control-track-hover hover:text-label md:text-control-label-idle"
   }`;
 }
 
 // From xl each step shows its number beside its name.
 function stepNumberClass(active: boolean) {
   const shape = "hidden h-5 w-5 items-center justify-center rounded-full text-xs font-bold xl:inline-flex";
-  return `${shape} ${active ? "bg-neutral-900 text-white md:bg-white md:text-neutral-900" : "bg-neutral-300 text-neutral-700 md:bg-neutral-200"}`;
+  return `${shape} ${active ? "bg-control-on-primary text-control-primary" : "bg-control-badge text-control-label-idle"}`;
 }

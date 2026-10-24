@@ -2139,7 +2139,7 @@ test.describe("Pro visual policy", () => {
       "central-environment-sun-ambient"
     );
     await expect(sceneCanvas).toHaveCSS("background-color", "rgb(244, 242, 237)");
-    await expect(page.getByTestId("editor-command-bar")).toHaveClass(/bg-white\/95/);
+    await expect(page.getByTestId("editor-command-bar")).toHaveClass(/bg-surface\/95/);
     await expect(page.getByTestId("design-controls-panel").first()).toBeVisible();
     const rightWorkSurface = page
       .locator('[data-testid="room-pan-navigator"], [data-testid="coohom-floor-panel"]')

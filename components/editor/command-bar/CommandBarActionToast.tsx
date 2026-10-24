@@ -54,13 +54,13 @@ export function CommandBarActionToast({ isClientPreview, undoName, onUndo }: Com
       className="pointer-events-none fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4 md:bottom-6">
       {action ? (
         <div data-testid="editor-action-toast"
-          className="pointer-events-auto flex min-w-0 max-w-full items-center gap-3 rounded-xl bg-neutral-900 py-1.5 pl-4 pr-1.5 text-sm text-white shadow-lg"
+          className="pointer-events-auto flex min-w-0 max-w-full items-center gap-3 rounded-xl bg-surface-toast py-1.5 pl-4 pr-1.5 text-sm text-on-surface-toast shadow-lg"
           onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)}
           onFocus={() => setHeld(true)} onBlur={() => setHeld(false)}>
           <span className="min-w-0 truncate" title={action.message}>{action.message}</span>
           {actionToastCanUndo(action, undoName) ? (
             <button type="button" data-testid="editor-action-toast-undo"
-              className="min-h-11 shrink-0 rounded-lg bg-white/15 px-3 font-bold hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white md:min-h-9"
+              className="min-h-11 shrink-0 rounded-lg bg-toast-control px-3 font-bold hover:bg-toast-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-on-surface-toast md:min-h-9"
               onClick={(event) => {
                 const hadFocus = document.activeElement === event.currentTarget;
                 onUndo();

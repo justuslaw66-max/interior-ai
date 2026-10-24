@@ -6,7 +6,7 @@ import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 
 /** "Saved" (to the account) is the one green line; the others are muted, and "Not saved" red. */
 function getSaveStatusClassName(saveStatus: EditorSaveStatus) {
-  if (saveStatus.tone === "error") return "text-red-700";
+  if (saveStatus.tone === "error") return "text-danger";
   if (saveStatus.tone === "saved" && saveStatus.source === "cloud") return "text-success";
   return "text-ink-muted";
 }

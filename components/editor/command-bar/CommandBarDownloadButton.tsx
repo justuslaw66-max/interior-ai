@@ -22,7 +22,7 @@ export function CommandBarDownloadButton({ onDownload }: CommandBarDownloadButto
       aria-label="Download"
       aria-haspopup="dialog"
       title="Download pictures or a PDF"
-      className="hidden h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white text-sm font-bold leading-none text-neutral-900 hover:bg-neutral-50 md:inline-flex xl:w-auto xl:pl-3 xl:pr-3.5"
+      className="hidden h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-control-secondary-border bg-control-secondary text-sm font-bold leading-none text-label hover:bg-control-secondary-hover md:inline-flex xl:w-auto xl:pl-3 xl:pr-3.5"
       onClick={onDownload}
     >
       <Download className="h-4 w-4" aria-hidden="true" />

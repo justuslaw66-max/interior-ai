@@ -87,9 +87,9 @@ function commandBarSteps({ editorMode, millworkActive = false, onPlan, onFurnish
 
 /** More's and Account's items and panels; the phone Menu opens from the left of the bar. */
 function commandBarMenuClasses(wide: boolean) {
-  const menuButtonClass = "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-neutral-800 hover:bg-neutral-100";
+  const menuButtonClass = "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-semibold text-control-label hover:bg-control-quiet-hover";
   // A menu taller than the screen (a short phone, a 44px row per item) scrolls inside itself.
-  const menuPanelClass = `absolute max-h-[calc(100dvh-4.5rem)] overflow-y-auto ${wide ? "right-0" : "left-0"} top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-neutral-200 bg-white p-2 text-neutral-900 shadow-2xl`;
+  const menuPanelClass = `absolute max-h-[calc(100dvh-4.5rem)] overflow-y-auto ${wide ? "right-0" : "left-0"} top-[calc(100%+0.5rem)] z-[80] w-64 rounded-2xl border border-separator bg-surface-floating p-2 text-label shadow-2xl`;
   return { menuButtonClass, menuPanelClass };
 }
 
@@ -162,7 +162,7 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
       inert={isClientPreview}
       aria-hidden={isClientPreview}
       onClickCapture={guardHiddenCommandAction}
-      className={`absolute left-0 right-0 top-0 z-50 flex h-(--editor-bar-h) items-center gap-1 overflow-visible border-b px-1 shadow-sm transition-opacity duration-300 md:gap-4 md:border-b-0 md:px-4 md:shadow-none border-neutral-200 bg-white/95 md:bg-surface text-neutral-950 ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
+      className={`absolute left-0 right-0 top-0 z-50 flex h-(--editor-bar-h) items-center gap-1 overflow-visible border-b px-1 shadow-sm transition-opacity duration-300 md:gap-4 md:border-b-0 md:px-4 md:shadow-none border-separator bg-surface/95 md:bg-surface text-label ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       <div className="flex min-w-0 flex-1 basis-0 items-center gap-1 md:gap-3">
         {wide ? null : moreMenu}
