@@ -96,8 +96,9 @@ function commandBarMenuClasses(wide: boolean) {
 /**
  * The editor's bar (UX 4c and 4d, the approved TopBar and PhonePlan mockups). From md: the name
  * with the save status under it, the steps in the centre, then Get Pro, Save, Download, Share,
- * More and Account. On phones a 56px header: Menu (More's items and the account's), the name and
- * status, Save and Share; the steps are a bar along the bottom.
+ * More and Account, on the frame with no line under it (the rounded inset frame). On phones a 56px
+ * header over the canvas: Menu (More's items and the account's), the name and status, Save and
+ * Share; the steps are a bar along the bottom.
  */
 export default function EditorCommandBar(props: EditorCommandBarProps) {
   const { isClientPreview, viewMode, isDesigner } = props;
@@ -161,7 +162,7 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
       inert={isClientPreview}
       aria-hidden={isClientPreview}
       onClickCapture={guardHiddenCommandAction}
-      className={`absolute left-0 right-0 top-0 z-50 flex h-(--editor-bar-h) items-center gap-1 overflow-visible border-b px-1 shadow-sm transition-opacity duration-300 md:gap-4 md:px-4 md:backdrop-blur border-neutral-200 bg-white/95 text-neutral-950 ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
+      className={`absolute left-0 right-0 top-0 z-50 flex h-(--editor-bar-h) items-center gap-1 overflow-visible border-b px-1 shadow-sm transition-opacity duration-300 md:gap-4 md:border-b-0 md:px-4 md:shadow-none border-neutral-200 bg-white/95 md:bg-surface text-neutral-950 ${isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"}`}
     >
       <div className="flex min-w-0 flex-1 basis-0 items-center gap-1 md:gap-3">
         {wide ? null : moreMenu}

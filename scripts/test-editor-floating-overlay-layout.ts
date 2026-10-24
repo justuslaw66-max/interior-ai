@@ -207,19 +207,19 @@ assert.match(
 
 assert.match(
   editorConfigurationSource,
-  /const PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX = 4;/,
-  "Floating overlay stack should use a shared right edge."
+  /const PLAN_FLOATING_OVERLAY_STACK_RIGHT_PX = 12;/,
+  "Floating overlay stack should use a shared right edge, inside the canvas card's (the rounded inset frame)."
 );
 
 assert.match(
   viewportOverlaySource,
-  /data-testid="plan-right-rail"[\s\S]{0,300}?right-1 top-bar-2/,
-  "Floating overlay stack should align with the left plan panel top edge."
+  /data-testid="plan-right-rail"[\s\S]{0,300}?right-3 top-bar-4/,
+  "Floating overlay stack should sit 8px inside the canvas card's top and right edges."
 );
 
 assert.match(
   editorConfigurationSource,
-  /const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = EDITOR_BAR_HEIGHT_PX \+ 268;/,
+  /const PLAN_FLOATING_OVERLAY_INSPECTOR_STACK_TOP_PX = EDITOR_BAR_HEIGHT_PX \+ 276;/,
   "Selection inspector should dock beneath the floating room navigator."
 );
 
@@ -454,7 +454,7 @@ assert.match(
 
 assert.match(
   viewportOverlaySource,
-  /data-testid="plan-right-rail"[\s\S]{0,300}?bottom-24 right-1 top-bar-2[\s\S]{0,200}?w-\[268px\][\s\S]{0,200}?overflow-x-hidden/,
+  /data-testid="plan-right-rail"[\s\S]{0,300}?bottom-24 right-3 top-bar-4[\s\S]{0,200}?w-\[268px\][\s\S]{0,200}?overflow-x-hidden/,
   "Floating plan overlays should stay inside a fixed, right-anchored scroll rail."
 );
 
@@ -608,8 +608,8 @@ assert.match(
 
 assert.match(
   designControlsPanelSource,
-  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-1";[\s\S]*?absolute top-bar-2 z-20/,
-  "Main left design controls column should sit as close to the viewport edge as the right overlay stack (phones get the step sheet, UX 4d)."
+  /const panelLeftClass = temporarilyRevealed[\s\S]*?: "left-2";[\s\S]*?absolute top-bar-2 z-20[\s\S]*?temporarilyRevealed \? "max-h-\[calc\(100vh-var\(--editor-bar-h\)-2\.5rem\)\] pb-4 z-40 drop-shadow-2xl" : "bottom-2"/,
+  "Main left design controls column should be docked in the frame, 8px from its edges like the canvas card, and float over the canvas only when revealed from the edge strip (phones get the step sheet, UX 4d)."
 );
 
 assert.match(
@@ -655,7 +655,7 @@ assert.match(
 
 assert.match(
   editorCommandBarSource,
-  /data-testid="editor-command-bar"[\s\S]{0,300}?absolute left-0 right-0 top-0 z-50 flex h-\(--editor-bar-h\) items-center gap-1 [^`]*px-1 [^`]*md:gap-4 md:px-4 md:backdrop-blur/,
+  /data-testid="editor-command-bar"[\s\S]{0,300}?absolute left-0 right-0 top-0 z-50 flex h-\(--editor-bar-h\) items-center gap-1 [^`]*px-1 [^`]*md:gap-4 md:border-b-0 md:px-4 /,
   "The editor command bar is --editor-bar-h (56px) tall at every width: the phone header and the desktop bar (UX 4c, 4d)."
 );
 
@@ -715,8 +715,13 @@ assert.match(
 );
 assert.match(
   editorCommandBarSource,
-  /md:gap-4 md:px-4 md:backdrop-blur/,
-  "The bar should only blur from tablet width up: a backdrop filter would pin the phone step bar inside it."
+  /md:gap-4 md:border-b-0 md:px-4 md:shadow-none border-neutral-200 bg-white\/95 md:bg-surface /,
+  "From md the bar sits on the frame with no line under it (the rounded inset frame)."
+);
+assert.doesNotMatch(
+  editorCommandBarSource,
+  /backdrop-blur/,
+  "The bar needs no blur: it no longer covers the canvas from md, and on phones a backdrop filter would pin the step bar inside it."
 );
 
 // One bar height from md (UX 4c): the bar is --editor-bar-h tall, and what sits under it is placed

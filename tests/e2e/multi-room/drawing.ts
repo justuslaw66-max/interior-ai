@@ -194,7 +194,9 @@ export function registerDrawingTests() {
     }
 
     const arcStart = { x: box.x + box.width * 0.58, y: box.y + box.height * 0.42 };
-    const arcEnd = { x: box.x + box.width * 0.74, y: box.y + box.height * 0.6 };
+    // The canvas is a card now, with the right rail inside its right edge: 74% across it is under the
+    // room inspector. 66% is where 74% of the window was.
+    const arcEnd = { x: box.x + box.width * 0.66, y: box.y + box.height * 0.6 };
 
     await page.mouse.click(arcStart.x, arcStart.y);
     if (!(await isDrawPointCountVisible(page, 1))) {

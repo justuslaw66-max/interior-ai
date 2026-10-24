@@ -2157,7 +2157,8 @@ test.describe("Pro visual policy", () => {
       .getByTestId("canvas-view-toolbar")
       .getByRole("button", { name: "2D", exact: true })
       .click();
-    await expect(sceneCanvas).toHaveCSS("background-color", "rgb(255, 255, 255)");
+    // The 2D canvas is warm too, so its card stands out from the white frame (J, 23 Oct).
+    await expect(sceneCanvas).toHaveCSS("background-color", "rgb(244, 242, 237)");
 
     await mockPlan(page, "free");
     await page.goto("/design?mode=designer", { waitUntil: "domcontentloaded" });
