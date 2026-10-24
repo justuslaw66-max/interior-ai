@@ -154,8 +154,15 @@ or retailer URL is not proof of redistribution rights.
   results that resolve after cancellation. Shared source data must be cloned
   before product-specific mutation.
 - `CabinetSceneItem` allocates generated cabinet groups and edges, while
-  `useCabinetSceneResourceOwnership` pairs their geometry/material disposal and
-  finish-texture cancellation cleanup with the mounted item lifecycle.
+  `useCabinetSceneResourceOwnership` pairs their geometry/material disposal
+  with the mounted item lifecycle and leases their laminate pictures, releasing
+  every lease on change or unmount. The pictures belong to the page's shared
+  cache in `features/cabinetry/cabinetLaminateTextures.ts`, one copy per WebGL
+  renderer sharing the loaded image, so a closed view's renderer isn't kept
+  alive by a texture's dispose listener. It disposes the
+  least recently used unreferenced pictures beyond 8 entries, late results whose
+  entry is gone, and everything on a non-persisted `pagehide`, and never a
+  picture in use.
   `LocalCabinetAssetStorage` owns generated blob URLs and revokes them on
   replacement and `dispose()`.
 - React Three Fiber owns the canvas render loop, WebGL renderer, and context.

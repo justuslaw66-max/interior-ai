@@ -223,6 +223,9 @@ const cabinetRendererSource = source(
 const cabinetResourceOwnershipSource = source(
   "features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts"
 );
+const cabinetLaminateTextureCacheSource = source(
+  "features/cabinetry/cabinetLaminateTextures.ts"
+);
 const glbRendererSource = source("components/scene/GLBScaledModel.tsx");
 const glbLifecycleSource = source(
   "components/scene/glb-scaled-model/useGLBModelLifecycle.ts"
@@ -332,11 +335,11 @@ assert.match(
 );
 assert.match(
   cabinetResourceOwnershipSource,
-  /disposeCabinetOwnedTextures\(loadedTextures\)/
+  /acquireCabinetLaminateTexture\([\s\S]*?return \(\) => releases\.forEach\(\(release\) => release\(\)\)/
 );
 assert.match(
-  cabinetResourceOwnershipSource,
-  /if \(cancelled\)[\s\S]*?texture\.dispose\(\)/
+  cabinetLaminateTextureCacheSource,
+  /if \(this\.entries\.get\(key\) !== entry\) \{\s*texture\.dispose\(\)/
 );
 assert.match(glbRendererSource, /useGLBModelLifecycle\(\{/);
 assert.match(
