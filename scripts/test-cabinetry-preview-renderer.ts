@@ -397,8 +397,10 @@ async function checkCabinetTextureCache() {
   const releaseRebuilt = cache.acquire("oak", view, (texture) => rebuilt.push(texture));
   assert.deepEqual(rebuilt, [oak], "A rebuilt cabinet must get its loaded picture at once, within the lease.");
   await settle();
-  assert.deepEqual(loads, ["oak"], "A loaded picture must not be loaded again.");
-  assert.deepEqual(disposed, []);
+  // The growing lists are compared as copies: strict deepEqual narrows the value it checks, and a
+  // narrowed list would fail next build's type check where it is read again.
+  assert.deepEqual([...loads], ["oak"], "A loaded picture must not be loaded again.");
+  assert.deepEqual([...disposed], []);
 
   // Unused pictures stay for a quick return, until there are more than the cache's size; the least
   // recently used goes first, and a picture in use never does.
@@ -409,10 +411,10 @@ async function checkCabinetTextureCache() {
   const releaseAsh = cache.acquire("ash", view, () => undefined);
   arrive("ash");
   await settle();
-  assert.deepEqual(disposed, ["walnut"], "The least recently used unused picture must be disposed first.");
+  assert.deepEqual([...disposed], ["walnut"], "The least recently used unused picture must be disposed first.");
   const releaseElm = cache.acquire("elm", view, () => undefined);
   await settle();
-  assert.deepEqual(disposed, ["walnut", "oak"]);
+  assert.deepEqual([...disposed], ["walnut", "oak"]);
   assert.equal(cache.size(), 2, "Pictures in use must stay, even past the cache's size.");
 
   // A cabinet released before its picture arrives is never called; a picture whose entry was
