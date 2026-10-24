@@ -36,14 +36,14 @@ export default function RoomConnectionChecklist({
 }: RoomConnectionChecklistProps) {
   if (items.length === 0) return null;
 
-  const shellClass = "rounded-xl border border-neutral-200 bg-white p-3";
-  const titleClass = "text-sm font-semibold text-neutral-900";
-  const rowClass = "rounded-lg border border-neutral-200 bg-neutral-50 p-2";
-  const labelClass = "text-xs font-semibold text-neutral-800";
-  const metaClass = "text-xs text-neutral-500";
-  const connectedClass = "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
-  const needsClass = "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
-  const reviewClass = "rounded-full bg-orange-50 px-2 py-1 text-xs font-semibold text-orange-700";
+  const shellClass = "rounded-xl border border-box-border bg-field p-3";
+  const titleClass = "text-sm font-semibold text-label";
+  const rowClass = "rounded-lg border border-box-border bg-tile p-2";
+  const labelClass = "text-xs font-semibold text-control-label";
+  const metaClass = "text-xs text-label-secondary";
+  const connectedClass = "rounded-full bg-success-tint px-2 py-1 text-xs font-semibold text-on-success-tint";
+  const needsClass = "rounded-full bg-warning-tint px-2 py-1 text-xs font-semibold text-on-warning-tint";
+  const reviewClass = "rounded-full bg-warning-tint px-2 py-1 text-xs font-semibold text-on-warning-tint";
   const getStatusClass = (status: HouseRoomConnectionChecklistItem["status"]) => {
     if (status === "connected" || status === "reachable") return connectedClass;
     if (status === "needs_doorway") return needsClass;

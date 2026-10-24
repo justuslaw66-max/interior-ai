@@ -67,13 +67,13 @@ function FurnishRoomRow({ rooms, activeRoomId, activeRoomName, canEdit, onSelect
   const targetId = useId();
   return (
     <div className="mb-3 flex min-h-10 items-center justify-between gap-2" data-testid="furnish-room-summary">
-      <label htmlFor={targetId} className="text-[13px] font-bold text-neutral-700">
+      <label htmlFor={targetId} className="text-[13px] font-bold text-control-label-idle">
         Room
       </label>
       {rooms.length > 1 ? (
         <select
           id={targetId}
-          className="min-h-10 min-w-0 max-w-[65%] rounded-lg border border-neutral-300 bg-white px-2 text-[13px] text-neutral-900 md:min-h-8"
+          className="min-h-10 min-w-0 max-w-[65%] rounded-lg border border-control-secondary-border bg-field px-2 text-[13px] text-label md:min-h-8"
           value={activeRoomId}
           disabled={!canEdit}
           data-testid="furnish-room-target-select"
@@ -86,7 +86,7 @@ function FurnishRoomRow({ rooms, activeRoomId, activeRoomName, canEdit, onSelect
           ))}
         </select>
       ) : (
-        <output id={targetId} className="min-w-0 truncate text-[13px] font-semibold text-neutral-900">
+        <output id={targetId} className="min-w-0 truncate text-[13px] font-semibold text-label">
           {activeRoomName}
         </output>
       )}
@@ -146,7 +146,7 @@ export default function DesignControlsFurnishPanel(props: DesignControlsFurnishP
   const { canEdit, isDesigner = false, activeRoomName, activeRoomShoppingItems } = props;
   const { placementAddMode, onPlacementAddModeChange } = props;
   const productCount = activeRoomShoppingItems.reduce((total, item) => total + item.quantity, 0);
-  const panelClass = "rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm";
+  const panelClass = "rounded-2xl border border-box-border bg-surface-secondary p-3 shadow-sm";
 
   return (
     <div className="space-y-3">

@@ -28,22 +28,22 @@ function EvidenceStatus({
 }) {
   const editable = floorPlanPropertyEvidenceIsEditable(evidence);
   const badgeClass = evidence === "assumed"
-    ? "bg-amber-100 text-amber-800"
+    ? "bg-warning-tint text-on-warning-tint"
     : evidence === "site_measured"
-      ? "bg-emerald-100 text-emerald-800"
-      : "bg-blue-100 text-blue-800";
+      ? "bg-success-tint text-on-success-tint"
+      : "bg-accent-tint text-on-accent-tint";
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badgeClass}`} data-testid={`${testId}-badge`}>
         {evidence === "assumed" && assumedLabel ? assumedLabel : floorPlanPropertyEvidenceLabel(evidence)}
       </span>
       {evidence === "assumed" ? (
-        <span className="text-xs text-amber-700">
+        <span className="text-xs text-on-warning-tint">
           {assumedHelpText ?? "Not read from the source drawing."}
         </span>
       ) : null}
       {!editable ? (
-        <span className="text-xs text-neutral-500">
+        <span className="text-xs text-label-secondary">
           Locked; use reviewed override workflow to replace it.
         </span>
       ) : null}
@@ -102,7 +102,7 @@ export default function FloorPlanPropertyEvidenceControl({
   if (!evidence) return null;
 
   const editable = floorPlanPropertyEvidenceIsEditable(evidence);
-  const controlClass = "rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-700";
+  const controlClass = "rounded-md border border-box-border bg-field px-2 py-1 text-xs text-control-label-idle";
 
   return (
     <div className="mt-1.5 grid grid-cols-1 gap-1.5" data-testid={testId}>

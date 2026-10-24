@@ -54,7 +54,7 @@ function SurfaceBrowserTitle(props: SurfaceBrowserHeaderProps) {
           <ChevronLeft className="h-4 w-4" aria-hidden="true" />
         </Button>
         <div className="min-w-0">
-          <div className="text-xs font-semibold text-neutral-900">Surfaces</div>
+          <div className="text-xs font-semibold text-label">Surfaces</div>
           <div className={props.metaClass}>
             {props.targetLabel} · {props.displayName}
           </div>

@@ -45,7 +45,7 @@ export function RoomSetupStartActions({
           Draw measured room
         </Button>
       </div>
-      <p className="mt-2 text-center text-[13px] text-neutral-600">
+      <p className="mt-2 text-center text-[13px] text-label-secondary">
         Have a floor plan?{" "}
         <Button
           variant="link"

@@ -24,13 +24,13 @@ export function FurnishFooter({ roomName, productCount, total, onGoShop }: Furni
   return (
     <div
       data-testid="furnish-footer"
-      className="sticky bottom-0 z-10 hidden rounded-2xl border border-neutral-200 bg-white p-3 shadow-[0_-6px_18px_rgba(23,23,23,0.08)] md:block"
+      className="sticky bottom-0 z-10 hidden rounded-2xl border border-box-border bg-surface-secondary p-3 shadow-[0_-6px_18px_rgba(23,23,23,0.08)] md:block"
     >
       <div className="flex items-baseline justify-between gap-2">
-        <span data-testid="furnish-active-room-name" className="min-w-0 truncate text-sm font-bold text-neutral-900">
+        <span data-testid="furnish-active-room-name" className="min-w-0 truncate text-sm font-bold text-label">
           {roomName}
         </span>
-        <span data-testid="furnish-room-total" className="shrink-0 text-sm text-neutral-700">
+        <span data-testid="furnish-room-total" className="shrink-0 text-sm text-control-label-idle">
           {furnishRoomSummary(productCount, total)}
         </span>
       </div>

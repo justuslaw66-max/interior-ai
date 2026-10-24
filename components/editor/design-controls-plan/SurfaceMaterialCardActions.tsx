@@ -23,7 +23,7 @@ export function SurfaceMaterialCardActions({
   onToggleFavorite,
   onOpenDetails,
 }: SurfaceMaterialCardActionsProps) {
-  const toggleClassName = "flex h-[30px] w-[30px] touch:h-11 touch:w-11 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-100";
+  const toggleClassName = "flex h-[30px] w-[30px] touch:h-11 touch:w-11 shrink-0 items-center justify-center rounded-lg border border-box-border bg-field text-control-label hover:bg-control-quiet-hover";
   return (
     <div className="mt-2 flex items-center gap-1.5">
       <button

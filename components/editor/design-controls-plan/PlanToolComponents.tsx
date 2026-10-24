@@ -70,9 +70,9 @@ export function PlanToolSection({
   children: ReactNode;
   onToggle: () => void;
 }) {
-  const sectionClass = "border-b border-neutral-100 last:border-b-0";
-  const headerClass = "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-neutral-50";
-  const titleClass = "text-sm font-semibold text-neutral-800";
+  const sectionClass = "border-b border-separator-subtle last:border-b-0";
+  const headerClass = "flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-control-secondary-hover";
+  const titleClass = "text-sm font-semibold text-control-label";
 
   return (
     <section data-testid={`plan-tool-section-${section}`} className={sectionClass}>
@@ -85,7 +85,7 @@ export function PlanToolSection({
         <span className={titleClass}>{title}</span>
         <span
           aria-hidden="true"
-          className="text-lg leading-none text-neutral-400"
+          className="text-lg leading-none text-label-secondary"
         >
           {collapsed ? "+" : "-"}
         </span>
@@ -118,10 +118,10 @@ export function PlanToolTile({
   const className = [
     "group relative isolate flex min-w-0 flex-col items-center justify-center gap-2 overflow-hidden rounded-[2px] border px-1.5 py-2 text-center transition-[transform,background-color,border-color,box-shadow] duration-150 focus:outline-hidden focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-blue-500/70 focus-visible:ring-offset-2 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none",
     disabled
-      ? "cursor-not-allowed border-transparent bg-[#f6f6f7] text-neutral-500 focus-visible:ring-offset-white"
+      ? "cursor-not-allowed border-transparent bg-tile text-label-secondary focus-visible:ring-offset-surface-secondary"
       : active
-        ? "border-blue-400 bg-blue-50 text-neutral-950 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.12)] hover:bg-blue-100/70 focus-visible:ring-offset-white"
-        : "border-transparent bg-[#f6f6f7] text-[#30333a] hover:border-[#d9dce0] hover:bg-[#f1f2f3] focus-visible:ring-offset-white",
+        ? "border-blue-400 bg-accent-tint text-label shadow-[inset_0_0_0_1px_rgba(96,165,250,0.12)] focus-visible:ring-offset-surface-secondary"
+        : "border-transparent bg-tile text-control-label hover:border-control-secondary-border hover:bg-control-track focus-visible:ring-offset-surface-secondary",
   ].join(" ");
 
   return (
@@ -143,15 +143,15 @@ export function PlanToolTile({
         className={[
           "block text-[12px] font-normal leading-[1.25] tracking-normal",
           disabled
-            ? "text-[#64686f]"
-            : "text-[#30333a]",
+            ? "text-label-secondary"
+            : "text-control-label",
         ].join(" ")}
       >
         {label}
         {shortcut ? (
           <>
             {" "}
-            <span className="whitespace-nowrap text-[#30333a]">
+            <span className="whitespace-nowrap text-control-label">
               ({shortcut})
             </span>
           </>

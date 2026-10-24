@@ -52,9 +52,9 @@ assert.equal(roomSetupStatus(true, true), "draft");
 assert.equal(roomSetupStatus(true, false), "ready");
 const badge = (status: Parameters<typeof RoomSetupStatusBadge>[0]["status"]) =>
   renderToStaticMarkup(createElement(RoomSetupStatusBadge, { status }));
-assert.match(badge("draft"), /data-testid="room-setup-status" data-status="draft" class="[^"]*bg-amber-50[^"]*">Default size</);
-assert.match(badge("ready"), /data-status="ready" class="[^"]*bg-emerald-50[^"]*">Room ready</);
-assert.match(badge("none"), /data-status="none" class="[^"]*bg-amber-50[^"]*">Needs a room</);
+assert.match(badge("draft"), /data-testid="room-setup-status" data-status="draft" class="[^"]*bg-warning-tint[^"]*">Default size</);
+assert.match(badge("ready"), /data-status="ready" class="[^"]*bg-success-tint[^"]*">Room ready</);
+assert.match(badge("none"), /data-status="none" class="[^"]*bg-warning-tint[^"]*">Needs a room</);
 
 // FR2: no "Not started" beside a draft room; the chips come back once the room is the person's.
 const chips = (roomIsDraft: boolean) =>
@@ -77,7 +77,7 @@ assert.deepEqual(checks(true).map((check) => check.label), ["Living room", "Meas
 const checklist = renderToStaticMarkup(createElement(AiLayoutReadinessChecklist, { checks: checks(true) }));
 assert.match(checklist, /data-testid="ai-layout-readiness"/);
 assert.match(checklist, />Ready to generate</);
-assert.match(checklist, /Measured room<\/span><span class="[^"]*bg-amber-50[^"]*">Default size</);
+assert.match(checklist, /Measured room<\/span><span class="[^"]*bg-warning-tint[^"]*">Default size</);
 const aiPanel = read("components/editor/DesignControlsAiPanel.tsx");
 assert.match(aiPanel, /const briefReady = aiMustHaves\.length > 0 && roomArea > 0 && roomSupported;/, "A draft room can still get a layout.");
 assert.match(aiPanel, /aiLayoutReadinessChecks\(\{\s*roomSupported, roomArea, roomIsDraft,/);

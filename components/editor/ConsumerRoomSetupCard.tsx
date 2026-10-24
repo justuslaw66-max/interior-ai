@@ -69,9 +69,9 @@ export function ConsumerRoomSetupCard({
 }: ConsumerRoomSetupCardProps) {
   const dimensions = consumerRoomMeasurementDimensions({ hasRooms, roomWidth, roomDepth, roomWidthInput, roomDepthInput });
   const roomTypeLabel = HOUSE_ROOM_TYPES.find((option) => option.type === newRoomType)?.label ?? "Room";
-  const shellClass = "border-b border-neutral-100 bg-neutral-50/80 p-3";
-  const labelClass = "text-xs font-semibold text-neutral-700";
-  const inputClass = "min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-900 outline-hidden focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
+  const shellClass = "border-b border-separator-subtle bg-surface-band p-3";
+  const labelClass = "text-xs font-semibold text-control-label-idle";
+  const inputClass = "min-h-11 w-full rounded-lg border border-box-border bg-field px-3 text-sm text-label outline-hidden focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20 disabled:opacity-50";
 
   return (
     <section
@@ -83,11 +83,11 @@ export function ConsumerRoomSetupCard({
         <div>
           <h2
             id="consumer-room-setup-title"
-            className="text-sm font-semibold text-neutral-950"
+            className="text-sm font-semibold text-label"
           >
             {hasRooms ? "Check your room" : "Set up your room"}
           </h2>
-          <p className="mt-1 text-xs text-neutral-600">
+          <p className="mt-1 text-xs text-label-secondary">
             {hasRooms
               ? `${activeRoomName}: confirm the real dimensions before furnishing.`
               : "Start with a safe rectangle, then adjust it to your measurements."}
@@ -156,7 +156,7 @@ export function ConsumerRoomSetupCard({
         onCommitDimension={actions.commitRoomDimension}
       />
 
-      <p className="mt-2 text-xs leading-4 text-neutral-500">
+      <p className="mt-2 text-xs leading-4 text-label-secondary">
         Enter applies, Escape restores the last valid value, and arrow keys
         adjust by 50 mm. Valid room sizes are 1.8–20 m.
       </p>
@@ -164,7 +164,7 @@ export function ConsumerRoomSetupCard({
       {!canEditPlanGeometry ? (
         <div
           role="alert"
-          className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800"
+          className="mt-3 rounded-lg bg-warning-tint px-3 py-2 text-xs text-on-warning-tint"
         >
           Room geometry is read-only in this view. Return to the editable plan
           to change dimensions, doors or windows.
@@ -188,8 +188,8 @@ export function ConsumerRoomSetupCard({
             role="status"
             className={
               hasConnectionBlockers
-                ? "rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800"
-                : "rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-600"
+                ? "rounded-lg bg-warning-tint px-3 py-2 text-xs text-on-warning-tint"
+                : "rounded-lg border border-box-border bg-field px-3 py-2 text-xs text-label-secondary"
             }
           >
             {roomSetupOpeningStatus({ hasConnectionBlockers, planSettingsReady: measurementUnitReady, openingCount })}

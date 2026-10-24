@@ -114,9 +114,9 @@ export default function DesignControlsAiPanel({
   const [aiMustHaves, setAiMustHaves] = useState<string[]>(["Sofa", "Rug", "Coffee table"]);
   const [aiLayoutGoal, setAiLayoutGoal] = useState<AiLayoutGoal>("balanced");
   const aiMustHaveOptions = useMemo(() => AI_MUST_HAVE_OPTIONS, []);
-  const titleClass = "text-sm font-semibold text-neutral-800";
-  const cardClass = "rounded-xl border border-neutral-200 bg-white p-3";
-  const mutedClass = "text-neutral-500";
+  const titleClass = "text-sm font-semibold text-control-label";
+  const cardClass = "rounded-xl border border-box-border bg-surface-secondary p-3";
+  const mutedClass = "text-label-secondary";
   const roomSizeLabel = formatPlanDimensionsLabel(roomWidth, roomDepth, measurementUnit);
   const roomSupported = activeRoomType === "living";
   const briefReady = aiMustHaves.length > 0 && roomArea > 0 && roomSupported;
@@ -158,39 +158,39 @@ export default function DesignControlsAiPanel({
 
   return (
     <div>
-      <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+      <div className="rounded-xl border border-box-border bg-tile p-4">
         <div className={titleClass}>Layout brief</div>
-        <div className="mt-1 text-xs text-neutral-500">
+        <div className="mt-1 text-xs text-label-secondary">
           Set the goal, style, budget, and must-haves for the current room.
         </div>
 
         <div className={`mt-4 ${cardClass}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-neutral-900">
+              <div className="truncate text-sm font-semibold text-label">
                 {activeRoomName}
               </div>
               <div className={`mt-1 text-xs ${mutedClass}`}>{roomSummary}</div>
             </div>
-            <div className="shrink-0 rounded-lg bg-neutral-100 px-2 py-1 text-xs text-neutral-700">
+            <div className="shrink-0 rounded-lg bg-control-track px-2 py-1 text-xs text-control-label-idle">
               {activeRoomItemCount} placed
             </div>
           </div>
           <div className={`mt-3 grid grid-cols-3 gap-2 text-center text-xs ${mutedClass}`}>
             <div>
-              <div className="text-sm font-semibold text-neutral-900">
+              <div className="text-sm font-semibold text-label">
                 {style}
               </div>
               <div>Style</div>
             </div>
             <div>
-              <div className="text-sm font-semibold text-neutral-900">
+              <div className="text-sm font-semibold text-label">
                 {budget}
               </div>
               <div>Budget</div>
             </div>
             <div>
-              <div className="text-sm font-semibold text-neutral-900">
+              <div className="text-sm font-semibold text-label">
                 {aiMustHaves.length}
               </div>
               <div>Must-haves</div>
@@ -198,7 +198,7 @@ export default function DesignControlsAiPanel({
           </div>
         </div>
 
-        <div className="mt-4 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+        <div className="mt-4 text-xs font-semibold uppercase tracking-wide text-label-secondary">
           Step 1 · Room goal
         </div>
         <div className="mt-2 grid grid-cols-2 gap-2" data-testid="ai-layout-goals">
@@ -214,7 +214,7 @@ export default function DesignControlsAiPanel({
                 onClick={() => applyAiLayoutGoal(goal)}
               >
                 <span className="block text-xs font-semibold">{goal.label}</span>
-                <span className="mt-1 block text-xs text-neutral-500">
+                <span className="mt-1 block text-xs text-label-secondary">
                   {goal.description}
                 </span>
               </ChoiceTile>
@@ -225,7 +225,7 @@ export default function DesignControlsAiPanel({
           Goal: {selectedGoal.label}
         </div>
 
-        <div className="mt-4 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+        <div className="mt-4 text-xs font-semibold uppercase tracking-wide text-label-secondary">
           Step 2 · Style
         </div>
         <div className="mt-2 grid grid-cols-2 gap-2">
@@ -242,13 +242,13 @@ export default function DesignControlsAiPanel({
         </div>
 
         <div className="mt-4 flex items-center justify-between">
-          <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          <div className="text-xs font-semibold uppercase tracking-wide text-label-secondary">
             Step 3 · Budget
           </div>
           <SegmentedControl label="Budget" size="compact" value={budget} onChange={onBudgetChange} options={BUDGET_OPTIONS} />
         </div>
 
-        <div className="mt-4 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+        <div className="mt-4 text-xs font-semibold uppercase tracking-wide text-label-secondary">
           Step 4 · Must-have items
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -279,41 +279,41 @@ export default function DesignControlsAiPanel({
         >
           {aiLayoutProposal ? "Suggest another" : "Suggest a layout"}
         </Button>
-        <div className="mt-2 text-xs text-neutral-500">
+        <div className="mt-2 text-xs text-label-secondary">
           {briefReady
             ? "Review the result before saving, exporting, or shopping."
             : "Add room dimensions and at least one must-have before generating."}
         </div>
       </div>
       {aiLayoutProposal && (
-        <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-          <div className="text-sm font-semibold text-emerald-900">
+        <div className="mt-3 rounded-xl border border-success-tint-border bg-success-tint p-4">
+          <div className="text-sm font-semibold text-on-success-tint">
             Layout proposal ready
           </div>
-          <div className="mt-1 text-xs text-emerald-800">
+          <div className="mt-1 text-xs text-on-success-tint">
             {aiLayoutProposal.sourceLabel}
             {aiLayoutProposal.fitRisk ? ` • Fit risk: ${aiLayoutProposal.fitRisk}` : ""}
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs text-emerald-900">
-            <div className="rounded-lg bg-white/80 p-2">
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs text-on-success-tint">
+            <div className="rounded-lg bg-surface-secondary/80 p-2">
               <div className="text-sm font-semibold">{aiLayoutProposal.itemNames.length}</div>
               <div>Items</div>
             </div>
-            <div className="rounded-lg bg-white/80 p-2">
+            <div className="rounded-lg bg-surface-secondary/80 p-2">
               <div className="text-sm font-semibold">{aiLayoutProposal.warnings.length}</div>
               <div>Warnings</div>
             </div>
-            <div className="rounded-lg bg-white/80 p-2">
+            <div className="rounded-lg bg-surface-secondary/80 p-2">
               <div className="truncate text-sm font-semibold">{aiLayoutProposal.fitRisk ?? "Clear"}</div>
               <div>Fit</div>
             </div>
           </div>
           {proposalRequestedRoles.length > 0 ? (
-            <div className="mt-3 rounded-lg bg-white/80 p-2 text-xs text-emerald-900">
+            <div className="mt-3 rounded-lg bg-surface-secondary/80 p-2 text-xs text-on-success-tint">
               <div className="font-semibold">
                 Brief match: {proposalMatchedCount}/{proposalRequestedRoles.length}
               </div>
-              <div className="mt-1 text-emerald-800">
+              <div className="mt-1 text-on-success-tint">
                 {proposalMissingRoles.length > 0
                   ? `Missing: ${proposalMissingRoles.map((role) => AI_ROLE_LABELS[role]).join(", ")}`
                   : "All requested must-haves are included."}
@@ -321,14 +321,14 @@ export default function DesignControlsAiPanel({
             </div>
           ) : null}
 
-          <div className="mt-3 rounded-lg bg-white/80 p-2 text-xs text-emerald-900">
+          <div className="mt-3 rounded-lg bg-surface-secondary/80 p-2 text-xs text-on-success-tint">
             <div className="font-semibold">Shown on canvas</div>
-            <div className="mt-1 text-emerald-800">
+            <div className="mt-1 text-on-success-tint">
               The translucent footprints show the proposal before it replaces the current room layout. You can still undo after applying.
             </div>
           </div>
 
-          <ul className="mt-3 space-y-1 text-xs text-neutral-700">
+          <ul className="mt-3 space-y-1 text-xs text-control-label-idle">
             {aiLayoutProposal.itemNames.slice(0, 5).map((name) => (
               <li key={name} className="truncate">
                 {name}
@@ -343,7 +343,7 @@ export default function DesignControlsAiPanel({
           </ul>
 
           {aiLayoutProposal.warnings.length > 0 && (
-            <div className="mt-3 rounded-lg bg-white/80 p-2 text-xs text-amber-800">
+            <div className="mt-3 rounded-lg bg-surface-secondary/80 p-2 text-xs text-on-warning-tint">
               {aiLayoutProposal.warnings[0]}
             </div>
           )}

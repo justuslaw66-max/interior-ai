@@ -24,10 +24,10 @@ export function FloorPlanImportArrivalNote() {
   if (!importId || importId === dismissedId) return null;
   return (
     <div role="status" data-testid="floor-plan-import-arrival"
-      className="mb-2 flex items-start gap-3 rounded-sm border border-emerald-200 bg-emerald-50 p-3 text-neutral-900">
+      className="mb-2 flex items-start gap-3 rounded-sm border border-success-tint-border bg-success-tint p-3 text-label">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold">Made from your floor plan</p>
-        <p className="mt-1 text-xs leading-5 text-neutral-700">
+        <p className="mt-1 text-xs leading-5 text-control-label-idle">
           Check the walls and each room against your plan, and fix anything we missed. Then continue
           to Furnish.
         </p>

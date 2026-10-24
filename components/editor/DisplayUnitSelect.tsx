@@ -31,7 +31,7 @@ export function DisplayUnitSelect({
   return (
     <label
       htmlFor={selectId}
-      className={`grid gap-1 text-xs font-semibold text-neutral-700 ${className}`.trim()}
+      className={`grid gap-1 text-xs font-semibold text-control-label-idle ${className}`.trim()}
     >
       <span>Units</span>
       <span className="relative block">
@@ -40,7 +40,7 @@ export function DisplayUnitSelect({
           data-testid={testId}
           value={value}
           disabled={disabled}
-          className="min-h-11 w-full appearance-none rounded-lg border px-3 pr-9 text-sm font-medium outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 border-neutral-200 bg-white text-neutral-900 focus-visible:border-blue-600 focus-visible:ring-blue-600/20"
+          className="min-h-11 w-full appearance-none rounded-lg border px-3 pr-9 text-sm font-medium outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 border-box-border bg-field text-label focus-visible:border-blue-600 focus-visible:ring-blue-600/20"
           onChange={(event) => {
             const nextUnit = event.currentTarget.value;
             if (isDisplayUnit(nextUnit)) onChange(nextUnit);
@@ -58,7 +58,7 @@ export function DisplayUnitSelect({
         </select>
         <ChevronDown
           aria-hidden="true"
-          className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-neutral-500"
+          className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-label-secondary"
         />
       </span>
     </label>
