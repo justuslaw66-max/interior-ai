@@ -16,7 +16,7 @@ import {
   type ReactNode,
 } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { CanvasErrorBoundary } from "@/components/CanvasErrorBoundary";
+import { CanvasFrameCard, CanvasLensShift } from "@/components/editor/canvas/CanvasFrameCard";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import EditorCamera2D, {
   WHOLE_HOME_FIT_ZOOM_SCALE,
@@ -91,7 +91,7 @@ type DesignSceneCanvasConfiguration = {
     centerX: number;
     centerZ: number;
   };
-  planSafeArea: { leftPx: number; rightPx: number; topPx: number; bottomPx: number };
+  planSafeArea: { leftPx: number; rightPx: number; topPx: number; bottomPx: number; frame: { leftPx: number; topPx: number; rightPx: number; bottomPx: number }; lensShiftPx: number };
   planRooms: HousePlanRoom2D[];
   orbit: {
     minDistance: number;
@@ -361,7 +361,7 @@ export function DesignSceneCanvas({
     activeFixtureLights.filter((fixture) => fixture.castShadow).length;
 
   return (
-    <CanvasErrorBoundary>
+    <CanvasFrameCard frame={configuration.planSafeArea.frame}>
       <Canvas
         data-testid="scene-canvas"
         data-client-hydrated={clientHydrated ? "true" : "false"}
@@ -442,7 +442,7 @@ export function DesignSceneCanvas({
           centerZ={planBounds.centerZ}
           safeAreaLeftPx={configuration.planSafeArea.leftPx}
           safeAreaRightPx={configuration.planSafeArea.rightPx}
-          safeAreaBottomPx={configuration.planSafeArea.bottomPx} safeAreaTopPx={configuration.planSafeArea.topPx}
+          safeAreaBottomPx={configuration.planSafeArea.bottomPx} safeAreaTopPx={configuration.planSafeArea.topPx} canvasFrame={configuration.planSafeArea.frame}
           zoomScale={WHOLE_HOME_FIT_ZOOM_SCALE}
         />
         <Plan2DCameraInvariantGuard
@@ -458,7 +458,7 @@ export function DesignSceneCanvas({
           rooms={configuration.planRooms}
           updateProjection={actions.updateProjection}
         />
-        <color attach="background" args={[configuration.backgroundColor]} />
+        <color attach="background" args={[configuration.backgroundColor]} /><CanvasLensShift shiftPx={configuration.planSafeArea.lensShiftPx} />
         {viewMode === "3d" ? (
           <WorkspacePlanningGrid
             centerX={presentationBounds.centerX}
@@ -533,6 +533,6 @@ export function DesignSceneCanvas({
           />
         )}
       </Canvas>
-    </CanvasErrorBoundary>
+    </CanvasFrameCard>
   );
 }

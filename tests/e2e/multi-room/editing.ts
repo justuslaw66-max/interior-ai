@@ -249,7 +249,8 @@ export function registerEditingTests() {
     const roomWidthPx = await readNumberAttribute(sceneCanvas, "data-plan-2d-projected-room-min-width-px");
     const roomHeightPx = await readNumberAttribute(sceneCanvas, "data-plan-2d-projected-room-min-height-px");
     // From md the plan is centred in the band under the canvas tools (UX 4d), not in the canvas.
-    const northWallY = canvasBox.y + (canvasBox.height + WIDE_PLAN_TOP_INSET_PX) / 2 - roomHeightPx / 2;
+    // The band's top is measured from under the bar; the canvas card starts 8px under it.
+    const northWallY = canvasBox.y + (canvasBox.height + WIDE_PLAN_TOP_INSET_PX - canvasBox.y) / 2 - roomHeightPx / 2;
     await page.mouse.click(canvasBox.x + canvasBox.width / 2 - roomWidthPx * 0.36, northWallY);
 
     const openingLabel = page.getByTestId("plan-opening-live-label").first();

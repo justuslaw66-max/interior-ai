@@ -331,8 +331,8 @@ assert.match(
 );
 assert.match(
   read("lib/useDesignPagePlanPresentationModel.ts"),
-  /layout\.viewMode\s*===\s*"3d"\s*\?\s*"#f4f2ed"\s*:\s*"#ffffff"/,
-  "The 3D canvas is the warm #f4f2ed and the 2D plan white."
+  /const sceneBackgroundColor = "#f4f2ed";/,
+  "The canvas is the warm #f4f2ed in 3D and 2D, so its card stands out from the white frame (J, 23 Oct)."
 );
 
 const designSceneCanvasSource = read("components/editor/design-page/DesignSceneCanvas.tsx");

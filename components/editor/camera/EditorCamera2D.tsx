@@ -5,7 +5,7 @@ import { useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import type { OrthographicCamera as ThreeOrthographicCamera } from "three";
 import { resolvePlanFitZoom } from "@/lib/design-page-house-plan";
-import { resolvePlanFitInsetsPx } from "@/lib/editor-canvas-insets";
+import { FULL_WINDOW_CANVAS, resolvePlanFitInsetsPx, type CanvasFrameBox } from "@/lib/editor-canvas-insets";
 import { applyPlan2DCameraInvariant } from "@/lib/plan-camera-2d";
 
 const WHOLE_HOME_FIT_PADDING_MIN_METERS = 3.2;
@@ -113,6 +113,8 @@ type EditorCamera2DProps = {
   safeAreaRightPx?: number;
   safeAreaBottomPx?: number;
   safeAreaTopPx?: number;
+  /** Where the canvas sits in the editor: the safe areas are measured from the editor's sides. */
+  canvasFrame?: CanvasFrameBox;
   zoomScale?: number;
 };
 
@@ -127,7 +129,7 @@ export default function EditorCamera2D({
   safeAreaLeftPx = 0,
   safeAreaRightPx = 0,
   safeAreaBottomPx = 0,
-  safeAreaTopPx = 0,
+  safeAreaTopPx = 0, canvasFrame = FULL_WINDOW_CANVAS,
   zoomScale = WHOLE_HOME_FIT_ZOOM_SCALE,
 }: EditorCamera2DProps) {
   const cameraRef = useRef<ThreeOrthographicCamera | null>(null);
@@ -136,7 +138,7 @@ export default function EditorCamera2D({
   useEffect(() => {
     if (!active || !cameraRef.current) return;
 
-    const insets = resolvePlanFitInsetsPx(size.width, { leftPx: safeAreaLeftPx, rightPx: safeAreaRightPx, topPx: safeAreaTopPx, bottomPx: safeAreaBottomPx });
+    const insets = resolvePlanFitInsetsPx(size.width, { leftPx: safeAreaLeftPx, rightPx: safeAreaRightPx, topPx: safeAreaTopPx, bottomPx: safeAreaBottomPx, frame: canvasFrame });
     const fitPaddingMeters = Math.max(
       WHOLE_HOME_FIT_PADDING_MIN_METERS,
       Math.max(roomWidth, roomDepth) * WHOLE_HOME_FIT_PADDING_RATIO
@@ -159,7 +161,7 @@ export default function EditorCamera2D({
       cameraHeightMeters: Math.max(roomWidth, roomDepth) + roomHeight + 6,
     });
   }, [
-    active,
+    active, canvasFrame,
     centerX,
     centerZ,
     fitOrientation,

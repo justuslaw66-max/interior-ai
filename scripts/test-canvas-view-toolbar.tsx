@@ -3,6 +3,9 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import * as THREE from "three";
+
+import { CanvasFrameCard, applyCanvasLensShift } from "../components/editor/canvas/CanvasFrameCard";
 import { CanvasViewToolbar, canvasToolbarLeft } from "../components/editor/canvas/CanvasViewToolbar";
 import { KeyboardShortcutsButton, KeyboardShortcutsList } from "../components/editor/canvas/KeyboardShortcutsSheet";
 import { PhoneCanvasPills } from "../components/editor/canvas/PhoneCanvasPills";
@@ -13,7 +16,16 @@ import {
   resolveSelectedItemKeyboardCommand,
   resolveSelectedPlanKeyboardCommand,
 } from "../lib/design-page-selection-keyboard-commands";
-import { resolveCanvasLeftInsetPx } from "../lib/editor-canvas-insets";
+import {
+  FULL_WINDOW_CANVAS,
+  WIDE_PLAN_TOP_INSET_PX,
+  isWideEditor,
+  resolveCanvas3DInsetsPx,
+  resolveCanvasFrameBox,
+  resolveCanvasLeftInsetPx,
+  resolveCanvasLensShiftPx,
+  resolvePlanFitInsetsPx,
+} from "../lib/editor-canvas-insets";
 import {
   EDITOR_SHORTCUT_GROUPS,
   chordKeyLabels,
@@ -31,9 +43,10 @@ const root = process.cwd();
 const read = (path: string) => readFileSync(join(root, path), "utf8");
 const noop = () => {};
 
-// The toolbar.
+// The toolbar, over the canvas card beside the docked step panel (the rounded inset frame).
+const dockedFrame = resolveCanvasFrameBox({ wide: true, clientPreview: false, panelVisible: true, shopping: false, collapsed: false, isDesigner: false });
 const toolbarProps = {
-  leftInsetPx: 318,
+  frame: dockedFrame,
   viewMode: "2d" as const,
   onViewModeChange: noop,
   canFit: true,
@@ -55,7 +68,7 @@ const toolbarProps = {
 };
 const toolbar = renderToStaticMarkup(<CanvasViewToolbar {...toolbarProps} />);
 assert.match(toolbar, /^<div role="group" aria-label="Canvas controls" data-testid="canvas-view-toolbar" class="absolute top-bar-4 z-40 flex -translate-x-1\/2 /);
-assert.match(toolbar, /style="left:clamp\(506px, calc\(50% \+ 159px\), calc\(100% - 540px\)\)"/);
+assert.match(toolbar, /style="left:clamp\(490px, calc\(50% \+ 147px\), calc\(100% - 540px\)\)"/);
 const order = ["editor-view-toggle", "editor-view-2d", "editor-view-3d", "canvas-fit-view", "command-undo", "command-redo"];
 const positions = order.map((testId) => toolbar.indexOf(`data-testid="${testId}"`));
 assert.ok(positions.every((position, index) => position > 0 && (index === 0 || position > positions[index - 1])), "2D | 3D, then Fit, Undo and Redo.");
@@ -89,8 +102,9 @@ assert.equal(existsSync(join(process.cwd(), "components/editor/design-page/Prese
 assert.match(read("lib/useDesignPagePresentationQaFacade.ts"), /savedViews: \{ views: state\.document\.activeRoom\?\.savedViews \?\? \[\], nameInput: state\.presentation\.cameraViewNameInput \}/);
 assert.match(read("lib/useDesignPagePresentationQaFacade.ts"), /savedViews: savedViewActions\(presentExport\.actions\)/);
 
-// Centred on the canvas right of the step panel, but clear of a 340px right panel and the step panel.
-assert.equal(canvasToolbarLeft(0), "clamp(188px, calc(50% + 0px), calc(100% - 540px))");
+// Centred on the canvas card, but clear of a 340px right panel and the step panel.
+assert.equal(canvasToolbarLeft(FULL_WINDOW_CANVAS), "clamp(188px, calc(50% + 0px), calc(100% - 540px))");
+assert.equal(canvasToolbarLeft(dockedFrame), "clamp(490px, calc(50% + 147px), calc(100% - 540px))", "1440 wide: 867, the card's middle.");
 for (const [input, expected] of [
   [{ panelVisible: false, shopping: false, collapsed: false, isDesigner: false }, 0],
   [{ panelVisible: true, shopping: false, collapsed: false, isDesigner: false }, 318],
@@ -101,7 +115,70 @@ for (const [input, expected] of [
 ] as const) {
   assert.equal(resolveCanvasLeftInsetPx(input), expected, JSON.stringify(input));
 }
-assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const plan2DSafeAreaLeftPx = resolveCanvasLeftInsetPx\(\{/, "The 2D fit and the toolbar share one inset.");
+assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const plan2DSafeAreaLeftPx = resolveCanvasLeftInsetPx\(\{/, "The 2D fit keeps the plan clear of the step panel.");
+
+// The rounded inset frame (J, 13 and 23 Oct): from md the canvas is a card 8px into the frame,
+// under the bar and beside the docked step panel; phones and Client Preview keep the whole window.
+const frameFor = (input: Partial<Parameters<typeof resolveCanvasFrameBox>[0]>) =>
+  resolveCanvasFrameBox({ wide: true, clientPreview: false, panelVisible: true, shopping: false, collapsed: false, isDesigner: false, ...input });
+assert.deepEqual(frameFor({}), { leftPx: 302, topPx: 64, rightPx: 8, bottomPx: 8 }, "Beside the step panel's cards (8 to 294px).");
+assert.equal(frameFor({ isDesigner: true }).leftPx, 374, "Pro's panel sits beside the tool rail (80 to 366px).");
+assert.equal(frameFor({ collapsed: true }).leftPx, 8, "Hidden, the card takes the panel's place.");
+assert.equal(frameFor({ collapsed: true, isDesigner: true }).leftPx, 80, "Pro's tool rail stays.");
+assert.equal(frameFor({ panelVisible: false }).leftPx, 8);
+assert.equal(frameFor({ shopping: true, collapsed: true }).leftPx, 302, "Shop keeps the panel's place, so leaving it doesn't resize the canvas.");
+assert.equal(frameFor({ wide: false }), FULL_WINDOW_CANVAS, "Phones keep the whole window.");
+assert.equal(frameFor({ clientPreview: true }), FULL_WINDOW_CANVAS, "So does Client Preview (J, 23 Oct).");
+assert.equal(frameFor({}), frameFor({}), "One object per frame, so effects can depend on it.");
+// The 2D fit's insets are measured from the editor's sides and count from the card's edges.
+assert.equal(isWideEditor(714, dockedFrame), true, "A 1024 window's card is 714px wide, but the editor is md.");
+assert.equal(isWideEditor(714), false);
+assert.deepEqual(
+  resolvePlanFitInsetsPx(1130, { leftPx: 318, rightPx: 284, topPx: 0, bottomPx: 0, frame: dockedFrame }),
+  { safeAreaLeftPx: 16, safeAreaRightPx: 284, safeAreaTopPx: WIDE_PLAN_TOP_INSET_PX - 64, safeAreaBottomPx: 0 },
+  "Clear of the step panel and the right rail, under the toolbar."
+);
+assert.deepEqual(
+  resolvePlanFitInsetsPx(1440, { leftPx: 318, rightPx: 284, topPx: 0, bottomPx: 0 }),
+  { safeAreaLeftPx: 318, safeAreaRightPx: 284, safeAreaTopPx: WIDE_PLAN_TOP_INSET_PX, safeAreaBottomPx: 0 },
+  "A canvas that fills the editor takes the insets as they are."
+);
+assert.match(read("components/editor/design-page/DesignPageEditorChrome.tsx"), /const frame = resolveCanvasFrameBox\(\{\s*wide,\s*clientPreview: bar\.isClientPreview,/, "The toolbar centres on the card the canvas sits in.");
+assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const canvasFrame = resolveCanvasFrameBox\(\{ wide: viewportWidth >= 768, clientPreview: isClientPreview, panelVisible: primaryLeftPanelVisible, \.\.\.leftPanel \}\);/);
+assert.equal(
+  renderToStaticMarkup(<CanvasFrameCard frame={dockedFrame}><canvas /></CanvasFrameCard>),
+  '<div data-testid="canvas-frame-card" data-canvas-framed="true" class="absolute overflow-hidden rounded-xl" style="left:302px;top:64px;right:8px;bottom:8px"><canvas></canvas></div>',
+  "The card: 12px corners, 8px into the frame."
+);
+assert.match(
+  renderToStaticMarkup(<CanvasFrameCard frame={FULL_WINDOW_CANVAS}><canvas /></CanvasFrameCard>),
+  /data-canvas-framed="false" class="absolute overflow-hidden" style="left:0;top:0;right:0;bottom:0"/
+);
+assert.match(read("components/editor/design-page/DesignSceneCanvas.tsx"), /<CanvasFrameCard frame=\{configuration\.planSafeArea\.frame\}>\s*<Canvas\s/, "The scene sizes itself to the card.");
+
+// 3D's lens (23 Oct, after the Mac's screenshots): the right rail floats inside the card, so a 3D
+// view centred on the card's middle sat partly under it. The picture's centre moves left instead,
+// between the step panel's margin and the rail, and the camera keeps its angle.
+const docked3DInsets = resolveCanvas3DInsetsPx({ wide: true, planLeftInsetPx: 318, frame: dockedFrame, overlayStackVisible: true, overlayStackWidthPx: 264 });
+assert.deepEqual(docked3DInsets, { leftPx: 16, rightPx: 296 }, "The step panel's margin, and the rail's 264px with room round it.");
+assert.equal(resolveCanvasLensShiftPx(docked3DInsets), 140, "1440 wide: the picture's centre at 727, midway between 318 and 1136.");
+assert.equal(resolveCanvasLensShiftPx(resolveCanvas3DInsetsPx({ wide: true, planLeftInsetPx: 318, frame: dockedFrame, overlayStackVisible: false, overlayStackWidthPx: 264 })), -8, "Under 1024 there's no rail.");
+assert.deepEqual(resolveCanvas3DInsetsPx({ wide: false, planLeftInsetPx: 0, frame: FULL_WINDOW_CANVAS, overlayStackVisible: false, overlayStackWidthPx: 264 }), { leftPx: 0, rightPx: 0 }, "Phones and Client Preview: none.");
+const lensCamera = new THREE.PerspectiveCamera(46, 1130 / 828, 0.1, 300);
+lensCamera.position.set(4, 3, 6);
+lensCamera.lookAt(0, 1, 0);
+lensCamera.updateMatrixWorld();
+const targetScreenX = () => ((new THREE.Vector3(0, 1, 0).project(lensCamera).x + 1) / 2) * 1130;
+assert.equal(applyCanvasLensShift(lensCamera, 1130, 828, 140), true);
+assert.ok(Math.abs(targetScreenX() - (565 - 140)) < 1e-6, "What the camera looks at shows 140px left of the middle.");
+assert.deepEqual(lensCamera.position.toArray(), [4, 3, 6], "The camera stays put.");
+assert.equal(applyCanvasLensShift(lensCamera, 1130, 828, 0), true);
+assert.ok(Math.abs(targetScreenX() - 565) < 1e-6, "Back in the middle.");
+assert.equal(applyCanvasLensShift(lensCamera, 1130, 828, 0), false, "Nothing to put back.");
+assert.equal(applyCanvasLensShift(new THREE.OrthographicCamera(), 1130, 828, 140), false, "2D's camera fits itself.");
+assert.match(read("components/editor/design-page/DesignSceneCanvas.tsx"), /<CanvasLensShift shiftPx=\{configuration\.planSafeArea\.lensShiftPx\} \/>/);
+assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const canvasLensShiftPx = resolveCanvasLensShiftPx\(resolveCanvas3DInsetsPx\(\{ wide: viewportWidth >= 768, planLeftInsetPx: plan2DSafeAreaLeftPx, frame: canvasFrame,/);
+assert.match(read("lib/useDesignPageCameraNavigation.ts"), /resolveCanvas3DInsetsPx\(\{[\s\S]*?\}\);[\s\S]*?const desiredCenterXPx = viewportWidthPx \/ 2;/, "The whole-home view fits between the insets and centres on the lens.");
 
 // The phone's pills (UX 4d, the PhonePlan mockup): 2D | 3D top left, Undo and Redo top right, 12px
 // under the bar, with 44px targets that keep the controls' test ids.
