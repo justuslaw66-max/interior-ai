@@ -1,5 +1,4 @@
 import { CABINET_HARDWARE } from "../catalog/hardware";
-import { CABINET_MATERIALS } from "../catalog/materials";
 import {
   CABINET_PRESET_OPTIONS,
   type CabinetTemplateCategory,
@@ -183,13 +182,6 @@ export { CABINET_SHELF_LAYOUT_FIELDS } from "../shelfLayout";
 
 export const GUIDED_TEMPLATE_CATEGORIES: CabinetTemplateCategory[] = Array.from(
   new Set(CABINET_PRESET_OPTIONS.map((preset) => preset.category))
-);
-
-export const GUIDED_MATERIALS = CABINET_MATERIALS.filter(
-  (material) =>
-    !["service_zone_marker", "upholstery_neutral", "glass"].includes(
-      material.id
-    )
 );
 
 export const GUIDED_HARDWARE = CABINET_HARDWARE.filter((hardware) =>

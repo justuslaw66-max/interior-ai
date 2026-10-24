@@ -54,7 +54,8 @@ export function floorPlanVectorizerRuntimeConfiguration(
     // whose trace took the whole budget would otherwise lose its result in the last, short step.
     exportFloorMs: Number.isFinite(exportFloor) ? Math.max(10_000, Math.min(exportFloor, 300_000)) : 60_000,
     // The faithful trace of a clean page (faithful_drawing.py) as the page's drawing. Off unless set; it fails soft, with
-    // its own time limit, and keeps to pictures of at most this many pixels (it needs about 400 MB per million).
+    // its own time limit. It works at twice the picture's size up to this many pixels (about 400 MB per million), and at
+    // the picture's own size up to three times as many (about 110 MB per million); a larger picture keeps stage 1's.
     faithfulTrace: environment.FLOOR_PLAN_FAITHFUL_TRACE === "1",
     faithfulTimeoutMs: Number.isFinite(faithfulTimeout) ? Math.max(10_000, Math.min(faithfulTimeout, 600_000)) : 240_000,
     faithfulMaxPixels: Number.isFinite(faithfulPixels) ? Math.max(100_000, Math.min(faithfulPixels, 16_000_000)) : 4_000_000,

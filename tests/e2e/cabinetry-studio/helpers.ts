@@ -14,6 +14,33 @@ export async function startInMillimetres(page: import("@playwright/test").Page) 
   });
 }
 
+/**
+ * Picks a laminate in one of the Detailed editor's finish fields: opens it, searches by the
+ * supplier's code and chooses the design, then checks the field took it.
+ *
+ * It presses "Change" straight after any typing, as a person would: placement.ts types a 1,200 mm
+ * module width first, whose "Width needs attention" used to appear during the press, move the
+ * button and lose the click (laminates r3, 23 Oct). Number fields now hold a new message until the
+ * press's click has landed (useHeldDuringPointerPress).
+ */
+export async function chooseCabinetFinish(
+  page: import("@playwright/test").Page,
+  fieldTestId: string,
+  code: string,
+  materialId: string
+) {
+  const field = page.getByTestId(fieldTestId);
+  if ((await page.getByTestId(`${fieldTestId}-picker`).count()) === 0) {
+    await page.getByTestId(`${fieldTestId}-change`).click();
+  }
+  await expect(page.getByTestId(`${fieldTestId}-change`)).toHaveAttribute("aria-expanded", "true");
+  await page.getByTestId(`${fieldTestId}-picker-search`).fill(code);
+  await page.getByTestId(`${fieldTestId}-picker-${materialId}`).click();
+  await expect(field).toHaveAttribute("data-value", materialId);
+  await page.getByTestId(`${fieldTestId}-change`).click();
+  await expect(page.getByTestId(`${fieldTestId}-picker`)).toHaveCount(0);
+}
+
 export async function mockPlan(page: import("@playwright/test").Page, plan: "free" | "pro") {
   await page.route("**/api/me", async (route) => {
     await route.fulfill({

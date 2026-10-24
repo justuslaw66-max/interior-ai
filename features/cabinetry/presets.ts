@@ -1,4 +1,5 @@
 import { CABINET_HARDWARE } from "./catalog/hardware";
+import { findCabinetFinishMaterial, syncCabinetFinishMaterials } from "./catalog/finishes";
 import { CABINET_MATERIALS } from "./catalog/materials";
 import { createCabinetAutomationState } from "./automation";
 import type {
@@ -596,10 +597,7 @@ function normalizeCabinetTemplateSearchTerm(value: string): string {
  * metadata—not only the marketing copy visible on its card.
  */
 export function getCabinetPresetSearchText(option: CabinetPresetOption): string {
-  const materialNames = option.defaultMaterialIds.map(
-    (materialId) =>
-      CABINET_MATERIALS.find((material) => material.id === materialId)?.name ?? materialId
-  );
+  const materialNames = option.defaultMaterialIds.map((materialId) => findCabinetFinishMaterial(materialId)?.name ?? materialId);
   const hardwareNames = option.defaultHardwareIds.map(
     (hardwareId) =>
       CABINET_HARDWARE.find((hardware) => hardware.id === hardwareId)?.name ?? hardwareId
@@ -656,7 +654,8 @@ export function createCabinetPreset(presetId: CabinetPresetId, id = `cabinet-${p
   const preset = presets[presetId];
   const timestamp = nowIso();
 
-  const definition: CabinetDefinition = {
+  // Templates start from real laminate designs, listed with the built-in materials.
+  const definition = syncCabinetFinishMaterials({
     ...preset,
     id,
     sourcePresetId: presetId,
@@ -678,7 +677,7 @@ export function createCabinetPreset(presetId: CabinetPresetId, id = `cabinet-${p
     })),
     createdAt: timestamp,
     updatedAt: timestamp,
-  };
+  });
   return {
     ...definition,
     automation: createCabinetAutomationState(definition),

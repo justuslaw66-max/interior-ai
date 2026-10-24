@@ -929,7 +929,7 @@ export function runArchitecturalPresetContractTests(): void {
     "board cut list should exclude office service-zone coordination markers"
   );
   assert(
-    homeOfficeDocumentation.materialSchedule.some((item) => item.materialId === "walnut_veneer"),
+    homeOfficeDocumentation.materialSchedule.some((item) => item.materialId === "greenlam-woodgrains-791"),
     "material schedule should include the office work surface material"
   );
   assert(

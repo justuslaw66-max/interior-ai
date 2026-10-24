@@ -125,11 +125,11 @@ export function runPresetContractTests(): void {
     "cabinet run should total edge-banding length from the cut list"
   );
   assert(
-    cabinetRunDocumentation.edgeBandingSchedule.some((item) => item.materialId === "white_melamine" && item.partCount === 16),
+    cabinetRunDocumentation.edgeBandingSchedule.some((item) => item.materialId === "greenlam-solids-101" && item.partCount === 16),
     "edge-banding schedule should group carcass edges by material"
   );
   assert(
-    cabinetRunDocumentation.materialSchedule.some((item) => item.materialId === "white_melamine"),
+    cabinetRunDocumentation.materialSchedule.some((item) => item.materialId === "greenlam-solids-101"),
     "cabinet run should include carcass material in the material schedule"
   );
   assert(
