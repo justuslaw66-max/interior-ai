@@ -65,6 +65,7 @@ const sceneItemPath =
   "features/cabinetry/components/CabinetSceneItem.tsx";
 const sceneResourceOwnershipPath =
   "features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts";
+const laminateTextureCachePath = "features/cabinetry/cabinetLaminateTextures.ts";
 const uiComponentPaths = [
   "features/cabinetry/components/CabinetStudioNavigator.tsx",
   "features/cabinetry/components/CabinetAssemblyInspector.tsx",
@@ -573,15 +574,36 @@ for (const forbiddenSceneItemLifecycle of [
 for (const requiredCleanupMarker of [
   "disposeCabinetObject3DResources(assembly)",
   "disposeCabinetObject3DResources(previewFrontEdges)",
-  "if (cancelled)",
-  "texture.dispose()",
-  "disposeCabinetOwnedTextures(loadedTextures)",
+  "acquireCabinetLaminateTexture(",
+  "return () => releases.forEach((release) => release());",
 ]) {
   if (!sceneResourceOwnershipSource.includes(requiredCleanupMarker)) {
     failures.push(
       `${sceneResourceOwnershipPath} must retain cleanup marker ${requiredCleanupMarker}.`
     );
   }
+}
+// The laminate pictures belong to the page's shared cache: one copy per renderer, so a closed view
+// keeps no renderer alive; it disposes a picture that arrives after its entry went, and the least
+// recently used unused pictures beyond its size.
+const laminateTextureCacheSource = source(laminateTextureCachePath);
+for (const requiredCacheMarker of [
+  "if (this.entries.get(key) !== entry) {\n          texture.dispose();",
+  "entry.texture = loaded.clone();",
+  "entry.texture?.dispose();",
+  ".filter(([, entry]) => entry.users === 0)",
+  "entry.waiting.delete(lease);",
+]) {
+  if (!laminateTextureCacheSource.includes(requiredCacheMarker)) {
+    failures.push(
+      `${laminateTextureCachePath} must retain cleanup marker ${JSON.stringify(requiredCacheMarker)}.`
+    );
+  }
+}
+if (/new THREE\.TextureLoader\(/.test(sceneResourceOwnershipSource)) {
+  failures.push(
+    `${sceneResourceOwnershipPath} must lease laminate pictures from the shared cache, not load its own.`
+  );
 }
 
 for (const forbiddenDirectStudioInfrastructure of [

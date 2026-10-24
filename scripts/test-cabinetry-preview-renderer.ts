@@ -11,10 +11,11 @@ import {
 } from "../features/cabinetry/components/CabinetSceneItem";
 import { resolveCabinetPreviewCameraPose } from "../features/cabinetry/components/CabinetPreviewCameraController";
 import { generateCabinetParts } from "../features/cabinetry/generateCabinetParts";
+import { disposeCabinetObject3DResources } from "../features/cabinetry/hooks/useCabinetSceneResourceOwnership";
 import {
-  disposeCabinetObject3DResources,
-  disposeCabinetOwnedTextures,
-} from "../features/cabinetry/hooks/useCabinetSceneResourceOwnership";
+  CabinetTextureCache,
+  type CabinetTextureLoader,
+} from "../features/cabinetry/cabinetLaminateTextures";
 import { createCabinetPreset } from "../features/cabinetry/presets";
 
 const root = process.cwd();
@@ -219,8 +220,8 @@ assert.doesNotMatch(
 );
 assert.match(
   resourceOwnershipSource,
-  /let cancelled = false[\s\S]*?if \(cancelled\)[\s\S]*?texture\.dispose\(\)[\s\S]*?return \(\) => \{[\s\S]*?cancelled = true[\s\S]*?disposeCabinetOwnedTextures\(loadedTextures\)/,
-  "Texture loading must dispose late results and all textures owned by the mounted scene item."
+  /useLayoutEffect\(\(\) => \{[\s\S]*?acquireCabinetLaminateTexture\([\s\S]*?return \(\) => releases\.forEach\(\(release\) => release\(\)\);/,
+  "A rebuilt cabinet must lease its laminate pictures before its first frame and release every lease on change or unmount."
 );
 
 const sharedGeometry = new THREE.BoxGeometry(1, 1, 1);
@@ -242,13 +243,6 @@ disposeCabinetObject3DResources(ownedGroup);
 assert.equal(geometryDisposeCount, 1, "Shared cabinet geometry must be disposed exactly once.");
 assert.equal(materialDisposeCount, 1, "Shared cabinet material must be disposed exactly once.");
 
-const ownedTexture = new THREE.Texture();
-let textureDisposeCount = 0;
-ownedTexture.dispose = () => {
-  textureDisposeCount += 1;
-};
-disposeCabinetOwnedTextures([ownedTexture, ownedTexture]);
-assert.equal(textureDisposeCount, 1, "Each owned cabinet texture must be disposed exactly once.");
 assert.match(cameraSource, /fitDistanceForPlane/, "Named views must use FOV-aware fitting.");
 assert.match(
   scenePreviewEdgesSource,
@@ -353,4 +347,164 @@ assert(
   "Top must fit cabinet width at the preview aspect ratio."
 );
 
-console.log("Cabinet Preview renderer policy checks passed.");
+void checkCabinetTextureCache()
+  .then(() => console.log("Cabinet Preview renderer policy checks passed."))
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+
+/** The page's shared laminate pictures (features/cabinetry/cabinetLaminateTextures.ts). */
+async function checkCabinetTextureCache() {
+  const pending = new Map<string, { onLoad: (texture: THREE.Texture) => void; onError: () => void }>();
+  const loads: string[] = [];
+  const load: CabinetTextureLoader = (url, onLoad, onError) => {
+    loads.push(url);
+    pending.set(url, { onLoad, onError });
+  };
+  const disposed: string[] = [];
+  const watchDisposal = (texture: THREE.Texture, label: string) => {
+    texture.dispose = () => {
+      disposed.push(label);
+    };
+    return texture;
+  };
+  const arrive = (url: string) => {
+    const texture = watchDisposal(new THREE.Texture(), url);
+    pending.get(url)!.onLoad(texture);
+    pending.delete(url);
+    return texture;
+  };
+  const settle = () => new Promise<void>((done) => queueMicrotask(done));
+  const view = 1;
+  const otherView = 2;
+  const cache = new CabinetTextureCache(load, 2);
+
+  // A cabinet's first lease waits for the picture; the picture is set up to repeat in sRGB.
+  const attached: THREE.Texture[] = [];
+  const releaseFirst = cache.acquire("oak", view, (texture) => attached.push(texture));
+  assert.equal(attached.length, 0, "A picture that is still loading must not be attached yet.");
+  const oak = arrive("oak");
+  assert.deepEqual(attached, [oak], "A picture must be attached when it arrives.");
+  assert.equal(oak.colorSpace, THREE.SRGBColorSpace);
+  assert.equal(oak.wrapS, THREE.RepeatWrapping);
+  assert.equal(oak.wrapT, THREE.RepeatWrapping);
+
+  // A rebuild releases the old cabinet's lease and takes a new one in the same commit: the picture
+  // is attached at once, before the rebuilt cabinet's first frame, and isn't loaded again.
+  releaseFirst();
+  const rebuilt: THREE.Texture[] = [];
+  const releaseRebuilt = cache.acquire("oak", view, (texture) => rebuilt.push(texture));
+  assert.deepEqual(rebuilt, [oak], "A rebuilt cabinet must get its loaded picture at once, within the lease.");
+  await settle();
+  assert.deepEqual(loads, ["oak"], "A loaded picture must not be loaded again.");
+  assert.deepEqual(disposed, []);
+
+  // Unused pictures stay for a quick return, until there are more than the cache's size; the least
+  // recently used goes first, and a picture in use never does.
+  const releaseWalnut = cache.acquire("walnut", view, () => undefined);
+  arrive("walnut");
+  releaseWalnut();
+  releaseRebuilt();
+  const releaseAsh = cache.acquire("ash", view, () => undefined);
+  arrive("ash");
+  await settle();
+  assert.deepEqual(disposed, ["walnut"], "The least recently used unused picture must be disposed first.");
+  const releaseElm = cache.acquire("elm", view, () => undefined);
+  await settle();
+  assert.deepEqual(disposed, ["walnut", "oak"]);
+  assert.equal(cache.size(), 2, "Pictures in use must stay, even past the cache's size.");
+
+  // A cabinet released before its picture arrives is never called; a picture whose entry was
+  // disposed while it loaded is disposed when it arrives.
+  const lateCalls: THREE.Texture[] = [];
+  const releaseLate = cache.acquire("teak", view, (texture) => lateCalls.push(texture));
+  releaseLate();
+  releaseAsh();
+  releaseElm();
+  await settle();
+  arrive("teak");
+  assert.deepEqual(lateCalls, [], "A released lease must never be attached.");
+  assert.ok(disposed.includes("teak"), "A picture whose entry was disposed while it loaded must be disposed.");
+
+  // Past the cache's size, a rebuild still finds its picture: pruning waits until the rebuilt
+  // cabinet has leased it again.
+  const fullCache = new CabinetTextureCache(load, 1);
+  const releaseMaple = fullCache.acquire("maple", view, () => undefined);
+  const maple = arrive("maple");
+  fullCache.acquire("cherry", view, () => undefined);
+  arrive("cherry");
+  releaseMaple();
+  const rebuiltMaple: THREE.Texture[] = [];
+  fullCache.acquire("maple", view, (texture) => rebuiltMaple.push(texture));
+  await settle();
+  assert.deepEqual(rebuiltMaple, [maple], "A rebuild past the cache's size must keep its picture.");
+  assert.equal(loads.filter((url) => url === "maple").length, 1);
+  assert.ok(!disposed.includes("maple") && !disposed.includes("cherry"), "Pictures in use must never be disposed.");
+  assert.equal(fullCache.size(), 2);
+
+  // Releasing a lease twice releases only that lease.
+  const twiceCache = new CabinetTextureCache(load, 1);
+  const releaseTwice = twiceCache.acquire("fir", view, () => undefined);
+  twiceCache.acquire("fir", view, () => undefined);
+  arrive("fir");
+  releaseTwice();
+  releaseTwice();
+  twiceCache.acquire("yew", view, () => undefined);
+  arrive("yew");
+  await settle();
+  assert.ok(!disposed.includes("fir"), "Releasing a lease twice must not release another cabinet's lease.");
+
+  // Two cabinets wait for one picture and one of them goes: only the other gets it, even when both
+  // passed the same callback.
+  const shared = new CabinetTextureCache(load, 4);
+  const gone: THREE.Texture[] = [];
+  const staying: THREE.Texture[] = [];
+  const releaseGone = shared.acquire("beech", view, (texture) => gone.push(texture));
+  shared.acquire("beech", view, (texture) => staying.push(texture));
+  releaseGone();
+  const beech = arrive("beech");
+  assert.deepEqual(gone, [], "A cabinet released before its picture arrives must not get it.");
+  assert.deepEqual(staying, [beech]);
+  const sameCallback: THREE.Texture[] = [];
+  const attachTwice = (texture: THREE.Texture) => sameCallback.push(texture);
+  const releaseOneOfTwo = shared.acquire("larch", view, attachTwice);
+  shared.acquire("larch", view, attachTwice);
+  releaseOneOfTwo();
+  const larch = arrive("larch");
+  assert.deepEqual(sameCallback, [larch], "Each lease must stand alone, even with the same callback.");
+
+  // Another 3D view gets its own copy of a loaded picture at once, sharing its image: nothing is
+  // loaded again, and disposing one view's copy leaves the other's.
+  const views = new CabinetTextureCache(load, 1);
+  const releaseRoom = views.acquire("pine", view, () => undefined);
+  const pine = arrive("pine");
+  const previewCopies: THREE.Texture[] = [];
+  const releasePreview = views.acquire("pine", otherView, (texture) => previewCopies.push(texture));
+  assert.equal(previewCopies.length, 1, "Another view must get a loaded picture at once.");
+  const previewPine = watchDisposal(previewCopies[0]!, "pine (preview)");
+  assert.notEqual(previewPine, pine, "Each view must get its own copy of a picture.");
+  assert.equal(previewPine.source, pine.source, "A view's copy must share the loaded image.");
+  assert.equal(previewPine.colorSpace, THREE.SRGBColorSpace);
+  assert.equal(previewPine.wrapS, THREE.RepeatWrapping);
+  assert.equal(loads.filter((url) => url === "pine").length, 1, "Another view's copy must not load the picture again.");
+  releasePreview();
+  await settle();
+  assert.ok(disposed.includes("pine (preview)"), "A closed view's copy must be disposed like any unused picture.");
+  assert.ok(!disposed.includes("pine"), "Disposing one view's copy must leave the other view's.");
+
+  // A picture that fails leaves the plain colour; the next cabinet to ask loads it again.
+  const failed: THREE.Texture[] = [];
+  views.acquire("broken", view, (texture) => failed.push(texture));
+  pending.get("broken")!.onError();
+  pending.delete("broken");
+  assert.deepEqual(failed, []);
+  views.acquire("broken", view, () => undefined);
+  assert.equal(loads.filter((url) => url === "broken").length, 2, "A failed picture must be tried again.");
+
+  // The page leaving disposes every picture, in use or not.
+  views.clear();
+  assert.ok(disposed.includes("pine"), "Clearing must dispose pictures in use.");
+  assert.equal(views.size(), 0);
+  releaseRoom();
+}

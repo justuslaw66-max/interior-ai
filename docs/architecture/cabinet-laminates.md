@@ -13,9 +13,10 @@ Cabinet fronts, bodies and countertops are made from a supplier's laminate sheet
 | The runtime catalogue (generated) | `lib/generated/cabinet-laminates.generated.ts`, from `scripts/generate-cabinet-laminate-runtime.ts` |
 | Laminates as cabinet materials | `features/cabinetry/catalog/laminates.ts` (`CABINET_LAMINATES`, `findCabinetLaminate`) |
 | How a picture lies on a part | `features/cabinetry/materialTexture.ts`, used by `features/cabinetry/createCabinetThreeGroup.ts` |
+| Loading the pictures, shared by every cabinet on the page | `features/cabinetry/cabinetLaminateTextures.ts`, leased by `features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts` |
 | Which finishes are offered, search, and keeping a design's materials in step | `features/cabinetry/catalog/finishes.ts` |
 | The picker | `features/cabinetry/components/CabinetFinishPicker.tsx` (Guided Main finish) and `CabinetFinishField.tsx` (each Detailed choice, and the part inspector) |
-| Checks | `scripts/test-cabinet-laminates.ts` and `scripts/test-cabinet-finishes.ts` (both part of `test:cabinetry`) |
+| Checks | `scripts/test-cabinet-laminates.ts` and `scripts/test-cabinet-finishes.ts`; the picture cache in `scripts/test-cabinetry-preview-renderer.ts` (all part of `test:cabinetry`) |
 
 - The JSON and the WebP pictures are made from the manufacturer's files by `make_app_copies.py`, which is kept with the originals in `~/Developer/material-masters/greenlam/`. The masters folder also keeps the inventory of every picture (`tracking/hpl-1220x2440-pictures.csv`) and its contact sheets.
 - After changing the JSON, run `npm run generate:cabinet-laminates`. `npm run check:cabinet-laminates` and the test fail when the generated file is out of date.
@@ -45,6 +46,17 @@ Cabinet fronts, bodies and countertops are made from a supplier's laminate sheet
   - A design whose grain runs across its sheet defaults to horizontal grain (`fabricationSemantics.ts`), since that is what it is chosen for. Its picture stays upright.
   - Choosing horizontal grain for an `along` design turns its picture a quarter turn.
 - The eight built-in cabinet materials have no real size, so they keep one picture per face, as before.
+
+## Loading the pictures
+
+- **A picture is loaded once per page and shared** by every cabinet that uses it, in the Studio's preview and in the room alike (`cabinetLaminateTextures.ts`).
+- **Each 3D view gets its own copy**, made from the image already loaded, so it has no download, decode or wait of its own. A WebGL renderer keeps a listener on every texture it has drawn until that texture is disposed. With one texture shared by every view, each closed Studio preview's renderer would stay in memory as long as the picture did. A closed view's copies are disposed like any other unused picture.
+- **An edit doesn't flash.** Each edit rebuilds a cabinet's meshes and materials. A rebuilt cabinet leases its pictures in a layout effect, so a picture already loaded is on it before its first frame. When each rebuild loaded its own pictures, the doors showed plain colour for a frame after every edit.
+- **Only a design's first appearance waits for its picture.** Until the picture arrives, the design shows its mean colour.
+- **A picture no cabinet uses is kept** while the cache holds 8 or fewer (counting each view's copy), so going back to a design just browsed past is instant. Beyond that, the least recently used unused pictures are disposed, and a picture in use never is.
+  - A picture that arrives after its entry was disposed is disposed too.
+  - A picture that fails to load leaves the mean colour, and the next cabinet to ask tries again.
+  - A page leaving for good (a `pagehide` that isn't kept for back and forward) disposes them all, as the GLB caches do.
 
 ## In a design
 
