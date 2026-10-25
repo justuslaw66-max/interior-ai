@@ -107,21 +107,21 @@ export default function FloorPropertiesPanel({
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const titleClass = "text-sm font-semibold text-neutral-800";
-  const metaClass = "mt-0.5 text-xs text-neutral-500";
-  const panelClass = "relative w-[16.5rem] max-[520px]:w-full rounded-lg border border-neutral-200 bg-white/95 p-2 text-neutral-900 shadow-xl backdrop-blur";
-  const floorPanelButtonClass = "flex w-full items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-left text-xs font-semibold text-neutral-800 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50";
-  const fieldLabelClass = "text-xs font-semibold text-neutral-700";
+  const titleClass = "text-sm font-semibold text-control-label";
+  const metaClass = "mt-0.5 text-xs text-label-secondary";
+  const panelClass = "relative w-[16.5rem] max-[520px]:w-full rounded-lg border border-separator bg-surface-floating/95 p-2 text-label shadow-xl backdrop-blur";
+  const floorPanelButtonClass = "flex w-full items-center justify-between rounded-lg border border-box-border bg-tile px-2.5 py-1.5 text-left text-xs font-semibold text-control-label transition hover:bg-control-track disabled:cursor-not-allowed disabled:opacity-50";
+  const fieldLabelClass = "text-xs font-semibold text-control-label-idle";
   const floorListButtonClass = (isActive: boolean) => {
 
     return [
       "grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left text-xs transition disabled:cursor-not-allowed disabled:opacity-50",
       isActive
-        ? "border-blue-200 bg-blue-50 text-blue-800"
-        : "border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100",
+        ? "border-accent-tint-border bg-accent-tint text-on-accent-tint"
+        : "border-box-border bg-tile text-control-label-idle hover:bg-control-track",
     ].join(" ");
   };
-  const inputClass = "h-8 w-full rounded-lg border border-neutral-200 bg-white px-2 text-right text-sm text-neutral-900";
+  const inputClass = "h-8 w-full rounded-lg border border-box-border bg-field px-2 text-right text-sm text-label";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "Level 1";
   const hiddenFloorLevelSet = new Set(hiddenFloorLevels);
@@ -167,7 +167,7 @@ export default function FloorPropertiesPanel({
   };
 
   return (
-    <div data-testid="coohom-floor-panel" className={panelClass}>
+    <div data-testid="coohom-floor-panel" data-surface="floating" className={panelClass}>
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className={titleClass}>Levels</div>
@@ -201,7 +201,7 @@ export default function FloorPropertiesPanel({
         <>
 
       <details className="mt-3">
-        <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
+        <summary className="cursor-pointer text-xs font-semibold text-control-label-idle">
           Add level
         </summary>
         <div className="mt-2 grid gap-2">
@@ -234,15 +234,15 @@ export default function FloorPropertiesPanel({
 
       {pendingAddDirection && (
         <div
-          className="absolute inset-x-2 top-16 z-20 rounded-xl border border-neutral-200 bg-white p-2 shadow-2xl"
+          className="absolute inset-x-2 top-16 z-20 rounded-xl border border-separator bg-surface-elevated p-2 shadow-2xl"
           data-testid="floor-add-mode-menu"
         >
           <div className="flex items-start justify-between gap-2">
             <div>
-              <div className="text-xs font-semibold text-neutral-900">
+              <div className="text-xs font-semibold text-label">
                 {pendingAddDirection === "upper" ? "New level above" : "New level below"}
               </div>
-              <div className="mt-0.5 text-xs text-neutral-500">
+              <div className="mt-0.5 text-xs text-label-secondary">
                 Choose what to copy into the new level.
               </div>
             </div>
@@ -261,11 +261,11 @@ export default function FloorPropertiesPanel({
                 key={option.mode}
                 type="button"
                 data-testid={`floor-add-mode-${option.mode}`}
-                className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2 text-left text-xs text-neutral-800 hover:bg-neutral-100"
+                className="rounded-lg border border-box-border bg-tile px-2.5 py-2 text-left text-xs text-control-label hover:bg-control-track"
                 onClick={() => commitFloorCreation(option.mode)}
               >
                 <span className="block font-semibold">{option.label}</span>
-                <span className="block text-xs text-neutral-500">
+                <span className="block text-xs text-label-secondary">
                   {option.description}
                 </span>
               </button>
@@ -320,14 +320,14 @@ export default function FloorPropertiesPanel({
                       />
                       <span className="min-w-0">
                         <span className="block truncate font-semibold">{option.label}</span>
-                        <span className="block text-xs text-neutral-500">
+                        <span className="block text-xs text-label-secondary">
                           {option.roomCount} room{option.roomCount === 1 ? "" : "s"}
                         </span>
                       </span>
                     </button>
                     <button
                       type="button"
-                      className="h-7 w-7 rounded-md text-xs font-semibold text-neutral-500 hover:bg-white disabled:opacity-40"
+                      className="h-7 w-7 rounded-md text-xs font-semibold text-label-secondary hover:bg-control-track-hover disabled:opacity-40"
                       disabled={!canEdit || isActive || !onToggleFloorVisibility}
                       aria-label={`${isHidden ? "Show" : "Hide"} ${option.label}`}
                       title={isActive ? "The level you're on stays visible" : isHidden ? "Show level" : "Hide level"}
@@ -341,15 +341,15 @@ export default function FloorPropertiesPanel({
           </div>
 
           {hiddenFloorLevels.length > 0 ? (
-            <div className="mt-1 text-xs text-neutral-500">
+            <div className="mt-1 text-xs text-label-secondary">
               Hidden levels stay out of stacked 3D until shown again.
             </div>
           ) : null}
         </>
       ) : null}
 
-      <details className="mt-2 border-t border-neutral-200/60 pt-2">
-        <summary className="cursor-pointer text-sm font-semibold text-neutral-800">
+      <details className="mt-2 border-t border-separator/60 pt-2">
+        <summary className="cursor-pointer text-sm font-semibold text-control-label">
           Basic
         </summary>
         <div className="mt-2 grid gap-1.5">
@@ -437,8 +437,8 @@ export default function FloorPropertiesPanel({
         </div>
       </details>
 
-      <details className="mt-2 border-t border-neutral-200/60 pt-2">
-        <summary className="cursor-pointer text-sm font-semibold text-neutral-800">
+      <details className="mt-2 border-t border-separator/60 pt-2">
+        <summary className="cursor-pointer text-sm font-semibold text-control-label">
           Opacity
         </summary>
         <label className="mt-2 grid grid-cols-[3.25rem_1fr_3.3rem] items-center gap-2">
@@ -471,8 +471,8 @@ export default function FloorPropertiesPanel({
         </label>
       </details>
 
-      <details className="mt-2 border-t border-neutral-200/60 pt-2">
-        <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
+      <details className="mt-2 border-t border-separator/60 pt-2">
+        <summary className="cursor-pointer text-xs font-semibold text-control-label-idle">
           Advanced
         </summary>
         <div className="mt-2 grid grid-cols-3 gap-1.5">
@@ -498,7 +498,7 @@ export default function FloorPropertiesPanel({
         </div>
         {renameOpen && (
           <div
-            className="mt-2 rounded-xl border border-neutral-200 bg-neutral-50 p-2"
+            className="mt-2 rounded-xl border border-box-border bg-tile p-2"
             data-testid="floor-rename-dialog"
           >
             <label className="block">
@@ -535,13 +535,13 @@ export default function FloorPropertiesPanel({
         )}
         {deleteOpen && (
           <div
-            className="mt-2 rounded-xl border border-red-200 bg-red-50 p-2"
+            className="mt-2 rounded-xl border border-danger-tint-border bg-danger-tint p-2"
             data-testid="floor-delete-dialog"
           >
-            <div className="text-xs font-semibold text-red-800">
+            <div className="text-xs font-semibold text-on-danger-tint">
               Delete {activeFloorLabel}?
             </div>
-            <div className="mt-0.5 text-xs text-red-700">
+            <div className="mt-0.5 text-xs text-on-danger-tint">
               This removes {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"} and their doors and windows.
             </div>
             <div className="mt-2 grid grid-cols-2 gap-1.5">
@@ -561,7 +561,7 @@ export default function FloorPropertiesPanel({
             </div>
           </div>
         )}
-        <label className="mt-2 grid grid-cols-[1fr_auto] items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2">
+        <label className="mt-2 grid grid-cols-[1fr_auto] items-center gap-3 rounded-lg border border-box-border bg-tile px-2.5 py-2">
           <span className="min-w-0">
             <span className={`block ${fieldLabelClass}`}>Stacked 3D floors</span>
             <span className={`block ${metaClass}`}>View all levels vertically</span>
@@ -605,7 +605,7 @@ export default function FloorPropertiesPanel({
               type="color"
               value={activeRoomCeilingColor}
               disabled={!canEdit}
-              className="h-8 w-10 rounded border border-neutral-200 bg-transparent p-0 disabled:opacity-50"
+              className="h-8 w-10 rounded border border-box-border bg-transparent p-0 disabled:opacity-50"
               onChange={(event) => onActiveRoomCeilingColorChange(event.currentTarget.value)}
             />
           </label>

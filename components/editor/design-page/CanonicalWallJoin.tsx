@@ -5,7 +5,7 @@ import type { FloorPlanFloorV2, FloorPlanWallV2 } from "@/lib/floor-plan-documen
 import type { ConsumerWallTopologyMutationV2 } from "@/lib/floor-plan-consumer-wall-edit";
 import { Button } from "@/components/ui/Button";
 
-const inputStyle = "mt-1 w-full rounded border border-neutral-400 bg-transparent p-1.5";
+const inputStyle = "mt-1 w-full rounded border border-control-edge-hover bg-transparent p-1.5";
 
 export function CanonicalWallJoin({ floor, wall, commit }: {
   floor: FloorPlanFloorV2; wall: FloorPlanWallV2; commit: (operation: ConsumerWallTopologyMutationV2) => boolean;
@@ -30,7 +30,7 @@ export function CanonicalWallJoin({ floor, wall, commit }: {
       <label>Join target Z (mm)<input type="number" step={1} className={inputStyle} value={target.zMm} onChange={(event) => setTarget({ ...target, zMm: Number(event.target.value) })} /></label>
       <label className="col-span-2">New room name after join<input className={inputStyle} value={roomName} onChange={(event) => setRoomName(event.target.value)} /></label>
       <p className="col-span-2">A dividing partition keeps the existing name on the boundary side reached from start to end. An enclosed loop keeps it with the surrounding space. The new room inherits finishes for review.</p>
-      {!enabled && <p className="col-span-2 text-amber-700">Choose a free endpoint of a wall. An existing room corner or shared junction cannot be joined by this tool.</p>}
+      {!enabled && <p className="col-span-2 text-on-warning-tint">Choose a free endpoint of a wall. An existing room corner or shared junction cannot be joined by this tool.</p>}
       <Button variant="secondary" size="compact" className="col-span-2" aria-disabled={!enabled} onClick={join}>Join proposed endpoint</Button>
     </div>
   </details>;

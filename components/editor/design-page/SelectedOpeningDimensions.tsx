@@ -113,7 +113,7 @@ function OpeningDimensionWarning({
   return (
     <div
       data-testid="selection-inspector-opening-dimension-warning"
-      className="col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"
+      className="col-span-2 rounded-lg border border-warning-tint-border bg-warning-tint p-2 text-xs text-on-warning-tint"
     >
       Stored {length(state.heightMm)} at {length(state.bottomMm)}; effective render {length(state.effectiveHeightMm)} at {length(state.effectiveBottomMm)}.
       {state.dimensionIssues.map((issue) => <div key={issue} className="mt-0.5">{issue}</div>)}
@@ -130,13 +130,13 @@ function OpeningHostRepair({
   return (
     <div
       data-testid="selection-inspector-opening-host-warning"
-      className="col-span-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"
+      className="col-span-2 rounded-lg border border-warning-tint-border bg-warning-tint p-2 text-xs text-on-warning-tint"
     >
       <div className="font-semibold">{state.kind === "door" ? "Door" : "Window"} needs wall repair</div>
       <div className="mt-0.5">Choose a wall that contains the requested position.</div>
       <select
         data-testid="selection-inspector-opening-wall-repair"
-        className="mt-2 w-full rounded-md border border-amber-300 bg-white px-2 py-2 text-xs text-gray-900"
+        className="mt-2 w-full rounded-md border border-warning-tint-border bg-field px-2 py-2 text-xs text-label"
         value={state.wall}
         disabled={!configuration.canEdit}
         onChange={(event) => commitWall(event.currentTarget.value as typeof state.wall)}

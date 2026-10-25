@@ -15,16 +15,16 @@ type RoomPanActiveRoomProps = {
  * room boxes are too small for 12px names, so they name their rooms in tooltips only (J, 12 Oct).
  */
 export default function RoomPanActiveRoom({ room, productCount }: RoomPanActiveRoomProps) {
-  if (!room) return <span className="text-neutral-600">Rooms</span>;
+  if (!room) return <span className="text-label-secondary">Rooms</span>;
   return (
     <span
       data-testid="room-pan-active-room"
-      className="flex min-w-0 items-center gap-1.5 text-neutral-700"
+      className="flex min-w-0 items-center gap-1.5 text-control-label-idle"
       title={describeNavigatorRoom(room.name, productCount)}
     >
       <span className="truncate">{room.name}</span>
       {productCount > 0 ? (
-        <span className="shrink-0 rounded-full bg-neutral-700 px-1.5 text-white">
+        <span className="shrink-0 rounded-full bg-control-primary px-1.5 text-control-on-primary">
           {productCount}
           <span className="sr-only"> product{productCount === 1 ? "" : "s"}</span>
         </span>

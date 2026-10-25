@@ -19,8 +19,8 @@ export function SelectedZoneToolbar({
 }: SelectedZoneToolbarProps) {
   return (
     <div className="absolute left-1/2 top-bar-17 z-30 md:top-bar-16 -translate-x-1/2">
-      <div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow">
-        <div className="text-xs font-semibold text-neutral-900">
+      <div data-surface="floating" className="flex items-center gap-2 rounded-full bg-surface-floating px-3 py-2 shadow ring-1 ring-surface-floating-edge">
+        <div className="text-xs font-semibold text-label">
           {state.label}
         </div>
         <Button size="compact" onClick={actions.autoLayout}>

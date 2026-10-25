@@ -75,9 +75,9 @@ export function ImportedFloorPlanWallEditor({
   const vertexZ = currentVertexDraft.zMm;
 
   if (!state.available || !document || !floor || !wall) return null;
-  const shell = "rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-lg backdrop-blur";
-  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5";
-  const subtle = "text-neutral-500";
+  const shell = "rounded-lg border border-separator bg-surface-floating/95 p-3 text-xs text-control-label shadow-lg backdrop-blur";
+  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5";
+  const subtle = "text-label-secondary";
   const straightWall = wall.path.kind === "line";
   const updateChanged =
     thicknessMm !== wall.thicknessMm || classification !== wall.classification;
@@ -86,7 +86,7 @@ export function ImportedFloorPlanWallEditor({
   );
 
   return (
-    <section data-testid="imported-wall-editor" className={shell}>
+    <section data-testid="imported-wall-editor" data-surface="floating" className={shell}>
       <ImportedFloorPlanReviewStatus document={document} isLocalFork={state.isLocalFork} editingEnabled={state.editingEnabled} subtle={subtle} />
 
       {!state.editingEnabled ? (
@@ -95,7 +95,7 @@ export function ImportedFloorPlanWallEditor({
             Walls stay locked until you explicitly choose to edit a local copy.
           </p>
           {state.confirmationPending ? (
-            <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-amber-950">
+            <div className="mt-2 rounded-md border border-warning-tint-border bg-warning-tint p-2 text-on-warning-tint">
               <p>{CONSUMER_WALL_EDIT_CONFIRMATION_COPY}</p>
               <div className="mt-2 flex gap-2">
                 <Button variant="secondary" size="compact" onClick={actions.cancelEditingRequest}>
@@ -122,7 +122,7 @@ export function ImportedFloorPlanWallEditor({
         </div>
       ) : (
         <div className="mt-3 grid gap-3">
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900">
+          <div className="rounded-md border border-warning-tint-border bg-warning-tint p-2 text-xs text-on-warning-tint">
             {state.isLocalFork
               ? "Changes save to this design’s local copy. The source plan is unchanged."
               : "Your first accepted change creates a local Needs review copy."}
@@ -176,7 +176,7 @@ export function ImportedFloorPlanWallEditor({
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 border-t border-neutral-200 pt-3">
+          <div className="grid grid-cols-2 gap-2 border-t border-separator pt-3">
             <NumberField label="Thickness (mm)" value={thicknessMm} min={1} className={control} subtle={subtle} onChange={(value) => setWallDraft({ ...currentWallDraft, thicknessMm: value })} />
             <label className={subtle}>
               Classification
@@ -189,14 +189,14 @@ export function ImportedFloorPlanWallEditor({
             </Button>
           </div>
 
-          <div className="grid gap-2 border-t border-neutral-200 pt-3">
+          <div className="grid gap-2 border-t border-separator pt-3">
             <NumberField label={`Split position (mm${wallLengthMm ? ` of ${Math.round(wallLengthMm)}` : ""})`} value={splitOffsetMm} min={1} className={control} subtle={subtle} onChange={(value) => setWallDraft({ ...currentWallDraft, splitOffsetMm: value })} />
             <Button variant="secondary" size="compact" disabled={!straightWall || !Number.isSafeInteger(splitOffsetMm) || splitOffsetMm <= 0 || (wallLengthMm !== null && splitOffsetMm >= wallLengthMm)} onClick={() => actions.splitWall({ floorId: floor.id, wallId: wall.id, offsetMm: splitOffsetMm })}>
               Split wall
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 border-t border-neutral-200 pt-3">
+          <div className="grid grid-cols-2 gap-2 border-t border-separator pt-3">
             <label className={`${subtle} col-span-2`}>
               Endpoint
               <select className={`${control} mt-1 w-full`} value={selectedVertexId} onChange={(event) => setVertexId(event.target.value)}>
@@ -209,9 +209,9 @@ export function ImportedFloorPlanWallEditor({
               Move endpoint
             </Button>
           </div>
-          {!straightWall ? <p className="text-xs text-amber-700">Arc geometry is review-only here. Wall type and thickness remain editable.</p> : null}
+          {!straightWall ? <p className="text-xs text-on-warning-tint">Arc geometry is review-only here. Wall type and thickness remain editable.</p> : null}
           <CanonicalPlanRemodelTools floor={floor} wall={wall} commit={actions.applyProposalMutation} proposal={state.proposal} recover={actions.recoverLayout} />
-          {state.proposal?.reviewIssues.map((issue) => <p key={issue} className="text-amber-700">{issue}</p>)}
+          {state.proposal?.reviewIssues.map((issue) => <p key={issue} className="text-on-warning-tint">{issue}</p>)}
           <Button variant="secondary" size="compact" onClick={actions.stopEditing}>Stop editing walls</Button>
         </div>
       )}

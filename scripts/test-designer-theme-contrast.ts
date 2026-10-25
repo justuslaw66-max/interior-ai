@@ -134,6 +134,14 @@ const LIGHT_ROLE_TOKENS = {
   "danger-tint": "var(--color-red-50)",
   "danger-tint-border": "var(--color-red-200)",
   "on-danger-tint": "var(--color-red-700)",
+  "surface-floating-edge": "transparent",
+  "floating-card": "var(--color-white)",
+  "floating-field": "var(--color-white)",
+  "floating-tile": "var(--color-neutral-50)",
+  "floating-elevated": "var(--color-white)",
+  "floating-on-danger": "var(--color-white)",
+  "floating-on-danger-tint": "var(--color-red-700)",
+  "floating-on-accent-tint": "var(--color-blue-700)",
   "control-primary": "var(--color-neutral-900)",
   "control-primary-hover": "var(--color-neutral-800)",
   "control-on-primary": "var(--color-white)",
@@ -158,8 +166,9 @@ for (const [name, value] of Object.entries(LIGHT_ROLE_TOKENS)) {
 }
 // J's dark surfaces (13 Oct: black panels, #1C1C1E cards; 22 Oct: dialogs #1C1C1E with #2C2C2E
 // fields, Apple's 60% grey), the near-white primary (14 Oct), the shell's toast and the phone's
-// steps (24 Oct: a #3A3A3C toast; a #1C1C1E bar with the current step a #2C2C2E card), and the step
-// panel (24 Oct: cards with no outline, fields #2C2C2E, no band, the menu's room card #3A3A3C).
+// steps (24 Oct: a #3A3A3C toast; a #1C1C1E bar with the current step a #2C2C2E card), the step
+// panel (24 Oct: cards with no outline, fields #2C2C2E, no band, the menu's room card #3A3A3C), and
+// the right rail (24 Oct: floating cards with a hairline, fields #3A3A3C, Delete's word #FF8A84).
 const DARK_CHOICES = {
   surface: "#000000",
   "surface-secondary": "#1c1c1e",
@@ -174,9 +183,36 @@ const DARK_CHOICES = {
   field: "#2c2c2e",
   "surface-band": "transparent",
   "surface-floating-secondary": "#3a3a3c",
+  "surface-floating-edge": "rgba(84, 84, 88, 0.65)",
+  "floating-card": "#3a3a3c",
+  "floating-field": "#3a3a3c",
+  "floating-tile": "#3a3a3c",
+  "floating-on-danger": "#ff8a84",
 } as const;
 for (const [name, value] of Object.entries(DARK_CHOICES)) {
   assert.equal(darkTokens.get(name), value, `Dark --${name} is the value J chose.`);
+}
+
+// A floating surface (data-surface="floating") swaps these tokens for their floating values. In light
+// the floating values are the ones they replace, so a floating surface looks as it did.
+const FLOATING_SWAPS = {
+  "surface-secondary": "floating-card",
+  field: "floating-field",
+  tile: "floating-tile",
+  "surface-elevated": "floating-elevated",
+  "control-on-danger": "floating-on-danger",
+  "on-danger-tint": "floating-on-danger-tint",
+  "on-accent-tint": "floating-on-accent-tint",
+} as const;
+const floatingScope = css.match(/\n\[data-surface="floating"\]\s*\{([\s\S]*?)\n\}/)?.[1];
+assert.ok(floatingScope, "A floating surface's token swaps should be defined.");
+assert.deepEqual(
+  Object.fromEntries(Array.from(floatingScope.matchAll(/^\s*--([a-z-]+):\s*var\(--([a-z-]+)\);/gm), ([, name, value]) => [name, value])),
+  FLOATING_SWAPS,
+  "A floating surface swaps exactly these tokens."
+);
+for (const [token, floating] of Object.entries(FLOATING_SWAPS)) {
+  assert.equal(lightTokens.get(floating), lightTokens.get(token), `Light --${floating} is --${token}'s value, so light is unchanged.`);
 }
 
 // Tailwind 4's colours that the light tokens point at, in sRGB (its oklch values, rounded).
@@ -225,7 +261,7 @@ const hexOf = ([r, g, b]: Rgba) => `#${[r, g, b].map((channel) => Math.round(cha
 
 // Text needs 4.5:1 on every surface it sits on; a translucent fill is read over each surface.
 // Controls sit on panels, cards, dialogs and the floating bars. The delete look's red reads
-// 4.1:1 over a floating bar in dark, so deletes stay off them.
+// 4.1:1 over a floating bar in dark, so on a floating surface its word is floating-on-danger.
 const GROUNDS = ["surface", "surface-secondary", "surface-elevated", "surface-elevated-secondary", "surface-floating"];
 const CONTROL_GROUNDS = ["surface", "surface-secondary", "surface-elevated", "surface-floating"];
 const DANGER_GROUNDS = ["surface", "surface-secondary", "surface-elevated"];
@@ -258,10 +294,26 @@ const TEXT_PAIRS: ReadonlyArray<readonly [text: string, fill: string | null, gro
   ["on-warning-tint", "warning-tint", ["surface-secondary"]],
   ["on-danger-tint", "danger-tint", ["surface-secondary"]],
   ["on-accent-tint", "accent-tint", ["surface-secondary"]],
+  // The right rail and the other floating surfaces: Delete, and the red and blue words on their tints,
+  // in their floating colours; green and amber on their tints; text in fields, tiles and popovers.
+  ["floating-on-danger", "control-danger", ["surface-floating"]],
+  ["floating-on-danger-tint", "danger-tint", ["surface-floating"]],
+  ["floating-on-accent-tint", "accent-tint", ["surface-floating"]],
+  ["label-secondary", "accent-tint", ["surface-floating"]],
+  ["on-success-tint", "success-tint", ["surface-floating"]],
+  ["on-warning-tint", "warning-tint", ["surface-floating"]],
+  ["on-success-tint", null, ["floating-tile"]],
+  ["label", null, ["floating-card", "floating-field", "floating-tile", "floating-elevated"]],
+  ["label-secondary", null, ["floating-card", "floating-field", "floating-tile", "floating-elevated"]],
+  ["control-label-idle", null, ["floating-card"]],
+  ["control-label", null, ["floating-field", "floating-tile"]],
+  ["control-label-idle", "control-track", ["floating-tile"]],
 ];
 // The focus ring and the primary's black (or near-white) edge need 3:1 against what's around them.
 const EDGE_PAIRS: ReadonlyArray<readonly [edge: string, grounds: readonly string[]]> = [
   ["control-primary", CONTROL_GROUNDS],
+  // A chosen ChoiceTile's edge on a floating surface's card.
+  ["control-primary", ["floating-card"]],
 ];
 for (const [mode, tokens, focus] of [
   ["light", lightTokens, readConsumerHexToken("focus")],

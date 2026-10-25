@@ -52,15 +52,15 @@ export function PlanRoomSummaryCard({
   const hasMultipleSelectedRooms = selection.roomCount > 1;
   const hasAllRoomsSelected =
     wholePlan.roomCount > 1 && selection.roomCount === wholePlan.roomCount;
-  const shellClass = "border-neutral-200 bg-white/95 text-neutral-900";
-  const mutedClass = "text-neutral-500";
-  const metricClass = "border-neutral-200 bg-neutral-50";
+  const shellClass = "border-separator bg-surface-floating/95 text-label";
+  const mutedClass = "text-label-secondary";
+  const metricClass = "border-box-border bg-tile";
 
   if (wholePlan.roomCount === 0) return null;
 
   return (
     <section
-      data-testid="plan-room-summary"
+      data-testid="plan-room-summary" data-surface="floating"
       data-selected-room-count={selection.roomCount}
       className={`pointer-events-auto w-full rounded-xl border shadow-lg backdrop-blur ${shellClass}`}
       aria-label="Whole plan dimensions and room selection summary"
@@ -90,7 +90,7 @@ export function PlanRoomSummaryCard({
               data-testid="plan-room-selection-summary"
               className={`mb-2 rounded-lg border px-2.5 py-2 ${metricClass}`}
             >
-              <div className="text-xs font-bold text-emerald-700">
+              <div className="text-xs font-bold text-on-success-tint">
                 {selection.roomCount} rooms selected
               </div>
               <div className={`mt-0.5 text-xs ${mutedClass}`}>
@@ -110,7 +110,7 @@ export function PlanRoomSummaryCard({
                   data-selected={selected ? "true" : "false"}
                   className={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs ${
                     selected
-                      ? "bg-emerald-50 text-emerald-900"
+                      ? "bg-success-tint text-on-success-tint"
                       : ""
                   }`}
                 >

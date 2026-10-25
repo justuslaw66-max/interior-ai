@@ -149,9 +149,9 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
       aria-hidden={isClientPreview}
     >
       <section
-        data-testid="selected-item-panel" data-touch-area
+        data-testid="selected-item-panel" data-touch-area data-surface="floating"
         aria-label="Selected product"
-        className="flex w-full flex-col gap-4 rounded-xl bg-white p-4 shadow"
+        className="flex w-full flex-col gap-4 rounded-xl bg-surface-floating p-4 shadow ring-1 ring-surface-floating-edge"
       >
         <SelectedItemPanelHeader
           title={title}
@@ -207,8 +207,8 @@ function SelectedItemOptions({
         actions={actions.productFinishes}
       />
       <div className="flex flex-col gap-1">
-        <span className="text-[13px] font-bold text-neutral-900">Size</span>
-        <span data-testid="selected-item-dimensions" className="text-[13px] text-neutral-700">
+        <span className="text-[13px] font-bold text-label">Size</span>
+        <span data-testid="selected-item-dimensions" className="text-[13px] text-control-label-idle">
           {state.summary.sizeLabel}
         </span>
       </div>

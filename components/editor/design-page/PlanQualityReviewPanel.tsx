@@ -46,9 +46,9 @@ export function PlanQualityReviewPanel({
   const reviewPanel = (
     <div
       ref={setPanel}
-      data-testid="plan-quality-review-panel"
+      data-testid="plan-quality-review-panel" data-surface="floating"
       data-collapsed={state.collapsed ? "true" : "false"}
-      className="pointer-events-auto z-30 hidden shrink-0 rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800 shadow-xl backdrop-blur md:block"
+      className="pointer-events-auto z-30 hidden shrink-0 rounded-lg border border-separator bg-surface-floating/95 p-3 text-xs text-control-label shadow-xl backdrop-blur md:block"
       style={
         configuration.portalTarget
           ? { position: "relative", width: `${configuration.dockedWidthPx}px` }
@@ -64,13 +64,13 @@ export function PlanQualityReviewPanel({
         <div className="min-w-0">
           <div className="text-sm font-semibold">Plan review</div>
           {!state.collapsed ? (
-            <div className="mt-0.5 text-neutral-500">
+            <div className="mt-0.5 text-label-secondary">
               {state.report.label} · {state.report.score}/100
             </div>
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          <span className="rounded-full bg-neutral-100 px-2 py-1 font-semibold text-neutral-700">
+          <span className="rounded-full bg-control-track px-2 py-1 font-semibold text-control-label-idle">
             {state.report.issues.length}
           </span>
           <Button
@@ -92,12 +92,12 @@ export function PlanQualityReviewPanel({
               key={issue.id}
               type="button"
               data-testid={`plan-quality-review-issue-${issue.id}`}
-              className="w-full rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-left hover:bg-white"
+              className="w-full rounded-lg border border-box-border bg-tile px-3 py-2 text-left hover:bg-control-track-hover"
               onClick={() => actions.activateIssue(issue.action, issue)}
             >
               <span className="block font-semibold">{issue.title}</span>
-              <span className="mt-0.5 block text-neutral-500">{issue.detail}</span>
-              <span className="mt-1 block text-neutral-600">{issue.suggestedFix}</span>
+              <span className="mt-0.5 block text-label-secondary">{issue.detail}</span>
+              <span className="mt-1 block text-label-secondary">{issue.suggestedFix}</span>
             </button>
           ))}
         </div>

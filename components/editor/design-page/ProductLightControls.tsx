@@ -20,10 +20,10 @@ function LightPowerRow({ light, disabled, onChange }: LightControlProps) {
   return (
     <div className="flex items-center justify-between gap-3">
       <div>
-        <h3 id="selected-item-light-heading" className="text-[13px] font-bold text-neutral-900">
+        <h3 id="selected-item-light-heading" className="text-[13px] font-bold text-label">
           Light
         </h3>
-        <div className="mt-0.5 text-neutral-600">
+        <div className="mt-0.5 text-label-secondary">
           {light.luminousFluxLumens} lm · {verificationLabel(light.verification)}
         </div>
       </div>
@@ -34,7 +34,7 @@ function LightPowerRow({ light, disabled, onChange }: LightControlProps) {
         aria-label={light.isOn ? "Turn the light off" : "Turn the light on"}
         data-testid="selection-inspector-fixture-power"
         disabled={disabled}
-        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${light.isOn ? "bg-emerald-600" : "bg-neutral-300"}`}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${light.isOn ? "bg-emerald-600" : "bg-control-handle"}`}
         onClick={() => onChange({ isOn: !light.isOn })}
       >
         <span aria-hidden="true" className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${light.isOn ? "translate-x-6" : "translate-x-1"}`} />
@@ -45,9 +45,9 @@ function LightPowerRow({ light, disabled, onChange }: LightControlProps) {
 
 function LightBeamControl({ light, disabled, onChange }: LightControlProps) {
   return (
-    <label className="mt-3 block font-semibold text-neutral-800">
+    <label className="mt-3 block font-semibold text-control-label">
       Beam width
-      <span className="float-right font-normal text-neutral-600">{Math.round(light.beamAngleDeg)}°</span>
+      <span className="float-right font-normal text-label-secondary">{Math.round(light.beamAngleDeg)}°</span>
       <input
         type="range"
         data-testid="selection-inspector-fixture-beam"
@@ -59,7 +59,7 @@ function LightBeamControl({ light, disabled, onChange }: LightControlProps) {
         disabled={disabled || !light.beamAdjustable}
         onChange={(event) => onChange({ beamAngleDeg: Number(event.currentTarget.value) })}
       />
-      {!light.beamAdjustable ? <span className="mt-1 block font-normal text-neutral-600">Lights all around</span> : null}
+      {!light.beamAdjustable ? <span className="mt-1 block font-normal text-label-secondary">Lights all around</span> : null}
     </label>
   );
 }
@@ -71,11 +71,11 @@ function LightBeamControl({ light, disabled, onChange }: LightControlProps) {
 export function ProductLightControls({ light, disabled, onChange }: LightControlProps) {
   const kelvins = Array.from(new Set([light.cctKelvin, ...KELVIN_STEPS])).sort((left, right) => left - right);
   return (
-    <section data-testid="selection-inspector-fixture-lighting" aria-labelledby="selected-item-light-heading" className="border-t border-neutral-200 pt-3 text-xs">
+    <section data-testid="selection-inspector-fixture-lighting" aria-labelledby="selected-item-light-heading" className="border-t border-separator pt-3 text-xs">
       <LightPowerRow light={light} disabled={disabled} onChange={onChange} />
-      <label className="mt-3 block font-semibold text-neutral-800">
+      <label className="mt-3 block font-semibold text-control-label">
         Dimmer
-        <span className="float-right font-normal text-neutral-600">{Math.round(light.dimmer * 100)}%</span>
+        <span className="float-right font-normal text-label-secondary">{Math.round(light.dimmer * 100)}%</span>
         <input
           type="range"
           data-testid="selection-inspector-fixture-dimmer"
@@ -88,11 +88,11 @@ export function ProductLightControls({ light, disabled, onChange }: LightControl
           onChange={(event) => onChange({ dimmer: Number(event.currentTarget.value) / 100 })}
         />
       </label>
-      <label className="mt-3 block font-semibold text-neutral-800">
+      <label className="mt-3 block font-semibold text-control-label">
         Colour temperature
         <select
           data-testid="selection-inspector-fixture-cct"
-          className="mt-1 h-9 w-full rounded-lg border border-neutral-300 bg-white px-2 text-xs touch:h-11"
+          className="mt-1 h-9 w-full rounded-lg border border-control-secondary-border bg-field px-2 text-xs touch:h-11"
           value={String(light.cctKelvin)}
           disabled={disabled}
           onChange={(event) => onChange({ cctKelvin: Number(event.currentTarget.value) })}

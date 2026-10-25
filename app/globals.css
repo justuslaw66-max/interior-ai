@@ -7,7 +7,7 @@
 @source "../features";
 @source not "../features/cabinetry";
 @source "../lib";
-@source inline("bg-white/80 gap-5 gap-6 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-neutral-100 text-neutral-300 text-red-950 xl:grid-cols-2");
+@source inline("bg-white/80 bg-white/90 gap-5 gap-6 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-amber-950 text-neutral-100 text-neutral-300 text-red-950 xl:grid-cols-2");
 
 /* Dark mode is opt-in. The UI is designed light-first; left on Tailwind's
    default, dark: utilities follow the OS setting and half-theme dialogs
@@ -87,6 +87,16 @@
   --danger-tint: var(--color-red-50);
   --danger-tint-border: var(--color-red-200);
   --on-danger-tint: var(--color-red-700);
+  /* On a floating surface (dark mode step 5.2b): see [data-surface="floating"] below. In light they
+     are the usual values, so a floating surface looks as before. */
+  --surface-floating-edge: transparent;
+  --floating-card: var(--color-white);
+  --floating-field: var(--color-white);
+  --floating-tile: var(--color-neutral-50);
+  --floating-elevated: var(--color-white);
+  --floating-on-danger: var(--color-white);
+  --floating-on-danger-tint: var(--color-red-700);
+  --floating-on-accent-tint: var(--color-blue-700);
   /* The shared controls (components/ui): Button, SegmentedControl, Chip and ChoiceTile; a step's
      number and the avatar's hover (control-badge), and the phone sheet's handle. */
   --control-primary: var(--color-neutral-900);
@@ -164,6 +174,14 @@
   --danger-tint: rgba(255, 69, 58, 0.16);
   --danger-tint-border: transparent;
   --on-danger-tint: #ff6961;
+  --surface-floating-edge: rgba(84, 84, 88, 0.65);
+  --floating-card: #3a3a3c;
+  --floating-field: #3a3a3c;
+  --floating-tile: #3a3a3c;
+  --floating-elevated: #3a3a3c;
+  --floating-on-danger: #ff8a84;
+  --floating-on-danger-tint: #ff8a84;
+  --floating-on-accent-tint: #64b0ff;
   --control-primary: #f5f5f7;
   --control-primary-hover: #e5e5ea;
   --control-on-primary: #1c1c1e;
@@ -182,6 +200,23 @@
   --control-danger-hover: rgba(255, 69, 58, 0.26);
   --control-danger-border: transparent;
   --control-on-danger: #ff6961;
+}
+
+/* A floating surface: the right rail's cards, the item panel and the bars over the canvas
+   (data-surface="floating", on a surface-floating background). In dark it is #2C2C2E, so what sits on
+   it goes a step up: cards (a ChoiceTile's surface-secondary), fields, tiles and popovers are #3A3A3C
+   (J, 24 Oct). Red and blue words on their
+   tints lighten to #FF8A84 and #64B0FF, where #FF6961 and #409CFF read only 4.1:1 and 4.0:1 (J chose
+   #FF8A84 for Delete there). A phone's step sheet is not floating: its inspector keeps the panel's
+   values. */
+[data-surface="floating"] {
+  --surface-secondary: var(--floating-card);
+  --field: var(--floating-field);
+  --tile: var(--floating-tile);
+  --surface-elevated: var(--floating-elevated);
+  --control-on-danger: var(--floating-on-danger);
+  --on-danger-tint: var(--floating-on-danger-tint);
+  --on-accent-tint: var(--floating-on-accent-tint);
 }
 
 :root {
@@ -211,6 +246,7 @@
   --color-surface-elevated: var(--surface-elevated);
   --color-surface-elevated-secondary: var(--surface-elevated-secondary);
   --color-surface-floating: var(--surface-floating);
+  --color-surface-floating-edge: var(--surface-floating-edge);
   --color-label: var(--label);
   --color-label-secondary: var(--label-secondary);
   --color-separator: var(--separator);
