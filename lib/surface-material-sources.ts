@@ -1,4 +1,3 @@
-import path from "node:path";
 import { CABINET_LAMINATE_COLLECTIONS } from "./generated/cabinet-laminates.generated";
 import {
   buildLaminateWallPanelMaterials,
@@ -12,14 +11,19 @@ export type SurfaceMaterialSourceEntry = SurfaceMaterialYamlEntry;
 
 let laminateWallPanelCache: SurfaceMaterialSourceEntry[] | null = null;
 
-/** The wall panels made from the laminate catalogue (lib/laminate-wall-panel-materials.ts), each with its catalogue's path. */
+/**
+ * The wall panels made from the laminate catalogue (lib/laminate-wall-panel-materials.ts), each with its catalogue's path
+ * relative to the repository. The path is only a label: nothing reads the file here, and it is never joined to
+ * `process.cwd()`, because Next's file tracer can't work out such a path and would copy the whole repository, tests
+ * included, into the server build (the production artifact check refuses that).
+ */
 export function getLaminateWallPanelSourceEntries(): SurfaceMaterialSourceEntry[] {
   if (laminateWallPanelCache) return laminateWallPanelCache;
   const collections = CABINET_LAMINATE_COLLECTIONS.filter((collection) =>
     LAMINATE_WALL_PANEL_COLLECTION_IDS.includes(collection.id)
   );
   laminateWallPanelCache = collections.flatMap((collection) => {
-    const filePath = path.join(process.cwd(), getLaminateCollectionSourcePath(collection));
+    const filePath = getLaminateCollectionSourcePath(collection);
     return buildLaminateWallPanelMaterials([collection]).map((material) => ({ ...material, file_path: filePath }));
   });
   return laminateWallPanelCache;

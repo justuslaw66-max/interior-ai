@@ -872,6 +872,18 @@ const laminateSheetDesigns = (
 ).filter((laminate) => laminate[5] !== null);
 assert.equal(laminateSheetDesigns.length, 234, "the 4'x8' collection has 234 patterned designs");
 assert.equal(laminatePanelEntries.length, 233, "every 4'x8' patterned design but one is a wall panel");
+// The panels' file_path is a label relative to the repository. Joined to process.cwd() with a computed name, it made Next's
+// file tracer copy the whole repository, tests included, into /api/catalog's server build, which the production artifact
+// check refuses (PR #207's first CI run, 25 Oct 2026).
+assert.doesNotMatch(
+  fs.readFileSync("lib/surface-material-sources.ts", "utf8"),
+  /(join|resolve)\(\s*process\.cwd\(\)/,
+  "the laminate wall panels' sources never build a path from process.cwd()"
+);
+assert.ok(
+  laminatePanelEntries.every((entry) => entry.file_path === "catalog/laminates/greenlam/hpl-1220x2440.json"),
+  "each laminate wall panel names its catalogue by its path in the repository"
+);
 assert.ok(
   !sourceByMaterialId.has("greenlam-woodgrains-5338"),
   "5338 Steamed Bouchle's picture covers 1220x2115 mm, less than its sheet, so it can't be drawn on a wall at real size"
