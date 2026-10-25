@@ -20,11 +20,13 @@ export type CondoViewChange = (change: (view: CondoMapView) => CondoMapView) => 
 function DevelopmentList({
   developments,
   maps,
+  failed,
   view,
   onView,
 }: {
   developments: readonly CondoDevelopmentSummary[];
   maps: CondoMapsBySlug;
+  failed: readonly string[];
   view: CondoMapView;
   onView: CondoViewChange;
 }) {
@@ -47,7 +49,7 @@ function DevelopmentList({
                 <span className="block text-sm font-semibold">{summary.name}</span>
                 <span className="block text-xs text-label-secondary">
                   {summary.units} units · {look}
-                  {maps[summary.slug] ? "" : " · loading"}
+                  {maps[summary.slug] ? "" : failed.includes(summary.slug) ? " · didn't load" : " · loading"}
                 </span>
               </ChoiceTile>
             </li>
@@ -106,6 +108,7 @@ function FloorPicker({ dev, maps, view, onView }: { dev: CondoDevelopmentMap; ma
 export function CondoMapPanel(props: {
   developments: readonly CondoDevelopmentSummary[];
   maps: CondoMapsBySlug;
+  failed: readonly string[];
   view: CondoMapView;
   onView: CondoViewChange;
 }) {

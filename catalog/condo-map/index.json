@@ -1,6 +1,6 @@
 {
  "schema": "interior-ai.condo-map.index.v1",
- "generator": "export_condo_map.py v1 (24 Oct 2026)",
+ "generator": "export_condo_map.py v2 (25 Oct 2026)",
  "developments": [
   {
    "slug": "10-evelyn",
@@ -11,17 +11,6 @@
     1.3162855
    ],
    "units": 56,
-   "detailed": false
-  },
-  {
-   "slug": "12-on-shan",
-   "name": "12 On Shan",
-   "subtitle": "12 Shan Road, Singapore 328105 \u00b7 freehold \u00b7 completed 2018 \u00b7 now Weave Suites \u2013 Novena",
-   "centre": [
-    103.8463584,
-    1.3247761
-   ],
-   "units": 78,
    "detailed": false
   },
   {
