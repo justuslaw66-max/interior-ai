@@ -23,6 +23,8 @@ function appendStyle(): void {
   link.href = MAPBOX_GL_FILES.style.url;
   link.integrity = MAPBOX_GL_FILES.style.integrity;
   link.crossOrigin = "anonymous";
+  // a stylesheet that fails (offline, a changed file refused by its hash) goes, so the next try adds it again
+  link.onerror = () => link.remove();
   document.head.appendChild(link);
 }
 

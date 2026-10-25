@@ -2,7 +2,7 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { parseCondoMapIndex, type CondoDevelopmentSummary } from "./condo-map-data";
-import type { CondoMapFilePath } from "./condo-map-paths";
+import { isGitLfsPointer, type CondoMapFilePath } from "./condo-map-paths";
 
 /**
  * The condo map's files on the server (catalog/condo-map, exported from the floor-plan masters). Only the admin page and
@@ -13,7 +13,9 @@ const CONDO_MAP_ROOT = path.join(process.cwd(), "catalog", "condo-map");
 
 export async function readCondoMapFile(file: CondoMapFilePath): Promise<Uint8Array | null> {
   try {
-    return new Uint8Array(await readFile(path.join(CONDO_MAP_ROOT, ...file.segments)));
+    const bytes = new Uint8Array(await readFile(path.join(CONDO_MAP_ROOT, ...file.segments)));
+    // a deployment without Git LFS has the pointer, not the model: "not found" (the map shows the massing instead)
+    return isGitLfsPointer(bytes) ? null : bytes;
   } catch (cause) {
     if (cause instanceof Error && "code" in cause && cause.code === "ENOENT") return null;
     throw cause;

@@ -1,7 +1,7 @@
 import type { CondoDevelopmentMap } from "@/lib/condo-map/condo-map-data";
 import type { Ring } from "@/lib/condo-map/condo-map-geometry";
 import { condoMapOptions, hideBasemapBuildingsOnSites } from "./condo-map-basemap";
-import { condoLayers, condoModels, condoPickLayers, condoPickTarget, condoSources, condoViewUpdates } from "./condo-map-layers";
+import { condoLayers, condoModelSlug, condoModels, condoPickLayers, condoPickTarget, condoSources, condoViewUpdates } from "./condo-map-layers";
 import type { CondoMapView, CondoMapsBySlug } from "./condo-map-view";
 import type { MapboxBounds, MapboxEvent, MapboxGlobal, MapboxMap } from "./mapbox-gl-types";
 
@@ -13,12 +13,40 @@ export type CondoPick = { slug: string; unit: string };
 
 const DATA_ROUTE = "/api/admin/condo-map/";
 
+/** What failed before the map's style loaded, in a few words: the answer's status and the server, or Mapbox's message. */
+export function loadError(status: number | undefined, url: string, message: string | undefined): string {
+  let host = "";
+  try {
+    host = url ? new URL(url).host : "";
+  } catch {
+    host = "";
+  }
+  if (status) return host ? `${host} answered ${status}` : `a request answered ${status}`;
+  return message || "a request failed";
+}
+
+/** Why the map isn't up, in the words the page shows: a refused token, a failed load, or a load that is taking long. */
+export function mapProblem(state: { map: MapboxMap | null; refused: number | null; loadFailed: string | null; slow: boolean }): string | null {
+  if (state.refused) return `Mapbox refused the token (${state.refused}). Check MAPBOX_PUBLIC_TOKEN and the addresses it is restricted to.`;
+  if (state.map) return null;
+  if (state.loadFailed) return `The map didn't load: ${state.loadFailed}. Check the network (api.mapbox.com) and reload.`;
+  if (state.slow) return "The map is taking long to load. It may be blocked on this network (api.mapbox.com); it keeps trying.";
+  return null;
+}
+
 export function createCondoMap(
   gl: MapboxGlobal,
   container: HTMLElement,
   token: string,
   bounds: MapboxBounds | undefined,
-  handlers: { onStyle: (map: MapboxMap) => void; onTokenRefused: (status: number) => void }
+  handlers: {
+    onStyle: (map: MapboxMap) => void;
+    onTokenRefused: (status: number) => void;
+    /** an error before the style loaded (style, sprite or glyph request failed): the map won't come up by itself */
+    onLoadFailed: (detail: string) => void;
+    /** one of a detailed development's models failed: that development is drawn as massing */
+    onModelFailed: (slug: string) => void;
+  }
 ): MapboxMap {
   const origin = window.location.origin;
   const map = new gl.Map({
@@ -30,8 +58,11 @@ export function createCondoMap(
   map.on("style.load", () => handlers.onStyle(map));
   map.on("error", (event: MapboxEvent) => {
     const status = event.error?.status;
-    const fromMapbox = (event.error?.url ?? "").includes("mapbox.com");
-    if (fromMapbox && (status === 401 || status === 403)) handlers.onTokenRefused(status);
+    const url = event.error?.url ?? "";
+    if (url.includes("mapbox.com") && (status === 401 || status === 403)) return handlers.onTokenRefused(status);
+    const modelOf = condoModelSlug(url);
+    if (modelOf) return handlers.onModelFailed(modelOf);
+    if (!map.isStyleLoaded()) handlers.onLoadFailed(loadError(status, url, event.error?.message));
   });
   return map;
 }
@@ -42,8 +73,8 @@ export function addCondoDevelopment(map: MapboxMap, dev: CondoDevelopmentMap, or
   for (const layer of condoLayers(dev)) map.addLayer(layer);
 }
 
-export function applyCondoView(map: MapboxMap, dev: CondoDevelopmentMap, view: CondoMapView): void {
-  const { filters, paint } = condoViewUpdates(dev, view);
+export function applyCondoView(map: MapboxMap, dev: CondoDevelopmentMap, view: CondoMapView, modelsFailed: boolean): void {
+  const { filters, paint } = condoViewUpdates(dev, view, modelsFailed);
   for (const [layerId, filter] of filters) if (map.getLayer(layerId)) map.setFilter(layerId, filter);
   for (const [layerId, property, value] of paint) if (map.getLayer(layerId)) map.setPaintProperty(layerId, property, value);
 }
