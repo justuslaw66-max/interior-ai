@@ -47,11 +47,11 @@ export function RoomRenameDialog({
       }
     >
       <label className="block">
-        <span className="text-xs font-semibold text-neutral-700">Room name</span>
+        <span className="text-xs font-semibold text-label-secondary">Room name</span>
         <input
           data-testid="room-rename-input"
           data-editor-dialog-initial-focus="true"
-          className="mt-1 min-h-11 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30"
+          className="mt-1 min-h-11 w-full rounded-lg border border-box-border bg-surface-elevated-secondary px-3 text-sm text-label outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30"
           value={value}
           onChange={(event) => onValueChange(event.currentTarget.value)}
           onKeyDown={(event) => {

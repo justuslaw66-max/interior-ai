@@ -48,7 +48,7 @@ export function PlanTemplateChoiceDialog({
       panelClassName="max-w-lg"
     >
       {!isAuthenticated ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900">
+        <div className="rounded-lg border border-warning-tint-border bg-warning-tint px-3 py-2 text-xs leading-5 text-on-warning-tint">
           Sign in first so the current design can be kept in My designs.
         </div>
       ) : null}
@@ -56,7 +56,7 @@ export function PlanTemplateChoiceDialog({
         <div
           data-testid="new-plan-choice-error"
           role="alert"
-          className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+          className="mt-3 rounded-lg border border-danger-tint-border bg-danger-tint px-3 py-2 text-sm text-on-danger-tint"
         >
           {errorMessage}
         </div>

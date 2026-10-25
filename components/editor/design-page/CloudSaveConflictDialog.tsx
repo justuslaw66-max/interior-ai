@@ -41,12 +41,12 @@ export function CloudSaveConflictDialog({
       layerClassName="z-[125]"
       panelClassName="max-w-xl"
     >
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-label-secondary">
         Detected <time dateTime={new Date(state.detectedAt).toISOString()}>{new Date(state.detectedAt).toLocaleString()}</time>
       </p>
       <p
         data-testid="cloud-save-conflict-message"
-        className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+        className="mt-4 rounded-lg border border-warning-tint-border bg-warning-tint px-3 py-2 text-sm text-on-warning-tint"
       >
         {state.message}
       </p>
@@ -54,7 +54,7 @@ export function CloudSaveConflictDialog({
         <p
           role="alert"
           data-testid="cloud-save-conflict-error"
-          className="mt-4 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800"
+          className="mt-4 rounded-lg border border-danger-tint-border bg-danger-tint px-3 py-2 text-sm text-on-danger-tint"
         >
           {state.resolutionError}
         </p>

@@ -52,7 +52,7 @@ export function GuestSavePromptDialog({
       closeLabel="Close sign-in prompt"
       closeButtonId={GUEST_PROMPT_CLOSE_ACTION_ID}
       closeButtonTestId="guest-save-prompt-close"
-      closeButtonClassName="focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
+      closeButtonClassName="focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-surface-elevated"
       testId="guest-save-prompt"
       dialogId={GUEST_PROMPT_DIALOG_ID}
       returnFocusIds={reason ? getGuestPromptReturnFocusIds(reason) : undefined}

@@ -48,7 +48,7 @@ export function EditorCommandPalette({
       hideWhenSuperseded manageBackground
       cancelFocusRestorationOnUnmount
       overlayClassName="z-[95] items-start !bg-black/30 px-4 pb-4 pt-20 backdrop-blur-sm"
-      panelClassName="!max-w-[560px] overflow-hidden !rounded-xl border-neutral-200 bg-white !p-0 text-neutral-950"
+      panelClassName="!max-w-[560px] overflow-hidden !rounded-xl border-separator bg-surface-elevated !p-0 text-label"
       headerClassName="sr-only"
       contentClassName="!mt-0"
     >
@@ -67,11 +67,11 @@ export function EditorCommandPalette({
           onRunAction(action);
         }}
         placeholder="Search commands"
-        className="h-12 w-full border-b border-neutral-200 bg-transparent px-4 text-sm font-semibold outline-hidden placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+        className="h-12 w-full border-b border-separator bg-transparent px-4 text-sm font-semibold outline-hidden placeholder:text-label-tertiary focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
       />
       <div className="max-h-[min(460px,60vh)] overflow-y-auto p-2">
         {actions.length === 0 ? (
-          <div className="px-3 py-8 text-center text-sm text-neutral-500">
+          <div className="px-3 py-8 text-center text-sm text-label-secondary">
             No commands found
           </div>
         ) : (
@@ -81,17 +81,17 @@ export function EditorCommandPalette({
               type="button"
               data-testid={`editor-command-palette-action-${action.id}`}
               disabled={!action.enabled}
-              className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm outline-hidden hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-sm outline-hidden hover:bg-control-quiet-hover focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={() => onRunAction(action)}
             >
               <span className="min-w-0">
                 <span className="block truncate font-semibold">{action.label}</span>
-                <span className="block truncate text-xs text-neutral-500">
+                <span className="block truncate text-xs text-label-secondary">
                   {action.hint}
                 </span>
               </span>
               {!action.enabled ? (
-                <span className="shrink-0 text-xs font-semibold text-neutral-400">
+                <span className="shrink-0 text-xs font-semibold text-label-secondary">
                   Unavailable
                 </span>
               ) : null}

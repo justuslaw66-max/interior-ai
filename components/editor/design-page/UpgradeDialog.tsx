@@ -56,7 +56,7 @@ export function UpgradeDialog({ state, actions }: UpgradeDialogProps) {
           </EditorDialogButton>
           {state.showSignIn ? (
             <EditorDialogButton
-              className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+              className="border-accent-tint-border bg-accent-tint text-on-accent-tint hover:brightness-95"
               onClick={actions.onSignIn}
             >
               Sign in to save progress
@@ -72,38 +72,38 @@ export function UpgradeDialog({ state, actions }: UpgradeDialogProps) {
       }
     >
         <div
-          className="rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-sm text-neutral-700"
+          className="rounded-xl border border-box-border bg-tile p-3 text-sm text-label-secondary"
           data-testid="upgrade-variant-content"
           data-upgrade-variant={state.variantLabel}
         >
           {state.contentVariant === "unlock_pro_exports" ? (
             <div data-testid="upgrade-variant-unlock-pro-exports">
-              <div className="font-medium text-neutral-900">Best for ongoing design work</div>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-neutral-600">
+              <div className="font-medium text-label">Best for ongoing design work</div>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-label-secondary">
                 <li>Clean PDF exports without watermark</li>
                 <li>Up to four image angles and clean presentation packs</li>
                 <li>{state.exportWorkflowBenefit}</li>
               </ul>
-              <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+              <div className="mt-3 rounded-lg bg-success-tint px-3 py-2 text-xs font-medium text-on-success-tint">
                 {state.annualSavingsLabel}
               </div>
             </div>
           ) : (
             <div data-testid="upgrade-variant-see-pricing">
-              <div className="font-medium text-neutral-900">Free vs Pro at a glance</div>
-              <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-neutral-600">
-                <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
-                  <div className="font-semibold text-neutral-900">Free</div>
+              <div className="font-medium text-label">Free vs Pro at a glance</div>
+              <div data-surface="floating" className="mt-2 grid grid-cols-2 gap-2 text-xs text-label-secondary">
+                <div className="rounded-lg border border-box-border bg-field px-3 py-2">
+                  <div className="font-semibold text-label">Free</div>
                   <div className="mt-1">Watermarked preview export</div>
                   <div>Basic sharing</div>
                 </div>
-                <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2">
-                  <div className="font-semibold text-neutral-900">Pro</div>
+                <div className="rounded-lg border border-box-border bg-field px-3 py-2">
+                  <div className="font-semibold text-label">Pro</div>
                   <div className="mt-1">Clean PDF and image exports</div>
                   <div>Pro tools</div>
                 </div>
               </div>
-              <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800">
+              <div className="mt-3 rounded-lg bg-warning-tint px-3 py-2 text-xs font-medium text-on-warning-tint">
                 {state.pricingGuidance}
               </div>
             </div>

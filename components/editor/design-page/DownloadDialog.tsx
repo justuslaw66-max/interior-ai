@@ -106,7 +106,7 @@ function FreeLimitsNote({ onClose, onSeePricing }: DownloadDialogProps) {
   return (
     <div
       data-testid="download-free-note"
-      className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs text-neutral-600"
+      className="flex items-center justify-between gap-3 rounded-lg border border-box-border bg-tile px-3 py-2 text-xs text-label-secondary"
     >
       <span>Free downloads are one view with a small watermark. Pro gives clean files and more views.</span>
       <EditorDialogButton
