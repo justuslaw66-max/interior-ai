@@ -72,7 +72,7 @@ function CatalogCardFavourite({ item, isFavorite, onToggleFavorite }: Pick<Props
       data-testid={`catalog-favorite-toggle-${item.id}`}
       aria-pressed={isFavorite}
       aria-label={favouriteLabel(item.title, isFavorite)}
-      className={`absolute right-1.5 top-1.5 flex h-8 w-8 touch:h-11 touch:w-11 items-center justify-center rounded-full bg-white/95 text-label shadow-sm hover:bg-white ${FOCUS_RING}`}
+      className={`absolute right-1.5 top-1.5 flex h-8 w-8 touch:h-11 touch:w-11 items-center justify-center rounded-full bg-white/95 text-neutral-900 shadow-sm hover:bg-white ${FOCUS_RING}`}
     >
       <Heart className={isFavorite ? "h-4 w-4 fill-current text-rose-600" : "h-4 w-4"} aria-hidden="true" />
     </button>
@@ -89,7 +89,7 @@ export default function CatalogCard(props: Props) {
   return (
     <div
       data-testid={`catalog-card-${item.id}`}
-      className="relative flex h-[232px] cursor-pointer flex-col rounded-lg border border-box-border bg-surface-secondary shadow-sm transition hover:border-control-edge-hover hover:shadow-md"
+      className="relative flex h-[232px] cursor-pointer flex-col rounded-lg border border-box-border bg-field shadow-sm transition hover:border-control-edge-hover hover:shadow-md"
       draggable={Boolean(props.onDragStart)}
       onMouseEnter={props.onHover}
       onMouseLeave={props.onHoverEnd}

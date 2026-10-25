@@ -226,7 +226,7 @@ const NEUTRAL_COLOUR_CLASS =
 const neutralColours = sources.reduce((count, { text }) => count + (text.match(NEUTRAL_COLOUR_CLASS)?.length ?? 0), 0);
 assert.equal("hover:bg-white md:bg-neutral-900/80 text-neutral-50 bg-neutral-950 border-black/10".match(NEUTRAL_COLOUR_CLASS)?.length, 5);
 assert.equal("bg-control-primary text-label bg-white-ish text-whitespace".match(NEUTRAL_COLOUR_CLASS), null);
-const LIMITS = { rawButtons: 149, emojiButtons: 3, neutralColours: 1484 };
+const LIMITS = { rawButtons: 149, emojiButtons: 3, neutralColours: 1475 };
 const counts = { rawButtons, emojiButtons, neutralColours };
 for (const [name, limit] of Object.entries(LIMITS) as Array<[keyof typeof LIMITS, number]>) {
   assert.ok(counts[name] <= limit, `${name} rose to ${counts[name]} (limit ${limit}); it can only go down.`);
