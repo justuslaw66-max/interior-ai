@@ -37,7 +37,7 @@ const readJson = (file: string): unknown => JSON.parse(fs.readFileSync(path.join
 
 // ---------- the data
 const index = parseCondoMapIndex(readJson("index.json"));
-assert.equal(index.length, 9, "the nine developments of the floor-plan masters");
+assert.equal(index.length, 10, "the ten developments of the floor-plan masters");
 const maps: Record<string, CondoDevelopmentMap> = {};
 for (const summary of index) {
   const dev = parseCondoDevelopmentMap(readJson(`${summary.slug}/map.json`), `${summary.slug}/map.json`);
@@ -66,6 +66,11 @@ for (const summary of index) {
 }
 const lotsCredit = "Contains information from SLA Cadastral Land Parcel accessed on 24 Oct 2026 from data.gov.sg";
 assert.ok(condoMapCredits(maps).some((credit) => credit.includes(lotsCredit)), "the land lots' licence credit is shown");
+// every development placed on its official land lot carries the lots' licence words, whatever day the lots were read
+const lotsLicence = /Contains information from SLA Cadastral Land Parcel accessed on \d{1,2} [A-Z][a-z]{2} \d{4} from data\.gov\.sg which is made available under the terms of the Singapore Open Data Licence version 1\.0/;
+for (const dev of Object.values(maps).filter((d) => d.placedOn.includes("official land lot"))) {
+  assert.ok(dev.credits.some((credit) => lotsLicence.test(credit)), `${dev.slug}: the land lots' licence credit`);
+}
 assert.ok(Object.values(maps).filter((dev) => dev.placedOn.includes("OneMap")).every((dev) => dev.credits.some((credit) => credit.includes("OneMap, © Singapore Land Authority"))));
 const raw1953 = readJson("1953/map.json");
 assert.ok(raw1953 && typeof raw1953 === "object");
