@@ -5,7 +5,9 @@ import {
   type SurfaceMaterialRenderInfo,
 } from "@/lib/surface-material-runtime";
 import {
+  DEFAULT_FLOOR_JOINT_SIZE_MM,
   DEFAULT_FLOOR_PATTERN,
+  DEFAULT_WALL_JOINT_COLOR,
   FLOOR_PATTERN_OPTIONS,
   GARDENIA_DEFAULT_TILE_PATTERN_OPTIONS,
   getFloorPatternOptionsForIds,
@@ -25,6 +27,35 @@ export type SurfacePatternPreviewTile = {
   height: number;
   shade?: boolean;
 };
+
+/**
+ * Laminate wall panels (25 Oct 2026) are butted closely: their joint starts at 1 mm in a dark grey from the grout palette, which
+ * reads as the shadow between sheets, and the inspector calls it a joint. Tiles keep their grout.
+ */
+export const WALL_PANEL_DEFAULT_JOINT = { jointSizeMm: 1, jointColor: "#444442" } as const;
+
+function isWallPanelMaterial(material: SurfaceMaterialRenderInfo | null): boolean {
+  return material?.surface_material.surface_category === "wall_panel";
+}
+
+/** Whether a wall finish has joints to size and colour: tiles and wall panels do. */
+export function surfaceMaterialHasJoints(material: SurfaceMaterialRenderInfo | null): boolean {
+  if (!material) return false;
+  const { surface_category: category, material_family: family } = material.surface_material;
+  return category === "wall_tile" || family === "tile" || category === "wall_panel";
+}
+
+/** What the inspector calls a material's joints. */
+export function getSurfaceJointLabel(material: SurfaceMaterialRenderInfo | null): "Grout" | "Joints" {
+  return isWallPanelMaterial(material) ? "Joints" : "Grout";
+}
+
+/** The joint a wall finish starts with when it is applied. */
+export function getDefaultWallJoint(material: SurfaceMaterialRenderInfo | null): { jointSizeMm: number; jointColor: string } {
+  return isWallPanelMaterial(material)
+    ? { ...WALL_PANEL_DEFAULT_JOINT }
+    : { jointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM, jointColor: DEFAULT_WALL_JOINT_COLOR };
+}
 
 export function formatFlooringInspectorValue(value?: string | null): string {
   if (!value) return "Unknown";
