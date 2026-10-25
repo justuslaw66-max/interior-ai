@@ -32,6 +32,8 @@ design_effect:
   - plain
   - woven
   - outdoor_decking
+  - pattern
+  - metallic
   - unknown
 
 color_family:

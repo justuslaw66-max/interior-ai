@@ -42,6 +42,8 @@ import {
   getFlooringInspectorProductName,
   getFlooringInspectorSizeLabel,
   getFlooringInspectorSurfaceSwatchStyle,
+  getSurfaceJointLabel,
+  surfaceMaterialHasJoints,
 } from "@/lib/design-page-surface-inspector";
 import {
   FLOOR_GROUT_COLOR_PALETTE,
@@ -270,13 +272,9 @@ export function useDesignPageSurfaceInspectorContext({
   const wallInspectorSurfaceMaterial = wallInspectorMaterialId
     ? getRuntimeSurfaceMaterialById(wallInspectorMaterialId)
     : null;
+  // Tiles and laminate wall panels have joints (design-page-surface-inspector.ts).
   const wallInspectorSupportsGrout = Boolean(
-    surfaceInspectorIsWall &&
-      wallInspectorSurfaceMaterial &&
-      (wallInspectorSurfaceMaterial.surface_material.surface_category ===
-        "wall_tile" ||
-        wallInspectorSurfaceMaterial.surface_material.material_family ===
-          "tile")
+    surfaceInspectorIsWall && surfaceMaterialHasJoints(wallInspectorSurfaceMaterial)
   );
   const wallInspectorStarterMaterial = wallInspectorMaterialId
     ? getFloorMaterialById(wallInspectorMaterialId)
@@ -987,9 +985,9 @@ export function useDesignPageSurfaceInspector({
           const wallGrout =
             surfaceInspectorIsWall && wallInspectorSupportsGrout
               ? {
+                  label: getSurfaceJointLabel(getRuntimeSurfaceMaterialById(surfaceInspectorMaterialId)),
                   groutSizes: FLOOR_GROUT_SIZE_PRESETS_MM.map((sizeMm) => {
-                    const selected =
-                      wallInspectorSettings.jointSizeMm === sizeMm;
+                    const selected = wallInspectorSettings.jointSizeMm === sizeMm;
                     return {
                       valueMm: sizeMm,
                       selected,

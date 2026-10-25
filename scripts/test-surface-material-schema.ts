@@ -7,6 +7,10 @@ import {
   runSurfaceMaterialAudit,
 } from "../lib/surface-material-audit";
 import { getAllSurfaceMaterialYamlEntries } from "../lib/surface-material-yaml";
+import {
+  getAllSurfaceMaterialSourceEntries,
+  getLaminateWallPanelSourceEntries,
+} from "../lib/surface-material-sources";
 import { SURFACE_MATERIAL_VOCABULARY, type SurfaceMaterial } from "../lib/surface-material-schema";
 import {
   getDraftFlooringMaterialsForAdmin,
@@ -27,7 +31,14 @@ import {
 import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
 import { buildOpeningWallSurfacePanels } from "../components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
 import { getContinuousWallPanelId } from "../components/editor/renderers/house-plan-3d/continuousWallSelection";
-import { getWallOpenings, getWallSegments } from "../components/editor/renderers/house-plan-3d/geometry";
+import {
+  buildWallSurfacePanels,
+  getWallOpenings,
+  getWallSegments,
+  joinedLegacyWallSurfacePart,
+} from "../components/editor/renderers/house-plan-3d/geometry";
+import { getWallSurfacePartStartAlongFace } from "../components/editor/renderers/house-plan-3d/wallSurfaceLayout";
+import { wallSurfaceLayout } from "../components/editor/renderers/canonical-floor-plan/geometry";
 import {
   SURFACE_MATERIAL_RENDER_REGISTRY,
   getRuntimeSurfaceMaterialById,
@@ -46,8 +57,15 @@ import {
 } from "../lib/surface-settings";
 import {
   getCompatibleFloorPatternForMaterial,
+  getDefaultWallJoint,
   getFlooringInspectorPatternOptions,
+  getSurfaceJointLabel,
+  surfaceMaterialHasJoints,
 } from "../lib/design-page-surface-inspector";
+import { CABINET_LAMINATE_COLLECTIONS } from "../lib/generated/cabinet-laminates.generated";
+import { LAMINATE_SURFACE_BY_CATEGORY } from "../lib/laminate-surface-finish";
+import { getSurfacePhysicalAssetFailures } from "../lib/surface-material-physical-sampling";
+import { getSurfaceTileColumns, getSurfaceTileRows } from "../components/editor/renderers/surfaceTileRows";
 import {
   NIPPON_WALL_PAINT_COLOUR_COUNT,
   WALL_PAINT_SWATCHES,
@@ -791,10 +809,19 @@ assert.ok(
   publishedFloors.length > 0 && publishedFloors.every((material) => material.surface_material.supplier === "gardenia_orchidea"),
   "the consumer flooring registry holds Gardenia's published quote-on-request entries only"
 );
+// Since 25 Oct 2026 the laminate catalogue's wall panels are surface materials too, read from catalog/laminates with no YAML
+// copy (lib/surface-material-sources.ts). Every other record comes from one YAML file.
+const laminatePanelEntries = getLaminateWallPanelSourceEntries();
+const sourceEntries = getAllSurfaceMaterialSourceEntries();
+assert.equal(sourceEntries.length, entries.length + laminatePanelEntries.length);
 assert.equal(
   productionRuntimeIds.length,
-  entries.length,
-  "every production YAML record must contribute exactly one render-registry record"
+  entries.length + laminatePanelEntries.length,
+  "every production YAML record must contribute exactly one render-registry record, and so must each laminate wall panel"
+);
+assert.ok(
+  sourceEntries.every((entry) => productionRuntimeIds.includes(entry.surface_material.material_id)),
+  "every YAML record and laminate wall panel is in the render registry"
 );
 assert.ok(
   goodrichEntries.every((entry) => productionRuntimeIds.includes(entry.surface_material.material_id)),
@@ -809,14 +836,14 @@ assert.deepEqual(
   productionRuntimeIds,
   "generated render and lazy catalog projections must preserve identical IDs and ordering"
 );
-const yamlByMaterialId = new Map(
-  entries.map((entry) => [entry.surface_material.material_id, entry] as const)
+const sourceByMaterialId = new Map(
+  sourceEntries.map((entry) => [entry.surface_material.material_id, entry] as const)
 );
 for (const runtimeMaterial of SURFACE_MATERIAL_RENDER_REGISTRY) {
-  const sourceMaterial = yamlByMaterialId.get(runtimeMaterial.surface_material.material_id);
+  const sourceMaterial = sourceByMaterialId.get(runtimeMaterial.surface_material.material_id);
   assert.ok(
     sourceMaterial,
-    `${runtimeMaterial.surface_material.material_id} render record must retain a canonical YAML source`
+    `${runtimeMaterial.surface_material.material_id} render record must retain a canonical YAML source (or the laminate catalogue)`
   );
   assert.deepEqual(
     runtimeMaterial.texture_assets,
@@ -834,9 +861,139 @@ for (const runtimeMaterial of SURFACE_MATERIAL_RENDER_REGISTRY) {
         : {}),
       ...(sourceMaterial.texture_assets.faces ? { faces: sourceMaterial.texture_assets.faces } : {}),
     },
-    `${runtimeMaterial.surface_material.material_id} texture-map identities must match canonical YAML`
+    `${runtimeMaterial.surface_material.material_id} texture-map identities must match canonical YAML (or the laminate catalogue)`
   );
 }
+
+// Greenlam's 4'x8' patterned laminates as wall panels (J, 25 Oct 2026): one published record per design whose picture covers
+// its sheet, with the cabinets' id, picture and sheet size, audited like the YAML (lib/laminate-wall-panel-materials.ts).
+const laminateSheetDesigns = (
+  CABINET_LAMINATE_COLLECTIONS.find((collection) => collection.id === "hpl-1220x2440")?.laminates ?? []
+).filter((laminate) => laminate[5] !== null);
+assert.equal(laminateSheetDesigns.length, 234, "the 4'x8' collection has 234 patterned designs");
+assert.equal(laminatePanelEntries.length, 233, "every 4'x8' patterned design but one is a wall panel");
+assert.ok(
+  !sourceByMaterialId.has("greenlam-woodgrains-5338"),
+  "5338 Steamed Bouchle's picture covers 1220x2115 mm, less than its sheet, so it can't be drawn on a wall at real size"
+);
+for (const panel of laminatePanelEntries) {
+  const id = panel.surface_material.material_id;
+  const laminate = laminateSheetDesigns.find((design) => design[0] === id);
+  assert.ok(laminate, `${id} is a 4'x8' cabinet laminate`);
+  assert.ok(panel.file_path.endsWith("catalog/laminates/greenlam/hpl-1220x2440.json"), `${id} comes from the laminate catalogue`);
+  assert.deepEqual(
+    [...auditSurfaceMaterialEntry(panel, panel.file_path).failures, ...getSurfacePhysicalAssetFailures(panel)],
+    [],
+    `${id}: a laminate wall panel passes the surface audit`
+  );
+  assert.deepEqual(
+    [panel.surface_material.surface_category, panel.import_governance.publish_status, panel.source.license_status],
+    ["wall_panel", "published", "confirmed"],
+    `${id} is a published wall panel`
+  );
+  assert.equal(panel.surface_material.product_name, `Greenlam ${laminate[2]} ${laminate[1]}`, `${id} is named, then numbered`);
+  assert.deepEqual([panel.physical_specs.tile_width_mm, panel.physical_specs.tile_length_mm], [1220, 2440], `${id} is a 4'x8' sheet`);
+  assert.deepEqual(
+    [panel.texture_assets.base_color_url, panel.texture_assets.swatch_url, panel.texture_assets.image_physical_size_mm],
+    [laminate[5], laminate[6], { width: laminate[7], height: laminate[8] }],
+    `${id} draws the cabinets' picture at the size it covers`
+  );
+  assert.deepEqual(panel.rendering.available_pattern_layouts, ["straight"], `${id} is laid straight`);
+  assert.deepEqual(
+    [panel.rendering.roughness, panel.rendering.metalness],
+    [LAMINATE_SURFACE_BY_CATEGORY[laminate[3]].roughness, LAMINATE_SURFACE_BY_CATEGORY[laminate[3]].metalness],
+    `${id} takes the light as the cabinets' laminate does`
+  );
+  assert.ok(
+    !panel.classification.room_suitability.some((room) => room === "bathroom" || room === "balcony"),
+    `${id}: thin HPL is for dry walls`
+  );
+}
+assert.equal(
+  getSurfaceMaterialById("greenlam-woodgrains-5394")?.surface_material.surface_category,
+  "wall_panel",
+  "the server registry serves the laminate wall panels"
+);
+const panelEffectCounts = laminatePanelEntries.reduce<Record<string, number>>((counts, panel) => {
+  counts[panel.classification.design_effect] = (counts[panel.classification.design_effect] ?? 0) + 1;
+  return counts;
+}, {});
+assert.deepEqual(
+  panelEffectCounts,
+  { wood: 158, woven: 7, pattern: 30, marble: 6, stone: 4, concrete: 1, metallic: 19, plain: 8 },
+  "wood for woodgrains, plain for solids and Unicore, metallic for metals and pearlescents, and an abstract's effect from its name"
+);
+assert.equal(sourceByMaterialId.get("greenlam-abstracts-5571")?.classification.design_effect, "marble", "Creme Marquina");
+assert.equal(sourceByMaterialId.get("greenlam-abstracts-5641")?.classification.design_effect, "pattern", "Kimono");
+
+// Wall panels are laid from the floor up, so the cut sheet is at the top of a 2.7 m wall, and the parts of a wall around a
+// door or window, each painted on its own canvas, share one set of joints. Tiles keep their rows from the canvas top.
+const nordicAcaciaPanel = getRuntimeSurfaceMaterialById("greenlam-woodgrains-5394");
+const someWallTile = SURFACE_MATERIAL_RENDER_REGISTRY.find((material) => material.surface_material.surface_category === "wall_tile");
+assert.ok(nordicAcaciaPanel && someWallTile);
+const panelRows = (canvasHeightPx: number, bottomAboveFloorMeters: number | null) =>
+  getSurfaceTileRows({
+    material: nordicAcaciaPanel,
+    canvasHeightPx,
+    surfaceHeightMeters: canvasHeightPx / 1000,
+    tileHeightPx: 2440,
+    bottomAboveFloorMeters,
+  });
+const fullHeightRows = panelRows(2700, 0);
+assert.equal(fullHeightRows.top(0), 260, "the first sheet stands on the floor; its top joint is 2440 mm up, 260 mm below the top");
+assert.ok(fullHeightRows.first <= 0 && fullHeightRows.end >= 2, "the first sheet and the cut one above it are painted");
+assert.equal(panelRows(600, 2.1).top(0), 260, "above a 2.1 m door head, the joint is at the same height as beside the door");
+assert.equal(panelRows(900, 0).top(0), 900 - 2440, "below a 0.9 m window sill, the part is all the first sheet");
+assert.deepEqual(
+  [panelRows(2700, null).first, panelRows(2700, null).end, panelRows(2700, null).top(1)],
+  [-2, 5, 2440],
+  "a panel with no floor height is laid from the canvas top, as before"
+);
+const wallTileRows = getSurfaceTileRows({
+  material: someWallTile,
+  canvasHeightPx: 2700,
+  surfaceHeightMeters: 2.7,
+  tileHeightPx: 600,
+  bottomAboveFloorMeters: 0,
+});
+assert.deepEqual([wallTileRows.first, wallTileRows.end, wallTileRows.top(1)], [-2, 8, 600], "wall tiles keep their rows from the top");
+// Columns: a part's canvas says how far along the wall face it starts, so the sheet edges carry on across the parts around a
+// door. A part starting 1.0 m along the face, 1 px per mm: the sheet edge at 1220 mm is 220 px into it, and it is sheet 1.
+const panelColumns = (canvasWidthPx: number, startAlongFaceMeters: number | null) =>
+  getSurfaceTileColumns({
+    material: nordicAcaciaPanel,
+    canvasWidthPx,
+    surfaceWidthMeters: canvasWidthPx / 1000,
+    tileWidthPx: 1220,
+    startAlongFaceMeters,
+  });
+const aboveDoorColumns = panelColumns(900, 1);
+assert.equal(aboveDoorColumns.left(1, 0), 220, "the sheet edge 1220 mm along the face falls 220 mm into a part starting at 1 m");
+assert.ok(aboveDoorColumns.first <= 0 && aboveDoorColumns.end >= 2, "sheets 0 and 1, the ones the part crosses, are painted");
+assert.equal(panelColumns(1000, 0).left(0, 0), 0, "the first sheet meets the face's start");
+assert.equal(panelColumns(900, -1.9).left(-1, 0), 680, "a reversed face counts back from its start, so the edges are the same");
+assert.deepEqual(
+  [panelColumns(900, null).first, panelColumns(900, null).end, panelColumns(900, null).left(1, 0)],
+  [0, 4, 0],
+  "a panel with no face start starts its columns at the canvas's edge, as before"
+);
+const wallTileColumns = getSurfaceTileColumns({
+  material: someWallTile,
+  canvasWidthPx: 900,
+  surfaceWidthMeters: 0.9,
+  tileWidthPx: 600,
+  startAlongFaceMeters: 1,
+});
+assert.deepEqual([wallTileColumns.first, wallTileColumns.end, wallTileColumns.left(0, 0)], [0, 5, -600], "wall tiles keep their columns");
+
+// A wall panel's joints: 1 mm and dark, called joints; tiles keep their grout.
+assert.equal(surfaceMaterialHasJoints(nordicAcaciaPanel), true);
+assert.equal(surfaceMaterialHasJoints(someWallTile), true);
+assert.equal(surfaceMaterialHasJoints(null), false);
+assert.equal(getSurfaceJointLabel(nordicAcaciaPanel), "Joints");
+assert.equal(getSurfaceJointLabel(someWallTile), "Grout");
+assert.deepEqual(getDefaultWallJoint(nordicAcaciaPanel), { jointSizeMm: 1, jointColor: "#444442" });
+assert.deepEqual(getDefaultWallJoint(someWallTile), { jointSizeMm: 2, jointColor: "#dad7cf" });
 
 const grandMarble = findRuntimeMaterialFixture("goodrich-geff-novaclick-gnv-018-grand-marble");
 assert.equal(grandMarble.physical_specs?.tile_width_mm, 457.2);
@@ -1272,6 +1429,77 @@ const continuousBomRows = buildRoomSurfaceMaterialBomRows([windowPanelRoom], [bo
 const continuousRows = continuousBomRows.filter((row) => row.wallPanelId === continuousPanelId);
 assert.equal(continuousRows.length, 1, "One selected wall must produce one material quantity row.");
 assert.equal(continuousRows[0].surfaceAreaSqm, 8.32, "A continuous wall finish includes all solid sections minus the window.");
+
+// Where each part of a wall finish starts along its face (wallSurfaceLayout.ts): the parts beside and above and below a
+// window follow on from each other, from the face's corner, the way each side's picture runs.
+const startAlongFaceRows = [
+  ...buildWallSurfacePanels(bomTopology[0], bomSegment, getWallOpenings(bomTopology[0], bomSegment, bomTopology,
+    mapPlanOpeningsToRoomRenderer([bomWindow], bomTopology))),
+  ...bomWindowPanels.filter((panel) => panel.role === "interior"),
+].map((panel) => {
+  const endJoin = { squareStart: false, squareEnd: false };
+  const surface = joinedLegacyWallSurfacePart(bomTopology[0], bomSegment, panel.part, panel.side, 0.1, endJoin);
+  const start = getWallSurfacePartStartAlongFace({
+    room: bomTopology[0], segment: bomSegment, part: panel.part, side: panel.side, wallThickness: 0.1, ...endJoin,
+  });
+  return [panel.part.key.split("-").slice(-2).join("-"), Math.round(start * 1000), Math.round((start + surface.length) * 1000)];
+});
+assert.deepEqual(
+  startAlongFaceRows,
+  [["part-0", 0, 1250], ["part-1", 2650, 3900], ["window-lintel", 1250, 2650], ["window-sill", 1250, 2650]],
+  "a 1.4 m window in a 4 m wall's 3.9 m room face: the parts run on from the corner without a gap or an overlap"
+);
+const southSegment = getWallSegments(bomTopology[0]).find((segment) => segment.wall === "south");
+assert.ok(southSegment);
+const southPanels = buildWallSurfacePanels(bomTopology[0], southSegment, []);
+assert.deepEqual(
+  southPanels.map((panel) => [panel.side, Math.round(getWallSurfacePartStartAlongFace({
+    room: bomTopology[0], segment: southSegment, part: panel.part, side: panel.side, wallThickness: 0.1,
+    squareStart: false, squareEnd: false,
+  }) * 1000)]),
+  [[-1, 0]],
+  "a room face on side -1 starts at its corner too"
+);
+
+// The same for an imported plan's wall slices (canonical-floor-plan/geometry.ts): a 3 m wall, 100 mm thick, between two
+// corners, its room face on the left (inside the corners, 50 mm in) and its outer face on the right (50 mm out), with a door
+// from 1.0 to 1.9 m. Each face is measured from its own corner, the way its picture runs.
+const importedSlice = (startOffsetMm: number, endOffsetMm: number, bottomMm: number, topMm: number) => ({
+  id: `slice-${startOffsetMm}-${bottomMm}`,
+  wallId: "imported-wall",
+  start: { xMm: startOffsetMm, zMm: 0 },
+  end: { xMm: endOffsetMm, zMm: 0 },
+  startOffsetMm,
+  endOffsetMm,
+  bottomMm,
+  topMm,
+  footprint: {
+    startLeft: { xMm: startOffsetMm === 0 ? 50 : startOffsetMm, zMm: 50 },
+    endLeft: { xMm: endOffsetMm === 3000 ? 2950 : endOffsetMm, zMm: 50 },
+    endRight: { xMm: endOffsetMm === 3000 ? 3050 : endOffsetMm, zMm: -50 },
+    startRight: { xMm: startOffsetMm === 0 ? -50 : startOffsetMm, zMm: -50 },
+  },
+});
+const importedSlices = [
+  importedSlice(0, 1000, 0, 2700),
+  importedSlice(1000, 1900, 2100, 2700),
+  importedSlice(1900, 3000, 0, 2700),
+];
+const importedLayout = (side: 1 | -1) =>
+  importedSlices.map((slice) => {
+    const layout = wallSurfaceLayout(slice, side, importedSlices);
+    return [Math.round(layout.startAlongFaceMeters * 1000), Math.round(layout.bottomAboveFloorMeters * 1000)];
+  });
+assert.deepEqual(
+  importedLayout(1),
+  [[0, 0], [950, 2100], [1850, 0]],
+  "an imported wall's room face starts at its corner, and the slice above the door at the door's head"
+);
+assert.deepEqual(
+  importedLayout(-1),
+  [[2050, 0], [1150, 2100], [0, 0]],
+  "its outer face starts at its own corner, at the wall's end, so no strip is left at an outside corner"
+);
 assert.equal(continuousBomRows.some((row) => row.wallPanelId === sillPanel.panelId), false,
   "A whole wall assignment must supersede old fragment assignments without double counting.");
 

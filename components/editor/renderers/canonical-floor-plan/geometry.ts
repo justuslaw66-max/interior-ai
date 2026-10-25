@@ -103,6 +103,46 @@ export function wallSurfaceEdge(solid: CanonicalFloorPlanWallSolid, side: 1 | -1
   };
 }
 
+/** A point's distance along the wall from its start, in metres, measured on a slice's own line. */
+function distanceAlongWall(solid: CanonicalFloorPlanWallSolid, point: { x: number; z: number }) {
+  const dx = solid.end.xMm - solid.start.xMm;
+  const dz = solid.end.zMm - solid.start.zMm;
+  const segmentLengthMm = Math.max(1, Math.hypot(dx, dz));
+  return (
+    (solid.startOffsetMm + ((point.x * 1000 - solid.start.xMm) * dx + (point.z * 1000 - solid.start.zMm) * dz) / segmentLengthMm) /
+    1000
+  );
+}
+
+/**
+ * How a wall slice's finish is laid: its face's length and height, how high its bottom edge is above the floor, and how far
+ * along the wall's face its picture starts, measured the way the picture runs: from the face's corner at the wall's start on
+ * side 1, and from its corner at the wall's end on side -1, whose picture runs back along the wall. `wallSolids` are the
+ * wall's slices, which give that corner. Wall panels lay their sheets from the floor and from the corner, so a full sheet
+ * meets the corner and the slices beside, below and above the wall's openings share their joints (surfaceTileRows.ts).
+ */
+export function wallSurfaceLayout(
+  solid: CanonicalFloorPlanWallSolid,
+  side: 1 | -1,
+  wallSolids: readonly CanonicalFloorPlanWallSolid[] = [solid]
+) {
+  const edge = wallSurfaceEdge(solid, side);
+  const cornerSlice = wallSolids.reduce((corner, candidate) =>
+    side === 1
+      ? candidate.startOffsetMm < corner.startOffsetMm ? candidate : corner
+      : candidate.endOffsetMm > corner.endOffsetMm ? candidate : corner
+  , solid);
+  const corner = distanceAlongWall(cornerSlice, wallSurfaceEdge(cornerSlice, side).start);
+  const here = distanceAlongWall(solid, edge.start);
+  return {
+    edge,
+    lengthMeters: Math.max(0.001, Math.hypot(edge.end.x - edge.start.x, edge.end.z - edge.start.z)),
+    heightMeters: Math.max(0.001, (solid.topMm - solid.bottomMm) / 1000),
+    bottomAboveFloorMeters: solid.bottomMm / 1000,
+    startAlongFaceMeters: side === 1 ? here - corner : corner - here,
+  };
+}
+
 export function wallSurfaceGeometry(solid: CanonicalFloorPlanWallSolid, side: 1 | -1) {
   const edge = wallSurfaceEdge(solid, side);
   const bottom = solid.bottomMm / 1000;

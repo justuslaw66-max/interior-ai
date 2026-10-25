@@ -37,8 +37,8 @@ import {
   structureOutlinePoints,
   structureShape,
   wallSolidShape,
-  wallSurfaceEdge,
   wallSurfaceGeometry,
+  wallSurfaceLayout,
 } from "./canonical-floor-plan/geometry";
 import {
   useCanonicalOpeningDrag,
@@ -522,6 +522,7 @@ function CanonicalWallBodies3D({
 
 const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh({
   solid,
+  wallSolids,
   wallId,
   floorId,
   floorElevationMm,
@@ -535,6 +536,7 @@ const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh({
   onSelectWall,
 }: {
   solid: CanonicalFloorPlanWallSolid;
+  wallSolids: readonly CanonicalFloorPlanWallSolid[]; // the wall's slices, which give its face's corners
   wallId: string;
   floorId: string;
   floorElevationMm: number;
@@ -549,14 +551,10 @@ const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh({
   onSelectWall?: (wallId: string, roomId: string | null, event: CanonicalPointerEvent) => void;
 }) {
   const { gl } = useThree();
-  const edge = wallSurfaceEdge(solid, side);
+  // Wall panels are laid from the floor and from the wall's start (canonical-floor-plan/geometry.ts).
+  const layout = useMemo(() => wallSurfaceLayout(solid, side, wallSolids), [side, solid, wallSolids]);
   const geometry = useMemo(() => wallSurfaceGeometry(solid, side), [side, solid]);
   useEffect(() => () => geometry.dispose(), [geometry]);
-  const surfaceLength = Math.max(
-    0.001,
-    Math.hypot(edge.end.x - edge.start.x, edge.end.z - edge.start.z)
-  );
-  const height = Math.max(0.001, (solid.topMm - solid.bottomMm) / 1000);
   const settings = getWallFaceSurfaceSettings(
     resolveRoomSurfaceAssignments(room),
     wallId,
@@ -566,8 +564,10 @@ const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh({
   const material = getRuntimeSurfaceMaterialById(settings.materialId);
   const texture = useSurfaceMaterialTexture({
     material,
-    roomWidthMeters: surfaceLength,
-    roomDepthMeters: height,
+    roomWidthMeters: layout.lengthMeters,
+    roomDepthMeters: layout.heightMeters,
+    bottomAboveFloorMeters: layout.bottomAboveFloorMeters,
+    startAlongFaceMeters: layout.startAlongFaceMeters,
     floorScale: settings.scale,
     rotationRad: (settings.rotationDeg * Math.PI) / 180,
     floorPattern: settings.pattern,
@@ -639,11 +639,11 @@ const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh({
       {selected && (
         <Line
           points={[
-            [edge.start.x, solid.bottomMm / 1000 + 0.02, edge.start.z],
-            [edge.end.x, solid.bottomMm / 1000 + 0.02, edge.end.z],
-            [edge.end.x, solid.topMm / 1000 - 0.02, edge.end.z],
-            [edge.start.x, solid.topMm / 1000 - 0.02, edge.start.z],
-            [edge.start.x, solid.bottomMm / 1000 + 0.02, edge.start.z],
+            [layout.edge.start.x, solid.bottomMm / 1000 + 0.02, layout.edge.start.z],
+            [layout.edge.end.x, solid.bottomMm / 1000 + 0.02, layout.edge.end.z],
+            [layout.edge.end.x, solid.topMm / 1000 - 0.02, layout.edge.end.z],
+            [layout.edge.start.x, solid.topMm / 1000 - 0.02, layout.edge.start.z],
+            [layout.edge.start.x, solid.bottomMm / 1000 + 0.02, layout.edge.start.z],
           ]}
           color="#f97316"
           lineWidth={2.2}
@@ -1145,7 +1145,7 @@ export function CanonicalFloorPlanWalls3D({
               return [
                 <CanonicalWallSurfaceMesh
                   key={`${floor.id}:${solid.id}:surface:${surfaceRoomId}`}
-                  solid={solid}
+                  solid={solid} wallSolids={wall.solids}
                   wallId={wall.id}
                   floorId={floor.id}
                   floorElevationMm={floor.elevationMm}

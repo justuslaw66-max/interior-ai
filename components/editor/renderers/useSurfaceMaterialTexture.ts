@@ -20,6 +20,8 @@ import {
 } from "@/lib/surface-material-physical-sampling";
 import { paintChevronSurface } from "./surfaceChevronPainter";
 import { paintHerringboneSurface } from "./surfaceHerringbonePainter";
+import { configureSurfaceTexture, type SurfaceTextureUvMode } from "./surfaceTextureSetup";
+import { getSurfaceTileGrid } from "./surfaceTileRows";
 import {
   createSurfaceTilePainter,
   getImageSize,
@@ -34,7 +36,6 @@ const DEFAULT_MIN_SURFACE_TEXTURE_SIZE = 384;
 const DEFAULT_TARGET_PIXELS_PER_METER = 260;
 const SURFACE_TEXTURE_RENDER_VERSION = 11;
 
-type SurfaceTextureUvMode = "world" | "normalized";
 type SourceRect = { x: number; y: number; width: number; height: number };
 type SurfaceTextureResolution = {
   maxSize?: number;
@@ -524,6 +525,8 @@ function createPatternedSurfaceTexture({
   material,
   surfaceWidthMeters,
   surfaceHeightMeters,
+  bottomAboveFloorMeters,
+  startAlongFaceMeters,
   floorScale,
   pattern,
   jointSizeMm,
@@ -535,6 +538,8 @@ function createPatternedSurfaceTexture({
   material: SurfaceMaterialRenderInfo;
   surfaceWidthMeters: number;
   surfaceHeightMeters: number;
+  bottomAboveFloorMeters?: number | null;
+  startAlongFaceMeters?: number | null;
   floorScale: number;
   pattern: RoomFloorPattern;
   jointSizeMm: number;
@@ -559,11 +564,7 @@ function createPatternedSurfaceTexture({
   const scale = clampFinite(floorScale, 0.1, 5);
   const tileWidthPx = Math.max(8, (tileSize.width * scale / surfaceWidth) * canvas.width);
   const tileHeightPx = Math.max(8, (tileSize.height * scale / surfaceHeight) * canvas.height);
-  const jointSizePx = getSurfaceJointSizePxForTest({
-    jointSizeMm,
-    surfaceWidthMeters: surfaceWidth,
-    canvasWidthPx: canvas.width,
-  });
+  const jointSizePx = getSurfaceJointSizePxForTest({ jointSizeMm, surfaceWidthMeters: surfaceWidth, canvasWidthPx: canvas.width });
   const seedBase = hashString(material.surface_material.material_id);
   const rotateSourceQuarterTurn = shouldRotateTileSourceQuarterTurnForTest({
     supplier: material.surface_material.supplier,
@@ -627,7 +628,8 @@ function createPatternedSurfaceTexture({
     return new THREE.CanvasTexture(canvas);
   }
 
-  const rowCount = Math.ceil(canvas.height / tileHeightPx) + 3;
+  const grid = getSurfaceTileGrid({ material, canvasHeightPx: canvas.height, surfaceHeightMeters: surfaceHeight, tileHeightPx, bottomAboveFloorMeters,
+    canvasWidthPx: canvas.width, surfaceWidthMeters: surfaceWidth, tileWidthPx, startAlongFaceMeters });
   const paintTile = createSurfaceTilePainter({
     context,
     physicalSources,
@@ -638,18 +640,15 @@ function createPatternedSurfaceTexture({
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
 
-  for (let row = -2; row < rowCount; row += 1) {
-    const y = row * tileHeightPx;
+  for (let row = grid.rows.first; row < grid.rows.end; row += 1) {
+    const y = grid.rows.top(row);
     const rowOffset = getSurfacePatternRowOffsetForTest({
       pattern: normalizedPattern,
       row,
       tileWidthPx,
     });
-    const startX = -tileWidthPx - rowOffset;
-    const colCount = Math.ceil((canvas.width + tileWidthPx * 3) / tileWidthPx);
-
-    for (let col = 0; col < colCount; col += 1) {
-      const x = startX + col * tileWidthPx;
+    for (let col = grid.cols.first; col < grid.cols.end; col += 1) {
+      const x = grid.cols.left(col, rowOffset);
       const columnOffset = getSurfacePatternColumnOffsetForTest({
         pattern: normalizedPattern,
         column: col,
@@ -691,6 +690,8 @@ export function useSurfaceMaterialTexture({
   material,
   roomWidthMeters,
   roomDepthMeters,
+  bottomAboveFloorMeters = null,
+  startAlongFaceMeters = null,
   floorScale,
   rotationRad,
   floorPattern,
@@ -704,6 +705,10 @@ export function useSurfaceMaterialTexture({
   material: SurfaceMaterialRenderInfo | null;
   roomWidthMeters: number;
   roomDepthMeters: number;
+  /** A wall finish's bottom edge above the floor, and its left edge along the face: wall panels are laid from the floor up
+   * and from the face's start (surfaceTileRows.ts). */
+  bottomAboveFloorMeters?: number | null;
+  startAlongFaceMeters?: number | null;
   floorScale: number;
   rotationRad: number;
   floorPattern?: RoomFloorPattern;
@@ -739,6 +744,8 @@ export function useSurfaceMaterialTexture({
         getSurfacePhysicalSourceKey(material?.texture_assets),
         roomWidthMeters,
         roomDepthMeters,
+        bottomAboveFloorMeters,
+        startAlongFaceMeters,
         floorScale,
         rotationRad,
         normalizedPattern,
@@ -781,6 +788,8 @@ export function useSurfaceMaterialTexture({
             material,
             surfaceWidthMeters: roomWidthMeters,
             surfaceHeightMeters: roomDepthMeters,
+            bottomAboveFloorMeters,
+            startAlongFaceMeters,
             floorScale,
             pattern: normalizedPattern,
             jointSizeMm: normalizedJointSizeMm,
@@ -792,36 +801,15 @@ export function useSurfaceMaterialTexture({
             },
       });
       const nextTexture = patternedTexture ?? sourceTexture.clone();
-      const isGeneratedPatternTexture = Boolean(patternedTexture);
-      const textureRepeat = {
-        repeatX: uvMode === "normalized" ? 1 : 1 / Math.max(0.1, roomWidthMeters),
-        repeatY: uvMode === "normalized" ? 1 : 1 / Math.max(0.1, roomDepthMeters),
-        offsetX:
-          uvMode === "normalized"
-            ? 0
-            : isGeneratedPatternTexture
-              ? 0.5 / Math.max(0.1, roomWidthMeters)
-              : 0.5,
-        offsetY:
-          uvMode === "normalized"
-            ? 0
-            : isGeneratedPatternTexture
-              ? 0.5 / Math.max(0.1, roomDepthMeters)
-              : 0.5,
-      };
-
-      nextTexture.wrapS = THREE.RepeatWrapping;
-      nextTexture.wrapT = THREE.RepeatWrapping;
-      nextTexture.colorSpace = THREE.SRGBColorSpace;
-      nextTexture.anisotropy = Math.min(8, Math.max(1, maxAnisotropy));
-      nextTexture.center.set(0.5, 0.5);
-      nextTexture.offset.set(
-        textureRepeat.offsetX + normalizedOffset.x,
-        textureRepeat.offsetY + normalizedOffset.y
-      );
-      nextTexture.rotation = rotationRad;
-      nextTexture.repeat.set(textureRepeat.repeatX, textureRepeat.repeatY);
-      nextTexture.needsUpdate = true;
+      configureSurfaceTexture(nextTexture, {
+        uvMode,
+        painted: Boolean(patternedTexture),
+        widthMeters: roomWidthMeters,
+        heightMeters: roomDepthMeters,
+        maxAnisotropy,
+        offset: normalizedOffset,
+        rotationRad,
+      });
 
       ownedTexture = nextTexture;
       setTextureState({ key: textureKey, texture: nextTexture });
@@ -832,6 +820,7 @@ export function useSurfaceMaterialTexture({
       ownedTexture?.dispose();
     };
   }, [
+    bottomAboveFloorMeters,
     floorScale,
     material,
     maxAnisotropy,
@@ -844,6 +833,7 @@ export function useSurfaceMaterialTexture({
     roomWidthMeters,
     rotationRad,
     source,
+    startAlongFaceMeters,
     textureKey,
     textureMaxSize,
     textureMinSize,
