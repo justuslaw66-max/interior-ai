@@ -79,8 +79,8 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
             title={finish.label}
             aria-label={finish.label}
             aria-pressed={active}
-            className={`h-16 w-full rounded-xl border border-neutral-200 shadow-sm transition ${
-              active ? "" : "hover:border-neutral-400 hover:shadow"
+            className={`h-16 w-full rounded-xl border border-swatch-edge shadow-sm transition ${
+              active ? "" : "hover:border-control-edge-hover hover:shadow"
             }`}
             style={{
               backgroundColor: finish.swatchHex ?? "#d1d5db",
@@ -115,17 +115,17 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
           data-testid={`catalog-finish-section-${sectionKey}`}
         >
           <div className="flex items-baseline justify-between gap-3">
-            <h4 className="text-sm font-semibold text-neutral-900">
+            <h4 className="text-sm font-semibold text-label">
               {section.collectionType
                 ? getCollectionLabel(section.collectionType, materialType)
                 : getMaterialLabel(materialType)}
             </h4>
-            <span className="text-xs text-neutral-500">
+            <span className="text-xs text-label-secondary">
               {section.items.length} option{section.items.length === 1 ? "" : "s"}
             </span>
           </div>
           {section.collectionType === "custom" ? (
-            <p className="mt-1 text-xs leading-relaxed text-neutral-600">
+            <p className="mt-1 text-xs leading-relaxed text-label-secondary">
               Create a piece made just for you in one of our custom {materialType.toLowerCase()}s.
             </p>
           ) : null}
@@ -144,14 +144,14 @@ export default function CatalogItemFinishPicker({ finishOptions, activeFinishId,
     <div data-testid="catalog-finish-picker">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
             Finish
           </div>
           {selectedFinish ? (
-            <div className="mt-1 text-sm font-semibold text-neutral-900">{selectedFinish.label}</div>
+            <div className="mt-1 text-sm font-semibold text-label">{selectedFinish.label}</div>
           ) : null}
         </div>
-        <div className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-600">
+        <div className="rounded-full bg-control-track px-2.5 py-1 text-xs font-semibold text-label-secondary">
           Variant-safe
         </div>
       </div>

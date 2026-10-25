@@ -30,11 +30,11 @@ export function CatalogEmptyState(props: CatalogEmptyStateProps) {
   const copy = emptyStateCopy(scope, hasSearchTerm || hasActiveFilters);
   return (
     <div
-      className="mt-2 rounded-lg border border-dashed border-neutral-300 bg-white px-3 py-5 text-center"
+      className="mt-2 rounded-lg border border-dashed border-control-handle bg-surface-secondary px-3 py-5 text-center"
       data-testid="catalog-empty-recovery"
     >
-      <div className="text-sm font-semibold text-neutral-900">{copy.title}</div>
-      <div className="mt-1 text-xs text-neutral-600">{copy.detail}</div>
+      <div className="text-sm font-semibold text-label">{copy.title}</div>
+      <div className="mt-1 text-xs text-label-secondary">{copy.detail}</div>
       <div className="mt-3 flex flex-wrap justify-center gap-2">
         {scope !== "all" ? <Chip onClick={props.onBrowseAll}>Browse all products</Chip> : null}
         {hasSearchTerm ? <Chip onClick={props.onClearSearch}>Clear search</Chip> : null}
