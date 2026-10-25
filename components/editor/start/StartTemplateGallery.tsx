@@ -68,7 +68,7 @@ export function StartTemplateGallery({ headingRef, ready, furnishedReady, onChoo
         </Button>
       </div>
       {furnished && !furnishedReady ? (
-        <p role="status" data-testid="start-template-products-loading" className="mt-3 text-sm text-neutral-600">
+        <p role="status" data-testid="start-template-products-loading" className="mt-3 text-sm text-label-secondary">
           Loading products for furnished templates…
         </p>
       ) : null}
@@ -105,13 +105,13 @@ function StartTemplateCards({ cards, furnished, ready, furnishedReady, onChooseT
             data-testid={`start-template-${card.template.id}`}
             aria-label={`${card.name}, ${card.meta}${withFurniture ? ", furnished" : ""}`}
             disabled={!ready || (withFurniture && !furnishedReady)}
-            className="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white text-left text-neutral-950 outline-hidden transition hover:border-neutral-400 hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60"
+            className="flex flex-col overflow-hidden rounded-2xl border border-box-border bg-surface-secondary text-left text-label outline-hidden transition hover:border-control-edge-hover hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-page disabled:cursor-wait disabled:opacity-60"
             onClick={() => onChooseTemplate(card, withFurniture)}
           >
             <PlanTemplatePreview template={card.template} furnishingPackId={withFurniture ? card.furnishingPackId : null} />
             <span className="flex flex-col gap-1 px-3.5 pb-3.5 pt-3">
               <span className="text-[15px] font-bold">{card.name}</span>
-              <span className="text-[13px] text-neutral-600">{card.meta}</span>
+              <span className="text-[13px] text-label-secondary">{card.meta}</span>
             </span>
           </button>
         );

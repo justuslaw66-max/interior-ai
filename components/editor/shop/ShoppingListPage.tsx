@@ -42,10 +42,10 @@ export type ShoppingListPageProps = {
 
 function ShoppingListEmpty({ onGoFurnish }: { onGoFurnish: () => void }) {
   return (
-    <div data-testid="shopping-list-empty" className="flex flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white px-6 py-10 text-center">
-      <ShoppingBag className="h-7 w-7 text-neutral-500" aria-hidden="true" />
-      <h2 className="text-base font-bold text-neutral-900">Nothing to buy yet</h2>
-      <p className="max-w-sm text-sm text-neutral-600">Add products in Furnish, and they appear here with their prices.</p>
+    <div data-testid="shopping-list-empty" className="flex flex-col items-center gap-2 rounded-2xl border border-box-border bg-surface-secondary px-6 py-10 text-center">
+      <ShoppingBag className="h-7 w-7 text-label-secondary" aria-hidden="true" />
+      <h2 className="text-base font-bold text-label">Nothing to buy yet</h2>
+      <p className="max-w-sm text-sm text-label-secondary">Add products in Furnish, and they appear here with their prices.</p>
       <Button data-testid="shopping-list-go-furnish" onClick={onGoFurnish} className="mt-2">
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         Go to Furnish
@@ -55,11 +55,11 @@ function ShoppingListEmpty({ onGoFurnish }: { onGoFurnish: () => void }) {
 }
 
 function ShoppingNoticeBar({ notice, onDismiss }: { notice: ShoppingNotice; onDismiss: () => void }) {
-  const tone = notice.tone === "error" ? "border-red-200 bg-red-50 text-red-800" : notice.tone === "warning" ? "border-amber-200 bg-amber-50 text-amber-900" : "border-sky-200 bg-sky-50 text-sky-900";
+  const tone = notice.tone === "error" ? "border-danger-tint-border bg-danger-tint text-on-danger-tint" : notice.tone === "warning" ? "border-warning-tint-border bg-warning-tint text-on-warning-tint" : "border-accent-tint-border bg-accent-tint text-on-accent-tint";
   return (
     <div role={notice.tone === "error" ? "alert" : "status"} data-testid="shopping-list-notice" className={`flex items-start justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-sm ${tone}`}>
       <span>{notice.message}</span>
-      <button type="button" onClick={onDismiss} className="min-h-8 shrink-0 rounded font-bold underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900">
+      <button type="button" onClick={onDismiss} className="min-h-8 shrink-0 rounded font-bold underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-control-primary">
         Dismiss
       </button>
     </div>
@@ -77,7 +77,7 @@ function ShoppingListSections({ list, canEdit, canSwap, actions }: Pick<Shopping
         <ShoppingListSection sectionId="here" title="Checkout here" lines={list.checkoutHere.lines} subtotal={list.checkoutHere.subtotal} {...row} />
       ) : null}
       {list.unavailable.length ? (
-        <ShoppingListSection sectionId="unavailable" title="Not sold online yet" lines={list.unavailable} aside={<span className="text-[13px] font-normal text-neutral-600">No buy link yet</span>} {...row} />
+        <ShoppingListSection sectionId="unavailable" title="Not sold online yet" lines={list.unavailable} aside={<span className="text-[13px] font-normal text-label-secondary">No buy link yet</span>} {...row} />
       ) : null}
     </>
   );
@@ -98,8 +98,8 @@ export function ShoppingListPage({ list, surfaces = [], canEdit, canSwap = canEd
     <section ref={pageRef} data-testid="shopping-list-page" aria-labelledby={SHOPPING_LIST_TITLE_ID} className="mx-auto flex w-full max-w-[1132px] flex-col gap-4 px-4 pt-5 lg:flex-row lg:items-start lg:gap-8 lg:px-8 lg:pb-8 lg:pt-7">
       <div className="flex min-w-0 flex-1 flex-col gap-4 pb-2">
         <div className="flex flex-col gap-1">
-          <h1 id={SHOPPING_LIST_TITLE_ID} tabIndex={-1} className="rounded text-[22px] font-bold leading-7 text-neutral-900 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 lg:text-[26px] lg:leading-8">Shopping list</h1>
-          <p className="text-sm text-neutral-600 lg:text-[15px]">Everything in this design, in one place. You pay on the retailer&apos;s website.</p>
+          <h1 id={SHOPPING_LIST_TITLE_ID} tabIndex={-1} className="rounded text-[22px] font-bold leading-7 text-label focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-control-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-page lg:text-[26px] lg:leading-8">Shopping list</h1>
+          <p className="text-sm text-label-secondary lg:text-[15px]">Everything in this design, in one place. You pay on the retailer&apos;s website.</p>
         </div>
         {swapAll && !empty && !wide ? <ShoppingSwapAll {...swapAll} /> : null}
         {notice && !buyList.retailer ? <ShoppingNoticeBar notice={notice} onDismiss={actions.dismissNotice} /> : null}

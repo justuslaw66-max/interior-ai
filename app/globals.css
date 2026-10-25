@@ -7,7 +7,7 @@
 @source "../features";
 @source not "../features/cabinetry";
 @source "../lib";
-@source inline("bg-amber-100 bg-emerald-100 bg-white/70 bg-white/80 bg-white/90 border-blue-100 border-blue-200 gap-5 gap-6 hover:bg-blue-50 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-amber-950 text-neutral-100 text-neutral-300 text-red-950 xl:grid-cols-2");
+@source inline("bg-amber-100 bg-emerald-100 bg-white/70 bg-white/80 bg-white/90 border-blue-100 border-blue-200 border-sky-200 gap-5 gap-6 hover:bg-blue-50 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-amber-950 text-neutral-100 text-neutral-300 text-red-950 xl:grid-cols-2");
 
 /* Dark mode is opt-in. The UI is designed light-first; left on Tailwind's
    default, dark: utilities follow the OS setting and half-theme dialogs

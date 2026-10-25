@@ -39,11 +39,11 @@ export function ShoppingSwapAll({ counts, disabled, onSwapAll }: ShoppingSwapAll
           >
             <span>{LABEL[direction]}</span>
             {count === null ? (
-              <span aria-hidden="true" className="rounded bg-neutral-900 px-1.5 py-0.5 text-xs font-bold text-white">
+              <span aria-hidden="true" className="rounded bg-control-primary px-1.5 py-0.5 text-xs font-bold text-control-on-primary">
                 Pro
               </span>
             ) : (
-              <span aria-hidden="true" className="text-xs font-normal text-neutral-600">
+              <span aria-hidden="true" className="text-xs font-normal text-label-secondary">
                 {count}
               </span>
             )}

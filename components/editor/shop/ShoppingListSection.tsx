@@ -23,16 +23,16 @@ export function ShoppingListSection({ sectionId, title, lines, aside, subtotal, 
       aria-labelledby={headingId}
       data-testid="shopping-list-section"
       data-section={sectionId}
-      className="overflow-hidden rounded-2xl border border-neutral-200 bg-white"
+      className="overflow-hidden rounded-2xl border border-box-border bg-surface-secondary"
     >
-      <div className="flex min-h-12 items-center justify-between gap-3 border-b border-neutral-200 px-3.5 py-2.5 md:min-h-14 md:px-5">
+      <div className="flex min-h-12 items-center justify-between gap-3 border-b border-separator px-3.5 py-2.5 md:min-h-14 md:px-5">
         <div className="flex min-w-0 items-baseline gap-2.5">
-          <h2 id={headingId} className="truncate text-[15px] font-bold text-neutral-900 md:text-base">
+          <h2 id={headingId} className="truncate text-[15px] font-bold text-label md:text-base">
             {title}
           </h2>
-          <span className="shrink-0 text-[13px] text-neutral-600">{productCountLabel(lines.length)}</span>
+          <span className="shrink-0 text-[13px] text-label-secondary">{productCountLabel(lines.length)}</span>
         </div>
-        <span className="shrink-0 text-[15px] font-bold text-neutral-900 md:text-base">
+        <span className="shrink-0 text-[15px] font-bold text-label md:text-base">
           {aside ?? (subtotal != null ? formatSgd(subtotal) : null)}
         </span>
       </div>

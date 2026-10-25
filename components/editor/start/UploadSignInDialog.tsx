@@ -53,14 +53,14 @@ export function UploadSignInDialog({ open, openerId, onClose, onSignIn }: Upload
             <span
               aria-hidden="true"
               className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                index === 0 ? "bg-neutral-900 text-white" : "bg-neutral-200 text-neutral-700"
+                index === 0 ? "bg-control-primary text-control-on-primary" : "bg-control-badge text-label-secondary"
               }`}
             >
               {index + 1}
             </span>
             <span className="flex flex-col gap-0.5">
               <span className="text-sm font-bold">{step.title}</span>
-              <span className="text-sm text-neutral-600">{step.detail}</span>
+              <span className="text-sm text-label-secondary">{step.detail}</span>
             </span>
           </li>
         ))}
@@ -73,7 +73,7 @@ export function UploadSignInDialog({ open, openerId, onClose, onSignIn }: Upload
           Not now
         </EditorDialogButton>
       </div>
-      <p className="mt-4 text-[13px] text-neutral-600" data-testid="upload-sign-in-cad-note">
+      <p className="mt-4 text-[13px] text-label-secondary" data-testid="upload-sign-in-cad-note">
         {GUEST_FORMATS.cadNote}
       </p>
     </EditorDialog>

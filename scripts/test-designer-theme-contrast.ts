@@ -465,7 +465,7 @@ assert.doesNotMatch(
 const designPagePanelRegionSource = read("components/editor/design-page/DesignPagePanelRegion.tsx");
 assert.match(
   designPagePanelRegionSource,
-  /data-testid="shop-step"[\s\S]{0,200}?bg-\[#fafaf9\]/,
+  /data-testid="shop-step"[\s\S]{0,200}?bg-surface-page/,
   "Shop should be an opaque page over the canvas."
 );
 assert.doesNotMatch(designPagePanelRegionSource, /shopping-dock/, "Shop should not come back as a dock.");
