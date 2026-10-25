@@ -23,7 +23,7 @@ export function FloorPlanImportPausedNotice({
   resumableJobId,
 }: FloorPlanImportPausedNoticeProps) {
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3" data-testid="floor-plan-import-error" data-floor-plan-workspace-state="failure">
+    <div className="rounded-lg border border-warning-tint-border bg-warning-tint p-3" data-testid="floor-plan-import-error" data-floor-plan-workspace-state="failure">
       <div className="text-xs font-semibold">Auto-detection paused</div>
       <p className={`mt-1 text-xs leading-4 ${subtle}`}>{message}</p>
       {authenticationRequired ? (

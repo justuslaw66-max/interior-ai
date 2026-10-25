@@ -19,12 +19,12 @@ export function FloorPlanSourceCompareToggle({ layer, onLayer, wipe, onWipe, dis
   layer: SourceReviewLayer; onLayer: (value: string) => void; wipe: number; onWipe: (value: number) => void; disabled?: boolean;
 }) {
   return (
-    <div className="mb-2 rounded border border-neutral-200 bg-white p-2 text-xs text-neutral-700" data-testid="floor-plan-source-compare">
+    <div className="mb-2 rounded border border-separator bg-surface-floating p-2 text-xs text-label-secondary" data-testid="floor-plan-source-compare">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-semibold">Before / after</span>
         <SegmentedControl label="Original or traced drawing" size="compact" value={layer} options={VIEWS} disabled={disabled}
           onChange={onLayer} />
-        <span className="text-neutral-500">Anything visible on the original but missing from the trace was not picked up.</span>
+        <span className="text-label-secondary">Anything visible on the original but missing from the trace was not picked up.</span>
       </div>
       {layer === "compare" ? (
         <label className="mt-2 flex items-center gap-2">

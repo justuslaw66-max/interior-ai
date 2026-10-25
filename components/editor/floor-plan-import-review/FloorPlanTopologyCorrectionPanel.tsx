@@ -31,8 +31,8 @@ export default function FloorPlanTopologyCorrectionPanel({
   const [vertexZ, setVertexZ] = useState(0);
   if (!floor) return null;
 
-  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
-  const subtle = "text-neutral-600";
+  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs";
+  const subtle = "text-label-secondary";
   const selectVertex = (id: string) => {
     setSelectedVertexId(id);
     const item = floor.vertices.find((entry) => entry.id === id);

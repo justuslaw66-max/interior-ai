@@ -93,7 +93,7 @@ export default function FloorPlanSourceReviewCanvas({
 
   const presentation = sourceReviewPresentation(sourceReview.layer, sourceOpacity, overlayOpacity);
   const visibleOverlay = sourceReviewOverlay(sourceReview.layer, overlay);
-  if (!page) return <p className="mt-2 text-xs text-neutral-600">
+  if (!page) return <p className="mt-2 text-xs text-label-secondary">
     A preview of your floor plan is not available. Use guided tracing.
   </p>;
 
@@ -167,14 +167,14 @@ export default function FloorPlanSourceReviewCanvas({
       <div className="mb-2 flex items-center justify-between gap-2">
         <div>
           <div className="text-sm font-semibold">{labels.title}</div>
-          <div className="text-xs text-neutral-600">
+          <div className="text-xs text-label-secondary">
             {labels.description}
           </div>
         </div>
         <FloorPlanReviewZoomControls zoom={zoom} setZoom={setZoom} pages={pages} pageNumber={page.pageNumber}
           onPageNumberChange={(value) => { setHoverSnap(null); onPageNumberChange(value); }} />
       </div>
-      <figure className="overflow-hidden rounded-md border border-neutral-200 bg-white">
+      <figure className="overflow-hidden rounded-md border border-separator bg-white">
         <div className="relative">
           <div ref={scrollRef} data-testid="source-review-scroll" className="max-h-[72vh] overflow-auto bg-neutral-100">
             <div
@@ -405,14 +405,14 @@ export default function FloorPlanSourceReviewCanvas({
             </div>
           ) : null}
         </div>
-        <figcaption className="border-t border-neutral-200 px-2 py-1.5 text-xs text-neutral-600">
+        <figcaption className="border-t border-separator px-2 py-1.5 text-xs text-label-secondary">
           {labels.caption}
         </figcaption>
       </figure>
-      <details className="mt-2 text-xs text-neutral-600">
+      <details className="mt-2 text-xs text-label-secondary">
         <summary className="cursor-pointer">Display options</summary>
         <div className="mt-2 grid grid-cols-2 gap-2">
-          <label className="col-span-2 flex items-center gap-2 rounded border bg-white p-2">
+          <label className="col-span-2 flex items-center gap-2 rounded border bg-field p-2">
             <input
               checked={snapEnabled}
               onChange={(event) => setSnapEnabled(event.target.checked)}

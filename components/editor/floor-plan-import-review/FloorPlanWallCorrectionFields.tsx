@@ -51,7 +51,7 @@ export default function FloorPlanWallCorrectionFields({
   };
 
   return (
-    <div data-review-controls="wall" className="grid gap-2 border-t border-neutral-200 pt-2">
+    <div data-review-controls="wall" className="grid gap-2 border-t border-separator pt-2">
       <label className={`text-xs ${subtleClassName}`}>
         Wall thickness and type
         <select
