@@ -359,7 +359,7 @@ export default function DesignControlsPlanPanel({
     });
   };
 
-  const titleClass = "text-sm font-semibold text-neutral-800";
+  const titleClass = "text-sm font-semibold text-control-label";
   const isPlanSectionCollapsed = (section: CollapsiblePlanSection) => collapsedPlanSections[section];
   const setPlanSectionCollapsed = (section: CollapsiblePlanSection, collapsed: boolean) => {
     setCollapsedPlanSections((current) => ({ ...current, [section]: collapsed }));
@@ -658,14 +658,14 @@ export default function DesignControlsPlanPanel({
     onPlanCompletionHandled,
     planCompletionSignal,
   ]);
-  const progressCardClass = "mt-2 rounded-lg border border-neutral-200 bg-white p-2.5";
-  const progressRowClass = "rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2";
-  const compactStatusClass = "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-2";
-  const progressLabelClass = "text-xs font-semibold text-neutral-900";
-  const progressMetaClass = "mt-0.5 text-xs text-neutral-500";
-  const progressReadyClass = "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700";
-  const progressTodoClass = "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
-  const progressViewClass = "rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700";
+  const progressCardClass = "mt-2 rounded-lg border border-box-border bg-field p-2.5";
+  const progressRowClass = "rounded-lg border border-box-border bg-tile px-3 py-2";
+  const compactStatusClass = "rounded-lg border border-box-border bg-tile px-2.5 py-2";
+  const progressLabelClass = "text-xs font-semibold text-label";
+  const progressMetaClass = "mt-0.5 text-xs text-label-secondary";
+  const progressReadyClass = "rounded-full bg-success-tint px-2 py-1 text-xs font-semibold text-on-success-tint";
+  const progressTodoClass = "rounded-full bg-warning-tint px-2 py-1 text-xs font-semibold text-on-warning-tint";
+  const progressViewClass = "rounded-full bg-accent-tint px-2 py-1 text-xs font-semibold text-on-accent-tint";
   const renderCollapsibleHeader = ({
     section,
     title,
@@ -691,7 +691,7 @@ export default function DesignControlsPlanPanel({
       />
     );
   };
-  const planToolGridClass = "grid grid-cols-3 gap-2 border-t border-neutral-100 bg-white p-2";
+  const planToolGridClass = "grid grid-cols-3 gap-2 border-t border-separator-subtle bg-surface-secondary p-2";
   const renderPlanToolSection = ({
     section,
     title,
@@ -1122,12 +1122,12 @@ export default function DesignControlsPlanPanel({
     label: string,
     options: string[]
   ) => (
-    <label className="block text-xs font-semibold text-neutral-700">
+    <label className="block text-xs font-semibold text-control-label-idle">
       {label}
       <select
         data-testid={`surfaces-filter-${key}`}
         value={surfaceFilters[key] ?? ""}
-        className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs text-neutral-800"
+        className="mt-1 h-9 w-full rounded-lg border border-box-border bg-field px-2 text-xs text-control-label"
         onChange={(event) => setSurfaceFilter(key, event.currentTarget.value)}
       >
       <option value="">All</option>
@@ -1139,11 +1139,11 @@ export default function DesignControlsPlanPanel({
     </select>
   </label>
   );
-  const floorMaterialMetaClass = "block text-xs text-neutral-500";
-  const floorFieldLabelClass = "text-xs font-semibold text-neutral-700";
-  const floorInputClass = "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-right text-sm text-neutral-900";
-  const consumerFieldLabelClass = "flex flex-col gap-1 text-xs font-semibold text-neutral-700";
-  const consumerInputClass = "min-h-10 rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-sm text-neutral-900 disabled:opacity-50";
+  const floorMaterialMetaClass = "block text-xs text-label-secondary";
+  const floorFieldLabelClass = "text-xs font-semibold text-control-label-idle";
+  const floorInputClass = "h-9 w-full rounded-lg border border-box-border bg-field px-2 text-right text-sm text-label";
+  const consumerFieldLabelClass = "flex flex-col gap-1 text-xs font-semibold text-control-label-idle";
+  const consumerInputClass = "min-h-10 rounded-lg border border-box-border bg-field px-2.5 py-2 text-sm text-label disabled:opacity-50";
   const activeFloorLabel =
     floorOptions.find((option) => option.level === activeFloorLevel)?.label ?? "Level 1";
   const activeRoomArea = getActiveSurfaceRoomFloorAreaSqm(surfaceRooms, activeRoomId);
@@ -1157,13 +1157,13 @@ export default function DesignControlsPlanPanel({
       : "-";
   const activeRoomClearWidth = Math.max(0, roomWidth - (activeRoomWallThicknessMm / 1000) * 2);
   const activeRoomClearDepth = Math.max(0, roomDepth - (activeRoomWallThicknessMm / 1000) * 2);
-  const measurementTileClass = "rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2";
-  const measurementValueClass = "text-sm font-semibold text-neutral-950";
-  const measurementLabelClass = "mt-0.5 text-xs font-semibold uppercase tracking-wide text-neutral-500";
+  const measurementTileClass = "rounded-lg border border-box-border bg-tile px-3 py-2";
+  const measurementValueClass = "text-sm font-semibold text-label";
+  const measurementLabelClass = "mt-0.5 text-xs font-semibold uppercase tracking-wide text-label-secondary";
   const measurementCheckClass = (ready: boolean) => {
     return ready
-      ? "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700"
-      : "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700";
+      ? "rounded-full bg-success-tint px-2 py-1 text-xs font-semibold text-on-success-tint"
+      : "rounded-full bg-warning-tint px-2 py-1 text-xs font-semibold text-on-warning-tint";
   };
   const measurementChecks = [
     {
@@ -1192,8 +1192,8 @@ export default function DesignControlsPlanPanel({
     return [
       "rounded-lg border p-2 text-left transition disabled:cursor-not-allowed disabled:opacity-50",
       isSelected
-        ? "border-emerald-300 bg-emerald-50"
-        : "border-neutral-200 bg-white hover:bg-neutral-50",
+        ? "border-success-tint-border bg-success-tint"
+        : "border-box-border bg-field hover:bg-control-secondary-hover",
     ].join(" ");
   };
   const renderSurfaceMaterialBrowser = () => (
@@ -1202,7 +1202,7 @@ export default function DesignControlsPlanPanel({
       data-testid="room-surfaces-floor-panel" data-floor-material-id={activeRoomFloorMaterialId}
       data-surface-target={activeSurfaceTarget} data-surface-material-id={activeTargetMaterialId ?? ""}
       open={roomFinishPanelOpen} status={surfaceCatalog.status} onRetry={surfaceCatalog.retry}
-      className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2"
+      className="mt-2 rounded-lg border border-box-border bg-tile p-2"
     >
       {!hasRooms ? (
         <EmptyFloorPlanSurfacesActions isDesigner={isDesigner}
@@ -1255,7 +1255,7 @@ export default function DesignControlsPlanPanel({
                 value={flooringSearch}
                 onChange={(event) => setFlooringSearch(event.currentTarget.value)}
                 placeholder={activeSurfaceTarget === "floor" ? "Search flooring" : "Search wall finishes"}
-                className="h-9 w-full rounded-lg border border-neutral-200 bg-white px-2.5 text-sm text-neutral-900 placeholder:text-neutral-400"
+                className="h-9 w-full rounded-lg border border-box-border bg-field px-2.5 text-sm text-label placeholder:text-label-tertiary"
               />
             </label>
             <Button
@@ -1302,7 +1302,7 @@ export default function DesignControlsPlanPanel({
           </div>
 
           {surfaceFilterDrawerOpen ? (
-            <div data-testid="surfaces-filter-drawer" className="mt-2 grid gap-2 rounded-lg border border-neutral-200 bg-white p-2">
+            <div data-testid="surfaces-filter-drawer" className="mt-2 grid gap-2 rounded-lg border border-box-border bg-field p-2">
               {renderSurfaceFilterSelect("brand", "Brand", surfaceFilterOptions.brand)}
               {renderSurfaceFilterSelect("collection", "Collection", surfaceFilterOptions.collection)}
               {renderSurfaceFilterSelect("effect", "Effect", surfaceFilterOptions.effect)}
@@ -1354,27 +1354,27 @@ export default function DesignControlsPlanPanel({
                       onClick={() => applySurfaceMaterialToActiveRoom(materialId)}
                     >
                       <span
-                        className={surfaceViewMode === "grid" ? "block aspect-square w-full rounded-md border border-black/10" : "block h-12 w-12 rounded-md border border-black/10"}
+                        className={surfaceViewMode === "grid" ? "block aspect-square w-full rounded-md border border-swatch-edge" : "block h-12 w-12 rounded-md border border-swatch-edge"}
                         style={getSurfaceMaterialSwatchStyle(material)}
                       />
                       <span className={surfaceViewMode === "grid" ? "mt-2 block min-w-0" : "block min-w-0"}>
-                        <span className="block truncate text-xs text-neutral-500">{getSurfaceMaterialCollectionLabel(material)}</span>
-                        <span className="block truncate text-sm font-semibold text-neutral-900" title={material.surface_material.product_name}>
+                        <span className="block truncate text-xs text-label-secondary">{getSurfaceMaterialCollectionLabel(material)}</span>
+                        <span className="block truncate text-sm font-semibold text-label" title={material.surface_material.product_name}>
                           {getSurfaceMaterialModelName(material)}
                         </span>
                         <span className={floorMaterialMetaClass}>
                           {getSurfaceMaterialGroupMetaLabel(group)}
                         </span>
                         {selected ? (
-                          <span className="mt-1 inline-flex rounded-full bg-emerald-100 px-1.5 py-0.5 text-xs font-semibold text-emerald-800">
+                          <span className="mt-1 inline-flex rounded-full bg-success-tint px-1.5 py-0.5 text-xs font-semibold text-on-success-tint">
                             Active
                           </span>
                         ) : null}
                         <span className="mt-1 flex flex-wrap gap-1">
-                          <span className={publishStatus === "published" ? "rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs font-semibold text-emerald-700" : "rounded-full bg-amber-50 px-1.5 py-0.5 text-xs font-semibold text-amber-700"}>
+                          <span className={publishStatus === "published" ? "rounded-full bg-success-tint px-1.5 py-0.5 text-xs font-semibold text-on-success-tint" : "rounded-full bg-warning-tint px-1.5 py-0.5 text-xs font-semibold text-on-warning-tint"}>
                             {publishStatus === "published" ? "Published" : "Draft"}
                           </span>
-                          <span className={textureSource ? "rounded-full bg-blue-50 px-1.5 py-0.5 text-xs font-semibold text-blue-700" : "rounded-full bg-neutral-100 px-1.5 py-0.5 text-xs font-semibold text-neutral-600"}>
+                          <span className={textureSource ? "rounded-full bg-accent-tint px-1.5 py-0.5 text-xs font-semibold text-on-accent-tint" : "rounded-full bg-control-track px-1.5 py-0.5 text-xs font-semibold text-label-secondary"}>
                             {textureSource ? "Texture" : "Swatch only"}
                           </span>
                           {tileable ? (
@@ -1401,7 +1401,7 @@ export default function DesignControlsPlanPanel({
                 );
               })
             ) : (
-              <div className="rounded-lg border border-neutral-200 bg-white p-3 text-xs text-neutral-500">
+              <div className="rounded-lg border border-box-border bg-field p-3 text-xs text-label-secondary">
                 {isDesigner
                   ? activeSurfaceTarget === "floor"
                     ? "No flooring materials match the current filters."
@@ -1425,16 +1425,16 @@ export default function DesignControlsPlanPanel({
             </Button>
           ) : null}
 
-          <div data-testid="surface-product-detail" className="mt-3 rounded-lg border border-neutral-200 bg-white p-2">
+          <div data-testid="surface-product-detail" className="mt-3 rounded-lg border border-box-border bg-field p-2">
             <div className="flex items-start gap-2">
               {selectedSurfaceMaterial ? (
                 <span
-                  className="h-16 w-16 shrink-0 rounded-md border border-black/10"
+                  className="h-16 w-16 shrink-0 rounded-md border border-swatch-edge"
                   style={getSurfaceMaterialSwatchStyle(selectedSurfaceMaterial)}
                 />
               ) : (
                 <span
-                  className="h-16 w-16 shrink-0 rounded-md border border-black/10"
+                  className="h-16 w-16 shrink-0 rounded-md border border-swatch-edge"
                   style={
                     activeSurfaceTarget === "floor" || activeTargetMaterialId
                       ? getFloorMaterialSwatchStyle(activeTargetStarterMaterial)
@@ -1443,7 +1443,7 @@ export default function DesignControlsPlanPanel({
                 />
               )}
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold text-neutral-950" title={selectedSurfaceMaterial?.surface_material.product_name ?? activeSurfaceDisplayName}>
+                <div className="truncate text-sm font-semibold text-label" title={selectedSurfaceMaterial?.surface_material.product_name ?? activeSurfaceDisplayName}>
                   {selectedSurfaceMaterial
                     ? getSurfaceMaterialProductDisplayName(selectedSurfaceMaterial)
                     : activeSurfaceDisplayName}
@@ -1459,11 +1459,11 @@ export default function DesignControlsPlanPanel({
                 </div>
                 {isDesigner && selectedSurfaceMaterial ? (
                   <div className="mt-1 flex flex-wrap gap-1">
-                    <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
+                    <span className="rounded-full bg-warning-tint px-1.5 py-0.5 text-xs font-semibold text-on-warning-tint">
                       {selectedSurfaceMaterial.import_governance.publish_status.replace(/_/g, " ")}
                     </span>
                     {selectedSurfaceMaterial.import_governance.publish_blockers.length > 0 ? (
-                      <span className="rounded-full bg-orange-50 px-1.5 py-0.5 text-xs font-semibold text-orange-700">
+                      <span className="rounded-full bg-warning-tint px-1.5 py-0.5 text-xs font-semibold text-on-warning-tint">
                         {selectedSurfaceMaterial.import_governance.publish_blockers.length} blockers
                       </span>
                     ) : null}
@@ -1519,10 +1519,10 @@ export default function DesignControlsPlanPanel({
               ) ?? activeSurfaceSummaryRows.find((entry) => entry.room.id === room.id && entry.target === "floor");
             const active = room.id === activeRoomId;
             return (
-              <div key={room.id} className="rounded-lg border border-neutral-200 bg-white p-2">
+              <div key={room.id} className="rounded-lg border border-box-border bg-field p-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="truncate text-xs font-semibold text-neutral-900">
+                    <div className="truncate text-xs font-semibold text-label">
                       {room.name}
                     </div>
                     <div className={progressMetaClass}>
@@ -1598,11 +1598,11 @@ export default function DesignControlsPlanPanel({
       {surfaceSummaryOpen ? (
         <div
           data-testid="surface-summary-panel"
-          className="mt-3 rounded-lg border border-neutral-200 bg-white p-2"
+          className="mt-3 rounded-lg border border-box-border bg-field p-2"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-xs font-semibold text-neutral-900">
+              <div className="text-xs font-semibold text-label">
                 Surface summary
               </div>
               <div className={progressMetaClass}>{activeSurfaceSummaryRows.length} surfaces</div>
@@ -1613,10 +1613,10 @@ export default function DesignControlsPlanPanel({
           </div>
           <div className="mt-2 grid gap-2">
             {activeSurfaceSummaryRows.map((row) => (
-              <div key={row.id} data-testid={`surface-summary-row-${row.id}`} className="rounded-lg border border-neutral-200 bg-neutral-50 p-2">
+              <div key={row.id} data-testid={`surface-summary-row-${row.id}`} className="rounded-lg border border-box-border bg-tile p-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="truncate text-xs font-semibold text-neutral-950">
+                    <div className="truncate text-xs font-semibold text-label">
                       {row.room.name} · {row.surfaceLabel}
                     </div>
                     <div className={progressMetaClass}>
@@ -1631,7 +1631,7 @@ export default function DesignControlsPlanPanel({
                   </span>
                 </div>
                 {row.sampleUrl ? (
-                  <a href={row.sampleUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-semibold text-blue-700">
+                  <a href={row.sampleUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-semibold text-link">
                     Request sample / quote
                   </a>
                 ) : null}
@@ -1708,12 +1708,12 @@ export default function DesignControlsPlanPanel({
                   <details
                     key={issue.id}
                     data-testid={`plan-quality-issue-${index}`}
-                    className="rounded-md bg-neutral-50 px-2.5 py-1.5 text-xs text-neutral-600"
+                    className="rounded-md bg-tile px-2.5 py-1.5 text-xs text-label-secondary"
                   >
                     <summary className="cursor-pointer font-semibold">
                       {issue.suggestedFix}
                     </summary>
-                    <div className="mt-1 text-neutral-500">
+                    <div className="mt-1 text-label-secondary">
                       {issue.detail}
                     </div>
                     <Button
@@ -1760,9 +1760,9 @@ export default function DesignControlsPlanPanel({
       {showRoomSetupWizard && (
         <div
           data-testid="plan-tool-palette"
-          className="overflow-hidden rounded-sm border border-neutral-200 bg-white"
+          className="overflow-hidden rounded-sm border border-box-border bg-surface-secondary"
         >
-          <div className="border-b border-neutral-100 px-3 py-3 text-neutral-900">
+          <div className="border-b border-separator-subtle px-3 py-3 text-label">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-base font-semibold">Room setup</div>
@@ -1943,11 +1943,11 @@ export default function DesignControlsPlanPanel({
         </div>
       )}
       {showStartPanel && (
-        <div className="mb-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2.5">
+        <div className="mb-2 rounded-lg border border-box-border bg-tile p-2.5">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className={titleClass}>{hasRooms ? "Add to plan" : "Start your room"}</div>
-              <div className="mt-1 text-xs text-neutral-500">
+              <div className="mt-1 text-xs text-label-secondary">
                 {hasRooms
                   ? "Add another room, upload a floor plan, or draw by hand."
                   : "Choose a room and size. You can adjust it anytime."}
@@ -1967,7 +1967,7 @@ export default function DesignControlsPlanPanel({
           {!hasRooms && (
             <div
               data-testid="guided-room-start"
-              className="mt-3 rounded-lg border border-neutral-200 bg-white p-3"
+              className="mt-3 rounded-lg border border-box-border bg-field p-3"
             >
               <div className="grid gap-2">
                 <label className={consumerFieldLabelClass}>
@@ -2047,7 +2047,7 @@ export default function DesignControlsPlanPanel({
           )}
 
           <details className="mt-3" open={planStartMode !== "start"}>
-            <summary className="cursor-pointer text-xs font-semibold text-neutral-600">
+            <summary className="cursor-pointer text-xs font-semibold text-label-secondary">
               Other ways to start
             </summary>
             <div className="mt-2 grid gap-2">
@@ -2082,7 +2082,7 @@ export default function DesignControlsPlanPanel({
           </details>
 
           {planStartMode === "upload" && !floorPlanUnderlay && (
-            <div className="mt-3 rounded-lg bg-white p-3 text-xs text-neutral-600">
+            <div className="mt-3 rounded-lg bg-field p-3 text-xs text-label-secondary">
               Upload your floor plan, then trace rooms, doors, and windows over it.
             </div>
           )}
@@ -2109,27 +2109,27 @@ export default function DesignControlsPlanPanel({
                   key={step.label}
                   className={
                     step.active
-                      ? "rounded-lg border border-neutral-900 bg-white px-2 py-2"
-                      : "rounded-lg border border-neutral-200 bg-neutral-50 px-2 py-2"
+                      ? "rounded-lg border border-control-primary bg-field px-2 py-2"
+                      : "rounded-lg border border-box-border bg-tile px-2 py-2"
                   }
                 >
                   <div className="flex items-center gap-1.5">
                     <span
                       className={
                         step.ready
-                          ? "flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700"
+                          ? "flex h-4 w-4 items-center justify-center rounded-full bg-success-tint text-xs font-bold text-on-success-tint"
                           : step.active
-                            ? "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white"
-                            : "flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-xs font-bold text-neutral-600"
+                            ? "flex h-4 w-4 items-center justify-center rounded-full bg-control-primary text-xs font-bold text-control-on-primary"
+                            : "flex h-4 w-4 items-center justify-center rounded-full bg-control-badge text-xs font-bold text-label-secondary"
                       }
                     >
                       {index + 1}
                     </span>
-                    <span className="truncate text-xs font-semibold text-neutral-900">
+                    <span className="truncate text-xs font-semibold text-label">
                       {step.label}
                     </span>
                   </div>
-                  <div className="mt-1 truncate text-xs text-neutral-500">
+                  <div className="mt-1 truncate text-xs text-label-secondary">
                     {step.meta}
                   </div>
                 </div>
@@ -2175,7 +2175,7 @@ export default function DesignControlsPlanPanel({
             </div>
           </div>
           <details className="mt-2">
-            <summary className="cursor-pointer text-xs font-semibold text-neutral-600">
+            <summary className="cursor-pointer text-xs font-semibold text-label-secondary">
               Measurements
             </summary>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -2206,9 +2206,9 @@ export default function DesignControlsPlanPanel({
               {measurementChecks.map((check) => (
                 <div
                   key={check.label}
-                  className="flex items-center justify-between gap-2 rounded-lg bg-white px-2.5 py-2"
+                  className="flex items-center justify-between gap-2 rounded-lg bg-field px-2.5 py-2"
                 >
-                  <span className="text-xs font-semibold text-neutral-600">
+                  <span className="text-xs font-semibold text-label-secondary">
                     {check.label}
                   </span>
                   <span className={measurementCheckClass(check.ready)}>{check.value}</span>
@@ -2250,7 +2250,7 @@ export default function DesignControlsPlanPanel({
               )}
               <div
                 data-testid="mobile-selected-room-dimensions"
-                className="mt-2 grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2 md:hidden"
+                className="mt-2 grid grid-cols-2 gap-2 border-t border-separator pt-2 md:hidden"
               >
                 <MeasurementField
                   label="Width"
@@ -2378,12 +2378,12 @@ export default function DesignControlsPlanPanel({
                 {activeFloorLabel} · {activeFloorRoomCount} room{activeFloorRoomCount === 1 ? "" : "s"}
               </div>
             </div>
-            <span className="rounded-full bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-600">
+            <span className="rounded-full bg-control-track px-2 py-1 text-xs font-semibold text-label-secondary">
               {floorOptions.length} level{floorOptions.length === 1 ? "" : "s"}
             </span>
           </div>
 
-          <div className="mt-3 grid gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-2">
+          <div className="mt-3 grid gap-1.5 rounded-lg border border-box-border bg-tile p-2">
             {floorOptions.map((option) => {
               const isActive = option.level === activeFloorLevel;
               return (
@@ -2391,7 +2391,7 @@ export default function DesignControlsPlanPanel({
                   key={option.level}
                   className={
                     `flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-xs ${
-                          isActive ? "bg-blue-50 text-blue-800" : "text-neutral-600"
+                          isActive ? "bg-accent-tint text-on-accent-tint" : "text-label-secondary"
                         }`
                   }
                 >
@@ -2404,14 +2404,14 @@ export default function DesignControlsPlanPanel({
             })}
           </div>
 
-          <div className="mt-2 flex items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs">
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-box-border bg-tile px-3 py-2 text-xs">
             <span className={floorFieldLabelClass}>Stacked 3D floors</span>
-            <span className={stackedFloorView ? "font-semibold text-blue-600" : progressMetaClass}>
+            <span className={stackedFloorView ? "font-semibold text-on-accent-tint" : progressMetaClass}>
               {stackedFloorView ? "On" : "Off"}
             </span>
           </div>
 
-          <div className="mt-3 border-t border-neutral-200/60 pt-3">
+          <div className="mt-3 border-t border-separator/60 pt-3">
             <div className="grid gap-2">
               <div className="grid grid-cols-[1fr_7rem] items-center gap-3">
                 <span className={floorFieldLabelClass}>Interior area</span>
@@ -2494,7 +2494,7 @@ export default function DesignControlsPlanPanel({
             </div>
           </div>
 
-          <div className="mt-3 border-t border-neutral-200/60 pt-3">
+          <div className="mt-3 border-t border-separator/60 pt-3">
             <div className={titleClass}>Opacity</div>
             <label className="mt-3 grid grid-cols-[3.5rem_1fr_3.75rem] items-center gap-2">
               <span className={floorFieldLabelClass}>Wall</span>
@@ -2546,7 +2546,7 @@ export default function DesignControlsPlanPanel({
             </label>
           </div>
 
-          <div className="mt-3 border-t border-neutral-200/60 pt-3">
+          <div className="mt-3 border-t border-separator/60 pt-3">
             <div className={titleClass}>Ceiling</div>
             <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
               <label className="flex items-center gap-2">
@@ -2565,7 +2565,7 @@ export default function DesignControlsPlanPanel({
                   type="color"
                   value={activeRoomCeilingColor}
                   disabled={!canEdit}
-                  className="h-8 w-10 rounded border border-neutral-200 bg-transparent p-0 disabled:opacity-50"
+                  className="h-8 w-10 rounded border border-box-border bg-transparent p-0 disabled:opacity-50"
                   onChange={(event) => onActiveRoomCeilingColorChange(event.currentTarget.value)}
                 />
               </label>
@@ -2594,13 +2594,13 @@ export default function DesignControlsPlanPanel({
             </div>
           </div>
           {renderSurfaceMaterialBrowser()}
-            <div className="mt-3 rounded-xl border border-neutral-200 bg-white p-3">
+            <div className="mt-3 rounded-xl border border-box-border bg-field p-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold text-neutral-900">
+                  <div className="text-xs font-semibold text-label">
                     Pattern direction
                   </div>
-                  <div className="mt-0.5 text-xs text-neutral-500">
+                  <div className="mt-0.5 text-xs text-label-secondary">
                     {activeFloorRotationDeg} deg
                   </div>
                 </div>
@@ -2624,10 +2624,10 @@ export default function DesignControlsPlanPanel({
               {isDesigner && (
                 <label className="mt-3 block">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-xs font-semibold text-neutral-900">
+                    <span className="text-xs font-semibold text-label">
                       Pattern size
                     </span>
-                    <span className="text-xs text-neutral-500">
+                    <span className="text-xs text-label-secondary">
                       {activeFloorScale.toFixed(1)}x
                     </span>
                   </div>
@@ -2653,19 +2653,19 @@ export default function DesignControlsPlanPanel({
       {floorPlanTraceOpeningMode && (
         <div
           data-testid="floor-plan-opening-active-card"
-          className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3"
+          className="mt-3 rounded-xl border border-success-tint-border bg-success-tint p-3"
         >
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold text-emerald-900">
+              <div className="text-sm font-semibold text-on-success-tint">
                 {floorPlanTraceOpeningKind === "door" ? "Door tool active" : "Window tool active"}
               </div>
-              <div className="mt-1 text-xs text-emerald-800">
+              <div className="mt-1 text-xs text-on-success-tint">
                 {floorPlanUnderlay
                   ? "Pick two points along the same wall. Green means it fits."
                   : "Move near a wall, then click when the preview turns green."}
               </div>
-              <div className="mt-1 text-xs font-semibold text-emerald-700">
+              <div className="mt-1 text-xs font-semibold text-on-success-tint">
                 Esc {floorPlanTraceOpeningPointCount > 0 ? "clears points" : "exits tool"}
               </div>
             </div>
@@ -2684,7 +2684,7 @@ export default function DesignControlsPlanPanel({
               onChange={(event) =>
                 onFloorPlanTraceOpeningKindChange(event.target.value as RoomOpening2D["kind"])
               }
-              className="min-w-28 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-sm text-neutral-900"
+              className="min-w-28 rounded-lg border border-success-tint-border bg-field px-2 py-2 text-sm text-label"
             >
               <option value="door">Door</option>
               <option value="window">Window</option>
@@ -2780,7 +2780,7 @@ export default function DesignControlsPlanPanel({
             event.preventDefault();
             closePlanStartWorkflow();
           }}
-          className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
+          className="mt-3 rounded-xl border border-box-border bg-tile p-3"
         >
           <h2
             ref={templatePickerHeadingRef}
@@ -2799,15 +2799,15 @@ export default function DesignControlsPlanPanel({
         </div>
       )}
       {isDesigner && (
-        <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+        <div className="mt-3 rounded-xl border border-box-border bg-tile p-3">
           <div className={titleClass}>Room setup</div>
           <div className="mt-2 grid grid-cols-2 gap-2">
-            <label className="flex flex-col gap-1 text-xs font-medium text-neutral-600">
+            <label className="flex flex-col gap-1 text-xs font-medium text-label-secondary">
               Type
               <select
                 value={newRoomType}
                 onChange={(event) => onNewRoomTypeChange(event.target.value as RoomType)}
-                className="rounded-lg border border-neutral-200 bg-white px-2 py-2 text-xs text-neutral-900"
+                className="rounded-lg border border-box-border bg-field px-2 py-2 text-xs text-label"
                 disabled={!canEdit}
                 title="Choose room type for next room"
               >
@@ -2818,12 +2818,12 @@ export default function DesignControlsPlanPanel({
                 ))}
               </select>
             </label>
-            <label className="flex flex-col gap-1 text-xs font-medium text-neutral-600">
+            <label className="flex flex-col gap-1 text-xs font-medium text-label-secondary">
               Shape
               <select
                 value={newRoomShape}
                 onChange={(event) => onNewRoomShapeChange(event.target.value as RoomPlanShape)}
-                className="rounded-lg border border-neutral-200 bg-white px-2 py-2 text-xs text-neutral-900"
+                className="rounded-lg border border-box-border bg-field px-2 py-2 text-xs text-label"
                 disabled={!canEdit}
                 title="Choose shape for next room"
               >
@@ -2836,12 +2836,12 @@ export default function DesignControlsPlanPanel({
             </label>
           </div>
 
-          <label className="mt-2 flex flex-col gap-1 text-xs font-medium text-neutral-600">
+          <label className="mt-2 flex flex-col gap-1 text-xs font-medium text-label-secondary">
             Size preset
             <select
               value={activeRoomPresetId}
               onChange={(event) => onRoomPresetChange(event.target.value as RoomSizePresetId)}
-              className="rounded-lg border border-neutral-200 bg-white px-2 py-2 text-xs text-neutral-900"
+              className="rounded-lg border border-box-border bg-field px-2 py-2 text-xs text-label"
               disabled={!canEdit}
               title="Select a room-size preset"
             >

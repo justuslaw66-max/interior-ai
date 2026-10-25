@@ -24,12 +24,12 @@ function OpeningHeader({ opening, roomName }: {
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
-        <div className="text-xs font-semibold text-gray-900">{opening.kind === "door" ? "Door" : "Window"}</div>
-        <div className="mt-0.5 text-xs text-gray-500">
+        <div className="text-xs font-semibold text-label">{opening.kind === "door" ? "Door" : "Window"}</div>
+        <div className="mt-0.5 text-xs text-label-secondary">
           On the {opening.canonicalHost ? "selected" : opening.wall} wall
         </div>
       </div>
-      <div className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+      <div className="rounded-full bg-control-track px-2 py-1 text-xs font-medium text-label-secondary">
         {roomName}
       </div>
     </div>
@@ -43,7 +43,7 @@ function OpeningBasics({ opening, wallSpanMeters, unit, proMode, onChange }: {
   proMode: boolean;
   onChange: PlanOpeningInspectorProps["onChange"];
 }) {
-  const labelClass = "text-xs font-medium text-gray-600";
+  const labelClass = "text-xs font-medium text-label-secondary";
   return (
     <div className="grid grid-cols-2 gap-2">
       <OpeningKindControl
@@ -52,7 +52,7 @@ function OpeningBasics({ opening, wallSpanMeters, unit, proMode, onChange }: {
         onChange={(patch) => onChange(opening.id, patch)}
       />
       <div className={labelClass}>Wall span
-        <div className="mt-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-2 text-xs text-gray-900">
+        <div className="mt-1 rounded-md border border-box-border bg-tile px-2 py-2 text-xs text-label">
           {formatCabinetMeasurement(wallSpanMeters * 1000, unit)}
         </div>
       </div>
@@ -75,7 +75,7 @@ export default function PlanOpeningInspector({
   return (
     <div
       data-testid="plan-opening-inspector"
-      className="space-y-3 rounded-lg border border-gray-200 bg-white p-3"
+      className="space-y-3 rounded-lg border border-box-border bg-field p-3"
     >
       <OpeningHeader opening={opening} roomName={roomName} />
       <OpeningBasics opening={opening} wallSpanMeters={wallSpanMeters} unit={measurementUnit} proMode={proMode} onChange={onChange} />

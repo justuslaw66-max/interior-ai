@@ -37,18 +37,18 @@ function PlacedItemRow({
         data-testid={`placed-item-select-${item.instanceId}`}
         disabled={!canEdit}
         onClick={() => onSelect(item.instanceId)}
-        className={`${ROW_CLASS} ${selected ? "border-sky-400 bg-sky-50" : "border-neutral-200 bg-white hover:bg-neutral-50"}`}
+        className={`${ROW_CLASS} ${selected ? "border-sky-400 bg-accent-tint" : "border-box-border bg-field hover:bg-control-secondary-hover"}`}
       >
-        <span className="h-9 w-9 shrink-0 overflow-hidden rounded-md bg-neutral-50">
+        <span className="h-9 w-9 shrink-0 overflow-hidden rounded-md bg-tile">
           {item.imageUrl ? (
             <LazyImage src={item.imageUrl} fallbackSrc={item.fallbackImageUrl ?? undefined} alt="" className="h-full w-full" imageClassName="object-contain object-center" />
           ) : null}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13px] font-semibold text-neutral-900">{item.title}</span>
-          {detail ? <span className="block truncate text-xs text-neutral-600">{detail}</span> : null}
+          <span className="block truncate text-[13px] font-semibold text-label">{item.title}</span>
+          {detail ? <span className="block truncate text-xs text-label-secondary">{detail}</span> : null}
         </span>
-        <span className="shrink-0 text-xs font-semibold text-neutral-900">{item.priceLabel}</span>
+        <span className="shrink-0 text-xs font-semibold text-label">{item.priceLabel}</span>
       </button>
     </div>
   );
@@ -66,10 +66,10 @@ export function FurnishInThisRoom({ roomName, items, selectedId, canEdit, onSele
     <section
       data-testid="furnish-in-this-room"
       aria-labelledby={headingId}
-      className="rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm"
+      className="rounded-2xl border border-box-border bg-surface-secondary p-3 shadow-sm"
     >
-      <h3 id={headingId} className="flex items-baseline gap-1.5 text-sm font-semibold text-neutral-900">
-        In this room <span className="text-xs font-normal text-neutral-600">{items.length}</span>
+      <h3 id={headingId} className="flex items-baseline gap-1.5 text-sm font-semibold text-label">
+        In this room <span className="text-xs font-normal text-label-secondary">{items.length}</span>
       </h3>
       <p id={hintId} className="sr-only">Tab to an item, then press Enter or Space to select.</p>
       <div data-testid="placed-item-selector" className="mt-2">

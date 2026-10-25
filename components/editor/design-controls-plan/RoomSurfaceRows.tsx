@@ -45,7 +45,7 @@ export function RoomSurfaceRows({ rows, openTarget, disabled, hidden = false, on
 }) {
   if (hidden) return null;
   return (
-    <ul data-testid="room-surface-rows" aria-label="Surfaces" className="mt-3 divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+    <ul data-testid="room-surface-rows" aria-label="Surfaces" className="mt-3 divide-y divide-separator rounded-lg border border-box-border bg-field">
       {rows.map((row) => (
         <li key={row.target}>
           <button
@@ -53,12 +53,12 @@ export function RoomSurfaceRows({ rows, openTarget, disabled, hidden = false, on
             data-testid={`room-surface-row-${row.target}`}
             aria-expanded={openTarget === row.target}
             disabled={disabled}
-            className="flex min-h-11 w-full items-center gap-3 px-3 text-left text-sm hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="flex min-h-11 w-full items-center gap-3 px-3 text-left text-sm hover:bg-control-secondary-hover disabled:cursor-not-allowed disabled:opacity-60"
             onClick={() => onOpen(row.target)}
           >
-            <span className="w-14 shrink-0 font-semibold text-neutral-900">{row.label}</span>
-            <span className="min-w-0 flex-1 truncate text-neutral-700">{row.value}</span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-neutral-500" aria-hidden="true" />
+            <span className="w-14 shrink-0 font-semibold text-label">{row.label}</span>
+            <span className="min-w-0 flex-1 truncate text-control-label-idle">{row.value}</span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-label-secondary" aria-hidden="true" />
           </button>
         </li>
       ))}

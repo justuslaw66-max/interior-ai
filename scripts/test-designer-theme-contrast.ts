@@ -117,6 +117,23 @@ const LIGHT_ROLE_TOKENS = {
   "accent-tint-border": "var(--color-blue-200)",
   "on-accent-tint": "var(--color-blue-700)",
   "surface-tab-bar": "var(--color-neutral-100)",
+  "box-border": "var(--color-neutral-200)",
+  "separator-subtle": "var(--color-neutral-100)",
+  field: "var(--color-white)",
+  tile: "var(--color-neutral-50)",
+  "surface-band": "color-mix(in oklab, var(--color-neutral-50) 80%, transparent)",
+  "surface-floating-secondary": "var(--color-neutral-50)",
+  "swatch-edge": "rgba(0, 0, 0, 0.1)",
+  "label-tertiary": "var(--color-neutral-400)",
+  "success-tint": "var(--color-emerald-50)",
+  "success-tint-border": "var(--color-emerald-200)",
+  "on-success-tint": "var(--color-emerald-700)",
+  "warning-tint": "var(--color-amber-50)",
+  "warning-tint-border": "var(--color-amber-300)",
+  "on-warning-tint": "var(--color-amber-800)",
+  "danger-tint": "var(--color-red-50)",
+  "danger-tint-border": "var(--color-red-200)",
+  "on-danger-tint": "var(--color-red-700)",
   "control-primary": "var(--color-neutral-900)",
   "control-primary-hover": "var(--color-neutral-800)",
   "control-on-primary": "var(--color-white)",
@@ -140,8 +157,9 @@ for (const [name, value] of Object.entries(LIGHT_ROLE_TOKENS)) {
   assert.equal(lightTokens.get(name), value, `Light --${name} keeps the colour it drew with before.`);
 }
 // J's dark surfaces (13 Oct: black panels, #1C1C1E cards; 22 Oct: dialogs #1C1C1E with #2C2C2E
-// fields, Apple's 60% grey), the near-white primary (14 Oct), and the shell's toast and the phone's
-// steps (24 Oct: a #3A3A3C toast; a #1C1C1E bar with the current step a #2C2C2E card).
+// fields, Apple's 60% grey), the near-white primary (14 Oct), the shell's toast and the phone's
+// steps (24 Oct: a #3A3A3C toast; a #1C1C1E bar with the current step a #2C2C2E card), and the step
+// panel (24 Oct: cards with no outline, fields #2C2C2E, no band, the menu's room card #3A3A3C).
 const DARK_CHOICES = {
   surface: "#000000",
   "surface-secondary": "#1c1c1e",
@@ -152,6 +170,10 @@ const DARK_CHOICES = {
   "control-primary": "#f5f5f7",
   "surface-toast": "#3a3a3c",
   "surface-tab-bar": "#1c1c1e",
+  "box-border": "transparent",
+  field: "#2c2c2e",
+  "surface-band": "transparent",
+  "surface-floating-secondary": "#3a3a3c",
 } as const;
 for (const [name, value] of Object.entries(DARK_CHOICES)) {
   assert.equal(darkTokens.get(name), value, `Dark --${name} is the value J chose.`);
@@ -173,6 +195,11 @@ const TAILWIND_SRGB: Record<string, string> = {
   "blue-50": "#eff6ff",
   "blue-200": "#bedbff",
   "blue-700": "#1447e6",
+  "emerald-50": "#ecfdf5",
+  "emerald-700": "#007a55",
+  "amber-50": "#fffbeb",
+  "amber-800": "#973c00",
+  "red-50": "#fef2f2",
 };
 function parseColour(value: string): Rgba {
   const tailwind = value.match(/^var\(--color-([a-z]+(?:-\d+)?)\)$/)?.[1];
@@ -222,6 +249,15 @@ const TEXT_PAIRS: ReadonlyArray<readonly [text: string, fill: string | null, gro
   ["on-accent-tint", "control-secondary", ["surface"]],
   ["label-secondary", null, ["surface-tab-bar"]],
   ["control-label-idle", "control-badge", ["surface-secondary"]],
+  // The step panel: text in fields, boxes and tiles inside a card; the status colours on their tints
+  // over a card; and the More menu's room card inside the floating menu.
+  ["label", null, ["field", "tile", "surface-floating-secondary"]],
+  ["label-secondary", null, ["field", "tile", "surface-floating-secondary"]],
+  ["control-label", null, ["field", "tile"]],
+  ["on-success-tint", "success-tint", ["surface-secondary"]],
+  ["on-warning-tint", "warning-tint", ["surface-secondary"]],
+  ["on-danger-tint", "danger-tint", ["surface-secondary"]],
+  ["on-accent-tint", "accent-tint", ["surface-secondary"]],
 ];
 // The focus ring and the primary's black (or near-white) edge need 3:1 against what's around them.
 const EDGE_PAIRS: ReadonlyArray<readonly [edge: string, grounds: readonly string[]]> = [
