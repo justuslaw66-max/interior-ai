@@ -169,6 +169,61 @@ class FaithfulDrawing(unittest.TestCase):
         tiny = cv2.resize(soft, (360, 300), interpolation=cv2.INTER_AREA)
         self.assertEqual(over(faithful_trace.trace_gray(tiny)), [], "a picture under 0.4 MP is left as r7 traced it")
 
+    @staticmethod
+    def _name_over_stripes(gap=4, hangers=False):
+        img = np.full((600, 720), 255, np.uint8)
+        for y in range(100, 500, 6):
+            cv2.line(img, (60, y), (660, y), 150, 1)
+        x = 200
+        for ch in "BEDROOM":
+            (w, _), _ = cv2.getTextSize(ch, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
+            cv2.putText(img, ch, (x, 310), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 0, 2, cv2.LINE_AA)
+            x += w + gap
+        if hangers:
+            for k in range(8):                                  # a wardrobe's hangers: upright strokes 20 px tall
+                cv2.line(img, (420 + 7 * k, 200), (422 + 7 * k, 220), 60, 2, cv2.LINE_AA)
+        cv2.rectangle(img, (40, 80), (680, 520), 30, 6)
+        return img
+
+    @staticmethod
+    def _blocky(img):
+        # a low-resolution picture enlarged 1.44 x by repeating its pixels, as the app's PDF renderer (pdf.js) draws a
+        # 100 ppi JPEG plan on a page rendered at 144 dpi (111 Emerald Hill)
+        small = cv2.GaussianBlur(cv2.resize(img, None, fx=1 / 1.44, fy=1 / 1.44, interpolation=cv2.INTER_AREA), (0, 0), 0.8)
+        return cv2.resize(small, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+    def test_blocky_enlarged_lettering_copied_and_hangers_left(self):
+        # (r9) the name over stripes as the app renders such a plan: steep edges (r8's steepness reads it as crisp) but
+        # wide ones; each letter is still copied by its outline, and the row of hangers beside it is not a word
+        import faithful_trace
+        crisp = self._name_over_stripes(hangers=True)
+        blocky = self._blocky(crisp)
+        self.assertGreaterEqual(faithful_trace.edge_steepness(blocky), faithful_trace.OVER_SOFT)
+        self.assertGreaterEqual(faithful_trace.edge_width(blocky), faithful_trace.OVER_EDGE)
+        self.assertLess(faithful_trace.edge_width(crisp), faithful_trace.OVER_EDGE)
+        letters = [p for p in faithful_trace.trace_gray(blocky)["walls"] if p.get("over")]
+        self.assertEqual(len(letters), 7, "B E D R O O M, one outline each; no hanger")
+        for p in letters:
+            xs = [x for r in p["rings"] for x, _ in r]; ys = [y for r in p["rings"] for _, y in r]
+            self.assertTrue(195 <= min(xs) and max(xs) <= 330 and 295 <= min(ys) and max(ys) <= 315, "within the word")
+
+    def test_touching_soft_letters_read_apart_at_darker_levels(self):
+        # (r9) soft letters set close enough to touch at the dark level: a mark a short word long is read again at
+        # darker levels, and more of its letters are copied apart
+        import faithful_trace
+        blocky = self._blocky(self._name_over_stripes(gap=1))
+        over = lambda: len([p for p in faithful_trace.trace_gray(blocky)["walls"] if p.get("over")])
+        keep = faithful_trace.OVER_SPLIT
+        try:
+            faithful_trace.OVER_SPLIT = False
+            whole = over()
+            faithful_trace.OVER_SPLIT = True
+            split = over()
+        finally:
+            faithful_trace.OVER_SPLIT = keep
+        self.assertGreaterEqual(split, 5)
+        self.assertLess(whole, split)
+
 
 if __name__ == "__main__":
     unittest.main()

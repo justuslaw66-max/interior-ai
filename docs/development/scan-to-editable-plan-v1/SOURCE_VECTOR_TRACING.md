@@ -30,10 +30,10 @@ Without a drawing the trace is `source-strokes-v2`, unchanged. Both the upload's
 
 J, 22 Oct 2026: "get the app to produce these blurry lines as clean sharp vectors". With `FLOOR_PLAN_FAITHFUL_TRACE=1`
 on the process that runs imports, a clean page is drawn by the faithful trace (`services/floorplan-vectorizer/
-faithful_trace.py`, r8, run by `faithful_drawing.py` after stage 1 and the exporter): what is drawn, copied as clean
+faithful_trace.py`, r9, run by `faithful_drawing.py` after stage 1 and the exporter): what is drawn, copied as clean
 vectors - solid fills as polygons with straight edges, every line, arc and dot fitted at its own width and grey,
 lettering and small marks copied by their outline. Nothing is read as a room, a door or a wall. Its drawing replaces
-stage 1's in the evidence (`version: "faithful-trace-r8"`), with each item's grey as `tone` (0 black - 255 white) and
+stage 1's in the evidence (`version: "faithful-trace-r9"`), with each item's grey as `tone` (0 black - 255 white) and
 no `textBoxes`.
 
 r8 (25 Oct, J's choice "Tracer round r8") is r7 - the graders' list of round 4: narrow hollow rectangles, curves made
@@ -47,6 +47,21 @@ drawings measure 0.637 or more). Blind pairwise grade against r6 on 15 soft page
 ten Emerald Hill pages and both web plans it changes (36 of 36 choices); on three tiny web thumbnails (0.2-0.3 MP),
 where it broke wall pieces into fragments, r6 was preferred, hence the 0.4 MP floor. Notes:
 `claude/faithful-trace-round5-2026-10-25.md` in the project.
+
+r9 (26 Oct, after the test window on release #204: J, "try until we get it work seamless and produce clean vectors")
+makes r8 hold for a soft plan as the app renders a PDF page. pdf.js draws a picture enlarged past 1.33 x without
+smoothing, so 111 Emerald Hill's 100 ppi JPEG plans come out with their pixels repeated: steep edges (0.69), which r8's
+softness test read as crisp, so the live trace was r7's. r9 also calls a picture soft when the median width of its ink
+edges (10 to 90 %, `edge_width`) is 2.3 px or more: 2.4-3.0 px on Emerald Hill as the app or poppler renders it, at most
+1.81 px on the test drawings but for one lower-resolution copy (2.55). In a soft picture r9 also reads a dark mark a short
+word long again at darker levels until it falls apart into letters (a stripe joined BEDROOM's OOM), leaves a row of
+single strokes (a wardrobe's hangers) out of the lettering, takes a letter's paler soft edge with it, outlines letters
+at half their darkest (blocky stems were lost at 0.6), and traces its light lines as lines instead of grey areas (a
+tub's rim, a headboard, a planter's edge were ragged grey shapes). Crisp plans are traced exactly as by r7. Blind
+pairwise grade, three graders, 18 soft pages (Emerald Hill's ten as the app renders them against the live trace; four
+of them as poppler renders them, three soft web plans and the lower-resolution copy against r8): r9 preferred in all 54
+choices (44 clear). Still rough: long slanting and curved lines (jagged), a few letters (BATH 2 as "BATH 7").
+Notes: `claude/faithful-trace-round6-2026-10-26.md` in the project.
 
 `extractSourceArtwork` takes such a drawing as the trace itself (`source-trace-faithful.ts`): its items become the
 paths (`faithful-<kind>-<n>`) as they are, with their tone. None of the v3 passes run - the drawing is not moved

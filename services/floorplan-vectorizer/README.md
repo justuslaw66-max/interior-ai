@@ -90,10 +90,10 @@ and its notes say `Local vectorizer unavailable: …` (a missing interpreter rea
 
 ## The faithful trace
 
-`faithful_trace.py` (version r8) copies a clean plan as it is drawn, as clean vectors: solid fills as polygons, every
+`faithful_trace.py` (version r9) copies a clean plan as it is drawn, as clean vectors: solid fills as polygons, every
 line, arc and dot at its own width and grey, lettering and small marks by their outline. It reads nothing as a room, a
 door or a wall. `faithful_drawing.py` runs it on the page and writes it in the evidence's `drawing` form
-(`version: "faithful-trace-r8"`, items with a `tone`, no `textBoxes`); the provider puts it in place of stage 1's
+(`version: "faithful-trace-r9"`, items with a `tone`, no `textBoxes`); the provider puts it in place of stage 1's
 drawing, and the app draws it as the page's traced drawing as it is (`faithful-trace-v1`: nothing is moved against the
 picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and the rest of the evidence are unchanged.
 
@@ -102,8 +102,11 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   blurred (stage 1's own softness measure, at most 1.4: a blurred scan or photo is left). A picture that is only soft,
   without solid black (a low-resolution JPEG plan enlarged into a brochure page), is traced (J, 24 Oct). Since r8 its
   lettering is copied letter by letter where it runs together or into the lighter line work under it (a room's name
-  on its floor's stripes), in a picture whose ink edges are soft (median steepness under 0.60) and of 0.4 MP or more;
-  a letter touching a line as dark as itself can still blob. Crisp plans trace as with r7.
+  on its floor's stripes), in a picture whose ink edges are soft (median steepness under 0.60, or since r9 median
+  width 2.3 px or more: such a plan as the app's PDF renderer draws it, its pixels repeated) and of 0.4 MP or more;
+  there (r9) its light lines are traced as lines, not grey areas, and a row of hangers is not taken for a word. A
+  letter touching a line as dark as itself can still blob, and long slanting or curved lines come out jagged. Crisp
+  plans trace as with r7.
 - Up to `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS` pixels (default 4,000,000) the trace works at twice the picture's size:
   about 350–400 MB of memory per million pixels of the picture (700–760 MB for a 1,400 px brochure page) and 30–50 s
   per page on one core. A larger page, up to three times that limit, is traced at its own size: about 110 MB per
