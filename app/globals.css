@@ -102,6 +102,10 @@
   --surface-canvas: #f4f2ed;
   --control-switch-off: var(--color-neutral-500);
   --control-switch-knob: var(--color-white);
+  /* The rest of the editor (dark mode PR 1, 25 Oct): Shop's and Start a new design's page behind their cards
+     (black in dark, like the panels), and the grey body behind the floor-plan workspace's cards. */
+  --surface-page: #fafaf9;
+  --surface-well: color-mix(in oklab, var(--color-neutral-100) 70%, transparent);
   /* The shared controls (components/ui): Button, SegmentedControl, Chip and ChoiceTile; a step's
      number and the avatar's hover (control-badge), and the phone sheet's handle. */
   --control-primary: var(--color-neutral-900);
@@ -190,6 +194,8 @@
   --surface-canvas: #1c1c1e;
   --control-switch-off: rgba(120, 120, 128, 0.36);
   --control-switch-knob: #f5f5f7;
+  --surface-page: #000000;
+  --surface-well: transparent;
   --control-primary: #f5f5f7;
   --control-primary-hover: #e5e5ea;
   --control-on-primary: #1c1c1e;
@@ -301,6 +307,8 @@
   --color-control-handle: var(--control-handle);
   --color-control-switch-off: var(--control-switch-off);
   --color-control-switch-knob: var(--control-switch-knob);
+  --color-surface-page: var(--surface-page);
+  --color-surface-well: var(--surface-well);
   --color-control-danger: var(--control-danger);
   --color-control-danger-hover: var(--control-danger-hover);
   --color-control-danger-border: var(--control-danger-border);
