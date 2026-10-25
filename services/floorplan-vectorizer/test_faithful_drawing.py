@@ -224,6 +224,45 @@ class FaithfulDrawing(unittest.TestCase):
         self.assertGreaterEqual(split, 5)
         self.assertLess(whole, split)
 
+    def test_soft_slanting_double_line_one_band_not_a_ladder(self):
+        # (r10) a facade drawn as two lines 4 px apart, slanting, in a low-resolution picture of brochure size enlarged
+        # by repeating pixels: r9 traced it as a ladder of hundreds of short pieces; r10 as one band along it
+        import faithful_trace
+        img = np.full((1200, 1300), 255, np.uint8)
+        for off in (0, 4):
+            cv2.line(img, (150 + off, 1100), (1100 + off, 300), 140, 2, cv2.LINE_AA)
+        cv2.rectangle(img, (40, 80), (1260, 1160), 30, 6)
+        small = cv2.GaussianBlur(cv2.resize(img, None, fx=1 / 1.44, fy=1 / 1.44, interpolation=cv2.INTER_AREA), (0, 0), 0.8)
+        blocky = cv2.resize(small, (1300, 1200), interpolation=cv2.INTER_NEAREST)
+        self.assertGreaterEqual(blocky.size, faithful_trace.SOFT_LINES_MIN_PX)
+        a, b = np.array([151.5, 1100.0]), np.array([1101.5, 300.0])
+        v = b - a
+        def along(pts):
+            P = np.asarray(pts, float)
+            s = ((P - a) @ v) / (v @ v)
+            return s, np.hypot(*(P - (a + s[:, None] * v)).T)
+        def read(t):
+            pieces = 0
+            for e in t["strokes"]:
+                s, off = along([e[k] for k in ("a", "b", "c") if k in e])
+                pieces += bool((off <= 7).all() and (s >= 0.03).all() and (s <= 0.97).all())
+            span = 0.0
+            for p in t["walls"]:
+                s, off = along([q for r in p["rings"] for q in r])
+                if (off <= 8).all():
+                    span = max(span, float(s.max() - s.min()))
+            return pieces, span
+        keep = faithful_trace.SOFT_LINES_MIN_PX
+        try:
+            faithful_trace.SOFT_LINES_MIN_PX = 10 ** 9
+            ladder, _ = read(faithful_trace.trace_gray(blocky))
+        finally:
+            faithful_trace.SOFT_LINES_MIN_PX = keep
+        pieces, span = read(faithful_trace.trace_gray(blocky))
+        self.assertGreater(ladder, 300, "r9: a ladder of short pieces")
+        self.assertLessEqual(pieces * 4, ladder)
+        self.assertGreaterEqual(span, 0.9, "one band along the whole line")
+
 
 if __name__ == "__main__":
     unittest.main()

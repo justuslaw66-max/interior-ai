@@ -14,7 +14,11 @@ No recognition: nothing is read as a room, a door or a wall - what is drawn is c
   - (r9) a picture is soft by the width of its ink edges too (edge_width), so a low-resolution plan the app's PDF
     renderer enlarged by repeating pixels (111 Emerald Hill) counts; there letters a stripe joins are read again at
     darker levels, a row of single strokes (a wardrobe's hangers) is not a word, a letter's soft edge goes with it, and
-    the light lines such a picture blurs are traced as lines, not grey areas.
+    the light lines such a picture blurs are traced as lines, not grey areas;
+  - (r10) in such a picture of brochure size (1.5 MP or more) its line work is read from it smoothed by 0.4 px (letter-
+    sized dark marks keep their own pixels) and its light lines are kept whole across their width (CORE 0.3), so a
+    long slanting or curved line - a facade, a terrace's edge, a floor's diagonal stripes - is one line or one band,
+    not a ladder of short pieces; a letter taken takes no pixel of the dark mark beside it.
 Output: an SVG in the image's pixel coordinates, one element per wall polygon, segment and arc."""
 import json, math, os, sys
 import cv2, numpy as np
@@ -1168,6 +1172,11 @@ def _split_long_marks(d, dark, n, lab, st):
     return dark, nxt, lab, st
 
 
+OVER_KEEP_NEIGHBOURS = __import__("os").environ.get("FT_OVER_KEEP", "1") == "1"   # (r10) a letter taken takes no pixel of the dark mark beside it
+SOFT_DARK = float(__import__("os").environ.get("FT_SOFT_DARK", "0.6"))   # (r10) ... line work lighter than this counts as light
+SOFT_LINES_MIN_PX = int(__import__("os").environ.get("FT_SOFT_LINES_MIN_PX", "1500000"))   # (r10) ... only in a soft picture of at least this many pixels (a brochure page; in a small web plan or a lower-resolution copy hatching and dimension dots merged)
+SOFT_CORE = float(__import__("os").environ.get("FT_SOFT_CORE", "0.3"))   # (r10) in a soft picture ink is kept where at least this share of the darkest beside it (CORE elsewhere)
+SOFT_SMOOTH = float(__import__("os").environ.get("FT_SOFT_SMOOTH", "0.4"))   # (r10) a soft picture's line work read from it smoothed this much (picture px)
 OVER_CRUMBS = __import__("os").environ.get("FT_OVER_CRUMBS", "1") == "1"   # (r9) a letter's soft edge left past it is taken too
 SOFT_GREY = __import__("os").environ.get("FT_SOFT_GREY", "0") == "1"   # (r9) grey areas in a soft picture too (off: its light lines are traced as lines)
 
@@ -1280,7 +1289,12 @@ def letters_over_lines(d, g):
             # touches) and a pixel round them
             dm = d[y0:y1, x0:x1]
             near = (cv2.dilate(m.astype(np.uint8), K1) > 0) & (dm > FAINT)
-            taken[y0:y1, x0:x1] |= cv2.dilate((near | m).astype(np.uint8), np.ones((PX + 1, PX + 1), np.uint8))
+            ring = cv2.dilate((near | m).astype(np.uint8), np.ones((PX + 1, PX + 1), np.uint8))
+            if OVER_KEEP_NEIGHBOURS:
+                # (r10) not into another dark mark beside it: the P of POWDER beside the O taken, the 2 of BATH 2
+                lb = lab[y0:y1, x0:x1]
+                ring &= ~((lb > 0) & (lb != i)).astype(np.uint8)
+            taken[y0:y1, x0:x1] |= ring
     finally:
         MARK_LEVEL = keep_level
     return taken, out
@@ -2499,6 +2513,7 @@ def trace_gray(g0, keep_text=True):
 def _trace(g0, g, keep_text):
     d, paper, darkest = darkness(g)
     over = []
+    soft_keep = None
     # (only in a soft picture: in a crisp one each letter already stands apart, and the darker level would split a thin
     # anti-aliased line - a hairline cross, an N's diagonal - into pieces that pass for letters)
     # (and not in a tiny picture - a web thumbnail of 0.2 MP, its lettering 5-7 px tall - where the darker level cannot
@@ -2513,6 +2528,21 @@ def _trace(g0, g, keep_text):
                 # (r9) the soft edge a letter leaves past the ink taken with it (a grey seam along a word's foot, specks
                 # by its strokes): ink lying wholly within 4 px of the letters taken
                 d, g = _letter_crumbs(d, g, over_taken, paper)
+    soft_lines = soft and g0.size >= SOFT_LINES_MIN_PX
+    if soft_lines and SOFT_SMOOTH > 0:
+        # (r10) the rest of a soft picture smoothed before its line work is read: an enlargement's repeated pixels
+        # make a slanting or curved line a staircase, which was traced as a ladder of short pieces
+        # (not the small dark marks - letters the lettering step left, a symbol - which keep their own pixels)
+        gs = cv2.GaussianBlur(g, (0, 0), SOFT_SMOOTH * PX)
+        dk = (d >= OVER_DARK).astype(np.uint8)
+        n_, lab_, st_, _ = cv2.connectedComponentsWithStats(dk, 8)
+        small = np.zeros(n_, bool)
+        L_ = np.maximum(st_[1:, 2], st_[1:, 3])
+        small[1:] = (L_ <= 24 * PX) & (L_ >= 7 * PX) & (st_[1:, 4] >= 12 * PX * PX)    # letter-sized
+        keep_px = cv2.dilate((small[lab_] & (lab_ > 0)).astype(np.uint8), np.ones((4 * PX + 1, 4 * PX + 1), np.uint8)) > 0
+        g = np.where(keep_px, g, gs).astype(g.dtype)
+        d, paper, darkest = darkness(g)
+        soft_keep = keep_px
     # ink: dark enough, and at least CORE of the darkest ink beside it, so that close lines (hatching) stay apart where
     # the paper between them is greyed by the rendering
     import os
@@ -2531,7 +2561,16 @@ def _trace(g0, g, keep_text):
     else:   # valley5 or p3
         peak5 = cv2.dilate(d, np.ones((4 * PX + 1, 4 * PX + 1), np.uint8)); peak3 = cv2.dilate(d, np.ones((2 * PX + 1, 2 * PX + 1), np.uint8))
         vmask = valleys(d)
-        keep = ~(vmask & (d < CORE * peak5)) & (d >= CORE * peak3)
+        core = CORE
+        if soft_lines and SOFT_CORE > 0:
+            # (r10) line work in a soft picture is kept whole across its width (its grey varies with the enlargement's
+            # repeated pixels, and CORE carved it into a ladder of pieces); letters the lettering step left keep CORE
+            # (light line work only: a dark double line - a wall's two faces - stays two lines)
+            light_ = peak3 < SOFT_DARK
+            if soft_keep is not None:
+                light_ &= ~soft_keep
+            core = np.where(light_, SOFT_CORE, CORE).astype(np.float32)
+        keep = ~(vmask & (d < core * peak5)) & (d >= core * peak3)
         ink = ((d > INK) & keep).astype(np.uint8)
         weak_all = ((d > FAINT) & keep).astype(np.uint8)
         if FAINT < INK:

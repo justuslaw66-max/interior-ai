@@ -30,10 +30,10 @@ Without a drawing the trace is `source-strokes-v2`, unchanged. Both the upload's
 
 J, 22 Oct 2026: "get the app to produce these blurry lines as clean sharp vectors". With `FLOOR_PLAN_FAITHFUL_TRACE=1`
 on the process that runs imports, a clean page is drawn by the faithful trace (`services/floorplan-vectorizer/
-faithful_trace.py`, r9, run by `faithful_drawing.py` after stage 1 and the exporter): what is drawn, copied as clean
+faithful_trace.py`, r10, run by `faithful_drawing.py` after stage 1 and the exporter): what is drawn, copied as clean
 vectors - solid fills as polygons with straight edges, every line, arc and dot fitted at its own width and grey,
 lettering and small marks copied by their outline. Nothing is read as a room, a door or a wall. Its drawing replaces
-stage 1's in the evidence (`version: "faithful-trace-r9"`), with each item's grey as `tone` (0 black - 255 white) and
+stage 1's in the evidence (`version: "faithful-trace-r10"`), with each item's grey as `tone` (0 black - 255 white) and
 no `textBoxes`.
 
 r8 (25 Oct, J's choice "Tracer round r8") is r7 - the graders' list of round 4: narrow hollow rectangles, curves made
@@ -62,6 +62,19 @@ pairwise grade, three graders, 18 soft pages (Emerald Hill's ten as the app rend
 of them as poppler renders them, three soft web plans and the lower-resolution copy against r8): r9 preferred in all 54
 choices (44 clear). Still rough: long slanting and curved lines (jagged), a few letters (BATH 2 as "BATH 7").
 Notes: `claude/faithful-trace-round6-2026-10-26.md` in the project.
+
+r10 (26 Oct, the same round) takes on what the graders found jagged in r9: long slanting and curved lines - curved
+facades, terrace and pool edges, a floor's diagonal stripes. In such a soft picture they are soft double lines whose
+grey varies with the enlargement's repeated pixels, and the ink rule that keeps close lines apart (at least CORE, 0.55,
+of the darkest beside it) carved them into a ladder of short pieces. In a soft picture of 1.5 MP or more (a brochure
+page) r10 reads the line work from the picture smoothed by 0.4 px, letter-sized dark marks keeping their own pixels,
+and keeps light line work (its darkest beside it under 0.6) whole across its width (0.3); a dark double line - a
+wall's two faces - stays two lines. A letter taken no longer takes pixels of a dark mark beside it. Smaller soft
+pictures (web plans, lower-resolution copies) are traced as by r9: there the same reading merged hatching into
+scribbles and lost dimension dots. Blind pairwise grade against r9, three graders, the same 18 pages: r10 preferred in
+36 choices, r9 in 15, 3 the same; on Emerald Hill's ten pages as the app renders them 24 to 5 (5 clear, 19 slight),
+for cleaner curves and diagonals, and 10 to 2 on four as poppler renders them; r9 was preferred on the lower-resolution
+copy and on s016, which r10 now leaves as r9 traced them.
 
 `extractSourceArtwork` takes such a drawing as the trace itself (`source-trace-faithful.ts`): its items become the
 paths (`faithful-<kind>-<n>`) as they are, with their tone. None of the v3 passes run - the drawing is not moved
