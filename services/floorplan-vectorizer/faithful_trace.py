@@ -7,7 +7,10 @@ No recognition: nothing is read as a room, a door or a wall - what is drawn is c
     centre and fitted as straight segments and circular arcs (each within FIT_PX of the drawn centre), a segment within
     SNAP_DEG of level or plumb made exactly so, drawn at the stroke's own width;
   - lettering is copied as it is drawn, like any other line work; --drop-text leaves out the marks that stand in a row
-    like the letters of a word and read as one (tesseract), as an experiment.
+    like the letters of a word and read as one (tesseract), as an experiment;
+  - (r8) in a soft picture (a low-resolution plan enlarged into a brochure), lettering that runs together, or into the
+    lighter line work under it (a room's name on its floor's stripes), is copied letter by letter by its outline, and
+    the line work under it is traced without it (letters_over_lines).
 Output: an SVG in the image's pixel coordinates, one element per wall polygon, segment and arc."""
 import json, math, os, sys
 import cv2, numpy as np
@@ -96,6 +99,617 @@ def bridge_gaps(ink, d, cleared):
             break
         ink[add] = 1
     return ink
+
+
+MOTTLE = os.environ.get("FT_MOTTLE", "0") == "1"   # (r7) a mottled grey band (a double hairline merged by the rendering) kept whole
+
+
+def mottle_fill(ink, d, vmask):
+    """(r7) a grey outline drawn as two hairlines a pixel apart (a toilet's, a pillow's, a chair's) renders as a mottled
+    band - dark and light pixels in turn - and the light ones fall out of the ink (the rule that keeps close lines apart
+    takes each for the paper between two lines), leaving the outline in crumbs. A light pixel inside such a band (a gap
+    of a pixel, which closing the ink fills) is put back, unless it lies in a channel of greyed paper running along
+    between two lines (paper between two parallel lines a pixel apart, between hatch strokes): a valley 4 px or longer."""
+    K = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3 * PX + 1, 3 * PX + 1))
+    closed = cv2.morphologyEx(ink, cv2.MORPH_CLOSE, K)
+    ds = cv2.blur(d.astype(np.float32), (3 * PX, 3 * PX))
+    cand = (closed > 0) & (ink == 0) & (d > FAINT) & (ds >= 0.2)
+    if not cand.any():
+        return ink
+    vv = (vmask & (d > FAINT)).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(vv, 8)
+    longv = np.zeros(n, bool)
+    longv[1:] = np.maximum(st[1:, 2], st[1:, 3]) >= 4 * PX
+    protect = cv2.dilate(longv[lab].astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+    add = cand & ~protect
+    if not add.any():
+        return ink
+    # never between two larger pieces of line work (a chair's inner outline and its outer one a few pixels off): only
+    # crumbs are joined, to each other or to one piece
+    n2, lab2, st2, _ = cv2.connectedComponentsWithStats(ink.astype(np.uint8), connectivity=8)
+    large = np.zeros(n2, bool); large[1:] = np.maximum(st2[1:, 2], st2[1:, 3]) > 8 * PX
+    lf = np.where(large[lab2], lab2, 0).astype(np.float32)
+    big = np.float32(1e7)
+    Kn = np.ones((3 * PX + 1, 3 * PX + 1), np.uint8)
+    mx = cv2.dilate(lf, Kn); mn = cv2.erode(np.where(lf > 0, lf, big), Kn)
+    add &= ~((mx > 0) & (mn < big) & (mx != mn))
+    out = ink.copy(); out[add] = 1
+    return out
+
+
+RECTS = os.environ.get("FT_RECTS", "1") == "1"   # (r7) narrow hollow rectangles drawn as rectangles
+
+
+def hollow_rects(stroke, d, fill, marks=None):
+    """(r7) a narrow hollow rectangle drawn in thin lines (a hanger's bar, a sliding-door panel, a narrow box): the
+    paper it encloses is a narrow hole in the stroke ink - at most 5 px across, three times as long, filling its
+    rectangle (90 %) - ringed by a thin line (2 px or less). Its sides are too short or too close for the line readers,
+    which draw it as loose sides or a bar. Returns each as (corners of its centre-line rectangle, line width, darkness)."""
+    H, W = stroke.shape
+    free = (stroke == 0).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(free, connectivity=4)
+    out = []
+    near_fill = fill > 0
+    _rb = [float(v) for v in os.environ["FT_RDBG"].split(",")] if os.environ.get("FT_RDBG") else None
+    def _rj(msg):
+        if _rb and _rb[0] <= x / PX <= _rb[2] and _rb[1] <= y / PX <= _rb[3]:
+            print("rect?", x / PX, y / PX, w, h, msg)
+    for i in range(1, n):
+        x, y, w, h, area = st[i]
+        if x == 0 or y == 0 or x + w >= W or y + h >= H:
+            continue
+        if area < 2 * PX * PX or max(w, h) > 120 * PX or min(w, h) > 12 * PX:
+            continue
+        m = (lab[y:y + h, x:x + w] == i).astype(np.uint8)
+        cnts, _ = cv2.findContours(m, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        if not cnts:
+            continue
+        (cx, cy), (rw, rh), ang = cv2.minAreaRect(cnts[0] + np.array([[x, y]]))
+        rw, rh = rw + 1.0, rh + 1.0                                     # (pixel centres to pixel edges)
+        cx, cy = cx + 0.5, cy + 0.5                                     # (pixel (x, y) covers [x, x + 1))
+        am = ang % 90.0
+        if min(am, 90.0 - am) <= SNAP_DEG:
+            ang = round(ang / 90.0) * 90.0                              # (level and plumb sides made exactly so)
+        short, long_ = min(rw, rh), max(rw, rh)
+        if short > 5 * PX or long_ < 3 * short or long_ < 12 * PX or area < 0.9 * rw * rh:   # (a letter's counter is shorter)
+            _rj("shape %.1f x %.1f fill %.2f" % (rw, rh, area / (rw * rh))); continue
+        # the ring: the stroke ink within 3 px of the hole, none of it a solid fill's
+        ya, yb, xa, xb = max(0, y - 3 * PX), min(H, y + h + 3 * PX), max(0, x - 3 * PX), min(W, x + w + 3 * PX)
+        hole = np.zeros((yb - ya, xb - xa), np.uint8); hole[y - ya:y - ya + h, x - xa:x - xa + w] = m
+        if near_fill[ya:yb, xa:xb][cv2.dilate(hole, np.ones((3 * PX, 3 * PX), np.uint8)) > 0].any():
+            _rj("near a fill"); continue
+        around = (cv2.dilate(hole, np.ones((2 * PX + 1, 2 * PX + 1), np.uint8)) > 0) & (hole == 0)
+        st_ = stroke[ya:yb, xa:xb] > 0
+        if marks is not None and long_ < 10 * PX and (marks[ya:yb, xa:xb][around] > 0).mean() > 0.2:
+            _rj("a letter's counter"); continue                 # (a D or an O in a narrow lettering: its counter)
+        # a closed shape standing alone (a letter D or O, a small box symbol) is copied as drawn, by its outline; a
+        # hanger's bar, a door panel, a loop on a stem is joined to the line work round it
+        ring_px = (around & st_)
+        ys_r, xs_r = np.nonzero(ring_px)
+        if len(ys_r):
+            sy, sx = int(ys_r[0]) + ya, int(xs_r[0]) + xa
+            x2, y2 = max(0, x - 6 * PX), max(0, y - 6 * PX)
+            x3, y3 = min(W, x + w + 6 * PX), min(H, y + h + 6 * PX)
+            win_ = (stroke[y2:y3, x2:x3] > 0).astype(np.uint8)
+            nn_, ll_ = cv2.connectedComponents(win_, connectivity=8)
+            comp_ = ll_ == ll_[sy - y2, sx - x2]
+            cys, cxs = np.nonzero(comp_)
+            if (cxs.min() > 0 and cys.min() > 0 and cxs.max() < win_.shape[1] - 1 and cys.max() < win_.shape[0] - 1
+                    and cxs.min() + x2 >= x - 3 * PX and cxs.max() + x2 <= x + w + 3 * PX
+                    and cys.min() + y2 >= y - 3 * PX and cys.max() + y2 <= y + h + 3 * PX):
+                _rj("stands alone"); continue
+        if around.sum() == 0 or st_[around].mean() < 0.9:
+            _rj("ring %.2f" % (st_[around].mean() if around.sum() else 0)); continue   # (an open shape: the hole leaks)
+        # the line's width: the ink outward from the hole, read along the long sides' middles
+        th = []
+        a = math.radians(ang)
+        ux, uy = (math.cos(a), math.sin(a)) if rw >= rh else (-math.sin(a), math.cos(a))   # along
+        vx, vy = -uy, ux                                                                 # across
+        for t_ in np.linspace(-0.3, 0.3, 7) * long_:
+            for sgn in (-1, 1):
+                px_, py_ = cx + ux * t_ + vx * sgn * short / 2.0, cy + uy * t_ + vy * sgn * short / 2.0
+                k = 0.0; tot = 0.0; mx = 0.0
+                while k < 4 * PX:
+                    qx, qy = int(math.floor(px_ + vx * sgn * (k + 0.5))), int(math.floor(py_ + vy * sgn * (k + 0.5)))
+                    if not (0 <= qx < W and 0 <= qy < H) or not stroke[qy, qx]:
+                        break
+                    tot += float(d[qy, qx]); mx = max(mx, float(d[qy, qx])); k += 1.0
+                th.append((k, tot / mx if mx > 0 else 0.0))
+        ks = np.array([t[0] for t in th]); tots = np.array([t[1] for t in th])
+        if (ks == 0).mean() > 0.2:
+            _rj("no line across"); continue
+        lw = float(np.median(tots[ks > 0]))                     # (its ink across, faint edges counted by their share)
+        # both long sides thin and of one weight (a heavy wall line with a thin line beside it is not a rectangle)
+        sides_ = [tots[1::2][ks[1::2] > 0], tots[0::2][ks[0::2] > 0]]
+        if any(len(v) == 0 for v in sides_):
+            _rj("a side without ink"); continue
+        w1, w2 = float(np.median(sides_[0])), float(np.median(sides_[1]))
+        if max(w1, w2) > 2.0 * PX or max(w1, w2) > 1.6 * min(w1, w2) + 0.25 * PX:
+            _rj("sides %.2f / %.2f" % (w1, w2)); continue
+        if lw > 2.5 * PX or lw < 0.5 * PX:
+            _rj("width %.2f" % lw); continue                    # (a heavy frame is the line readers')
+        dark = float(np.percentile(d[ya:yb, xa:xb][around & st_], 90))
+        half = (short + lw) / 2.0, (long_ + lw) / 2.0
+        # its long sides end at its short ones on one end at least: two long lines that run on past both ends (a door's
+        # frame lines with the panel between them, two parallel walls with jambs across) enclose paper, but are lines
+        runs_on = 0
+        for su in (-1, 1):
+            both = True
+            for sv in (-1, 1):
+                bx = cx + ux * su * half[1] + vx * sv * half[0]; by = cy + uy * su * half[1] + vy * sv * half[0]
+                hit = 0
+                for kk in range(1, 7):
+                    qx = int(math.floor(bx + ux * su * (lw / 2.0 + kk * PX))); qy = int(math.floor(by + uy * su * (lw / 2.0 + kk * PX)))
+                    hit += 0 <= qx < W and 0 <= qy < H and stroke[qy, qx] > 0
+                both = both and hit >= 5
+            runs_on += both
+        if runs_on == 2:
+            _rj("runs on"); continue
+        _rj("RECT w %.2f" % lw)
+        corners = []
+        for su, sv in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+            corners.append((cx + ux * su * half[1] + vx * sv * half[0], cy + uy * su * half[1] + vy * sv * half[0]))
+        kr = 2 * int(math.ceil(lw + 0.5 * PX)) + 1
+        ring = (cv2.dilate(hole, np.ones((kr, kr), np.uint8)) > 0) & (hole == 0) & st_
+        out.append({"corners": np.array(corners), "w": lw, "dark": max(0.2, dark), "ring": (ya, xa, ring)})
+    return out
+
+
+def merge_rects(rects):
+    """(r7) two hollow rectangles end to end - one rectangle a line runs across (a hanger's bar on its rail) - of one
+    width, in line, their facing sides within the line's width and 2 px of each other: one rectangle"""
+    rects = [dict(r) for r in rects]
+    changed = True
+    while changed:
+        changed = False
+        for i in range(len(rects)):
+            for j in range(i + 1, len(rects)):
+                A, B = rects[i]["corners"], rects[j]["corners"]
+                ua = A[1] - A[0]; la = float(np.linalg.norm(ua)); va = A[3] - A[0]; wa = float(np.linalg.norm(va))
+                ub = B[1] - B[0]; lb = float(np.linalg.norm(ub)); wb = float(np.linalg.norm(B[3] - B[0]))
+                # long axis of each
+                if la < wa:
+                    ua, la, va, wa = va, wa, ua, la
+                if lb < wb:
+                    ub, lb = B[3] - B[0], wb; wb = float(np.linalg.norm(B[1] - B[0]))
+                u = ua / la
+                if abs(float(np.dot(u, ub / lb))) < math.cos(math.radians(3)) or abs(wa - wb) > 1.0 * PX:
+                    continue
+                ca, cb = A.mean(0), B.mean(0)
+                if abs(float(cross2(u, cb - ca))) > 1.0 * PX:
+                    continue
+                along = abs(float(np.dot(cb - ca, u)))
+                gap = along - (la + lb) / 2.0
+                if gap > max(rects[i]["w"], rects[j]["w"]) + 2 * PX:
+                    continue
+                P = np.vstack([A, B]); t = (P - ca) @ u
+                n_ = np.array([-u[1], u[0]]); half = (wa + wb) / 4.0
+                lo, hi = float(t.min()), float(t.max())
+                C = [ca + u * lo - n_ * half, ca + u * hi - n_ * half, ca + u * hi + n_ * half, ca + u * lo + n_ * half]
+                rects[i] = {"corners": np.array(C), "w": (rects[i]["w"] + rects[j]["w"]) / 2.0,
+                            "dark": max(rects[i]["dark"], rects[j]["dark"])}
+                del rects[j]; changed = True
+                break
+            if changed:
+                break
+    return rects
+
+
+def _explained(P, rects, tol_of):
+    """(r7) whether all the points lie on one of the rectangles' outlines (within tol_of(r)); rectangles whose box
+    does not hold the points are not tried"""
+    lo, hi = P.min(0), P.max(0)
+    for r in rects:
+        bl, bh = r["corners"].min(0) - r["w"] - 2 * PX, r["corners"].max(0) + r["w"] + 2 * PX
+        if lo[0] < bl[0] or lo[1] < bl[1] or hi[0] > bh[0] or hi[1] > bh[1]:
+            continue
+        if np.all(_dist_to_rect(P, r["corners"]) <= tol_of(r)):
+            return True
+    return False
+
+
+def _dist_to_rect(P, R):
+    """the distance of each point to the rectangle's outline (corners in order)"""
+    best = np.full(len(P), np.inf)
+    for k in range(4):
+        a, b = R[k], R[(k + 1) % 4]; v = b - a
+        t = np.clip(((P - a) @ v) / max(1e-9, float(v @ v)), 0.0, 1.0)
+        best = np.minimum(best, np.linalg.norm(P - (a + t[:, None] * v), axis=1))
+    return best
+
+
+def rect_outlines(rects, segs, polys):
+    """(r7) each hollow rectangle drawn as its four sides; the strokes and outlines it explains (its loose sides and
+    caps, crumbs at its corners) dropped: every point of them within the line's half width (and FIT_PX) of its outline"""
+    keep = []
+    for e in segs:
+        P = _seg_points(e) if e["k"] != "dot" else np.asarray(e["c"], float)[None]
+        if not _explained(P, rects, lambda r: r["w"] / 2.0 + e["w"] / 2.0 + FIT_PX):
+            keep.append(e)
+    pk = []
+    for p in polys:
+        if p.get("mark"):
+            P = np.array([q for ring in p["rings"] for q in ring], float)
+            if _explained(P, rects, lambda r: r["w"] + FIT_PX):
+                continue
+        pk.append(p)
+    longs = [e for e in keep if e["k"] == "line" and np.linalg.norm(e["b"] - e["a"]) >= 4 * PX]
+    for r in rects:
+        R = r["corners"]
+        for k in range(4):
+            a, b = R[k].copy(), R[(k + 1) % 4].copy()
+            # a side a line already draws (a frame line running on past the rectangle) is not drawn twice
+            v = b - a; Lv = float(np.linalg.norm(v)); u = v / max(1e-9, Lv)
+            S = a[None] + np.linspace(0.05, 0.95, 10)[:, None] * v[None]
+            cov = np.zeros(len(S), bool)
+            for e in longs:
+                if abs(float(np.dot(_dir(e), u))) < math.cos(math.radians(3)):
+                    continue
+                ev = e["b"] - e["a"]; t = ((S - e["a"]) @ ev) / max(1e-9, float(ev @ ev))
+                dd = np.abs(cross2(_dir(e), S - e["a"]))
+                cov |= (t >= -0.02) & (t <= 1.02) & (dd <= FIT_PX + 0.25 * PX)
+            if cov.mean() >= 0.9:
+                continue
+            keep.append({"k": "line", "a": a, "b": b, "w": r["w"], "dark": r["dark"], "na": -1, "nb": -1, "rect": True})
+    return keep, pk
+
+
+CURVES = os.environ.get("FT_CURVES", "1") == "1"   # (r7) light curves made whole: arcs run on, merged, gaps bridged
+
+
+def _end(e, end):
+    """an end of a line or an arc: its point and the direction it leaves the stroke"""
+    if e["k"] == "line":
+        u = _dir(e)
+        return (e["a"].copy(), -u) if end == "a" else (e["b"].copy(), u)
+    th = e["a0"] if end == "a" else e["a1"]
+    sg = 1.0 if e["a1"] >= e["a0"] else -1.0
+    t = np.array([-math.sin(th), math.cos(th)])
+    p = e["c"] + e["r"] * np.array([math.cos(th), math.sin(th)])
+    return p, (-sg * t if end == "a" else sg * t)
+
+
+def _seg_label_map(segs, shape):
+    """each stroke drawn into a label image (its index + 1), as wide as it is plus a pixel each side"""
+    lab = np.zeros(shape, np.int32)
+    for i, e in enumerate(segs):
+        P = _seg_points(e)
+        th = max(1, int(math.ceil(e["w"])) + 2)
+        if len(P) == 1:
+            cv2.circle(lab, (int(P[0][0]), int(P[0][1])), max(1, th // 2), i + 1, -1)
+            continue
+        pts = np.round(P * 4).astype(np.int32)
+        cv2.polylines(lab, [pts], False, i + 1, th, cv2.LINE_8, shift=2)
+    return lab
+
+
+def close_curves(segs, d, solid):
+    """(r7) a light curve's ends fall where its anti-aliased ink fades, so it comes out short or in pieces (a door swing
+    stopping short of the jamb, a round table or a lamp's circle with gaps, a pillow's or a cushion's outline broken):
+      - an arc's free end runs on along its circle while faint ink (a third of its own darkness) does, up to 60 degrees,
+        stopping at a darker line or another stroke;
+      - arcs on one circle (centre and radius within 1.5 px), of one weight and darkness, are one arc where the ink runs
+        on between them (or the gap is under 2 px): a circle closed all round is drawn closed;
+      - two free ends of one weight facing each other within 4 px, faint ink between them, are joined."""
+    H, W = d.shape
+    dmx = cv2.dilate(d.astype(np.float32), np.ones((3, 3), np.uint8))
+    sol = solid > 0
+    def at(p):
+        x, y = int(math.floor(p[0])), int(math.floor(p[1]))
+        if 0 <= x < W and 0 <= y < H:
+            return float(dmx[y, x]), bool(sol[y, x])
+        return 0.0, True
+    lab = _seg_label_map(segs, (H, W))
+    def owner(p):
+        x, y = int(math.floor(p[0])), int(math.floor(p[1]))
+        return int(lab[y, x]) - 1 if 0 <= x < W and 0 <= y < H else -2
+    tip = lambda e, end: e.get("na" if end == "a" else "nb", 0) != -1
+    def attached(i, end):
+        p, u = _end(segs[i], end)
+        for k in (0.5, 1.0, 1.5):
+            o = owner(p + u * (segs[i]["w"] / 2.0 + k * PX))
+            if o >= 0 and o != i:
+                return True
+        return False
+    # 1. arcs run on along their circle
+    arc_ends = []
+    for i, e in enumerate(segs):
+        if e["k"] == "arc":
+            for th_ in (e["a0"], e["a1"]):
+                arc_ends.append((i, e["c"] + e["r"] * np.array([math.cos(th_), math.sin(th_)])))
+    AE = np.array([q for _, q in arc_ends]) if arc_ends else np.zeros((0, 2))
+    AI = np.array([k for k, _ in arc_ends]) if arc_ends else np.zeros(0, int)
+    for i, e in enumerate(segs):
+        if e["k"] != "arc" or e["r"] < 3 * PX:
+            continue
+        sg = 1.0 if e["a1"] >= e["a0"] else -1.0
+        thr = max(0.07, 0.33 * e["dark"])
+        for end in ("a", "b"):
+            if not tip(e, end) or attached(i, end):
+                continue
+            key = "a0" if end == "a" else "a1"
+            step = 0.5 * PX / e["r"] * (-sg if end == "a" else sg)
+            th = e[key]; last = th; miss = 0; n_ = 0
+            while n_ * abs(step) < math.radians(35):
+                n_ += 1
+                th += step
+                q = e["c"] + e["r"] * np.array([math.cos(th), math.sin(th)])
+                v, insol = at(q)
+                o = owner(q)
+                if len(AE):
+                    near_ = (np.linalg.norm(AE - q, axis=1) <= 2 * PX + e["w"]) & (AI != i)
+                    if near_.any():
+                        last = th; break                        # (it meets another arc's end: they join there)
+                if insol or (o >= 0 and o != i) or v >= 1.8 * e["dark"] + 0.1:
+                    if o >= 0 and o != i:
+                        last = th                               # (it runs up to the stroke it meets)
+                    break
+                if v >= thr:
+                    last = th; miss = 0
+                else:
+                    miss += 1
+                    if miss > PX:
+                        break
+            if abs(last - e[key]) * e["r"] >= 1.5 * PX:
+                e[key] = last
+    # 2. arcs on one circle made one arc
+    arcs = [i for i, e in enumerate(segs) if e["k"] == "arc" and e["r"] >= 3 * PX]
+    dead = set()
+    def interval(e):
+        a0, a1 = (e["a0"], e["a1"]) if e["a1"] >= e["a0"] else (e["a1"], e["a0"])
+        return a0, a1
+    def gap_inked(c, r, t0, t1, dark, mine=()):
+        L = (t1 - t0) * r
+        if L <= 2 * PX:
+            return True
+        ts = np.linspace(t0, t1, max(3, int(L / (0.5 * PX))))
+        hit = 0; other = 0
+        for t in ts:
+            q = c + r * np.array([math.cos(t), math.sin(t)])
+            v, _ = at(q)
+            o = owner(q)
+            if o >= 0 and o not in mine:
+                so = segs[o]
+                tang = np.array([-math.sin(t), math.cos(t)])
+                if so["k"] == "line" and abs(float(np.dot(_dir(so), tang))) <= math.cos(math.radians(45)):
+                    hit += 1                                    # (a line crossing the circle: the circle runs on under it)
+                else:
+                    other += 1                                  # (ink another stroke already draws along it)
+            elif v >= max(0.07, 0.33 * dark):
+                hit += 1
+        return hit >= 0.6 * len(ts) and other <= 0.3 * len(ts)
+    absorbed = {i: {i} for i in arcs}
+    changed = True
+    while changed:
+        changed = False
+        for ii in range(len(arcs)):
+            i = arcs[ii]
+            if i in dead:
+                continue
+            e = segs[i]
+            for jj in range(ii + 1, len(arcs)):
+                j = arcs[jj]
+                if j in dead:
+                    continue
+                f = segs[j]
+                tol = 1.0 * PX + 0.02 * max(e["r"], f["r"])
+                if np.linalg.norm(e["c"] - f["c"]) > tol or abs(e["r"] - f["r"]) > tol:
+                    continue
+                # both on one circle (two concentric arcs a few pixels apart - a curved double line - are not)
+                Q = np.vstack([_seg_points(e), _seg_points(f)])
+                cf = fit_circle(Q)
+                if cf is None or cf[3] > 1.5 * FIT_PX:
+                    continue
+                if max(e["w"], f["w"]) > 1.6 * min(e["w"], f["w"]) + 0.3 * PX or \
+                        max(e["dark"], f["dark"]) > 1.6 * min(e["dark"], f["dark"]) + 0.05:
+                    continue
+                c = np.array([cf[0], cf[1]]); r = cf[2]
+                ea0, ea1 = interval(e); fa0, fa1 = interval(f)
+                # f's interval moved by whole turns to sit after e's
+                best = None
+                for kk in (-1, 0, 1):
+                    g0, g1 = fa0 + 2 * math.pi * kk, fa1 + 2 * math.pi * kk
+                    if g0 >= ea1 - 0.05:
+                        gap = (ea1, g0)
+                    elif ea0 >= g1 - 0.05:
+                        gap = (g1, ea0)
+                    else:
+                        gap = (0.0, 0.0)                        # (overlapping)
+                    span = max(ea1, g1) - min(ea0, g0)
+                    if best is None or span < best[0]:
+                        best = (span, g0, g1, gap)
+                span, g0, g1, gap = best
+                if span > 2 * math.pi + 0.3:
+                    continue
+                if gap[1] - gap[0] > 0 and not gap_inked(c, r, gap[0], gap[1], max(e["dark"], f["dark"]), absorbed[i] | absorbed[j]):
+                    continue
+                lo, hi = min(ea0, g0), max(ea1, g1)
+                if hi - lo >= 2 * math.pi - 0.02:
+                    lo, hi = lo, lo + 2 * math.pi
+                else:
+                    # a circle nearly closed: closed, where its last gap is inked too
+                    rest_ = 2 * math.pi - (hi - lo)
+                    if rest_ * r <= 12 * PX and gap_inked(c, r, hi, lo + 2 * math.pi, max(e["dark"], f["dark"]), absorbed[i] | absorbed[j]):
+                        hi = lo + 2 * math.pi
+                wl = e["r"] * (ea1 - ea0) + 1e-6; wf = f["r"] * (g1 - g0) + 1e-6
+                e.update(c=c, r=r, a0=lo, a1=hi, w=(e["w"] * wl + f["w"] * wf) / (wl + wf), dark=max(e["dark"], f["dark"]),
+                         na=0, nb=0)
+                dead.add(j); absorbed[i] |= absorbed[j]; changed = True
+    segs = [e for k, e in enumerate(segs) if k not in dead]
+    # 3. free ends facing each other across a short faint gap joined
+    lab = _seg_label_map(segs, (H, W))
+    ends = []
+    for i, e in enumerate(segs):
+        if e["k"] not in ("line", "arc"):
+            continue
+        if e["k"] == "arc" and abs(e["a1"] - e["a0"]) >= 2 * math.pi - 0.02:
+            continue
+        for end in ("a", "b"):
+            if tip(e, end) and not attached(i, end):
+                p, u = _end(e, end)
+                ends.append((i, end, p, u))
+    used_ = set(); add = []
+    cell = 8 * PX
+    egrid = {}
+    for k2, (j, endj, q, v) in enumerate(ends):
+        egrid.setdefault((int(q[0] // cell), int(q[1] // cell)), []).append(k2)
+    for k, (i, end, p, u) in enumerate(ends):
+        if (i, end) in used_:
+            continue
+        best = None
+        gx_, gy_ = int(p[0] // cell), int(p[1] // cell)
+        near_k = [k2 for dx in (-1, 0, 1) for dy in (-1, 0, 1) for k2 in egrid.get((gx_ + dx, gy_ + dy), [])]
+        for k2 in near_k:
+            j, endj, q, v = ends[k2]
+            if j == i or (j, endj) in used_ or k2 == k:
+                continue
+            g = q - p; L = float(np.linalg.norm(g))
+            if L < 0.5 * PX or L > 4 * PX + 0.5 * (segs[i]["w"] + segs[j]["w"]):
+                continue
+            gu = g / L
+            if float(np.dot(u, gu)) < math.cos(math.radians(40)) or float(np.dot(v, -gu)) < math.cos(math.radians(40)):
+                continue
+            e, f = segs[i], segs[j]
+            if max(e["w"], f["w"]) > 1.6 * min(e["w"], f["w"]) + 0.3 * PX or \
+                    max(e["dark"], f["dark"]) > 1.6 * min(e["dark"], f["dark"]) + 0.05:
+                continue
+            ts = np.linspace(0.0, 1.0, max(3, int(L / (0.5 * PX)) + 1))
+            vals = [at(p + gu * L * t)[0] for t in ts]
+            if np.mean(np.array(vals) >= max(0.07, 0.33 * min(e["dark"], f["dark"]))) < 0.7:
+                continue
+            if best is None or L < best[0]:
+                best = (L, j, endj, q)
+        if best:
+            L, j, endj, q = best
+            e, f = segs[i], segs[j]
+            add.append({"k": "line", "a": p.copy(), "b": q.copy(), "w": (e["w"] + f["w"]) / 2.0,
+                        "dark": (e["dark"] + f["dark"]) / 2.0, "na": -1, "nb": -1})
+            used_.add((i, end)); used_.add((j, endj))
+    return segs + add
+
+
+DASHES = os.environ.get("FT_DASHES", "1") == "1"   # (r7) the dashes (and dots) of a dashed or dash-dot line set on one line
+
+
+def align_dashes(segs, polys=None):
+    """(r7) a dashed or dash-dot line is traced dash by dash, each fitted on its own pixels, so the dashes wobble off
+    the line and vary in weight (a shaft's dashed cross, a dash-dot centre line). Three or more short pieces in a row -
+    two dashes at least, each within 6 degrees of the others' direction, within a pixel of one line, no more than three
+    dash lengths (and 15 px) apart - are set on the line fitted through them all, at their common weight and darkness."""
+    # (the dots of a dash-dot line, copied as small marks, take part as dots)
+    mdots = {}
+    n0 = len(segs)
+    segs = list(segs)
+    for pi, p in enumerate(polys or []):
+        if not p.get("mark") or len(p["rings"]) != 1:
+            continue
+        R = np.asarray(p["rings"][0], float)
+        ext = R.max(0) - R.min(0)
+        if max(ext) > 4.5 * PX or max(ext) < 0.8 * PX or max(ext) > 2.0 * max(min(ext), 0.5 * PX):
+            continue                                            # (a dot: about as wide as long)
+        mdots[len(segs)] = pi
+        segs.append({"k": "dot", "c": (R.max(0) + R.min(0)) / 2.0, "w": float(min(ext)), "dark": 1.0,
+                     "mdot": pi, "ext": R})
+    idx = [i for i, e in enumerate(segs) if (e["k"] == "line" and np.linalg.norm(e["b"] - e["a"]) <= 14 * PX and not e.get("rect"))
+           or e["k"] == "dot"]
+    if len(idx) < 3:
+        return segs[:n0], polys
+    mid = {i: ((segs[i]["a"] + segs[i]["b"]) / 2.0 if segs[i]["k"] == "line" else np.asarray(segs[i]["c"], float)) for i in idx}
+    grid = {}
+    for i in idx:
+        grid.setdefault((int(mid[i][0] // (16 * PX)), int(mid[i][1] // (16 * PX))), []).append(i)
+    parent = {i: i for i in idx}
+    def root(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]; a = parent[a]
+        return a
+    for i in idx:
+        e = segs[i]
+        if e["k"] != "line":
+            continue
+        u = _dir(e); L = float(np.linalg.norm(e["b"] - e["a"]))
+        if L < 1.5 * PX:
+            continue
+        gx, gy = int(mid[i][0] // (16 * PX)), int(mid[i][1] // (16 * PX))
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for j in grid.get((gx + dx, gy + dy), []):
+                    if j == i:
+                        continue
+                    f = segs[j]
+                    if f["k"] == "line":
+                        if abs(float(np.dot(u, _dir(f)))) < math.cos(math.radians(6)):
+                            continue
+                        Lf = float(np.linalg.norm(f["b"] - f["a"]))
+                        pts = [f["a"], f["b"]]
+                    else:
+                        Lf = 0.0; pts = [mid[j]]
+                    if max(abs(float(cross2(u, q - e["a"]))) for q in pts) > 1.0 * PX + 0.5 * max(e["w"], f["w"]):
+                        continue
+                    # the gap between them along the line
+                    t = [float(np.dot(q - e["a"], u)) for q in pts]
+                    gap = max(0.0, min(t) - L, -max(t))
+                    if gap > min(15 * PX, 3 * max(L, Lf, 2 * PX)) or gap < 0.5 * PX and f["k"] == "line":
+                        continue                                # (touching pieces are a line's, merged before)
+                    if "mdot" not in f and max(e["dark"], f["dark"]) > 1.6 * min(e["dark"], f["dark"]) + 0.05:
+                        continue
+                    if f["k"] == "line" and max(e["w"], f["w"]) > 1.4 * min(e["w"], f["w"]) + 0.25 * PX:
+                        continue                                # (dashes of one line are of one weight)
+                    ra, rb = root(i), root(j)
+                    if ra != rb:
+                        parent[rb] = ra
+    groups = {}
+    for i in idx:
+        groups.setdefault(root(i), []).append(i)
+    for g in groups.values():
+        lines = [i for i in g if segs[i]["k"] == "line"]
+        if len(g) < 3 or sum(1 for i in lines if np.linalg.norm(segs[i]["b"] - segs[i]["a"]) >= 4 * PX) < 2:
+            continue                                            # (two real dashes at least: stipple is not a dashed line)
+        P = []; Wt = []
+        for i in g:
+            e = segs[i]
+            if e["k"] == "line":
+                L = float(np.linalg.norm(e["b"] - e["a"]))
+                P += [e["a"], e["b"]]; Wt += [L, L]
+            else:
+                P.append(mid[i]); Wt.append(1.0)
+        P = np.array(P); Wt = np.array(Wt)
+        c = (P * Wt[:, None]).sum(0) / Wt.sum()
+        C = ((P - c) * Wt[:, None]).T @ (P - c)
+        vals, vecs = np.linalg.eigh(C)
+        u = vecs[:, 1]; nrm = vecs[:, 0]
+        if np.max(np.abs((P - c) @ nrm)) > 0.5 * PX + 0.25 * max(segs[i]["w"] for i in g):
+            continue                                            # (dashes along a curve are not set straight)
+        angs = [math.degrees(math.atan2(*(_dir(segs[i])[::-1]))) % 180 for i in lines]
+        ref_ = angs[0]
+        if max(min(abs(a_ - ref_), 180 - abs(a_ - ref_)) for a_ in angs) > 4.0:
+            continue
+        ang = math.degrees(math.atan2(u[1], u[0])) % 180
+        ext = float(np.ptp((P - c) @ u))
+        if min(ang, 180 - ang) <= SNAP_DEG and abs(math.sin(math.radians(ang))) * ext <= 2 * SNAP_PX:
+            u = np.array([1.0, 0.0]); nrm = np.array([0.0, 1.0])
+        elif abs(ang - 90) <= SNAP_DEG and abs(math.cos(math.radians(ang))) * ext <= 2 * SNAP_PX:
+            u = np.array([0.0, 1.0]); nrm = np.array([1.0, 0.0])
+        wmed = float(np.median([segs[i]["w"] for i in lines])); dmed = float(np.median([segs[i]["dark"] for i in lines]))
+        proj = lambda q: c + u * float(np.dot(q - c, u))
+        for i in g:
+            e = segs[i]
+            if e["k"] == "line":
+                e["a"], e["b"] = proj(e["a"]), proj(e["b"]); e["w"] = wmed; e["dark"] = dmed
+            elif "mdot" in e:
+                # a dot copied as a mark: a short dash on the line, as long as the mark along it
+                t = (e["ext"] - c) @ u
+                t0, t1 = float(t.min()) + wmed / 2.0, float(t.max()) - wmed / 2.0
+                if t1 < t0:
+                    t0 = t1 = (t0 + t1) / 2.0
+                e.update(k="line", a=c + u * t0, b=c + u * t1, w=wmed, dark=dmed, na=-1, nb=-1, dashdot=True)
+            else:
+                e["c"] = proj(np.asarray(e["c"], float)); e["dark"] = dmed
+    drop = {segs[i]["mdot"] for i in mdots if segs[i].get("dashdot")}
+    out = segs[:n0] + [segs[i] for i in mdots if segs[i].get("dashdot")]
+    for e in out:
+        e.pop("mdot", None); e.pop("ext", None)
+    return out, [p for k, p in enumerate(polys or []) if k not in drop]
 
 
 def grey_areas(d, solid):
@@ -381,6 +995,150 @@ def lettering_mask(stroke, g):
     return out
 
 
+# ---------------------------------------------------------------- lettering over line work (r8)
+OVERTEXT = __import__("os").environ.get("FT_OVERTEXT", "1") == "1"   # (r8) dark lettering drawn over lighter line work, copied apart from it
+OVER_DARK = float(__import__("os").environ.get("FT_OVER_DARK", "0.45"))   # a letter's ink: at least this dark
+OVER_LEVEL = float(__import__("os").environ.get("FT_OVER_LEVEL", "0.6"))   # ... its outline traced at this share of its darkest
+OVER_SMOOTH = float(__import__("os").environ.get("FT_OVER_SMOOTH", "0.5"))   # ... from the picture smoothed this much (picture px)
+OVER_SOFT = float(__import__("os").environ.get("FT_OVER_SOFT", "0.60"))   # ... only in a soft picture: its ink edges' median steepness under this (p05, a crisp web plan of thin lettering, measures 0.619)
+OVER_MIN_PX = int(__import__("os").environ.get("FT_OVER_MIN_PX", "400000"))   # ... in a picture of at least this many pixels
+OVER_SHARE = float(__import__("os").environ.get("FT_OVER_SHARE", "0.55"))   # ... the line work round it at most this share as dark
+
+
+def edge_steepness(g):
+    """the median steepness of the picture's strong ink edges (at each edge where a 5 px window spans half the black-to-
+    paper range, the local peak of the gradient, per unit of that range): about 1 at a crisp edge, lower as the
+    picture is softer (0.8 / sigma for a Gaussian blur of sigma px). The plans the tracer was built on measure 0.64
+    and up; a low-resolution picture enlarged into a brochure (111 Emerald Hill) 0.57."""
+    hist = np.bincount(g.ravel(), minlength=256)
+    paper = 128 + int(np.argmax(hist[128:]))
+    dark = g[g < 160]
+    black = float(np.percentile(dark, 1)) if dark.size >= 200 else 0.0
+    span = max(1.0, paper - black)
+    gf = g.astype(np.float32)
+    mag = np.hypot(cv2.Sobel(gf, cv2.CV_32F, 1, 0, ksize=3), cv2.Sobel(gf, cv2.CV_32F, 0, 1, ksize=3)) / (4.0 * span)
+    strong = (cv2.dilate(gf, np.ones((5, 5), np.uint8)) - cv2.erode(gf, np.ones((5, 5), np.uint8))) >= 0.5 * span
+    peak = (mag >= cv2.dilate(mag, np.ones((3, 3), np.uint8)) - 1e-6) & strong & (mag > 0.05)
+    v = mag[peak]
+    return float(np.median(v)) if v.size >= 200 else 1.0
+
+
+def _side_by_side(boxes, idx):
+    """the members of idx standing side by side along a row as the letters of a word do (boxes: x, y, w, h), in groups"""
+    idx = sorted(idx, key=lambda i: boxes[i][0])
+    parent = {i: i for i in idx}
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]; i = parent[i]
+        return i
+    for a_ in range(len(idx)):
+        i = idx[a_]; xi, yi, wi, hi = boxes[i]
+        for b_ in range(a_ + 1, len(idx)):
+            j = idx[b_]; xj, yj, wj, hj = boxes[j]
+            H_ = max(hi, hj)
+            if xj > xi + wi + 0.8 * H_:
+                break
+            if H_ > 2.6 * min(hi, hj) and min(hi, hj) > 4 * PX:
+                continue
+            ov = min(yi + hi, yj + hj) - max(yi, yj)
+            if ov < 0.5 * min(hi, hj):
+                continue
+            parent[find(i)] = find(j)
+    groups = {}
+    for i in idx:
+        groups.setdefault(find(i), []).append(i)
+    return [gm for gm in groups.values() if len(gm) >= 2]
+
+
+def letters_over_lines(d, g):
+    """lettering drawn dark over lighter line work - a room's name across its floor's stripes, a label over a table's
+    edge - or run together by a soft picture. Small dark marks that stand apart from one another at a darker level
+    (each at least OVER_DARK dark, the line work round it at most OVER_SHARE as dark as its darkest), but that the
+    ink's level joins into one piece with line work or with one another, not one thin line, two or more side by side
+    as letters stand (along the rows, or the columns
+    for upright lettering). Each is copied by its outline, traced above the line work's level, and taken out of the
+    picture with a pixel round it, so that the line work under it is traced as the lines it is (with the letters' gaps),
+    not as a blob of letters and stripes. A mark standing alone at the ink's level is left to small_marks; lettering
+    over line work as dark as itself cannot be told apart by its grey and is left as it was. Returns (the pixels taken,
+    the outlines)."""
+    H, W = d.shape
+    taken = np.zeros((H, W), np.uint8)
+    out = []
+    ink = (d > INK).astype(np.uint8)
+    nI, labI, stI, _ = cv2.connectedComponentsWithStats(ink, 8)
+    bigI = np.maximum(stI[:, 2], stI[:, 3]) > MARK_PX
+    bigI[0] = False
+    dark = (d >= OVER_DARK).astype(np.uint8)
+    n, lab, st, _ = cv2.connectedComponentsWithStats(dark, 8)
+    K1 = np.ones((2 * PX + 1, 2 * PX + 1), np.uint8)
+    K2 = np.ones((6 * PX + 1, 6 * PX + 1), np.uint8)
+    K3 = np.ones((3 * PX + 1, 3 * PX + 1), np.uint8)
+    near_dark = cv2.dilate(dark, K3) > 0
+    # the dark marks each piece of ink holds: a soft word's letters run together at the ink's level
+    on = dark > 0
+    pairs = np.unique(np.stack([lab[on], labI[on]], 1), axis=0)
+    held = np.bincount(pairs[:, 1], minlength=nI)
+    of = np.zeros(n, np.int64)
+    of[pairs[:, 0]] = pairs[:, 1]
+    cand = {}
+    for i in range(1, n):
+        x, y, w, h, a = st[i]
+        if not (3 * PX <= max(w, h) <= 24 * PX) or a < 3 * PX * PX:
+            continue
+        x0, y0 = max(0, x - 3 * PX), max(0, y - 3 * PX)
+        x1, y1 = min(W, x + w + 3 * PX), min(H, y + h + 3 * PX)
+        m = lab[y0:y1, x0:x1] == i
+        thin = _thin_stroke(m)                                  # one thin line: a hatching stroke, or an I or a 1
+        dm = d[y0:y1, x0:x1]
+        peak = float(dm[m].max())
+        mu8 = m.astype(np.uint8)
+        # the line work round it: ink beside it, away from it and from the other dark marks (its neighbours in a word)
+        ring = (cv2.dilate(mu8, K2) > 0) & ~near_dark[y0:y1, x0:x1] & (ink[y0:y1, x0:x1] > 0)
+        rd = float(np.percentile(dm[ring], 75)) if ring.sum() >= 2 * PX else INK
+        if rd > OVER_SHARE * peak:
+            continue                                            # the line work round it is as dark: not told apart
+        cand[i] = (x0, y0, x1, y1, peak, rd, bool(bigI[of[i]] or held[of[i]] >= 2), thin)
+    if not cand:
+        return taken, out
+    words = set()
+    for turn in (False, True):
+        boxes = {i: ((st[i, 0], st[i, 1], st[i, 2], st[i, 3]) if not turn else (st[i, 1], st[i, 0], st[i, 3], st[i, 2]))
+                 for i in cand}
+        for gm in _side_by_side(boxes, list(cand)):
+            # a word one of whose letters the ink's level joins to line work or to another letter; a word whose
+            # letters all stand apart at the ink's level is left to small_marks as it was
+            # (two letters at least that are not one thin line: a row of hatching strokes is not a word; an I or a 1
+            # in a word is one of its letters)
+            if any(cand[i][6] for i in gm) and sum(not cand[i][7] for i in gm) >= 2:
+                words.update(gm)
+    global MARK_LEVEL
+    keep_level = MARK_LEVEL
+    # the outline from the picture smoothed by about half a pixel of the picture as given: traced at UP x, a soft
+    # letter's edge is the enlarged picture's blocks, which would make every stem a staircase
+    ds = cv2.GaussianBlur(d, (0, 0), OVER_SMOOTH * PX) if OVER_SMOOTH > 0 else d
+    try:
+        for i in sorted(words):
+            x0, y0, x1, y1, peak, rd, _, _ = cand[i]
+            m = lab[y0:y1, x0:x1] == i
+            # traced above the line work's level, so that no stripe it touches is taken into its outline
+            # (at half its darkest, the edge of a soft letter as it is seen; higher where the line work round it is darker)
+            MARK_LEVEL = max(OVER_LEVEL, min(0.9, (rd + 0.05) / peak))
+            mk = _outline_mark(m, x0, y0, x1, y1, ds, g)
+            if not mk:
+                continue
+            mk["over"] = True
+            out.append(mk)
+            # taken out of the picture: the letter, the ink within two pixels of it (its soft edge, the line work it
+            # touches) and a pixel round them
+            dm = d[y0:y1, x0:x1]
+            near = (cv2.dilate(m.astype(np.uint8), K1) > 0) & (dm > FAINT)
+            taken[y0:y1, x0:x1] |= cv2.dilate((near | m).astype(np.uint8), np.ones((PX + 1, PX + 1), np.uint8))
+    finally:
+        MARK_LEVEL = keep_level
+    return taken, out
+
+
 # ---------------------------------------------------------------- small marks
 MARK_PX = int(__import__("os").environ.get("FT_MARK", "64"))   # a mark standing alone no larger than this (a letter, a dot, a basin) is copied by its outline
 MARK_LEVEL = float(__import__("os").environ.get("FT_MARK_LEVEL", "0.4"))   # ... traced where its ink is this share of its darkest
@@ -607,6 +1365,27 @@ def marks_on_lines(segs, weak, d, g):
 
 
 # ---------------------------------------------------------------- level and plumb lines
+STEPS = os.environ.get("FT_STEPS", "1") == "1"   # (r7) a short dark piece spanning the gap between two lines (a panel's end) is drawn
+
+
+def _spans_gap(m, x, y, w, h, used, dm):
+    """A crumb that runs straight across the gap between two lines (a sliding panel's end, the step between a thin and a
+    heavy line): narrow, dark, and with line ink just beyond both its ends along its length (lines joined elsewhere count:
+    the two lines are one piece of `used` when they meet further on)."""
+    H, W = used.shape
+    if h >= w:
+        if w > 3 * PX or h < 2 * PX or y < 1 or y + h >= H:
+            return False
+        a, b = used[y - 1, x:x + w], used[y + h, x:x + w]
+    else:
+        if h > 3 * PX or w < 2 * PX or x < 1 or x + w >= W:
+            return False
+        a, b = used[y:y + h, x - 1], used[y:y + h, x + w]
+    if not (a.any() and b.any()):
+        return False
+    return float(np.median(dm[m])) >= 0.6
+
+
 RUN = 10               # a level (plumb) line: ink running at least this far along a row (column)
 
 
@@ -662,6 +1441,33 @@ def _band_parts(dd, x0, y0, w, h, band):
     return out
 
 
+CURVE_BANDS = os.environ.get("FT_CURVEBANDS", "1") == "1"
+
+
+def _drifts(cx, cy, h, across):
+    """(r7) a band whose centre drifts smoothly off level - a slanted straight line or a shallow curve running near
+    level (a pillow's or cushion's side, a lens, a chair's side, a toilet's flank) - is not a stack of level pieces: its
+    centre keeps within FIT_PX of one slanted line, or of one parabola that bends one way, and it drifts by 1.5 px or
+    more. A heavy outline that steps (a box side stepping out) fits neither: its steps are sharp."""
+    if len(cx) < RUN or across > 4 * PX:
+        return False                                            # (a heavy band: its rows say little of a curve)
+    span = float(cx[-1] - cx[0]) if len(cx) > 1 else 0.0
+    if span < RUN:
+        return False
+    if len(cy) > 1 and float(np.max(np.abs(np.diff(cy)))) > 1.0 * PX:
+        return False                                            # (a sharp step: a heavy outline that jogs)
+    k1, c1 = np.polyfit(cx, cy, 1)
+    r1 = np.abs(cy - (k1 * cx + c1))
+    if abs(k1) * span >= 1.5 * PX and np.percentile(r1, 90) <= FIT_PX and r1.max() <= FIT_PX + 0.5 * PX:
+        return True
+    q = np.polyfit(cx, cy, 2)
+    r2 = np.abs(cy - np.polyval(q, cx))
+    fitted = np.polyval(q, cx)
+    if np.percentile(r2, 90) <= FIT_PX and r2.max() <= FIT_PX + 0.5 * PX and float(fitted.max() - fitted.min()) >= 1.5 * PX:
+        return True
+    return False
+
+
 def _level_pieces(dd, x0, y0, w, h, band):
     """a band as it is, if it keeps level; else cut where its centre moves off by more than FIT_PX for 2 px or more (a
     heavy outline that jogs, a box side that steps out), each piece trimmed to its own rows"""
@@ -677,6 +1483,8 @@ def _level_pieces(dd, x0, y0, w, h, band):
     if not (abs(k) > math.tan(math.radians(SNAP_DEG)) or abs(k) * w > 2 * SNAP_PX or np.percentile(res, 90) > FIT_PX) \
             or os.environ.get("FT_SPLIT", "1") != "1":
         return [(x0, y0, w, h, band)]
+    if CURVE_BANDS and _drifts(cx, cy[ok], h, float(band.sum()) / max(1, w)):
+        return []                                               # (r7) a slanted line or a shallow curve: left to the strokes
     cuts = [0]; start = 0; ref = None; run_start = None
     for j in range(w):
         if not ok[j]:
@@ -724,6 +1532,68 @@ def _axdbg(level, x0, y0, w, h, msg):
     X, Y = AXDBG if level else (AXDBG[1], AXDBG[0])
     if x0 - 2 <= X <= x0 + w + 2 and y0 - 2 <= Y <= y0 + h + 2:
         print("axis", "level" if level else "plumb", "x0 y0 w h", x0, y0, w, h, ":", msg)
+
+
+TANGENT = os.environ.get("FT_TANGENT", "1") == "1"   # (r7) a thin band whose end runs on into a curve along it
+
+
+def _runs_on_tangent(grp, level, x0, y0, w, h, rest, fill):
+    """(r7) a thin band (a hairline, 2 px or less) whose end runs on into stroke ink no band took, heading on along the
+    band (within 35 degrees of it): the straight stretch of a curve (a lens's side, a pillow's flank, a chair's arm, a
+    door swing near its end) - left to the curves, so the curve is fitted whole. A heavy band is not touched (hatching
+    meeting a heavy outline)."""
+    if max(e["w"] for e in grp) > 3.5 * PX or w > 80 * PX:
+        return False
+    r_ = rest if level else rest.T
+    f_ = None if fill is None else (fill if level else fill.T)
+    # a slice of a heavier slanted or curved stroke (a heavy door swing near its hinge): the stroke's own ink, left
+    # to the strokes, runs along beside the band for half its length or more
+    above = r_[y0 - 1, x0:x0 + w] if y0 > 0 else np.zeros(w, r_.dtype)
+    below = r_[y0 + h, x0:x0 + w] if y0 + h < r_.shape[0] else np.zeros(w, r_.dtype)
+    side = (above > 0) | (below > 0)
+    if w >= RUN and float(side.mean()) >= 0.5:
+        pad = np.concatenate([[0], side.astype(np.int8), [0]]); dv_ = np.diff(pad)
+        runs = np.nonzero(dv_ == -1)[0] - np.nonzero(dv_ == 1)[0]
+        # (hatching touching a line touches it in short runs; a line drawn heavier for a stretch has the extra ink on
+        # one side; a slanted stroke crosses the band: its ink lies above it at one end and below it at the other)
+        ab, be = np.nonzero(above > 0)[0], np.nonzero(below > 0)[0]
+        crosses = len(ab) >= 0.2 * w and len(be) >= 0.2 * w and abs(float(ab.mean()) - float(be.mean())) >= 0.3 * w
+        if len(runs) and int(runs.max()) >= max(RUN, 0.3 * w) and crosses:
+            return True
+    q = 4 * PX
+    for side in (-1, 1):
+        xa, xb = (max(0, x0 - q), x0) if side < 0 else (x0 + w, min(r_.shape[1], x0 + w + q))
+        ya, yb = max(0, y0 - q), min(r_.shape[0], y0 + h + q)
+        if xb <= xa:
+            continue
+        if f_ is not None and f_[y0:y0 + h, xa:xb].any():
+            continue
+        blk = r_[ya:yb, xa:xb]
+        n_ = int(blk.sum())
+        if n_ < 2 * PX * PX:
+            continue
+        cols_ = int((blk.sum(0) > 0).sum())
+        if cols_ and n_ / cols_ > 1.6 * max(e["w"] for e in grp) + PX:
+            continue                                            # (heavier ink running on: a heavier line, not a curve)
+        ys_, xs_ = np.nonzero(blk)
+        dx = float(np.mean(xs_ + xa + 0.5)) - (x0 if side < 0 else x0 + w)
+        # (across from the centre of the band's own end piece, not the band's: a band drawn heavier for a stretch is
+        # centred off its thin line)
+        along_ = lambda e_: float(min(e_["a"][0], e_["b"][0])) if level else float(min(e_["a"][1], e_["b"][1]))
+        endp = min(grp, key=along_) if side < 0 else max(grp, key=along_)
+        yc_ = float(endp["a"][1]) if level else float(endp["a"][0])
+        dy = float(np.mean(ys_ + ya + 0.5)) - yc_
+        if abs(dx) < 1e-6:
+            continue
+        if side * dx > 0 and abs(dy) <= math.tan(math.radians(35)) * abs(dx) and abs(dy) >= 0.5 * PX:
+            # (and it bends off the band: ink straight on is the line itself running on past a crossing; ink running
+            # on level beside it is the line stepping a pixel, not a curve)
+            if len(set(xs_.tolist())) >= 3:
+                k_, _c = np.polyfit(xs_.astype(float), ys_.astype(float), 1)
+                if abs(k_) < math.tan(math.radians(3)):
+                    continue
+            return True
+    return False
 
 
 def axis_lines(stroke, d, fill=None, run=None, min_h=0):
@@ -910,6 +1780,9 @@ def axis_lines(stroke, d, fill=None, run=None, min_h=0):
             if left >= 3 * PX * PX or right >= 3 * PX * PX:
                 _axdbg(level, x0, y0, w, h, "runs on into a curve: left %d right %d" % (left, right))
                 continue
+        if TANGENT and _runs_on_tangent(grp, level, x0, y0, w, h, rest, fill):
+            _axdbg(level, x0, y0, w, h, "a thin band running on into a curve along it: left to the curves")
+            continue
         _axdbg(level, x0, y0, w, h, "kept, %d pieces" % len(grp))
         keep += grp
         if level:
@@ -1109,6 +1982,9 @@ def _arc_of(P):
     return None
 
 
+ARC_OVER = os.environ.get("FT_ARCOVER", "1") == "1"
+
+
 def fit_path(P, out):
     """straight segments and circular arcs, each within FIT_PX of the drawn centre: the run's corners found first (its
     simplified polyline), then from each corner the longest stretch that one straight line or one arc holds"""
@@ -1149,7 +2025,9 @@ def fit_path(P, out):
             if arc:
                 Q = P[V[k]:V[ma] + 1]; A_, B_ = Q[0], Q[-1]; L_ = np.linalg.norm(B_ - A_)
                 sag = float(np.max(np.abs(cross2(B_ - A_, Q - A_)) / L_)) if L_ > 1e-9 else 0.0
-                if sag > 2 * FIT_PX:
+                if sag > 2 * FIT_PX or (ARC_OVER and sag > FIT_PX and V[ma] >= V[m] + 4 * PX):
+                    # (r7) or a gentle bend that one arc holds further than any straight stretch does: a long arc's
+                    # shallow piece is not a polyline of two or three lines
                     best = (ma, arc)
                 break
         if best:
@@ -1339,6 +2217,9 @@ def _meet(p, u, q, v):
     return p + u * t
 
 
+MEET_ON = os.environ.get("FT_MEETON", "1") == "1"   # (r7) an end carried onto another line meets it within its drawn length
+
+
 def join_ends(segs, solid, ink=None):
     """corners closed (two lines' ends near each other meet where their lines cross), a line's end at another line's
     side carried onto its centre line, and a free end short of a wall carried onto the wall"""
@@ -1399,6 +2280,8 @@ def join_ends(segs, solid, ink=None):
                 if side > f["w"] / 2 + e["w"] / 2 + 2.5 * PX:
                     continue
                 X = _meet(p, u, f["a"], v)
+                if X is not None and MEET_ON and not (-PX - f["w"] / 2 <= float(np.dot(X - f["a"], v)) <= L + PX + f["w"] / 2):
+                    continue                                    # (r7) it would meet the line's run-on past its end
                 if X is not None and np.linalg.norm(X - p) <= f["w"] / 2 + 3 * PX:
                     sin = abs(cross2(u, v))
                     rank = (float(np.linalg.norm(X - p)) - 0.5 * f["w"] * sin, -sin)
@@ -1468,6 +2351,16 @@ def trace_gray(g0, keep_text=True):
 
 def _trace(g0, g, keep_text):
     d, paper, darkest = darkness(g)
+    over = []
+    # (only in a soft picture: in a crisp one each letter already stands apart, and the darker level would split a thin
+    # anti-aliased line - a hairline cross, an N's diagonal - into pieces that pass for letters)
+    # (and not in a tiny picture - a web thumbnail of 0.2 MP, its lettering 5-7 px tall - where the darker level cannot
+    # tell a letter from a piece of wall between two doors: blind-graded worse there, 25 Oct)
+    if OVERTEXT and g0.size >= OVER_MIN_PX and edge_steepness(g0) < OVER_SOFT:
+        over_taken, over = letters_over_lines(d, g)
+        if over_taken.any():
+            d = np.where(over_taken > 0, 0.0, d).astype(d.dtype)
+            g = np.where(over_taken > 0, paper, g).astype(g.dtype)
     # ink: dark enough, and at least CORE of the darkest ink beside it, so that close lines (hatching) stay apart where
     # the paper between them is greyed by the rendering
     import os
@@ -1499,11 +2392,14 @@ def _trace(g0, g, keep_text):
             ridge = (d >= cv2.dilate(d, np.array([[0, 0, 0], [1, 0, 1], [0, 0, 0]], np.uint8)) - 0.02) & \
                     (d >= cv2.dilate(d, np.array([[0, 1, 0], [0, 0, 0], [0, 1, 0]], np.uint8)) - 0.02)
             ink = (ink | (strong[lab] & ridge & (weak > 0))).astype(np.uint8)
+    if MOTTLE:
+        ink = mottle_fill(ink, d, vmask)
     ink_pc = part_corners(ink, d, vmask)
     ink = bridge_gaps(ink_pc, d, ink & (1 - ink_pc)) if BRIDGE else ink_pc
     text = np.zeros_like(ink) if keep_text else lettering_mask(ink, g)
     ink = ink & (1 - text)
     polys, solid = solid_polygons(d, ink, g)
+    polys += over
     K = np.ones((2 * PX + 1, 2 * PX + 1), np.uint8)
     if GREY:
         ga = grey_areas(d, solid)
@@ -1520,12 +2416,40 @@ def _trace(g0, g, keep_text):
         polys += marks
         stroke = stroke & (1 - taken)
     fill_ = cv2.dilate(solid, np.ones((4 * PX + 1, 4 * PX + 1), np.uint8))
+    rects = []
+    if RECTS:
+        rects = hollow_rects(stroke, d, fill_)
+        # (a light rectangle's ring is whole only with its fainter ink; its inside, if narrow, greys with it too: the
+        # ink is read at two more depths)
+        free_ = (1 - cv2.dilate(solid, K)) & (1 - text) & ((1 - taken) if MARK_PX else 1)
+        masks_ = [((d > t_) & (free_ > 0)) for t_ in (0.3, 0.14)]
+        # (a loop whose inside is a pixel across: the inside is paper greyed between the two sides - a valley - and
+        # its rounded ends are faint)
+        masks_.append((d > FAINT) & ~vmask & (cv2.dilate(solid, K) == 0) & (text == 0))
+        for m_ in masks_:
+            for r in hollow_rects(m_.astype(np.uint8), d, fill_, taken if MARK_PX else None):
+                cen = r["corners"].mean(0)
+                if all(np.linalg.norm(cen - q["corners"].mean(0)) > 2 * PX for q in rects):
+                    rects.append(r)
+    if rects:
+        rects = merge_rects(rects)
+        # (r7) a hollow rectangle is drawn as itself: its outline is not read again as lines (its sides would run on into
+        # the lines that meet it - a hanger's stem - and be drawn slanted); a line across it (a hanger's rail) stays
+        om = np.zeros_like(stroke)
+        for r in rects:
+            r.pop("ring", None)
+            pts = np.round(r["corners"] * 4).astype(np.int32)
+            cv2.polylines(om, [pts], True, 1, max(1, int(round(r["w"] + PX))), cv2.LINE_8, shift=2)
     ax, used = axis_lines(stroke, d, fill_)
+    if rects:
+        ax = [e for e in ax if not _explained(_seg_points(e), rects, lambda r, e=e: r["w"] / 2.0 + e["w"] / 2.0 + FIT_PX)]
     # short heavy pieces (a step in a heavy outline, a jamb): level or plumb too, though shorter than RUN
     if os.environ.get("FT_SHORTBAND", "1") == "1":
         ax2, used2 = axis_lines(stroke & (1 - used), d, fill_, run=5 * PX, min_h=4 * PX)
         ax += ax2; used = used | used2
     rest = stroke & (1 - used)
+    if rects:
+        rest = rest & (1 - om)
     # crumbs a level or plumb line leaves at its edge
     n, lab, st, _ = cv2.connectedComponentsWithStats(rest, 8)
     near_used = cv2.dilate(used, np.ones((3, 3), np.uint8))
@@ -1541,6 +2465,8 @@ def _trace(g0, g, keep_text):
             m = cv2.dilate((lab[ya:yb, xa:xb] == i).astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
             if len(set(np.unique(labu[ya:yb, xa:xb][m]).tolist()) - {0}) >= 2:
                 keep_c.append(i)
+            elif STEPS and _spans_gap(lab[y:y + h, x:x + w] == i, x, y, w, h, used, d[y:y + h, x:x + w]):
+                keep_c.append(i)
         crumbs = [i for i in crumbs if i not in keep_c]
     if crumbs:
         rest[np.isin(lab, np.array(crumbs))] = 0
@@ -1550,6 +2476,12 @@ def _trace(g0, g, keep_text):
     if MARK_PX and MARK2:
         segs, marks2 = marks_on_lines(segs, weak & (1 - taken), d, g)
         polys += marks2
+    if rects:
+        segs, polys = rect_outlines(rects, segs, polys)
+    if CURVES:
+        segs = close_curves(segs, d, solid)
+    if DASHES:
+        segs, polys = align_dashes(segs, polys)
     # the fills' own line work: darker edges, and lighter lines through dark fills (their tone kept as lightness)
     rim, light = solid_polygons.rim, solid_polygons.light
     over = []

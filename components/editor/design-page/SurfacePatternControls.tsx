@@ -37,13 +37,13 @@ export type SurfacePatternActions = SurfaceGroutActions & {
   onResetSurface: () => void;
 };
 
-const LABEL = "text-xs font-semibold text-neutral-700";
+const LABEL = "text-xs font-semibold text-control-label-idle";
 
 type GroutProps = { grout: SurfaceGroutState; actions: SurfaceGroutActions; testIdPrefix: "surface" | "wall-surface" };
 
 function GroutPalette({ grout, actions, testIdPrefix }: GroutProps) {
   return (
-    <div data-testid={`${testIdPrefix}-grout-color-palette`} className="mt-2 grid grid-cols-5 gap-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-1.5">
+    <div data-testid={`${testIdPrefix}-grout-color-palette`} className="mt-2 grid grid-cols-5 gap-1.5 rounded-lg border border-box-border bg-tile p-1.5">
       {grout.groutColors.map((color) => (
         <button
           key={color.key}
@@ -53,14 +53,14 @@ function GroutPalette({ grout, actions, testIdPrefix }: GroutProps) {
           disabled={grout.disabled}
           className={
             color.selected
-              ? "grid aspect-square min-h-8 place-items-center rounded-md border border-neutral-200 bg-white p-0 shadow-sm"
-              : "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-white p-0 hover:border-neutral-200"
+              ? "grid aspect-square min-h-8 place-items-center rounded-md border border-separator bg-field p-0 shadow-sm"
+              : "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-field p-0 hover:border-separator"
           }
           aria-label={`Set grout colour ${color.color}`}
           title={color.color}
           onClick={() => actions.onSelectGroutColor(color.color)}
         >
-          <span aria-hidden="true" className="block h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-md border border-black/5" style={{ backgroundColor: color.color }} />
+          <span aria-hidden="true" className="block h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-md border border-swatch-edge" style={{ backgroundColor: color.color }} />
         </button>
       ))}
     </div>
@@ -85,13 +85,13 @@ export function SurfaceGroutControls({ grout, actions, testIdPrefix }: GroutProp
             type="button"
             data-testid={`${testIdPrefix}-joint-color`}
             disabled={grout.disabled}
-            className="mt-1 grid h-8 w-12 place-items-center rounded-lg border border-neutral-200 bg-white p-1 disabled:opacity-50 touch:h-11"
+            className="mt-1 grid h-8 w-12 place-items-center rounded-lg border border-box-border bg-field p-1 disabled:opacity-50 touch:h-11"
             aria-label="Choose grout colour"
             aria-expanded={grout.groutPaletteOpen}
             title="Choose grout colour"
             onClick={actions.onToggleGroutPalette}
           >
-            <span aria-hidden="true" className="block h-full w-full rounded border border-black/15" style={{ backgroundColor: grout.groutColor }} />
+            <span aria-hidden="true" className="block h-full w-full rounded border border-swatch-edge" style={{ backgroundColor: grout.groutColor }} />
           </button>
         </div>
       </div>
@@ -145,8 +145,8 @@ function PatternChoices({ pattern, actions }: PatternProps) {
             disabled={pattern.disabled}
             className={
               option.selected
-                ? "grid h-12 place-items-center rounded-lg border border-emerald-400 bg-emerald-50 p-1 shadow-sm"
-                : "grid h-12 place-items-center rounded-lg border border-neutral-200 bg-white p-1 hover:border-neutral-300 hover:bg-neutral-50"
+                ? "grid h-12 place-items-center rounded-lg border border-emerald-400 bg-success-tint p-1 shadow-sm"
+                : "grid h-12 place-items-center rounded-lg border border-box-border bg-field p-1 hover:border-control-secondary-border hover:bg-control-secondary-hover"
             }
             onClick={() => actions.onSelectPattern(option.id)}
           >
@@ -202,7 +202,7 @@ function PatternMove({ pattern, actions }: PatternProps) {
           </Button>
         ))}
       </div>
-      <div className="mt-1 text-xs text-neutral-600">
+      <div className="mt-1 text-xs text-label-secondary">
         Offset {pattern.offset.x.toFixed(2)}, {pattern.offset.y.toFixed(2)}
       </div>
     </div>
@@ -216,7 +216,7 @@ function PatternMove({ pattern, actions }: PatternProps) {
  */
 export function SurfacePatternControls({ pattern, actions }: PatternProps) {
   return (
-    <div className="mt-2 border-t border-neutral-100 pt-2">
+    <div className="mt-2 border-t border-separator-subtle pt-2">
       <PatternChoices pattern={pattern} actions={actions} />
       <PatternRotationAndSize pattern={pattern} actions={actions} />
       <SurfaceGroutControls grout={pattern} actions={actions} testIdPrefix="surface" />

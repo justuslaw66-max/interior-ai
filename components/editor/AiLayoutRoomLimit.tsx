@@ -12,14 +12,14 @@ type AiLayoutRoomLimitProps = {
  */
 export function AiLayoutRoomLimit({ roomName, roomSummary }: AiLayoutRoomLimitProps) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-4" data-testid="ai-layout-room-limit">
-      <div className="text-sm font-semibold text-neutral-900">Suggest a layout works in living rooms for now</div>
-      <p className="mt-1 text-xs text-neutral-600">
+    <div className="rounded-xl border border-box-border bg-surface-secondary p-4" data-testid="ai-layout-room-limit">
+      <div className="text-sm font-semibold text-label">Suggest a layout works in living rooms for now</div>
+      <p className="mt-1 text-xs text-label-secondary">
         Choose a living room in Plan to get a suggested layout. You can still add products to the {roomName} from Furnish.
       </p>
-      <div className="mt-3 rounded-lg bg-neutral-50 px-3 py-2">
-        <div className="truncate text-sm font-semibold text-neutral-900">{roomName}</div>
-        <div className="mt-0.5 text-xs text-neutral-600">{roomSummary}</div>
+      <div className="mt-3 rounded-lg bg-tile px-3 py-2">
+        <div className="truncate text-sm font-semibold text-label">{roomName}</div>
+        <div className="mt-0.5 text-xs text-label-secondary">{roomSummary}</div>
       </div>
     </div>
   );

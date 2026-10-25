@@ -47,11 +47,12 @@ export function useInspectorPlacement(state: InspectorState, configuration: Insp
 
 /**
  * The inspector's frame and the size of its × Deselect Button (UX 4f, ED7; UX 5n): in the sheet it
- * is Done, a 44px Button; elsewhere a 36px icon, 44px on touch screens.
+ * is Done, a 44px Button, on a card like the step panel's; elsewhere a 36px icon, 44px on touch
+ * screens, on a floating surface (dark mode step 5.2b: data-surface="floating").
  */
 export function inspectorFrame(configuration: InspectorConfiguration, placement: { inSheet: boolean; portalTarget: HTMLDivElement | null }) {
-  const surface = `pointer-events-auto z-30 shrink-0 rounded-lg border border-neutral-200 bg-white/95 p-3 text-xs text-neutral-800${placement.inSheet ? "" : " shadow-xl backdrop-blur"}`;
-  if (placement.inSheet) return { className: surface, clearSize: "touch" as const, style: { position: "relative", width: "100%" } as CSSProperties };
+  const surface = `pointer-events-auto z-30 shrink-0 rounded-lg border p-3 text-xs text-control-label ${placement.inSheet ? "border-box-border bg-surface-secondary" : "border-separator bg-surface-floating/95 shadow-xl backdrop-blur"}`;
+  if (placement.inSheet) return { className: surface, clearSize: "touch" as const, dataSurface: undefined, style: { position: "relative", width: "100%" } as CSSProperties };
   const style: CSSProperties = placement.portalTarget
     ? { position: "relative", width: `${configuration.dockedWidthPx}px` }
     : {
@@ -63,5 +64,5 @@ export function inspectorFrame(configuration: InspectorConfiguration, placement:
         overflowY: "auto",
         overscrollBehavior: "contain",
       };
-  return { className: `${surface} hidden md:block`, clearSize: "icon" as const, style };
+  return { className: `${surface} hidden md:block`, dataSurface: "floating" as const, clearSize: "icon" as const, style };
 }

@@ -460,7 +460,7 @@ assert.match(
 
 assert.match(
   planToolComponentsSource,
-  /const className = \[[\s\S]*?rounded-\[2px\][\s\S]*?bg-\[#f6f6f7\][\s\S]*?hover:bg-\[#f1f2f3\]/,
+  /const className = \[[\s\S]*?rounded-\[2px\][\s\S]*?bg-tile[\s\S]*?hover:bg-control-track/,
   "Plan tool cards should keep the flat, compact architectural-tool treatment."
 );
 

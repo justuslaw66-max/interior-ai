@@ -90,7 +90,7 @@ type ProductModelVariantControlsProps = {
   actions: ProductModelVariantControlsActions;
 };
 
-const sectionHeadingClass = "text-sm font-semibold text-neutral-900";
+const sectionHeadingClass = "text-sm font-semibold text-label";
 
 type CastleryConfigurationFamily = "hamilton" | "dawson";
 type CastleryConfigurationGroupKey =
@@ -273,15 +273,15 @@ function CastleryConfigurationSelector({
     <div className="pt-3" data-testid={`${family}-configuration-selector`}>
       <div className="flex items-baseline justify-between gap-3">
         <div className={sectionHeadingClass}>Configuration</div>
-        <div className="text-xs text-neutral-500">
+        <div className="text-xs text-label-secondary">
           {variantSection.options.length} configurations
         </div>
       </div>
 
-      <div className="mt-2 text-sm font-semibold leading-snug text-neutral-900">
+      <div className="mt-2 text-sm font-semibold leading-snug text-label">
         {castleryConfigurationLabel(family, activeOption)}
       </div>
-      <div className="mt-0.5 text-xs text-neutral-500">Select a layout below</div>
+      <div className="mt-0.5 text-xs text-label-secondary">Select a layout below</div>
 
       <SegmentedControl
         label="Configuration type"
@@ -516,7 +516,7 @@ export function ProductModelVariantControls({
         <div className="pt-3" data-testid="selected-sloane-bench-material-section">
           <div className={sectionHeadingClass}>Material</div>
           <div
-            className="mt-2 text-xs text-neutral-600"
+            className="mt-2 text-xs text-label-secondary"
             data-testid="selected-sloane-bench-material-label"
           >
             Selected: {state.sloaneBenchMaterial.label}
@@ -631,25 +631,25 @@ export function ProductModelVariantControls({
           </div>
 
           {state.layout.helperText ? (
-            <div className="mt-2 text-xs text-neutral-600">
+            <div className="mt-2 text-xs text-label-secondary">
               {state.layout.helperText}
             </div>
           ) : null}
 
           {state.layout.recommendedPlanningSize ? (
-            <div className="mt-2 text-xs text-neutral-600">
+            <div className="mt-2 text-xs text-label-secondary">
               Recommended planning size: {state.layout.recommendedPlanningSize}
             </div>
           ) : null}
 
           {state.layout.visualFootprint ? (
-            <div className="mt-1 text-xs text-neutral-600">
+            <div className="mt-1 text-xs text-label-secondary">
               Visual footprint: {state.layout.visualFootprint}
             </div>
           ) : null}
 
           {state.layout.estimationNote ? (
-            <div className="mt-2 text-xs text-neutral-600">
+            <div className="mt-2 text-xs text-label-secondary">
               {state.layout.estimationNote}
             </div>
           ) : null}

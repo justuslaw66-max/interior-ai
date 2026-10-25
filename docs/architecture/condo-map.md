@@ -3,7 +3,8 @@
 `/admin/condo-map` shows the developments from the floor-plan masters on a Mapbox map, each on its own site: the
 whole building as grey massing (33 Residences as its detailed 3D models), a chosen floor cut open with its units' rooms
 painted on it, and a chosen unit's card with its plan. It is admin-only and unlisted (not in the admin menu) while J
-decides what it becomes. J's choices, 24 Oct 2026: admins only; all nine developments.
+decides what it becomes. J's choices, 24 Oct 2026: admins only; all nine developments. 25 Oct 2026: 32 Gilstead
+added, so ten (each new development in the masters joins the map with a re-export).
 
 ## Decisions
 

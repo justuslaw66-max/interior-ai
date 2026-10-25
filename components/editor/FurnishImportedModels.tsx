@@ -23,7 +23,7 @@ type FurnishImportedModelsProps = {
   onAdd: () => void;
 };
 
-const SELECT_CLASS = "w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900";
+const SELECT_CLASS = "w-full rounded-lg border border-control-secondary-border bg-field px-3 py-2 text-sm text-label";
 
 function ImportedModelSelects(props: FurnishImportedModelsProps) {
   return (
@@ -68,20 +68,20 @@ export function FurnishImportedModels(props: FurnishImportedModelsProps) {
     modelOptions.find((option) => option.id === selectedProductId) ??
     null;
   return (
-    <details className="rounded-2xl border border-neutral-200 bg-white p-3 shadow-sm" data-testid="advanced-imported-models">
+    <details className="rounded-2xl border border-box-border bg-surface-secondary p-3 shadow-sm" data-testid="advanced-imported-models">
       <summary
         data-testid="advanced-imported-models-toggle"
-        className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 text-neutral-900 marker:hidden"
+        className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-3 text-label marker:hidden"
       >
         <span className="text-sm font-semibold">All 3D models</span>
-        <span className="rounded-full bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700">Open</span>
+        <span className="rounded-full bg-control-track px-2 py-1 text-xs font-semibold text-control-label-idle">Open</span>
       </summary>
-      <p className="text-xs text-neutral-600">Pick any verified model by family, including pieces not in the catalogue yet.</p>
+      <p className="text-xs text-label-secondary">Pick any verified model by family, including pieces not in the catalogue yet.</p>
       <ImportedModelSelects {...props} />
       {selected ? (
-        <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-          <div className="text-xs font-semibold text-neutral-800">{selected.pickerLabel}</div>
-          <div className="text-xs text-neutral-600">{selected.familyLabel}</div>
+        <div className="mt-3 rounded-xl border border-box-border bg-tile p-3">
+          <div className="text-xs font-semibold text-control-label">{selected.pickerLabel}</div>
+          <div className="text-xs text-label-secondary">{selected.familyLabel}</div>
         </div>
       ) : null}
       <Button

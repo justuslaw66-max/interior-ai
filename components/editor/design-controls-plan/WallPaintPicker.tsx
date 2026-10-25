@@ -80,7 +80,7 @@ export function WallPaintPicker({
     const paintTargetNoun = activeSurfaceTarget === "ceiling" ? "ceiling" : "wall";
     const normalizedCustomPaintHex =
       normalizeWallPaintColorHex(customWallPaintHex) ?? DEFAULT_WALL_PAINT_SWATCH.hex;
-    const wallPaintSearchInputClass = "h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs font-semibold text-neutral-800 placeholder:text-neutral-400";
+    const wallPaintSearchInputClass = "h-9 w-full rounded-lg border border-box-border bg-field px-2 text-xs font-semibold text-control-label placeholder:text-label-tertiary";
     const applyWallPaintSwatch = (swatch: WallPaintSwatch, source: "swatch" | "nippon") => {
       setWallPaintFamilyFilter(swatch.family);
       applyWallPaintToActiveTarget(swatch.hex, getWallPaintSwatchLabel(swatch), source);
@@ -89,8 +89,8 @@ export function WallPaintPicker({
       const label = getWallPaintSwatchLabel(swatch);
       const selected = swatch.hex.toUpperCase() === activePaintColorHex?.toUpperCase();
       const source = swatch.source === "nippon" ? "nippon" : "swatch";
-      const selectedClass = "border-emerald-500 bg-emerald-50";
-      const idleClass = "border-neutral-200 bg-white hover:bg-neutral-50";
+      const selectedClass = "border-emerald-500 bg-success-tint";
+      const idleClass = "border-box-border bg-field hover:bg-control-secondary-hover";
       if (variant === "chip") {
         return (
           <button
@@ -105,7 +105,7 @@ export function WallPaintPicker({
           >
             <span
               aria-hidden="true"
-              className="block h-full w-full rounded-md border border-black/10"
+              className="block h-full w-full rounded-md border border-swatch-edge"
               style={{ backgroundColor: swatch.hex }}
             />
           </button>
@@ -125,14 +125,14 @@ export function WallPaintPicker({
         >
           <span
             aria-hidden="true"
-            className="h-7 w-7 shrink-0 rounded-md border border-black/10"
+            className="h-7 w-7 shrink-0 rounded-md border border-swatch-edge"
             style={{ backgroundColor: swatch.hex }}
           />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-xs font-semibold text-neutral-900">
+            <span className="block truncate text-xs font-semibold text-label">
               {swatch.name}
             </span>
-            <span className="block truncate text-xs font-medium text-neutral-500">
+            <span className="block truncate text-xs font-medium text-label-secondary">
               {swatch.code ?? swatch.hex}
             </span>
           </span>
@@ -143,16 +143,16 @@ export function WallPaintPicker({
     return (
       <div
         data-testid="wall-paint-panel"
-        className="mt-2 rounded-lg border border-neutral-200 bg-white p-2"
+        className="mt-2 rounded-lg border border-box-border bg-field p-2"
       >
         <div className="flex items-start gap-2">
           <span
             aria-hidden="true"
-            className="h-12 w-12 shrink-0 rounded-md border border-black/10"
+            className="h-12 w-12 shrink-0 rounded-md border border-swatch-edge"
             style={{ backgroundColor: activePaintColorHex ?? "#f7f5ef" }}
           />
           <div className="min-w-0 flex-1">
-            <div className="truncate text-xs font-semibold text-neutral-900">
+            <div className="truncate text-xs font-semibold text-label">
               {activePaintName}
             </div>
             <div className={floorMaterialMetaClass}>
@@ -163,7 +163,7 @@ export function WallPaintPicker({
 
         <div className="mt-3">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-xs font-semibold text-neutral-700">
+            <div className="text-xs font-semibold text-control-label-idle">
               Colour family: {activeWallPaintFamilyFilter.id === "all" ? "ALL" : activeWallPaintFamilyFilter.label.toUpperCase()}
             </div>
             {wallPaintFamilyFilter !== "all" ? (
@@ -184,8 +184,8 @@ export function WallPaintPicker({
             {WALL_PAINT_FAMILY_FILTERS.filter((family) => family.id !== "all").map((family) => {
               const selected = family.id === wallPaintFamilyFilter;
               const familyButtonClass = selected
-                ? "h-9 w-9 shrink-0 rounded-full border-2 border-neutral-950 shadow-sm ring-2 ring-emerald-200"
-                : "h-9 w-9 shrink-0 rounded-full border border-neutral-200 shadow-sm hover:border-neutral-400";
+                ? "h-9 w-9 shrink-0 rounded-full border-2 border-control-primary shadow-sm ring-2 ring-emerald-200"
+                : "h-9 w-9 shrink-0 rounded-full border border-swatch-edge shadow-sm hover:border-control-edge-hover";
               return (
                 <button
                   key={family.id}
@@ -207,7 +207,7 @@ export function WallPaintPicker({
 
         <div className="mt-3 grid gap-2">
           <div className="flex items-center justify-between gap-2">
-            <div className="text-xs font-semibold text-neutral-700">
+            <div className="text-xs font-semibold text-control-label-idle">
               Nippon Paint
             </div>
             <div className={floorMaterialMetaClass}>
@@ -227,7 +227,7 @@ export function WallPaintPicker({
               {visibleNipponWallPaintSwatches.map((swatch) => renderWallPaintSwatchButton(swatch, "row"))}
             </div>
           ) : (
-            <div className="rounded-lg border border-neutral-200 bg-white p-3 text-xs text-neutral-500">
+            <div className="rounded-lg border border-box-border bg-field p-3 text-xs text-label-secondary">
               No Nippon Paint colours match.
             </div>
           )}
@@ -244,7 +244,7 @@ export function WallPaintPicker({
         </div>
 
         <div className="mt-3 grid grid-cols-[auto_1fr] items-end gap-2">
-          <label className="block text-xs font-semibold text-neutral-700">
+          <label className="block text-xs font-semibold text-control-label-idle">
             Custom
             <input
               type="color"
@@ -255,7 +255,7 @@ export function WallPaintPicker({
                 setCustomWallPaintHex(event.currentTarget.value);
                 setWallPaintApplyName("Custom paint");
               }}
-              className="mt-1 h-9 w-14 rounded-md border border-black/10 bg-transparent p-0"
+              className="mt-1 h-9 w-14 rounded-md border border-swatch-edge bg-transparent p-0"
             />
           </label>
           <div className="flex flex-wrap gap-2">

@@ -184,10 +184,10 @@ export default function MeasurementField({
       {!hideLabel ? (
         <label
           htmlFor={inputId}
-          className="flex items-center justify-between text-xs font-semibold text-neutral-600"
+          className="flex items-center justify-between text-xs font-semibold text-label-secondary"
         >
           <span>{label}</span>
-          <span className="font-normal text-neutral-500">{metadata.indicator}</span>
+          <span className="font-normal text-label-secondary">{metadata.indicator}</span>
         </label>
       ) : null}
       <span className="relative block">
@@ -214,8 +214,8 @@ export default function MeasurementField({
           }
           className={`${touchFriendly ? "min-h-11 rounded-md px-2" : compact ? "h-9 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border pr-11 text-sm font-semibold outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             error
-                ? "border-red-400 bg-white text-red-900 focus-visible:ring-red-500/20"
-                : "border-neutral-200 bg-white text-neutral-900 focus-visible:border-blue-600 focus-visible:ring-blue-600/20"
+                ? "border-red-400 bg-field text-on-danger-tint focus-visible:ring-red-500/20"
+                : "border-box-border bg-field text-label focus-visible:border-blue-600 focus-visible:ring-blue-600/20"
           } ${inputClassName}`.trim()}
           onChange={(event) => {
             setDirty(true);
@@ -224,15 +224,15 @@ export default function MeasurementField({
           onBlur={(event) => commit(event.currentTarget.value)}
           onKeyDown={handleKeyDown}
         />
-        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-xs text-neutral-500">
+        <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-2 grid place-items-center text-xs text-label-secondary">
           {metadata.indicator}
         </span>
       </span>
-      <span id={statusId} role={error ? "alert" : undefined} className={error ? "text-xs leading-4 text-red-600" : "sr-only"}>
+      <span id={statusId} role={error ? "alert" : undefined} className={error ? "text-xs leading-4 text-danger" : "sr-only"}>
         {error ?? ""}
       </span>
       {hint ? (
-        <span id={hintId} className="text-xs text-neutral-500">
+        <span id={hintId} className="text-xs text-label-secondary">
           {hint}
         </span>
       ) : null}

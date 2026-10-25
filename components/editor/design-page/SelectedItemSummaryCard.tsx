@@ -17,7 +17,7 @@ type SelectedItemSummaryCardProps = {
 function SelectedItemSaleLine({ sale, onViewProduct }: { sale: SelectedItemSale; onViewProduct: () => void }) {
   if (sale.kind !== "retailer") {
     return (
-      <div data-testid="selected-item-availability" data-sale={sale.kind} className="text-[13px] text-neutral-600">
+      <div data-testid="selected-item-availability" data-sale={sale.kind} className="text-[13px] text-label-secondary">
         {sale.kind === "checkout" ? "Checkout here, from your Shopping list" : "Not sold online yet"}
       </div>
     );
@@ -26,7 +26,7 @@ function SelectedItemSaleLine({ sale, onViewProduct }: { sale: SelectedItemSale;
     <div
       data-testid="selected-item-availability"
       data-sale="retailer"
-      className="flex flex-wrap items-center gap-x-2 text-[13px] text-neutral-600"
+      className="flex flex-wrap items-center gap-x-2 text-[13px] text-label-secondary"
     >
       <span>Sold by {sale.retailer}</span>
       <span aria-hidden="true">·</span>
@@ -62,13 +62,13 @@ export function SelectedItemSummaryCard({ summary, title, locked, onViewProduct 
         ) : null}
       </div>
       <div className="flex flex-col gap-1.5">
-        <h2 className="m-0 text-lg font-bold leading-6 text-neutral-900">{title}</h2>
-        <span data-testid="selected-item-price" className="text-lg font-bold text-neutral-900">
+        <h2 className="m-0 text-lg font-bold leading-6 text-label">{title}</h2>
+        <span data-testid="selected-item-price" className="text-lg font-bold text-label">
           {summary.priceLabel}
         </span>
         <SelectedItemSaleLine sale={summary.sale} onViewProduct={onViewProduct} />
         {locked ? (
-          <span className="inline-flex w-fit rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-700">Locked</span>
+          <span className="inline-flex w-fit rounded-full bg-control-track px-3 py-1 text-xs text-control-label-idle">Locked</span>
         ) : null}
       </div>
     </div>

@@ -146,10 +146,10 @@ export function AuburnConfigurationSelector({
   return (
     <div className="pt-3" data-testid="auburn-configuration-selector">
       <div className="flex items-baseline justify-between gap-3">
-        <div className="text-sm font-semibold text-neutral-900">
+        <div className="text-sm font-semibold text-label">
           Configuration
         </div>
-        <div className="text-xs text-neutral-500">
+        <div className="text-xs text-label-secondary">
           {state.configurationCount} configurations
         </div>
       </div>
@@ -191,7 +191,7 @@ export function AuburnConfigurationSelector({
                     <span className="block text-sm font-semibold leading-snug">
                       {option.label}
                     </span>
-                    <span className="mt-1 block text-xs text-neutral-500">
+                    <span className="mt-1 block text-xs text-label-secondary">
                       {option.description}
                     </span>
                   </span>
@@ -199,7 +199,7 @@ export function AuburnConfigurationSelector({
               </ChoiceTile>
 
               {active && option.orientations.length ? (
-                <div className="px-1 pb-2 pt-3 text-neutral-900">
+                <div className="px-1 pb-2 pt-3 text-label">
                   <div className="mb-2 text-center text-sm font-semibold">
                     Which orientation would you like?
                   </div>

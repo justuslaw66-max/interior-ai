@@ -6,7 +6,7 @@ import type { ConsumerWallTopologyMutationV2 } from "@/lib/floor-plan-consumer-w
 import { proposedWallLengthEndpoint } from "@/lib/floor-plan-wall-length";
 import { Button } from "@/components/ui/Button";
 
-const inputClass = "mt-1 w-full rounded border border-neutral-400 bg-transparent p-1.5";
+const inputClass = "mt-1 w-full rounded border border-control-edge-hover bg-transparent p-1.5";
 
 export function CanonicalWallDimensions({ floor, wall, commit }: {
   floor: FloorPlanFloorV2; wall: FloorPlanWallV2; commit: (operation: ConsumerWallTopologyMutationV2) => boolean;

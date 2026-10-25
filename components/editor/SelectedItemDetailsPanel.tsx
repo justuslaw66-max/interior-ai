@@ -82,11 +82,11 @@ export default function SelectedItemDetailsPanel({
 }: SelectedItemDetailsPanelProps) {
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
   const actionIconClass = "h-3.5 w-3.5 shrink-0";
-  const panelClass = "mt-2 space-y-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
-  const compactPanelClass = "mt-2 space-y-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3";
-  const sectionTitleClass = "text-xs font-semibold uppercase tracking-[0.08em] text-neutral-700";
-  const labelClass = "text-xs text-neutral-600";
-  const valueClass = "text-xs text-neutral-900";
+  const panelClass = "mt-2 space-y-3 rounded-lg border border-box-border bg-tile p-3";
+  const compactPanelClass = "mt-2 space-y-2 rounded-lg border border-box-border bg-tile p-3";
+  const sectionTitleClass = "text-xs font-semibold uppercase tracking-[0.08em] text-control-label-idle";
+  const labelClass = "text-xs text-label-secondary";
+  const valueClass = "text-xs text-label";
   const hasFullDimensions = Boolean(fullDimensionsDetails?.length);
   const hasDeliveryWarranty = Boolean(productDetailSections?.deliveryWarranty?.length);
   const itemActionsDisabled = !item || !canEdit || (isDesigner && Boolean(item.locked));
@@ -94,10 +94,10 @@ export default function SelectedItemDetailsPanel({
   const positionZ = item?.position?.[2] ?? 0;
   const styleStatusClass =
     styleConsistencyReport?.status === "cohesive"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+      ? "border-success-tint-border bg-success-tint text-on-success-tint"
       : styleConsistencyReport?.status === "clashing"
-        ? "border-rose-200 bg-rose-50 text-rose-800"
-        : "border-amber-200 bg-amber-50 text-amber-800";
+        ? "border-danger-tint-border bg-danger-tint text-on-danger-tint"
+        : "border-warning-tint-border bg-warning-tint text-on-warning-tint";
 
 
   return (
@@ -177,7 +177,7 @@ export default function SelectedItemDetailsPanel({
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className={sectionTitleClass}>Hanging height</div>
-              <div className="mt-0.5 text-xs text-neutral-500">
+              <div className="mt-0.5 text-xs text-label-secondary">
                 Adjusts only the central cable
               </div>
             </div>
@@ -211,7 +211,7 @@ export default function SelectedItemDetailsPanel({
             }}
             aria-label="Adjust pendant hanging height"
           />
-          <div className="flex justify-between text-xs text-neutral-500">
+          <div className="flex justify-between text-xs text-label-secondary">
             <span>{formatCabinetMeasurement(adjustableHangingHeight.minCm * 10, measurementUnit)}</span>
             <span>{formatCabinetMeasurement(adjustableHangingHeight.maxCm * 10, measurementUnit)}</span>
           </div>
@@ -243,11 +243,11 @@ export default function SelectedItemDetailsPanel({
           </div>
 
           <div
-            className="rounded-lg border border-neutral-200 bg-white p-2"
+            className="rounded-lg border border-separator bg-surface-floating p-2"
             data-testid="selected-item-precision"
           >
             <div
-              className="text-xs text-neutral-500"
+              className="text-xs text-label-secondary"
               data-testid="selected-item-size-guidance"
             >
               Catalogue size is preserved. Choose an available model or size option below to resize accurately.
@@ -322,7 +322,7 @@ export default function SelectedItemDetailsPanel({
           </div>
           {styleConsistencyReport && styleConsistencyReport.status !== "solo" ? (
             <div
-              className="rounded-lg border border-neutral-200 bg-white p-2"
+              className="rounded-lg border border-separator bg-surface-floating p-2"
               data-testid="selected-item-style-check"
             >
               <div className="flex items-center justify-between gap-2">
@@ -334,7 +334,7 @@ export default function SelectedItemDetailsPanel({
                   {styleConsistencyReport.status}
                 </span>
               </div>
-              <div className="mt-1 text-xs text-neutral-700">
+              <div className="mt-1 text-xs text-control-label-idle">
                 {styleConsistencyReport.summary}
               </div>
               {styleConsistencyReport.findings.length > 0 ? (
@@ -342,9 +342,9 @@ export default function SelectedItemDetailsPanel({
                   {styleConsistencyReport.findings.slice(0, 3).map((finding) => (
                     <div
                       key={`${finding.kind}-${finding.label}`}
-                      className="text-xs text-neutral-600"
+                      className="text-xs text-label-secondary"
                     >
-                      <span className="font-semibold text-neutral-800">
+                      <span className="font-semibold text-control-label">
                         {finding.label}:
                       </span>{" "}
                       {finding.message}
@@ -358,14 +358,14 @@ export default function SelectedItemDetailsPanel({
                     <button
                       key={alternative.productId}
                       type="button"
-                      className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5 text-left text-xs text-neutral-700 hover:bg-neutral-100"
+                      className="w-full rounded-md border border-box-border bg-tile px-2 py-1.5 text-left text-xs text-control-label-idle hover:bg-control-track"
                       data-testid={`selected-item-style-alternative-${alternative.productId}`}
                       disabled={itemActionsDisabled}
                       onClick={() => onApplyStyleAlternative(alternative.productId)}
                       title={alternative.reason}
                     >
                       <span className="block truncate font-semibold">{alternative.title}</span>
-                      <span className="block text-neutral-500">
+                      <span className="block text-label-secondary">
                         {alternative.reason}
                       </span>
                     </button>
@@ -379,7 +379,7 @@ export default function SelectedItemDetailsPanel({
               <span className={labelClass}>Move to room</span>
               <select
                 data-testid="selected-item-move-room"
-                className="mt-1 h-11 w-full rounded-md border border-neutral-200 bg-white px-2 text-xs text-neutral-900"
+                className="mt-1 h-11 w-full rounded-md border border-box-border bg-field px-2 text-xs text-label"
                 value={activeRoomId}
                 disabled={itemActionsDisabled}
                 onChange={(event) => onMoveToRoom(event.currentTarget.value)}
@@ -412,7 +412,7 @@ export default function SelectedItemDetailsPanel({
               ))}
             </div>
           ) : (
-            <div className="text-xs text-neutral-700">
+            <div className="text-xs text-control-label-idle">
               {selectedBrand ? `${selectedBrand} - ` : ""}
               {selectedCategoryDebugLabel ?? product.category.replace(/_/g, " ")}
               {activeVariantLabel ? ` - ${activeVariantLabel}` : ""}

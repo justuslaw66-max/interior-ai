@@ -60,6 +60,16 @@ export function sourceDrawingInk(geometry: Pick<FloorPlanSourceDrawingGeometryV2
   return tone === undefined ? fallback : `rgb(${tone},${tone},${tone})`;
 }
 
+/**
+ * How a source shape's line is drawn over its page. A final trace keeps its own width in page pixels, so it scales with
+ * the page like the picture under it (drawn in screen pixels, a page shown at half size would get lines twice too
+ * thick). Any other source shape (a proposal, a raster candidate) is a review mark of a fixed screen width.
+ */
+export function sourceDrawingStroke(geometry: Pick<FloorPlanSourceDrawingGeometryV2, "strokeWidthPx">, finalTrace: boolean,
+  selected = false): { strokeWidth: number; vectorEffect?: "non-scaling-stroke" } {
+  return finalTrace ? { strokeWidth: geometry.strokeWidthPx ?? 1 } : { strokeWidth: selected ? 4 : 1.5, vectorEffect: "non-scaling-stroke" };
+}
+
 export function sourceDrawingSvgPoints(points: FloorPlanSourceDrawingGeometryV2["points"]) {
   return points.map((point) => `${point.x},${point.y}`).join(" ");
 }

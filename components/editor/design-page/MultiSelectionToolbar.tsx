@@ -25,7 +25,7 @@ function ZoneCreateControls({ state, actions }: MultiSelectionToolbarProps) {
   return (
     <>
       <select
-        className="rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs text-neutral-900"
+        className="rounded-full border border-box-border bg-field px-2 py-1 text-xs text-label"
         value={state.zoneType}
         onChange={(event) => actions.changeZoneType(event.currentTarget.value as ZoneMin["type"])}
       >
@@ -47,8 +47,8 @@ export function MultiSelectionToolbar({
 }: MultiSelectionToolbarProps) {
   return (
     <div className="absolute left-1/2 top-4 z-30 -translate-x-1/2 md:top-bar-16">
-      <div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow">
-        <div className="text-xs font-semibold text-neutral-900">
+      <div data-surface="floating" className="flex items-center gap-2 rounded-full bg-surface-floating px-3 py-2 shadow ring-1 ring-surface-floating-edge">
+        <div className="text-xs font-semibold text-label">
           Group ({state.count})
         </div>
         <Button size="compact" onClick={actions.alignX}>

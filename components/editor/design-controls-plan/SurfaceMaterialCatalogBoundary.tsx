@@ -30,7 +30,7 @@ export const SurfaceMaterialCatalogBoundary = forwardRef<
         <>
           <div
             role="status"
-            className="text-xs text-neutral-600"
+            className="text-xs text-label-secondary"
           >
             {status === "error"
               ? "Surface materials could not be loaded. Your current room finishes are unchanged."

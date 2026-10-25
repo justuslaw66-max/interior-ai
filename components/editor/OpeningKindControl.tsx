@@ -29,7 +29,7 @@ function BlockedKindPlan({
   return (
     <div
       data-testid={`${testId}-blocked`}
-      className="mt-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900"
+      className="mt-2 rounded-md border border-warning-tint-border bg-warning-tint p-2 text-xs text-on-warning-tint"
     >
       <div>{plan.explanation}</div>
       {proMode && plan.approvedOverridePatch ? (
@@ -54,8 +54,8 @@ export function OpeningKindControl({
 }: OpeningKindControlProps) {
   const [blockedPlan, setBlockedPlan] =
     useState<DesignPageOpeningKindMutationPlan | null>(null);
-  const labelClass = "text-xs font-medium text-gray-600";
-  const controlClass = "mt-1 w-full rounded-md border border-gray-200 px-2 py-2 text-xs text-gray-900 focus:border-teal-500";
+  const labelClass = "text-xs font-medium text-label-secondary";
+  const controlClass = "mt-1 w-full rounded-md border border-box-border bg-field px-2 py-2 text-xs text-label focus:border-teal-500";
 
   const selectKind = (newKind: RoomOpening2D["kind"]) => {
     const plan = planDesignPageOpeningKindMutation(opening, newKind);

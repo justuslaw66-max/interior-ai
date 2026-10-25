@@ -20,6 +20,15 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
   - `surface-toast` and `on-surface-toast`, the Undo toast (`#171717` in light, `#3A3A3C` in dark), with `toast-control` and its hover for its Undo;
   - `accent-tint`, `accent-tint-border` and `on-accent-tint`, Pro's blue: the Pro tools pill, and Get Pro's word;
   - `surface-tab-bar`, the phone's steps along the bottom. It's opaque (the canvas can sit under it), so the translucent `control-track` can't stand in; the current step is a `surface-floating` card.
+- **The step panel (step 5.2a, 24 Oct):**
+  - `box-border`, the hairline around cards, boxes and fields in light (none in dark), and `separator-subtle`, the lighter line inside a card;
+  - `field` (fields, and the boxes inside a card) and `tile` (light's grey tiles), both `#2C2C2E` in dark;
+  - `surface-band`, the lower part of a card (light's grey band; no fill in dark), and `surface-floating-secondary`, a card inside a floating menu (`#3A3A3C` in dark);
+  - `swatch-edge` and `label-tertiary` (placeholders);
+  - the status colours: `success-tint`, `warning-tint` and `danger-tint`, each with `-border` and an `on-` text colour. Light uses today's tints (emerald, amber, red); dark uses Apple's system colours over a tint of themselves. Blue is the existing `accent-tint` set.
+- **Floating surfaces (step 5.2b, 24 Oct):**
+  - `surface-floating-edge`, a floating card's hairline where light has none (transparent in light);
+  - the `floating-*` values that a floating surface swaps in (below): `floating-card`, `floating-field`, `floating-tile` and `floating-elevated` (`#3A3A3C` in dark), `floating-on-danger` and `floating-on-danger-tint` (`#FF8A84`), and `floating-on-accent-tint` (`#64B0FF`). In light each is the value it replaces. They aren't utilities.
 - **The page tokens from before** (`--bg-canvas`, `--text-primary`, `--accent`, `--focus`…), with dark values too. Screens fold into the roles as they move.
 
 ## The switch
@@ -37,18 +46,20 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
   - light values match what the controls drew with before, and the dark values J chose;
   - text reaches 4.5:1 on each surface it sits on, with translucent fills read over each surface;
   - the focus ring and the primary edge reach 3:1.
-- **The delete look's red reads 4.1:1 over a floating bar in dark,** so deletes stay off the floating bars.
+- **The delete look's red reads 4.1:1 over a floating bar in dark,** and blue on its tint 4.0:1. On a floating surface they are `#FF8A84` and `#64B0FF` (5.0:1), through the swaps below.
 
 ## Which surface
 
-- **Panels and the bar:** `surface`. **Cards and fields on them:** `surface-secondary`.
+- **Panels and the bar:** `surface`. **The step panel's cards:** `surface-secondary` with `box-border`.
+- **Fields and boxes inside a card:** `field`; grey tiles: `tile`; the lower part of a card: `surface-band` (J, 24 Oct: no fill in dark, with `separator-subtle` above).
 - **Dialogs:** `surface-elevated`, with their fields `surface-elevated-secondary`.
 - **Anything over the canvas** (the canvas toolbar, the phone's pills, Pro's tool rail, the right rail) **and the menus that open over it** (More, Account, Saved views): `surface-floating`. Since the inset frame the canvas is `#1C1C1E` in dark, the same as `surface-elevated`, so a menu on the elevated surface would only be told from the canvas by its line (J, 24 Oct).
+- **A floating card that holds fields or status** (the right rail's cards, the inspector from md, the Selected panel, the bars for a door, a group or a zone, the level stack) carries `data-surface="floating"`. Under it, `surface-secondary` (a ChoiceTile, for one), `field`, `tile` and `surface-elevated` are `#3A3A3C` in dark, a step up from the card's `#2C2C2E`, and Delete's word, `on-danger-tint` and `on-accent-tint` lighten (J, 24 Oct: `#FF8A84` for Delete on the rail). Its edge is `border-separator`, or `ring-surface-floating-edge` where light draws no line. A box nested in a tile goes back to `surface-floating` with a `separator` edge, so status chips never sit on `#3A3A3C`, where they would read about 4.2:1. In the phone's step sheet the inspector is a `surface-secondary` card without the attribute.
 
 ## Moving screens
 
 - **Screens move folder by folder** (plan step 5). Replace hard-coded `bg-white`, `bg-neutral-*`, `text-neutral-*`, `border-neutral-*`, `text-white` and `bg-black` with roles.
-- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3, 2,848 after the inset frame, 2,738 after the laminate picker and the editor's shell), and the count can only go down.
+- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3, 2,848 after the inset frame, 2,738 after the laminate picker and the editor's shell, 2,399 after the step panel, 2,137 after the right rail), and the count can only go down.
 - **The `.text-neutral-400`, `-500` and `-600` overrides** at the end of `globals.css` are a light-only fix. They go once their users have moved.
 
 The edge between the panels and the canvas, the rounded inset frame, is in `editor-canvas-frame.md`.

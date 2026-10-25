@@ -1,0 +1,784 @@
+{
+  "schema_version": 1,
+  "supplier": "Greenlam",
+  "collection": "HPL 1300×3050 (4.25'×10')",
+  "collection_id": "hpl-1300x3050",
+  "source": {
+    "url": "https://www.greenlamusa.com/documents/bim/",
+    "download": "1300x3050mm / 4.25'x10' HPL collection",
+    "range_note": "Greenlam's 2024 HPL range; only its designs the 4'x8' catalogue doesn't have (J, 25 Oct 2026). Names and finishes from its Multi-Category Greenlam tables",
+    "masters": "~/Developer/material-masters/greenlam/hpl-1300x3050",
+    "rights": "Greenlam's permission given (J, 22 Oct 2026); details to be recorded"
+  },
+  "sheet": {
+    "width_mm": 1300,
+    "height_mm": 3050,
+    "thickness_mm": 0.7
+  },
+  "scale_rule": "A picture's width is the sheet's 1300 mm and its height follows the picture's own shape, so the grain is never stretched. Not yet checked against a real sheet.",
+  "entries": [
+    {
+      "id": "greenlam-abstracts-5577",
+      "code": "5577",
+      "name": "Houston",
+      "category": "abstracts",
+      "colour": "#9e9e99",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns_5577-houston.jpg",
+        "sha256": "2a16cb1c7c6e5c4cc66294dd75c226eb3cbb332fb2f68ac41d803c7ab0121916",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5577-houston.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5577-houston_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-abstracts-5578",
+      "code": "5578",
+      "name": "Madison",
+      "category": "abstracts",
+      "colour": "#2c2522",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns_5578-madison.jpg",
+        "sha256": "e598c1de89f4cbe8363e79fb9b1175d1e7ea5ed2ab384e0daea86248ff3e34e9",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5578-madison.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5578-madison_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-abstracts-5773",
+      "code": "5773",
+      "name": "Neptunite",
+      "category": "abstracts",
+      "colour": "#262220",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns-5773-neptunite.jpg",
+        "sha256": "6b709d4ab96e8de90499695c351fe00ff4a4f20a565af523d2ba14d9d7215e22",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Terracotta"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5773-neptunite.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5773-neptunite_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-abstracts-5774",
+      "code": "5774",
+      "name": "Antico",
+      "category": "abstracts",
+      "colour": "#271e1b",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns-5774-antico.jpg",
+        "sha256": "91b9513abd02f3535f703f20b1d962dd1bd911a12ada2af1c07f562b9961a52c",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Terracotta"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5774-antico.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5774-antico_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-abstracts-5778",
+      "code": "5778",
+      "name": "Ahuna Marble",
+      "category": "abstracts",
+      "colour": "#d8dbe0",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns-5778-ahuna-marble.jpg",
+        "sha256": "0d02bc69e5704606daaf0763c47d70457b198a89e49b99d5fbabf4af776429f7",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede",
+        "Glossy",
+        "Satin"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5778-ahuna-marble.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5778-ahuna-marble_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-abstracts-5784",
+      "code": "5784",
+      "name": "Athena Aegis",
+      "category": "abstracts",
+      "colour": "#2a2927",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns-5774-athena-aegis.jpg",
+        "sha256": "abc5532a6da67381d9de2d241003cf379fc38a392372fe32d9d7f9de446750f8",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede",
+        "Satin"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5784-athena-aegis.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5784-athena-aegis_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      },
+      "notes": [
+        "the file is named 5774, but Greenlam's table and Revit file give Athena Aegis as 5784"
+      ]
+    },
+    {
+      "id": "greenlam-abstracts-5794",
+      "code": "5794",
+      "name": "Grey Onyx",
+      "category": "abstracts",
+      "colour": "#bfb8b5",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns-5794-grey-onyx.jpg",
+        "sha256": "17e9379bba9dd076afd5965ec28b1c8dfad5f653fd6eedf3600ed993689ed000",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede",
+        "Satin"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5794-grey-onyx.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5794-grey-onyx_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-abstracts-5811",
+      "code": "5811",
+      "name": "Yorkshire",
+      "category": "abstracts",
+      "colour": "#bfc0bc",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns-5811-yorkshire.jpg",
+        "sha256": "79787fa5be0f2c2e3f1dedb52b8389b79a04404bce291407a5ceff471cc4ab71",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Terracotta"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5811-yorkshire.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5811-yorkshire_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-abstracts-5865",
+      "code": "5865",
+      "name": "Dune Pietra",
+      "category": "abstracts",
+      "colour": "#7c716b",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns-5865-dune-pietra.jpg",
+        "sha256": "0dc939fec57cbb50cf28c6f739f55ec44bf602a17b328804d5f57f301e4333b5",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede",
+        "Satin",
+        "Jupiter"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5865-dune-pietra.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5865-dune-pietra_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-abstracts-5866",
+      "code": "5866",
+      "name": "Rustica",
+      "category": "abstracts",
+      "colour": "#3c2213",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns-5866-rustica.jpg",
+        "sha256": "bb80ed967d15a023e4df6c420ea6c43ef82fec8fe54dada145264b13fb8fcf99",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede",
+        "Jupiter",
+        "Terracotta"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5866-rustica.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5866-rustica_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-abstracts-5867",
+      "code": "5867",
+      "name": "Seronic Black",
+      "category": "abstracts",
+      "colour": "#3c4446",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Patterns/Materials/Greenlam_Patterns-5867-seronic-black.jpg",
+        "sha256": "60adad328c2ceb79f0fd310dacf3278eb0cf3e55c9b684b60e82111628ea7654",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede",
+        "Satin",
+        "Glossy",
+        "Jupiter"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5867-seronic-black.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/abstracts-5867-seronic-black_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-metals-9031",
+      "code": "9031",
+      "name": "Silver Metal",
+      "category": "metals",
+      "colour": "#e0ddda",
+      "render": "texture",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Metal/Materials/Greenlam_Laminates_Metals_9031-silver-metal.jpg",
+        "sha256": "181f7cb3207c0a4ab559f2aed82ab7735a733d1d078a0fc7bd48d151e06fbb71",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Brushed"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/metals-9031-silver-metal.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/metals-9031-silver-metal_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-solids-112",
+      "code": "112",
+      "name": "Brilliant White",
+      "category": "solids",
+      "colour": "#f7f7f7",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_112-brilliant-white.jpg",
+        "sha256": "1ffbc50a53024fe4b026b308029549f9d1247ec48acaaaeb5a80f6b9e1273d08",
+        "width_px": 315,
+        "height_px": 650
+      },
+      "finishes": [
+        "Suede"
+      ]
+    },
+    {
+      "id": "greenlam-solids-113",
+      "code": "113",
+      "name": "Frosty White",
+      "category": "solids",
+      "colour": "#f8f5e6",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_113-frosty-white.jpg",
+        "sha256": "24e561803d0088fba16d030a9e128c99c36b49efca7bf66294e8ecd821778a36",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede"
+      ]
+    },
+    {
+      "id": "greenlam-solids-116",
+      "code": "116",
+      "name": "Pearly White",
+      "category": "solids",
+      "colour": "#f8faec",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_116-pearly-white.jpg",
+        "sha256": "53ef449623c5c847f2634b9d47f04afdcfdfa388f3866c7bdfbad5090aee8f7b",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede"
+      ]
+    },
+    {
+      "id": "greenlam-solids-149",
+      "code": "149",
+      "name": "Sheer",
+      "category": "solids",
+      "colour": "#cdc7bb",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_149-sheer.jpg",
+        "sha256": "288592da1bee7c347184a8ab9767bcb930e34a010e850f5d05b368588da9753b",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede"
+      ]
+    },
+    {
+      "id": "greenlam-solids-183",
+      "code": "183",
+      "name": "Bungee Grey",
+      "category": "solids",
+      "colour": "#5a5859",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_183-bungee-grey.jpg",
+        "sha256": "34009c0c6ebdde344092e3872634c0c94422ab2cdeb297e114040d4c00f8bc9c",
+        "width_px": 321,
+        "height_px": 650
+      },
+      "finishes": [
+        "Suede",
+        "Jupiter"
+      ]
+    },
+    {
+      "id": "greenlam-solids-231",
+      "code": "231",
+      "name": "Lime Yellow",
+      "category": "solids",
+      "colour": "#e5e633",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_231-lime-yellow.jpg",
+        "sha256": "8171107182e245b059d4198d45fb5f7607c9111d66ead47cf87e733a59204075",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede"
+      ]
+    },
+    {
+      "id": "greenlam-solids-279",
+      "code": "279",
+      "name": "Char Grey",
+      "category": "solids",
+      "colour": "#4f5554",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_279-char-grey.jpg",
+        "sha256": "6627cf6313fdec1c4b988a50c171c20404b940d35df7b5e8dd4f564ef300ce97",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede"
+      ]
+    },
+    {
+      "id": "greenlam-solids-464",
+      "code": "464",
+      "name": "Peacock",
+      "category": "solids",
+      "colour": "#008c96",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_464-peacock.jpg",
+        "sha256": "c8df4aeedbfcf445f341d9196ba0d06cbf7a7683bd55fdf0498a99d8a8e32899",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede"
+      ]
+    },
+    {
+      "id": "greenlam-solids-472",
+      "code": "472",
+      "name": "Lake Grey",
+      "category": "solids",
+      "colour": "#6f7881",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_472-lake-grey.jpg",
+        "sha256": "8867b8ac6b57d2380b22b8fe2ffb6043b6714a869065fbb6f2884400593f8a8d",
+        "width_px": 322,
+        "height_px": 650
+      },
+      "finishes": [
+        "Suede",
+        "Satin"
+      ]
+    },
+    {
+      "id": "greenlam-solids-473",
+      "code": "473",
+      "name": "Roman Blue",
+      "category": "solids",
+      "colour": "#4b5e6f",
+      "render": "flat_colour",
+      "grain": "none",
+      "picture": {
+        "path": "hpl-1300x3050/Colours/Materials/Greenlam_1300x3050_473-roman-blue.jpg",
+        "sha256": "297321880f0967465b63930b8bab5e59a408522896747fdd4e9f568e86466672",
+        "width_px": 315,
+        "height_px": 650
+      },
+      "finishes": [
+        "Suede",
+        "Satin"
+      ]
+    },
+    {
+      "id": "greenlam-woodgrains-1046",
+      "code": "1046",
+      "name": "Reco Wood",
+      "category": "woodgrains",
+      "colour": "#3d3936",
+      "render": "texture",
+      "grain": "along",
+      "picture": {
+        "path": "hpl-1300x3050/Woodgrains/Materials/Greenlam_Woodgrains_1046-reco-wood.jpg",
+        "sha256": "8f0b0132069666acb2077779665b0062f4b224f91288618a1fce1887b739aede",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Essentia"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-1046-reco-wood.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-1046-reco-wood_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-woodgrains-1072",
+      "code": "1072",
+      "name": "Sugarcoat Maple",
+      "category": "woodgrains",
+      "colour": "#bfae88",
+      "render": "texture",
+      "grain": "along",
+      "picture": {
+        "path": "hpl-1300x3050/Woodgrains/Materials/Greenlam_Woodgrains_1072-sugarcoat-maple.jpg",
+        "sha256": "38cf0848c61baa7fd9a6f2d200e80252a50cdab9ca2b949e1dddf2d4d2d1ccd3",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Essentia"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-1072-sugarcoat-maple.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-1072-sugarcoat-maple_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-woodgrains-5758",
+      "code": "5758",
+      "name": "Artisan Oak",
+      "category": "woodgrains",
+      "colour": "#a28659",
+      "render": "texture",
+      "grain": "along",
+      "picture": {
+        "path": "hpl-1300x3050/Woodgrains/Materials/Greenlam_Woodgrains_5758-artisan-oak.jpg",
+        "sha256": "bb1e404b42ddac570e7a5bc11455e76801d3d6be5cbeed32232922ae3f08d399",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "VRB"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5758-artisan-oak.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5758-artisan-oak_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-woodgrains-5762",
+      "code": "5762",
+      "name": "Tuscany Oak",
+      "category": "woodgrains",
+      "colour": "#b3935d",
+      "render": "texture",
+      "grain": "along",
+      "picture": {
+        "path": "hpl-1300x3050/Woodgrains/Materials/Greenlam_Woodgrains_5762-tuscany-oak.jpg",
+        "sha256": "f42fc15b4fc33edc3fc8a703ee80e3230d82bbf454d377ee0428101bec4817a9",
+        "width_px": 1087,
+        "height_px": 2355
+      },
+      "finishes": [
+        "Suede",
+        "Pure Grain",
+        "Linea"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5762-tuscany-oak.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5762-tuscany-oak_swatch.webp",
+        "width_px": 1087,
+        "height_px": 2355,
+        "width_mm": 1300,
+        "height_mm": 2816
+      }
+    },
+    {
+      "id": "greenlam-woodgrains-5763",
+      "code": "5763",
+      "name": "Albin Oak Blonde",
+      "category": "woodgrains",
+      "colour": "#d9bea0",
+      "render": "texture",
+      "grain": "along",
+      "picture": {
+        "path": "hpl-1300x3050/Woodgrains/Materials/Greenlam_Woodgrains_5763_albin-oak-blonde.jpg",
+        "sha256": "02df04d9f39d22194555450a4c22a820b394fb53680e1fc28765e77b984cd4f3",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede",
+        "Satin",
+        "VRB",
+        "Essentia",
+        "Linea"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5763-albin-oak-blonde.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5763-albin-oak-blonde_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-woodgrains-5764",
+      "code": "5764",
+      "name": "Albin Oak Natural",
+      "category": "woodgrains",
+      "colour": "#836b56",
+      "render": "texture",
+      "grain": "along",
+      "picture": {
+        "path": "hpl-1300x3050/Woodgrains/Materials/Greenlam_Woodgrains_5764_albin-oak-natural.jpg",
+        "sha256": "e71a5da3abea2b1f2ff1e699e1f9382c552760bdcec0fc1bb383fb3fadad1b0a",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Suede",
+        "Essentia",
+        "Linea"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5764-albin-oak-natural.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5764-albin-oak-natural_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-woodgrains-5765",
+      "code": "5765",
+      "name": "Albin Oak Black",
+      "category": "woodgrains",
+      "colour": "#120d0b",
+      "render": "texture",
+      "grain": "along",
+      "picture": {
+        "path": "hpl-1300x3050/Woodgrains/Materials/Greenlam_Woodgrains_5765_albin-oak-black.jpg",
+        "sha256": "2f02bcedf4474e302000548023e623f8febc465ae33fcdf0525a4010b998744a",
+        "width_px": 900,
+        "height_px": 1800,
+        "crop_px": [
+          0,
+          0,
+          900,
+          899
+        ]
+      },
+      "finishes": [
+        "Suede",
+        "Satin",
+        "Essentia",
+        "Linea"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5765-albin-oak-black.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-5765-albin-oak-black_swatch.webp",
+        "width_px": 900,
+        "height_px": 899,
+        "width_mm": 1300,
+        "height_mm": 1299
+      },
+      "notes": [
+        "the picture is one 900x900 tile drawn twice with a light line across the joint, so the import uses the top tile without the line"
+      ]
+    },
+    {
+      "id": "greenlam-woodgrains-7815",
+      "code": "7815",
+      "name": "Sabatina Oak",
+      "category": "woodgrains",
+      "colour": "#816851",
+      "render": "texture",
+      "grain": "along",
+      "picture": {
+        "path": "hpl-1300x3050/Woodgrains/Materials/Greenlam_Woodgrains_7815-sabatina-oak.jpg",
+        "sha256": "cc71976f460f6fb48246b8ee1fc6725bb2eb1a8457820ac8044cbf9c5d09c409",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Essentia"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-7815-sabatina-oak.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-7815-sabatina-oak_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    },
+    {
+      "id": "greenlam-woodgrains-7816",
+      "code": "7816",
+      "name": "Carpenter Cherry",
+      "category": "woodgrains",
+      "colour": "#6c3320",
+      "render": "texture",
+      "grain": "along",
+      "picture": {
+        "path": "hpl-1300x3050/Woodgrains/Materials/Greenlam_Woodgrains_7816-carpenter-cherry.jpg",
+        "sha256": "81b11900004858b26d730c99c5a12075f736e41d374c1408e32e1bcd591b1b57",
+        "width_px": 900,
+        "height_px": 1800
+      },
+      "finishes": [
+        "Essentia"
+      ],
+      "texture": {
+        "url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-7816-carpenter-cherry.webp",
+        "swatch_url": "/assets/catalog/laminates/greenlam/hpl-1300x3050/woodgrains-7816-carpenter-cherry_swatch.webp",
+        "width_px": 900,
+        "height_px": 1800,
+        "width_mm": 1300,
+        "height_mm": 2600
+      }
+    }
+  ]
+}

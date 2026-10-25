@@ -1,9 +1,10 @@
 "use client";
 
 import { useThree } from "@react-three/fiber";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import * as THREE from "three";
 
+import { acquireCabinetLaminateTexture } from "../cabinetLaminateTextures";
 import { currentCabinetMaterials } from "../catalog/finishes";
 import type { CabinetMaterialRef } from "../types";
 
@@ -22,10 +23,6 @@ export function disposeCabinetObject3DResources(object: THREE.Object3D): void {
 
   geometries.forEach((geometry) => geometry.dispose());
   materials.forEach((material) => material.dispose());
-}
-
-export function disposeCabinetOwnedTextures(textures: readonly THREE.Texture[]): void {
-  new Set(textures).forEach((texture) => texture.dispose());
 }
 
 function attachCabinetMaterialTexture(
@@ -60,6 +57,7 @@ export function useCabinetSceneResourceOwnership({
   materials,
 }: CabinetSceneResourceOwnership): void {
   const invalidate = useThree((state) => state.invalidate);
+  const renderer = useThree((state) => state.gl);
 
   useEffect(() => {
     return () => disposeCabinetObject3DResources(assembly);
@@ -70,42 +68,22 @@ export function useCabinetSceneResourceOwnership({
     return () => disposeCabinetObject3DResources(previewFrontEdges);
   }, [previewFrontEdges]);
 
-  useEffect(() => {
-    // A catalogue laminate loads its current picture, even in a design saved before a correction.
+  // A layout effect, so a picture already loaded is on the rebuilt cabinet before its first frame
+  // and an edit never shows plain colour. The pictures belong to the page's shared cache
+  // (cabinetLaminateTextures.ts), one copy per renderer; this cabinet leases them and releases
+  // them on change or unmount.
+  useLayoutEffect(() => {
+    // A catalogue laminate draws its current picture, even in a design saved before a correction.
     const texturedMaterials = currentCabinetMaterials(materials).filter(
       (material) => typeof material.textureUrl === "string" && material.textureUrl.length > 0
     );
-    if (!texturedMaterials.length) return;
-
-    let cancelled = false;
-    const loadedTextures: THREE.Texture[] = [];
-    const loader = new THREE.TextureLoader();
-    for (const materialRef of texturedMaterials) {
-      loader.load(
-        materialRef.textureUrl!,
-        (texture) => {
-          if (cancelled) {
-            texture.dispose();
-            return;
-          }
-          texture.colorSpace = THREE.SRGBColorSpace;
-          texture.wrapS = THREE.RepeatWrapping;
-          texture.wrapT = THREE.RepeatWrapping;
-          loadedTextures.push(texture);
-          attachCabinetMaterialTexture(assembly, materialRef.id, texture);
-          // Scenes render on demand; a late texture needs its own frame.
-          invalidate();
-        },
-        undefined,
-        () => {
-          // The color fallback remains usable when a texture asset is unavailable.
-        }
-      );
-    }
-
-    return () => {
-      cancelled = true;
-      disposeCabinetOwnedTextures(loadedTextures);
-    };
-  }, [assembly, invalidate, materials]);
+    const releases = texturedMaterials.map((materialRef) =>
+      acquireCabinetLaminateTexture(materialRef.textureUrl!, renderer, (texture) => {
+        attachCabinetMaterialTexture(assembly, materialRef.id, texture);
+        // Scenes render on demand; a picture that arrives later needs its own frame.
+        invalidate();
+      })
+    );
+    return () => releases.forEach((release) => release());
+  }, [assembly, invalidate, materials, renderer]);
 }

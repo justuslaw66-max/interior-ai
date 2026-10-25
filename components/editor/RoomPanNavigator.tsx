@@ -172,13 +172,13 @@ export default function RoomPanNavigator({
 
   return (
     <section
-      data-testid="room-pan-navigator"
-      className="w-[264px] max-[520px]:w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg"
+      data-testid="room-pan-navigator" data-surface="floating"
+      className="w-[264px] max-[520px]:w-full overflow-hidden rounded-lg border border-separator bg-surface-floating shadow-lg"
       aria-label="Room navigator"
     >
-      <div className="flex items-center justify-between border-b border-neutral-200 px-2 py-1">
+      <div className="flex items-center justify-between border-b border-separator px-2 py-1">
         <div className="flex min-w-0 items-center gap-2.5 text-xs font-semibold">
-          <span className="text-blue-600">2D</span>
+          <span className="text-link">2D</span>
           <RoomPanActiveRoom
             room={rooms.find((room) => room.id === activeRoomId)}
             productCount={itemCountsByRoomId[activeRoomId] ?? 0}

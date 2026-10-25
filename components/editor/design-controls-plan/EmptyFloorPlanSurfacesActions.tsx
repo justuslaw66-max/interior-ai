@@ -51,9 +51,9 @@ export function EmptyFloorPlanSurfacesActions({
   return (
     <div
       data-testid="surfaces-start-state"
-      className="rounded-lg border border-neutral-200 bg-white p-3"
+      className="rounded-lg border border-box-border bg-field p-3"
     >
-      <div className="text-sm font-semibold text-neutral-950">
+      <div className="text-sm font-semibold text-label">
         Choose a room before applying finishes
       </div>
       <div className={progressMetaClass}>Choose a template, draw a room, or upload a floor plan.</div>

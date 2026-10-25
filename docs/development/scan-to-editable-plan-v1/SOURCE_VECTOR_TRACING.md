@@ -30,19 +30,34 @@ Without a drawing the trace is `source-strokes-v2`, unchanged. Both the upload's
 
 J, 22 Oct 2026: "get the app to produce these blurry lines as clean sharp vectors". With `FLOOR_PLAN_FAITHFUL_TRACE=1`
 on the process that runs imports, a clean page is drawn by the faithful trace (`services/floorplan-vectorizer/
-faithful_trace.py`, r6, run by `faithful_drawing.py` after stage 1 and the exporter): what is drawn, copied as clean
+faithful_trace.py`, r8, run by `faithful_drawing.py` after stage 1 and the exporter): what is drawn, copied as clean
 vectors - solid fills as polygons with straight edges, every line, arc and dot fitted at its own width and grey,
 lettering and small marks copied by their outline. Nothing is read as a room, a door or a wall. Its drawing replaces
-stage 1's in the evidence (`version: "faithful-trace-r6"`), with each item's grey as `tone` (0 black - 255 white) and
+stage 1's in the evidence (`version: "faithful-trace-r8"`), with each item's grey as `tone` (0 black - 255 white) and
 no `textBoxes`.
+
+r8 (25 Oct, J's choice "Tracer round r8") is r7 - the graders' list of round 4: narrow hollow rectangles, curves made
+whole, door arcs, dash-dot lines, panel ends - with one more step, `letters_over_lines`. In a soft picture (its ink
+edges' median steepness under 0.60, of 0.4 MP or more: 111 Emerald Hill's plan pages, low-resolution web plans) a
+word's letters run together at the tracer's ink level, and into the lighter line work under them (a room's name on its
+floor's stripes), and were traced as a blob. At a darker level (0.45) they stand apart: each letter of a word of two or
+more is copied by its outline (at 0.6 of its darkest, from the picture smoothed by half a pixel) and taken out of the
+picture, and the line work under it is traced without it. Crisp plans are traced exactly as by r7 (all 154 test
+drawings measure 0.637 or more). Blind pairwise grade against r6 on 15 soft pages, three graders: r8 preferred on all
+ten Emerald Hill pages and both web plans it changes (36 of 36 choices); on three tiny web thumbnails (0.2-0.3 MP),
+where it broke wall pieces into fragments, r6 was preferred, hence the 0.4 MP floor. Notes:
+`claude/faithful-trace-round5-2026-10-25.md` in the project.
 
 `extractSourceArtwork` takes such a drawing as the trace itself (`source-trace-faithful.ts`): its items become the
 paths (`faithful-<kind>-<n>`) as they are, with their tone. None of the v3 passes run - the drawing is not moved
 against the picture, and no lettering, marks or leftovers are traced from it - because the faithful trace already lies
 on the page's ink and copies the lettering itself. The tone is carried into the source-drawing annotations
 (`tone`, validated 0-255), drawn by the review overlay, the compare wipe and the retrace preview
-(`sourceDrawingInk`), and by the SVG and PDF export; a path without a tone keeps the view's own ink. The retrace
-preview reuses the retained drawing, so it needs no Python.
+(`sourceDrawingInk`), and by the SVG and PDF export; a path without a tone keeps the view's own ink. The review
+overlay and the compare wipe draw a final trace's lines at their own width in page pixels, so they scale with the page
+like the picture under them (`sourceDrawingStroke`); until 25 Oct the compare wipe drew them in screen pixels, so a page
+shown at half its size had lines twice too thick there. The retrace preview reuses the retained drawing, so it needs no
+Python.
 
 How the trace is carried: fills one item per polygon, rings wound by nesting depth so the nonzero rule fills them as
 the trace's even-odd rule does; lines carried on by half their width at both ends (the trace draws square caps, the app

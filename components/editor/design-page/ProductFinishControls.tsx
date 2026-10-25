@@ -125,9 +125,9 @@ type ProductFinishControlsProps = {
   actions: ProductFinishControlsActions;
 };
 
-const sectionHeadingClass = "text-sm font-semibold text-neutral-900";
+const sectionHeadingClass = "text-sm font-semibold text-label";
 
-const selectedLabelClass = "mt-2 text-xs text-neutral-600";
+const selectedLabelClass = "mt-2 text-xs text-label-secondary";
 const HOVERED_SWATCH_RING = "0 0 0 2px #fff, 0 0 0 3px #a0a0a0";
 const swatchClass = "shrink-0 h-20 w-20 rounded-sm bg-cover bg-center";
 
@@ -351,12 +351,12 @@ export function ProductFinishControls({
                         : undefined,
                     }}
                   />
-                  <div className="space-y-1 bg-white px-4 py-3">
-                    <div className="text-base font-semibold leading-snug text-neutral-900">
+                  <div className="space-y-1 bg-surface-elevated px-4 py-3">
+                    <div className="text-base font-semibold leading-snug text-label">
                       {state.structuredColour.preview.title}
                     </div>
                     {state.structuredColour.preview.subtitle ? (
-                      <div className="text-[12px] text-neutral-600">
+                      <div className="text-[12px] text-label-secondary">
                         {state.structuredColour.preview.subtitle}
                       </div>
                     ) : null}
@@ -365,7 +365,7 @@ export function ProductFinishControls({
                         {state.structuredColour.preview.tags.map((tag) => (
                           <span
                             key={tag}
-                            className="rounded-sm bg-neutral-100 px-2 py-1 text-xs text-neutral-700"
+                            className="rounded-sm bg-control-track px-2 py-1 text-xs text-control-label-idle"
                           >
                             {tag}
                           </span>
@@ -373,22 +373,22 @@ export function ProductFinishControls({
                       </div>
                     ) : null}
                     {state.structuredColour.preview.finishCode ? (
-                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
                         {state.structuredColour.preview.finishCode}
                       </div>
                     ) : null}
                     {state.structuredColour.preview.compositionHeading ? (
                       <>
-                        <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                        <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
                           {state.structuredColour.preview.compositionHeading}
                         </div>
-                        <div className="text-[12px] leading-snug text-neutral-700">
+                        <div className="text-[12px] leading-snug text-control-label-idle">
                           {state.structuredColour.preview.composition}
                         </div>
-                        <div className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                        <div className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
                           Care
                         </div>
-                        <div className="text-[12px] leading-snug text-neutral-700">
+                        <div className="text-[12px] leading-snug text-control-label-idle">
                           {state.structuredColour.preview.care}
                         </div>
                       </>
@@ -403,12 +403,12 @@ export function ProductFinishControls({
             {state.structuredColour.groups.map((group) => (
               <div key={group.key}>
                 {group.label ? (
-                  <div className="mb-2 text-[15px] font-medium tracking-tight text-neutral-900">
+                  <div className="mb-2 text-[15px] font-medium tracking-tight text-label">
                     {group.label}
                   </div>
                 ) : null}
                 {group.helperText ? (
-                  <div className="mb-2 text-[13px] text-neutral-600">
+                  <div className="mb-2 text-[13px] text-label-secondary">
                     {group.helperText}
                   </div>
                 ) : null}

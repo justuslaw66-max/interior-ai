@@ -22,7 +22,8 @@ export type CabinetLaminateCatalogItem = CabinetMaterialCatalogItem & {
   swatchUrl?: string;
 };
 
-// The 4'x8' catalogue doesn't give each design's finish, so these are per kind of decor.
+// Per kind of decor: the 4'x8' catalogue doesn't give each design's finish, and the 4.25'x10'
+// collection's finishes (in its JSON) are not drawn yet.
 const SURFACE_BY_CATEGORY: Record<CabinetLaminateCategory, { roughness: number; metalness: number }> = {
   abstracts: { roughness: 0.55, metalness: 0 },
   metals: { roughness: 0.36, metalness: 0.45 },

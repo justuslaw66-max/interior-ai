@@ -13,14 +13,14 @@ import type { RecoverProposedRoomLayoutInput } from "@/lib/floor-plan-room-recov
 import { Button } from "@/components/ui/Button";
 
 type Props = { floor: FloorPlanFloorV2; wall: FloorPlanWallV2; commit: (operation: ConsumerWallTopologyMutationV2) => boolean };
-const inputStyle = "mt-1 w-full rounded border border-neutral-400 bg-transparent p-1.5";
+const inputStyle = "mt-1 w-full rounded border border-control-edge-hover bg-transparent p-1.5";
 
 function Millimetres({ label, value, change, min }: { label: string; value: number; change: (value: number) => void; min?: number }) {
   return <label>{label} (mm)<input className={inputStyle} type="number" step="1" min={min} value={value} onChange={(event) => change(Number(event.target.value))} /></label>;
 }
 
 export function CanonicalPlanRemodelTools({ floor, wall, commit, proposal, recover }: Props & { proposal?: FloorPlanProposalState; recover: (input: RecoverProposedRoomLayoutInput) => boolean }) {
-  return <div className="grid gap-3 border-t border-neutral-300 pt-3">
+  return <div className="grid gap-3 border-t border-separator pt-3">
     <CanonicalWallDimensions floor={floor} wall={wall} commit={commit} />
     <CanonicalWallJoin key={`join:${wall.id}`} floor={floor} wall={wall} commit={commit} />
     <AddPartition floor={floor} commit={commit} />
@@ -62,7 +62,7 @@ function WallRemoval({ floor, wall, commit }: Props) {
   const [keepRoomId, setKeepRoomId] = useState(rooms[0]?.id ?? wall.adjacentRoomIds[0] ?? "");
   const openings = floor.openings.filter((opening) => opening.wallId === wall.id);
   return <details><summary className="cursor-pointer font-semibold">Remove selected wall</summary>
-    <p className="my-2 text-amber-700">Structural status is not established by this drawing. Removing a wall here is a conceptual proposal and does not authorize demolition. Consult the relevant qualified professional before physical work.</p>
+    <p className="my-2 text-on-warning-tint">Structural status is not established by this drawing. Removing a wall here is a conceptual proposal and does not authorize demolition. Consult the relevant qualified professional before physical work.</p>
     <p>Affected openings: {openings.map((opening) => `${opening.kind} ${opening.id}`).join(", ") || "none"}. Their removal is part of this transaction. Attached furniture stays at its world position for review.</p>
     {rooms.length === 2 ? <label className="my-2 block">Keep name and finishes from<select className={inputStyle} value={keepRoomId} onChange={(event) => setKeepRoomId(event.target.value)}>{rooms.map((room) => <option key={room.id} value={room.id}>{room.name}</option>)}</select></label> : null}
     <label className="my-2 flex gap-2"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />I reviewed these dependencies and am making a conceptual proposal.</label>

@@ -30,29 +30,29 @@ function PickerOption({ option, onSelect }: { option: SurfacePickerOption; onSel
       aria-pressed={option.selected}
       className={
         option.selected
-          ? "grid grid-cols-[2.5rem_1fr] gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-2 text-left"
-          : "grid grid-cols-[2.5rem_1fr] gap-2 rounded-lg border border-neutral-200 bg-white p-2 text-left hover:bg-neutral-50"
+          ? "grid grid-cols-[2.5rem_1fr] gap-2 rounded-lg border border-emerald-300 bg-success-tint p-2 text-left"
+          : "grid grid-cols-[2.5rem_1fr] gap-2 rounded-lg border border-separator bg-surface-floating p-2 text-left hover:bg-control-secondary-hover"
       }
       disabled={option.disabled}
       onClick={onSelect}
     >
-      <span aria-hidden="true" className="h-10 w-10 rounded-md border border-black/10" style={option.swatchStyle} />
+      <span aria-hidden="true" className="h-10 w-10 rounded-md border border-swatch-edge" style={option.swatchStyle} />
       <span className="min-w-0">
-        <span className="block truncate text-xs font-semibold text-neutral-900">{option.name}</span>
-        <span className="block truncate text-xs text-neutral-600">{option.metadata}</span>
+        <span className="block truncate text-xs font-semibold text-label">{option.name}</span>
+        <span className="block truncate text-xs text-label-secondary">{option.metadata}</span>
         {option.showGovernance ? (
           <span className="mt-1 flex flex-wrap gap-1">
             <span
               className={
                 option.draft
-                  ? "rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800"
-                  : "rounded-full bg-emerald-50 px-1.5 py-0.5 text-xs font-semibold text-emerald-700"
+                  ? "rounded-full bg-warning-tint px-1.5 py-0.5 text-xs font-semibold text-on-warning-tint"
+                  : "rounded-full bg-success-tint px-1.5 py-0.5 text-xs font-semibold text-on-success-tint"
               }
             >
               {option.publishStatus}
             </span>
             {option.blockerCount > 0 ? (
-              <span className="rounded-full bg-orange-50 px-1.5 py-0.5 text-xs font-semibold text-orange-700">
+              <span className="rounded-full bg-warning-tint px-1.5 py-0.5 text-xs font-semibold text-on-warning-tint">
                 {option.blockerCount} blockers
               </span>
             ) : null}
@@ -73,9 +73,9 @@ export function SurfaceMaterialPicker({ picker, onClose, onSelect }: {
   onSelect: (materialId: string) => void;
 }) {
   return (
-    <div data-testid="selection-inspector-floor-picker" className="mt-3 max-h-80 overflow-y-auto rounded-lg border border-neutral-200 bg-white p-2">
+    <div data-testid="selection-inspector-floor-picker" className="mt-3 max-h-80 overflow-y-auto rounded-lg border border-separator bg-surface-floating p-2">
       <div className="flex items-center justify-between gap-2">
-        <div className="text-xs font-semibold text-neutral-900">{picker.title}</div>
+        <div className="text-xs font-semibold text-label">{picker.title}</div>
         <Button
           data-testid="selection-inspector-floor-picker-close"
           variant="secondary" size="compact"
@@ -91,7 +91,7 @@ export function SurfaceMaterialPicker({ picker, onClose, onSelect }: {
           ))}
         </div>
       ) : (
-        <div className="mt-2 rounded-lg border border-neutral-200 p-2 text-xs text-neutral-600">{picker.emptyMessage}</div>
+        <div className="mt-2 rounded-lg border border-separator p-2 text-xs text-label-secondary">{picker.emptyMessage}</div>
       )}
     </div>
   );
