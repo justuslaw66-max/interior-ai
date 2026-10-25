@@ -1,8 +1,8 @@
 /**
  * How a cabinet material's picture lies on a part, at its real size.
  *
- * A laminate picture shows a real area of its sheet (for Greenlam's 4'x8' HPL, the
- * 1220 mm width and the picture's own shape). Each face of a part gets texture
+ * A laminate picture shows a real area of its sheet (for Greenlam's HPL, the sheet's width,
+ * 1220 or 1300 mm, and the picture's own shape). Each face of a part gets texture
  * coordinates in millimetres divided by that area, so a 600 mm door shows 600 mm of
  * sheet and the grain is never stretched. Coordinates are measured from the cabinet's
  * origin, so neighbouring parts in one plane continue the pattern, as fronts cut from
