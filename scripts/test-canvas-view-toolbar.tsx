@@ -147,12 +147,12 @@ assert.match(read("components/editor/design-page/DesignPageEditorChrome.tsx"), /
 assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const canvasFrame = resolveCanvasFrameBox\(\{ wide: viewportWidth >= 768, clientPreview: isClientPreview, panelVisible: primaryLeftPanelVisible, \.\.\.leftPanel \}\);/);
 assert.equal(
   renderToStaticMarkup(<CanvasFrameCard frame={dockedFrame}><canvas /></CanvasFrameCard>),
-  '<div data-testid="canvas-frame-card" data-canvas-framed="true" class="absolute overflow-hidden rounded-xl" style="left:302px;top:64px;right:8px;bottom:8px"><canvas></canvas></div>',
-  "The card: 12px corners, 8px into the frame."
+  '<div data-testid="canvas-frame-card" data-canvas-framed="true" class="absolute overflow-hidden rounded-xl bg-surface-canvas" style="left:302px;top:64px;right:8px;bottom:8px"><canvas></canvas></div>',
+  "The card: 12px corners, 8px into the frame, in the canvas's own colour."
 );
 assert.match(
   renderToStaticMarkup(<CanvasFrameCard frame={FULL_WINDOW_CANVAS}><canvas /></CanvasFrameCard>),
-  /data-canvas-framed="false" class="absolute overflow-hidden" style="left:0;top:0;right:0;bottom:0"/
+  /data-canvas-framed="false" class="absolute overflow-hidden bg-surface-canvas" style="left:0;top:0;right:0;bottom:0"/
 );
 assert.match(read("components/editor/design-page/DesignSceneCanvas.tsx"), /<CanvasFrameCard frame=\{configuration\.planSafeArea\.frame\}>\s*<Canvas\s/, "The scene sizes itself to the card.");
 
