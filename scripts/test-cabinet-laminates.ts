@@ -39,12 +39,24 @@ assert.equal(
   "lib/generated/cabinet-laminates.generated.ts is out of date; run npm run generate:cabinet-laminates."
 );
 
-// The Greenlam 4'x8' catalogue: every design once, every picture present and never stretched.
-assert.equal(CABINET_LAMINATES.length, 342, "Greenlam's 4'x8' HPL collection has 342 designs in the catalogue.");
+// The Greenlam catalogue: every design once, every picture present and never stretched.
+// The 4'x8' collection (342 designs, 234 pictures), and the 4.25'x10' collection's designs the
+// 4'x8' one doesn't have (J, 25 Oct 2026: 31 designs, 21 pictures).
+const inCollection = (id: string) => CABINET_LAMINATES.filter((laminate) => laminate.collectionId === id);
+const fourByEight = inCollection("hpl-1220x2440");
+const tenFoot = inCollection("hpl-1300x3050");
+assert.equal(fourByEight.length, 342, "Greenlam's 4'x8' HPL collection has 342 designs in the catalogue.");
+assert.equal(tenFoot.length, 31, "The 4.25'x10' collection adds 31 designs the 4'x8' one doesn't have.");
+assert.equal(CABINET_LAMINATES.length, fourByEight.length + tenFoot.length);
 assert.equal(new Set(CABINET_LAMINATES.map((laminate) => laminate.id)).size, CABINET_LAMINATES.length);
 assert(CABINET_LAMINATES.every((laminate) => !CABINET_MATERIALS.some((material) => material.id === laminate.id)));
+const fourByEightCodes = new Set(fourByEight.map((laminate) => laminate.supplierCode));
+assert(tenFoot.every((laminate) => !fourByEightCodes.has(laminate.supplierCode)), "A design already in the 4'x8' catalogue isn't added again.");
+assert(fourByEight.every((laminate) => laminate.sheetSizeMm.width === 1220 && laminate.sheetSizeMm.height === 2440));
+assert(tenFoot.every((laminate) => laminate.sheetSizeMm.width === 1300 && laminate.sheetSizeMm.height === 3050));
 const textured = CABINET_LAMINATES.filter((laminate) => laminate.textureUrl);
-assert.equal(textured.length, 234, "234 designs draw their sheet picture; the solid colours are flat.");
+assert.equal(fourByEight.filter((laminate) => laminate.textureUrl).length, 234, "234 4'x8' designs draw their sheet picture; the solid colours are flat.");
+assert.equal(tenFoot.filter((laminate) => laminate.textureUrl).length, 21, "21 4.25'x10' designs draw their sheet picture; the solid colours are flat.");
 for (const laminate of CABINET_LAMINATES) {
   assert.match(laminate.color ?? "", /^#[0-9a-f]{6}$/, `${laminate.id} needs its mean colour.`);
   if (!laminate.textureUrl) {
@@ -53,7 +65,7 @@ for (const laminate of CABINET_LAMINATES) {
   }
   const size = laminate.textureSizeMm;
   assert(size, `${laminate.id} needs the real size its picture covers.`);
-  assert.equal(size.width, 1220, `${laminate.id}'s picture spans the sheet's 1220 mm width.`);
+  assert.equal(size.width, laminate.sheetSizeMm.width, `${laminate.id}'s picture spans its sheet's width.`);
   for (const url of [laminate.textureUrl, laminate.swatchUrl]) {
     assert(url && existsSync(path.join(root, "public", url)), `${laminate.id} is missing ${url}.`);
   }
@@ -64,6 +76,21 @@ for (const laminate of CABINET_LAMINATES) {
 assert.equal(findCabinetLaminate("greenlam-woodgrains-3396"), undefined, "3396's picture is a boxed thumbnail.");
 assert(findCabinetLaminate("greenlam-woodgrains-5394")?.textureUrl, "5394 uses the full picture from the 4.25'x10' collection.");
 assert(findCabinetLaminate("greenlam-abstracts-5594") && findCabinetLaminate("greenlam-unicore-5594"));
+// The 4.25'x10' pictures that needed care (catalog/laminates/greenlam/hpl-1300x3050.json).
+for (const [code, reason] of [
+  ["115", "115 Alabaster's picture is a stone design, but it is a plain colour"],
+  ["471", "471 Arctic Grey's picture is a woodgrain, but it is a plain colour"],
+  ["9107", "9107's picture is 5004 Lorraine Walnut's, already in the 4'x8' catalogue"],
+]) {
+  assert(!CABINET_LAMINATES.some((laminate) => laminate.supplierCode === code), reason);
+}
+assert.equal(findCabinetLaminate("greenlam-abstracts-5784")?.designName, "Athena Aegis", "Athena Aegis is 5784, though its file says 5774.");
+assert.equal(findCabinetLaminate("greenlam-abstracts-5774")?.designName, "Antico");
+assert.deepEqual(
+  findCabinetLaminate("greenlam-woodgrains-5765")?.textureSizeMm,
+  { width: 1300, height: 1299 },
+  "5765 Albin Oak Black draws one tile of its picture, without the line drawn across the joint."
+);
 const across = CABINET_LAMINATES.filter((laminate) => laminate.textureGrain === "across").map((laminate) => laminate.supplierCode);
 assert.deepEqual(across.sort(), ["5517", "5518", "5519", "5520", "5523", "5524", "5527", "5528", "5529", "5530"]);
 
@@ -108,6 +135,16 @@ for (const door of teakFronts) {
   near(uv.uMin, door.position.x / 1220, `${door.id} continues the sheet from its neighbour`);
   near(uv.vMin, door.position.y / teak.textureSizeMm.height, `${door.id} sits at its height on the sheet`);
 }
+
+// A 4.25'x10' woodgrain lies on its own, wider sheet.
+const blonde = findCabinetLaminate("greenlam-woodgrains-5763");
+assert(blonde?.textureSizeMm && blonde.textureGrain === "along");
+const blondeWardrobe = withLaminateFronts(blonde);
+const blondeDoor = generateCabinetParts(blondeWardrobe).find((part) => part.type === "door_front" && part.materialId === blonde.id);
+assert(blondeDoor);
+const blondeUv = frontFaceUv(blondeWardrobe, blondeDoor);
+near(blondeUv.uSpan, blondeDoor.size.width / 1300, `${blondeDoor.id} shows its width of a 1300 mm sheet`);
+near(blondeUv.vSpan, blondeDoor.size.height / blonde.textureSizeMm.height, `${blondeDoor.id} shows its height of sheet`);
 
 // A horizontal-grain design reads horizontal by default: the picture stays upright, its grain across the door.
 const santos = findCabinetLaminate("greenlam-woodgrains-5523");
