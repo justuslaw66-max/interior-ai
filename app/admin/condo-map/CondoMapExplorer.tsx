@@ -48,7 +48,9 @@ export function CondoMapExplorer({ developments, token }: { developments: CondoD
       </aside>
       <section aria-label="Map" className="min-w-0 space-y-2">
         <div className="relative h-[78vh] min-h-[30rem] overflow-hidden rounded-xl border border-separator bg-surface-secondary">
-          <div ref={setContainer} className="absolute inset-0" />
+          {/* Sized by height, not by absolute positioning: mapbox-gl.css (loaded after the app's styles) sets the map
+              container to position: relative, which collapsed an absolute inset-0 box to 0 px tall. */}
+          <div ref={setContainer} className="h-full w-full" />
           {message ? (
             <p role="status" className="absolute left-4 right-4 top-4 rounded-lg bg-surface-elevated p-3 text-sm text-label shadow">
               {message}
