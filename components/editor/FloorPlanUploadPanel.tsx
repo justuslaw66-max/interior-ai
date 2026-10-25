@@ -200,23 +200,23 @@ export default function FloorPlanUploadPanel({
   const choice = useFloorPlanUploadChoice(lifecycleIdentity, trainingBenchmarkOptIn);
   // A closed window forgets its file, so opening it again resumes that upload instead of sending it twice.
   const dialog = useFloorPlanUploadDialogLifecycle(lifecycleScopeKey, choice.forget);
-  const cardClass = "rounded-xl border border-neutral-200 bg-white p-3";
-  const titleClass = "text-sm font-semibold text-neutral-900";
-  const subtleClass = "text-xs text-neutral-500";
-  const rangeClass = "h-2 w-full accent-neutral-900";
-  const selectClass = "rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 disabled:opacity-50";
+  const cardClass = "rounded-xl border border-box-border bg-surface-secondary p-3";
+  const titleClass = "text-sm font-semibold text-label";
+  const subtleClass = "text-xs text-label-secondary";
+  const rangeClass = "h-2 w-full accent-control-primary";
+  const selectClass = "rounded border border-box-border bg-field px-2 py-1.5 text-sm text-label disabled:opacity-50";
   const drawToolButtonClass = (mode: FloorPlanDrawRoomMode) => {
     const isActive = traceRoomMode && traceRoomDrawMode === mode;
     return [
       "flex min-h-14 items-center gap-3 rounded-lg border px-3 py-2 text-left text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-45",
       isActive
-        ? "border-blue-200 bg-blue-50 text-neutral-900 shadow-sm"
-        : "border-neutral-100 bg-white text-neutral-700 hover:border-neutral-200 hover:bg-neutral-50",
+        ? "border-accent-tint-border bg-accent-tint text-label shadow-sm"
+        : "border-separator-subtle bg-field text-control-label-idle hover:border-box-border hover:bg-control-secondary-hover",
     ].join(" ");
   };
-  const drawStatusClass = "rounded-full border border-neutral-200 bg-white px-2 py-1 text-xs font-semibold text-neutral-500";
-  const drawToolMetaClass = "mt-0.5 block text-xs font-medium text-neutral-500";
-  const drawToolIconClass = "border-neutral-600 bg-neutral-300";
+  const drawStatusClass = "rounded-full border border-box-border bg-field px-2 py-1 text-xs font-semibold text-label-secondary";
+  const drawToolMetaClass = "mt-0.5 block text-xs font-medium text-label-secondary";
+  const drawToolIconClass = "border-label-secondary bg-control-handle";
   const traceRoomHint =
     traceRoomDrawMode === "straight_wall"
       ? "Click corners, then close the outline."
@@ -285,7 +285,7 @@ export default function FloorPlanUploadPanel({
           id={FLOOR_PLAN_WORKSPACE_LAUNCH_ACTION_ID}
           type="button"
           data-testid="floor-plan-import-workspace-launcher"
-          className="flex w-full items-center justify-between gap-3 rounded-lg bg-neutral-50 p-3 text-left hover:bg-neutral-100"
+          className="flex w-full items-center justify-between gap-3 rounded-lg bg-tile p-3 text-left hover:bg-control-track"
           disabled={disabled}
           onClick={(event) => {
             const forwardedOpener =
@@ -297,7 +297,7 @@ export default function FloorPlanUploadPanel({
           }}
         >
           <span className="min-w-0">
-            <span className="block text-xs font-semibold text-neutral-800">
+            <span className="block text-xs font-semibold text-control-label">
               Open floor plan upload
             </span>
             <span className={`${subtleClass} mt-0.5 block`}>
@@ -311,9 +311,9 @@ export default function FloorPlanUploadPanel({
         {!underlay && !showDrawRoomTools && (
           <div
             data-testid="floor-plan-upload-empty-state"
-            className="rounded-lg bg-neutral-50 p-3"
+            className="rounded-lg bg-tile p-3"
           >
-            <div className="text-xs font-semibold text-neutral-800">
+            <div className="text-xs font-semibold text-control-label">
               Upload floor plan: {choice.formats.summary}
             </div>
             <div className={`${subtleClass} mt-1`}>
@@ -324,9 +324,9 @@ export default function FloorPlanUploadPanel({
 
         {underlay && (
           <>
-          <div className="flex items-center justify-between gap-2 rounded-lg bg-neutral-50 p-3">
+          <div className="flex items-center justify-between gap-2 rounded-lg bg-tile p-3">
             <div>
-              <div className="text-xs font-semibold text-neutral-800">
+              <div className="text-xs font-semibold text-control-label">
                 Floor plan image
               </div>
               <div className={subtleClass}>
@@ -363,10 +363,10 @@ export default function FloorPlanUploadPanel({
               onChange={(event) => onOpacityChange(Number(event.target.value))}
             />
           </div>
-          <div className="rounded-lg bg-neutral-50 p-3">
+          <div className="rounded-lg bg-tile p-3">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <div className="text-xs font-semibold text-neutral-800">
+                <div className="text-xs font-semibold text-control-label">
                   Scale
                 </div>
                 <div className={subtleClass}>
@@ -398,7 +398,7 @@ export default function FloorPlanUploadPanel({
                     value={calibrationDistanceMeters}
                     disabled={disabled}
                     onChange={(event) => onCalibrationDistanceChange?.(event.target.value)}
-                    className="w-24 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900"
+                    className="w-24 rounded border border-box-border bg-field px-2 py-1.5 text-sm text-label"
                     placeholder="m"
                   />
                   <span className={subtleClass}>m</span>
@@ -425,10 +425,10 @@ export default function FloorPlanUploadPanel({
         )}
 
         {showDrawRoomTools && (
-          <div className="rounded-lg bg-neutral-50 p-3">
+          <div className="rounded-lg bg-tile p-3">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <div className="text-xs font-semibold text-neutral-800">
+                <div className="text-xs font-semibold text-control-label">
                   Draw room
                 </div>
                 <div className={subtleClass}>
@@ -520,7 +520,7 @@ export default function FloorPlanUploadPanel({
                       value={traceRoomType}
                       disabled={disabled}
                       onChange={(event) => onTraceRoomTypeChange?.(event.target.value as RoomType)}
-                      className="min-w-32 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900"
+                      className="min-w-32 rounded border border-box-border bg-field px-2 py-1.5 text-sm text-label"
                     >
                       {traceRoomTypeOptions.map((option) => (
                         <option key={option.type} value={option.type}>
@@ -538,7 +538,7 @@ export default function FloorPlanUploadPanel({
                   </Button>
                 </div>
                 {(showAngleLockControls || showExactWallLengthControls) && (
-                  <div className="rounded-lg bg-white p-2">
+                  <div className="rounded-lg bg-surface-secondary p-2">
                     <div className={subtleClass}>Precision</div>
                     {showAngleLockControls && (
                       <SegmentedControl
@@ -577,7 +577,7 @@ export default function FloorPlanUploadPanel({
                                 onApplyExactWallLength?.();
                               }
                             }}
-                            className="min-w-0 flex-1 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900 disabled:opacity-50"
+                            className="min-w-0 flex-1 rounded border border-box-border bg-field px-2 py-1.5 text-sm text-label disabled:opacity-50"
                             placeholder="3500"
                           />
                           <span className={subtleClass}>mm</span>
@@ -597,7 +597,7 @@ export default function FloorPlanUploadPanel({
                   </div>
                 )}
                 <details className="pt-1">
-                  <summary className="cursor-pointer text-xs font-semibold text-neutral-600">
+                  <summary className="cursor-pointer text-xs font-semibold text-label-secondary">
                     More drawing options
                   </summary>
                   <div className="mt-2 grid gap-2">
@@ -612,8 +612,8 @@ export default function FloorPlanUploadPanel({
                         onClick={() => startRoomDraw(tool.id)}
                       >
                         <span className="relative block h-9 w-10 shrink-0" aria-hidden="true">
-                          <span className="absolute left-1 top-3 h-6 w-8 rounded-b-full border-b-2 border-l-2 border-r-2 border-neutral-600" />
-                          <span className="absolute right-1 top-1 h-5 w-5 rounded-tr-full border-r-2 border-t-2 border-neutral-600" />
+                          <span className="absolute left-1 top-3 h-6 w-8 rounded-b-full border-b-2 border-l-2 border-r-2 border-label-secondary" />
+                          <span className="absolute right-1 top-1 h-5 w-5 rounded-tr-full border-r-2 border-t-2 border-label-secondary" />
                         </span>
                         <span className="min-w-0 leading-tight">
                           {tool.label}
@@ -632,10 +632,10 @@ export default function FloorPlanUploadPanel({
 
         {underlay && (
           <>
-          <div className="rounded-lg bg-neutral-50 p-3">
+          <div className="rounded-lg bg-tile p-3">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <div className="text-xs font-semibold text-neutral-800">
+                <div className="text-xs font-semibold text-control-label">
                   Doors & windows
                 </div>
                 <div className={subtleClass}>
@@ -667,7 +667,7 @@ export default function FloorPlanUploadPanel({
                     onChange={(event) =>
                       onTraceOpeningKindChange?.(event.target.value as RoomOpening2D["kind"])
                     }
-                    className="min-w-28 rounded border border-neutral-200 bg-white px-2 py-1.5 text-sm text-neutral-900"
+                    className="min-w-28 rounded border border-box-border bg-field px-2 py-1.5 text-sm text-label"
                   >
                     <option value="door">Door</option>
                     <option value="window">Window</option>
