@@ -807,7 +807,7 @@ export function useSurfaceMaterialTexture({
         widthMeters: roomWidthMeters,
         heightMeters: roomDepthMeters,
         maxAnisotropy,
-        offset: normalizedOffset,
+        offset: { x: normalizedOffset.x, y: normalizedOffset.y },
         rotationRad,
       });
 
