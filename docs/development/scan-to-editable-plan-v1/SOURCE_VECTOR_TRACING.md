@@ -41,8 +41,11 @@ paths (`faithful-<kind>-<n>`) as they are, with their tone. None of the v3 passe
 against the picture, and no lettering, marks or leftovers are traced from it - because the faithful trace already lies
 on the page's ink and copies the lettering itself. The tone is carried into the source-drawing annotations
 (`tone`, validated 0-255), drawn by the review overlay, the compare wipe and the retrace preview
-(`sourceDrawingInk`), and by the SVG and PDF export; a path without a tone keeps the view's own ink. The retrace
-preview reuses the retained drawing, so it needs no Python.
+(`sourceDrawingInk`), and by the SVG and PDF export; a path without a tone keeps the view's own ink. The review
+overlay and the compare wipe draw a final trace's lines at their own width in page pixels, so they scale with the page
+like the picture under them (`sourceDrawingStroke`); until 25 Oct the compare wipe drew them in screen pixels, so a page
+shown at half its size had lines twice too thick there. The retrace preview reuses the retained drawing, so it needs no
+Python.
 
 How the trace is carried: fills one item per polygon, rings wound by nesting depth so the nonzero rule fills them as
 the trace's even-odd rule does; lines carried on by half their width at both ends (the trace draws square caps, the app
