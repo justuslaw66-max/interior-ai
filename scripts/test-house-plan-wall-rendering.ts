@@ -752,6 +752,28 @@ assert.match(source, /\.\.\.buildOpeningWallSurfacePanels\(room, topologyRooms, 
   "Opening lintels and sills must be routed through the same selectable panel owner as the side sections.");
 assert.match(source, /const partHeight = panel\.part\.height \?\? wallHeight;[\s\S]*const partCenterY = panel\.part\.centerY \?\? wallHeight \/ 2;[\s\S]*position=\{\[panel\.part\.x, partCenterY, panel\.part\.z\]\}[\s\S]*partHeight=\{partHeight\}/,
   "Opening panel hit geometry and visible surfaces must retain their own height and elevation.");
+// Wall panels are laid from the floor up (25 Oct 2026): every part of a wall finish says how high its bottom edge is, and its
+// picture is painted with that height, so the parts around a door or window share their sheet joints.
+assert.equal(
+  source.match(/partHeight=\{partHeight\} partBottom=\{partCenterY - partHeight \/ 2\}/g)?.length,
+  2,
+  "Both owners of a wall finish's parts pass the part's height above the floor."
+);
+assert.match(
+  fs.readFileSync(path.join(path.dirname(rendererPath), "house-plan-3d", "useWallSurfaceTexture.ts"), "utf8"),
+  /useSurfaceMaterialTexture\(\{[\s\S]*?roomDepthMeters: partHeightMeters,[\s\S]*?bottomAboveFloorMeters: partBottomMeters,[\s\S]*?startAlongFaceMeters: partStartMeters,/,
+  "A wall finish's picture is painted knowing the part's height above the floor and where it starts along the face."
+);
+assert.match(
+  source,
+  /export function WallSurfacePanelMesh\([\s\S]*?partStart=\{getWallSurfacePartStartAlongFace\(\{ room, segment, part: panel\.part, side: panel\.side,/,
+  "Each visible finish part says where it starts along its face (house-plan-3d/wallSurfaceLayout.ts)."
+);
+assert.match(
+  source,
+  /const layout = useMemo\(\(\) => wallSurfaceLayout\(solid, side, wallSolids\), \[side, solid, wallSolids\]\);[\s\S]*?useSurfaceMaterialTexture\(\{[\s\S]*?bottomAboveFloorMeters: layout\.bottomAboveFloorMeters,[\s\S]*?startAlongFaceMeters: layout\.startAlongFaceMeters,/,
+  "An imported plan's wall slices are painted knowing their height above the floor and where they start along the wall."
+);
 assert.match(source, /const edges = panel\.boundaryEdges \?\?/,
   "Window walls must use the exposed boundary, excluding internal fragment seams.");
 

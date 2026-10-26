@@ -6,7 +6,8 @@ import type { CondoMapsBySlug } from "./condo-map-view";
  * Each development's map (its map.json from the admin data route), fetched once the page is up, all at the same time;
  * each is drawn as soon as it arrives. A map that fails to load or to read is reported and the rest still draw.
  */
-export type CondoMapData = { maps: CondoMapsBySlug; failures: string[] };
+export type CondoMapFailure = { slug: string; detail: string };
+export type CondoMapData = { maps: CondoMapsBySlug; failures: CondoMapFailure[] };
 
 async function fetchDevelopmentMap(slug: string, signal: AbortSignal): Promise<CondoDevelopmentMap> {
   const response = await fetch(condoMapFileUrl(slug, "map.json"), { signal, credentials: "same-origin" });
@@ -24,7 +25,7 @@ export function useCondoMapData(slugKey: string): CondoMapData {
         (cause: unknown) => {
           if (controller.signal.aborted) return;
           const detail = cause instanceof Error ? cause.message : "it didn't load";
-          setData((current) => ({ ...current, failures: [...current.failures, `${slug}: ${detail}`] }));
+          setData((current) => ({ ...current, failures: [...current.failures, { slug, detail }] }));
         }
       );
     }

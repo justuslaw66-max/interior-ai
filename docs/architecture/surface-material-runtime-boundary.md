@@ -64,6 +64,14 @@ slip class, the barefoot class, the ABK sheet's collection, an outdoor-range fla
 (1.2 KB gzip). ABK's sheets themselves stay out of the client: the generator builds the facts. See
 `docs/architecture/surface-suitability-checks.md`.
 
+25 Oct 2026: a second canonical source. Greenlam's 4'×8' patterned laminates are wall panels (`wall_panel`), read from the laminate
+catalogue (`catalog/laminates/greenlam/hpl-1220x2440.json`, through `lib/generated/cabinet-laminates.generated.ts`) by
+`lib/laminate-wall-panel-materials.ts`, with no YAML copy. `lib/surface-material-sources.ts` joins them to the YAML records for the
+server registry (`catalog-registry`), and the generator audits them with the same checks and writes them into both projections:
+233 records, sorted with the rest, so 1,638 in all. They add about 118 KB raw (7 KB compressed) to the eager render tuples and
+about 148 KB raw to the lazy catalog metadata. The admin surface QA page still lists the YAML files only. See
+`docs/architecture/cabinet-laminates.md`.
+
 ## Runtime and loading contract
 
 `lib/surface-material-runtime.ts` synchronously decodes the compact render

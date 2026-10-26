@@ -23,6 +23,9 @@ python3 -I _tools/mapexport/export_condo_map.py . ~/Developer/interior-ai/catalo
   --models 33-residences=_prototypes/build/work/models
 ```
 
+A development whose package says `"directory": {"listed": false}` isn't exported (12 On Shan, from 25 Oct 2026: J
+took it off the directory and the map); remove its folder here when one is taken off.
+
 33 Residences' models are those `_prototypes/build/build.sh` writes to `_prototypes/build/work/models` (its
 `models33.py` step). The export is the same every time it runs on the same masters. It adds and replaces files but
 doesn't remove any, so delete the development folders first when a plan or model has been renamed or dropped.
@@ -34,7 +37,8 @@ Only admins can open the map and its data (the page and `/api/admin/condo-map/..
 
 - Floor plans and key plans: the developers' brochures (via cos.sg).
 - Land lots: "Contains information from SLA Cadastral Land Parcel accessed on 24 Oct 2026 from data.gov.sg which is
-  made available under the terms of the Singapore Open Data Licence version 1.0".
+  made available under the terms of the Singapore Open Data Licence version 1.0" (32 Gilstead's lot was accessed on
+  25 Oct 2026; the page shows the credit once, with both dates).
 - Buildings' outlines from OneMap: "OneMap, © Singapore Land Authority".
 
 No map tiles or satellite pictures are stored here; Mapbox draws the base map in the browser.

@@ -11,7 +11,8 @@ import type { CanvasFrameBox } from "@/lib/editor-canvas-insets";
  * editor and, from md, its 12px corners. The scene sizes itself to the card, and the 2D fit and
  * 3D's lens (`CanvasLensShift`) keep the plan and the room clear of what floats over it; if the
  * scene fails, the error shows in the card. On phones and in Client Preview the card is the whole
- * editor.
+ * editor. The card is the canvas's own colour: while a room prepares the scene fades out and the
+ * card shows, keeping its shape in the frame (J, 25 Oct).
  */
 export function CanvasFrameCard({ frame, children }: { frame: CanvasFrameBox; children: ReactNode }) {
   const framed = frame.leftPx + frame.topPx + frame.rightPx + frame.bottomPx > 0;
@@ -19,7 +20,7 @@ export function CanvasFrameCard({ frame, children }: { frame: CanvasFrameBox; ch
     <div
       data-testid="canvas-frame-card"
       data-canvas-framed={framed ? "true" : "false"}
-      className={framed ? "absolute overflow-hidden rounded-xl" : "absolute overflow-hidden"}
+      className={framed ? "absolute overflow-hidden rounded-xl bg-surface-canvas" : "absolute overflow-hidden bg-surface-canvas"}
       style={{ left: frame.leftPx, top: frame.topPx, right: frame.rightPx, bottom: frame.bottomPx }}
     >
       <CanvasErrorBoundary>{children}</CanvasErrorBoundary>

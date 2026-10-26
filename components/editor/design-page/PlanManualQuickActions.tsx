@@ -37,7 +37,7 @@ type PlanManualQuickActionsProps = {
 const manualPlanQuickActionButtonClass = "group relative";
 
 const manualPlanQuickActionTooltipClass =
-  "pointer-events-none absolute bottom-full left-1/2 z-40 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-xs font-semibold text-white shadow-lg group-hover:block group-focus:block group-focus-visible:block";
+  "pointer-events-none absolute bottom-full left-1/2 z-40 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-surface-toast px-2 py-1 text-xs font-semibold text-on-surface-toast shadow-lg group-hover:block group-focus:block group-focus-visible:block";
 
 function ManualPlanActionIcon({ name }: { name: ManualPlanActionIconName }) {
   const lineProps = {
@@ -101,9 +101,9 @@ export function PlanManualQuickActions({ state, actions }: PlanManualQuickAction
   return (
     <div
       data-testid="plan-manual-quick-actions"
-      className="pointer-events-auto flex flex-wrap items-center justify-center gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-xl backdrop-blur"
+      className="pointer-events-auto flex flex-wrap items-center justify-center gap-1 rounded-xl border border-separator bg-surface-floating/95 p-1 shadow-xl backdrop-blur"
       role="toolbar"
-      aria-label="Manual plan actions"
+      aria-label="Manual plan actions" data-surface="floating"
     >
       <Button
         size="icon"

@@ -36,6 +36,10 @@ export type CondoUnitCard = {
   areaSqm: number | null;
   areaSqft: number | null;
   areaSqftFrom: string | null;
+  /** The attic void the plan leaves out of its m² (10 Evelyn's 5th storey), when it gives one. */
+  atticVoidSqm: number | null;
+  /** The sq ft counts the attic void (the unit chart's figure, or converted from the m² with it). */
+  areaSqftWithVoid: boolean;
   balconyM2: number | null;
   plan: string | null;
 };
@@ -190,6 +194,8 @@ function unitCard(value: unknown, path: string): CondoUnitCard {
     areaSqm: optional(card.areaSqm, `${path}.areaSqm`, number),
     areaSqft: optional(card.areaSqft, `${path}.areaSqft`, number),
     areaSqftFrom: optional(card.areaSqftFrom, `${path}.areaSqftFrom`, text),
+    atticVoidSqm: optional(card.atticVoidSqm, `${path}.atticVoidSqm`, number),
+    areaSqftWithVoid: card.areaSqftWithVoid === true,
     balconyM2: optional(card.balconyM2, `${path}.balconyM2`, number),
     plan: optional(card.plan, `${path}.plan`, (entry, at) => matching(entry, at, CONDO_FILE_NAME)),
   };

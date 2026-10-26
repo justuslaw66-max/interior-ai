@@ -1,11 +1,11 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { condoMapFileUrl, type CondoUnitCard as CondoUnit } from "@/lib/condo-map/condo-map-data";
-import { floorName, unitArea, unitLayout } from "./condo-map-view";
+import { unitArea, unitFloorName, unitLayout } from "./condo-map-view";
 
 /** The chosen unit: its type, floor and stack, its layout and areas as the brochure gives them, and its plan. */
 export function CondoUnitCard({ slug, unit, onClose }: { slug: string; unit: CondoUnit; onClose: () => void }) {
-  const where = [unit.type ? `Type ${unit.type}` : null, floorName(unit.floor), unit.stack ? `stack ${unit.stack}` : null];
+  const where = [unit.type ? `Type ${unit.type}` : null, unitFloorName(unit), unit.stack ? `stack ${unit.stack}` : null];
   return (
     <section aria-labelledby="condo-map-unit" className="rounded-xl border border-separator bg-surface-elevated p-4">
       <div className="flex items-start justify-between gap-2">

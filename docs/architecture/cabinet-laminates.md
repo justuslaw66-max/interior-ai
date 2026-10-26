@@ -14,6 +14,8 @@ Cabinet fronts, bodies and countertops are made from a supplier's laminate sheet
 | The pictures the app loads | `public/assets/catalog/laminates/greenlam/<collection>/<category>-<code>-<name>.webp`, plus a `_swatch.webp` for pickers |
 | The runtime catalogue (generated) | `lib/generated/cabinet-laminates.generated.ts`, from `scripts/generate-cabinet-laminate-runtime.ts` |
 | Laminates as cabinet materials | `features/cabinetry/catalog/laminates.ts` (`CABINET_LAMINATES`, `findCabinetLaminate`) |
+| Laminates as wall panels (surface materials) | `lib/laminate-wall-panel-materials.ts`, read by `lib/surface-material-sources.ts` (the server registry) and `scripts/generate-surface-material-runtime.ts`; see "On walls" below |
+| How a laminate takes the light, per kind of decor | `lib/laminate-surface-finish.ts`, for cabinets and walls alike |
 | How a picture lies on a part | `features/cabinetry/materialTexture.ts`, used by `features/cabinetry/createCabinetThreeGroup.ts` |
 | Loading the pictures, shared by every cabinet on the page | `features/cabinetry/cabinetLaminateTextures.ts`, leased by `features/cabinetry/hooks/useCabinetSceneResourceOwnership.ts` |
 | Which finishes are offered, search, and keeping a design's materials in step | `features/cabinetry/catalog/finishes.ts` |
@@ -21,7 +23,7 @@ Cabinet fronts, bodies and countertops are made from a supplier's laminate sheet
 | Checks | `scripts/test-cabinet-laminates.ts` and `scripts/test-cabinet-finishes.ts`; the picture cache in `scripts/test-cabinetry-preview-renderer.ts` (all part of `test:cabinetry`) |
 
 - The JSON and the WebP pictures are made from the manufacturer's files by `make_app_copies.py <masters> <repo> [collection]`, which is kept with the originals in `~/Developer/material-masters/greenlam/`. The collection defaults to `hpl-1220x2440`. The masters folder also keeps each collection's picture inventory (`tracking/<collection>-pictures.csv`) and contact sheets.
-- After changing the JSON, run `npm run generate:cabinet-laminates`. `npm run check:cabinet-laminates` and the test fail when the generated file is out of date.
+- After changing the JSON, run `npm run generate:cabinet-laminates`, then `npm run generate:surface-material-runtime` for the wall panels. `npm run check:cabinet-laminates`, `npm run check:surface-material-runtime` and the tests fail when a generated file is out of date.
 - **Picture rights:** Greenlam's permission was given (J, 22 Oct 2026). Its details are to be recorded in the masters README.
 
 ## What an entry holds
@@ -75,6 +77,16 @@ Cabinet fronts, bodies and countertops are made from a supplier's laminate sheet
 - Designs by kind (Woodgrains, Solid colours, Stone & abstract, Pearlescent, Metallic, Unicore), 24 at a time with "Show all", and a search: a word matches a code from its start, or the design's name, supplier or kind.
 - The chosen design is always in view: it takes the first place when it would be further on.
 - Tiles show the middle of the sheet (`_swatch.webp`) or the flat colour, the code and name, and a label for a horizontal grain or a pattern. The summary says how the design is drawn.
+
+## On walls
+
+Since 25 Oct 2026 the 4'×8' collection's patterned designs are also wall finishes (J's choices: patterned designs first, whole sheets, a warning on bathroom walls, the pictures confirmed for walls). They come from the same catalogue, with no copy in `catalog/surface-materials/`:
+- **233 wall panels.** Each design with a picture is a `wall_panel` surface material with the cabinets' id (`greenlam-<category>-<code>`), picture, swatch and sheet size, published. 5338 Steamed Bouchle is left out: its picture covers 1220×2115 mm, less than a sheet, so a wall would repeat it. The flat colours (no picture) and the 4.25'×10' collection (pictures cover 2600 of its 3050 mm) come later.
+- **One catalogue, two readers.** `lib/surface-material-sources.ts` gives the server registry the YAML records and these; the surface generator audits both alike and writes them into the render and catalogue data, so the 3D view, the inspector and the browser treat a panel like any other wall finish. See `docs/architecture/surface-material-runtime-boundary.md`.
+- **A sheet on a wall** is a portrait 1220×2440 mm "tile" whose one face is the design's picture, at the size it covers (`image_physical_size_mm`). 228 pictures cover the sheet (within 3%); the five taller ones show a sheet-sized window. Panels are laid straight, from the floor up and from the face's start: the cut sheet is at the top, a full sheet meets the corner, and the parts of a wall beside, below and above a door or window, each painted on its own canvas, share their joints and sheet edges, with a sheet's picture carrying on across them (`components/editor/renderers/surfaceTileRows.ts`). Each part says how high it starts and how far along the face: `house-plan-3d/wallSurfaceLayout.ts` for drawn rooms (from the face's corner), `canonical-floor-plan/geometry.ts` (`wallSurfaceLayout`, given the wall's slices) for imported plans; each measures from the face's corner, the way its picture runs. Tiles are laid as before, from each part's top and left edges.
+- **Joints:** 1 mm in dark grey (#444442), which reads as the shadow between butted sheets; the inspector calls them joints, not grout, and they can be changed like tile grout.
+- **The browser:** brand Greenlam, each kind of decor a collection (Woodgrains, Abstracts, Pearlescents, Metals, Unicore, Solids). A wall panel is named design first ("Greenlam Nordic Acacia 5394"; cabinets say "Greenlam 5394 Nordic Acacia"), because the wall browser sorts by name: code first, all 233 would come ahead of every tile. Effect: woodgrains are Wood, solids and Unicore Plain, metals and pearlescents Metallic; an abstract is Marble, Stone, Concrete or Woven where its name says so (Creme Marquina, Tivoli Travertine, Urban Concrete, Grey Mesh), otherwise Pattern. Colour is not classified yet. The rooms it suits leave out bathrooms and balconies: thin HPL is for dry walls.
+- **Quantities and wet walls:** for now panels are counted in m² plus 10%, as tiles are; whole sheets and the bathroom-wall warning follow.
 
 ## Pictures that needed care (Greenlam 4'×8')
 

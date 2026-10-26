@@ -4,7 +4,9 @@
 whole building as grey massing (33 Residences as its detailed 3D models), a chosen floor cut open with its units' rooms
 painted on it, and a chosen unit's card with its plan. It is admin-only and unlisted (not in the admin menu) while J
 decides what it becomes. J's choices, 24 Oct 2026: admins only; all nine developments. 25 Oct 2026: 32 Gilstead
-added, so ten (each new development in the masters joins the map with a re-export).
+added, and 12 On Shan taken off (it is a single-owner serviced-apartment building now, Weave Suites – Novena, so its
+units aren't sold one by one; its package is kept in the masters), so nine. Each new development in the masters joins
+the map with a re-export.
 
 ## Decisions
 
@@ -26,6 +28,15 @@ added, so ten (each new development in the masters joins the map with a re-expor
   its floor) and `condo-map-layers.ts` (the sources, layers, filters and colours) don't touch Mapbox;
   `scripts/test-condo-map.ts` runs the filters against the real features. `condo-map-mapbox.ts` does the Mapbox work
   and the hooks call it from their effects.
+- **A unit is on every storey it takes.** A duplex or a penthouse with its attic has a part on each of its storeys, so
+  it is painted and can be picked on each; choosing it keeps the floor already chosen when that is one of its storeys,
+  and its card names them ("1st–2nd storey"). An area with an attic void says so ("+ attic void"), and its square
+  feet then include the void.
+- **The page says what didn't work.** A refused token, a map style that didn't load, a load that takes over 20 s, a
+  development whose data didn't load (named in the list) and a detailed development whose models didn't load (drawn as
+  massing instead, with a note) each show as such. The data route answers a Git LFS pointer (models not pulled) with a
+  404, so Mapbox never gets a pointer as a model, and refuses folder names that are object properties
+  (`constructor`, `__proto__`).
 - **Mapbox's old buildings are kept off the sites** by a clip layer on each footprint 2.5 m in, and, where a browser
   draws one anyway (Safari did in the prototype), by marking it "selected", which the map's config draws clear
   (`condo-map-basemap.ts`).
