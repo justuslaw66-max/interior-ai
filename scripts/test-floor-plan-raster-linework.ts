@@ -6,7 +6,15 @@ import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { registerEmptyPlanScaleCalibration } from "@/lib/floor-plan-import-review-geometry";
 import { applyFloorPlanTopologyMutationV2 } from "@/lib/floor-plan-topology-mutations";
-import { PDFDocument, degrees } from "pdf-lib";
+import {
+  PDFDocument,
+  PDFName,
+  concatTransformationMatrix,
+  degrees,
+  drawObject,
+  popGraphicsState,
+  pushGraphicsState,
+} from "pdf-lib";
 import { mergeMixedPdfEvidence } from "@/lib/floor-plan-imports/mixed-pdf-evidence";
 import {
   registerRoomRectangles,
@@ -710,6 +718,89 @@ async function testRejectedClusterDiagnostics() {
   assert.equal(empty.diagnostics.singleSegmentCandidateCount, 0);
 }
 
+// A brochure scanned to black and white draws its plan as a fax-coded (CCITT G4) picture, which PDF.js decodes with
+// its own decoders in pdfjs-dist/wasm (lib/floor-plan-imports/pdf-runtime.ts). Without them the picture is left off
+// the rendered page and the import sees a page of lettering alone (1 Suites, 10 Shelford, 120 Grange: J, 26 Oct).
+// The picture: 96 x 64 px, a 3 px outline round two rooms with a 2 px wall between them.
+const FAX_PLAN_G4 = "JqB4NX//Iu6v/mA1S4af//////////////////////////////////////////////////////+I//H//gAgAg==";
+
+async function testFaxPictureInPdfIsRendered() {
+  const pdf = await PDFDocument.create();
+  const page = pdf.addPage([400, 300]);
+  const picture = pdf.context.register(pdf.context.stream(Buffer.from(FAX_PLAN_G4, "base64"), {
+    Type: "XObject",
+    Subtype: "Image",
+    Width: 96,
+    Height: 64,
+    ImageMask: true,
+    BitsPerComponent: 1,
+    Filter: "CCITTFaxDecode",
+    DecodeParms: { K: -1, Columns: 96, Rows: 64, BlackIs1: true },
+  }));
+  page.node.setXObject(PDFName.of("Plan"), picture);
+  // drawn 240 x 160 pt at (80, 70) from the page's foot: 480 x 320 px at the renderer's 2 x, its top at y = 140 px
+  page.pushOperators(pushGraphicsState(), concatTransformationMatrix(240, 0, 0, 160, 80, 70), drawObject("Plan"), popGraphicsState());
+  const bytes = await pdf.save();
+  const source: StoredFloorPlanSource = {
+    id: "fax-source-1",
+    fileName: "fax-plan.pdf",
+    mimeType: "application/pdf",
+    byteLength: bytes.byteLength,
+    sha256: "c".repeat(64),
+    bytes,
+  };
+  const derivatives = new Map<string, Uint8Array>();
+  const store: FloorPlanSourceStore = {
+    async putSource() {
+      return source;
+    },
+    async readSource(id) {
+      return id === source.id ? source : null;
+    },
+    async putDerivative(input) {
+      const id = `fax-derivative-${derivatives.size + 1}`;
+      derivatives.set(id, input.bytes);
+      return id;
+    },
+    async readDerivative() {
+      return null;
+    },
+  };
+  const adapter = new PdfRasterFloorPlanSourceAdapter({ localOcrProvider: null });
+  const [rendered] = await adapter.render(source, {
+    jobId: "fax-job-1",
+    store,
+    privacy: {
+      trainingBenchmarkOptIn: false,
+      trainingBenchmarkOptInAt: null,
+      trainingBenchmarkConsentVersion: null,
+      trainingBenchmarkRevokedAt: null,
+      sourceRetentionExpiresAt: new Date("2030-01-31T00:00:00.000Z"),
+      sourceDeletionRequestedAt: null,
+    },
+  });
+  assert.deepEqual([rendered.widthPx, rendered.heightPx], [800, 600]);
+  const { default: sharp } = await import("sharp");
+  const { data, info } = await sharp(Buffer.from(derivatives.get(rendered.assetKey)!))
+    .flatten({ background: "#ffffff" })
+    .greyscale()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const dark = (x: number, y: number) => data[y * info.width + x] < 128;
+  const darkIn = (x0: number, y0: number, x1: number, y1: number) => {
+    let count = 0;
+    for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) if (dark(x, y)) count += 1;
+    return count;
+  };
+  // at 5 px a picture pixel: the outline (15 px wide, from 200 to 600 across and 180 to 420 down) and the wall between
+  // the rooms (about x = 400) are drawn; the rooms stay paper
+  assert.ok(darkIn(160, 140, 640, 460) > 15000, "a fax-coded plan picture must be drawn on the rendered PDF page");
+  assert.ok(dark(207, 300) && dark(593, 300) && dark(400, 187) && dark(300, 413), "the plan's outline is drawn");
+  assert.ok(dark(405, 300), "the wall between the two rooms is drawn");
+  assert.ok(!dark(300, 300) && !dark(500, 300), "the rooms stay paper");
+  assert.equal(darkIn(0, 0, 800, 120), 0, "nothing is drawn off the picture");
+}
+
 async function main() {
   await testRasterDimensionAssociations();
   await testRasterOpeningSpans();
@@ -726,6 +817,7 @@ async function main() {
   await testRasterAdapterIntegration("pdf");
   await testRasterAdapterIntegration("mixed");
   await testPageScaleIsolation();
+  await testFaxPictureInPdfIsRendered();
   console.log("Floor-plan raster linework tests passed");
 }
 
