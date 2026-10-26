@@ -72,7 +72,7 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 ## Moving screens
 
 - **Screens move folder by folder** (plan step 5). Replace hard-coded `bg-white`, `bg-neutral-*`, `text-neutral-*`, `border-neutral-*`, `text-white` and `bg-black` with roles.
-- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3, 2,848 after the inset frame, 2,738 after the laminate picker and the editor's shell, 2,399 after the step panel, 2,137 after the right rail, 2,024 after the overlays on the canvas, 1,475 after the rest of the editor), and the count can only go down.
+- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3, 2,848 after the inset frame, 2,738 after the laminate picker and the editor's shell, 2,399 after the step panel, 2,137 after the right rail, 2,024 after the overlays on the canvas, 1,475 after the rest of the editor, 1,267 after the pages outside it), and the count can only go down.
 - **The `.text-neutral-400`, `-500` and `-600` overrides** at the end of `globals.css` are a light-only fix. They go once their users have moved.
 
 The edge between the panels and the canvas, the rounded inset frame, is in `editor-canvas-frame.md`.

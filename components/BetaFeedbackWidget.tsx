@@ -161,8 +161,8 @@ export default function BetaFeedbackWidget({
       {showTrigger && (
         <button
           type="button"
-          data-testid="beta-feedback-open"
-          className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 z-40 rounded-full border border-neutral-200 bg-white/95 px-3 py-2 text-xs font-semibold text-neutral-800 shadow-xl backdrop-blur hover:bg-neutral-50 md:bottom-24"
+          data-testid="beta-feedback-open" data-surface="floating"
+          className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-4 z-40 rounded-full border border-separator bg-surface-floating/95 px-3 py-2 text-xs font-semibold text-label shadow-xl backdrop-blur hover:bg-control-secondary-hover md:bottom-24"
           onClick={() => {
             setOpen(true);
             setStatus("idle");
@@ -186,11 +186,11 @@ export default function BetaFeedbackWidget({
           }}
           onKeyDown={(event) => { if (event.key === "Escape") resetAndClose(); }}
         >
-          <div className="w-[min(420px,calc(100vw-2rem))] rounded-xl border border-neutral-200 bg-white p-4 shadow-2xl">
+          <div className="w-[min(420px,calc(100vw-2rem))] rounded-xl border border-separator bg-surface-elevated p-4 shadow-2xl">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="text-base font-semibold text-neutral-950">Beta feedback</h3>
-                <p className="mt-0.5 truncate text-xs text-neutral-500">{contextSummary}</p>
+                <h3 className="text-base font-semibold text-label">Beta feedback</h3>
+                <p className="mt-0.5 truncate text-xs text-label-secondary">{contextSummary}</p>
               </div>
               <Button variant="quiet" size="icon" aria-label="Close feedback dialog" onClick={resetAndClose}>
                 <X className="h-4 w-4" aria-hidden="true" />
@@ -198,10 +198,10 @@ export default function BetaFeedbackWidget({
             </div>
 
             <label className="mt-3 block">
-              <span className="text-xs font-semibold text-neutral-700">What felt confusing?</span>
+              <span className="text-xs font-semibold text-label-secondary">What felt confusing?</span>
               <textarea
                 data-testid="beta-feedback-note"
-                className="mt-1 min-h-28 w-full resize-none rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-950 outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                className="mt-1 min-h-28 w-full resize-none rounded-lg border border-box-border bg-surface-elevated-secondary px-3 py-2 text-sm text-label outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                 value={note}
                 maxLength={1200}
                 autoFocus
@@ -221,7 +221,7 @@ export default function BetaFeedbackWidget({
               />
             </label>
 
-            <div className="mt-3 min-h-5 text-xs text-neutral-500" role="status">
+            <div className="mt-3 min-h-5 text-xs text-label-secondary" role="status">
               {status === "sent" && (
                 reportId ? (
                   <>
