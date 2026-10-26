@@ -1,4 +1,4 @@
-import { extractRasterEvidence,attachRasterSourceArtwork } from "./raster-page-evidence";
+import { extractRasterEvidence,attachSourceArtwork } from "./raster-page-evidence";
 import { asEnvelope,type ExtractionEnvelope,type PageScaleSolution } from "./pdf-raster-evidence";
 import { architecturalLineworkPage,hasSourceDivider } from "./source-wall-linework";
 import { diagnoseSourceScale } from "./source-scale-cross-check";
@@ -2183,7 +2183,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       rankPages: rankFloorPlanSemanticPages,
       mergeSemantics: (deterministic, semantic, page) => mergeSemantics(deterministic, semantic, vectorizerReadingsLead(page)),
     });
-    if(rasterEvidence)await attachRasterSourceArtwork(rasterEvidence.pages,renderedPages,context);
+    await attachSourceArtwork(pages,rasterEvidence?.pages??[],renderedPages,context,this.vectorizerProvider?.drawsFaithfully===true);
     const semanticPages = rankFloorPlanSemanticPages(pages).slice(
       0,
       MAX_SEMANTIC_PAGES

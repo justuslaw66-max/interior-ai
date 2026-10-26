@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
-import { sourceDrawingInk, sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
+import { sourceDrawingInk, sourceDrawingStroke, sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
+import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { SourceReviewLayer } from "./useSourceReviewLayers";
 
@@ -38,7 +39,8 @@ export function FloorPlanSourceCompareToggle({ layer, onLayer, wipe, onWipe, dis
   );
 }
 
-/** The trace on white, clipped to the right of the divider, over the original; the divider drags. */
+/** The trace on white, clipped to the right of the divider, over the original; the divider drags. Its lines are drawn
+ * as the Traced view draws them (`sourceDrawingStroke`), so both sides of the divider are at the same scale. */
 export function FloorPlanSourceCompareWipe({ layer, wipe, onWipe, annotations, widthPx, heightPx }: {
   layer: SourceReviewLayer; wipe: number; onWipe: (value: number) => void; annotations: FloorPlanAnnotationV2[]; widthPx: number; heightPx: number;
 }) {
@@ -55,7 +57,7 @@ export function FloorPlanSourceCompareWipe({ layer, wipe, onWipe, annotations, w
         <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 ${widthPx} ${heightPx}`}>
           {annotations.map((annotation) => annotation.geometry.kind === "source_drawing" && annotation.geometry.command !== "text" ? (
             <path key={annotation.id} d={sourceDrawingSvgPath(annotation.geometry)} fill={annotation.geometry.fill ? sourceDrawingInk(annotation.geometry, "#222") : "none"}
-              stroke={annotation.geometry.fill ? "none" : sourceDrawingInk(annotation.geometry, "#222")} strokeWidth={annotation.geometry.strokeWidthPx} vectorEffect="non-scaling-stroke" />
+              stroke={annotation.geometry.fill ? "none" : sourceDrawingInk(annotation.geometry, "#222")} {...sourceDrawingStroke(annotation.geometry, isFinalSourceTrace(annotation))} />
           ) : null)}
         </svg>
       </div>

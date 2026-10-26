@@ -32,11 +32,12 @@ import { validateCabinetDefinition } from "../features/cabinetry/validation";
 const ids = (definition: CabinetDefinition) => definition.materials.map((material) => material.id);
 
 // Only real products are offered (J, 23 Oct 2026): every finish is a supplier's laminate design.
-assert.equal(CABINET_FINISHES.length, 342);
+// The 4'x8' collection's 342 designs and the 4.25'x10' collection's 31 the 4'x8' one doesn't have.
+assert.equal(CABINET_FINISHES.length, 373);
 assert(CABINET_FINISHES.every((finish) => finish.supplier === "Greenlam" && !isCabinetPlaceholderFinish(finish.id)));
 assert.deepEqual(
   CABINET_FINISH_CATEGORIES.map((category) => [category.label, category.count]),
-  [["Woodgrains", 159], ["Solid colours", 109], ["Stone & abstract", 48], ["Pearlescent", 14], ["Metallic", 5], ["Unicore", 7]]
+  [["Woodgrains", 168], ["Solid colours", 119], ["Stone & abstract", 59], ["Pearlescent", 14], ["Metallic", 6], ["Unicore", 7]]
 );
 assert.deepEqual([...CABINET_PLACEHOLDER_FINISH_IDS].sort(), [
   "matte_black_laminate", "oak_veneer", "painted_shaker_white", "walnut_veneer", "white_melamine",
@@ -44,7 +45,7 @@ assert.deepEqual([...CABINET_PLACEHOLDER_FINISH_IDS].sort(), [
 assert(CABINET_FINISHES.some((finish) => finish.id === CABINET_DEFAULT_FINISH_ID));
 
 // The picker: a category, or a search by code (from its start) or by name, supplier and kind.
-assert.equal(filterCabinetFinishes("", "metals").length, 5);
+assert.equal(filterCabinetFinishes("", "metals").length, 6);
 assert(filterCabinetFinishes("", "woodgrains").every((finish) => finish.laminateCategory === "woodgrains"));
 assert.deepEqual(filterCabinetFinishes("5003", "solids").map((finish) => finish.id), ["greenlam-woodgrains-5003"]);
 assert.deepEqual(filterCabinetFinishes(" 5003  TEAK ", "solids").map((finish) => finish.id), ["greenlam-woodgrains-5003"]);
@@ -73,6 +74,12 @@ assert.equal(describeCabinetFinish(rift), "Grain runs up doors and sides, at rea
 assert.equal(describeCabinetFinish(santos), "Grain runs across, at real size from a 1220 × 2440 mm sheet.");
 assert.equal(describeCabinetFinish(statuario), "At real size from a 1220 × 2440 mm sheet.");
 assert.equal(describeCabinetFinish(white), "Plain colour, 1220 × 2440 mm sheet.");
+assert.equal(
+  describeCabinetFinish(findCabinetLaminate("greenlam-woodgrains-5763")!),
+  "Grain runs up doors and sides, at real size from a 1300 × 3050 mm sheet.",
+  "a 4.25'x10' design says its own sheet"
+);
+assert.deepEqual(filterCabinetFinishes("albin", "solids").map((finish) => finish.supplierCode), ["5763", "5764", "5765"]);
 assert.deepEqual(describeCabinetFinishChoice("greenlam-woodgrains-5308", []), {
   title: "Greenlam 5308 Rift Oak",
   detail: describeCabinetFinish(rift),

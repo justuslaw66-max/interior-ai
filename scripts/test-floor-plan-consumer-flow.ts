@@ -13,6 +13,7 @@ import {
 } from "@/lib/floor-plan-import-client";
 import { inverseFloorPlanAddressTransform } from "@/lib/floor-plan-consumer-orientation";
 import { floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
+import { sourceDrawingStroke } from "@/lib/floor-plan-source-drawing";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanCatalogSearchResult } from "@/lib/floor-plan-catalog-repository";
@@ -863,6 +864,19 @@ assert.match(
   /import \{ buildOpeningRenderSegments, type Opening2D,[\s\S]*?from "\.\/room-renderer-2d-opening-geometry";[\s\S]*?const openingSegments = buildOpeningRenderSegments\(\{\s*openings, rooms,/,
   "The 2D renderer should consume the typed opening geometry owner."
 );
+
+// The import review's Compare view draws the trace as its Traced view does: a final trace's lines at their own width in
+// page pixels, scaling with the page. Drawn in screen pixels, a page shown at half its size got lines twice too thick
+// (J's test window, 25 Oct). Review marks that aren't the final trace keep a fixed screen width.
+assert.deepEqual(sourceDrawingStroke({ strokeWidthPx: 2.5 }, true), { strokeWidth: 2.5 });
+assert.deepEqual(sourceDrawingStroke({}, true), { strokeWidth: 1 });
+assert.deepEqual(sourceDrawingStroke({ strokeWidthPx: 2.5 }, false), { strokeWidth: 1.5, vectorEffect: "non-scaling-stroke" });
+assert.deepEqual(sourceDrawingStroke({ strokeWidthPx: 2.5 }, false, true), { strokeWidth: 4, vectorEffect: "non-scaling-stroke" });
+for (const view of ["FloorPlanSourceCompare.tsx", "FloorPlanSourceReviewOverlay.tsx"]) {
+  const source = read(`components/editor/floor-plan-import-review/${view}`);
+  assert.match(source, /\{\.\.\.sourceDrawingStroke\(/, `${view} should draw source shapes with sourceDrawingStroke.`);
+  assert.doesNotMatch(source, /strokeWidth=\{[^}]*strokeWidthPx/, `${view} should not set a trace's line width by hand.`);
+}
 
 Promise.all([
   assertBackgroundValidationKeepsPolling(),

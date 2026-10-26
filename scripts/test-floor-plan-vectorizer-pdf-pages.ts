@@ -1,11 +1,16 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import sharp from "sharp";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { RegisteredPageEvidence } from "@/lib/floor-plan-imports/deterministic-evidence";
 import { pageGeometryBasis } from "@/lib/floor-plan-imports/mixed-pdf-evidence";
 import { PdfRasterFloorPlanSourceAdapter, registerSupportedPageTopology } from "@/lib/floor-plan-imports/pdf-raster-adapter";
+import { attachSourceArtwork } from "@/lib/floor-plan-imports/raster-page-evidence";
 import { mergeSemantics } from "@/lib/floor-plan-imports/semantic-merge";
+import { FAITHFUL_TRACE_VERSION } from "@/lib/floor-plan-imports/source-trace-faithful";
+import { registeredVectorizerDrawing } from "@/lib/floor-plan-imports/vectorizer-drawing";
+import { parseFloorPlanVectorizerDrawing } from "@/lib/floor-plan-imports/vectorizer-evidence-schema";
 import type { FloorPlanAdapterContext } from "@/lib/floor-plan-imports/source-adapter";
 import { parseFloorPlanVectorizerEvidence, registerVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-evidence";
 import {
@@ -97,10 +102,40 @@ async function testVectorPageReadByTheVectorizer() {
   assert.deepEqual([...bases], ["raster_traced"], "its walls are recorded as traced from the rendered page");
 }
 
+/**
+ * Which pages get a traced drawing: every page read from its picture, and a vector PDF page the faithful trace drew (a
+ * brochure page whose plan is a picture but whose headings are vector text). With the faithful trace on, a page's traced
+ * drawing is the faithful trace or none: the older traces are not drawn (J, 24 Oct).
+ */
+async function testTracedDrawingPages() {
+  const W = 60, H = 40;
+  const bytes = await sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">` +
+    `<rect width="${W}" height="${H}" fill="white"/><path d="M10 10H50V14H10Z" fill="#111"/></svg>`)).png().toBuffer();
+  const store = { readDerivative: async () => ({ id: "d", fileName: "page.png", mimeType: "image/png", byteLength: bytes.length, sha256: "0".repeat(64), bytes }) };
+  const withStore = { ...context, store } as unknown as FloorPlanAdapterContext;
+  const faithful = registeredVectorizerDrawing(parseFloorPlanVectorizerDrawing({ version: "faithful-trace-r6", textBoxes: [],
+    items: [{ kind: "fill", fill: true, strokeWidthPx: 0, tone: 17, commands: ["L", "L", "L", "Z"], points: [[10, 10], [50, 10], [50, 14], [10, 14]] }] }), 1, 1);
+  const sized = (pageNumber: number, kind: "pdf_vector" | "raster_linework"): RegisteredPageEvidence => ({ ...page(pageNumber, kind), widthPx: W, heightPx: H });
+  const rendered = [1, 2, 3, 4].map((pageNumber) => ({ pageNumber, widthPx: W, heightPx: H, assetKey: `p${pageNumber}` }));
+
+  const picture = sized(1, "raster_linework"), drawnVector = { ...sized(2, "pdf_vector"), faithfulDrawing: faithful }, plainVector = sized(3, "pdf_vector");
+  await attachSourceArtwork([picture, drawnVector, plainVector], [picture], rendered, withStore, false);
+  assert.ok(picture.sourceArtwork && picture.sourceArtwork.version !== FAITHFUL_TRACE_VERSION, "faithful trace off: a picture page keeps the older trace");
+  assert.equal(drawnVector.sourceArtwork?.version, FAITHFUL_TRACE_VERSION, "a vector PDF page the faithful trace drew shows it");
+  assert.equal(plainVector.sourceArtwork, undefined, "a vector PDF page it did not draw keeps its own lines only");
+
+  const undrawn = sized(1, "raster_linework"), drawn = { ...sized(4, "raster_linework"), faithfulDrawing: faithful };
+  await attachSourceArtwork([undrawn, drawn], [undrawn, drawn], rendered, withStore, true);
+  assert.equal(undrawn.sourceArtwork, undefined, "faithful trace on: no older trace where it did not draw");
+  assert.match(undrawn.semantics.notes.at(-1) ?? "", /^No traced drawing: /);
+  assert.equal(drawn.sourceArtwork?.version, FAITHFUL_TRACE_VERSION);
+}
+
 async function main() {
   testCandidatePages();
   testGeometryBasis();
   await testVectorPageReadByTheVectorizer();
+  await testTracedDrawingPages();
   console.log("floor-plan vectorizer on vector PDF pages: ok");
 }
 

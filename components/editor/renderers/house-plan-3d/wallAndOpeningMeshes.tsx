@@ -16,15 +16,12 @@ import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering
 import { moveOpeningCenterFromWorldPoint, projectWorldPointToOpeningHost } from "@/lib/design-page-opening-interaction";
 import { noRaycast } from "@/components/scene/stableSceneProps";
 import { useLatestCallback } from "../useLatestCallback";
-import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
 import type { SelectableWallSurfacePanel } from "./continuousWallSelection";
 import { OpeningInteractionQaMarker3D } from "./OpeningInteractionQaMarker3D";
 import { shouldOpeningPointerDownSelect } from "./openingPointerSelection";
-import {
-  getSurfaceMaterialFallbackColor,
-  useSurfaceMaterialSourceTexture,
-  useTransparencyRecompileRef,
-} from "./materials";
+import { getSurfaceMaterialFallbackColor, useTransparencyRecompileRef } from "./materials";
+import { useWallSurfaceTexture } from "./useWallSurfaceTexture";
+import { getWallSurfacePartStartAlongFace } from "./wallSurfaceLayout";
 import {
   buildWallFinishShellGeometry,
   getSharedWallMatches,
@@ -70,11 +67,6 @@ const WALL_SURFACE_CUT_OVERLAP_METERS = 0;
 const WALL_CUT_ENDPOINT_TOLERANCE_METERS = 0.002;
 const STRUCTURE_HOVER_OUTLINE_COLOR = "#00d5e8";
 const STRUCTURE_SELECTED_OUTLINE_COLOR = "#2563eb";
-const WALL_SURFACE_TEXTURE_RESOLUTION = {
-  maxSize: 4096,
-  minSize: 768,
-  pixelsPerMeter: 560,
-} as const;
 
 function getStructureOutlineStyle(
   targetKey: string,
@@ -116,6 +108,8 @@ function WallSurfaceSideMesh({
   settings,
   partLength,
   partHeight,
+  partBottom,
+  partStart,
   centerOffset,
   texturePanelLength,
   texturePanelCenterOffset,
@@ -136,6 +130,9 @@ function WallSurfaceSideMesh({
   settings: ReturnType<typeof getWallPanelSurfaceSettings>;
   partLength: number;
   partHeight: number;
+  /** How high the part's bottom edge is above the floor, and how far along the wall face its picture starts (wallSurfaceLayout.ts). */
+  partBottom: number;
+  partStart?: number;
   centerOffset: number;
   texturePanelLength: number;
   texturePanelCenterOffset: number;
@@ -188,29 +185,15 @@ function WallSurfaceSideMesh({
     uv.needsUpdate = true;
     return geometry;
   }, [partHeight, partLength, textureEndU, textureStartU]);
-  const patternedWallTexture = useSurfaceMaterialTexture({
+  const wallTexture = useWallSurfaceTexture({
     material: wallSurfaceMaterial,
-    roomWidthMeters: normalizedTexturePanelLength,
-    roomDepthMeters: partHeight,
-    floorScale: settings.scale,
-    rotationRad: THREE.MathUtils.degToRad(settings.rotationDeg),
-    floorPattern: settings.pattern,
-    patternOffset: settings.offset,
-    jointSizeMm: settings.jointSizeMm,
-    jointColor: settings.jointColor,
-    maxAnisotropy: gl.capabilities.getMaxAnisotropy(),
-    uvMode: "normalized",
-    textureResolution: WALL_SURFACE_TEXTURE_RESOLUTION,
-  });
-  const sourceWallTexture = useSurfaceMaterialSourceTexture({
-    material: wallSurfaceMaterial,
-    surfaceWidthMeters: normalizedTexturePanelLength,
-    surfaceHeightMeters: partHeight,
-    scale: settings.scale,
-    rotationRad: THREE.MathUtils.degToRad(settings.rotationDeg),
+    settings,
+    panelLengthMeters: normalizedTexturePanelLength,
+    partHeightMeters: partHeight,
+    partBottomMeters: partBottom,
+    partStartMeters: partStart,
     maxAnisotropy: gl.capabilities.getMaxAnisotropy(),
   });
-  const wallTexture = patternedWallTexture ?? sourceWallTexture;
   const wallColor =
     wallTexture
       ? "#ffffff"
@@ -677,7 +660,7 @@ export function CutawayWallMesh({
             }}
             settings={surface.settings}
             partLength={joinedSurface.length}
-            partHeight={partHeight}
+            partHeight={partHeight} partBottom={partCenterY - partHeight / 2}
             centerOffset={joinedSurface.centerDelta}
             texturePanelLength={selectionPanelLength}
             texturePanelCenterOffset={selectionPanelCenterOffset}
@@ -874,7 +857,8 @@ export function WallSurfacePanelMesh({
         target={target}
         settings={settings}
         partLength={joinedSurface.length}
-        partHeight={partHeight}
+        partHeight={partHeight} partBottom={partCenterY - partHeight / 2}
+        partStart={getWallSurfacePartStartAlongFace({ room, segment, part: panel.part, side: panel.side, wallThickness, squareStart, squareEnd })}
         centerOffset={joinedSurface.centerDelta}
         texturePanelLength={joinedSurface.length}
         texturePanelCenterOffset={joinedSurface.centerDelta}

@@ -251,11 +251,17 @@ const onAbkFaces = [
   isLaMarmoteca, isHermione, isConcreaPlain, isJustNature, isLuce, isStorm, isEpoque, isCamouflage, isBlock, isEterea,
   isPleinAirOutdoor, isPleinAir,
 ];
+// Greenlam's laminate wall panels (25 Oct 2026) draw each sheet's one picture at the size it covers; see their block below.
+const isLaminateWallPanel = (material: { surface_material: { surface_category: string } }) =>
+  material.surface_material.surface_category === "wall_panel";
 assert.ok(
   physicalMaterials.every(
-    (material) => material.surface_material.supplier === "florim" || onAbkFaces.some((filter) => filter(material))
+    (material) =>
+      material.surface_material.supplier === "florim" ||
+      isLaminateWallPanel(material) ||
+      onAbkFaces.some((filter) => filter(material))
   ),
-  "only the Florim materials and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
+  "only the Florim materials, Greenlam's laminate wall panels and Gardenia Anima, Dorica, Oxide, Falaise, Make, Tabulae, Bon Ton, Pietra Viva, La Geoteca, " +
     "Orosei, Gioia, I Pigmenti, La Marmoteca, Hermione, Concrea Plain, Just Nature, Luce, Storm, Epoque 2.0, Camouflage, Block, Eterea " +
     "(with Plein Air's outdoor sizes of them) and Plein Air declare physical-scale data"
 );
@@ -265,7 +271,7 @@ assert.equal(
   "every Anima entry is on real faces"
 );
 assert.equal(physicalMaterials.filter(isAnima).length, 38, "Anima: six colours, 19 floor and 19 wall entries");
-for (const material of physicalMaterials) {
+for (const material of physicalMaterials.filter((entry) => !isLaminateWallPanel(entry))) {
   const id = material.surface_material.material_id;
   const sources = getSurfacePhysicalImageSources(material.texture_assets);
   const tileWidthMm = material.physical_specs.tile_width_mm as number;
@@ -297,6 +303,32 @@ for (const material of physicalMaterials) {
     assertClose(sample.needWidthMm / sample.rect.width, 1, `${id} is drawn at the picture's scale`);
   }
 }
+// Each laminate wall panel is one 1220x2440 mm sheet, drawn from its one picture: the whole picture when it covers the sheet
+// (219 of them exactly, nine more within 3%), or a sheet-sized window of the five taller ones, never repeated.
+const laminateWallPanels = physicalMaterials.filter(isLaminateWallPanel);
+assert.equal(laminateWallPanels.length, 233, "Greenlam's 4'x8' patterned designs, as wall panels");
+const laminatePanelModes = new Map<string, number>();
+for (const panel of laminateWallPanels) {
+  const id = panel.surface_material.material_id;
+  const sources = getSurfacePhysicalImageSources(panel.texture_assets);
+  assert.deepEqual(sources.map((source) => source.url), [panel.texture_assets.base_color_url], `${id} has one picture`);
+  const [source] = sources;
+  const sample = resolveSurfacePhysicalTileSample({
+    sourceWidthPx: source.widthMm,
+    sourceHeightPx: source.heightMm,
+    sourceWidthMm: source.widthMm,
+    sourceHeightMm: source.heightMm,
+    tileWidthMm: 1220,
+    tileHeightMm: 2440,
+    seed: 1,
+  });
+  assert.equal(sample.quarterTurn, false, `${id} stands upright, as the sheet does`);
+  assert.notEqual(sample.mode, "undersized", `${id}'s picture covers its sheet`);
+  assertClose(sample.needWidthMm / sample.rect.width, 1, `${id} is drawn at the picture's scale`);
+  laminatePanelModes.set(sample.mode, (laminatePanelModes.get(sample.mode) ?? 0) + 1);
+}
+assert.deepEqual(Object.fromEntries(laminatePanelModes), { whole_face: 228, window: 5 });
+
 const cutFromSlab = physicalMaterials.find((material) => material.surface_material.material_id.includes("757828"));
 assert.ok(cutFromSlab, "the 60x120 cut from 120x240 pictures is in the catalogue");
 assert.deepEqual(cutFromSlab.texture_assets.image_physical_size_mm, { width: 1200, height: 2400 });

@@ -102,18 +102,18 @@ class FaithfulDrawing(unittest.TestCase):
         cv2.imwrite(os.path.join(folder, "dark.png"), 255 - img)
         fd.main([os.path.join(folder, "dark.png"), out])
         self.assertIn("dark ground", result(out)["skipped"])
-        # thin lines blurred: no solid black, so stage 1's softness measure sees nothing, but the edges are spread
+        # thin lines blurred: no solid black, so the softness measure sees nothing; such a picture is traced
+        # (its lettering may blob, but that is better than the app's older pixel trace)
         grid = np.full((200, 200), 255, np.uint8)
         for x in range(30, 180, 20):
             cv2.line(grid, (x, 20), (x, 180), 0, 2)
         for y in range(30, 180, 30):
             cv2.line(grid, (20, y), (180, y), 0, 2)
-        self.assertGreater(fd.edge_sharpness(grid), 0.95, "crisp lines are sharp")
         soft_grid = cv2.GaussianBlur(grid, (0, 0), 1.5)
         self.assertEqual(fd.softness(soft_grid), 0.0)
         cv2.imwrite(os.path.join(folder, "grid.png"), soft_grid)
         fd.main([os.path.join(folder, "grid.png"), out])
-        self.assertIn("not sharp enough", result(out)["skipped"])
+        self.assertNotIn("skipped", result(out))
 
     def test_traces_a_page_over_the_limit_at_its_own_size(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -138,6 +138,36 @@ class FaithfulDrawing(unittest.TestCase):
             xs = [p[0] for p in fills[0]["points"]]
             self.assertAlmostEqual(min(xs), 40, delta=1.0); self.assertAlmostEqual(max(xs), 161, delta=1.0)
             self.assertEqual(faithful_trace.UP, 2, "the working scale is put back for the next page")
+
+
+    def test_soft_lettering_over_stripes_copied_letter_by_letter(self):
+        # (r8) a room's name on its floor's stripes in a soft picture: each letter is copied by its outline ("over"),
+        # one per letter; in the crisp picture, and in a tiny one, the step does not run
+        import faithful_trace
+        def page(sigma, size=(600, 720)):
+            img = np.full(size, 255, np.uint8)
+            for y in range(100, 500, 6):
+                cv2.line(img, (60, y), (660, y), 150, 1)
+            x = 200
+            for ch in "BEDROOM":
+                (w, _), _ = cv2.getTextSize(ch, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)
+                cv2.putText(img, ch, (x, 310), cv2.FONT_HERSHEY_SIMPLEX, 0.5, 0, 2, cv2.LINE_AA)
+                x += w + 4
+            cv2.rectangle(img, (40, 80), (680, 520), 30, 6)
+            return cv2.GaussianBlur(img, (0, 0), sigma) if sigma else img
+        over = lambda t: [p for p in t["walls"] if p.get("over")]
+        soft = page(1.3)
+        self.assertLess(faithful_trace.edge_steepness(soft), faithful_trace.OVER_SOFT)
+        letters = over(faithful_trace.trace_gray(soft))
+        self.assertEqual(len(letters), 7, "B E D R O O M, one outline each")
+        for p in letters:
+            xs = [x for r in p["rings"] for x, _ in r]; ys = [y for r in p["rings"] for _, y in r]
+            self.assertTrue(195 <= min(xs) and max(xs) <= 330 and 295 <= min(ys) and max(ys) <= 315, "within the word")
+        crisp = page(0)
+        self.assertGreaterEqual(faithful_trace.edge_steepness(crisp), faithful_trace.OVER_SOFT)
+        self.assertEqual(over(faithful_trace.trace_gray(crisp)), [], "a crisp picture: each letter already stands apart")
+        tiny = cv2.resize(soft, (360, 300), interpolation=cv2.INTER_AREA)
+        self.assertEqual(over(faithful_trace.trace_gray(tiny)), [], "a picture under 0.4 MP is left as r7 traced it")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import type { RegisteredPageEvidence, PageSemanticEvidence } from "./deterministic-evidence";
 import type { FloorPlanAdapterContext } from "./source-adapter";
 import type { FloorPlanRenderedPage } from "./types";
+import { registeredVectorizerDrawing } from "./vectorizer-drawing";
 import {
   floorPlanVectorizerRuntimeConfiguration,
   registerVectorizerEvidence,
@@ -65,11 +66,9 @@ export async function applyVectorizerEvidence(input: VectorizerPassInput) {
     const derivative = rendered ? await context.store.readDerivative(rendered.assetKey) : null;
     if (!derivative) continue;
     const started = Date.now();
+    const pageImage = { pageNumber: page.pageNumber, widthPx: page.widthPx, heightPx: page.heightPx, mimeType: derivative.mimeType, bytes: derivative.bytes };
     try {
-      const evidence = await provider.analyzePage(
-        { pageNumber: page.pageNumber, widthPx: page.widthPx, heightPx: page.heightPx, mimeType: derivative.mimeType, bytes: derivative.bytes },
-        { timeoutMs, signal: context.signal }
-      );
+      const evidence = await provider.analyzePage(pageImage, { timeoutMs, signal: context.signal });
       page.semantics = input.mergeSemantics(page.semantics, registerVectorizerEvidence(page, evidence, derivative.bytes), page);
       diagnostics.set(page.pageNumber, {
         providerId: provider.id,
@@ -85,7 +84,37 @@ export async function applyVectorizerEvidence(input: VectorizerPassInput) {
       const failed = failedPass(provider.id, started, cause);
       page.semantics.notes.push(`Local vectorizer unavailable: ${failed.error}. Other evidence sources are retained.`);
       diagnostics.set(page.pageNumber, failed);
+      await drawFaithfullyAlone(page, pageImage, rendered, provider, context.signal);
     }
   }
   return diagnostics;
+}
+
+/**
+ * With the faithful trace on, a page the vectorizer could not read (stage 1 failed or ran out of time) is still drawn
+ * by it: the faithful trace does not need stage 1 (J, 24 Oct). It fails soft and says why; a cancelled import draws
+ * nothing more.
+ */
+async function drawFaithfullyAlone(
+  page: RegisteredPageEvidence,
+  pageImage: Parameters<FloorPlanVectorizerProvider["analyzePage"]>[0],
+  rendered: FloorPlanRenderedPage | undefined,
+  provider: FloorPlanVectorizerProvider,
+  signal?: AbortSignal
+) {
+  if (!provider.drawsFaithfully || !provider.drawPage || signal?.aborted) return;
+  try {
+    const result = await provider.drawPage(pageImage, { signal });
+    if ("note" in result) {
+      page.semantics.notes.push(result.note.slice(0, 240));
+      return;
+    }
+    // The trace is in the rendered picture's pixels; the page may be registered at a slightly different size.
+    const sx = rendered?.widthPx ? page.widthPx / rendered.widthPx : 1;
+    const sy = rendered?.heightPx ? page.heightPx / rendered.heightPx : 1;
+    page.faithfulDrawing = registeredVectorizerDrawing(result.drawing, sx, sy);
+    page.semantics.notes.push("Faithful trace drawn on its own: the vectorizer could not read this page.");
+  } catch (cause) {
+    page.semantics.notes.push(`Faithful trace unavailable: ${cause instanceof Error ? cause.message.slice(0, 200) : "unknown error"}`);
+  }
 }

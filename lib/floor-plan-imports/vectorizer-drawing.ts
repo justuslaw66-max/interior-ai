@@ -62,3 +62,12 @@ export function registeredVectorizerDrawing(drawing: EvidenceDrawing, sx: number
     })),
   };
 }
+
+/** A page's clean drawing: the vectorizer's own (the faithful trace, when it ran), or the faithful trace drawn on its
+ * own when the vectorizer could not read the page. */
+export function pageCleanDrawing(page: {
+  vectorizer?: { drawing?: RegisteredVectorizerDrawing };
+  faithfulDrawing?: RegisteredVectorizerDrawing;
+}): RegisteredVectorizerDrawing | undefined {
+  return page.vectorizer?.drawing ?? page.faithfulDrawing;
+}
