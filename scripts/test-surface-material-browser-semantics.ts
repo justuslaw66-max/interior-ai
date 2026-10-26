@@ -51,7 +51,8 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-assert.equal(records.length, 1405, "the browser must join all 1405 render and catalog identities");
+// 1,405 YAML records and, since 25 Oct 2026, 233 laminate wall panels from catalog/laminates.
+assert.equal(records.length, 1638, "the browser must join all 1638 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);
@@ -108,7 +109,30 @@ assert.ok(!facets.collection.includes("Gardenia & Ariana"), "the Collection filt
 
 // Brand, then its collections, then the models on the cards (J, 2 Oct).
 const allOptions = buildSurfaceFilterOptions(records, undefined);
-assert.deepEqual(allOptions.brand, ["Florim", "Gardenia & Ariana", "Goodrich Global"]);
+assert.deepEqual(allOptions.brand, ["Florim", "Gardenia & Ariana", "Goodrich Global", "Greenlam"]);
+// Greenlam's laminate wall panels: each kind of decor is a collection, and a card names the design by its code and name.
+const greenlamOptions = buildSurfaceFilterOptions(records, "Greenlam");
+assert.deepEqual(greenlamOptions.collection, ["Abstracts", "Metals", "Pearlescents", "Solids", "Unicore", "Woodgrains"]);
+const nordicAcacia = records.find((record) => record.surface_material.material_id === "greenlam-woodgrains-5394");
+assert.ok(nordicAcacia);
+assert.deepEqual(
+  [
+    getSurfaceMaterialSupplierLabel(nordicAcacia),
+    getSurfaceMaterialCollectionLabel(nordicAcacia),
+    getSurfaceMaterialModelName(nordicAcacia),
+    getSurfaceMaterialSizeLabel(nordicAcacia),
+    getSurfaceMaterialEffectLabel(nordicAcacia),
+  ],
+  ["Greenlam", "Woodgrains", "Nordic Acacia 5394", "1220x2440 mm", "Wood"],
+  "a laminate wall panel's card"
+);
+// The browser sorts by name: a laminate wall panel sits among the tiles by its design's name, not ahead of them by its code.
+const wallGroupNames = buildSurfaceMaterialProductGroups(
+  records.filter((record) => ["wall_tile", "wall_panel"].includes(record.surface_material.surface_category))
+).map((group) => getSurfaceMaterialProductDisplayName(group.primary));
+assert.ok(wallGroupNames.indexOf("Anima Beige") < 32, "Anima Beige stays on the wall browser's first page");
+assert.ok(wallGroupNames.indexOf("Akita Grey 5644") < wallGroupNames.indexOf("Anima Beige"));
+assert.ok(facets.effect.includes("Pattern") && facets.effect.includes("Metallic"), "the laminates' own effects are filters");
 assert.ok(allOptions.collection.includes("Ardoise") && allOptions.collection.includes("Dorica"));
 const gardeniaOptions = buildSurfaceFilterOptions(records, "Gardenia & Ariana");
 assert.equal(gardeniaOptions.collection.length, 23, "Gardenia & Ariana's 23 collections");
@@ -142,7 +166,9 @@ assert.equal(
   getSurfaceMaterialProductDisplayName(goodrich),
   "a name that doesn't start with its collection stays whole"
 );
-for (const record of records.filter((entry) => entry.surface_material.supplier !== "goodrich_global")) {
+for (const record of records.filter(
+  (entry) => entry.surface_material.supplier !== "goodrich_global" && entry.surface_material.supplier !== "greenlam"
+)) {
   assert.notEqual(
     getSurfaceMaterialModelName(record),
     getSurfaceMaterialProductDisplayName(record),

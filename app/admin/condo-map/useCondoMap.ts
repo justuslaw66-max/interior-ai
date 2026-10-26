@@ -8,6 +8,7 @@ import {
   condoSiteRings,
   createCondoMap,
   keepBasemapOffSites,
+  mapProblem,
   type CondoPick,
 } from "./condo-map-mapbox";
 import type { CondoMapView, CondoMapsBySlug } from "./condo-map-view";
@@ -18,9 +19,13 @@ import { useMapboxGl } from "./useMapboxGl";
  * The admin condo map's Mapbox map in a container: made once Mapbox GL has loaded (and only with a token), then kept in
  * step with the developments as they arrive and with the view. The Mapbox work itself is in condo-map-mapbox.
  */
-export type CondoMapStatus = { ready: boolean; problem: string | null };
+export type CondoMapStatus = { ready: boolean; problem: string | null; modelsFailed: string[] };
 
-type MapState = { map: MapboxMap | null; refused: number | null };
+type MapState = { map: MapboxMap | null; refused: number | null; loadFailed: string | null; slow: boolean; modelsFailed: string[] };
+
+const NO_MAP: MapState = { map: null, refused: null, loadFailed: null, slow: false, modelsFailed: [] };
+// how long the map's style may take before the page says so (it keeps waiting)
+const SLOW_MS = 20000;
 
 // which developments each map already has, so a new view only changes filters and colours
 const ADDED = new WeakMap<MapboxMap, Set<string>>();
@@ -29,25 +34,31 @@ const HIDDEN = new WeakMap<MapboxMap, Set<string | number>>();
 
 function useMapboxMap(token: string | null, container: HTMLElement | null, bounds: MapboxBounds | undefined) {
   const { gl, error } = useMapboxGl(token !== null);
-  const [state, setState] = useState<MapState>({ map: null, refused: null });
+  const [state, setState] = useState<MapState>(NO_MAP);
   useEffect(() => {
     if (!gl || !token || !container) return;
+    const slow = window.setTimeout(() => setState((current) => (current.map ? current : { ...current, slow: true })), SLOW_MS);
     const map = createCondoMap(gl, container, token, bounds, {
-      onStyle: (ready) => setState((current) => ({ ...current, map: ready })),
+      onStyle: (ready) => {
+        window.clearTimeout(slow);
+        setState((current) => ({ ...current, map: ready, loadFailed: null, slow: false }));
+      },
       onTokenRefused: (status) => setState((current) => ({ ...current, refused: status })),
+      onLoadFailed: (detail) => setState((current) => ({ ...current, loadFailed: current.loadFailed ?? detail })),
+      onModelFailed: (slug) =>
+        setState((current) => (current.modelsFailed.includes(slug) ? current : { ...current, modelsFailed: [...current.modelsFailed, slug] })),
     });
     return () => {
+      window.clearTimeout(slow);
       map.remove();
-      setState((current) => (current.map === map ? { ...current, map: null } : current));
+      // a new map (or none) starts clean: no stale load error or model failures from this one
+      setState(NO_MAP);
     };
   }, [gl, token, container, bounds]);
-  const refused = state.refused
-    ? `Mapbox refused the token (${state.refused}). Check MAPBOX_PUBLIC_TOKEN and the addresses it is restricted to.`
-    : null;
-  return { map: state.map, problem: error ?? refused };
+  return { map: state.map, problem: error ?? mapProblem(state), modelsFailed: state.modelsFailed };
 }
 
-function useDevelopmentLayers(map: MapboxMap | null, maps: CondoMapsBySlug, view: CondoMapView) {
+function useDevelopmentLayers(map: MapboxMap | null, maps: CondoMapsBySlug, view: CondoMapView, modelsFailed: readonly string[]) {
   useEffect(() => {
     if (!map) return;
     const added = ADDED.get(map) ?? new Set<string>();
@@ -57,9 +68,9 @@ function useDevelopmentLayers(map: MapboxMap | null, maps: CondoMapsBySlug, view
         addCondoDevelopment(map, dev, window.location.origin);
         added.add(dev.slug);
       }
-      applyCondoView(map, dev, view);
+      applyCondoView(map, dev, view, modelsFailed.includes(dev.slug));
     }
-  }, [map, maps, view]);
+  }, [map, maps, view, modelsFailed]);
 }
 
 function useMapBehaviour(map: MapboxMap | null, maps: CondoMapsBySlug, onPick: (pick: CondoPick | null) => void) {
@@ -92,9 +103,9 @@ export function useCondoMap(options: {
   onPick: (pick: CondoPick | null) => void;
 }): CondoMapStatus {
   const { token, container, overview, maps, view, onPick } = options;
-  const { map, problem } = useMapboxMap(token, container, overview ?? undefined);
-  useDevelopmentLayers(map, maps, view);
+  const { map, problem, modelsFailed } = useMapboxMap(token, container, overview ?? undefined);
+  useDevelopmentLayers(map, maps, view, modelsFailed);
   useMapBehaviour(map, maps, onPick);
   useFocus(map, view.slug ? maps[view.slug]?.bounds : undefined);
-  return { ready: map !== null, problem };
+  return { ready: map !== null, problem, modelsFailed };
 }

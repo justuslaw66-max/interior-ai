@@ -33,9 +33,9 @@ const placementClass = (aboveStepSheet: boolean) =>
   aboveStepSheet ? PLACEMENT_ABOVE_STEP_SHEET : "bottom-20 sm:bottom-6";
 
 function toneClasses(tone: PlanCanvasGuidanceState["tone"]) {
-  if (tone === "blocked") return { accentClass: "bg-amber-500", labelClass: "bg-amber-50 text-amber-800" };
-  if (tone === "ready") return { accentClass: "bg-emerald-500", labelClass: "bg-emerald-50 text-emerald-800" };
-  return { accentClass: "bg-blue-500", labelClass: "bg-blue-50 text-blue-800" };
+  if (tone === "blocked") return { accentClass: "bg-amber-500", labelClass: "bg-warning-tint text-on-warning-tint" };
+  if (tone === "ready") return { accentClass: "bg-emerald-500", labelClass: "bg-success-tint text-on-success-tint" };
+  return { accentClass: "bg-blue-500", labelClass: "bg-accent-tint text-on-accent-tint" };
 }
 
 export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) {
@@ -46,9 +46,9 @@ export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) 
 
   return (
     <div
-      data-testid="plan-canvas-guidance" data-touch-area
+      data-testid="plan-canvas-guidance" data-touch-area data-surface="floating"
       data-tone={state.guidance.tone}
-      className={`pointer-events-none absolute left-1/2 z-30 w-[min(92vw,390px)] -translate-x-1/2 rounded-xl border border-neutral-200 bg-white/95 px-3 py-2.5 shadow-xl backdrop-blur ${placementClass(state.aboveStepSheet)}`}
+      className={`pointer-events-none absolute left-1/2 z-30 w-[min(92vw,390px)] -translate-x-1/2 rounded-xl border border-separator bg-surface-floating/95 px-3 py-2.5 shadow-xl backdrop-blur ${placementClass(state.aboveStepSheet)}`}
       style={onSheet ? { bottom: `calc(${sheet.heightPx + 8}px + env(safe-area-inset-bottom))` } : undefined}
       role={state.primaryAction ? "group" : "status"}
       aria-label={state.primaryAction ? state.guidance.title : undefined}
@@ -61,7 +61,7 @@ export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) 
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <div className="truncate text-sm font-semibold text-neutral-950">
+            <div className="truncate text-sm font-semibold text-label">
               {state.guidance.title}
             </div>
             <div className="flex shrink-0 items-center gap-1.5">
@@ -99,7 +99,7 @@ export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) 
               )}
             </div>
           </div>
-          <div className="mt-0.5 text-xs leading-5 text-neutral-600">
+          <div className="mt-0.5 text-xs leading-5 text-label-secondary">
             {state.guidance.detail}
           </div>
         </div>
