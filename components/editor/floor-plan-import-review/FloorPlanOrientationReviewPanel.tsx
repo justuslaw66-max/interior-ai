@@ -49,7 +49,7 @@ export default function FloorPlanOrientationReviewPanel({
           <button
             key={choice.id}
             type="button"
-            className="rounded-md border border-neutral-200 bg-white p-1.5 text-xs"
+            className="rounded-md border border-box-border bg-field p-1.5 text-xs"
             disabled={disabled || choice.id === "normal"}
             onClick={() => {
               try {
@@ -71,7 +71,7 @@ export default function FloorPlanOrientationReviewPanel({
           </button>
         ))}
       </div>
-      <p className="mt-1 text-xs text-neutral-600">
+      <p className="mt-1 text-xs text-label-secondary">
         Thumbnails are relative to the current candidate. Registration points
         rotate or mirror with geometry so the source overlay remains aligned.
       </p>

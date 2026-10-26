@@ -37,11 +37,11 @@ export default function CatalogFilterDrawer({
   if (!open) return null;
   return (
     <div id={CATALOG_FILTER_POPOVER_ID} role="dialog" aria-labelledby={CATALOG_FILTER_POPOVER_TITLE_ID} tabIndex={-1}
-      data-testid="catalog-filter-drawer"
-      className="absolute left-0 right-0 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain rounded-xl border border-neutral-200 bg-white p-3 shadow-lg outline-hidden"
+      data-testid="catalog-filter-drawer" data-surface="floating"
+      className="absolute left-0 right-0 top-24 z-40 max-h-[calc(100dvh-7rem)] overflow-y-auto overscroll-contain rounded-xl border border-separator bg-surface-floating p-3 shadow-lg outline-hidden"
     >
-      <div className="sticky -top-3 z-10 -mx-3 -mt-3 mb-2 flex items-center justify-between border-b border-neutral-100 bg-white px-3 py-3">
-        <div id={CATALOG_FILTER_POPOVER_TITLE_ID} className="text-xs font-semibold text-neutral-900">Structured filters</div>
+      <div className="sticky -top-3 z-10 -mx-3 -mt-3 mb-2 flex items-center justify-between border-b border-separator-subtle bg-surface-floating px-3 py-3">
+        <div id={CATALOG_FILTER_POPOVER_TITLE_ID} className="text-xs font-semibold text-label">Structured filters</div>
         <Button variant="quiet" size="compact" onClick={onClose}>Close</Button>
       </div>
 
@@ -66,7 +66,7 @@ export default function CatalogFilterDrawer({
 
       {showSofaSeatCapacityFilter ? (
         <fieldset className="mt-3">
-          <legend className="text-xs font-medium text-neutral-500">Seat capacity</legend>
+          <legend className="text-xs font-medium text-label-secondary">Seat capacity</legend>
           <div className="mt-1 grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-2">
             {SOFA_SEAT_CAPACITY_OPTIONS.map((option) => {
               const selectedBuckets = filters.sofaSeatCapacityBuckets ?? [];
@@ -81,9 +81,9 @@ export default function CatalogFilterDrawer({
                   className={[
                     "flex min-h-10 items-center gap-2 rounded border px-2 py-2 text-xs transition-colors",
                     selected
-                      ? "border-neutral-900 bg-neutral-50 text-neutral-950"
-                      : "border-neutral-200 text-neutral-700",
-                    disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer hover:border-neutral-400",
+                      ? "border-control-primary bg-tile text-label"
+                      : "border-separator text-label-secondary",
+                    disabled ? "cursor-not-allowed opacity-45" : "cursor-pointer hover:border-control-edge-hover",
                   ].join(" ")}
                 >
                   <input
@@ -107,7 +107,7 @@ export default function CatalogFilterDrawer({
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium">{option.label}</span>
-                    <span className="block text-xs text-neutral-400">
+                    <span className="block text-xs text-label-secondary">
                       {count} {count === 1 ? "option" : "options"}
                     </span>
                   </span>
@@ -120,7 +120,7 @@ export default function CatalogFilterDrawer({
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
         <label className="space-y-1">
-          <div className="text-neutral-500">Price min (SGD)</div>
+          <div className="text-label-secondary">Price min (SGD)</div>
           <input
             type="number"
             className="w-full rounded border p-1"
@@ -133,7 +133,7 @@ export default function CatalogFilterDrawer({
         </label>
 
         <label className="space-y-1">
-          <div className="text-neutral-500">Price max (SGD)</div>
+          <div className="text-label-secondary">Price max (SGD)</div>
           <input
             type="number"
             className="w-full rounded border p-1"
@@ -146,7 +146,7 @@ export default function CatalogFilterDrawer({
         </label>
 
         <label className="space-y-1">
-          <div className="text-neutral-500">Finish colour</div>
+          <div className="text-label-secondary">Finish colour</div>
           <select
             className="w-full rounded border p-1"
             value={filters.colorFamilies?.[0] ?? ""}
@@ -168,7 +168,7 @@ export default function CatalogFilterDrawer({
         </label>
 
         <label className="space-y-1">
-          <div className="text-neutral-500">Brand</div>
+          <div className="text-label-secondary">Brand</div>
           <select
             className="w-full rounded border p-1"
             value={filters.brandIds?.[0] ?? ""}
@@ -184,7 +184,7 @@ export default function CatalogFilterDrawer({
         </label>
 
         <label className="space-y-1">
-          <div className="text-neutral-500">Style</div>
+          <div className="text-label-secondary">Style</div>
           <select
             className="w-full rounded border p-1"
             value={filters.styleTags?.[0] ?? ""}
@@ -200,7 +200,7 @@ export default function CatalogFilterDrawer({
         </label>
 
         <label className="space-y-1">
-          <div className="text-neutral-500">Material</div>
+          <div className="text-label-secondary">Material</div>
           <select
             className="w-full rounded border p-1"
             value={filters.materialFamilies?.[0] ?? ""}
@@ -216,7 +216,7 @@ export default function CatalogFilterDrawer({
         </label>
 
         <label className="space-y-1">
-          <div className="text-neutral-500">Width min (cm)</div>
+          <div className="text-label-secondary">Width min (cm)</div>
           <input
             type="number"
             min="0"
@@ -233,7 +233,7 @@ export default function CatalogFilterDrawer({
         </label>
 
         <label className="space-y-1">
-          <div className="text-neutral-500">Width max (cm)</div>
+          <div className="text-label-secondary">Width max (cm)</div>
           <input
             type="number"
             min="0"

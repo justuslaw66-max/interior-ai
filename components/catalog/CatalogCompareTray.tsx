@@ -22,11 +22,11 @@ function UnavailableCompareCard({
 }) {
   return (
     <div
-      className="rounded-md border border-neutral-200 bg-white p-2"
+      className="rounded-md border border-separator bg-surface-secondary p-2"
       data-testid="catalog-compare-unavailable"
     >
-      <div className="text-xs font-semibold text-neutral-900">Product unavailable</div>
-      <div className="mt-1 text-xs text-neutral-500">
+      <div className="text-xs font-semibold text-label">Product unavailable</div>
+      <div className="mt-1 text-xs text-label-secondary">
         {item.reason === "variant"
           ? "The selected variant is no longer available in the public catalogue."
           : "This product is no longer available in the public catalogue."}
@@ -56,13 +56,13 @@ function AvailableCompareCard({
 }) {
   const card = item.card;
   return (
-    <div className="rounded-md border border-neutral-200 bg-white p-2">
-      <div className="line-clamp-1 text-xs font-semibold text-neutral-900">{card.title}</div>
-      <div className="line-clamp-1 text-xs text-neutral-500">{card.brand ?? "Unknown brand"}</div>
-      <div className="line-clamp-1 text-xs text-neutral-500" data-testid="catalog-compare-variant-label">{card.variantLabel}</div>
-      <div className="mt-1 text-xs text-neutral-700">{card.priceLabel ?? "Price on request"}</div>
-      <div className="text-xs text-neutral-500">{card.dimsLabel}</div>
-      <div className="mt-1 line-clamp-1 text-xs text-neutral-500">{card.badges.join(" • ")}</div>
+    <div className="rounded-md border border-separator bg-surface-secondary p-2">
+      <div className="line-clamp-1 text-xs font-semibold text-label">{card.title}</div>
+      <div className="line-clamp-1 text-xs text-label-secondary">{card.brand ?? "Unknown brand"}</div>
+      <div className="line-clamp-1 text-xs text-label-secondary" data-testid="catalog-compare-variant-label">{card.variantLabel}</div>
+      <div className="mt-1 text-xs text-label-secondary">{card.priceLabel ?? "Price on request"}</div>
+      <div className="text-xs text-label-secondary">{card.dimsLabel}</div>
+      <div className="mt-1 line-clamp-1 text-xs text-label-secondary">{card.badges.join(" • ")}</div>
 
       <div className="mt-2 grid grid-cols-3 gap-1">
         <Button
@@ -85,9 +85,9 @@ export default function CatalogCompareTray(props: Props) {
   if (items.length === 0) return null;
 
   return (
-    <div className="mt-3 rounded-lg border border-neutral-300 bg-neutral-50 p-2" data-testid="catalog-compare-tray">
+    <div className="mt-3 rounded-lg border border-control-secondary-border bg-tile p-2" data-testid="catalog-compare-tray">
       <div className="flex items-center justify-between">
-        <div className="text-xs font-semibold text-neutral-900">Quick compare ({items.length}/3)</div>
+        <div className="text-xs font-semibold text-label">Quick compare ({items.length}/3)</div>
         <Button variant="link" size="inline" onClick={onClear} className="min-h-8 text-xs" data-testid="catalog-compare-clear">
           Clear all
         </Button>

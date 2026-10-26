@@ -79,7 +79,7 @@ function PresetIcon() {
 
 function RailTooltip({ label }: { label: string }) {
   return (
-    <span className="pointer-events-none absolute left-full top-1/2 z-[80] ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-neutral-950 px-2 py-1 text-xs font-semibold text-white shadow-lg group-hover:block group-focus-visible:block">
+    <span className="pointer-events-none absolute left-full top-1/2 z-[80] ml-2 hidden -translate-y-1/2 whitespace-nowrap rounded-md bg-surface-toast px-2 py-1 text-xs font-semibold text-on-surface-toast shadow-lg group-hover:block group-focus-visible:block">
       {label}
     </span>
   );
@@ -502,14 +502,14 @@ export default function DraggableFloatingPanel({
               </Button>
               {presetMenuOpen && (
                 <div
-                  className="absolute left-7 top-0 z-[70] w-32 rounded-lg border border-neutral-200 bg-white p-1 text-xs shadow-xl"
+                  className="absolute left-7 top-0 z-[70] w-32 rounded-lg border border-separator bg-surface-floating p-1 text-xs shadow-xl"
                   data-testid={`floating-panel-preset-menu-${storageKey ?? panelId}`}
                 >
                   {resolvedPositionPresets.map((preset) => (
                     <button
                       key={preset.label}
                       type="button"
-                      className="block w-full rounded-md px-2 py-1.5 text-left font-semibold text-neutral-700 hover:bg-neutral-100"
+                      className="block w-full rounded-md px-2 py-1.5 text-left font-semibold text-control-label-idle hover:bg-control-quiet-hover"
                       onClick={() => applyPositionPreset(preset)}
                     >
                       {preset.label}

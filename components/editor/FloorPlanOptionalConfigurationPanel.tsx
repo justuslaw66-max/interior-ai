@@ -40,12 +40,12 @@ export default function FloorPlanOptionalConfigurationPanel({
   );
   if (!suggestions.length && !publicGroups.length) return null;
 
-  const subtle = "text-neutral-600";
+  const subtle = "text-label-secondary";
   return (
     <section
       aria-label="Source-supported floor-plan options"
       data-testid="floor-plan-optional-configurations"
-      className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3"
+      className="mt-3 rounded-lg border border-accent-tint-border bg-accent-tint p-3" data-surface="floating"
     >
       <div className="text-xs font-semibold">Options shown in the source</div>
       <p className={`mt-1 text-xs leading-4 ${subtle}`}>
@@ -57,7 +57,7 @@ export default function FloorPlanOptionalConfigurationPanel({
           {publicGroups.map((group) => (
             <fieldset
               key={group.groupId}
-              className="rounded-md border border-sky-100 bg-white p-2"
+              className="rounded-md border border-accent-tint-border bg-surface-floating p-2"
             >
               <legend className="px-1 text-xs font-semibold">{group.label}</legend>
               <div className="mt-1 grid gap-1.5">
@@ -69,8 +69,8 @@ export default function FloorPlanOptionalConfigurationPanel({
                       type="button"
                       aria-pressed={selected}
                       className={selected
-                        ? "rounded-md border border-sky-600 bg-sky-50 px-2 py-1.5 text-left text-xs font-semibold text-sky-900"
-                        : "rounded-md border border-neutral-200 px-2 py-1.5 text-left text-xs font-semibold disabled:opacity-50"}
+                        ? "rounded-md border border-blue-600 bg-accent-tint px-2 py-1.5 text-left text-xs font-semibold text-on-accent-tint"
+                        : "rounded-md border border-box-border px-2 py-1.5 text-left text-xs font-semibold disabled:opacity-50"}
                       disabled={disabled || !onChoosePublicVariant || selected}
                       onClick={() => onChoosePublicVariant?.(group, option)}
                     >
@@ -94,7 +94,7 @@ export default function FloorPlanOptionalConfigurationPanel({
           return (
             <div
               key={`${suggestion.floorId}:${suggestion.annotationId}`}
-              className="rounded-md border border-sky-100 bg-white p-2"
+              className="rounded-md border border-accent-tint-border bg-surface-floating p-2"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
@@ -111,8 +111,8 @@ export default function FloorPlanOptionalConfigurationPanel({
                   </div>
                 </div>
                 <span className={suggestion.sourceSupported
-                  ? "shrink-0 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800"
-                  : "shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800"}
+                  ? "shrink-0 rounded-full bg-accent-tint px-2 py-0.5 text-xs font-semibold text-on-accent-tint"
+                  : "shrink-0 rounded-full bg-warning-tint px-2 py-0.5 text-xs font-semibold text-on-warning-tint"}
                 >
                   {suggestion.sourceSupported ? "Source mark" : "Needs review"}
                 </span>

@@ -11,7 +11,7 @@ const PresentExportProfessionalPlanControls = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div role="status" aria-live="polite" className="rounded-lg border border-neutral-200 p-3 text-xs text-neutral-600">
+      <div role="status" aria-live="polite" className="rounded-lg border border-box-border p-3 text-xs text-label-secondary">
         Loading detailed options…
       </div>
     ),
@@ -58,8 +58,8 @@ const EXPORT_STYLE_OPTIONS = [
 export function PlanDisplaySection({ state, actions }: PlanDisplaySectionProps) {
   const detailed = !state.simplePlanControls;
   return (
-    <section aria-labelledby="plan-display-heading" data-testid="plan-display-section" className="space-y-2 rounded-xl border border-neutral-200 bg-white p-3">
-      <h3 id="plan-display-heading" className="text-sm font-semibold text-neutral-900">
+    <section aria-labelledby="plan-display-heading" data-testid="plan-display-section" className="space-y-2 rounded-xl border border-box-border bg-surface-secondary p-3">
+      <h3 id="plan-display-heading" className="text-sm font-semibold text-label">
         Plan display
       </h3>
       <SegmentedControl
@@ -80,7 +80,7 @@ export function PlanDisplaySection({ state, actions }: PlanDisplaySectionProps) 
           onToggleLayer={actions.onTogglePlanLayer}
         />
       ) : (
-        <p className="text-xs text-neutral-600">Simple keeps the plan clean. Detailed adds layers, notes and the plan theme.</p>
+        <p className="text-xs text-label-secondary">Simple keeps the plan clean. Detailed adds layers, notes and the plan theme.</p>
       )}
       <DisplayUnitSelect value={state.planMeasurementUnit} onChange={actions.onMeasurementUnitChange} />
       <SegmentedControl
@@ -104,7 +104,7 @@ export function PlanDisplaySection({ state, actions }: PlanDisplaySectionProps) 
       </Button>
       {detailed ? (
         <>
-          <p className="text-xs font-semibold text-neutral-700">Export style</p>
+          <p className="text-xs font-semibold text-label-secondary">Export style</p>
           <SegmentedControl size="compact" fill label="Export style" options={EXPORT_STYLE_OPTIONS} value={state.exportStylePreset} onChange={actions.onExportStyleChange} />
         </>
       ) : null}
@@ -124,8 +124,8 @@ export type PlanNotesSectionProps = {
  */
 export function PlanNotesSection({ state, actions }: PlanNotesSectionProps) {
   return (
-    <section aria-labelledby="plan-notes-heading" data-testid="plan-notes-section" className="space-y-2 rounded-xl border border-neutral-200 bg-white p-3">
-      <h3 id="plan-notes-heading" className="text-sm font-semibold text-neutral-900">
+    <section aria-labelledby="plan-notes-heading" data-testid="plan-notes-section" className="space-y-2 rounded-xl border border-box-border bg-surface-secondary p-3">
+      <h3 id="plan-notes-heading" className="text-sm font-semibold text-label">
         Notes on the plan
       </h3>
       <SegmentedControl size="compact" fill label="Note tools" options={SIMPLE_NOTE_OPTIONS} value={state.annotationToolKind} onChange={actions.onSelectAnnotationTool} />

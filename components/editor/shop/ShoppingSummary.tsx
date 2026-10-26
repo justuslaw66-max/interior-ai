@@ -62,23 +62,23 @@ export function ShoppingSummary(props: ShoppingSummaryProps) {
     <aside
       aria-label="Summary"
       data-testid="shopping-summary"
-      className="sticky bottom-0 z-10 -mx-4 border-t border-neutral-200 bg-white px-4 py-3 shadow-[0_-6px_18px_rgba(23,23,23,0.08)] lg:top-6 lg:mx-0 lg:w-[340px] lg:shrink-0 lg:self-start lg:rounded-2xl lg:border lg:p-5 lg:shadow-none"
+      className="sticky bottom-0 z-10 -mx-4 border-t border-box-border bg-surface-secondary px-4 py-3 shadow-[0_-6px_18px_rgba(23,23,23,0.08)] lg:top-6 lg:mx-0 lg:w-[340px] lg:shrink-0 lg:self-start lg:rounded-2xl lg:border lg:p-5 lg:shadow-none"
     >
       <div className="flex items-center justify-between gap-3 lg:flex-col lg:items-stretch lg:gap-3.5">
         <div className="flex min-w-0 flex-col gap-0.5 lg:gap-1">
-          <span className="text-xs text-neutral-600 lg:text-sm">Total</span>
-          <span data-testid="shopping-list-total" className="text-xl font-bold text-neutral-900 lg:text-[32px] lg:leading-[38px] lg:tracking-tight">
+          <span className="text-xs text-label-secondary lg:text-sm">Total</span>
+          <span data-testid="shopping-list-total" className="text-xl font-bold text-label lg:text-[32px] lg:leading-[38px] lg:tracking-tight">
             {formatSgd(list.total)}
           </span>
-          <span data-testid="shopping-summary-count" className="hidden text-[13px] text-neutral-600 lg:block">
+          <span data-testid="shopping-summary-count" className="hidden text-[13px] text-label-secondary lg:block">
             {productCountLabel(list.productCount)}.{props.hasSurfaces ? " Surfaces are priced separately." : ""}
           </span>
         </div>
         <SummaryActions {...props} />
       </div>
-      <p className="mt-3.5 hidden text-[13px] leading-[19px] text-neutral-600 lg:block">{summaryNote(list)}</p>
+      <p className="mt-3.5 hidden text-[13px] leading-[19px] text-label-secondary lg:block">{summaryNote(list)}</p>
       {props.swapAll ? (
-        <div className="mt-4 border-t border-neutral-200 pt-4">
+        <div className="mt-4 border-t border-separator pt-4">
           <ShoppingSwapAll {...props.swapAll} />
         </div>
       ) : null}

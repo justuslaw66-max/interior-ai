@@ -30,7 +30,7 @@ export default function FloorPlanCatalogResultList({
   onUse,
   measurementUnit,
 }: FloorPlanCatalogResultListProps) {
-  const subtle = "text-neutral-600";
+  const subtle = "text-label-secondary";
   return (
     <div id={resultListId} className="mt-2 grid gap-4" data-testid={testId}>
       {groups.map((group) => (
@@ -46,7 +46,7 @@ export default function FloorPlanCatalogResultList({
                 <article
                   key={result.id}
                   data-testid={`floor-plan-library-result-${result.layoutId}`}
-                  className="ph-no-capture overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm"
+                  className="ph-no-capture overflow-hidden rounded-lg border border-box-border bg-surface-elevated-secondary shadow-sm" data-surface="floating"
                 >
                   <div className="bg-neutral-50">
                     {result.previewUrl ? (
@@ -58,7 +58,7 @@ export default function FloorPlanCatalogResultList({
                         className="h-40 w-full object-contain"
                       />
                     ) : (
-                      <div className="flex h-28 items-center justify-center bg-neutral-100 px-6 text-center text-xs font-semibold text-neutral-500">
+                      <div className="flex h-28 items-center justify-center bg-tile px-6 text-center text-xs font-semibold text-label-secondary">
                         Verified editable floor plan
                       </div>
                     )}
@@ -73,11 +73,11 @@ export default function FloorPlanCatalogResultList({
                       </div>
                       <div className="flex shrink-0 flex-wrap justify-end gap-1">
                         {exactMatch ? (
-                          <span data-testid="floor-plan-unit-match-badge" className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800">
+                          <span data-testid="floor-plan-unit-match-badge" className="rounded-full bg-success-tint px-2 py-1 text-xs font-semibold text-on-success-tint">
                             Exact unit match
                           </span>
                         ) : null}
-                        <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800">
+                        <span className="rounded-full bg-success-tint px-2 py-1 text-xs font-semibold text-on-success-tint">
                           {result.verificationTier === "construction_verified" ? "Construction verified" : "Source verified"}
                         </span>
                       </div>
@@ -107,13 +107,13 @@ export default function FloorPlanCatalogResultList({
                     </div>
                     <div className="mt-2 flex flex-wrap gap-3">
                       {result.sourceUrl && result.sourcePage !== null ? (
-                        <a href={`${result.sourceUrl.split("#")[0]}#page=${result.sourcePage}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-blue-700">
+                        <a href={`${result.sourceUrl.split("#")[0]}#page=${result.sourcePage}`} target="_blank" rel="noreferrer" className="text-xs font-semibold text-link">
                           Source page {result.sourcePage}
                         </a>
                       ) : <span className={`text-xs ${subtle}`}>Published revision</span>}
                     </div>
                     {applyError?.id === result.id ? (
-                      <p role="alert" className="mt-2 text-xs text-red-700">{applyError.message}</p>
+                      <p role="alert" className="mt-2 text-xs text-on-danger-tint">{applyError.message}</p>
                     ) : null}
                   </div>
                 </article>

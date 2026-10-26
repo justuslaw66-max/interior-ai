@@ -97,27 +97,27 @@ export function CatalogPlacementConfirmPanel({
 
   return (
     <div
-      data-testid="catalog-placement-confirm-panel"
+      data-testid="catalog-placement-confirm-panel" data-surface="floating"
       role="dialog"
       aria-modal="false"
       aria-label="Preview catalogue placement"
-      className={`fixed inset-x-0 bottom-0 z-[95] max-h-[82vh] overflow-y-auto rounded-t-2xl border bg-white p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl md:inset-x-auto md:bottom-5 md:right-5 md:max-h-[min(48vh,420px)] md:w-[min(460px,calc(100vw-2rem))] md:rounded-xl md:p-3 md:pb-3 ${
-        pendingCatalogPlacementHardInvalid ? "border-red-200" : "border-emerald-200"
+      className={`fixed inset-x-0 bottom-0 z-[95] max-h-[82vh] overflow-y-auto rounded-t-2xl border bg-surface-floating p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-2xl md:inset-x-auto md:bottom-5 md:right-5 md:max-h-[min(48vh,420px)] md:w-[min(460px,calc(100vw-2rem))] md:rounded-xl md:p-3 md:pb-3 ring-1 ring-surface-floating-edge ${
+        pendingCatalogPlacementHardInvalid ? "border-danger-tint-border" : "border-success-tint-border"
       }`}
     >
       <div
-        className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-neutral-200 md:hidden"
+        className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-control-badge md:hidden"
         aria-hidden="true"
       />
       <div className="flex flex-col gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-label-secondary">
             Preview placement
           </p>
-          <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-neutral-950 md:line-clamp-1 md:text-sm">
+          <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-label md:line-clamp-1 md:text-sm">
             {pendingCatalogPlacementScene.productTitle}
           </h3>
-          <p className="mt-1 line-clamp-2 text-sm text-neutral-600 md:line-clamp-1 md:text-xs">
+          <p className="mt-1 line-clamp-2 text-sm text-label-secondary md:line-clamp-1 md:text-xs">
             {pendingCatalogPlacementScene.variantLabel} · {pendingCatalogPlacementScene.reason}
             {pendingCatalogPlacementRoomName ? ` · ${pendingCatalogPlacementRoomName}` : ""}
           </p>
@@ -126,13 +126,13 @@ export function CatalogPlacementConfirmPanel({
               data-testid="catalog-placement-status"
               className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                 pendingCatalogPlacementHardInvalid
-                  ? "bg-red-50 text-red-700"
-                  : "bg-emerald-50 text-emerald-700"
+                  ? "bg-danger-tint text-on-danger-tint"
+                  : "bg-success-tint text-on-success-tint"
               }`}
             >
               {pendingCatalogPlacementStatusLabel}
             </span>
-            <span className="text-xs text-neutral-500 md:hidden">
+            <span className="text-xs text-label-secondary md:hidden">
               Drag the preview or tap a room/highlighted zone, then confirm.
             </span>
             {activePlacementTargetLabel && (
@@ -140,8 +140,8 @@ export function CatalogPlacementConfirmPanel({
                 data-testid="catalog-placement-target-room"
                 className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                   activePlacementTargetValid
-                    ? "bg-blue-50 text-blue-700"
-                    : "bg-red-50 text-red-700"
+                    ? "bg-accent-tint text-on-accent-tint"
+                    : "bg-danger-tint text-on-danger-tint"
                 }`}
               >
                 Target: {activePlacementTargetLabel}
@@ -152,10 +152,10 @@ export function CatalogPlacementConfirmPanel({
                 data-testid="catalog-placement-quality"
                 className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                   pendingCatalogPlacementQuality.tone === "good"
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-accent-tint text-on-accent-tint"
                     : pendingCatalogPlacementQuality.tone === "warn"
-                      ? "bg-amber-50 text-amber-700"
-                      : "bg-red-50 text-red-700"
+                      ? "bg-warning-tint text-on-warning-tint"
+                      : "bg-danger-tint text-on-danger-tint"
                 }`}
               >
                 {pendingCatalogPlacementQuality.label}
@@ -165,24 +165,24 @@ export function CatalogPlacementConfirmPanel({
           {pendingCatalogPlacementScore && (
             <div
               data-testid="catalog-placement-score-card"
-              className="mt-2 rounded-lg border border-neutral-200 bg-neutral-50 p-3 md:p-2.5"
+              className="mt-2 rounded-lg border border-separator bg-surface-floating p-3 md:p-2.5"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-label-secondary">
                     Placement score
                   </div>
-                  <div className="mt-0.5 text-sm font-semibold text-neutral-950">
+                  <div className="mt-0.5 text-sm font-semibold text-label">
                     {pendingCatalogPlacementScore.label} · {pendingCatalogPlacementScore.score}/100
                   </div>
                 </div>
                 <div
                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                     pendingCatalogPlacementScore.relationship === "good"
-                      ? "bg-emerald-100 text-emerald-800"
+                      ? "bg-success-tint text-on-success-tint"
                       : pendingCatalogPlacementScore.relationship === "wrong"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-white text-neutral-700"
+                        ? "bg-warning-tint text-on-warning-tint"
+                        : "bg-control-track text-label-secondary"
                   }`}
                 >
                   {pendingCatalogPlacementScore.relationship === "good"
@@ -194,25 +194,25 @@ export function CatalogPlacementConfirmPanel({
                         : "Neutral"}
                 </div>
               </div>
-              <div className="mt-2 text-xs text-neutral-600">
+              <div className="mt-2 text-xs text-label-secondary">
                 {pendingCatalogPlacementScore.summary}
               </div>
               {pendingCatalogPlacementScore.warnings.length > 0 && (
-                <ul className="mt-2 space-y-1 text-xs text-amber-800 md:mt-1">
+                <ul className="mt-2 space-y-1 text-xs text-on-warning-tint md:mt-1">
                   {pendingCatalogPlacementScore.warnings.slice(0, 3).map((warning) => (
                     <li key={warning}>{warning}</li>
                   ))}
                 </ul>
               )}
               {pendingCatalogPlacementScore.suggestions.length > 0 && (
-                <div className="mt-2 text-xs text-neutral-600 md:hidden">
+                <div className="mt-2 text-xs text-label-secondary md:hidden">
                   {pendingCatalogPlacementScore.suggestions[0]}
                 </div>
               )}
               {pendingCatalogPlacementImprovement && (
                 <div
                   data-testid="catalog-placement-improvement-hint"
-                  className="mt-2 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-800"
+                  className="mt-2 rounded-md bg-success-tint px-2.5 py-1.5 text-xs font-semibold text-on-success-tint"
                 >
                   Better nearby spot available: +{pendingCatalogPlacementImprovement.scoreDelta} to{" "}
                   {pendingCatalogPlacementImprovement.score}/100.
@@ -221,7 +221,7 @@ export function CatalogPlacementConfirmPanel({
               {pendingCatalogBestRoomPlacement && (
                 <div
                   data-testid="catalog-placement-best-room-hint"
-                  className="mt-2 rounded-md bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-800"
+                  className="mt-2 rounded-md bg-accent-tint px-2.5 py-1.5 text-xs font-semibold text-on-accent-tint"
                 >
                   Best room: {pendingCatalogBestRoomPlacement.roomName} · +
                   {pendingCatalogBestRoomPlacement.scoreDelta} to{" "}
@@ -231,7 +231,7 @@ export function CatalogPlacementConfirmPanel({
               {pendingCatalogBestVariantPlacement && (
                 <div
                   data-testid="catalog-placement-best-option-hint"
-                  className="mt-2 rounded-md bg-violet-50 px-2.5 py-1.5 text-xs font-semibold text-violet-800"
+                  className="mt-2 rounded-md bg-accent-tint px-2.5 py-1.5 text-xs font-semibold text-on-accent-tint"
                 >
                   Best option: {pendingCatalogBestVariantPlacement.variantLabel} · +
                   {pendingCatalogBestVariantPlacement.scoreDelta} to{" "}
@@ -239,7 +239,7 @@ export function CatalogPlacementConfirmPanel({
                 </div>
               )}
               {pendingCatalogPlacementScore.compatibleZoneIds.length > 0 && (
-                <div className="mt-2 text-xs font-semibold text-emerald-700 md:hidden">
+                <div className="mt-2 text-xs font-semibold text-on-success-tint md:hidden">
                   Compatible zones are highlighted on the canvas.
                 </div>
               )}
@@ -375,7 +375,7 @@ export function CatalogPlacementConfirmPanel({
             </Button>
           </div>
         </div>
-        <div className="sticky bottom-0 -mx-4 grid shrink-0 grid-cols-2 gap-2 border-t border-neutral-200 bg-white/95 px-4 pb-1 pt-3 backdrop-blur md:-mx-3 md:px-3 md:pb-0 md:pt-2">
+        <div className="sticky bottom-0 -mx-4 grid shrink-0 grid-cols-2 gap-2 border-t border-separator bg-surface-floating/95 px-4 pb-1 pt-3 backdrop-blur md:-mx-3 md:px-3 md:pb-0 md:pt-2">
           <Button
             data-testid="catalog-placement-rotate-left"
             variant="secondary" size="regular"

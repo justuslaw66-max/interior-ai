@@ -44,17 +44,17 @@ export function StartChoiceCards({ isAuthenticated, ready, onTemplates, onDraw, 
           type="button"
           data-testid={`start-choice-${id}`}
           disabled={!ready && id !== "templates"}
-          className="flex min-h-11 items-start gap-3.5 rounded-2xl border border-neutral-200 bg-white p-4 text-left text-neutral-950 outline-hidden transition hover:border-neutral-400 hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-60 lg:p-[18px]"
+          className="flex min-h-11 items-start gap-3.5 rounded-2xl border border-box-border bg-surface-secondary p-4 text-left text-label outline-hidden transition hover:border-control-edge-hover hover:shadow-md focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-page disabled:cursor-wait disabled:opacity-60 lg:p-[18px]"
           onClick={handlers[id]}
         >
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-neutral-100">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-control-track">
             <Icon aria-hidden="true" className="h-[22px] w-[22px]" strokeWidth={1.8} />
           </span>
           <span className="flex min-w-0 flex-col gap-1">
             <span className="text-base font-bold">{title}</span>
-            <span className="text-sm leading-5 text-neutral-600">{description}</span>
+            <span className="text-sm leading-5 text-label-secondary">{description}</span>
             {id === "upload" && !isAuthenticated ? (
-              <span data-testid="start-choice-upload-sign-in" className="mt-0.5 flex items-center gap-1.5 text-[13px] text-neutral-600">
+              <span data-testid="start-choice-upload-sign-in" className="mt-0.5 flex items-center gap-1.5 text-[13px] text-label-secondary">
                 <Lock aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.8} />
                 Sign in needed
               </span>

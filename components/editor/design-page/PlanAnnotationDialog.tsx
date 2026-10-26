@@ -55,13 +55,13 @@ export function PlanAnnotationDialog({
       }
     >
       <label className="block">
-        <span className="text-xs font-semibold text-neutral-700">
+        <span className="text-xs font-semibold text-label-secondary">
           {kind === "room_tag" ? "Tag text" : "Annotation text"}
         </span>
         <textarea
           data-testid="plan-annotation-input"
           data-editor-dialog-initial-focus="true"
-          className="mt-1 min-h-24 w-full resize-none rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-950 outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30"
+          className="mt-1 min-h-24 w-full resize-none rounded-lg border border-box-border bg-surface-elevated-secondary px-3 py-2 text-sm text-label outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30"
           value={text}
           onChange={(event) => onTextChange(event.currentTarget.value)}
           onKeyDown={(event) => {

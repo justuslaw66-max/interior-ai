@@ -38,15 +38,15 @@ function WorkspaceHeader({
   "disabled" | "closeButtonRef" | "historyConfirmationOpen" | "onClose" | "onChooseFile"
 > & { signedIn: boolean }) {
   return (
-    <header className="flex shrink-0 items-center justify-between gap-3 border-b border-neutral-200 bg-white/95 px-4 py-3 sm:px-6 sm:py-4">
+    <header className="flex shrink-0 items-center justify-between gap-3 border-b border-separator bg-surface-elevated/95 px-4 py-3 sm:px-6 sm:py-4">
       <div className="min-w-0">
-        <div className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+        <div className="text-xs font-bold uppercase tracking-[0.16em] text-on-success-tint">
           Private upload
         </div>
         <h2 id="floor-plan-import-dialog-title" className="truncate text-lg font-semibold sm:text-xl">
           Upload floor plan
         </h2>
-        <p className="hidden text-xs text-neutral-500 sm:block">
+        <p className="hidden text-xs text-label-secondary sm:block">
           Upload once. AI builds an editable 2D and 3D design.
         </p>
       </div>
@@ -62,7 +62,7 @@ function WorkspaceHeader({
         ) : null}
         <button ref={closeButtonRef} id={FLOOR_PLAN_WORKSPACE_CLOSE_ACTION_ID}
           type="button" aria-label="Close floor plan upload"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-neutral-200 bg-white text-xl text-neutral-700 hover:bg-neutral-100"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-box-border bg-control-secondary text-xl text-control-label-idle hover:bg-control-quiet-hover"
           disabled={historyConfirmationOpen} onClick={onClose}>
           <span aria-hidden="true">×</span>
         </button>
@@ -98,11 +98,11 @@ export function FloorPlanUploadWorkspaceDialog(
         if (!historyConfirmationOpen && event.target === event.currentTarget) onClose();
       }}>
       <section ref={panelRef} data-testid="floor-plan-import-dialog-panel" tabIndex={-1}
-        className="flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-white text-neutral-950 shadow-2xl outline-hidden sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-neutral-200">
+        className="flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-surface-elevated text-label shadow-2xl outline-hidden sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-separator">
         <WorkspaceHeader disabled={disabled} signedIn={choose.signedIn} closeButtonRef={closeButtonRef}
           historyConfirmationOpen={historyConfirmationOpen} onClose={onClose}
           onChooseFile={onChooseFile} />
-        <div className="min-h-0 flex-1 overflow-y-auto bg-neutral-100/70 p-3 sm:p-5 lg:p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto bg-surface-well p-3 sm:p-5 lg:p-6">
           <FloorPlanImportWorkspace request={request} choose={choose}
             trainingBenchmarkOptIn={trainingBenchmarkOptIn}
             disabled={disabled} proMode={proMode} onChooseFile={onChooseFile}

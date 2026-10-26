@@ -29,7 +29,7 @@ function Chord({ chord, isMac }: { chord: ShortcutChord; isMac: boolean }) {
         <kbd
           key={`${label}-${index}`}
           aria-hidden="true"
-          className="inline-flex h-6 min-w-6 items-center justify-center rounded-md border border-neutral-300 bg-neutral-50 px-1.5 font-sans text-xs font-semibold text-neutral-800"
+          className="inline-flex h-6 min-w-6 items-center justify-center rounded-md border border-control-secondary-border bg-tile px-1.5 font-sans text-xs font-semibold text-label"
         >
           {label}
         </kbd>
@@ -46,16 +46,16 @@ export function KeyboardShortcutsList({ isDesigner, isMac }: { isDesigner: boole
         <section key={group.id} aria-labelledby={`keyboard-shortcuts-${group.id}`} data-testid={`keyboard-shortcuts-${group.id}`}>
           <h3 id={`keyboard-shortcuts-${group.id}`} className="text-sm font-bold">
             {group.title}
-            {group.when ? <span className="ml-2 font-normal text-neutral-600">{group.when}</span> : null}
+            {group.when ? <span className="ml-2 font-normal text-label-secondary">{group.when}</span> : null}
           </h3>
-          <dl className="mt-2 divide-y divide-neutral-100">
+          <dl className="mt-2 divide-y divide-separator-subtle">
             {group.shortcuts.map((shortcut) => (
               <div key={shortcut.action} className="flex items-center justify-between gap-3 py-1.5 text-sm">
                 <dt>{shortcut.action}</dt>
                 <dd className="flex shrink-0 items-center gap-1.5">
                   {shortcut.chords.map((chord, index) => (
                     <span key={chord.join("+")} className="inline-flex items-center gap-1.5">
-                      {index > 0 ? <span className="text-xs text-neutral-600">or</span> : null}
+                      {index > 0 ? <span className="text-xs text-label-secondary">or</span> : null}
                       <Chord chord={chord} isMac={isMac} />
                     </span>
                   ))}

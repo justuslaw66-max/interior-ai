@@ -12,7 +12,7 @@ export function FloorPlanOpeningKindCorrectionNotice({
 }) {
   if (plan.locked) {
     return (
-      <div className="col-span-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900">
+      <div className="col-span-2 rounded-md border border-warning-tint-border bg-warning-tint p-2 text-xs text-on-warning-tint">
         <div>Changing this window to a door requires changing its documented sill.</div>
         {proMode ? (
           <Button

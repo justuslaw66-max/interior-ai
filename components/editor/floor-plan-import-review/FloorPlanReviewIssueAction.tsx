@@ -25,7 +25,7 @@ export function FloorPlanReviewIssueAction({ target, root, disabled }: {
   target: FloorPlanReviewTarget | null; root: RefObject<HTMLDivElement | null>; disabled: boolean;
 }) {
   if (!target) return null;
-  return <div className="my-2 rounded border border-blue-200 bg-blue-50 p-2 text-xs text-blue-900">
+  return <div className="my-2 rounded border border-accent-tint-border bg-accent-tint p-2 text-xs text-on-accent-tint">
     <p>Review the highlighted {target.label}{target.pageNumber ? ` on page ${target.pageNumber}` : ""}.</p>
     <Button size="compact" className="mt-1" disabled={disabled} onClick={() => openCorrection(root.current, target)}>
       {target.control === "artwork" ? "Select marked artwork" : `Open ${target.label} controls`}

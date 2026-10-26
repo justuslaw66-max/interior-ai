@@ -145,6 +145,8 @@ const LIGHT_ROLE_TOKENS = {
   "surface-canvas": "#f4f2ed",
   "control-switch-off": "var(--color-neutral-500)",
   "control-switch-knob": "var(--color-white)",
+  "surface-page": "#fafaf9",
+  "surface-well": "color-mix(in oklab, var(--color-neutral-100) 70%, transparent)",
   "control-primary": "var(--color-neutral-900)",
   "control-primary-hover": "var(--color-neutral-800)",
   "control-on-primary": "var(--color-white)",
@@ -172,7 +174,8 @@ for (const [name, value] of Object.entries(LIGHT_ROLE_TOKENS)) {
 // steps (24 Oct: a #3A3A3C toast; a #1C1C1E bar with the current step a #2C2C2E card), the step
 // panel (24 Oct: cards with no outline, fields #2C2C2E, no band, the menu's room card #3A3A3C), and
 // the right rail (24 Oct: floating cards with a hairline, fields #3A3A3C, Delete's word #FF8A84), and
-// what covers the canvas while a room prepares (25 Oct: the canvas's own colour).
+// what covers the canvas while a room prepares (25 Oct: the canvas's own colour), and the rest of the
+// editor (25 Oct: Shop and Start a black page like the panels; no grey behind the workspace's cards).
 const DARK_CHOICES = {
   surface: "#000000",
   "surface-secondary": "#1c1c1e",
@@ -193,6 +196,8 @@ const DARK_CHOICES = {
   "floating-tile": "#3a3a3c",
   "floating-on-danger": "#ff8a84",
   "surface-canvas": "#1c1c1e",
+  "surface-page": "#000000",
+  "surface-well": "transparent",
 } as const;
 for (const [name, value] of Object.entries(DARK_CHOICES)) {
   assert.equal(darkTokens.get(name), value, `Dark --${name} is the value J chose.`);
@@ -318,6 +323,23 @@ const TEXT_PAIRS: ReadonlyArray<readonly [text: string, fill: string | null, gro
   // tooltip on the tool row, in the toast's colours.
   ["label", null, ["surface-canvas"]],
   ["on-surface-toast", "surface-toast", ["surface-floating", "surface-canvas"]],
+  // The rest of the editor: text and notices on Shop's and Start's page; the status colours in dialogs, on
+  // the dialog and on its cards (a dialog's card that holds status is a floating surface, so its red and
+  // blue words lighten, as on the rail).
+  ["label", null, ["surface-page"]],
+  ["label-secondary", null, ["surface-page"]],
+  ["link", null, ["surface-page"]],
+  ["on-accent-tint", "accent-tint", ["surface-page"]],
+  ["on-warning-tint", "warning-tint", ["surface-page"]],
+  ["on-danger-tint", "danger-tint", ["surface-page"]],
+  ["on-success-tint", "success-tint", ["surface-elevated", "surface-elevated-secondary"]],
+  ["on-warning-tint", "warning-tint", ["surface-elevated", "surface-elevated-secondary"]],
+  ["on-danger-tint", "danger-tint", ["surface-elevated"]],
+  ["on-accent-tint", "accent-tint", ["surface-elevated"]],
+  ["floating-on-danger-tint", "danger-tint", ["surface-elevated-secondary"]],
+  ["floating-on-accent-tint", "accent-tint", ["surface-elevated-secondary"]],
+  ["control-on-primary", "control-primary", ["surface-elevated-secondary", "surface-page"]],
+  ["label", "control-secondary", ["surface-elevated-secondary"]],
 ];
 // The focus ring and the primary's black (or near-white) edge need 3:1 against what's around them.
 const EDGE_PAIRS: ReadonlyArray<readonly [edge: string, grounds: readonly string[]]> = [
@@ -443,7 +465,7 @@ assert.doesNotMatch(
 const designPagePanelRegionSource = read("components/editor/design-page/DesignPagePanelRegion.tsx");
 assert.match(
   designPagePanelRegionSource,
-  /data-testid="shop-step"[\s\S]{0,200}?bg-\[#fafaf9\]/,
+  /data-testid="shop-step"[\s\S]{0,200}?bg-surface-page/,
   "Shop should be an opaque page over the canvas."
 );
 assert.doesNotMatch(designPagePanelRegionSource, /shopping-dock/, "Shop should not come back as a dock.");

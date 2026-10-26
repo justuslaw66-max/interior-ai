@@ -132,15 +132,15 @@ export default function CatalogItemDrawer({
       <aside
         ref={panelRef}
         tabIndex={-1} data-editor-dialog-state="mounting"
-        data-testid="catalog-item-drawer"
-        className="fixed bottom-6 right-4 top-bar-3 md:top-bar-6 flex w-[28rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl outline-hidden"
+        data-testid="catalog-item-drawer" data-surface="floating"
+        className="fixed bottom-6 right-4 top-bar-3 md:top-bar-6 flex w-[28rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-separator bg-surface-floating shadow-2xl outline-hidden"
       >
-      <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-separator-subtle px-4 py-3">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+          <div className="text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
             Product preview
           </div>
-          <div id={titleId} className="text-sm font-semibold text-neutral-900">
+          <div id={titleId} className="text-sm font-semibold text-label">
             Review exact variant
           </div>
         </div>
@@ -158,95 +158,95 @@ export default function CatalogItemDrawer({
         />
 
         <div className="mt-4">
-          <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+          <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
             Product details
           </div>
-          <div className="line-clamp-2 text-lg font-semibold leading-snug text-neutral-950">
+          <div className="line-clamp-2 text-lg font-semibold leading-snug text-label">
             {detail.title}
           </div>
-          <div className="mt-1 text-xs text-neutral-500">
+          <div className="mt-1 text-xs text-label-secondary">
             {detail.brand ?? "Unknown brand"} • {detail.category}
           </div>
         </div>
 
         <div
           data-testid="catalog-detail-add-context"
-          className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3"
+          className="mt-3 rounded-xl border border-success-tint-border bg-success-tint p-3"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-on-success-tint">
                 Adding to {activeRoomLabel}
               </div>
               <div
                 data-testid="catalog-detail-selected-variant-summary"
-                className="mt-1 truncate text-sm font-semibold text-neutral-950"
+                className="mt-1 truncate text-sm font-semibold text-label"
               >
                 {selectedFinishLabel}
               </div>
-              <div className="mt-1 text-xs text-neutral-600">
+              <div className="mt-1 text-xs text-label-secondary">
                 {detail.variantLabel} · {dimsCmLabel}
               </div>
               {roomProductQuantity > 0 ? (
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                  <span className="rounded-full bg-surface-floating px-2 py-0.5 text-xs font-semibold text-on-success-tint">
                 {roomProductQuantity} already in {activeRoomLabel}
                   </span>
                   {roomVariantQuantity > 0 ? (
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                    <span className="rounded-full bg-surface-floating px-2 py-0.5 text-xs font-semibold text-on-success-tint">
                       {roomVariantQuantity} this variant
                     </span>
                   ) : null}
                 </div>
               ) : null}
             </div>
-            <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-emerald-700 shadow-sm">
+            <span className="shrink-0 rounded-full bg-surface-floating px-2.5 py-1 text-xs font-semibold text-on-success-tint shadow-sm">
               Variant locked
             </span>
           </div>
         </div>
 
-        <div className="mt-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-3.5">
+        <div className="mt-3 rounded-2xl border border-box-border bg-tile p-3.5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 gap-3">
               <div
-                className="h-14 w-14 shrink-0 rounded-xl border border-white shadow-sm ring-1 ring-neutral-200"
+                className="h-14 w-14 shrink-0 rounded-xl border border-surface-floating shadow-sm ring-1 ring-swatch-edge"
                 style={selectedSwatchStyle}
                 aria-hidden="true"
               />
               <div className="min-w-0">
-                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
                   Exact variant selected
                 </div>
                 <div
-                  className="mt-1 text-sm font-semibold text-neutral-950"
+                  className="mt-1 text-sm font-semibold text-label"
                   data-testid="catalog-detail-variant-label"
                 >
                   {detail.variantLabel}
                 </div>
-                <div className="mt-1 text-xs text-neutral-600">Finish: {selectedFinishLabel}</div>
+                <div className="mt-1 text-xs text-label-secondary">Finish: {selectedFinishLabel}</div>
               </div>
             </div>
             <div className="shrink-0 text-right">
-              <div className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-sm">
+              <div className="rounded-full bg-surface-floating px-2.5 py-1 text-xs font-semibold text-label-secondary shadow-sm">
                 {detail.priceLabel ?? "Price on request"}
               </div>
-              <div className="mt-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+              <div className="mt-1 rounded-full bg-surface-floating px-2.5 py-1 text-xs font-semibold text-on-success-tint">
                 Identity locked
               </div>
             </div>
           </div>
-          <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-neutral-600">
-            <div className="rounded-xl bg-white px-2.5 py-2" data-testid="catalog-detail-dimensions">
-              <div className="font-semibold text-neutral-900">Dimensions</div>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-label-secondary">
+            <div className="rounded-xl bg-surface-floating px-2.5 py-2" data-testid="catalog-detail-dimensions">
+              <div className="font-semibold text-label">Dimensions</div>
               <div>{dimsCmLabel}</div>
             </div>
-            <div className="rounded-xl bg-white px-2.5 py-2">
-              <div className="font-semibold text-neutral-900">Add target</div>
+            <div className="rounded-xl bg-surface-floating px-2.5 py-2">
+              <div className="font-semibold text-label">Add target</div>
               <div className="truncate">{activeRoomLabel}</div>
             </div>
-            <div className="rounded-xl bg-white px-2.5 py-2">
-              <div className="font-semibold text-neutral-900">Commerce</div>
+            <div className="rounded-xl bg-surface-floating px-2.5 py-2">
+              <div className="font-semibold text-label">Commerce</div>
               <div className="truncate">
                 {detail.retailerUrl ? "Retailer link ready" : "Variant-safe item"}
               </div>
@@ -255,18 +255,18 @@ export default function CatalogItemDrawer({
         </div>
 
         {detail.purchaseOptions.length > 0 ? (
-          <section className="mt-3 rounded-2xl border border-neutral-200 bg-white p-3.5">
+          <section className="mt-3 rounded-2xl border border-separator bg-surface-floating p-3.5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
                   Purchase option
                 </div>
-                <div className="mt-1 text-sm font-semibold text-neutral-950">
+                <div className="mt-1 text-sm font-semibold text-label">
                   Choose single or official set
                 </div>
               </div>
               {selectedOptionSavings ? (
-                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                <span className="rounded-full bg-success-tint px-2.5 py-1 text-xs font-semibold text-on-success-tint">
                   Save {selectedOptionSavings}
                 </span>
               ) : null}
@@ -286,21 +286,21 @@ export default function CatalogItemDrawer({
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-semibold">{option.label}</span>
-                      <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-600">
+                      <span className="rounded-full bg-control-track px-2 py-0.5 text-xs font-semibold text-label-secondary">
                         x{option.quantity}
                       </span>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
                       {price ? <span className="font-semibold">{price}</span> : null}
-                      {compareAt ? <span className="text-neutral-400 line-through">{compareAt}</span> : null}
-                      {savings ? <span className="text-emerald-700">Save {savings}</span> : null}
+                      {compareAt ? <span className="text-label-secondary line-through">{compareAt}</span> : null}
+                      {savings ? <span className="text-on-success-tint">Save {savings}</span> : null}
                     </div>
                   </ChoiceTile>
                 );
               })}
             </div>
             {selectedPurchaseOption ? (
-              <div className="mt-2 text-xs text-neutral-600">
+              <div className="mt-2 text-xs text-label-secondary">
                 {selectedPurchaseOption.quantity > 1
                   ? `Adds ${selectedPurchaseOption.quantity} chairs; the Shopping list keeps them as one Castlery set.`
                   : "Adds one chair and one single-chair purchase line."}
@@ -309,20 +309,20 @@ export default function CatalogItemDrawer({
           </section>
         ) : null}
 
-        <div className="mt-3 rounded-xl border border-neutral-200 bg-white p-3">
+        <div className="mt-3 rounded-xl border border-separator bg-surface-floating p-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
                 Placement preview
               </div>
-              <div className="mt-1 text-sm font-semibold text-neutral-950">
+              <div className="mt-1 text-sm font-semibold text-label">
                 Preview before adding
               </div>
-              <div className="mt-1 text-xs text-neutral-600">
+              <div className="mt-1 text-xs text-label-secondary">
                 The selected variant appears as a placement ghost in {activeRoomLabel}.
               </div>
             </div>
-            <div className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-semibold text-neutral-700">
+            <div className="shrink-0 rounded-full bg-control-track px-2.5 py-1 text-xs font-semibold text-label-secondary">
               Strict bounds
             </div>
           </div>
@@ -338,10 +338,10 @@ export default function CatalogItemDrawer({
           {configurationOptions.length > 1 && (
             <section className="space-y-2" aria-label="Configuration" data-testid="catalog-configuration-picker">
               <div className="flex items-center justify-between gap-3">
-                <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
                   Configuration
                 </h4>
-                <span className="text-xs text-neutral-500">
+                <span className="text-xs text-label-secondary">
                   {configurationOptions.length} choices
                 </span>
               </div>
@@ -367,7 +367,7 @@ export default function CatalogItemDrawer({
                       ) : null}
                       <div className="px-3 py-2">
                         <div className="text-sm font-semibold">{option.label}</div>
-                        <div className="mt-0.5 text-xs text-neutral-500">{option.dimsLabel}</div>
+                        <div className="mt-0.5 text-xs text-label-secondary">{option.dimsLabel}</div>
                       </div>
                     </ChoiceTile>
                   );
@@ -379,10 +379,10 @@ export default function CatalogItemDrawer({
           {detail.sizeOptions.length > 1 && (
             <section className="space-y-2" aria-label="Size">
               <div className="flex items-center justify-between gap-3">
-                <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
                   Size
                 </h4>
-                <span className="text-xs text-neutral-500">Keeps finish when possible</span>
+                <span className="text-xs text-label-secondary">Keeps finish when possible</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {detail.sizeOptions.map((size) => {

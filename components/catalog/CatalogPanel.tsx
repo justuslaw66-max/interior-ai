@@ -543,7 +543,7 @@ export default function CatalogPanel({
       </div>
 
       <div className="mt-2 flex items-center justify-between gap-2">
-        <div data-testid="catalog-focused-category-pill" className="text-xs text-neutral-600" aria-live="polite">
+        <div data-testid="catalog-focused-category-pill" className="text-xs text-label-secondary" aria-live="polite">
           {catalogResultsLabel(cardViews.length)}
         </div>
         <CatalogFiltersBar
@@ -716,7 +716,7 @@ export default function CatalogPanel({
         }}
       />
 
-      {!canEdit ? <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-white/50" aria-hidden><span data-testid="catalog-products-loading" className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-neutral-700 shadow-sm">Loading products…</span></div> : null}
+      {!canEdit ? <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-surface/50" aria-hidden><span data-testid="catalog-products-loading" className="rounded-full bg-surface-floating px-3 py-1 text-sm font-semibold text-label-secondary shadow-sm">Loading products…</span></div> : null}
     </div>
   );
 }

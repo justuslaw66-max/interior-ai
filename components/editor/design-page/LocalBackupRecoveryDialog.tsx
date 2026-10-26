@@ -40,26 +40,26 @@ export function LocalBackupRecoveryDialog({
       layerClassName="z-[120]"
       panelClassName="max-w-xl"
     >
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl bg-slate-900/80 p-4 text-xs">
-        <dt className="text-slate-400">Diagnostic</dt>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl bg-tile p-4 text-xs">
+        <dt className="text-label-secondary">Diagnostic</dt>
         <dd className="text-right font-medium">{state.code ?? "UNKNOWN"}</dd>
-        <dt className="text-slate-400">Source version</dt>
+        <dt className="text-label-secondary">Source version</dt>
         <dd className="text-right font-medium">{state.sourceVersion ?? "unknown"}</dd>
-        <dt className="text-slate-400">Backup size</dt>
+        <dt className="text-label-secondary">Backup size</dt>
         <dd className="text-right font-medium">{state.byteLength.toLocaleString()} bytes</dd>
-        <dt className="text-slate-400">Quarantine copy</dt>
+        <dt className="text-label-secondary">Quarantine copy</dt>
         <dd className="text-right font-medium">
           {state.quarantineSucceeded ? "Retained" : "Browser storage failed"}
         </dd>
       </dl>
 
-      <p className="mt-4 text-sm text-amber-100">{state.message}</p>
+      <p className="mt-4 text-sm text-on-warning-tint">{state.message}</p>
 
       <div className="mt-6 flex flex-wrap gap-3">
         <button
           ref={primaryActionRef}
           type="button"
-          className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50"
+          className="rounded-lg bg-control-primary px-4 py-2 text-sm font-semibold text-control-on-primary hover:bg-control-primary-hover disabled:opacity-50"
           onClick={actions.downloadRawBackup}
           disabled={state.isWorking}
         >
@@ -67,7 +67,7 @@ export function LocalBackupRecoveryDialog({
         </button>
         <button
           type="button"
-          className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-semibold disabled:opacity-50"
+          className="rounded-lg border border-control-secondary-border bg-control-secondary px-4 py-2 text-sm font-semibold text-label hover:bg-control-secondary-hover disabled:opacity-50"
           onClick={() => void actions.retry()}
           disabled={state.isWorking}
         >
