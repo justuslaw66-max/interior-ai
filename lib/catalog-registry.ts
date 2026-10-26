@@ -1,7 +1,7 @@
 import { CATALOG_ITEMS } from "./catalog";
 import type { CatalogItemSchema } from "./catalog-schema";
 import type { SurfaceMaterial } from "./surface-material-schema";
-import { getAllSurfaceMaterialYamlEntries } from "./surface-material-yaml";
+import { getAllSurfaceMaterialSourceEntries } from "./surface-material-sources";
 
 export type ProductCatalogItem = CatalogItemSchema;
 
@@ -24,8 +24,9 @@ function allowDraftSurfaceMaterials(options: SurfaceMaterialVisibilityOptions = 
 
 let invalidSurfaceMaterialWarningShown = false;
 
+// The YAML catalogue and the laminate catalogue's wall panels (lib/surface-material-sources.ts).
 function getAllSurfaceMaterials(): SurfaceMaterial[] {
-  const entries = getAllSurfaceMaterialYamlEntries();
+  const entries = getAllSurfaceMaterialSourceEntries();
   const validEntries = entries.filter((entry) =>
     Boolean(entry.surface_material && entry.import_governance)
   );
