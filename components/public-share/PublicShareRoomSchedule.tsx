@@ -12,8 +12,8 @@ import type { SharePageRoom } from "@/lib/public-share-page-model";
 function RoomName({ room }: { room: SharePageRoom }) {
   return (
     <>
-      <div className="break-words font-semibold text-neutral-950">{room.name}</div>
-      {room.floorLabel ? <div className="text-xs text-neutral-500">{room.floorLabel}</div> : null}
+      <div className="break-words font-semibold text-label">{room.name}</div>
+      {room.floorLabel ? <div className="text-xs text-label-secondary">{room.floorLabel}</div> : null}
     </>
   );
 }
@@ -22,16 +22,16 @@ function MobileRoomCards({ rooms }: { rooms: readonly SharePageRoom[] }) {
   return (
     <div className="grid gap-2" data-testid="share-room-list-mobile">
       {rooms.map((room) => (
-        <article key={room.id} className="min-w-0 rounded-xl border border-neutral-200 bg-white p-3 text-sm">
+        <article key={room.id} className="min-w-0 rounded-xl border border-box-border bg-surface-secondary p-3 text-sm">
           <div className="flex min-w-0 items-start justify-between gap-3">
             <div className="min-w-0">
               <RoomName room={room} />
             </div>
-            <div className="shrink-0 text-right font-semibold text-neutral-950">{formatSgd(room.subtotal)}</div>
+            <div className="shrink-0 text-right font-semibold text-label">{formatSgd(room.subtotal)}</div>
           </div>
-          <div className="mt-2 flex flex-wrap gap-x-3 text-neutral-700">
+          <div className="mt-2 flex flex-wrap gap-x-3 text-label-secondary">
             <span>{room.sizeLabel}</span>
-            <span className="text-neutral-500">{room.areaLabel}</span>
+            <span className="text-label-secondary">{room.areaLabel}</span>
             <span>{room.productLabel}</span>
           </div>
         </article>
@@ -42,9 +42,9 @@ function MobileRoomCards({ rooms }: { rooms: readonly SharePageRoom[] }) {
 
 function RoomTable({ rooms }: { rooms: readonly SharePageRoom[] }) {
   return (
-    <div className="max-w-full overflow-x-auto rounded-xl border border-neutral-200" data-testid="share-room-list-table">
-      <table className="min-w-full divide-y divide-neutral-200 text-sm">
-        <thead className="bg-neutral-50 text-left text-xs font-semibold text-neutral-600">
+    <div className="max-w-full overflow-x-auto rounded-xl border border-box-border" data-testid="share-room-list-table">
+      <table className="min-w-full divide-y divide-separator text-sm">
+        <thead className="bg-tile text-left text-xs font-semibold text-label-secondary">
           <tr>
             <th scope="col" className="px-3 py-2">Room</th>
             <th scope="col" className="px-3 py-2">Size</th>
@@ -52,18 +52,18 @@ function RoomTable({ rooms }: { rooms: readonly SharePageRoom[] }) {
             <th scope="col" className="px-3 py-2 text-right">Subtotal</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-neutral-100 bg-white">
+        <tbody className="divide-y divide-separator-subtle bg-surface-secondary">
           {rooms.map((room) => (
             <tr key={room.id}>
               <td className="px-3 py-3">
                 <RoomName room={room} />
               </td>
-              <td className="px-3 py-3 text-neutral-700">
+              <td className="px-3 py-3 text-label-secondary">
                 <div>{room.sizeLabel}</div>
-                <div className="text-xs text-neutral-500">{room.areaLabel}</div>
+                <div className="text-xs text-label-secondary">{room.areaLabel}</div>
               </td>
-              <td className="px-3 py-3 text-neutral-700">{room.productLabel}</td>
-              <td className="px-3 py-3 text-right font-semibold text-neutral-950">{formatSgd(room.subtotal)}</td>
+              <td className="px-3 py-3 text-label-secondary">{room.productLabel}</td>
+              <td className="px-3 py-3 text-right font-semibold text-label">{formatSgd(room.subtotal)}</td>
             </tr>
           ))}
         </tbody>

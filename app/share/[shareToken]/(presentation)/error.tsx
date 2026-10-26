@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/Button";
 
 export default function PublicShareError({ reset }: { reset: () => void }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-100 p-8">
+    <div className="flex min-h-screen items-center justify-center bg-surface-grouped p-8">
       <PublicShareFallbackStateReporter state="error" />
-      <div className="rounded-xl border bg-white p-6">
+      <div className="rounded-xl border border-box-border bg-surface-secondary p-6">
         <h1 className="text-lg font-semibold">Shared design could not load</h1>
-        <p className="mt-1 text-sm text-neutral-600">
+        <p className="mt-1 text-sm text-label-secondary">
           The link may still work. Try loading this design again.
         </p>
         <Button

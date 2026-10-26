@@ -32,14 +32,14 @@ function ShopLine({ line, shop, linkType }: { line: ShoppingListLine; shop: stri
         imageClassName="object-contain object-center"
       />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-semibold text-neutral-950">{line.title}</div>
-        <div className="truncate text-xs text-neutral-600">
+        <div className="truncate text-sm font-semibold text-label">{line.title}</div>
+        <div className="truncate text-xs text-label-secondary">
           {line.detail} · {line.roomName}
           {line.addCount > 1 ? ` · Qty ${line.addCount}` : ""}
         </div>
       </div>
       <div className="shrink-0 text-right text-sm">
-        <div className="font-semibold text-neutral-950">{line.priceLabel}</div>
+        <div className="font-semibold text-label">{line.priceLabel}</div>
         {line.buyUrl && linkType ? (
           <ShopLink url={line.buyUrl} retailer={shop} itemId={line.productId} type={linkType}>
             View product<span className="sr-only">: {line.title}, {shop}</span>
@@ -52,23 +52,23 @@ function ShopLine({ line, shop, linkType }: { line: ShoppingListLine; shop: stri
 
 function ShopGroup({ title, detail, subtotal, lines, linkType, action }: ShopGroupProps) {
   return (
-    <section className="rounded-xl border border-neutral-200" aria-label={title}>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200 px-4 py-3">
+    <section className="rounded-xl border border-box-border bg-surface-secondary" aria-label={title}>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-separator px-4 py-3">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-neutral-950">{title}</h3>
-          <div className="text-xs text-neutral-600">
+          <h3 className="text-sm font-semibold text-label">{title}</h3>
+          <div className="text-xs text-label-secondary">
             {productCountLabel(lines.length)}
             {detail ? ` · ${detail}` : ""}
           </div>
         </div>
         <div className="flex items-center gap-3">
           {subtotal !== undefined ? (
-            <span className="text-sm font-semibold text-neutral-950">{formatSgd(subtotal)}</span>
+            <span className="text-sm font-semibold text-label">{formatSgd(subtotal)}</span>
           ) : null}
           {action}
         </div>
       </div>
-      <ul className="divide-y divide-neutral-100">
+      <ul className="divide-y divide-separator-subtle">
         {lines.map((line) => (
           <ShopLine key={line.instanceId} line={line} shop={title} linkType={linkType} />
         ))}
@@ -82,7 +82,7 @@ function ShopGroups({ list, checkoutLines }: { list: ShoppingList; checkoutLines
     // One column that may shrink (grid-cols-1 is minmax(0, 1fr)): an auto column grows to the
     // widest product name, which the lines truncate, and pushed a phone's page 153px wide.
     <div className="mt-4 grid grid-cols-1 gap-4" data-testid="share-checkout-readiness">
-      <p className="text-xs text-neutral-600" data-testid="share-availability-warning">
+      <p className="text-xs text-label-secondary" data-testid="share-availability-warning">
         Prices are estimates. Each shop confirms stock, delivery and the final price.
       </p>
       {list.retailers.map((retailer) => (
@@ -96,7 +96,7 @@ function ShopGroups({ list, checkoutLines }: { list: ShoppingList; checkoutLines
         />
       ))}
       {list.retailers.length > 0 ? (
-        <p className="text-xs text-neutral-600">Products sold by other shops open on their own websites.</p>
+        <p className="text-xs text-label-secondary">Products sold by other shops open on their own websites.</p>
       ) : null}
       {list.checkoutHere ? (
         <ShopGroup
@@ -116,15 +116,15 @@ function ShopGroups({ list, checkoutLines }: { list: ShoppingList; checkoutLines
 
 export function ShareShoppingSection({ list, checkoutLines }: { list: ShoppingList; checkoutLines: ShareCheckoutLine[] }) {
   return (
-    <section id="shopping-preview" className="scroll-mt-6 border-t bg-white" aria-labelledby="share-shopping-heading">
+    <section id="shopping-preview" className="scroll-mt-6 border-t border-separator bg-surface" aria-labelledby="share-shopping-heading">
       <div className="mx-auto max-w-6xl px-6 py-6">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h2 id="share-shopping-heading" className="text-lg font-semibold text-neutral-950">
+          <h2 id="share-shopping-heading" className="text-lg font-semibold text-label">
             Shopping list
           </h2>
           {list.productCount > 0 ? (
-            <div className="text-sm text-neutral-700">
-              <span className="font-semibold text-neutral-950">{formatSgd(list.total)}</span> ·{" "}
+            <div className="text-sm text-label-secondary">
+              <span className="font-semibold text-label">{formatSgd(list.total)}</span> ·{" "}
               {productCountLabel(list.productCount)}
             </div>
           ) : null}
@@ -132,7 +132,7 @@ export function ShareShoppingSection({ list, checkoutLines }: { list: ShoppingLi
         {list.productCount > 0 ? (
           <ShopGroups list={list} checkoutLines={checkoutLines} />
         ) : (
-          <p className="mt-2 text-sm text-neutral-600">No products added to this shared design yet</p>
+          <p className="mt-2 text-sm text-label-secondary">No products added to this shared design yet</p>
         )}
       </div>
     </section>

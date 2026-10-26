@@ -62,7 +62,7 @@ export default function ShareShoppingCheckout({
         data-testid="share-start-checkout"
         disabled={busy || lines.length === 0}
         onClick={startCheckout}
-        className="rounded-lg bg-neutral-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:cursor-not-allowed disabled:bg-neutral-300"
+        className="rounded-lg bg-control-primary px-4 py-2.5 text-sm font-semibold text-control-on-primary shadow-sm hover:bg-control-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
       >
         {busy
           ? "Checking availability…"
@@ -71,7 +71,7 @@ export default function ShareShoppingCheckout({
             : "No direct-checkout items"}
       </button>
       {message ? (
-        <div className="mt-2 max-w-md text-xs font-medium text-red-700" role="alert">
+        <div className="mt-2 max-w-md text-xs font-medium text-on-danger-tint" role="alert">
           {message}
         </div>
       ) : null}
