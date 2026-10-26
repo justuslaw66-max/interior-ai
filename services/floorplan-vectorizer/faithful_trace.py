@@ -10,7 +10,15 @@ No recognition: nothing is read as a room, a door or a wall - what is drawn is c
     like the letters of a word and read as one (tesseract), as an experiment;
   - (r8) in a soft picture (a low-resolution plan enlarged into a brochure), lettering that runs together, or into the
     lighter line work under it (a room's name on its floor's stripes), is copied letter by letter by its outline, and
-    the line work under it is traced without it (letters_over_lines).
+    the line work under it is traced without it (letters_over_lines);
+  - (r9) a picture is soft by the width of its ink edges too (edge_width), so a low-resolution plan the app's PDF
+    renderer enlarged by repeating pixels (111 Emerald Hill) counts; there letters a stripe joins are read again at
+    darker levels, a row of single strokes (a wardrobe's hangers) is not a word, a letter's soft edge goes with it, and
+    the light lines such a picture blurs are traced as lines, not grey areas;
+  - (r10) in such a picture of brochure size (1.5 MP or more) its line work is read from it smoothed by 0.4 px (letter-
+    sized dark marks keep their own pixels) and its light lines are kept whole across their width (CORE 0.3), so a
+    long slanting or curved line - a facade, a terrace's edge, a floor's diagonal stripes - is one line or one band,
+    not a ladder of short pieces; a letter taken takes no pixel of the dark mark beside it.
 Output: an SVG in the image's pixel coordinates, one element per wall polygon, segment and arc."""
 import json, math, os, sys
 import cv2, numpy as np
@@ -998,7 +1006,7 @@ def lettering_mask(stroke, g):
 # ---------------------------------------------------------------- lettering over line work (r8)
 OVERTEXT = __import__("os").environ.get("FT_OVERTEXT", "1") == "1"   # (r8) dark lettering drawn over lighter line work, copied apart from it
 OVER_DARK = float(__import__("os").environ.get("FT_OVER_DARK", "0.45"))   # a letter's ink: at least this dark
-OVER_LEVEL = float(__import__("os").environ.get("FT_OVER_LEVEL", "0.6"))   # ... its outline traced at this share of its darkest
+OVER_LEVEL = float(__import__("os").environ.get("FT_OVER_LEVEL", "0.5"))   # ... its outline traced at this share of its darkest
 OVER_SMOOTH = float(__import__("os").environ.get("FT_OVER_SMOOTH", "0.5"))   # ... from the picture smoothed this much (picture px)
 OVER_SOFT = float(__import__("os").environ.get("FT_OVER_SOFT", "0.60"))   # ... only in a soft picture: its ink edges' median steepness under this (p05, a crisp web plan of thin lettering, measures 0.619)
 OVER_MIN_PX = int(__import__("os").environ.get("FT_OVER_MIN_PX", "400000"))   # ... in a picture of at least this many pixels
@@ -1021,6 +1029,61 @@ def edge_steepness(g):
     peak = (mag >= cv2.dilate(mag, np.ones((3, 3), np.uint8)) - 1e-6) & strong & (mag > 0.05)
     v = mag[peak]
     return float(np.median(v)) if v.size >= 200 else 1.0
+
+
+OVER_EDGE = float(__import__("os").environ.get("FT_OVER_EDGE", "2.3"))   # (r9) ... or its ink edges' median width (10-90 %) at least this many px
+
+
+def edge_width(g, reach=6):
+    """(r9) the median width of the picture's strong ink edges: across each edge (along the rows and the columns), the
+    distance between where the grey passes 10 % and 90 % of the way from the ink to the paper, both taken within
+    `reach` px. About 1 px in a crisp render; 2.4-3 px in a low-resolution picture enlarged into a brochure page,
+    whether the enlargement repeated its pixels (pdf.js, as the app renders a PDF page: 111 Emerald Hill) or blended
+    them (poppler) - where the steepness of the edges (edge_steepness) tells only the blended one."""
+    hist = np.bincount(g.ravel(), minlength=256)
+    paper = 128 + int(np.argmax(hist[128:]))
+    dark = g[g < 160]
+    black = float(np.percentile(dark, 1)) if dark.size >= 200 else 0.0
+    span = max(1.0, paper - black)
+    out = []
+    for a in (g, g.T):
+        a = a.astype(np.float32)
+        H, W = a.shape
+        gx = np.zeros_like(a); gx[:, 1:-1] = (a[:, 2:] - a[:, :-2]) / 2
+        mag = np.abs(gx)
+        pk = (mag >= np.roll(mag, 1, 1)) & (mag > np.roll(mag, -1, 1)) & (mag > 0.08 * span)
+        pk[:, :reach + 1] = False; pk[:, W - reach - 1:] = False
+        ys, xs = np.nonzero(pk)
+        if len(ys) > 40000:
+            sel = np.random.default_rng(0).choice(len(ys), 40000, replace=False); ys, xs = ys[sel], xs[sel]
+        if not len(ys):
+            continue
+        prof = a[ys[:, None], xs[:, None] + np.arange(-reach, reach + 1)[None, :]]
+        lo = prof.min(1); hi = prof.max(1)
+        ok = (hi - lo) >= 0.5 * span
+        prof, lo, hi = prof[ok], lo[ok], hi[ok]
+        flip = prof[:, 0] > prof[:, -1]
+        prof[flip] = prof[flip, ::-1]
+        t = (prof - lo[:, None]) / (hi - lo)[:, None]           # 0 at the ink, 1 at the paper, rising
+        def cross(level):
+            # where the profile, walked from its centre, passes the level (linear between pixels)
+            c = reach; n = len(t); res = np.full(n, np.nan)
+            above = t >= level
+            for k in range(n):
+                row = t[k]; ab = above[k]; j = c
+                if ab[j]:
+                    while j > 0 and ab[j - 1]: j -= 1
+                    if j == 0: continue
+                    res[k] = j - 1 + (level - row[j - 1]) / max(1e-6, row[j] - row[j - 1])
+                else:
+                    while j < len(row) - 1 and not ab[j + 1]: j += 1
+                    if j == len(row) - 1: continue
+                    res[k] = j + (level - row[j]) / max(1e-6, row[j + 1] - row[j])
+            return res
+        w = cross(0.9) - cross(0.1)
+        out.append(w[np.isfinite(w)])
+    w = np.concatenate(out) if out else np.zeros(0)
+    return float(np.median(w)) if w.size >= 200 else 0.0
 
 
 def _side_by_side(boxes, idx):
@@ -1051,6 +1114,92 @@ def _side_by_side(boxes, idx):
     return [gm for gm in groups.values() if len(gm) >= 2]
 
 
+OVER_SPLIT = __import__("os").environ.get("FT_OVER_SPLIT", "1") == "1"   # (r9) a dark mark of a short word's length read again at darker levels
+
+
+OVER_PATTERN = __import__("os").environ.get("FT_OVER_PATTERN", "1") == "1"   # (r9) a row of single strokes is not a word
+
+
+def _stroke_like(lab, st, i):
+    """(r9) a dark mark that is one stroke: long and narrow, its spread along its axis at least 1.9 x its spread across
+    (second moments 3.5 x) - a hanger in a wardrobe, a hatching stroke; of a word's letters only an I, an l or a 1 is"""
+    x, y, w, h, _ = st[i]
+    ys, xs = np.nonzero(lab[y:y + h, x:x + w] == i)
+    if len(xs) < 6:
+        return False
+    xs = xs - xs.mean(); ys = ys - ys.mean()
+    cxx, cyy, cxy = float((xs * xs).mean()), float((ys * ys).mean()), float((xs * ys).mean())
+    tr, det = cxx + cyy, cxx * cyy - cxy * cxy
+    l1 = tr / 2 + np.sqrt(max(0.0, tr * tr / 4 - det)); l2 = max(1e-6, tr - l1)
+    return l1 >= 3.5 * l2
+
+
+def _split_long_marks(d, dark, n, lab, st):
+    """dark marks longer than a letter (24 px) and no longer than a short word (72 px), read again inside themselves at
+    darker levels: at the first level at which every piece of it is of letter size, its pieces replace it (the paler
+    pixels between them leave the dark marks). Returns the new (dark, n, lab, st)."""
+    lab = lab.copy(); dark = dark.copy()
+    nxt = n
+    extra = []
+    for i in range(1, n):
+        x, y, w, h, a = st[i]
+        L = max(w, h)
+        if not (24 * PX < L <= 72 * PX) or min(w, h) > 24 * PX:
+            continue
+        m = lab[y:y + h, x:x + w] == i
+        dm = np.where(m, d[y:y + h, x:x + w], 0.0)
+        for t in np.arange(OVER_DARK + 0.05, 0.951, 0.05):
+            k, lk, sk, _ = cv2.connectedComponentsWithStats((dm >= t).astype(np.uint8), 8)
+            keep = [j for j in range(1, k) if sk[j, 4] >= 3 * PX * PX]
+            if not keep:
+                break
+            if len(keep) < 2:
+                continue                                        # still one piece: darker yet
+            if all(max(sk[j, 2], sk[j, 3]) <= 24 * PX for j in keep):
+                sub = lab[y:y + h, x:x + w]
+                sub[m] = 0
+                dark[y:y + h, x:x + w][m] = 0
+                for j in keep:
+                    mj = lk == j
+                    sub[mj] = nxt
+                    dark[y:y + h, x:x + w][mj] = 1
+                    extra.append([x + sk[j, 0], y + sk[j, 1], sk[j, 2], sk[j, 3], sk[j, 4]])
+                    nxt += 1
+                break
+    if nxt == n:
+        return dark, n, lab, st
+    st = np.vstack([st, np.array(extra, st.dtype).reshape(-1, 5)])
+    return dark, nxt, lab, st
+
+
+OVER_KEEP_NEIGHBOURS = __import__("os").environ.get("FT_OVER_KEEP", "1") == "1"   # (r10) a letter taken takes no pixel of the dark mark beside it
+SOFT_DARK = float(__import__("os").environ.get("FT_SOFT_DARK", "0.6"))   # (r10) ... line work lighter than this counts as light
+SOFT_LINES_MIN_PX = int(__import__("os").environ.get("FT_SOFT_LINES_MIN_PX", "1500000"))   # (r10) ... only in a soft picture of at least this many pixels (a brochure page; in a small web plan or a lower-resolution copy hatching and dimension dots merged)
+SOFT_CORE = float(__import__("os").environ.get("FT_SOFT_CORE", "0.3"))   # (r10) in a soft picture ink is kept where at least this share of the darkest beside it (CORE elsewhere)
+SOFT_SMOOTH = float(__import__("os").environ.get("FT_SOFT_SMOOTH", "0.4"))   # (r10) a soft picture's line work read from it smoothed this much (picture px)
+OVER_CRUMBS = __import__("os").environ.get("FT_OVER_CRUMBS", "1") == "1"   # (r9) a letter's soft edge left past it is taken too
+SOFT_GREY = __import__("os").environ.get("FT_SOFT_GREY", "0") == "1"   # (r9) grey areas in a soft picture too (off: its light lines are traced as lines)
+
+
+def _letter_crumbs(d, g, taken, paper):
+    """(r9) ink left wholly within 4 px of the letters taken and paler than a letter's ink: their soft edge, not line
+    work (a line under a letter runs on past it) nor a letter left standing"""
+    near = cv2.dilate(taken, np.ones((8 * PX + 1, 8 * PX + 1), np.uint8)) > 0
+    n, lab = cv2.connectedComponents((d > FAINT).astype(np.uint8), connectivity=8)
+    if n <= 1:
+        return d, g
+    outside = np.zeros(n, bool)
+    outside[np.unique(lab[~near])] = True
+    # (only paler than a letter's ink: a letter the step left - an I in DINING - stays)
+    peak = np.zeros(n, np.float32)
+    np.maximum.at(peak, lab.ravel(), d.ravel())
+    outside |= peak >= OVER_DARK
+    drop = (~outside)[lab] & (lab > 0)
+    if not drop.any():
+        return d, g
+    return np.where(drop, 0.0, d).astype(d.dtype), np.where(drop, paper, g).astype(g.dtype)
+
+
 def letters_over_lines(d, g):
     """lettering drawn dark over lighter line work - a room's name across its floor's stripes, a label over a table's
     edge - or run together by a soft picture. Small dark marks that stand apart from one another at a darker level
@@ -1071,6 +1220,11 @@ def letters_over_lines(d, g):
     bigI[0] = False
     dark = (d >= OVER_DARK).astype(np.uint8)
     n, lab, st, _ = cv2.connectedComponentsWithStats(dark, 8)
+    if OVER_SPLIT:
+        # (r9) letters a stripe or a soft edge joins at the dark level (OOM of BEDROOM over a floor's stripes): a mark
+        # too long for a letter but no longer than a short word is read again at darker levels, the first at which it
+        # falls apart into pieces of letter size
+        dark, n, lab, st = _split_long_marks(d, dark, n, lab, st)
     K1 = np.ones((2 * PX + 1, 2 * PX + 1), np.uint8)
     K2 = np.ones((6 * PX + 1, 6 * PX + 1), np.uint8)
     K3 = np.ones((3 * PX + 1, 3 * PX + 1), np.uint8)
@@ -1111,6 +1265,8 @@ def letters_over_lines(d, g):
             # (two letters at least that are not one thin line: a row of hatching strokes is not a word; an I or a 1
             # in a word is one of its letters)
             if any(cand[i][6] for i in gm) and sum(not cand[i][7] for i in gm) >= 2:
+                if OVER_PATTERN and sum(_stroke_like(lab, st, i) for i in gm) * 3 >= 2 * len(gm):
+                    continue                                    # (r9) a row of single strokes: a wardrobe's hangers
                 words.update(gm)
     global MARK_LEVEL
     keep_level = MARK_LEVEL
@@ -1133,7 +1289,12 @@ def letters_over_lines(d, g):
             # touches) and a pixel round them
             dm = d[y0:y1, x0:x1]
             near = (cv2.dilate(m.astype(np.uint8), K1) > 0) & (dm > FAINT)
-            taken[y0:y1, x0:x1] |= cv2.dilate((near | m).astype(np.uint8), np.ones((PX + 1, PX + 1), np.uint8))
+            ring = cv2.dilate((near | m).astype(np.uint8), np.ones((PX + 1, PX + 1), np.uint8))
+            if OVER_KEEP_NEIGHBOURS:
+                # (r10) not into another dark mark beside it: the P of POWDER beside the O taken, the 2 of BATH 2
+                lb = lab[y0:y1, x0:x1]
+                ring &= ~((lb > 0) & (lb != i)).astype(np.uint8)
+            taken[y0:y1, x0:x1] |= ring
     finally:
         MARK_LEVEL = keep_level
     return taken, out
@@ -2352,15 +2513,36 @@ def trace_gray(g0, keep_text=True):
 def _trace(g0, g, keep_text):
     d, paper, darkest = darkness(g)
     over = []
+    soft_keep = None
     # (only in a soft picture: in a crisp one each letter already stands apart, and the darker level would split a thin
     # anti-aliased line - a hairline cross, an N's diagonal - into pieces that pass for letters)
     # (and not in a tiny picture - a web thumbnail of 0.2 MP, its lettering 5-7 px tall - where the darker level cannot
     # tell a letter from a piece of wall between two doors: blind-graded worse there, 25 Oct)
-    if OVERTEXT and g0.size >= OVER_MIN_PX and edge_steepness(g0) < OVER_SOFT:
+    soft = OVERTEXT and g0.size >= OVER_MIN_PX and (edge_steepness(g0) < OVER_SOFT or edge_width(g0) >= OVER_EDGE)
+    if soft:
         over_taken, over = letters_over_lines(d, g)
         if over_taken.any():
             d = np.where(over_taken > 0, 0.0, d).astype(d.dtype)
             g = np.where(over_taken > 0, paper, g).astype(g.dtype)
+            if OVER_CRUMBS:
+                # (r9) the soft edge a letter leaves past the ink taken with it (a grey seam along a word's foot, specks
+                # by its strokes): ink lying wholly within 4 px of the letters taken
+                d, g = _letter_crumbs(d, g, over_taken, paper)
+    soft_lines = soft and g0.size >= SOFT_LINES_MIN_PX
+    if soft_lines and SOFT_SMOOTH > 0:
+        # (r10) the rest of a soft picture smoothed before its line work is read: an enlargement's repeated pixels
+        # make a slanting or curved line a staircase, which was traced as a ladder of short pieces
+        # (not the small dark marks - letters the lettering step left, a symbol - which keep their own pixels)
+        gs = cv2.GaussianBlur(g, (0, 0), SOFT_SMOOTH * PX)
+        dk = (d >= OVER_DARK).astype(np.uint8)
+        n_, lab_, st_, _ = cv2.connectedComponentsWithStats(dk, 8)
+        small = np.zeros(n_, bool)
+        L_ = np.maximum(st_[1:, 2], st_[1:, 3])
+        small[1:] = (L_ <= 24 * PX) & (L_ >= 7 * PX) & (st_[1:, 4] >= 12 * PX * PX)    # letter-sized
+        keep_px = cv2.dilate((small[lab_] & (lab_ > 0)).astype(np.uint8), np.ones((4 * PX + 1, 4 * PX + 1), np.uint8)) > 0
+        g = np.where(keep_px, g, gs).astype(g.dtype)
+        d, paper, darkest = darkness(g)
+        soft_keep = keep_px
     # ink: dark enough, and at least CORE of the darkest ink beside it, so that close lines (hatching) stay apart where
     # the paper between them is greyed by the rendering
     import os
@@ -2379,7 +2561,16 @@ def _trace(g0, g, keep_text):
     else:   # valley5 or p3
         peak5 = cv2.dilate(d, np.ones((4 * PX + 1, 4 * PX + 1), np.uint8)); peak3 = cv2.dilate(d, np.ones((2 * PX + 1, 2 * PX + 1), np.uint8))
         vmask = valleys(d)
-        keep = ~(vmask & (d < CORE * peak5)) & (d >= CORE * peak3)
+        core = CORE
+        if soft_lines and SOFT_CORE > 0:
+            # (r10) line work in a soft picture is kept whole across its width (its grey varies with the enlargement's
+            # repeated pixels, and CORE carved it into a ladder of pieces); letters the lettering step left keep CORE
+            # (light line work only: a dark double line - a wall's two faces - stays two lines)
+            light_ = peak3 < SOFT_DARK
+            if soft_keep is not None:
+                light_ &= ~soft_keep
+            core = np.where(light_, SOFT_CORE, CORE).astype(np.float32)
+        keep = ~(vmask & (d < core * peak5)) & (d >= core * peak3)
         ink = ((d > INK) & keep).astype(np.uint8)
         weak_all = ((d > FAINT) & keep).astype(np.uint8)
         if FAINT < INK:
@@ -2401,7 +2592,10 @@ def _trace(g0, g, keep_text):
     polys, solid = solid_polygons(d, ink, g)
     polys += over
     K = np.ones((2 * PX + 1, 2 * PX + 1), np.uint8)
-    if GREY:
+    # (r9) not in a soft picture: there the light lines a low-resolution picture blurs (a tub's rim, a planter's edge,
+    # a headboard's cushions) read as grey areas and were drawn as ragged grey shapes; traced as line work they are
+    # the lines they are
+    if GREY and (SOFT_GREY or not soft):
         ga = grey_areas(d, solid)
         if ga.any():
             polys += grey_polygons(ga, g)
