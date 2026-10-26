@@ -106,6 +106,9 @@
      (black in dark, like the panels), and the grey body behind the floor-plan workspace's cards. */
   --surface-page: #fafaf9;
   --surface-well: color-mix(in oklab, var(--color-neutral-100) 70%, transparent);
+  /* The pages outside the editor (dark mode PR 2, 26 Oct): the grey page behind white cards (the shared
+     design, the status pages), black in dark like the other pages. */
+  --surface-grouped: var(--color-neutral-100);
   /* The shared controls (components/ui): Button, SegmentedControl, Chip and ChoiceTile; a step's
      number and the avatar's hover (control-badge), and the phone sheet's handle. */
   --control-primary: var(--color-neutral-900);
@@ -196,6 +199,7 @@
   --control-switch-knob: #f5f5f7;
   --surface-page: #000000;
   --surface-well: transparent;
+  --surface-grouped: #000000;
   --control-primary: #f5f5f7;
   --control-primary-hover: #e5e5ea;
   --control-on-primary: #1c1c1e;
@@ -309,6 +313,7 @@
   --color-control-switch-knob: var(--control-switch-knob);
   --color-surface-page: var(--surface-page);
   --color-surface-well: var(--surface-well);
+  --color-surface-grouped: var(--surface-grouped);
   --color-control-danger: var(--control-danger);
   --color-control-danger-hover: var(--control-danger-hover);
   --color-control-danger-border: var(--control-danger-border);
