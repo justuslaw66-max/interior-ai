@@ -25,7 +25,7 @@ type Props = {
   onHoverEnd?: () => void;
 };
 
-const FOCUS_RING = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-900";
+const FOCUS_RING = "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-control-primary";
 
 function CatalogCardImage({ item, inRoom }: Pick<Props, "item" | "inRoom">) {
   return (
@@ -52,7 +52,7 @@ function CatalogCardPrice({ item }: Pick<Props, "item">) {
   return (
     <span
       data-testid={`catalog-card-price-${item.id}`}
-      className={`mt-1 text-[13px] leading-5 ${item.priceAmount != null ? "font-bold text-neutral-900" : "text-neutral-600"}`}
+      className={`mt-1 text-[13px] leading-5 ${item.priceAmount != null ? "font-bold text-label" : "text-label-secondary"}`}
     >
       {item.priceAmount != null ? formatSgd(item.priceAmount) : "Price on request"}
     </span>
@@ -89,7 +89,7 @@ export default function CatalogCard(props: Props) {
   return (
     <div
       data-testid={`catalog-card-${item.id}`}
-      className="relative flex h-[232px] cursor-pointer flex-col rounded-lg border border-neutral-200 bg-white shadow-sm transition hover:border-neutral-400 hover:shadow-md"
+      className="relative flex h-[232px] cursor-pointer flex-col rounded-lg border border-box-border bg-field shadow-sm transition hover:border-control-edge-hover hover:shadow-md"
       draggable={Boolean(props.onDragStart)}
       onMouseEnter={props.onHover}
       onMouseLeave={props.onHoverEnd}
@@ -113,13 +113,13 @@ export default function CatalogCard(props: Props) {
           type="button"
           data-testid={`catalog-preview-${item.id}`} data-touch-exempt
           {...getCatalogDrawerFocusAttributes({ productId: item.id, action: "details", source: "product-card" })}
-          className={`rounded text-left text-[13px] font-semibold leading-[17px] text-neutral-900 ${FOCUS_RING}`}
+          className={`rounded text-left text-[13px] font-semibold leading-[17px] text-label ${FOCUS_RING}`}
           onClick={(event) => props.onPreview(event.currentTarget)}
         >
           <span className="line-clamp-2 h-[34px]" title={item.title}>{item.title}</span>
           <span className="sr-only">, view details</span>
         </button>
-        <span className="mt-0.5 truncate text-xs leading-4 text-neutral-600">{item.dimsLabel}</span>
+        <span className="mt-0.5 truncate text-xs leading-4 text-label-secondary">{item.dimsLabel}</span>
         <CatalogCardPrice item={item} />
         <Button
           size="regular"

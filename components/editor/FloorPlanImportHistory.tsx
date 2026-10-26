@@ -247,12 +247,12 @@ export default function FloorPlanImportHistory({
     });
   };
 
-  const subtle = "text-neutral-500";
-  const card = "rounded-lg border border-neutral-200 bg-white p-2.5";
+  const subtle = "text-label-secondary";
+  const card = "rounded-lg border border-separator bg-surface-floating p-2.5";
 
   return (
     <details
-      className="rounded-lg bg-neutral-50 p-3"
+      className="rounded-lg bg-surface-band p-3" data-surface="floating"
       open={historyOpen}
       onToggle={(event) => setHistoryOpen(event.currentTarget.open)}
       onKeyDownCapture={guardConfirmationEscape}
@@ -263,7 +263,7 @@ export default function FloorPlanImportHistory({
       </p>
       {!loading && jobs.length > 0 ? (
         <div
-          className="mt-2 flex flex-wrap items-center gap-2 rounded-md border p-2 border-neutral-200 bg-white"
+          className="mt-2 flex flex-wrap items-center gap-2 rounded-md border p-2 border-separator bg-surface-floating"
           data-testid="floor-plan-import-bulk-actions"
         >
           <label className="flex cursor-pointer items-center gap-1.5 text-xs font-semibold">
@@ -302,7 +302,7 @@ export default function FloorPlanImportHistory({
         <div
           role="alertdialog"
           aria-labelledby="floor-plan-bulk-delete-title"
-          className="mt-2 rounded-md border p-2 border-red-200 bg-red-50"
+          className="mt-2 rounded-md border p-2 border-danger-tint-border bg-danger-tint"
           data-testid="floor-plan-import-bulk-delete-confirmation"
         >
           <p
@@ -384,7 +384,7 @@ export default function FloorPlanImportHistory({
                   </div>
                 </div>
                 {active ? (
-                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                  <span className="rounded-full bg-success-tint px-2 py-0.5 text-xs font-semibold text-on-success-tint">
                     Open
                   </span>
                 ) : null}
@@ -432,7 +432,7 @@ export default function FloorPlanImportHistory({
                 <div
                   role="alertdialog"
                   aria-labelledby={`floor-plan-delete-title-${job.id}`}
-                  className="mt-2 rounded-md border p-2 border-red-200 bg-red-50"
+                  className="mt-2 rounded-md border p-2 border-danger-tint-border bg-danger-tint"
                 >
                   <p
                     id={`floor-plan-delete-title-${job.id}`}
@@ -474,7 +474,7 @@ export default function FloorPlanImportHistory({
           {loadingMore ? "Loading…" : "Show older uploads"}
         </Button>
       ) : null}
-      {errorMessage ? <p role="alert" className="mt-2 text-xs text-red-600">{errorMessage}</p> : null}
+      {errorMessage ? <p role="alert" className="mt-2 text-xs text-on-danger-tint">{errorMessage}</p> : null}
     </details>
   );
 }

@@ -22,7 +22,7 @@ function ShareLinkFallbackControls({
 }: Omit<ShareLinkFallbackDialogProps, "url" | "copied" | "errorMessage" | "onCopy"> & {
   url: string; onCopy: (url: string) => void;
 }) {
-  const inputClassName = "min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono text-gray-700 outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
+  const inputClassName = "min-w-0 flex-1 rounded-lg border border-control-secondary-border bg-surface-elevated-secondary px-3 py-2 text-sm font-mono text-label-secondary outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-elevated";
   return <>
     <div className="mb-4 flex min-w-0 gap-2">
       <input type="text" readOnly aria-label="Share URL" data-testid="share-url-input"

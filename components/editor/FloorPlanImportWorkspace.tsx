@@ -67,7 +67,7 @@ export default function FloorPlanImportWorkspace({
     setActiveImportJobId(job.id);
   }, []);
 
-  const subtle = "text-neutral-500";
+  const subtle = "text-label-secondary";
   const activeRequest=request!==ignoredRequest?request:null;
   const hasActiveImport=Boolean(activeRequest||resumeJobId);
   return (
@@ -77,7 +77,7 @@ export default function FloorPlanImportWorkspace({
     >
       <main className="min-w-0">
         {hasActiveImport && choose.fileProblem ? (
-          <p role="alert" className="mb-3 text-sm font-semibold text-red-700">
+          <p role="alert" className="mb-3 text-sm font-semibold text-on-danger-tint">
             {choose.fileProblem}
           </p>
         ) : null}
@@ -97,7 +97,7 @@ export default function FloorPlanImportWorkspace({
         )}
       </main>
       <details
-        className="mt-4 rounded-xl border border-neutral-200 bg-white p-3"
+        className="mt-4 rounded-xl border border-box-border bg-surface-elevated-secondary p-3" data-surface="floating"
         data-testid="floor-plan-import-secondary-options" data-floor-plan-workspace-history="true"
         open={secondaryOptionsOpen}
         onToggle={(event) => setSecondaryOptionsOpen(event.currentTarget.open)}
@@ -111,7 +111,7 @@ export default function FloorPlanImportWorkspace({
         </p>
         <div className="mt-3 grid min-w-0 items-start gap-3 lg:grid-cols-2">
           <div
-            className="rounded-lg bg-neutral-50 p-3"
+            className="rounded-lg bg-tile p-3"
             data-testid="floor-plan-private-upload-disclosure"
           >
             <div className="text-xs font-semibold">Private by default</div>
@@ -121,7 +121,7 @@ export default function FloorPlanImportWorkspace({
               your floor plan are sent to our AI provider with storage of its
               replies turned off.
             </p>
-            <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-neutral-600">
+            <label className="mt-3 flex items-start gap-2 text-xs leading-5 text-label-secondary">
               <input
                 type="checkbox"
                 className="mt-1"

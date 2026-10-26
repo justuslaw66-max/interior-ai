@@ -66,7 +66,7 @@ export default function FloorPlanOpeningAddFields({
       (Number.isSafeInteger(sillHeightMm) && sillHeightMm >= 0));
 
   return (
-    <div className="grid grid-cols-2 gap-2 border-t border-neutral-200 pt-2">
+    <div className="grid grid-cols-2 gap-2 border-t border-separator pt-2">
       <label className={`col-span-2 text-xs ${subtleClassName}`}>
         Add a missing door, window or passage
         <select

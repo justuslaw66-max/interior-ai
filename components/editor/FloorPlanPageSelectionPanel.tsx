@@ -23,7 +23,7 @@ export default function FloorPlanPageSelectionPanel({
   submitting = false,
   disabled = false,
 }: FloorPlanPageSelectionPanelProps) {
-  const subtle = "text-neutral-600";
+  const subtle = "text-label-secondary";
 
   return (
     <section data-testid="floor-plan-page-selection" data-floor-plan-workspace-state="page-selection">
@@ -46,7 +46,7 @@ export default function FloorPlanPageSelectionPanel({
                 "overflow-hidden rounded-lg border text-left transition disabled:opacity-50",
                 selectedPageNumber === candidate.pageNumber
                   ? "border-emerald-500 ring-2 ring-emerald-500/25"
-                  : "border-neutral-200 hover:border-neutral-400",
+                  : "border-box-border hover:border-control-edge-hover",
               ].join(" ")}
               disabled={disabled || submitting}
               onClick={() =>
@@ -70,7 +70,7 @@ export default function FloorPlanPageSelectionPanel({
                   <span
                     className={
                       candidate.rank === 1
-                        ? "text-emerald-600"
+                        ? "text-on-success-tint"
                         : subtle
                     }
                   >

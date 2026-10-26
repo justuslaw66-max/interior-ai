@@ -14,7 +14,7 @@ export default function CatalogSearchInput({
   return (
     <div className="relative min-w-0 flex-1">
       <Search
-        className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-500"
+        className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-label-secondary"
         aria-hidden="true"
       />
       <input
@@ -22,7 +22,7 @@ export default function CatalogSearchInput({
         aria-label="Search catalogue products"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-lg border border-neutral-300 bg-white pl-7 pr-1.5 text-base text-neutral-900 placeholder:text-neutral-500 md:text-[13px]"
+        className="h-10 w-full rounded-lg border border-control-secondary-border bg-field pl-7 pr-1.5 text-base text-label placeholder:text-label-tertiary md:text-[13px]"
         placeholder={placeholder}
       />
     </div>

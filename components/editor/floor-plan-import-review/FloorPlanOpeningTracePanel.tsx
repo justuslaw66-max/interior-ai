@@ -70,20 +70,20 @@ export default function FloorPlanOpeningTracePanel({
   );
   if (!floor) return null;
 
-  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
-  const subtle = "text-neutral-600";
+  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs";
+  const subtle = "text-label-secondary";
 
   return (
     <details
-      className="mt-3 rounded-lg border border-orange-200 bg-orange-50 p-3"
+      className="mt-3 rounded-lg border border-warning-tint-border bg-warning-tint p-3"
       open={pickingOpening || !floor.openings.length}
     >
       <summary className="cursor-pointer text-sm font-semibold">
-        <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-700 text-xs text-white">
+        <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-700 text-xs text-white">
           3
         </span>
         Add visible doors and windows
-        <span className="ml-2 rounded-full bg-orange-100 px-2 py-0.5 text-xs text-orange-800">
+        <span className="ml-2 rounded-full bg-surface-floating px-2 py-0.5 text-xs text-on-warning-tint">
           {floor.openings.length
             ? `${floor.openings.length} added`
             : "Recommended"}
@@ -112,7 +112,7 @@ export default function FloorPlanOpeningTracePanel({
           </select>
         </label>
         {!calibration || !floor.walls.length ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs font-medium text-amber-900">
+          <div className="rounded-md border border-warning-tint-border bg-surface-floating p-2 text-xs font-medium text-on-warning-tint">
             Set scale and outline the rooms first.
           </div>
         ) : null}
@@ -135,8 +135,8 @@ export default function FloorPlanOpeningTracePanel({
         <div
           className={`rounded-md border p-2 text-xs ${
             openingPoints.length === 2 && analysis?.valid
-              ? "border-emerald-200 bg-emerald-50 text-emerald-900"
-              : "border-orange-100 bg-white text-neutral-700"
+              ? "border-success-tint-border bg-success-tint text-on-success-tint"
+              : "border-warning-tint-border bg-surface-floating text-label-secondary"
           }`}
         >
           {openingPoints.length === 0
@@ -194,7 +194,7 @@ export default function FloorPlanOpeningTracePanel({
         >
           Add this opening
         </Button>
-        <p className="rounded-md bg-white p-2 text-xs leading-4 text-neutral-600">
+        <p className="rounded-md bg-surface-floating p-2 text-xs leading-4 text-label-secondary">
           Add every visible opening. If the source truly shows none, skip this
           step and mark the checklist suggestion as reviewed.
         </p>

@@ -233,7 +233,7 @@ assert.equal(chordSpokenLabel(["Esc"], false), "Escape");
 const listOther = renderToStaticMarkup(<KeyboardShortcutsList isDesigner={false} isMac={false} />);
 const listMac = renderToStaticMarkup(<KeyboardShortcutsList isDesigner isMac />);
 assert.match(listOther, /<dt>Redo<\/dt><dd[^>]*>(?:<span[^>]*>)+<span class="sr-only">Control Shift Z<\/span><kbd aria-hidden="true"[^>]*>Ctrl<\/kbd>/);
-assert.match(listOther, /<span class="text-xs text-neutral-600">or<\/span><span[^>]*><span class="sr-only">Control Y<\/span>/);
+assert.match(listOther, /<span class="text-xs text-label-secondary">or<\/span><span[^>]*><span class="sr-only">Control Y<\/span>/);
 assert.match(listMac, /<span class="sr-only">Command Z<\/span><kbd aria-hidden="true"[^>]*>⌘<\/kbd>/);
 assert.doesNotMatch(listOther, /Presentation mode/, "Pro's P only with Pro.");
 assert.match(listMac, /data-testid="keyboard-shortcuts-pro"[\s\S]*Presentation mode/);

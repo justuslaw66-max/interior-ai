@@ -85,7 +85,7 @@ assert.match(open, /data-instance-id="b"[\s\S]*?data-testid="shopping-buy-list-a
 assert.match(open, /<p role="status" data-testid="shopping-buy-list-notice" class="sr-only"><\/p>/);
 assert.match(
   dialog({ notice: { message: "Blocked.", tone: "warning" } }),
-  /<p role="status" data-testid="shopping-buy-list-notice" class="[^"]*bg-amber-50[^"]*">Blocked\.<\/p>/
+  /<p role="status" data-testid="shopping-buy-list-notice" class="[^"]*bg-warning-tint[^"]*">Blocked\.<\/p>/
 );
 assert.equal(
   (dialog({ busy: true }).match(/data-testid="shopping-buy-list-open" aria-label="[^"]+" disabled=""/g) ?? []).length,

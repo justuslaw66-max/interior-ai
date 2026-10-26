@@ -37,7 +37,7 @@ function LightPowerRow({ light, disabled, onChange }: LightControlProps) {
         className={`relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50 ${light.isOn ? "bg-emerald-600" : "bg-control-handle"}`}
         onClick={() => onChange({ isOn: !light.isOn })}
       >
-        <span aria-hidden="true" className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${light.isOn ? "translate-x-6" : "translate-x-1"}`} />
+        <span aria-hidden="true" className={`absolute top-1 h-5 w-5 rounded-full bg-control-switch-knob shadow transition-transform ${light.isOn ? "translate-x-6" : "translate-x-1"}`} />
       </button>
     </div>
   );

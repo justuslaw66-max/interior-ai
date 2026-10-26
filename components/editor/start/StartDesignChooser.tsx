@@ -94,7 +94,7 @@ export function StartDesignChooser(props: StartDesignChooserProps) {
     <div
       ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="start-design-title"
       data-testid="start-design-chooser" data-editor-dialog-state="mounting"
-      className="fixed inset-0 z-[60] overflow-y-auto bg-[#fafaf9] text-neutral-950 outline-hidden"
+      className="fixed inset-0 z-[60] overflow-y-auto bg-surface-page text-label outline-hidden"
     >
       <div ref={panelRef} tabIndex={-1} data-editor-dialog-state="mounting"
         className="mx-auto w-full max-w-[1120px] px-4 pb-12 pt-6 outline-hidden sm:px-8 md:pt-10">
@@ -104,7 +104,7 @@ export function StartDesignChooser(props: StartDesignChooserProps) {
               className="text-[26px] font-bold leading-8 tracking-tight outline-hidden md:text-[30px] md:leading-9">
               Start a new design
             </h1>
-            <p className="mt-2 text-base leading-[22px] text-neutral-600">
+            <p className="mt-2 text-base leading-[22px] text-label-secondary">
               Choose how to begin. You can change the rooms and products at any time.
             </p>
           </div>

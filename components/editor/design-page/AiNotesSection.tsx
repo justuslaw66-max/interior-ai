@@ -15,15 +15,15 @@ export type AiNotesSectionProps = {
  */
 export function AiNotesSection({ loading, canGenerate, onGenerate }: AiNotesSectionProps) {
   return (
-    <section aria-labelledby="ai-notes-heading" data-testid="ai-notes-section" className="space-y-2 rounded-xl border border-neutral-200 bg-white p-3">
-      <h3 id="ai-notes-heading" className="text-sm font-semibold text-neutral-900">
+    <section aria-labelledby="ai-notes-heading" data-testid="ai-notes-section" className="space-y-2 rounded-xl border border-box-border bg-surface-secondary p-3">
+      <h3 id="ai-notes-heading" className="text-sm font-semibold text-label">
         AI notes
       </h3>
-      <p className="text-xs text-neutral-600">A summary of this room&apos;s layout and finishes, why it works, and suggestions you can apply.</p>
+      <p className="text-xs text-label-secondary">A summary of this room&apos;s layout and finishes, why it works, and suggestions you can apply.</p>
       <Button data-testid="ai-notes-generate" className="w-full" disabled={loading || !canGenerate} onClick={onGenerate}>
         {loading ? "Generating…" : "Get AI notes"}
       </Button>
-      {canGenerate ? null : <p className="text-xs text-neutral-600">Add products or a floor or wall finish to the room first.</p>}
+      {canGenerate ? null : <p className="text-xs text-label-secondary">Add products or a floor or wall finish to the room first.</p>}
     </section>
   );
 }

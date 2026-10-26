@@ -11,16 +11,16 @@ export function scaleReviewStatus(
 ): { label: string; className: string; assumed: boolean; open: boolean; offerOpenings: boolean } {
   const assumed = calibration?.primaryMeasurement?.basis === "assumed_opening_width";
   const flags = { assumed, open: hasConflict || !calibration || assumed, offerOpenings: !calibration || assumed };
-  if (hasConflict) return { label: "Scale conflict", className: "bg-red-100 text-red-800", ...flags };
-  if (assumed) return { label: "Set from an assumed width", className: "bg-amber-100 text-amber-900", ...flags };
+  if (hasConflict) return { label: "Scale conflict", className: "bg-danger-tint text-on-danger-tint", ...flags };
+  if (assumed) return { label: "Set from an assumed width", className: "bg-warning-tint text-on-warning-tint", ...flags };
   const fromBar = calibration?.primaryMeasurement?.id === SCALE_BAR_MEASUREMENT_ID;
-  if (calibration) return { label: fromBar ? "Set from the scale bar" : "Set", className: "bg-emerald-100 text-emerald-800", ...flags };
-  return { label: "Start here", className: "bg-blue-100 text-blue-800", ...flags };
+  if (calibration) return { label: fromBar ? "Set from the scale bar" : "Set", className: "bg-success-tint text-on-success-tint", ...flags };
+  return { label: "Start here", className: "bg-accent-tint text-on-accent-tint", ...flags };
 }
 
 export function FloorPlanScaleAssumedNotice() {
   return (
-    <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-4 text-amber-900" data-testid="floor-plan-scale-assumed-notice">
+    <p className="mt-2 rounded-md border border-warning-tint-border bg-warning-tint p-2 text-xs leading-4 text-on-warning-tint" data-testid="floor-plan-scale-assumed-notice">
       This scale rests on a door width that was assumed, not read off the plan; every length is approximate (about ±10 %).
       When you find a printed measurement, cross-check or set the scale from it.
     </p>
@@ -38,7 +38,7 @@ type EstimateOfferProps = {
 /** The door openings the vectorizer measured where a plan prints no dimensions: pick one to seed the scale. */
 export function FloorPlanScaleEstimateOffer({ marks, assumedMm, control, disabled, onPick }: EstimateOfferProps) {
   return (
-    <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-4 text-amber-900" data-testid="floor-plan-scale-estimate">
+    <div className="rounded-md border border-warning-tint-border bg-warning-tint p-2 text-xs leading-4 text-on-warning-tint" data-testid="floor-plan-scale-estimate">
       <p className="font-semibold">No printed dimensions were found on this plan.</p>
       <p className="mt-1">
         The door openings below were measured on the plan; the width shown is what each would be if standard

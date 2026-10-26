@@ -216,18 +216,18 @@ export default function GoogleAddressAutocomplete({
       />
       {open && (suggestions.length > 0 || status === "loading") ? (
         <div
-          className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-xl"
+          className="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border border-separator bg-surface-elevated shadow-xl"
           id={`${id}-suggestions`}
           role="listbox"
         >
           {status === "loading" ? (
-            <div className="px-3 py-2 text-xs text-neutral-500">Finding addresses…</div>
+            <div className="px-3 py-2 text-xs text-label-secondary">Finding addresses…</div>
           ) : null}
           {suggestions.map((suggestion, index) => (
             <button
               aria-selected={index === activeIndex}
-              className={`block w-full border-b border-neutral-100 px-3 py-2 text-left last:border-b-0 ${
-                index === activeIndex ? "bg-blue-50" : "bg-white hover:bg-neutral-50"
+              className={`block w-full border-b border-separator-subtle px-3 py-2 text-left last:border-b-0 ${
+                index === activeIndex ? "bg-accent-tint" : "bg-surface-elevated hover:bg-control-secondary-hover"
               }`}
               id={`${id}-suggestion-${index}`}
               key={suggestion.placeId}
@@ -237,25 +237,25 @@ export default function GoogleAddressAutocomplete({
               role="option"
               type="button"
             >
-              <span className="block text-sm font-medium text-neutral-900">
+              <span className="block text-sm font-medium text-label">
                 {suggestion.mainText}
               </span>
               {suggestion.secondaryText ? (
-                <span className="mt-0.5 block text-xs text-neutral-500">
+                <span className="mt-0.5 block text-xs text-label-secondary">
                   {suggestion.secondaryText}
                 </span>
               ) : null}
             </button>
           ))}
           <div
-            className="bg-neutral-50 px-3 py-1.5 text-right text-xs font-normal text-[#5e5e5e]"
+            className="bg-tile px-3 py-1.5 text-right text-xs font-normal text-[#5e5e5e] dark:text-label"
             translate="no"
           >
             Google Maps
           </div>
         </div>
       ) : null}
-      <div className="mt-1 min-h-4 text-xs text-neutral-500" aria-live="polite">
+      <div className="mt-1 min-h-4 text-xs text-label-secondary" aria-live="polite">
         {availability === "checking" ? "Connecting address search…" : null}
         {availability === "unavailable"
           ? "Address suggestions are unavailable; manual entry still works."

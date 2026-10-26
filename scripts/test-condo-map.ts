@@ -253,5 +253,11 @@ const nextConfig = fs.readFileSync(path.join(root, "next.config.ts"), "utf8");
 assert.match(nextConfig, /"\/api\/admin\/condo-map\/\*\*": \["\.\/catalog\/condo-map\/\*\*\/\*"\]/);
 assert.match(nextConfig, /"\/admin\/condo-map": \["\.\/catalog\/condo-map\/index\.json"\]/);
 assert.doesNotMatch(fs.readFileSync(path.join(root, "app/admin/admin-navigation.ts"), "utf8"), /condo-map/, "unlisted for now");
+// mapbox-gl.css sets the map container to position: relative after the app's styles, so a container sized by absolute
+// positioning collapses to 0 px tall (the live page, 26 Oct 2026): it must be sized by its height
+const mapContainer = /<div ref=\{setContainer\} className="([^"]*)"/.exec(fs.readFileSync(path.join(root, "app/admin/condo-map/CondoMapExplorer.tsx"), "utf8"));
+assert.ok(mapContainer, "the map container is found");
+assert.doesNotMatch(mapContainer[1], /\b(absolute|fixed|inset-)/, "the map container isn't sized by absolute positioning");
+assert.match(mapContainer[1], /\bh-full\b/, "the map container takes its frame's height");
 
 console.log(`Condo map checks passed: ${index.length} developments, ${Object.values(maps).reduce((sum, dev) => sum + dev.units.length, 0)} units.`);

@@ -10,6 +10,10 @@ const SHARP_LINUX_NATIVE_FILES = [
   "./node_modules/@img/sharp-linux-x64/**/*",
   "./node_modules/@img/sharp-libvips-linux-x64/**/*",
 ];
+const PDFJS_RUNTIME_FILES = [
+  "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs",
+  "./node_modules/pdfjs-dist/wasm/**/*",
+];
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
@@ -33,11 +37,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Retain the dynamically loaded sibling worker for each server PDF importer.
+  // Retain the dynamically loaded sibling worker for each server PDF importer, and the picture decoders it reads at
+  // run time (fax, JBIG2 and JPEG 2000 pictures: lib/floor-plan-imports/pdf-runtime.ts).
   outputFileTracingIncludes: {
-    "/api/floor-plan-imports/*/process": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
-    "/api/admin/floor-plan-imports/*/construction-sources": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
-    "/api/admin/floor-plan-imports/*/supplementary-sources": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+    "/api/floor-plan-imports/*/process": PDFJS_RUNTIME_FILES,
+    "/api/admin/floor-plan-imports/*/construction-sources": PDFJS_RUNTIME_FILES,
+    "/api/admin/floor-plan-imports/*/supplementary-sources": PDFJS_RUNTIME_FILES,
     // Every route family that reaches lib/floor-plan-imports, which imports sharp.
     "/api/floor-plan-imports": SHARP_LINUX_NATIVE_FILES,
     "/api/floor-plan-imports/**": SHARP_LINUX_NATIVE_FILES,

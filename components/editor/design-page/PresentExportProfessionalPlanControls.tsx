@@ -49,8 +49,8 @@ export default function PresentExportProfessionalPlanControls({
 }: PresentExportProfessionalPlanControlsProps) {
   return (
     <div className="space-y-2" data-testid="professional-plan-controls">
-      <div className="rounded-lg border border-gray-200/70 p-2">
-        <div className="mb-2 text-xs text-gray-500">
+      <div className="rounded-lg border border-box-border p-2">
+        <div className="mb-2 text-xs text-label-secondary">
           Layer presets
         </div>
         <SegmentedControl label="Layer presets" size="compact" fill value={preset} onChange={onPresetChange} options={PRESET_OPTIONS} />

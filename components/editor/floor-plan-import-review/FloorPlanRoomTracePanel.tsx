@@ -47,15 +47,15 @@ export default function FloorPlanRoomTracePanel({
   const [wallThicknessMm, setWallThicknessMm] = useState(120);
   if (!floor) return null;
 
-  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
-  const subtle = "text-neutral-600";
+  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs";
+  const subtle = "text-label-secondary";
 
   return (
-    <details data-review-controls="room" className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3" open={pickingRoom || !floor.rooms.length}>
+    <details data-review-controls="room" className="mt-3 rounded-lg border border-success-tint-border bg-success-tint p-3" open={pickingRoom || !floor.rooms.length}>
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-700 text-xs text-white">2</span>
         Outline each room
-        <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800">
+        <span className="ml-2 rounded-full bg-surface-floating px-2 py-0.5 text-xs text-on-success-tint">
           {floor.rooms.length
             ? `${floor.rooms.length} added`
             : calibration
@@ -69,7 +69,7 @@ export default function FloorPlanRoomTracePanel({
           then add it. Repeat until every room is outlined.
         </p>
         {!calibration ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs font-medium text-amber-900">
+          <div className="rounded-md border border-warning-tint-border bg-warning-tint p-2 text-xs font-medium text-on-warning-tint">
             Set scale above before tracing rooms.
           </div>
         ) : null}
@@ -82,7 +82,7 @@ export default function FloorPlanRoomTracePanel({
             ? "Selecting corners — click on the plan"
             : "Start outlining a room"}
         </Button>
-        <div className="rounded-md bg-white p-2 text-xs text-neutral-700">
+        <div className="rounded-md bg-surface-floating p-2 text-xs text-label-secondary">
           {pickingRoom
             ? roomPoints.length < 3
               ? `${roomPoints.length} corner${roomPoints.length === 1 ? "" : "s"} selected. Add at least ${3 - roomPoints.length} more.`
@@ -140,8 +140,8 @@ export default function FloorPlanRoomTracePanel({
         >
           Add this room
         </Button>
-        <details className="rounded-md border border-emerald-200 bg-white p-2">
-          <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
+        <details className="rounded-md border border-success-tint-border bg-surface-floating p-2">
+          <summary className="cursor-pointer text-xs font-semibold text-label-secondary">
             Room details (optional)
           </summary>
           <div className="mt-2 grid gap-2">

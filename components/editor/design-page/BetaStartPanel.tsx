@@ -18,20 +18,20 @@ export interface BetaStartPanelProps {
 export function BetaStartPanel({ state, actions }: BetaStartPanelProps) {
   return (
     <div
-      data-testid="beta-start-panel"
-      className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-1/2 z-30 max-h-[calc(100vh-9.75rem-env(safe-area-inset-bottom))] w-[min(92vw,760px)] md:bottom-4 md:max-h-[calc(100vh-5.75rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border border-neutral-200 bg-white/95 p-4 shadow-2xl backdrop-blur"
+      data-testid="beta-start-panel" data-surface="floating"
+      className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-1/2 z-30 max-h-[calc(100vh-9.75rem-env(safe-area-inset-bottom))] w-[min(92vw,760px)] md:bottom-4 md:max-h-[calc(100vh-5.75rem)] -translate-x-1/2 overflow-y-auto rounded-2xl border border-separator bg-surface-floating/95 p-4 shadow-2xl backdrop-blur"
       role="region"
       aria-label="Public beta fast start"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+          <div className="text-xs font-semibold uppercase tracking-wide text-on-success-tint">
             Public beta fast start
           </div>
-          <h2 className="mt-1 text-xl font-semibold text-neutral-950">
+          <h2 className="mt-1 text-xl font-semibold text-label">
             Start with the path that matches your room
           </h2>
-          <p className="mt-1 max-w-2xl text-sm text-neutral-600">
+          <p className="mt-1 max-w-2xl text-sm text-label-secondary">
             Choose a template, draw in measured 2D, upload a floor plan, or let AI suggest a furniture layout.
           </p>
         </div>
@@ -45,22 +45,22 @@ export function BetaStartPanel({ state, actions }: BetaStartPanelProps) {
 
       <div
         data-testid="beta-start-activation-progress"
-        className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-3"
+        className="mt-4 rounded-xl border border-box-border bg-tile p-3"
       >
         <div className="flex items-center justify-between gap-3">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            <div className="text-xs font-semibold uppercase tracking-wide text-label-secondary">
               First run progress
             </div>
-            <div className="mt-0.5 text-sm font-semibold text-neutral-950">
+            <div className="mt-0.5 text-sm font-semibold text-label">
               {state.nextStepLabel ?? "Ready to share"}
             </div>
           </div>
-          <div className="text-sm font-semibold text-neutral-700">
+          <div className="text-sm font-semibold text-label-secondary">
             {state.progressPercent}%
           </div>
         </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-control-track">
           <div
             className="h-full rounded-full bg-emerald-500"
             style={{ width: `${state.progressPercent}%` }}
@@ -118,13 +118,13 @@ function StartPathButton({
       data-testid={testId}
       className={
         accent
-          ? "rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-left transition hover:border-emerald-300 hover:bg-white"
-          : "rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-left transition hover:border-neutral-300 hover:bg-white"
+          ? "rounded-xl border border-success-tint-border bg-success-tint p-3 text-left transition hover:border-success-tint-border hover:bg-control-secondary-hover"
+          : "rounded-xl border border-box-border bg-tile p-3 text-left transition hover:border-control-secondary-border hover:bg-control-secondary-hover"
       }
       onClick={onClick}
     >
-      <div className="text-sm font-semibold text-neutral-950">{title}</div>
-      <div className="mt-1 text-xs text-neutral-600">{description}</div>
+      <div className="text-sm font-semibold text-label">{title}</div>
+      <div className="mt-1 text-xs text-label-secondary">{description}</div>
     </button>
   );
 }

@@ -1378,12 +1378,12 @@ export default function DesignControlsPlanPanel({
                             {textureSource ? "Texture" : "Swatch only"}
                           </span>
                           {tileable ? (
-                            <span className="rounded-full bg-cyan-50 px-1.5 py-0.5 text-xs font-semibold text-cyan-700">
+                            <span className="rounded-full bg-control-track px-1.5 py-0.5 text-xs font-semibold text-label-secondary">
                               Tileable
                             </span>
                           ) : null}
                           {sampleAvailable ? (
-                            <span className="rounded-full bg-violet-50 px-1.5 py-0.5 text-xs font-semibold text-violet-700">
+                            <span className="rounded-full bg-control-track px-1.5 py-0.5 text-xs font-semibold text-label-secondary">
                               Sample
                             </span>
                           ) : null}
