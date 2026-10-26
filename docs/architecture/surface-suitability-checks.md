@@ -1,6 +1,6 @@
 # Plan review's surface checks (17 Oct 2026)
 
-J, 17 Oct 2026, chose "Build all five" checks and "Yes, add balcony". Plan review checks each room's floor and walls against what the room is for, using the tile facts from ABK's technical sheets (`surface-material-abk-documents.md`). They are advice: every finding is a `tip` in the new `surfaces` category, with the action `review_surface`. They don't change the score or the label.
+J, 17 Oct 2026, chose "Build all five" checks and "Yes, add balcony"; on 25 Oct, "Warn on bathroom walls" added check 6. Plan review checks each room's floor and walls against what the room is for, using the tile facts from ABK's technical sheets (`surface-material-abk-documents.md`). They are advice: every finding is a `tip` in the new `surfaces` category, with the action `review_surface`. They don't change the score or the label.
 
 ## The checks (`lib/floor-plan-surface-checks.ts`)
 
@@ -11,12 +11,15 @@ J, 17 Oct 2026, chose "Build all five" checks and "Yes, add balcony". Plan revie
 | 3 | Any floor | The sheet calls it a white-body wall tile (EN 14411 group BIII, water absorption over 10%) | ABK's sheet |
 | 4 | Balcony floor | Not in ABK's outdoor range (no `classification.outdoor_uses`), or not a catalogue tile at all | Outdoor paths need R11 (ASR A1.5); ABK's outdoor tiles are R11 and 20 mm |
 | 5 | Balcony walls | Any wall, face or panel in a white-body wall tile | ABK's sheet: over 10% water absorption |
+| 6 | Bathroom walls | Any wall, face or panel in a laminate sheet (a Greenlam HPL wall panel); J, 25 Oct 2026: "Warn on bathroom walls" | Greenlam's pasting manual bonds its laminates to a board, not to plaster or concrete; for showers Greenlam makes Shower Surfaces, a 3 mm compact sold as waterproof |
 
 - **Private homes aren't regulated.** The R10, R11 and barefoot B levels are the German workplace rules', which tile makers use as the reference (Villeroy & Boch's "Tech Info: slip resistance" lists them and says private areas aren't subject to them). Every message says so.
 - **No guesses.** A floor with no facts (the starter floors, the legacy `FLOOR_MATERIALS`, other suppliers) gets no bathroom finding. On a balcony, any floor that isn't in ABK's outdoor range is flagged.
 - **No kitchen check.** The rules only cover commercial kitchens (R12).
 - **Check 3 flags no floor entry today.** Gioia's floor entries are its porcelain decors, which ABK's Gioia page says suit floors. Its nine white-body plain colours are wall tiles, and floors only take floor entries. The check guards a stored id or a future entry.
-- Published entries the checks can flag: 14 R9 floors, 23 floors with a barefoot class without B, 87 floors whose sheet doesn't settle a slip class, 9 white-body wall tiles. 106 floors are in ABK's outdoor range. `scripts/test-floor-plan-surface-checks.ts` pins these counts.
+- Published entries the checks can flag: 14 R9 floors, 23 floors with a barefoot class without B, 87 floors whose sheet doesn't settle a slip class, 9 white-body wall tiles, 233 laminate sheets. 106 floors are in ABK's outdoor range. `scripts/test-floor-plan-surface-checks.ts` pins these counts.
+- **A wall's outside face isn't the room's.** A panel finish saved for the outside of an unshared wall (an id ending `:exterior`) faces whatever is beyond the wall, so `toSurfaceCheckRoom` leaves it out of the room's checks (5 and 6) and of AI notes' description of the room (26 Oct 2026).
+- **Check 6 doesn't know where the shower is**, so it flags laminate on any bathroom wall and says what to do if the room has a shower. Balconies get no laminate check: the panels' rooms already leave out bathrooms and balconies, and J asked for the bathroom warning only.
 
 ## Where the facts come from
 
@@ -24,8 +27,9 @@ J, 17 Oct 2026, chose "Build all five" checks and "Yes, add balcony". Plan revie
   - the slip class: the YAML's `physical_specs.slip_rating`, else the sheet's;
   - the barefoot class and the sheet's collection, from `findAbkDatasheetMatch`;
   - an outdoor floor: `classification.outdoor_uses` is set;
-  - a white-body wall tile: the sheet's group is BIII.
-- `scripts/generate-surface-material-runtime.ts` writes them as the render tuple's trailing field 34, `[slip, barefoot, sheet, flags]`, only for entries with a fact.
+  - a white-body wall tile: the sheet's group is BIII;
+  - a laminate sheet: a `wall_panel` whose `classification.flooring_type` is `laminate`, which is what the laminate catalogue's panels are (26 Oct 2026). Goodrich's laminate floors are `flooring`, so they aren't.
+- `scripts/generate-surface-material-runtime.ts` writes them as the render tuple's trailing field 34, `[slip, barefoot, sheet, flags]`, only for entries with a fact. The flags are 1 for an outdoor floor, 2 for a white-body wall tile and 4 for a laminate sheet; the laminate flag adds about 6.7 KB raw to the render data.
 - `lib/surface-material-suitability.ts` decodes them into `SurfaceMaterialRenderRecord.suitability`.
 - App code never imports ABK's sheets or the source module. The test checks that.
 - **Why the eager render data:** plan review runs synchronously for any saved design, and the lazy catalogue loads only with the surface browser. The facts add about 29 KB raw (about 1.2 KB gzip) to `surface-material-render.generated.ts`. See `surface-material-runtime-boundary.md`.

@@ -2,11 +2,19 @@
 
 import LazyImage from "@/components/common/LazyImage";
 import type { ShoppingSurface } from "@/lib/shopping-surfaces";
+import { formatSheetCount, formatSheetSize } from "@/lib/surface-material-sheets";
+
+/** How much to order: whole sheets, with the area they cover, or square metres with 10% for cuts. */
+function orderText({ sheetOrder, orderAreaSqm }: ShoppingSurface) {
+  if (!sheetOrder) return `Order about ${orderAreaSqm} m², including 10% extra for cuts`;
+  const area = Math.round(sheetOrder.surfaceAreaSqm * 10) / 10;
+  return `Order ${formatSheetCount(sheetOrder.sheets)} of ${formatSheetSize(sheetOrder.sheet)}, for ${area} m²`;
+}
 
 /**
  * The design's floor and wall finishes, as in the Shop mockup: one row per material with its
- * supplier, where it goes and how much to order (10% extra for cuts). Suppliers price them, so
- * they stay out of the total and have no Buy.
+ * supplier, where it goes and how much to order (10% extra for cuts, or whole sheets for a wall
+ * panel). Suppliers price them, so they stay out of the total and have no Buy.
  */
 export function ShoppingSurfacesSection({ surfaces }: { surfaces: readonly ShoppingSurface[] }) {
   if (!surfaces.length) return null;
@@ -41,7 +49,7 @@ export function ShoppingSurfacesSection({ surfaces }: { surfaces: readonly Shopp
                 {surface.supplier} · {surface.where}
               </div>
               <div data-testid="shopping-surface-order" className="mt-0.5 text-xs text-neutral-700 md:text-[13px]">
-                Order about {surface.orderAreaSqm} m², including 10% extra for cuts
+                {orderText(surface)}
               </div>
             </div>
             {/* Phones have the section's "Priced by the supplier" and the room for the text. */}

@@ -1,11 +1,12 @@
 import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
 import { buildRoomSurfaceAreaRows, roundSquareMeters, type SurfaceAreaRow } from "@/lib/surface-material-areas";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
+import { countSurfaceSheets, getSurfaceSheetSize, type SurfaceSheetSize } from "@/lib/surface-material-sheets";
 
 /**
  * A floor or wall finish in the design, as the Shopping list shows it (the Shop mockup's
- * "Surfaces"): what to ask the supplier for, where it goes and how much to order. Suppliers price
- * surfaces, so they stay out of the total.
+ * "Surfaces"): what to ask the supplier for, where it goes and how much to order, by area or, for a
+ * finish sold by the sheet, in whole sheets. Suppliers price surfaces, so they stay out of the total.
  */
 export type ShoppingSurface = {
   materialId: string;
@@ -15,11 +16,20 @@ export type ShoppingSurface = {
   where: string;
   /** Whole square metres to order, with 10% extra for cuts. */
   orderAreaSqm: number;
+  /** A finish sold by the sheet: its sheet, the sheets to order (surface-material-sheets.ts) and the wall they cover. */
+  sheetOrder: { sheet: SurfaceSheetSize; sheets: number; surfaceAreaSqm: number } | null;
   swatchUrl: string | null;
 };
 
 /** What the Shopping list shows of a material; null for one the catalogue doesn't have. */
-export type ShoppingSurfaceMaterial = { materialId: string; name: string; supplier: string; swatchUrl: string | null };
+export type ShoppingSurfaceMaterial = {
+  materialId: string;
+  name: string;
+  supplier: string;
+  swatchUrl: string | null;
+  /** Set for a finish sold by the sheet. */
+  sheet?: SurfaceSheetSize | null;
+};
 export type ShoppingSurfaceMaterialLookup = (materialId: string) => ShoppingSurfaceMaterial | null;
 
 /** The editor's own surface catalogue (it runs in the browser, like the renderer that uses it). */
@@ -32,6 +42,7 @@ export function runtimeShoppingSurfaceMaterial(materialId: string): ShoppingSurf
     name: info.product_name,
     supplier: info.brand ?? info.supplier,
     swatchUrl: textures.swatch_url?.trim() || null,
+    sheet: getSurfaceSheetSize(material),
   };
 }
 
@@ -81,8 +92,20 @@ export function buildShoppingSurfaces(
     supplier: material.supplier,
     where: surfaceWhere(group),
     orderAreaSqm: Math.max(1, Math.ceil(roundSquareMeters(group.reduce((sum, row) => sum + row.orderAreaSqm, 0)))),
+    sheetOrder: material.sheet ? sheetOrderOf(group, material.sheet) : null,
     swatchUrl: material.swatchUrl,
   }));
+}
+
+/** Each finish's sheets, added up: offcuts are shared within a room's finish, not between rooms or finishes. */
+function sheetOrderOf(rows: readonly SurfaceAreaRow[], sheet: SurfaceSheetSize): NonNullable<ShoppingSurface["sheetOrder"]> {
+  return {
+    sheet,
+    sheets: rows.reduce((sum, row) => sum + countSurfaceSheets({
+      pieces: row.wallPieces, orderAreaSqm: row.orderAreaSqm, rotationDeg: row.settings.rotationDeg, sheet,
+    }), 0),
+    surfaceAreaSqm: roundSquareMeters(rows.reduce((sum, row) => sum + row.surfaceAreaSqm, 0)),
+  };
 }
 
 /** The design's floor and wall finishes, from its rooms and the doors and windows that cut its walls. */

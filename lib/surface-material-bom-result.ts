@@ -5,6 +5,7 @@ import {
   type SurfaceMaterialBomRow,
 } from "@/lib/surface-material-bom";
 import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
+import { formatSheetCount, formatSheetSize } from "@/lib/surface-material-sheets";
 
 export type SurfaceMaterialBomWarning = {
   code: "UNRESOLVED_OPENING_HOST";
@@ -24,6 +25,20 @@ export function formatSurfaceMaterialBomWarning(
 ) {
   const noun = warnings.length === 1 ? "door or window" : "doors or windows";
   return `Warning — wall quantities remain uncut for ${warnings.length} ${noun}.`;
+}
+
+/**
+ * What to order of a row: "12 sheets of 1220 × 2440 mm" for a finish sold by the sheet, or its order area, as the
+ * export formats areas, "incl. 10% waste".
+ */
+export function formatSurfaceMaterialBomOrder(
+  row: Pick<SurfaceMaterialBomRow, "orderSheets" | "sheetSizeMm" | "orderAreaSqm">,
+  formatArea: (areaSqm: number) => string
+): string {
+  if (row.orderSheets !== null && row.sheetSizeMm) {
+    return `${formatSheetCount(row.orderSheets)} of ${formatSheetSize(row.sheetSizeMm)}`;
+  }
+  return `${formatArea(row.orderAreaSqm)} incl. 10% waste`;
 }
 
 export function buildRoomSurfaceMaterialBomResult(

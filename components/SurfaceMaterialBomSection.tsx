@@ -1,5 +1,6 @@
 import type { SurfaceMaterialBomRow } from "@/lib/surface-material-bom";
 import type { SurfaceMaterialBomWarning } from "@/lib/surface-material-bom-result";
+import { formatSheetCount, formatSheetSize } from "@/lib/surface-material-sheets";
 import { SurfaceMaterialBomWarnings } from "@/components/SurfaceMaterialBomWarnings";
 
 function money(currency: string | null, value: number | null) {
@@ -13,6 +14,19 @@ function money(currency: string | null, value: number | null) {
 
 function formatArea(value: number) {
   return `${value.toFixed(1).replace(/\.0$/, "")} m2`;
+}
+
+/** Whole sheets and their size for a finish sold by the sheet, else the order area and its waste allowance. */
+function OrderCell({ row }: { row: SurfaceMaterialBomRow }) {
+  const [amount, note] = row.orderSheets !== null && row.sheetSizeMm
+    ? [formatSheetCount(row.orderSheets), formatSheetSize(row.sheetSizeMm)]
+    : [formatArea(row.orderAreaSqm), `incl. ${(row.wasteFactor * 100).toFixed(0)}% waste`];
+  return (
+    <td className="p-2 text-right">
+      <div>{amount}</div>
+      <div className="text-xs text-gray-500">{note}</div>
+    </td>
+  );
 }
 
 function BomRow({ row }: { row: SurfaceMaterialBomRow }) {
@@ -34,10 +48,7 @@ function BomRow({ row }: { row: SurfaceMaterialBomRow }) {
       <td className="p-2">{row.supplier}</td>
       <td className="p-2">{row.materialFamily.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase())}</td>
       <td className="p-2 text-right">{formatArea(row.surfaceAreaSqm)}</td>
-      <td className="p-2 text-right">
-        <div>{formatArea(row.orderAreaSqm)}</div>
-        <div className="text-xs text-gray-500">incl. {(row.wasteFactor * 100).toFixed(0)}% waste</div>
-      </td>
+      <OrderCell row={row} />
       <td className="p-2 text-right">{money(row.pricePerSqmCurrency, row.pricePerSqmAmount)}</td>
       <td className="p-2 text-right">{money(row.pricePerSqmCurrency, row.lineTotal)}</td>
       <td className="p-2">
@@ -51,8 +62,8 @@ function BomRow({ row }: { row: SurfaceMaterialBomRow }) {
 
 function BomTable({ rows }: { rows: readonly SurfaceMaterialBomRow[] }) {
   if (!rows.length) return null;
-  const headings = ["Room", "Surface / Material", "Supplier", "Family", "Surface area", "Order area", "Price / m2", "Estimate", "Status"];
-  const numericHeadings = ["Surface area", "Order area", "Price / m2", "Estimate"];
+  const headings = ["Room", "Surface / Material", "Supplier", "Family", "Surface area", "Order", "Price / m2", "Estimate", "Status"];
+  const numericHeadings = ["Surface area", "Order", "Price / m2", "Estimate"];
   return (
     <div className="overflow-x-auto rounded-lg border">
       <table className="w-full border-collapse text-sm">
@@ -77,7 +88,7 @@ export function SurfaceMaterialBomSection({
     <div className="mb-12">
       <h2 className="mb-4 text-2xl font-bold text-gray-900">Surface material BOM</h2>
       <p className="mb-3 text-sm text-gray-600">
-        Area-based floor and wall finishes with a suggested 10% waste allowance. Suppliers price these separately from the furniture.
+        Floor and wall finishes by area, with a suggested 10% waste allowance, and wall panels in whole sheets. Suppliers price these separately from the furniture.
       </p>
       <SurfaceMaterialBomWarnings warnings={warnings} />
       <BomTable rows={rows} />
