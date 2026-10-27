@@ -346,7 +346,7 @@ export function CabinetNumberField({
                   displayUnit ? ` ${displayUnit}` : ""
                 }`
           }
-          className={`${compact ? "h-8 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border bg-field text-sm text-label outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:bg-control-track disabled:text-label-secondary ${
+          className={`${compact ? "h-8 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border bg-field text-sm text-label outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 ${
             invalid
               ? "border-red-400 focus-visible:border-red-600 focus-visible:ring-red-600/20"
               : "border-control-secondary-border focus-visible:border-blue-600 focus-visible:ring-blue-600/20"

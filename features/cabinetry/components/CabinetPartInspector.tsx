@@ -130,7 +130,7 @@ export function CabinetPartInspector({
 
   return (
     <div
-      className="grid gap-4 rounded-xl border border-accent-tint-border bg-accent-tint/50 p-3"
+      className="grid gap-4 rounded-xl border border-accent-tint-border bg-accent-tint p-3"
       data-testid="cabinet-part-inspector"
       data-part-type={selectedPart?.type ?? selectedPartType ?? "unknown"}
     >

@@ -128,7 +128,7 @@ export function CabinetGuidedReviewPanel({
               ],
               ["Planning allowance", quoteSummary.contingency],
             ].map(([label, value]) => (
-              <div key={String(label)} className="rounded-xl bg-surface-secondary/75 p-3">
+              <div key={String(label)} className="rounded-xl bg-surface-secondary/80 p-3">
                 <p className="text-on-accent-tint">{label}</p>
                 <p className="mt-1 font-semibold text-on-accent-tint">
                   {formatEstimate(Number(value))}
@@ -194,7 +194,7 @@ export function CabinetGuidedReviewPanel({
             </p>
           </div>
           {isProWorkspace ? (
-            <span className="shrink-0 rounded-full bg-surface-secondary/70 px-3 py-1 text-xs font-semibold">
+            <span className="shrink-0 rounded-full bg-surface-secondary/80 px-3 py-1 text-xs font-semibold">
               {bomCount} BOM rows
             </span>
           ) : null}

@@ -903,7 +903,7 @@ export function CabinetryStudioDetailedView({
                   </>
                   ) : null}
                   {!activeIsCabinetComponent ? (
-                    <div className="grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint/50 p-3" data-testid="cabinet-specialty-inspector">
+                    <div className="grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint p-3" data-testid="cabinet-specialty-inspector">
                       <div>
                         <p className="text-xs font-semibold text-on-accent-tint">{formatCabinetLabel(activeComponentType)} properties</p>
                         <p className="mt-1 text-xs leading-5 text-on-accent-tint">
@@ -943,7 +943,7 @@ export function CabinetryStudioDetailedView({
                               The preview can show either the closed front or deployed bed, plus its required floor clearance.
                             </p>
                           </div>
-                          <div className="rounded-lg border border-accent-tint-border bg-accent-tint/50 p-2 text-on-accent-tint">
+                          <div className="rounded-lg border border-accent-tint-border bg-accent-tint p-2 text-on-accent-tint">
                             <CabinetWallBedConfigurationPreview
                               mattressSize={getCabinetWallBedMattressSize(activeModule)}
                               orientation={getCabinetWallBedOrientation(activeModule)}

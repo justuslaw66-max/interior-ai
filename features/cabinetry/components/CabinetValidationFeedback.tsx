@@ -53,11 +53,11 @@ export function ValidationIssueCard({
             {issue.severity}
           </span>
           <span className="font-semibold">{formatFeedback(issue.title)}</span>
-          <span className="rounded-full bg-surface-secondary/70 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">
+          <span className="rounded-full bg-surface-secondary/80 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">
             {issue.target.scope}
           </span>
           {issue.target.moduleIds?.length ? (
-            <span className="rounded-full bg-surface-secondary/70 px-2 py-0.5 text-xs font-medium">
+            <span className="rounded-full bg-surface-secondary/80 px-2 py-0.5 text-xs font-medium">
               {issue.target.moduleIds.length === 1
                 ? issue.target.moduleIds[0]
                 : `${issue.target.moduleIds.length} modules`}
@@ -157,7 +157,7 @@ export function ValidationFixPreview({
         {formatFeedback(pending.fix.description)}
       </p>
       <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
-        <div className="rounded-xl bg-surface-secondary/70 p-3">
+        <div className="rounded-xl bg-surface-secondary/80 p-3">
           <span className="font-semibold">Before</span>
           <span className="mt-1 block">
             {formatMeasurement(current.totalWidth)} × {formatMeasurement(current.height)} ×{" "}
@@ -165,7 +165,7 @@ export function ValidationFixPreview({
             {current.modules.length === 1 ? "module" : "modules"}
           </span>
         </div>
-        <div className="rounded-xl bg-surface-secondary/70 p-3">
+        <div className="rounded-xl bg-surface-secondary/80 p-3">
           <span className="font-semibold">After</span>
           <span className="mt-1 block">
             {formatMeasurement(pending.candidate.totalWidth)} ×{" "}

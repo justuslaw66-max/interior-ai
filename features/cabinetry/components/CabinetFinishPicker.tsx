@@ -204,7 +204,7 @@ export function CabinetFinishPicker({
         <input
           type="search"
           data-testid={`${testIdPrefix}-search`}
-          className="h-9 rounded-md border border-control-secondary-border bg-surface-secondary px-3 text-sm font-normal text-label focus:border-control-primary"
+          className="h-9 rounded-md border border-control-secondary-border bg-surface-secondary px-3 text-sm font-normal text-label focus-visible:border-blue-600"
           placeholder="For example 5003 or walnut"
           value={query}
           onChange={(event) => setQuery(event.target.value)}

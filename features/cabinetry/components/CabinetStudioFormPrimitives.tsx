@@ -7,7 +7,7 @@ import type { CabinetValidationIssue } from "../types";
 import { CabinetNumberField } from "./CabinetNumberField";
 
 export function selectClass() {
-  return "h-8 w-full rounded-md border border-control-secondary-border bg-field px-2 text-sm text-label focus:border-control-primary";
+  return "h-8 w-full rounded-md border border-control-secondary-border bg-field px-2 text-sm text-label focus-visible:border-blue-600";
 }
 
 export function sectionTitle(title: string) {

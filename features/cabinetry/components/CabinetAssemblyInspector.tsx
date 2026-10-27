@@ -41,7 +41,7 @@ export function CabinetAssemblyInspector({
 }: CabinetAssemblyInspectorProps) {
   return (
     <div
-      className="grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint/50 p-3"
+      className="grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint p-3"
       data-testid="cabinet-assembly-inspector"
     >
       {sectionTitle("Complete assembly size")}

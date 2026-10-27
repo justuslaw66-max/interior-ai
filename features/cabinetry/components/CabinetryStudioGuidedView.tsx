@@ -477,7 +477,7 @@ export function CabinetryStudioGuidedView({
                       <input
                         data-testid="cabinet-template-search"
                         aria-label="Search built-in templates"
-                        className="h-12 w-full rounded-2xl border border-control-secondary-border bg-field pl-10 pr-4 text-sm outline-hidden transition placeholder:text-label-tertiary focus:border-control-primary focus:ring-2 focus:ring-control-primary/10"
+                        className="h-12 w-full rounded-2xl border border-control-secondary-border bg-field pl-10 pr-4 text-sm outline-hidden transition placeholder:text-label-tertiary focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20"
                         type="search"
                         value={templateQuery}
                         placeholder="Search wardrobe, media wall, drawers…"
@@ -811,7 +811,7 @@ export function CabinetryStudioGuidedView({
                       ) : null}
 
                       {isProWorkspace && customSpaceFormOpen ? (
-                        <div data-testid="cabinet-custom-space-form" className="mt-3 grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint/60 p-4 sm:grid-cols-2">
+                        <div data-testid="cabinet-custom-space-form" className="mt-3 grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint p-4 sm:grid-cols-2">
                           <label className="grid gap-1.5 text-xs font-semibold text-on-accent-tint">
                             Host type
                             <select
@@ -942,7 +942,7 @@ export function CabinetryStudioGuidedView({
                                     ? 0.125
                                     : toProjectMeasurementValue(10)
                                 }
-                                className="h-10 w-full rounded-xl border border-control-secondary-border bg-field px-3 pr-10 text-sm font-medium normal-case tracking-normal text-label focus:border-control-primary"
+                                className="h-10 w-full rounded-xl border border-control-secondary-border bg-field px-3 pr-10 text-sm font-medium normal-case tracking-normal text-label focus-visible:border-blue-600"
                                 value={mountingHeightDraft}
                                 onChange={(event) => setMountingHeightDraft(event.target.value)}
                               />
@@ -982,7 +982,7 @@ export function CabinetryStudioGuidedView({
                         </h3>
                         <div className="mt-3 grid gap-2">
                           {fitFeedback.issues.map((issue) => (
-                            <div key={`${issue.code}-${issue.message}`} className="rounded-xl bg-surface-secondary/70 px-3 py-2 text-xs leading-5">
+                            <div key={`${issue.code}-${issue.message}`} className="rounded-xl bg-surface-secondary/80 px-3 py-2 text-xs leading-5">
                               <span className="font-semibold">{formatCabinetLabel(issue.severity)}:</span> {formatProjectFeedback(issue.message)}
                               {issue.moduleIds?.length && issue.suggestedAction === "unlock_modules" ? (
                                 <Button
@@ -1007,7 +1007,7 @@ export function CabinetryStudioGuidedView({
                             </div>
                           ))}
                           {fitFeedback.adjustments.length ? (
-                            <div className="rounded-xl bg-surface-secondary/70 p-3 text-xs">
+                            <div className="rounded-xl bg-surface-secondary/80 p-3 text-xs">
                               <p className="font-semibold">Automatic assembly changes</p>
                               <ul className="mt-2 grid gap-1.5 text-control-label-idle">
                                 {fitFeedback.adjustments.map((adjustment) => (
@@ -1019,7 +1019,7 @@ export function CabinetryStudioGuidedView({
                             </div>
                           ) : null}
                           {fitFeedback.moduleAdjustments.length ? (
-                            <div className="rounded-xl bg-surface-secondary/70 p-3 text-xs">
+                            <div className="rounded-xl bg-surface-secondary/80 p-3 text-xs">
                               <p className="font-semibold">Module widths</p>
                               <ul className="mt-2 grid gap-1.5 text-control-label-idle">
                                 {fitFeedback.moduleAdjustments.map((adjustment) => (
@@ -1470,7 +1470,7 @@ export function CabinetryStudioGuidedView({
                             </div>
                           ) : null}
                           {isProWorkspace && activeShelfSpacingMode === "custom" && activeShelfPositions.length ? (
-                            <div className="mt-4 grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint/50 p-3 sm:grid-cols-2">
+                            <div className="mt-4 grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint p-3 sm:grid-cols-2">
                               {activeShelfPositions.map((position, index) => (
                                 <GuidedNumberField
                                   key={index}

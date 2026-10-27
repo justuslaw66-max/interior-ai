@@ -238,7 +238,7 @@ export function CabinetStudioNavigator({
           </Chip>
           {activeModuleId ? (
             <>
-              <span aria-hidden="true" className="text-control-handle">
+              <span aria-hidden="true" className="text-neutral-300">
                 /
               </span>
               <Chip
@@ -251,7 +251,7 @@ export function CabinetStudioNavigator({
           ) : null}
           {selection.scope === "part" ? (
             <>
-              <span aria-hidden="true" className="text-control-handle">
+              <span aria-hidden="true" className="text-neutral-300">
                 /
               </span>
               <span className="rounded-md bg-blue-600 px-2 py-1.5 font-semibold text-white">
@@ -274,7 +274,7 @@ export function CabinetStudioNavigator({
           <input
             data-testid="cabinet-property-search-input"
             type="search"
-            className="h-9 w-full rounded-md border border-control-secondary-border bg-field pl-8 pr-3 text-xs focus:border-control-primary"
+            className="h-9 w-full rounded-md border border-control-secondary-border bg-field pl-8 pr-3 text-xs focus-visible:border-blue-600"
             placeholder="Filler, scribe, hinge, clearance…"
             value={propertyQuery}
             onChange={(event) => onPropertyQueryChange(event.target.value)}
