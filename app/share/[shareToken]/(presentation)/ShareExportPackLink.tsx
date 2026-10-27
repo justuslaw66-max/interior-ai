@@ -11,7 +11,7 @@ export function ShareExportPackLink({ shareToken }: { shareToken: string }) {
       data-testid="share-export-pack"
       data-share-touch-target="true"
       onClick={() => track("share_page_export_clicked", { shared_context: true })}
-      className="inline-flex min-h-11 items-center rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-900 outline-offset-2 hover:bg-neutral-50 focus-visible:outline-2"
+      className="inline-flex min-h-11 items-center rounded-lg border border-control-secondary-border bg-control-secondary px-3 py-2 text-sm font-semibold text-label outline-offset-2 hover:bg-control-secondary-hover focus-visible:outline-2"
     >
       Plans and schedules
     </Link>

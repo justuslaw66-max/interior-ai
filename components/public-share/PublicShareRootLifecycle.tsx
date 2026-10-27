@@ -54,7 +54,7 @@ export function PublicShareFallbackStateReporter({ state }: { state: PublicShare
 export function PublicShareRouteLifecycle({ children }: { children: ReactNode }) {
   return (
     <main
-      className="min-h-screen overflow-x-clip bg-neutral-100"
+      className="min-h-screen overflow-x-clip bg-surface-grouped"
       data-public-share-lifecycle-owner="true"
       data-testid="public-share-loading"
       data-layout-status="loading"
@@ -68,9 +68,9 @@ export function PublicShareRouteLifecycle({ children }: { children: ReactNode })
 
 export function PublicShareLoadingState() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-100 p-8">
+    <div className="flex min-h-screen items-center justify-center bg-surface-grouped p-8">
       <PublicShareFallbackStateReporter state="loading" />
-      <div className="rounded-xl border bg-white p-6 text-sm text-neutral-600" role="status">
+      <div className="rounded-xl border border-box-border bg-surface-secondary p-6 text-sm text-label-secondary" role="status">
         Loading shared design…
       </div>
     </div>

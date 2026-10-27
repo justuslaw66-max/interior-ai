@@ -9,7 +9,7 @@ import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = { title: "My designs · Interior AI" };
 
-const PAGE = "flex min-h-screen flex-col bg-[#fafaf9] text-neutral-950";
+const PAGE = "flex min-h-screen flex-col bg-surface-page text-label";
 
 /**
  * My designs (audit findings MD1–MD4 and MD6), laid out as in the mockup. Guests get a sign-in

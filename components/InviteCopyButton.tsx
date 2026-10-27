@@ -37,7 +37,7 @@ Try it here: ${appUrl}?ref=${referralCode}`;
   return (
     <>
       <button
-        className="rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white"
+        className="rounded-lg bg-control-primary px-3 py-2 text-sm text-control-on-primary"
         onClick={handleCopy}
         disabled={!referralCode}
         title={referralCode ? "Copy invite" : "Invite ready after sign-in"}
@@ -45,7 +45,7 @@ Try it here: ${appUrl}?ref=${referralCode}`;
         Copy invite
       </button>
       {message && (
-        <span className="text-xs text-neutral-600" role="status">
+        <span className="text-xs text-label-secondary" role="status">
           {message}
         </span>
       )}

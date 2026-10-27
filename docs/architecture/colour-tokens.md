@@ -35,6 +35,7 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 - **The rest of the editor (dark mode PR 1, 25 Oct):**
   - `surface-page`, the page behind Shop's and Start a new design's cards: `#FAFAF9` in light, black in dark, like the panels, so their cards are `surface-secondary` (`#1C1C1E`);
   - `surface-well`, the grey body behind the floor-plan workspace's cards (`neutral-100` at 70% in light), with nothing in dark, where the dialog's own `#1C1C1E` shows behind `#2C2C2E` cards.
+- **The pages outside the editor (dark mode PR 2, 26 Oct):** `surface-grouped`, the grey page behind white cards (the shared design, the status pages): `neutral-100` in light, black in dark.
 - **The page tokens from before** (`--bg-canvas`, `--text-primary`, `--accent`, `--focus`…), with dark values too. Screens fold into the roles as they move.
 
 ## The switch
@@ -59,7 +60,7 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 - **Panels and the bar:** `surface`. **The step panel's cards:** `surface-secondary` with `box-border`.
 - **Fields and boxes inside a card:** `field`; grey tiles: `tile`; the lower part of a card: `surface-band` (J, 24 Oct: no fill in dark, with `separator-subtle` above).
 - **Dialogs:** `surface-elevated`, with their fields and cards `surface-elevated-secondary`. A dialog's card that holds status or boxes carries `data-surface="floating"`, like the rail's cards: in dark the card is `#2C2C2E`, where red and blue words on their tints read about 4.1:1, so they lighten, and boxes inside (`tile`, `field`) step up to `#3A3A3C`.
-- **Pages** (Shop, Start a new design): `surface-page`, with `surface-secondary` cards and `box-border`.
+- **Pages** (Shop, Start a new design, My designs): `surface-page`, with `surface-secondary` cards and `box-border`. **Grey pages** (the shared design, the status pages): `surface-grouped`. The shared design follows the device like the app (J, 26 Oct); the export page and its PDF stay light, held with `data-color-scheme="light"` like Admin.
 - **Tooltips** on the canvas's tool row: the toast's colours, `surface-toast` and `on-surface-toast`.
 - **Anything over the canvas** (the canvas toolbar, the phone's pills, Pro's tool rail, the right rail) **and the menus that open over it** (More, Account, Saved views): `surface-floating`. Since the inset frame the canvas is `#1C1C1E` in dark, the same as `surface-elevated`, so a menu on the elevated surface would only be told from the canvas by its line (J, 24 Oct).
 - **A floating card that holds fields or status** (the right rail's cards, the inspector from md, the Selected panel, the bars for a door, a group or a zone, the level stack) carries `data-surface="floating"`. Under it, `surface-secondary` (a ChoiceTile, for one), `field`, `tile` and `surface-elevated` are `#3A3A3C` in dark, a step up from the card's `#2C2C2E`, and Delete's word, `on-danger-tint` and `on-accent-tint` lighten (J, 24 Oct: `#FF8A84` for Delete on the rail). Its edge is `border-separator`, or `ring-surface-floating-edge` where light draws no line. A box nested in a tile goes back to `surface-floating` with a `separator` edge, so status chips never sit on `#3A3A3C`, where they would read about 4.2:1. In the phone's step sheet the inspector is a `surface-secondary` card without the attribute.
@@ -71,7 +72,7 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 ## Moving screens
 
 - **Screens move folder by folder** (plan step 5). Replace hard-coded `bg-white`, `bg-neutral-*`, `text-neutral-*`, `border-neutral-*`, `text-white` and `bg-black` with roles.
-- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3, 2,848 after the inset frame, 2,738 after the laminate picker and the editor's shell, 2,399 after the step panel, 2,137 after the right rail, 2,024 after the overlays on the canvas, 1,475 after the rest of the editor), and the count can only go down.
+- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3, 2,848 after the inset frame, 2,738 after the laminate picker and the editor's shell, 2,399 after the step panel, 2,137 after the right rail, 2,024 after the overlays on the canvas, 1,475 after the rest of the editor, 1,267 after the pages outside it), and the count can only go down.
 - **The `.text-neutral-400`, `-500` and `-600` overrides** at the end of `globals.css` are a light-only fix. They go once their users have moved.
 
 The edge between the panels and the canvas, the rounded inset frame, is in `editor-canvas-frame.md`.

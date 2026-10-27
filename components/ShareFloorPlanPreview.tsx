@@ -121,16 +121,16 @@ export default function ShareFloorPlanPreview({ snapshot }: { snapshot: DesignSn
   if (floors.length === 0) return null;
 
   return (
-    <section className="border-t bg-white" data-testid="share-floor-plan-preview">
+    <section className="border-t border-separator bg-surface" data-testid="share-floor-plan-preview">
       <div className="mx-auto max-w-6xl px-6 py-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-neutral-950">Floor-plan preview</h2>
-            <p className="mt-1 text-sm text-neutral-600">
+            <h2 className="text-lg font-semibold text-label">Floor-plan preview</h2>
+            <p className="mt-1 text-sm text-label-secondary">
               Room boundaries, dimensions, doors, and windows from the shared design.
             </p>
           </div>
-          <div className="flex gap-3 text-xs text-neutral-600">
+          <div className="flex gap-3 text-xs text-label-secondary">
             <span><span className="mr-1 inline-block h-2 w-4 rounded bg-amber-500" />Door</span>
             <span><span className="mr-1 inline-block h-2 w-4 rounded bg-sky-500" />Window</span>
           </div>
@@ -149,10 +149,10 @@ export default function ShareFloorPlanPreview({ snapshot }: { snapshot: DesignSn
             const toY = (z: number) => offsetY + (z - floor.bounds.minZ) * scale;
 
             return (
-              <div key={floor.key} className="overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50">
-                <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2">
-                  <h3 className="text-sm font-semibold text-neutral-900">{floor.label}</h3>
-                  <span className="text-xs text-neutral-500">
+              <div key={floor.key} className="overflow-hidden rounded-xl border border-box-border bg-tile">
+                <div className="flex items-center justify-between border-b border-separator px-3 py-2">
+                  <h3 className="text-sm font-semibold text-label">{floor.label}</h3>
+                  <span className="text-xs text-label-secondary">
                     {floor.rooms.length} room{floor.rooms.length === 1 ? "" : "s"}
                   </span>
                 </div>

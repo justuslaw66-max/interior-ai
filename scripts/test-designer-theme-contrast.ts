@@ -147,6 +147,7 @@ const LIGHT_ROLE_TOKENS = {
   "control-switch-knob": "var(--color-white)",
   "surface-page": "#fafaf9",
   "surface-well": "color-mix(in oklab, var(--color-neutral-100) 70%, transparent)",
+  "surface-grouped": "var(--color-neutral-100)",
   "control-primary": "var(--color-neutral-900)",
   "control-primary-hover": "var(--color-neutral-800)",
   "control-on-primary": "var(--color-white)",
@@ -198,6 +199,7 @@ const DARK_CHOICES = {
   "surface-canvas": "#1c1c1e",
   "surface-page": "#000000",
   "surface-well": "transparent",
+  "surface-grouped": "#000000",
 } as const;
 for (const [name, value] of Object.entries(DARK_CHOICES)) {
   assert.equal(darkTokens.get(name), value, `Dark --${name} is the value J chose.`);
@@ -340,6 +342,12 @@ const TEXT_PAIRS: ReadonlyArray<readonly [text: string, fill: string | null, gro
   ["floating-on-accent-tint", "accent-tint", ["surface-elevated-secondary"]],
   ["control-on-primary", "control-primary", ["surface-elevated-secondary", "surface-page"]],
   ["label", "control-secondary", ["surface-elevated-secondary"]],
+  // The pages outside the editor: text and links on the grey page (the shared design, the status pages),
+  // and the primary control on it.
+  ["label", null, ["surface-grouped"]],
+  ["label-secondary", null, ["surface-grouped"]],
+  ["link", null, ["surface-grouped"]],
+  ["control-on-primary", "control-primary", ["surface-grouped"]],
 ];
 // The focus ring and the primary's black (or near-white) edge need 3:1 against what's around them.
 const EDGE_PAIRS: ReadonlyArray<readonly [edge: string, grounds: readonly string[]]> = [

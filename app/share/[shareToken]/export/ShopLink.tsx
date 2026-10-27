@@ -29,7 +29,7 @@ export default function ShopLink({
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
-      className="text-blue-600 hover:text-blue-700"
+      className="text-link hover:underline"
     >
       {children}
     </a>
