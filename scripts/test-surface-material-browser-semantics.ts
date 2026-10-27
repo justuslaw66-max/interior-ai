@@ -14,8 +14,10 @@ import {
   getSurfaceMaterialSizeLabel,
   getSurfaceMaterialSupplierLabel,
   getSurfaceMaterialSwatchStyle,
+  SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT,
   type SurfaceFilterState,
 } from "../components/editor/design-controls-plan/surfaceCatalog";
+import { isLaminateFlatPicture } from "../lib/laminate-flat-pictures";
 import {
   buildSurfaceFilterOptions,
   filterSurfaceMaterialGroups,
@@ -144,8 +146,25 @@ assert.deepEqual(
 const wallGroupNames = buildSurfaceMaterialProductGroups(
   records.filter((record) => ["wall_tile", "wall_panel"].includes(record.surface_material.surface_category))
 ).map((group) => getSurfaceMaterialProductDisplayName(group.primary));
-assert.ok(wallGroupNames.indexOf("Anima Beige") < 32, "Anima Beige stays on the wall browser's first page");
+// The first page is the browser's first 16 cards (SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT). The laminates' 118 flat colours
+// come after every other card, A to Z (J, 27 Oct 2026: "Flat colours last"); before that, Absolute White and twelve AFX
+// colours had pushed Anima Beige to the second page, and two wall panel browser tests couldn't find it.
+const wallGroups = buildSurfaceMaterialProductGroups(
+  records.filter((record) => ["wall_tile", "wall_panel"].includes(record.surface_material.surface_category))
+);
+assert.ok(wallGroupNames.indexOf("Anima Beige") < SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT, "Anima Beige stays on the wall browser's first page");
 assert.ok(wallGroupNames.indexOf("Akita Grey 5644") < wallGroupNames.indexOf("Anima Beige"));
+const firstFlat = wallGroups.findIndex((group) => isLaminateFlatPicture(group.primary.texture_assets.base_color_url));
+assert.deepEqual(
+  [firstFlat, wallGroups.slice(firstFlat).every((group) => isLaminateFlatPicture(group.primary.texture_assets.base_color_url))],
+  [wallGroups.length - 118, true],
+  "the 118 flat colours close the wall browser"
+);
+assert.deepEqual(
+  wallGroups.slice(firstFlat, firstFlat + 3).map((group) => getSurfaceMaterialProductDisplayName(group.primary)),
+  ["Absolute White 108", "AFX Anthracite 9853", "AFX Basalt Grey 9855"],
+  "the flat colours are A to Z among themselves"
+);
 assert.ok(facets.effect.includes("Pattern") && facets.effect.includes("Metallic"), "the laminates' own effects are filters");
 assert.ok(allOptions.collection.includes("Ardoise") && allOptions.collection.includes("Dorica"));
 const gardeniaOptions = buildSurfaceFilterOptions(records, "Gardenia & Ariana");

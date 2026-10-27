@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { CABINET_LAMINATE_COLLECTIONS } from "../lib/generated/cabinet-laminates.generated";
-import { getLaminateFlatPictureUrl } from "../lib/laminate-wall-panel-materials";
+import { getLaminateFlatPictureUrl } from "../lib/laminate-flat-pictures";
 
 // Writes the one-colour pictures of the laminate catalogue's flat colours (the solids), which wall panels draw
 // (lib/laminate-wall-panel-materials.ts; J, 27 Oct 2026: "Flat colour sheets"). One 4x8 px PNG per colour, named by it,

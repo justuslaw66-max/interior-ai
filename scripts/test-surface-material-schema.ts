@@ -64,7 +64,8 @@ import {
   surfaceMaterialHasJoints,
 } from "../lib/design-page-surface-inspector";
 import { CABINET_LAMINATE_COLLECTIONS } from "../lib/generated/cabinet-laminates.generated";
-import { getLaminateCollectionSourcePath, getLaminateFlatPictureUrl } from "../lib/laminate-wall-panel-materials";
+import { getLaminateFlatPictureUrl } from "../lib/laminate-flat-pictures";
+import { getLaminateCollectionSourcePath } from "../lib/laminate-wall-panel-materials";
 import {
   buildFlatColourPng,
   buildLaminateFlatPictures,

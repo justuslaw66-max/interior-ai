@@ -4,6 +4,7 @@ import type {
   CabinetLaminateTuple,
 } from "./cabinet-laminate-runtime-types";
 import { CABINET_LAMINATE_COLLECTIONS } from "./generated/cabinet-laminates.generated";
+import { getLaminateFlatPictureUrl } from "./laminate-flat-pictures";
 import { LAMINATE_SURFACE_BY_CATEGORY } from "./laminate-surface-finish";
 import { SURFACE_PHYSICAL_SIZE_TOLERANCE } from "./surface-material-physical-sampling";
 import type { SurfaceDesignEffect, SurfaceMaterial } from "./surface-material-schema";
@@ -17,7 +18,7 @@ import type { SurfaceDesignEffect, SurfaceMaterial } from "./surface-material-sc
  *
  * - **Patterned designs** use their picture.
  * - **Flat colours** (the solids, whose scans are unevenly lit, so the cabinets draw them flat) use a one-colour picture of
- *   their catalogue colour that covers the sheet (`getLaminateFlatPictureUrl`, written by
+ *   their catalogue colour that covers the sheet (lib/laminate-flat-pictures.ts, written by
  *   scripts/generate-laminate-flat-pictures.ts).
  * - **The 4'x8' collection's pictures must cover the sheet.** 5338 Steamed Bouchle (1220x2115 mm) is left out, because it
  *   would repeat on every sheet.
@@ -30,10 +31,6 @@ export const LAMINATE_WALL_PANEL_COLLECTION_IDS: readonly string[] = ["hpl-1220x
 /** Collections whose pictures may be shorter than the sheet: drawn from its foot, repeating above (wallPanelSheetPainter.ts). */
 const PICTURE_FROM_SHEET_FOOT_COLLECTION_IDS: readonly string[] = ["hpl-1300x3050"];
 
-/** A flat colour's picture: one colour, the same for every design of that colour. */
-export function getLaminateFlatPictureUrl(colour: string): string {
-  return `/assets/catalog/laminates/flat-colours/${colour.replace(/^#/, "").toLowerCase()}.png`;
-}
 
 const COLLECTION_LABEL: Record<CabinetLaminateCategory, string> = {
   abstracts: "Abstracts",
