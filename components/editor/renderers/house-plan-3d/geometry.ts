@@ -26,7 +26,7 @@ export {
 export { projectOpeningWorldCenterOntoLegacySegment } from "./legacyOpeningProjection";
 export { getWallOpenings } from "./legacyWallOpenings";
 
-const STRUCTURE_THICKNESS_METERS = 0.025;
+export const STRUCTURE_THICKNESS_METERS = 0.025;
 const FLOOR_THICKNESS_METERS = ROOM_DIMENSION_DEFAULTS.slabThickness;
 const CAMERA_FACING_WALL_CUTAWAY_OPACITY = 0;
 

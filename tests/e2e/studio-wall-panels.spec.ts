@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { test, expect } from "./fixtures";
-import { chooseTemplateStart } from "./multi-room/helpers";
+import { chooseTemplateStart, clickWithFallback } from "./multi-room/helpers";
 import { chooseStartTemplate } from "./variant-test-utils";
 
 const PANEL_ATTRIBUTE = "data-selected-wall-panel-id";
@@ -960,7 +960,7 @@ test.describe("Studio canonical wall panels", () => {
     ).toHaveCSS("background-color", "rgb(204, 138, 16)");
   });
 
-  test("a Greenlam laminate wall panel starts with 1 mm dark joints, called joints", async ({
+  test("a Greenlam laminate wall panel starts with 1 mm dark joints, called joints, and is ordered in sheets", async ({
     page,
   }) => {
     // Laminate wall panels (25 Oct 2026): sheets are butted, so the joint is a 1 mm shadow line, not tile grout.
@@ -1011,6 +1011,12 @@ test.describe("Studio canonical wall panels", () => {
     await expect(
       wallJoints.getByTestId("wall-surface-joint-color").locator("span"),
     ).toHaveCSS("background-color", "rgb(68, 68, 66)");
+
+    // Whole sheets (26 Oct 2026): the Shopping list orders the panel in 1220 x 2440 mm sheets, with the area alongside.
+    await clickWithFallback(page.getByTestId("editor-workflow-shop"));
+    const panelOrder = page.locator('[data-testid="shopping-surface-row"][data-material-id="greenlam-woodgrains-5394"]')
+      .getByTestId("shopping-surface-order");
+    await expect(panelOrder).toHaveText(/^Order \d+ sheets? of 1220 × 2440 mm, for \d+(?:\.\d)? m²$/, { timeout: 30_000 });
   });
 
   test("rapid orbit never reveals the workspace grid through returning walls", async ({

@@ -52,6 +52,8 @@ export type SurfaceSummaryRow = {
   materialName: string;
   supplier: string;
   areaSqm: number;
+  /** "12 sheets": what to order of a wall panel finish (lib/surface-material-sheets.ts); null for one ordered by area. */
+  sheetsLabel: string | null;
   status: string;
   sampleUrl: string | null;
   settings: {

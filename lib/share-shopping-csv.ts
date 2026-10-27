@@ -2,7 +2,8 @@ import {
   resolveRoomShoppingItems,
   type ActiveRoomShoppingItem,
 } from "@/lib/room-shopping";
-import { buildRoomSurfaceMaterialBomResult } from "@/lib/surface-material-bom-result";
+import { buildRoomSurfaceMaterialBomResult, formatSurfaceMaterialBomOrder } from "@/lib/surface-material-bom-result";
+import type { SurfaceMaterialBomRow } from "@/lib/surface-material-bom";
 import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
 
 export type CheckoutReadinessRow = ActiveRoomShoppingItem & {
@@ -125,6 +126,24 @@ export function buildShoppingCsvRows(rows: CheckoutReadinessRow[]): ShoppingCsvR
   }));
 }
 
+function csvArea(areaSqm: number) {
+  return `${areaSqm.toFixed(2)} m2`;
+}
+
+/** The review note's quantity: whole sheets, or the area with 10% for cuts. */
+function surfaceOrderNote(row: SurfaceMaterialBomRow) {
+  const measured = `Surface ${row.surfaceLabel}; measured area ${csvArea(row.surfaceAreaSqm)};`;
+  return row.orderSheets === null
+    ? `${measured} suggested order ${csvArea(row.orderAreaSqm)} with 10% waste.`
+    : `${measured} suggested order ${formatSurfaceMaterialBomOrder(row, csvArea)}.`;
+}
+
+/** The price of one unit of Qty: a square metre, or a whole sheet for a finish sold by the sheet. */
+function surfaceUnitPrice(row: SurfaceMaterialBomRow) {
+  if (row.orderSheets && row.lineTotal !== null) return row.lineTotal / row.orderSheets;
+  return row.pricePerSqmAmount ?? 0;
+}
+
 export function buildSurfaceMaterialCsvRows(
   rooms: RoomSnapshot[],
   planOpenings: readonly PersistedPlanOpening[] = []
@@ -145,17 +164,17 @@ export function buildSurfaceMaterialCsvRows(
       itemTitle: row.materialName,
       productId: row.materialId,
       variantId: row.surface,
-      variantLabel: `${row.surfaceLabel} · ${row.orderAreaSqm.toFixed(2)} m2 incl. 10% waste`,
+      variantLabel: `${row.surfaceLabel} · ${formatSurfaceMaterialBomOrder(row, csvArea)}`,
       purchaseOptionLabel: row.purchaseMode,
-      quantity: Number(row.orderAreaSqm.toFixed(2)),
+      quantity: row.orderSheets ?? Number(row.orderAreaSqm.toFixed(2)),
       status,
       source: `${brandLabel} ${row.materialFamily.replace(/_/g, " ")} ${row.purchaseMode.replace(/_/g, " ")}`,
       retailerUrl: row.sampleRequestUrl ?? row.sourceUrl,
       includeInCheckout: row.purchaseMode === "direct_checkout",
-      unitPriceSgd: row.pricePerSqmAmount ?? 0,
+      unitPriceSgd: surfaceUnitPrice(row),
       lineTotalSgd: row.lineTotal ?? 0,
       reviewNote: [
-        `Surface ${row.surfaceLabel}; measured area ${row.surfaceAreaSqm.toFixed(2)} m2; suggested order ${row.orderAreaSqm.toFixed(2)} m2 with 10% waste.`,
+        surfaceOrderNote(row),
         `Pattern ${row.pattern}; rotation ${row.rotationDeg} deg; scale ${row.scale}; joint ${row.jointSizeMm} mm ${row.jointColor}.`,
         row.reviewNote,
       ].filter(Boolean).join(" "),

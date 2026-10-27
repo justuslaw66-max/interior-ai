@@ -9,7 +9,7 @@ import { storedToSnapshot } from "@/lib/room-persistence";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import { resolveRoomShoppingItems, summarizeShoppingRooms, summarizeWholeHomeShopping } from "@/lib/room-shopping";
 import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
-import { buildRoomSurfaceMaterialBomResult, formatSurfaceMaterialBomWarning } from "@/lib/surface-material-bom-result";
+import { buildRoomSurfaceMaterialBomResult, formatSurfaceMaterialBomOrder, formatSurfaceMaterialBomWarning } from "@/lib/surface-material-bom-result";
 import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
 import { formatSgd } from "@/lib/money-format";
 
@@ -425,7 +425,7 @@ export async function GET(
         y -= 12;
         drawTextLine(
           page,
-          `Surface area ${formatMeasurement(row.surfaceAreaSqm, "m2")} • Order ${formatMeasurement(row.orderAreaSqm, "m2")} incl. 10% waste • ${row.purchaseMode.replace(/_/g, " ")}`,
+          `Surface area ${formatMeasurement(row.surfaceAreaSqm, "m2")} • Order ${formatSurfaceMaterialBomOrder(row, (area) => formatMeasurement(area, "m2"))} • ${row.purchaseMode.replace(/_/g, " ")}`,
           MARGIN + 12,
           y,
           fonts.regular,

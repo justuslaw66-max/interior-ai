@@ -6,6 +6,7 @@ import {
   type SurfaceAreaRow,
 } from "./surface-material-areas";
 import type { SurfaceMaterial } from "./surface-material-schema";
+import { countSurfaceSheets, getSheetAreaSqm, getSurfaceSheetSize, type SurfaceSheetSize } from "./surface-material-sheets";
 
 export { getRoomSurfaceAssignments };
 
@@ -28,6 +29,9 @@ export type SurfaceMaterialBomRow = {
   orderAreaSqm: number;
   wasteFactor: number;
   quantitySqm: number;
+  /** A finish sold by the sheet (a wall panel): its sheet and how many to order; null for one ordered by area. */
+  sheetSizeMm: SurfaceSheetSize | null;
+  orderSheets: number | null;
   status: "published" | "draft" | "blocked" | "needs_review" | "unknown";
   purchaseMode: string;
   sampleRequestUrl: string | null;
@@ -57,6 +61,12 @@ function toBomRow(area: SurfaceAreaRow, material: SurfaceMaterial): SurfaceMater
   const amount = typeof pricePerSqm?.amount === "number" ? pricePerSqm.amount : null;
   const blockers = material.import_governance.publish_blockers ?? [];
   const { settings } = area;
+  const sheet = getSurfaceSheetSize(material);
+  const orderSheets = sheet
+    ? countSurfaceSheets({ pieces: area.wallPieces, orderAreaSqm: area.orderAreaSqm, rotationDeg: settings.rotationDeg, sheet })
+    : null;
+  // Sheets are bought whole, so a priced sheet finish costs its sheets' area.
+  const pricedAreaSqm = sheet && orderSheets !== null ? orderSheets * getSheetAreaSqm(sheet) : area.orderAreaSqm;
   return {
     roomId: area.roomId,
     roomName: area.roomName,
@@ -76,13 +86,15 @@ function toBomRow(area: SurfaceAreaRow, material: SurfaceMaterial): SurfaceMater
     orderAreaSqm: area.orderAreaSqm,
     wasteFactor: area.wasteFactor,
     quantitySqm: area.orderAreaSqm,
+    sheetSizeMm: sheet,
+    orderSheets,
     status: material.import_governance.publish_status ?? "unknown",
     purchaseMode: material.commerce.purchase_mode,
     sampleRequestUrl: material.commerce.sample_request_url ?? material.source.sample_request_url ?? null,
     sourceUrl: material.source.source_url,
     pricePerSqmCurrency: pricePerSqm?.currency ?? material.source.currency ?? null,
     pricePerSqmAmount: amount,
-    lineTotal: amount === null ? null : amount * area.orderAreaSqm,
+    lineTotal: amount === null ? null : amount * pricedAreaSqm,
     publishBlockers: blockers,
     reviewNote: blockers.length > 0 ? blockers.join("; ") : null,
     pattern: settings.pattern,
@@ -100,7 +112,10 @@ function toBomRow(area: SurfaceAreaRow, material: SurfaceMaterial): SurfaceMater
   };
 }
 
-/** The design's floor and wall finishes, with 10% extra for cuts; unknown materials are left out. */
+/**
+ * The design's floor and wall finishes, with 10% extra for cuts, and whole sheets for a finish sold by the sheet;
+ * unknown materials are left out.
+ */
 export function buildRoomSurfaceMaterialBomRows(
   rooms: RoomSnapshot[],
   planOpenings: readonly PersistedPlanOpening[] = []

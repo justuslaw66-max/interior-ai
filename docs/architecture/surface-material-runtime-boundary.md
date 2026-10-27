@@ -72,6 +72,10 @@ server registry (`catalog-registry`), and the generator audits them with the sam
 about 148 KB raw to the lazy catalog metadata. The admin surface QA page still lists the YAML files only. See
 `docs/architecture/cabinet-laminates.md`.
 
+26 Oct 2026: the panels carry plan review's laminate-sheet flag (4) in field 34, for the bathroom-wall check: about 6.7 KB raw;
+the gzip size is unchanged. Quantities read the sheet size from the render data's tile size (`lib/surface-material-sheets.ts`),
+so the Shopping list and surface summary count sheets in the browser, and the server's bill of materials counts them the same way.
+
 ## Runtime and loading contract
 
 `lib/surface-material-runtime.ts` synchronously decodes the compact render

@@ -1620,7 +1620,7 @@ export default function DesignControlsPlanPanel({
                       {row.room.name} · {row.surfaceLabel}
                     </div>
                     <div className={progressMetaClass}>
-                      {row.materialName} · {formatDisplayArea(row.areaSqm, measurementUnit)}
+                      {row.materialName} · {formatDisplayArea(row.areaSqm, measurementUnit)}{row.sheetsLabel ? ` · ${row.sheetsLabel}` : null}
                     </div>
                     <div className={progressMetaClass}>
                       {getFloorPatternLabel(row.settings.pattern)} · {row.settings.rotationDeg}° · Scale {row.settings.scale.toFixed(2)}x · Joint {row.settings.jointSizeMm} mm
