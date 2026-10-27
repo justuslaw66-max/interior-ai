@@ -116,8 +116,8 @@ export function CabinetStudioNavigator({
           ))}
         </div>
         {savedTemplates.length ? (
-          <div className="mt-2 grid gap-1 border-t border-neutral-200 pt-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+          <div className="mt-2 grid gap-1 border-t border-separator pt-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-label-secondary">
               My templates
             </span>
             {savedTemplates.map((template) => (
@@ -216,10 +216,10 @@ export function CabinetStudioNavigator({
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-2">
+        <div className="rounded-lg border border-box-border bg-tile p-2">
           <SegmentedControl label="Module sizing mode" size="compact" fill value={moduleSizingMode} onChange={onChangeModuleSizingMode}
             options={(["automatic", "manual"] as const).map((value) => ({ value, label: formatCabinetLabel(value), testId: `cabinet-module-sizing-${value}` }))} />
-          <p className="mt-2 text-xs leading-4 text-neutral-500">
+          <p className="mt-2 text-xs leading-4 text-label-secondary">
             {moduleSizingMode === "automatic"
               ? "Structural changes preserve the overall target and redistribute unlocked bays."
               : "Structural changes preserve entered bay widths and derive the overall width."}
@@ -238,7 +238,7 @@ export function CabinetStudioNavigator({
           </Chip>
           {activeModuleId ? (
             <>
-              <span aria-hidden="true" className="text-neutral-300">
+              <span aria-hidden="true" className="text-control-handle">
                 /
               </span>
               <Chip
@@ -251,7 +251,7 @@ export function CabinetStudioNavigator({
           ) : null}
           {selection.scope === "part" ? (
             <>
-              <span aria-hidden="true" className="text-neutral-300">
+              <span aria-hidden="true" className="text-control-handle">
                 /
               </span>
               <span className="rounded-md bg-blue-600 px-2 py-1.5 font-semibold text-white">
@@ -260,7 +260,7 @@ export function CabinetStudioNavigator({
             </>
           ) : null}
         </div>
-        <p className="text-xs leading-5 text-neutral-500">
+        <p className="text-xs leading-5 text-label-secondary">
           Select a generated part in the preview to open its parent module and
           relevant properties.
         </p>
@@ -270,18 +270,18 @@ export function CabinetStudioNavigator({
         {sectionTitle("Find a property")}
         <label className="relative block">
           <span className="sr-only">Search built-in properties</span>
-          <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-neutral-400" />
+          <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-label-secondary" />
           <input
             data-testid="cabinet-property-search-input"
             type="search"
-            className="h-9 w-full rounded-md border border-neutral-300 bg-white pl-8 pr-3 text-xs focus:border-neutral-900"
+            className="h-9 w-full rounded-md border border-control-secondary-border bg-field pl-8 pr-3 text-xs focus:border-control-primary"
             placeholder="Filler, scribe, hinge, clearance…"
             value={propertyQuery}
             onChange={(event) => onPropertyQueryChange(event.target.value)}
           />
         </label>
         {propertyQuery.trim() ? (
-          <div className="grid max-h-64 gap-1 overflow-auto rounded-md border border-neutral-200 bg-neutral-50 p-1">
+          <div className="grid max-h-64 gap-1 overflow-auto rounded-md border border-box-border bg-tile p-1">
             {propertyResults.length ? (
               propertyResults.map((property) => (
                 <button
@@ -289,25 +289,25 @@ export function CabinetStudioNavigator({
                   type="button"
                   data-testid="cabinet-property-search-result"
                   data-property-id={property.id}
-                  className="rounded-md bg-white px-2.5 py-2 text-left hover:bg-blue-50"
+                  className="rounded-md bg-surface-secondary px-2.5 py-2 text-left hover:bg-accent-tint"
                   onClick={() => onSelectProperty(property)}
                 >
-                  <span className="block text-xs font-semibold text-neutral-900">
+                  <span className="block text-xs font-semibold text-label">
                     {property.label}
                   </span>
-                  <span className="mt-0.5 block text-xs text-neutral-500">
+                  <span className="mt-0.5 block text-xs text-label-secondary">
                     {formatCabinetLabel(property.section)} · {property.description}
                   </span>
                 </button>
               ))
             ) : (
-              <p className="px-2 py-3 text-xs text-neutral-500">
+              <p className="px-2 py-3 text-xs text-label-secondary">
                 No relevant properties match this selection.
               </p>
             )}
           </div>
         ) : (
-          <p className="text-xs leading-5 text-neutral-500">
+          <p className="text-xs leading-5 text-label-secondary">
             Search friendly or trade terms without opening every construction
             section.
           </p>

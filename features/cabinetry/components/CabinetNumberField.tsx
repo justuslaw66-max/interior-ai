@@ -295,10 +295,10 @@ export function CabinetNumberField({
 
   const messageTone =
     severity === "error"
-      ? "text-red-700"
+      ? "text-on-danger-tint"
       : severity === "warning"
-        ? "text-amber-700"
-        : "text-blue-700";
+        ? "text-on-warning-tint"
+        : "text-on-accent-tint";
   const Wrapper = hideLabel ? "span" : "div";
 
   return (
@@ -307,9 +307,9 @@ export function CabinetNumberField({
       data-draft-state={draftState}
     >
       {!hideLabel ? (
-        <label htmlFor={resolvedId} className="flex items-baseline justify-between gap-2 text-xs font-medium text-neutral-700">
+        <label htmlFor={resolvedId} className="flex items-baseline justify-between gap-2 text-xs font-medium text-control-label-idle">
           <span>{label}</span>
-          {displayUnit ? <span className="shrink-0 font-normal text-neutral-500">{displayUnit}</span> : null}
+          {displayUnit ? <span className="shrink-0 font-normal text-label-secondary">{displayUnit}</span> : null}
         </label>
       ) : null}
       <span className="relative block">
@@ -346,10 +346,10 @@ export function CabinetNumberField({
                   displayUnit ? ` ${displayUnit}` : ""
                 }`
           }
-          className={`${compact ? "h-8 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border bg-white text-sm text-neutral-950 outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 ${
+          className={`${compact ? "h-8 rounded-md px-2" : "h-10 rounded-lg px-3"} w-full border bg-field text-sm text-label outline-hidden transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:bg-control-track disabled:text-label-secondary ${
             invalid
               ? "border-red-400 focus-visible:border-red-600 focus-visible:ring-red-600/20"
-              : "border-neutral-300 focus-visible:border-blue-600 focus-visible:ring-blue-600/20"
+              : "border-control-secondary-border focus-visible:border-blue-600 focus-visible:ring-blue-600/20"
           } ${displayUnit ? "pr-14" : ""} ${inputClassName}`.trim()}
           onChange={(event) => setAuthoredDraft(event.currentTarget.value)}
           onBlur={commit}
@@ -358,7 +358,7 @@ export function CabinetNumberField({
         {displayUnit ? (
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-xs font-medium text-neutral-500"
+            className="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-xs font-medium text-label-secondary"
           >
             {displayUnit}
           </span>
@@ -374,12 +374,12 @@ export function CabinetNumberField({
         {message ?? ""}
       </span>
       {hint ? (
-        <span id={hintId} className="text-xs leading-4 text-neutral-500">
+        <span id={hintId} className="text-xs leading-4 text-label-secondary">
           {hint}
         </span>
       ) : null}
       {disabled && disabledReason ? (
-        <span id={disabledReasonId} className="text-xs leading-4 text-neutral-500">
+        <span id={disabledReasonId} className="text-xs leading-4 text-label-secondary">
           {disabledReason}
         </span>
       ) : null}

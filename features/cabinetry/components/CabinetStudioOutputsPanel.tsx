@@ -115,7 +115,7 @@ export function CabinetStudioOutputsPanel({
   const interactionDisabled = busyAction !== null;
 
   return (
-    <aside className="overflow-auto border-l border-neutral-200 bg-white p-4">
+    <aside className="overflow-auto border-l border-separator bg-surface p-4">
       <div className="grid gap-5">
         <CabinetOutputTabs
           value={outputTab}
@@ -142,7 +142,7 @@ export function CabinetStudioOutputsPanel({
             {!errors.length && !warnings.length && !infos.length ? (
               <p
                 data-testid="cabinet-validation-success"
-                className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800"
+                className="rounded-md bg-success-tint px-3 py-2 text-xs text-on-success-tint"
               >
                 Built-in parameters are valid.
               </p>
@@ -178,7 +178,7 @@ export function CabinetStudioOutputsPanel({
           {busyAction ? (
             <div
               data-testid="cabinet-action-status"
-              className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800"
+              className="rounded-md bg-accent-tint px-3 py-2 text-xs text-on-accent-tint"
             >
               {busyActionLabel(busyAction, mode)}
             </div>
@@ -187,7 +187,7 @@ export function CabinetStudioOutputsPanel({
             <div
               data-testid="cabinet-action-error"
               role="alert"
-              className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-800"
+              className="rounded-md bg-danger-tint px-3 py-2 text-xs text-on-danger-tint"
             >
               {formatFeedback(actionError)}
             </div>
@@ -196,7 +196,7 @@ export function CabinetStudioOutputsPanel({
             <div
               data-testid="cabinet-action-success"
               role="status"
-              className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800"
+              className="rounded-md bg-success-tint px-3 py-2 text-xs text-on-success-tint"
             >
               {formatFeedback(actionSuccess)}
             </div>
@@ -277,7 +277,7 @@ export function CabinetStudioOutputsPanel({
               />
             </div>
 
-            <div className="sticky bottom-0 grid gap-2 border-t border-neutral-200 bg-white/95 pt-3 backdrop-blur">
+            <div className="sticky bottom-0 grid gap-2 border-t border-separator bg-surface/95 pt-3 backdrop-blur">
               <OutputButton
                 testId="cabinet-open-outputs"
                 disabled={false}

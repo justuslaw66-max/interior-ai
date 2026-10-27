@@ -22,7 +22,7 @@ function withCentimetres(child: ReturnType<typeof createElement>) {
 
 assert.equal(
   selectClass(),
-  "h-8 w-full rounded-md border border-neutral-300 bg-white px-2 text-sm text-neutral-900 focus:border-neutral-900"
+  "h-8 w-full rounded-md border border-control-secondary-border bg-field px-2 text-sm text-label focus:border-control-primary"
 );
 
 const headingMarkup = renderToStaticMarkup(sectionTitle("Materials"));
