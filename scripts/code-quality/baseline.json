@@ -213,7 +213,7 @@
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
-      "lines": 646,
+      "lines": 569,
       "limit": 250
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -1945,11 +1945,11 @@
     "components/editor/FloorPlanImportAssistant.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 584
+        "maximum": 507
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 77
+        "maximum": 65
       }
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -1965,7 +1965,7 @@
     "components/editor/FloorPlanImportWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 118
+        "maximum": 95
       }
     },
     "components/editor/FloorPlanOptionalConfigurationPanel.tsx": {

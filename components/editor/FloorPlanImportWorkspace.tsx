@@ -1,14 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import {
-  readActiveFloorPlanImportId,
-  writeActiveFloorPlanImportId,
-} from "@/lib/floor-plan-import-client";
+import { useEffect, useState } from "react";
 import FloorPlanImportAssistant from "./FloorPlanImportAssistant";
 import FloorPlanImportHistory from "./FloorPlanImportHistory";
 import { FloorPlanUploadChooseStep, type FloorPlanUploadChooseState } from "./FloorPlanUploadChooseStep";
-import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
+import { useFloorPlanImportSelection } from "./useFloorPlanImportSelection";
 
 type FloorPlanImportWorkspaceProps = {
   request: { file: File; trainingBenchmarkOptIn: boolean } | null;
@@ -29,8 +25,6 @@ function useHistoryConfirmationGuard(onChange: (open: boolean) => void) {
   return { secondaryOptionsOpen, setSecondaryOptionsOpen, setHistoryConfirmationOpen };
 }
 
-const initialStoredJobId = () => typeof window === "undefined" ? null : readActiveFloorPlanImportId(window.localStorage);
-
 export default function FloorPlanImportWorkspace({
   request, choose,
   trainingBenchmarkOptIn,
@@ -38,37 +32,13 @@ export default function FloorPlanImportWorkspace({
   onChooseFile, onHistoryConfirmationOpenChange,
   onTrainingBenchmarkOptInChange,
 }: FloorPlanImportWorkspaceProps) {
-  const [resumeJobId, setResumeJobId] = useState<string | null>(initialStoredJobId);
-  const [activeImportJobId, setActiveImportJobId] = useState<string | null>(initialStoredJobId);
-  const [ignoredRequest, setIgnoredRequest] = useState<typeof request>(null);
-  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
-  const [activeJobSnapshot, setActiveJobSnapshot] = useState<ConsumerFloorPlanImportJob | null>(null);
-  const [reviewSession, setReviewSession] = useState(0);
+  const {
+    activeRequest, resumeJobId, resumeFileName, lastUpload, activeImportJobId, historyRefreshKey,
+    activeJobSnapshot, reviewSession, selectImportJob, recordActiveImportJob, recordJobUpdate,
+  } = useFloorPlanImportSelection(request, choose.accountKey ?? "guest");
   const { secondaryOptionsOpen, setSecondaryOptionsOpen, setHistoryConfirmationOpen } = useHistoryConfirmationGuard(onHistoryConfirmationOpenChange);
 
-  const selectImportJob = useCallback((jobId: string | null) => {
-    if(jobId!==activeImportJobId){setReviewSession(value=>value+1);setActiveJobSnapshot(null);}
-    writeActiveFloorPlanImportId(window.localStorage, jobId);
-    setResumeJobId(jobId);
-    setIgnoredRequest(request);
-    setActiveImportJobId(jobId);
-    setHistoryRefreshKey((value) => value + 1);
-  }, [request,activeImportJobId]);
-
-  const recordActiveImportJob = useCallback((jobId: string | null) => {
-    writeActiveFloorPlanImportId(window.localStorage, jobId);
-    setActiveImportJobId(jobId);
-    if (!jobId) setActiveJobSnapshot(null);
-    setHistoryRefreshKey((value) => value + 1);
-  }, []);
-
-  const recordJobUpdate = useCallback((job: ConsumerFloorPlanImportJob) => {
-    setActiveJobSnapshot(job);
-    setActiveImportJobId(job.id);
-  }, []);
-
   const subtle = "text-label-secondary";
-  const activeRequest=request!==ignoredRequest?request:null;
   const hasActiveImport=Boolean(activeRequest||resumeJobId);
   return (
     <div
@@ -85,7 +55,7 @@ export default function FloorPlanImportWorkspace({
           <FloorPlanImportAssistant
             key={reviewSession}
             file={activeRequest?.file ?? null}
-            resumeJobId={activeRequest ? null : resumeJobId}
+            resumeJobId={activeRequest ? null : resumeJobId} resumeFileName={resumeFileName}
             trainingBenchmarkOptIn={request?.trainingBenchmarkOptIn ?? false}
             disabled={disabled} proMode={proMode}
             onChooseFile={onChooseFile}
@@ -93,7 +63,8 @@ export default function FloorPlanImportWorkspace({
             onJobUpdate={recordJobUpdate}
           />
         ) : (
-          <FloorPlanUploadChooseStep {...choose} disabled={disabled} onChooseFile={onChooseFile} />
+          <FloorPlanUploadChooseStep {...choose} disabled={disabled} onChooseFile={onChooseFile}
+            lastUpload={lastUpload} onContinueLastUpload={selectImportJob} />
         )}
       </main>
       <details
@@ -138,7 +109,7 @@ export default function FloorPlanImportWorkspace({
           </div>
           <FloorPlanImportHistory
             disabled={disabled}
-            activeJobId={activeImportJobId}
+            activeJobId={activeImportJobId} openJobId={hasActiveImport ? activeImportJobId : null}
             activeJobSnapshot={activeJobSnapshot}
             refreshKey={historyRefreshKey}
             onResume={selectImportJob}
