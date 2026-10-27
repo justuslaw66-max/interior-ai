@@ -19,7 +19,7 @@ import type { MyDesignCard } from "@/lib/my-designs";
 import { useClientHydrated } from "@/lib/useClientHydrated";
 import { NEW_DESIGN_HREF, PRICING_HREF } from "@/lib/start-design-link";
 
-const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
+const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-page";
 
 const NO_RETURN_FOCUS: readonly string[] = [];
 
@@ -41,24 +41,24 @@ export function MyDesignsView({ designs, limit: planLimit }: MyDesignsViewProps)
         <div className="flex flex-col gap-2">
           <h1 className="text-[30px] font-bold leading-9 tracking-tight">My designs</h1>
           {limit ? (
-            <p data-testid="my-designs-limit" className="text-[15px] text-neutral-600">
+            <p data-testid="my-designs-limit" className="text-[15px] text-label-secondary">
               {limit.text} {limit.reached ? "Delete a design or upgrade to save more. " : ""}
               <Link href={PRICING_HREF} data-testid="my-designs-see-pricing"
-                className={`whitespace-nowrap rounded font-bold text-blue-800 hover:underline ${FOCUS_RING}`}>See pricing</Link>
+                className={`whitespace-nowrap rounded font-bold text-link hover:underline ${FOCUS_RING}`}>See pricing</Link>
             </p>
           ) : null}
         </div>
         <Link href={NEW_DESIGN_HREF} id={MY_DESIGNS_NEW_DESIGN_ID} data-testid="my-designs-new-design"
-          className={`flex h-11 items-center gap-2 rounded-[10px] bg-neutral-900 pl-4 pr-5 text-[15px] font-bold text-white hover:bg-neutral-800 ${FOCUS_RING}`}>
+          className={`flex h-11 items-center gap-2 rounded-[10px] bg-control-primary pl-4 pr-5 text-[15px] font-bold text-control-on-primary hover:bg-control-primary-hover ${FOCUS_RING}`}>
           <Plus aria-hidden="true" className="h-[18px] w-[18px]" strokeWidth={1.8} />
           New design
         </Link>
       </div>
-      <p role="status" aria-live="polite" data-testid="my-designs-status" className="mt-3 min-h-5 text-sm text-neutral-700">
+      <p role="status" aria-live="polite" data-testid="my-designs-status" className="mt-3 min-h-5 text-sm text-label-secondary">
         {state.status}
       </p>
       {state.error ? (
-        <p role="alert" data-testid="my-designs-error" className="mt-1 text-sm font-bold text-red-800">{state.error}</p>
+        <p role="alert" data-testid="my-designs-error" className="mt-1 text-sm font-bold text-on-danger-tint">{state.error}</p>
       ) : null}
       {state.visibleDesigns.length > 0 ? <MyDesignsGrid designs={state.visibleDesigns} state={state} /> : <MyDesignsEmpty />}
       <MyDesignsDialogs state={state} />
@@ -84,9 +84,9 @@ function MyDesignsGrid({ designs, state }: { designs: MyDesignCard[]; state: MyD
 function MyDesignsEmpty() {
   return (
     <div data-testid="my-designs-empty"
-      className="mt-6 flex flex-col items-start gap-2 rounded-2xl border border-dashed border-neutral-300 bg-white p-8">
+      className="mt-6 flex flex-col items-start gap-2 rounded-2xl border border-dashed border-control-handle bg-surface-secondary p-8">
       <h2 className="text-lg font-bold">No saved designs yet</h2>
-      <p className="max-w-prose text-[15px] text-neutral-600">
+      <p className="max-w-prose text-[15px] text-label-secondary">
         Choose a template, draw your room or upload your floor plan. Designs you save show up here.
       </p>
     </div>

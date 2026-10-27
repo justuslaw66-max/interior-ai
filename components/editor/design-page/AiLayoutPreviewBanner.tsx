@@ -19,17 +19,17 @@ export function AiLayoutPreviewBanner({
 }: AiLayoutPreviewBannerProps) {
   return (
     <div
-      data-testid="ai-layout-preview-banner"
-      className="absolute left-1/2 top-36 z-30 md:top-bar-41 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg border border-emerald-200 bg-white/95 px-4 py-3 text-sm text-neutral-800 shadow-xl backdrop-blur"
+      data-testid="ai-layout-preview-banner" data-surface="floating"
+      className="absolute left-1/2 top-36 z-30 md:top-bar-41 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg border border-success-tint-border bg-surface-floating/95 ring-1 ring-surface-floating-edge px-4 py-3 text-sm text-control-label shadow-xl backdrop-blur"
     >
       <div className="min-w-0">
         <div className="font-semibold">
           Previewing AI proposal
-          <span className="ml-2 text-emerald-700">
+          <span className="ml-2 text-on-success-tint">
             {state.toneText}
           </span>
         </div>
-        <div className="mt-0.5 truncate text-xs text-neutral-600">
+        <div className="mt-0.5 truncate text-xs text-label-secondary">
           {state.itemCount} item{state.itemCount === 1 ? "" : "s"} shown on canvas
           {state.itemNames.length > 0
             ? `: ${state.itemNames.slice(0, 3).join(", ")}`

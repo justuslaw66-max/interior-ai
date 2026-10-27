@@ -68,9 +68,9 @@ function getDialogPlacementClasses(placement: EditorDialogPlacement) {
 
 /** The panel's colours: one light theme. */
 const DIALOG_THEME_CLASSES = {
-  panel: "border-neutral-200 bg-white text-neutral-950",
-  description: "text-neutral-600",
-  close: "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 focus-visible:ring-offset-white",
+  panel: "border-separator bg-surface-elevated text-label",
+  description: "text-label-secondary",
+  close: "text-label-secondary hover:bg-control-quiet-hover hover:text-label focus-visible:ring-offset-surface-elevated",
 };
 
 type EditorDialogCloseButtonProps = {

@@ -241,7 +241,7 @@
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
-      "lines": 1116,
+      "lines": 1100,
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
@@ -261,7 +261,7 @@
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
-      "lines": 855,
+      "lines": 845,
       "limit": 400
     },
     "components/editor/RoomPanNavigator.tsx": {
@@ -673,11 +673,11 @@
       "limit": 400
     },
     "lib/useDesignPageSurfaceActions.ts": {
-      "lines": 1623,
+      "lines": 1622,
       "limit": 400
     },
     "lib/useDesignPageSurfaceInspector.ts": {
-      "lines": 1107,
+      "lines": 1105,
       "limit": 400
     },
     "lib/useFloorPlanRoomDrawing.ts": {
@@ -2094,8 +2094,8 @@
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
       "overlongFunctions": {
-        "count": 4,
-        "maximum": 166
+        "count": 3,
+        "maximum": 164
       },
       "complexFunctions": {
         "count": 1,
@@ -4505,7 +4505,7 @@
     "lib/useDesignPageSurfaceActions.ts": {
       "overlongFunctions": {
         "count": 13,
-        "maximum": 1423
+        "maximum": 1422
       },
       "complexFunctions": {
         "count": 1,
@@ -4519,7 +4519,7 @@
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 64
+        "maximum": 62
       }
     },
     "lib/useDesignPageSurfaceTargetingFacade.ts": {

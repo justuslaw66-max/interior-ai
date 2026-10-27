@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 type Props={document:FloorPlanDocumentV2;floorId:string;sourceId:string;
   page:{pageNumber:number;widthPx:number;heightPx:number}|null;points:Array<{x:number;y:number}>;
   onPick:()=>void;onSelect:(id:string,points:Array<{x:number;y:number}>)=>void;onChange:(value:FloorPlanDocumentV2)=>void;disabled:boolean};
-const control="rounded border bg-white px-2 py-1 text-xs disabled:opacity-50";
+const control="rounded border bg-field px-2 py-1 text-xs disabled:opacity-50";
 
 export default function FloorPlanPendingSpanReview(props:Props) {
   const [kind,setKind]=useState<SourceSpanKind>("boundary"),[selected,setSelected]=useState(""),[note,setNote]=useState("");
@@ -21,7 +21,7 @@ export default function FloorPlanPendingSpanReview(props:Props) {
       setMessage("Pending source correction recorded. Save the review draft to keep it. Scale and geometry have not changed.");
     }catch(cause){setMessage(userFacingErrorMessage(cause, "The source correction could not be saved."));}
   };
-  return <details className="mt-3 rounded-lg border border-violet-200 bg-white p-3 text-neutral-800">
+  return <details className="mt-3 rounded-lg border border-accent-tint-border bg-surface-floating p-3 text-label">
     <summary className="cursor-pointer text-sm font-semibold">Review missing boundaries and openings</summary>
     <fieldset disabled={props.disabled} className="mt-2 grid gap-2 text-xs">
       <p>Mark a missing span, or correct a proposal, even before scale and walls exist. These purple reference marks stay pending; they do not close a room or create an opening.</p>

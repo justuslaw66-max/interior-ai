@@ -142,6 +142,12 @@ const LIGHT_ROLE_TOKENS = {
   "floating-on-danger": "var(--color-white)",
   "floating-on-danger-tint": "var(--color-red-700)",
   "floating-on-accent-tint": "var(--color-blue-700)",
+  "surface-canvas": "#f4f2ed",
+  "control-switch-off": "var(--color-neutral-500)",
+  "control-switch-knob": "var(--color-white)",
+  "surface-page": "#fafaf9",
+  "surface-well": "color-mix(in oklab, var(--color-neutral-100) 70%, transparent)",
+  "surface-grouped": "var(--color-neutral-100)",
   "control-primary": "var(--color-neutral-900)",
   "control-primary-hover": "var(--color-neutral-800)",
   "control-on-primary": "var(--color-white)",
@@ -168,7 +174,9 @@ for (const [name, value] of Object.entries(LIGHT_ROLE_TOKENS)) {
 // fields, Apple's 60% grey), the near-white primary (14 Oct), the shell's toast and the phone's
 // steps (24 Oct: a #3A3A3C toast; a #1C1C1E bar with the current step a #2C2C2E card), the step
 // panel (24 Oct: cards with no outline, fields #2C2C2E, no band, the menu's room card #3A3A3C), and
-// the right rail (24 Oct: floating cards with a hairline, fields #3A3A3C, Delete's word #FF8A84).
+// the right rail (24 Oct: floating cards with a hairline, fields #3A3A3C, Delete's word #FF8A84), and
+// what covers the canvas while a room prepares (25 Oct: the canvas's own colour), and the rest of the
+// editor (25 Oct: Shop and Start a black page like the panels; no grey behind the workspace's cards).
 const DARK_CHOICES = {
   surface: "#000000",
   "surface-secondary": "#1c1c1e",
@@ -188,6 +196,10 @@ const DARK_CHOICES = {
   "floating-field": "#3a3a3c",
   "floating-tile": "#3a3a3c",
   "floating-on-danger": "#ff8a84",
+  "surface-canvas": "#1c1c1e",
+  "surface-page": "#000000",
+  "surface-well": "transparent",
+  "surface-grouped": "#000000",
 } as const;
 for (const [name, value] of Object.entries(DARK_CHOICES)) {
   assert.equal(darkTokens.get(name), value, `Dark --${name} is the value J chose.`);
@@ -223,6 +235,7 @@ const TAILWIND_SRGB: Record<string, string> = {
   "neutral-200": "#e5e5e5",
   "neutral-300": "#d4d4d4",
   "neutral-400": "#a1a1a1",
+  "neutral-500": "#737373",
   "neutral-700": "#404040",
   "neutral-800": "#262626",
   "neutral-900": "#171717",
@@ -308,12 +321,44 @@ const TEXT_PAIRS: ReadonlyArray<readonly [text: string, fill: string | null, gro
   ["control-label-idle", null, ["floating-card"]],
   ["control-label", null, ["floating-field", "floating-tile"]],
   ["control-label-idle", "control-track", ["floating-tile"]],
+  // Over the canvas: text on the canvas's own colour (what covers it while a room prepares), and the
+  // tooltip on the tool row, in the toast's colours.
+  ["label", null, ["surface-canvas"]],
+  ["on-surface-toast", "surface-toast", ["surface-floating", "surface-canvas"]],
+  // The rest of the editor: text and notices on Shop's and Start's page; the status colours in dialogs, on
+  // the dialog and on its cards (a dialog's card that holds status is a floating surface, so its red and
+  // blue words lighten, as on the rail).
+  ["label", null, ["surface-page"]],
+  ["label-secondary", null, ["surface-page"]],
+  ["link", null, ["surface-page"]],
+  ["on-accent-tint", "accent-tint", ["surface-page"]],
+  ["on-warning-tint", "warning-tint", ["surface-page"]],
+  ["on-danger-tint", "danger-tint", ["surface-page"]],
+  ["on-success-tint", "success-tint", ["surface-elevated", "surface-elevated-secondary"]],
+  ["on-warning-tint", "warning-tint", ["surface-elevated", "surface-elevated-secondary"]],
+  ["on-danger-tint", "danger-tint", ["surface-elevated"]],
+  ["on-accent-tint", "accent-tint", ["surface-elevated"]],
+  ["floating-on-danger-tint", "danger-tint", ["surface-elevated-secondary"]],
+  ["floating-on-accent-tint", "accent-tint", ["surface-elevated-secondary"]],
+  ["control-on-primary", "control-primary", ["surface-elevated-secondary", "surface-page"]],
+  ["label", "control-secondary", ["surface-elevated-secondary"]],
+  // The pages outside the editor: text and links on the grey page (the shared design, the status pages),
+  // and the primary control on it.
+  ["label", null, ["surface-grouped"]],
+  ["label-secondary", null, ["surface-grouped"]],
+  ["link", null, ["surface-grouped"]],
+  ["control-on-primary", "control-primary", ["surface-grouped"]],
 ];
 // The focus ring and the primary's black (or near-white) edge need 3:1 against what's around them.
 const EDGE_PAIRS: ReadonlyArray<readonly [edge: string, grounds: readonly string[]]> = [
   ["control-primary", CONTROL_GROUNDS],
   // A chosen ChoiceTile's edge on a floating surface's card.
   ["control-primary", ["floating-card"]],
+];
+// A switch's knob against its track, on and off, over a floating surface (the Tips switch).
+const SWITCH_PAIRS: ReadonlyArray<readonly [knob: string, track: string]> = [
+  ["control-on-primary", "control-primary"],
+  ["control-switch-knob", "control-switch-off"],
 ];
 for (const [mode, tokens, focus] of [
   ["light", lightTokens, readConsumerHexToken("focus")],
@@ -334,6 +379,11 @@ for (const [mode, tokens, focus] of [
         `${mode}: --${text} on ${fill ? `--${fill} over ` : ""}--${ground} is ${ratio.toFixed(2)}:1; expected at least 4.5:1.`
       );
     }
+  }
+  for (const [knob, track] of SWITCH_PAIRS) {
+    const trackColour = over(colour(track), colour("surface-floating"));
+    const ratio = contrastRatio(hexOf(over(colour(knob), trackColour)), hexOf(trackColour));
+    assert.ok(ratio >= 3, `${mode}: the switch knob --${knob} on --${track} is ${ratio.toFixed(2)}:1; expected at least 3:1.`);
   }
   for (const [edge, grounds] of [...EDGE_PAIRS, ["focus", CONTROL_GROUNDS] as const]) {
     for (const ground of grounds) {
@@ -423,7 +473,7 @@ assert.doesNotMatch(
 const designPagePanelRegionSource = read("components/editor/design-page/DesignPagePanelRegion.tsx");
 assert.match(
   designPagePanelRegionSource,
-  /data-testid="shop-step"[\s\S]{0,200}?bg-\[#fafaf9\]/,
+  /data-testid="shop-step"[\s\S]{0,200}?bg-surface-page/,
   "Shop should be an opaque page over the canvas."
 );
 assert.doesNotMatch(designPagePanelRegionSource, /shopping-dock/, "Shop should not come back as a dock.");

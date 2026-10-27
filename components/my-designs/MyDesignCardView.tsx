@@ -14,8 +14,8 @@ export const myDesignActionsButtonId = (designId: string) => `my-design-actions-
 
 export type MyDesignCardAction = "share" | "copy" | "rename" | "delete";
 
-const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2";
-const MENU_ITEM = `flex h-10 w-full items-center rounded-lg px-3 text-left text-sm font-bold hover:bg-neutral-100 ${FOCUS_RING}`;
+const FOCUS_RING = "outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-page";
+const MENU_ITEM = `flex h-10 w-full items-center rounded-lg px-3 text-left text-sm font-bold hover:bg-control-quiet-hover ${FOCUS_RING}`;
 
 type MyDesignCardViewProps = {
   card: MyDesignCard;
@@ -43,14 +43,14 @@ export function MyDesignCardView({ card, menuOpen, busy, onToggleMenu, onCloseMe
   return (
     <li data-testid={`my-design-card-${card.id}`} className="relative flex flex-col">
       <Link href={href} data-testid={`my-design-open-${card.id}`}
-        className={`flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white text-neutral-950 transition hover:border-neutral-400 hover:shadow-md ${FOCUS_RING}`}>
+        className={`flex flex-col overflow-hidden rounded-2xl border border-box-border bg-surface-secondary text-label transition hover:border-control-edge-hover hover:shadow-md ${FOCUS_RING}`}>
         <DesignPlanThumbnailSvg thumbnail={card.thumbnail} />
         <span className="flex min-w-0 flex-col gap-1.5 px-3.5 pb-3.5 pt-3">
           <span className="truncate pr-11 text-[15px] font-bold" title={card.title}>{card.title}</span>
-          <span className="flex items-center gap-2.5 text-[13px] text-neutral-600">
+          <span className="flex items-center gap-2.5 text-[13px] text-label-secondary">
             {card.editedLabel}
             {card.shared ? (
-              <span data-testid="my-design-shared" className="flex items-center gap-1 text-blue-900">
+              <span data-testid="my-design-shared" className="flex items-center gap-1 text-link">
                 <Link2 aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.8} />
                 Shared
               </span>
@@ -71,21 +71,21 @@ export function MyDesignCardView({ card, menuOpen, busy, onToggleMenu, onCloseMe
 }
 
 function MyDesignCardMenu({ card, href, onAction }: { card: MyDesignCard; href: string; onAction: (action: MyDesignCardAction) => void }) {
-  const item = (action: MyDesignCardAction, label: string, className = "text-neutral-900") => (
+  const item = (action: MyDesignCardAction, label: string, className = "text-label") => (
     <button type="button" role="menuitem" data-testid={`my-design-menu-${action}`} onClick={() => onAction(action)}
       className={`${MENU_ITEM} ${className}`}>
       {label}
     </button>
   );
   return (
-    <div role="menu" aria-label={`Actions for ${card.title}`} data-testid="my-design-menu"
-      className="absolute right-0 top-12 z-20 flex w-52 flex-col rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl">
-      <Link href={href} role="menuitem" data-testid="my-design-menu-open" className={`${MENU_ITEM} text-neutral-900`}>Open</Link>
+    <div role="menu" aria-label={`Actions for ${card.title}`} data-testid="my-design-menu" data-surface="floating"
+      className="absolute right-0 top-12 z-20 flex w-52 flex-col rounded-xl border border-separator bg-surface-floating p-1.5 shadow-xl">
+      <Link href={href} role="menuitem" data-testid="my-design-menu-open" className={`${MENU_ITEM} text-label`}>Open</Link>
       {item("share", "Share")}
       {item("copy", "Make a copy")}
       {item("rename", "Rename")}
-      <div className="my-1 h-px bg-neutral-200" />
-      {item("delete", "Delete", "text-red-800")}
+      <div className="my-1 h-px bg-separator" />
+      {item("delete", "Delete", "text-on-danger-tint")}
     </div>
   );
 }

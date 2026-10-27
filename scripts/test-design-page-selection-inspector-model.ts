@@ -76,13 +76,13 @@ const roomRendererSource = readFileSync(
   join(root, "components/editor/renderers/RoomRenderer2D.tsx"),
   "utf8"
 );
-const wallRendererSource = readFileSync(
-  join(
-    root,
-    "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx"
-  ),
-  "utf8"
-);
+// Each part of a wall finish gets its picture from useWallSurfaceTexture (since 25 Oct 2026).
+const wallRendererSource = [
+  "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx",
+  "components/editor/renderers/house-plan-3d/useWallSurfaceTexture.ts",
+]
+  .map((path) => readFileSync(join(root, path), "utf8"))
+  .join("\n");
 
 assert.match(
   planEditingFacadeSource,
@@ -194,8 +194,8 @@ assert.match(
 );
 assert.match(
   surfaceInspectorControllerSource,
-  /wallInspectorSupportsGrout = Boolean\([\s\S]*?surfaceInspectorIsWall[\s\S]*?surface_category ===[\s\S]*?"wall_tile"[\s\S]*?material_family ===[\s\S]*?"tile"[\s\S]*?const wallGrout =[\s\S]*?wallInspectorSupportsGrout[\s\S]*?wallInspectorSettings\.jointSizeMm[\s\S]*?wallInspectorSettings\.jointColor/,
-  "Wall grout controls should appear only for tiled wall materials and reflect the selected panel settings."
+  /wallInspectorSupportsGrout = Boolean\([\s\S]*?surfaceInspectorIsWall && surfaceMaterialHasJoints\(wallInspectorSurfaceMaterial\)[\s\S]*?const wallGrout =[\s\S]*?wallInspectorSupportsGrout[\s\S]*?label: getSurfaceJointLabel\(getRuntimeSurfaceMaterialById\(surfaceInspectorMaterialId\)\)[\s\S]*?wallInspectorSettings\.jointSizeMm[\s\S]*?wallInspectorSettings\.jointColor/,
+  "Wall grout controls should appear only for tiled wall materials (and laminate wall panels' joints) and reflect the selected panel settings."
 );
 assert.match(
   surfaceInspectorControllerSource,

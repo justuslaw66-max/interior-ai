@@ -26,6 +26,10 @@ export type SurfaceDesignEffect =
   | "plain"
   | "woven"
   | "outdoor_decking"
+  // Greenlam's laminate wall panels (25 Oct 2026): its abstracts that are no stone, marble, concrete or weave, and its metal and
+  // pearlescent finishes.
+  | "pattern"
+  | "metallic"
   | "unknown";
 
 export type SurfaceColorFamily =
@@ -214,6 +218,8 @@ export const SURFACE_MATERIAL_VOCABULARY = {
     "plain",
     "woven",
     "outdoor_decking",
+    "pattern",
+    "metallic",
     "unknown",
   ],
   color_family: [

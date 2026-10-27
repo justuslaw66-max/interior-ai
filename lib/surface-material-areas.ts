@@ -12,6 +12,7 @@ import {
   getWallFaceSurfaceSettings,
   normalizeFloorSurfaceSettings,
 } from "./surface-settings";
+import type { WallFinishPiece } from "./surface-material-sheets";
 import { buildRoomWallFinishQuantities, type RoomWallFinishQuantities } from "./surface-material-wall-panels";
 
 /** How a finish is laid on its surface, as the room assigns it. */
@@ -44,12 +45,22 @@ export type SurfaceAreaRow = {
   /** The material id (or slug) the room assigns. */
   materialId: string;
   settings: SurfaceAreaSettings;
+  /**
+   * A wall finish's rectangles on the wall faces, for counting sheets (surface-material-sheets.ts); null for the floor
+   * and for walls the plan doesn't lay out.
+   */
+  wallPieces: WallFinishPiece[] | null;
 };
 
 export const FLOORING_WASTE_FACTOR = 0.1;
 
 export function roundSquareMeters(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+/** What to order for a measured surface: its area, to the hundredth of a square metre, with 10% extra for cuts. */
+export function getOrderAreaSqm(surfaceAreaSqm: number): number {
+  return roundSquareMeters(roundSquareMeters(surfaceAreaSqm) * (1 + FLOORING_WASTE_FACTOR));
 }
 
 export function getRoomSurfaceAssignments(room: RoomSnapshot): RoomSurfaceAssignments | undefined {
@@ -61,6 +72,7 @@ type AreaRowInput = Pick<SurfaceAreaRow, "surface" | "surfaceLabel" | "surfaceAr
   materialId: string | null | undefined;
   wallFaceId?: string | null;
   wallPanelId?: string | null;
+  wallPieces?: WallFinishPiece[] | null;
 };
 
 function pushAreaRow(target: RoomAreaRows, input: AreaRowInput) {
@@ -75,12 +87,13 @@ function pushAreaRow(target: RoomAreaRows, input: AreaRowInput) {
     surfaceLabel: input.surfaceLabel,
     surfaceAreaSqm,
     roomAreaSqm: target.roomAreaSqm,
-    orderAreaSqm: roundSquareMeters(surfaceAreaSqm * (1 + FLOORING_WASTE_FACTOR)),
+    orderAreaSqm: getOrderAreaSqm(surfaceAreaSqm),
     wasteFactor: FLOORING_WASTE_FACTOR,
     wallFaceId: input.wallFaceId ?? null,
     wallPanelId: input.wallPanelId ?? null,
     materialId,
     settings: input.settings,
+    wallPieces: input.wallPieces ?? null,
   });
 }
 
@@ -116,6 +129,7 @@ function pushWallRows(target: RoomAreaRows, surfaces: RoomSurfaceAssignments | u
     surfaceLabel: faceIds.length > 0 ? "Remaining walls" : "All walls",
     surfaceAreaSqm: walls.remainingWallAreaSqm,
     settings: wallSettings(defaults),
+    wallPieces: walls.remainingWallPieces,
   });
   for (const faceId of faceIds) {
     const face = getWallFaceSurfaceSettings(surfaces, faceId, normalizeFloorRotationDeg, clampFloorPatternScale);
@@ -126,6 +140,7 @@ function pushWallRows(target: RoomAreaRows, surfaces: RoomSurfaceAssignments | u
       surfaceAreaSqm: walls.faceAreaSqmById.get(faceId) ?? 0,
       wallFaceId: faceId,
       settings: wallSettings(face),
+      wallPieces: walls.facePiecesById.get(faceId) ?? null,
     });
   }
   for (const panel of walls.assignedPanels) {
@@ -137,6 +152,7 @@ function pushWallRows(target: RoomAreaRows, surfaces: RoomSurfaceAssignments | u
       wallFaceId: panel.faceId,
       wallPanelId: panel.panelId,
       settings: wallSettings(panel.settings),
+      wallPieces: panel.pieces,
     });
   }
 }

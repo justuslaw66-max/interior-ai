@@ -42,10 +42,10 @@ function ShareFingerprintMarker({ summary }: { summary: FidelitySummary }) {
 
 function ShareNotes({ notes }: { notes: string }) {
   return (
-    <section className="border-t bg-white" data-testid="share-design-notes">
+    <section className="border-t border-separator bg-surface" data-testid="share-design-notes">
       <div className="mx-auto max-w-6xl px-6 py-6">
-        <h2 className="text-lg font-semibold text-neutral-950">Design notes</h2>
-        <p className="mt-2 whitespace-pre-wrap rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm leading-6 text-neutral-700">
+        <h2 className="text-lg font-semibold text-label">Design notes</h2>
+        <p className="mt-2 whitespace-pre-wrap rounded-xl border border-box-border bg-tile p-4 text-sm leading-6 text-label-secondary">
           {notes}
         </p>
       </div>

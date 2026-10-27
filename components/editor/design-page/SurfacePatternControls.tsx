@@ -7,6 +7,8 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { RoomFloorPattern } from "@/lib/room-types";
 
 export type SurfaceGroutState = {
+  /** "Joints" for laminate wall panels; tiles have grout (the default). */
+  label?: "Grout" | "Joints";
   groutSizes: Array<{ valueMm: number; selected: boolean; testId: string }>;
   groutColor: string;
   groutPaletteOpen: boolean;
@@ -41,6 +43,12 @@ const LABEL = "text-xs font-semibold text-control-label-idle";
 
 type GroutProps = { grout: SurfaceGroutState; actions: SurfaceGroutActions; testIdPrefix: "surface" | "wall-surface" };
 
+function groutWords(grout: SurfaceGroutState) {
+  return grout.label === "Joints"
+    ? { title: "Joints", size: "Joint size", noun: "joint" }
+    : { title: "Grout", size: "Grout size", noun: "grout" };
+}
+
 function GroutPalette({ grout, actions, testIdPrefix }: GroutProps) {
   return (
     <div data-testid={`${testIdPrefix}-grout-color-palette`} className="mt-2 grid grid-cols-5 gap-1.5 rounded-lg border border-box-border bg-tile p-1.5">
@@ -56,7 +64,7 @@ function GroutPalette({ grout, actions, testIdPrefix }: GroutProps) {
               ? "grid aspect-square min-h-8 place-items-center rounded-md border border-separator bg-field p-0 shadow-sm"
               : "grid aspect-square min-h-8 place-items-center rounded-md border border-transparent bg-field p-0 hover:border-separator"
           }
-          aria-label={`Set grout colour ${color.color}`}
+          aria-label={`Set ${groutWords(grout).noun} colour ${color.color}`}
           title={color.color}
           onClick={() => actions.onSelectGroutColor(color.color)}
         >
@@ -67,15 +75,16 @@ function GroutPalette({ grout, actions, testIdPrefix }: GroutProps) {
   );
 }
 
-/** Grout size and colour, for tiled floors and walls. */
+/** Grout size and colour, for tiled floors and walls; the same for a laminate wall panel's joints. */
 export function SurfaceGroutControls({ grout, actions, testIdPrefix }: GroutProps) {
+  const words = groutWords(grout);
   return (
     <div className="mt-2">
-      <div className={LABEL}>Grout</div>
+      <div className={LABEL}>{words.title}</div>
       <div className="mt-1 grid grid-cols-[1fr_auto] gap-2">
         <div className={`block ${LABEL}`}>
-          Grout size
-          <SegmentedControl label="Grout size" className="mt-1" size="compact" fill disabled={grout.disabled}
+          {words.size}
+          <SegmentedControl label={words.size} className="mt-1" size="compact" fill disabled={grout.disabled}
             value={grout.groutSizes.find((size) => size.selected)?.valueMm ?? null} onChange={actions.onSelectGroutSize}
             options={grout.groutSizes.map((size) => ({ value: size.valueMm, label: `${size.valueMm} mm`, testId: size.testId }))} />
         </div>
@@ -86,9 +95,9 @@ export function SurfaceGroutControls({ grout, actions, testIdPrefix }: GroutProp
             data-testid={`${testIdPrefix}-joint-color`}
             disabled={grout.disabled}
             className="mt-1 grid h-8 w-12 place-items-center rounded-lg border border-box-border bg-field p-1 disabled:opacity-50 touch:h-11"
-            aria-label="Choose grout colour"
+            aria-label={`Choose ${words.noun} colour`}
             aria-expanded={grout.groutPaletteOpen}
-            title="Choose grout colour"
+            title={`Choose ${words.noun} colour`}
             onClick={actions.onToggleGroutPalette}
           >
             <span aria-hidden="true" className="block h-full w-full rounded border border-swatch-edge" style={{ backgroundColor: grout.groutColor }} />

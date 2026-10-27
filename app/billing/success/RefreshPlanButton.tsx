@@ -86,10 +86,10 @@ function ActivationActions({ state, onRetry }: { state: ActivationState; onRetry
   if (state === "active") {
     return (
       <div className="mt-4 flex flex-col gap-2">
-        <Link href="/design?mode=designer" className="rounded-xl bg-neutral-900 px-4 py-2 text-center text-sm text-white">
+        <Link href="/design?mode=designer" className="rounded-xl bg-control-primary px-4 py-2 text-center text-sm text-control-on-primary">
           Open Pro tools
         </Link>
-        <Link href="/dashboard" className="rounded-xl border px-4 py-2 text-center text-sm">
+        <Link href="/dashboard" className="rounded-xl border border-control-secondary-border bg-control-secondary px-4 py-2 text-center text-sm text-label">
           My designs
         </Link>
       </div>
@@ -113,8 +113,8 @@ export default function RefreshPlanButton() {
       <div
         className={
           state === "active"
-            ? "mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
-            : "mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-700"
+            ? "mt-4 rounded-xl border border-success-tint-border bg-success-tint p-4 text-sm text-on-success-tint"
+            : "mt-4 rounded-xl border border-box-border bg-tile p-4 text-sm text-label-secondary"
         }
       >
         {copy.detail}

@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { test, expect } from "./fixtures";
-import { chooseTemplateStart } from "./multi-room/helpers";
+import { chooseTemplateStart, clickWithFallback } from "./multi-room/helpers";
 import { chooseStartTemplate } from "./variant-test-utils";
 
 const PANEL_ATTRIBUTE = "data-selected-wall-panel-id";
@@ -958,6 +958,65 @@ test.describe("Studio canonical wall panels", () => {
     await expect(
       page.getByTestId("wall-surface-joint-color").locator("span"),
     ).toHaveCSS("background-color", "rgb(204, 138, 16)");
+  });
+
+  test("a Greenlam laminate wall panel starts with 1 mm dark joints, called joints, and is ordered in sheets", async ({
+    page,
+  }) => {
+    // Laminate wall panels (25 Oct 2026): sheets are butted, so the joint is a 1 mm shadow line, not tile grout.
+    test.setTimeout(240_000);
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.addInitScript(() => {
+      const sentinel = "__e2e_studio_wall_laminate_panel_storage_cleared";
+      if (window.localStorage.getItem(sentinel) === "1") return;
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+      window.localStorage.setItem(sentinel, "1");
+    });
+
+    await page.goto("/design");
+    await page.waitForLoadState("domcontentloaded");
+    await expect(page.getByTestId("scene-canvas").first()).toBeVisible({
+      timeout: 30_000,
+    });
+    await page.getByRole("button", { name: "2D", exact: true }).click();
+    await chooseTemplateStart(page);
+    await chooseStartTemplate(page, "studio");
+    await expect(page.getByTestId("room-plan-status-room-count")).toHaveText(
+      "4 rooms",
+      { timeout: 30_000 },
+    );
+    await page.getByRole("button", { name: "3D", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Focus room" })).toBeVisible({
+      timeout: 30_000,
+    });
+    await frameLivingEastWall(page);
+
+    const panelHits = await scanLivingEastPanels(page);
+    const middleHit = [...panelHits.values()][1]?.[0];
+    if (!middleHit) throw new Error("Studio Living east middle panel hit point was missing.");
+
+    const selectedInspector = page.locator(`[${PANEL_ATTRIBUTE}]`);
+    await clickPanelAt(page, middleHit.x, middleHit.y);
+    await page.getByRole("button", { name: "Change material" }).click();
+    await page.locator('[data-testid="surfaces-search"]:visible').first().fill("5394");
+    await page.locator('[data-material-name="Nordic Acacia 5394"] button').first().click();
+    await expect(selectedInspector).toContainText("Nordic Acacia 5394");
+    await openAdjustPattern(page);
+    const wallJoints = page.getByTestId("selection-inspector-wall-grout");
+    await expect(wallJoints).toBeVisible();
+    await expect(wallJoints).toContainText("Joint size");
+    await expect(wallJoints).not.toContainText("Grout");
+    await expect(wallJoints.getByTestId("wall-surface-joint-size")).toContainText("1 mm");
+    await expect(
+      wallJoints.getByTestId("wall-surface-joint-color").locator("span"),
+    ).toHaveCSS("background-color", "rgb(68, 68, 66)");
+
+    // Whole sheets (26 Oct 2026): the Shopping list orders the panel in 1220 x 2440 mm sheets, with the area alongside.
+    await clickWithFallback(page.getByTestId("editor-workflow-shop"));
+    const panelOrder = page.locator('[data-testid="shopping-surface-row"][data-material-id="greenlam-woodgrains-5394"]')
+      .getByTestId("shopping-surface-order");
+    await expect(panelOrder).toHaveText(/^Order \d+ sheets? of 1220 × 2440 mm, for \d+(?:\.\d)? m²$/, { timeout: 30_000 });
   });
 
   test("rapid orbit never reveals the workspace grid through returning walls", async ({

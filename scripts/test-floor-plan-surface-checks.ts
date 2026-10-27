@@ -14,8 +14,10 @@ import { SURFACE_MATERIAL_RENDER_REGISTRY, getRuntimeSurfaceMaterialById } from 
 import { decodeSurfaceSuitability, encodeSurfaceSuitability } from "../lib/surface-material-suitability";
 import { buildSurfaceSuitabilityFacts } from "../lib/surface-material-suitability-source";
 import { getAllSurfaceMaterialYamlEntries } from "../lib/surface-material-yaml";
+import { getLaminateWallPanelSourceEntries } from "../lib/surface-material-sources";
 
-// Plan review's surface checks (J, 17 Oct 2026: "Build all five"), and the balcony room type they need.
+// Plan review's surface checks (J, 17 Oct 2026: "Build all five"; 25 Oct: "Warn on bathroom walls"), and the balcony
+// room type they need.
 const LUCE_R9 = "gardenia-flooring-luce-acciaio-0006083-120x120-nat";
 const HERMIONE_BAREFOOT_A = "gardenia-flooring-hermione-beige-0202265-20x120-nat";
 const CAMOUFLAGE_R10_B = "gardenia-flooring-camouflage-ecru-beton-0016235-120x280-nat";
@@ -23,6 +25,7 @@ const ANIMA_NO_SETTLED_CLASS = "gardenia-flooring-anima-beige-0006056-60x60-1962
 const ANIMA_OUTDOOR_R11 = "gardenia-flooring-anima-beige-0006354-60x120-r11";
 const GIOIA_WHITE_BODY_WALL = "gardenia-wall-tile-gioia-beige-pf60008230-60x120-90227-0";
 const ANIMA_PORCELAIN_WALL = "gardenia-wall-tile-anima-beige-0006044-120x120-196214-0";
+const NORDIC_ACACIA_LAMINATE = "greenlam-woodgrains-5394";
 
 function room(id: string, roomType: RoomType, surfaces?: RoomSurfaceFinishes): HousePlanRoom2D {
   return { id, name: ROOM_TYPE_LABELS[roomType], roomType, shape: "rectangle", x: 0, z: 0, w: 3, d: 2, surfaces };
@@ -42,12 +45,19 @@ for (const id of [LUCE_R9, HERMIONE_BAREFOOT_A, CAMOUFLAGE_R10_B, ANIMA_NO_SETTL
 }
 assert.deepEqual(getRuntimeSurfaceMaterialById(LUCE_R9)?.suitability, {
   slip_rating: "R9", barefoot_slip_rating: null, datasheet: "Luce", outdoor_floor: false, wall_tile_body: false,
+  laminate_sheet: false,
 });
 assert.deepEqual(getRuntimeSurfaceMaterialById(GIOIA_WHITE_BODY_WALL)?.suitability, {
   slip_rating: null, barefoot_slip_rating: null, datasheet: "Gioia", outdoor_floor: false, wall_tile_body: true,
+  laminate_sheet: false,
+});
+assert.deepEqual(getRuntimeSurfaceMaterialById(NORDIC_ACACIA_LAMINATE)?.suitability, {
+  slip_rating: null, barefoot_slip_rating: null, datasheet: null, outdoor_floor: false, wall_tile_body: false,
+  laminate_sheet: true,
 });
 const yamlEntries = getAllSurfaceMaterialYamlEntries();
-for (const entry of yamlEntries) {
+const laminatePanels = getLaminateWallPanelSourceEntries();
+for (const entry of [...yamlEntries, ...laminatePanels]) {
   const id = entry.surface_material.material_id;
   const runtime = getRuntimeSurfaceMaterialById(id)?.suitability ?? null;
   const tuple = encodeSurfaceSuitability(buildSurfaceSuitabilityFacts(entry));
@@ -64,9 +74,15 @@ assert.deepEqual(
     outdoorFloors: floors.filter(({ facts: f }) => f.outdoor_floor).length,
     whiteBodyFloors: floors.filter(({ facts: f }) => f.wall_tile_body).length,
     whiteBodyWalls: facts.filter(({ material, facts: f }) => material.surface_material.surface_category !== "flooring" && f.wall_tile_body).length,
+    laminateSheets: facts.filter(({ facts: f }) => f.laminate_sheet).length,
   },
-  { r9Floors: 14, barefootWithoutB: 23, noSettledClass: 87, outdoorFloors: 106, whiteBodyFloors: 0, whiteBodyWalls: 9 },
+  { r9Floors: 14, barefootWithoutB: 23, noSettledClass: 87, outdoorFloors: 106, whiteBodyFloors: 0, whiteBodyWalls: 9, laminateSheets: 233 },
   "published entries the checks can flag (Gioia's floors are its porcelain decors; its white-body plain colours are wall tiles)"
+);
+assert.equal(laminatePanels.length, 233);
+assert.ok(
+  facts.every(({ material, facts: f }) => !f.laminate_sheet || material.surface_material.surface_category === "wall_panel"),
+  "only the laminate catalogue's wall panels are laminate sheets: Goodrich's laminate floors aren't"
 );
 assert.equal(getSlipClassNumber("DS / R10"), 10, "a slip rating with a prefix still reads as its class");
 assert.equal(getSlipClassNumber(null), null);
@@ -114,6 +130,40 @@ assert.deepEqual(
   "one face is enough"
 );
 assert.deepEqual(ids([room("bath", "toilet", { floorMaterialId: CAMOUFLAGE_R10_B, wallMaterialId: GIOIA_WHITE_BODY_WALL })]), [], "indoor walls are what Gioia is for");
+// 6. Bathroom walls in a laminate sheet (J, 25 Oct 2026: "Warn on bathroom walls"), set for the room, a face or a panel.
+const laminateWall = only([room("bath", "toilet", { floorMaterialId: CAMOUFLAGE_R10_B, walls: { default: { materialId: NORDIC_ACACIA_LAMINATE } } })]);
+assert.equal(laminateWall.id, "surface-laminate-wall-bath");
+assert.equal(laminateWall.title, "Bathroom: laminate panels on the walls");
+assert.equal(
+  laminateWall.detail,
+  "Greenlam Nordic Acacia 5394 is a laminate sheet for dry walls. Greenlam's pasting manual bonds its laminates to a board, " +
+    "not to plaster or concrete, and for showers Greenlam makes Shower Surfaces, a 3 mm compact sold as waterproof."
+);
+assert.equal(laminateWall.suggestedFix, "If this bathroom has a shower, keep the panels to its dry walls and tile the shower walls.");
+assert.deepEqual([laminateWall.category, laminateWall.severity, laminateWall.action], ["surfaces", "tip", "review_surface"]);
+assert.deepEqual(
+  ids([room("bath", "toilet", {
+    floorMaterialId: CAMOUFLAGE_R10_B,
+    walls: { default: { materialId: ANIMA_PORCELAIN_WALL }, panels: { "north-part-0": { materialId: NORDIC_ACACIA_LAMINATE } } },
+  })]),
+  ["surface-laminate-wall-bath"],
+  "one panel is enough"
+);
+assert.deepEqual(
+  ids([room("bath", "toilet", {
+    floorMaterialId: CAMOUFLAGE_R10_B,
+    walls: { panels: { "wall-panel:v2:1:bath:north:segment-start:segment-end:exterior": { materialId: NORDIC_ACACIA_LAMINATE } } },
+  })]),
+  [],
+  "a wall's outside face isn't the bathroom's"
+);
+assert.deepEqual(ids([room("living", "living", { wallMaterialId: NORDIC_ACACIA_LAMINATE })]), [], "dry rooms are what the panels are for");
+assert.deepEqual(ids([room("kitchen", "kitchen", { wallMaterialId: NORDIC_ACACIA_LAMINATE })]), [], "the check is the bathroom's");
+assert.deepEqual(
+  ids([room("bath", "toilet", { floorMaterialId: LUCE_R9, wallMaterialId: NORDIC_ACACIA_LAMINATE })]),
+  ["surface-slip-bath", "surface-laminate-wall-bath"],
+  "the floor's findings come first"
+);
 
 // The report: surface tips come after the plan's own issues and leave the score and label alone.
 const rooms = [room("bath", "toilet", { floorMaterialId: LUCE_R9 }), room("out", "balcony")];

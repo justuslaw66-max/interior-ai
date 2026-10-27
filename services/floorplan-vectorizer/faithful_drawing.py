@@ -9,14 +9,16 @@ Only for dark ink on light paper (a plan drawn light on a dark ground traces as 
 not blurred (stage 1's softness measure around solid black, at most --max-softness: a blurred scan or photo is left).
 A picture that is merely soft without solid black (a low-resolution JPEG plan enlarged into a brochure page) is traced,
 which is better than the app's older pixel trace (J, 24 Oct); since r8 its lettering is copied letter by letter where
-it runs together or into the line work under it.
+it runs together or into the line work under it, and since r9 that holds for such a plan as the app renders a PDF page
+(its pixels repeated, not blended), whose light lines are traced as lines, and since r10 a long slanting or curved
+line in it as one line or band.
 The trace works at twice the picture's size up to --max-pixels (about 350-400 MB of memory per million pixels of the
 picture); a larger picture, up to three times --max-pixels, is traced at its own size (about 110 MB per million pixels:
 the same memory at most), and a larger one still is left. Otherwise, and on any error, the output is {"skipped": <why>}
 and the app draws no traced drawing for the page (its picture is shown as it is), with a note saying why.
 
 Output (the evidence's `drawing`, see vectorizer-evidence-schema.ts):
-  {"version": "faithful-trace-r8", "items": [{"kind", "fill", "strokeWidthPx", "tone", "commands", "points"}],
+  {"version": "faithful-trace-r10", "items": [{"kind", "fill", "strokeWidthPx", "tone", "commands", "points"}],
    "textBoxes": []}
   - fills: one item per polygon, each ring a closed sub-path; rings are wound by how deep they are nested (an outline
     one way, its holes the other, an island in a hole the first way again), so the nonzero rule the app draws with
@@ -34,7 +36,7 @@ import json, math, os, sys
 import cv2
 import numpy as np
 
-VERSION = "faithful-trace-r8"
+VERSION = "faithful-trace-r10"
 MAX_COMMANDS = 4000           # per item (vectorizer-evidence-schema.ts)
 MAX_POINTS = 12000
 MAX_ITEMS = 8000

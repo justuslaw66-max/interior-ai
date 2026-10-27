@@ -134,8 +134,8 @@ export default function FloorPlanImportReviewPanel({
   const [manualToolsOpen, setManualToolsOpen] = useState(false);
   if (!floor) return null;
   const namedRooms = namedFloorPlanRooms(floor.rooms); // voids (ducts, shafts) keep their walls but are not rooms to count or name
-  const subtle = "text-neutral-600";
-  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
+  const subtle = "text-label-secondary";
+  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs";
   const unresolvedCritical = issues.filter(isFloorPlanMvpBlockingIssue);
   const blockingPrerequisites = unresolvedCritical
     .map((issue) => issuePrerequisite(issue, candidate, entranceOpeningId))
@@ -326,8 +326,8 @@ export default function FloorPlanImportReviewPanel({
           <div
             className={
               needsManualRecovery
-                ? "text-xs font-bold uppercase tracking-[0.14em] text-amber-700"
-                : "text-xs font-bold uppercase tracking-[0.14em] text-emerald-700"
+                ? "text-xs font-bold uppercase tracking-[0.14em] text-on-warning-tint"
+                : "text-xs font-bold uppercase tracking-[0.14em] text-on-success-tint"
             }
           >
             AI floor-plan check
@@ -340,14 +340,14 @@ export default function FloorPlanImportReviewPanel({
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm">
+          <span className="rounded-full bg-surface-floating px-3 py-1.5 font-semibold text-label-secondary shadow-sm">
             {namedRooms.length} room{namedRooms.length === 1 ? "" : "s"}
           </span>
-          <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm">
+          <span className="rounded-full bg-surface-floating px-3 py-1.5 font-semibold text-label-secondary shadow-sm">
             {floor.dimensions.length} measurement
             {floor.dimensions.length === 1 ? "" : "s"}
           </span>
-          <span className="rounded-full bg-white px-3 py-1.5 font-semibold text-neutral-700 shadow-sm">
+          <span className="rounded-full bg-surface-floating px-3 py-1.5 font-semibold text-label-secondary shadow-sm">
             {floor.openings.length} opening
             {floor.openings.length === 1 ? "" : "s"}
           </span>
@@ -355,7 +355,7 @@ export default function FloorPlanImportReviewPanel({
       </div>
       {needsManualRecovery ? (
         <div
-          className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4"
+          className="mt-4 rounded-xl border border-warning-tint-border bg-warning-tint p-4"
           data-testid="floor-plan-import-simple-recovery"
         >
           <div className="text-sm font-semibold">
@@ -415,7 +415,7 @@ export default function FloorPlanImportReviewPanel({
         disabled={disabled}
       />
       {namedRooms.length > 0 ? (
-        <details className="mt-4 rounded-xl border border-neutral-200 bg-white p-3">
+        <details className="mt-4 rounded-xl border border-separator bg-surface-floating p-3">
           <summary className="cursor-pointer text-xs font-semibold">
             Edit room names (optional)
           </summary>
@@ -438,7 +438,7 @@ export default function FloorPlanImportReviewPanel({
           </div>
         </details>
       ) : null}
-      <details className="mt-3 rounded-xl border border-neutral-200 bg-white p-3">
+      <details className="mt-3 rounded-xl border border-separator bg-surface-floating p-3">
         <summary className="cursor-pointer text-xs font-semibold">
           Optional plan details
         </summary>
@@ -558,7 +558,7 @@ export default function FloorPlanImportReviewPanel({
         />
       </details>
       <details
-        className="mt-3 rounded-xl border border-neutral-200 bg-white p-3"
+        className="mt-3 rounded-xl border border-separator bg-surface-floating p-3"
         data-testid="floor-plan-import-technical-details"
       >
         <summary className="cursor-pointer text-xs font-semibold">
@@ -580,7 +580,7 @@ export default function FloorPlanImportReviewPanel({
             return (
               <div
                 key={issue.id}
-                className="flex gap-2 rounded-md bg-neutral-50 p-2 text-xs"
+                className="flex gap-2 rounded-md bg-tile p-2 text-xs"
               >
                 <input
                   aria-label={`Resolve ${issue.message}`}
@@ -601,7 +601,7 @@ export default function FloorPlanImportReviewPanel({
                 <div className="min-w-0 flex-1">
                   <span
                     className={`mb-0.5 block text-xs font-semibold uppercase tracking-wide ${
-                      level === "blocking" ? "text-red-600" : subtle
+                      level === "blocking" ? "text-on-danger-tint" : subtle
                     }`}
                   >
                     {level === "blocking"
@@ -651,7 +651,7 @@ export default function FloorPlanImportReviewPanel({
         </div>
       </details>
       {!needsManualRecovery ? (
-        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <div className="mt-4 rounded-xl border border-success-tint-border bg-success-tint p-4">
           <div className="text-sm font-semibold">Looks like your floor plan?</div>
           <p className={`mt-1 text-xs leading-5 ${subtle}`}>
             Continue to run the final check. Your current design will

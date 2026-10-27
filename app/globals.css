@@ -7,7 +7,7 @@
 @source "../features";
 @source not "../features/cabinetry";
 @source "../lib";
-@source inline("bg-white/80 bg-white/90 gap-5 gap-6 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-amber-950 text-neutral-100 text-neutral-300 text-red-950 xl:grid-cols-2");
+@source inline("bg-amber-100 bg-emerald-100 bg-white/70 bg-white/80 bg-white/90 border-blue-100 border-blue-200 border-sky-200 gap-5 gap-6 hover:bg-blue-50 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-amber-950 text-blue-800 text-blue-900 text-neutral-100 text-neutral-300 text-red-950 xl:grid-cols-2");
 
 /* Dark mode is opt-in. The UI is designed light-first; left on Tailwind's
    default, dark: utilities follow the OS setting and half-theme dialogs
@@ -97,6 +97,18 @@
   --floating-on-danger: var(--color-white);
   --floating-on-danger-tint: var(--color-red-700);
   --floating-on-accent-tint: var(--color-blue-700);
+  /* Over the canvas (dark mode step 5.2c): the canvas card's own colour, which shows while a room
+     prepares (J, 25 Oct), and the Tips switch's track and knob when it is off. */
+  --surface-canvas: #f4f2ed;
+  --control-switch-off: var(--color-neutral-500);
+  --control-switch-knob: var(--color-white);
+  /* The rest of the editor (dark mode PR 1, 25 Oct): Shop's and Start a new design's page behind their cards
+     (black in dark, like the panels), and the grey body behind the floor-plan workspace's cards. */
+  --surface-page: #fafaf9;
+  --surface-well: color-mix(in oklab, var(--color-neutral-100) 70%, transparent);
+  /* The pages outside the editor (dark mode PR 2, 26 Oct): the grey page behind white cards (the shared
+     design, the status pages), black in dark like the other pages. */
+  --surface-grouped: var(--color-neutral-100);
   /* The shared controls (components/ui): Button, SegmentedControl, Chip and ChoiceTile; a step's
      number and the avatar's hover (control-badge), and the phone sheet's handle. */
   --control-primary: var(--color-neutral-900);
@@ -182,6 +194,12 @@
   --floating-on-danger: #ff8a84;
   --floating-on-danger-tint: #ff8a84;
   --floating-on-accent-tint: #64b0ff;
+  --surface-canvas: #1c1c1e;
+  --control-switch-off: rgba(120, 120, 128, 0.36);
+  --control-switch-knob: #f5f5f7;
+  --surface-page: #000000;
+  --surface-well: transparent;
+  --surface-grouped: #000000;
   --control-primary: #f5f5f7;
   --control-primary-hover: #e5e5ea;
   --control-on-primary: #1c1c1e;
@@ -247,6 +265,7 @@
   --color-surface-elevated-secondary: var(--surface-elevated-secondary);
   --color-surface-floating: var(--surface-floating);
   --color-surface-floating-edge: var(--surface-floating-edge);
+  --color-surface-canvas: var(--surface-canvas);
   --color-label: var(--label);
   --color-label-secondary: var(--label-secondary);
   --color-separator: var(--separator);
@@ -290,6 +309,11 @@
   --color-control-edge-hover: var(--control-edge-hover);
   --color-control-badge: var(--control-badge);
   --color-control-handle: var(--control-handle);
+  --color-control-switch-off: var(--control-switch-off);
+  --color-control-switch-knob: var(--control-switch-knob);
+  --color-surface-page: var(--surface-page);
+  --color-surface-well: var(--surface-well);
+  --color-surface-grouped: var(--surface-grouped);
   --color-control-danger: var(--control-danger);
   --color-control-danger-hover: var(--control-danger-hover);
   --color-control-danger-border: var(--control-danger-border);

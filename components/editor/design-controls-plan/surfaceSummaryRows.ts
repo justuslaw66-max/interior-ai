@@ -5,8 +5,10 @@ import {
 } from "@/lib/floor-materials";
 import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
+import { getOrderAreaSqm } from "@/lib/surface-material-areas";
 import { buildRoomWallFinishQuantities } from "@/lib/surface-material-wall-panels";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
+import { countSurfaceSheets, formatSheetCount, getSurfaceSheetSize, type WallFinishPiece } from "@/lib/surface-material-sheets";
 import {
   getCeilingSurfaceSettings,
   getDefaultWallSurfaceSettings,
@@ -54,17 +56,38 @@ export function getActiveSurfaceRoomFloorAreaSqm(
   return (rooms.find((room) => room.id === activeRoomId) ?? rooms[0])?.floorAreaSqm ?? 0;
 }
 
+type WallFinishScope = {
+  id: string;
+  target: "walls" | "selected_wall";
+  surfaceLabel: string;
+  areaSqm: number;
+  pieces: WallFinishPiece[] | null;
+};
+
+/** "12 sheets" for a wall panel finish, counted as the bill of materials counts them; null for one ordered by area. */
+function wallFinishSheetsLabel(
+  material: ReturnType<typeof getRuntimeSurfaceMaterialById>,
+  { pieces, areaSqm }: WallFinishScope,
+  rotationDeg: number
+): string | null {
+  const sheet = getSurfaceSheetSize(material);
+  if (!sheet) return null;
+  return formatSheetCount(countSurfaceSheets({ pieces, orderAreaSqm: getOrderAreaSqm(areaSqm), rotationDeg, sheet }));
+}
+
 function buildWallFinishRow(
   room: SurfaceRoomSummary,
-  scope: { id: string; target: "walls" | "selected_wall"; surfaceLabel: string; areaSqm: number },
+  scope: WallFinishScope,
   settings: NormalizedSurfaceSettings,
   sampleUrlFor: SampleUrlFor
 ): SurfaceSummaryRow | null {
   if (!settings.materialId && !settings.paintColorHex) return null;
   const material = settings.materialId ? getRuntimeSurfaceMaterialById(settings.materialId) : null;
   const starter = settings.materialId ? getFloorMaterialById(settings.materialId) : null;
+  const { id, target, surfaceLabel, areaSqm } = scope;
   return {
-    ...scope,
+    id, target, surfaceLabel, areaSqm,
+    sheetsLabel: wallFinishSheetsLabel(material, scope, settings.rotationDeg),
     room,
     materialId: material?.surface_material.material_id ?? starter?.id ?? `paint:${settings.paintColorHex}`,
     materialName:
@@ -111,6 +134,7 @@ function buildRoomFloorAndCeilingRows(
         ? floorMaterial.surface_material.brand ?? formatSurfaceMaterialValue(floorMaterial.surface_material.supplier)
         : "Starter finish",
       areaSqm: room.floorAreaSqm,
+      sheetsLabel: null,
       status: floorMaterial?.import_governance.publish_status ?? "not_orderable",
       sampleUrl: sampleUrlFor(floorMaterialId),
       settings: {
@@ -133,6 +157,7 @@ function buildRoomFloorAndCeilingRows(
         : "No ceiling paint",
       supplier: ceilingSettings.paintColorHex ? "Paint colour" : "Visual finish",
       areaSqm: room.floorAreaSqm,
+      sheetsLabel: null,
       status: ceilingSettings.paintColorHex ? "visual_finish" : "not_started",
       sampleUrl: null,
       settings: {
@@ -149,7 +174,7 @@ function buildRoomFloorAndCeilingRows(
 
 function buildRoomWallRows(room: SurfaceRoomSummary, sampleUrlFor: SampleUrlFor): SurfaceSummaryRow[] {
   const surfaces = room.surfaces ?? room.surfaceFinishes;
-  const { faceAreaSqmById, remainingWallAreaSqm, assignedPanels } = room.wallFinishQuantities;
+  const { faceAreaSqmById, facePiecesById, remainingWallAreaSqm, remainingWallPieces, assignedPanels } = room.wallFinishQuantities;
   const faceIds = [...faceAreaSqmById.keys()];
   const rows = [
     buildWallFinishRow(room, {
@@ -157,18 +182,21 @@ function buildRoomWallRows(room: SurfaceRoomSummary, sampleUrlFor: SampleUrlFor)
       target: "walls",
       surfaceLabel: faceIds.length > 0 ? "Remaining walls" : "All walls",
       areaSqm: remainingWallAreaSqm,
+      pieces: remainingWallPieces,
     }, getDefaultWallSurfaceSettings(surfaces, normalizeFloorRotationDeg, clampFloorPatternScale), sampleUrlFor),
     ...faceIds.map((faceId) => buildWallFinishRow(room, {
       id: `${room.id}-wall-${faceId}`,
       target: "selected_wall",
       surfaceLabel: getWallFaceLabel(faceId),
       areaSqm: faceAreaSqmById.get(faceId) ?? 0,
+      pieces: facePiecesById.get(faceId) ?? null,
     }, getWallFaceSurfaceSettings(surfaces, faceId, normalizeFloorRotationDeg, clampFloorPatternScale), sampleUrlFor)),
     ...assignedPanels.map((panel) => buildWallFinishRow(room, {
       id: `${room.id}-wall-panel-${panel.panelId}`,
       target: "selected_wall",
       surfaceLabel: panel.surfaceLabel,
       areaSqm: panel.areaSqm,
+      pieces: panel.pieces,
     }, panel.settings, sampleUrlFor)),
   ];
   return rows.filter((row): row is SurfaceSummaryRow => row !== null);

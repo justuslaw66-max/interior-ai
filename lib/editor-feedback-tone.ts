@@ -23,7 +23,7 @@ export const EDITOR_FEEDBACK_DURATION_MS: Record<"error" | "notice" | "success",
 /** White text has at least 4.5:1 contrast on each of these backgrounds. */
 export const EDITOR_FEEDBACK_TONE_CLASS: Record<EditorFeedbackTone, string> = {
   error: "bg-red-700 text-white",
-  notice: "bg-neutral-900 text-white",
+  notice: "bg-surface-toast text-on-surface-toast",
   success: "bg-emerald-700 text-white",
-  tip: "bg-purple-600 text-white",
+  tip: "bg-blue-700 text-white",
 };

@@ -541,7 +541,7 @@ assert.match(
 
 assert.match(
   panelRegionSource,
-  /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-bar-0 z-40 overflow-y-auto bg-\[#fafaf9\] md:bottom-0"/,
+  /data-testid="shop-step"\s+className="absolute inset-x-0 bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\] top-bar-0 z-40 overflow-y-auto bg-surface-page md:bottom-0"/,
   "Shop should be one page over the canvas at every width, from the command bar to the phone's step bar (UX audit FU8)."
 );
 

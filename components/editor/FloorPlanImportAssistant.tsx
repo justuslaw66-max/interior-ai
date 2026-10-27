@@ -343,9 +343,9 @@ export default function FloorPlanImportAssistant({
   };
 
   if ((!file && !resumeJobId) || state.kind === "idle") return null;
-  const surface = "rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 shadow-sm sm:p-5";
-  const subtle = "text-neutral-600";
-  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs text-neutral-900";
+  const surface = "rounded-xl border border-success-tint-border bg-success-tint p-4 shadow-sm sm:p-5";
+  const subtle = "text-label-secondary";
+  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs text-label";
 
   if (state.kind === "working") {
     const estimate = state.estimate;
@@ -379,7 +379,7 @@ export default function FloorPlanImportAssistant({
         data-testid="floor-plan-import-progress" data-floor-plan-workspace-state="working"
       >
         <div className="relative h-14 w-14">
-          <div className="absolute inset-0 rounded-full border-4 border-emerald-100" />
+          <div className="absolute inset-0 rounded-full border-4 border-success-tint" />
           <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-emerald-600" />
         </div>
         <h3 className="mt-5 text-xl font-semibold">AI is reading your floor plan</h3>
@@ -392,7 +392,7 @@ export default function FloorPlanImportAssistant({
             <span className="flex items-center gap-2 text-left">
               {state.message}
               {estimate?.heartbeatHealthy ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-800">
+                <span className="inline-flex items-center gap-1 rounded-full bg-surface-floating px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-on-success-tint">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   Live
                 </span>
@@ -406,7 +406,7 @@ export default function FloorPlanImportAssistant({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progress}
-            className="mt-2 h-2 overflow-hidden rounded-full bg-emerald-100"
+            className="mt-2 h-2 overflow-hidden rounded-full bg-surface-floating"
           >
             <div
               className="h-full rounded-full bg-emerald-500 transition-all"
@@ -472,7 +472,7 @@ export default function FloorPlanImportAssistant({
               : "Private upload deleted."}
           </p>
         )}
-        {deleteError && <p className="mt-2 text-xs text-red-600">{deleteError}</p>}
+        {deleteError && <p className="mt-2 text-xs text-on-danger-tint">{deleteError}</p>}
       </div>
     );
   }
@@ -480,7 +480,7 @@ export default function FloorPlanImportAssistant({
   if (activeJob?.status === "ready") {
     return (
       <div className={surface} data-testid="floor-plan-import-ready" data-floor-plan-workspace-state="ready">
-        <div className="text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
+        <div className="text-xs font-bold uppercase tracking-[0.14em] text-on-success-tint">
           AI check complete
         </div>
         <h3 className="mt-1 text-2xl font-semibold">Your floor plan is ready</h3>
@@ -491,16 +491,16 @@ export default function FloorPlanImportAssistant({
           {canonicalDimensionCount === 1 ? "" : "s"}. Check the drawing and scale. Confirming records your review for planning and creates a separate editable design without furniture.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
+          <span className="rounded-full bg-surface-floating px-3 py-1.5 font-semibold text-on-success-tint">
             Editable 2D
           </span>
-          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
+          <span className="rounded-full bg-surface-floating px-3 py-1.5 font-semibold text-on-success-tint">
             Editable 3D
           </span>
-          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
+          <span className="rounded-full bg-surface-floating px-3 py-1.5 font-semibold text-on-success-tint">
             Zero furniture
           </span>
-          <span className="rounded-full bg-emerald-100 px-3 py-1.5 font-semibold text-emerald-800">
+          <span className="rounded-full bg-surface-floating px-3 py-1.5 font-semibold text-on-success-tint">
             Current design unchanged
           </span>
         </div>
@@ -530,11 +530,11 @@ export default function FloorPlanImportAssistant({
           Opens in Plan, in 2D, so you can check it before you furnish. Your planning review does not grant source verification or construction approval.
         </p>
         {createError ? (
-          <p className="mt-2 text-xs leading-4 text-red-600">
+          <p className="mt-2 text-xs leading-4 text-on-danger-tint">
             Creation paused: {createError}
           </p>
         ) : null}
-        <details className="mt-4 rounded-xl border border-neutral-200 bg-white p-3">
+        <details data-surface="floating" className="mt-4 rounded-xl border border-separator bg-surface-elevated-secondary p-3">
           <summary className="cursor-pointer text-xs font-semibold">
             Rename, plan options & privacy
           </summary>
@@ -588,7 +588,7 @@ export default function FloorPlanImportAssistant({
             </Button>
           ) : null}
           {deleteError ? (
-            <p className="mt-2 text-xs text-red-600">{deleteError}</p>
+            <p className="mt-2 text-xs text-on-danger-tint">{deleteError}</p>
           ) : null}
         </details>
       </div>
@@ -616,9 +616,9 @@ export default function FloorPlanImportAssistant({
 
   if (!activeJob || !candidate || !floor) return null;
   return (
-    <div className={surface} data-testid="floor-plan-import-review" data-floor-plan-workspace-state="review">
+    <div className={surface} data-surface="floating" data-testid="floor-plan-import-review" data-floor-plan-workspace-state="review">
       {reviewError ? (
-        <p className="mb-3 rounded-md bg-red-50 p-2 text-xs text-red-700" role="alert">
+        <p className="mb-3 rounded-md bg-danger-tint p-2 text-xs text-on-danger-tint" role="alert">
           {reviewError}
         </p>
       ) : null}

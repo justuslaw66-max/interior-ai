@@ -22,12 +22,12 @@ export function ShareHeader({
     <header className="mx-auto max-w-6xl px-6 pt-6">
       <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="break-words text-2xl font-semibold text-neutral-950">{title}</h1>
-          <div className="mt-1 text-sm text-neutral-600">
+          <h1 className="break-words text-2xl font-semibold text-label">{title}</h1>
+          <div className="mt-1 text-sm text-label-secondary">
             View only{style ? ` • ${style}` : ""}{budget ? ` • ${budget}` : ""}
           </div>
           <div
-            className="mt-2 flex flex-wrap items-center gap-x-3 text-sm text-neutral-800"
+            className="mt-2 flex flex-wrap items-center gap-x-3 text-sm text-label"
             data-testid="share-client-handoff-summary"
           >
             <span>{summary}</span>
@@ -40,7 +40,7 @@ export function ShareHeader({
               Shopping list
             </a>
           </div>
-          <div className="text-xs text-neutral-500">Drag to look around • Make a copy to edit</div>
+          <div className="text-xs text-label-secondary">Drag to look around • Make a copy to edit</div>
         </div>
 
         <SharePageActions shareToken={shareToken} />

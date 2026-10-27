@@ -112,7 +112,7 @@ function SharePreviewSurface({
   }, [layoutGeneration, layoutKey, reportCanvasReady, reportSurfaceMeasurement]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-white shadow">
+    <div className="relative overflow-hidden rounded-2xl bg-surface-secondary shadow">
       <div className="pointer-events-none absolute right-3 top-3 z-10 rounded-lg bg-black/70 px-3 py-1 text-xs text-white md:right-4 md:top-4">
         Shared preview
       </div>
@@ -149,10 +149,10 @@ function SavedViewNavigation({
   return (
     <nav
       aria-label={`Saved views for ${room.name}`}
-      className="rounded-xl bg-white p-4 shadow"
+      className="rounded-xl bg-surface-secondary p-4 shadow"
       data-testid="share-saved-view-navigation"
     >
-      <h3 className="mb-2 text-sm font-semibold text-gray-800">Saved views</h3>
+      <h3 className="mb-2 text-sm font-semibold text-label">Saved views</h3>
       <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:grid-cols-3">
         {savedViews.map((view) => (
           <ChoiceTile
@@ -185,7 +185,7 @@ export default function ShareViewer() {
 
   if (!layout.activeRoom) {
     return (
-      <section className="rounded-xl border bg-white p-6" data-testid="public-share-empty">
+      <section className="rounded-xl border border-box-border bg-surface-secondary p-6" data-testid="public-share-empty">
         No room is available in this shared design.
       </section>
     );

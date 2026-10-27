@@ -14,7 +14,7 @@ export function FloorPlanReviewZoomControls({ zoom, setZoom, pages, pageNumber, 
       <Plus className="h-3.5 w-3.5" aria-hidden="true" /></Button>
     <Button size="mini" aria-label="Fit" title="Fit the plan to the frame" onClick={() => setZoom(1)}>
       <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /></Button>
-    {pages.length > 1 ? <select aria-label="Floor plan page" className="rounded border border-neutral-300 bg-white px-1 py-1 text-xs"
+    {pages.length > 1 ? <select aria-label="Floor plan page" className="rounded border border-control-secondary-border bg-field px-1 py-1 text-xs"
       value={pageNumber} onChange={(event) => { setZoom(1); onPageNumberChange(Number(event.target.value)); }}>
       {pages.map((item) => <option key={item.pageNumber} value={item.pageNumber}>Page {item.pageNumber}</option>)}
     </select> : null}

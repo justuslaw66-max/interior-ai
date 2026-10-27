@@ -11,6 +11,7 @@ import {
 import {
   getCompatibleFloorPatternForMaterial,
   getDefaultFloorPatternForMaterial,
+  getDefaultWallJoint,
 } from "@/lib/design-page-surface-inspector";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import {
@@ -24,7 +25,6 @@ import {
   DEFAULT_FLOOR_JOINT_COLOR,
   DEFAULT_FLOOR_JOINT_SIZE_MM,
   DEFAULT_FLOOR_PATTERN_OFFSET,
-  DEFAULT_WALL_JOINT_COLOR,
   createSurfaceSettingsPatch,
   getWallFaceLabel,
   normalizeFloorJointColor,
@@ -481,8 +481,7 @@ export function useDesignPageSurfaceActions({
           rotationDeg: 0,
           scale: DEFAULT_FLOOR_PATTERN_SCALE,
           offset: DEFAULT_FLOOR_PATTERN_OFFSET,
-          jointSizeMm: DEFAULT_FLOOR_JOINT_SIZE_MM,
-          jointColor: DEFAULT_WALL_JOINT_COLOR,
+          ...getDefaultWallJoint(getRuntimeSurfaceMaterialById(materialId)),
           ...(settingsPatch ?? {}),
           materialId,
         },

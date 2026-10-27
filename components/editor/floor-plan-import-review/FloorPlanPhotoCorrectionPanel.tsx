@@ -26,7 +26,7 @@ function Result({model:m,url}:{model:Model;url:string}) {
       "These anchors do not require perspective correction. Review ordinary scale and endpoint associations.":
       "The correction still conflicts with source measurements. Review the marked endpoints and readings."}</p>
     <p className="mt-1 text-xs">Affine check failures: {r.affineChecks.filter((c)=>!c.passes).length}. All errors below are measured in source pixels.</p>
-    <ul className="mt-2 text-xs">{r.checks.map((check,i)=><li key={check.id} className={check.passes?"text-green-800":"text-red-800"}>
+    <ul className="mt-2 text-xs">{r.checks.map((check,i)=><li key={check.id} className={check.passes?"text-on-success-tint":"text-on-danger-tint"}>
       Measurement {i+1} ({check.use}): {check.residualPx.toFixed(2)} px / {check.tolerancePx} px — {check.passes?"passes":"conflict"}
     </li>)}</ul>
     {r.correction?<FloorPlanPhotoComparison url={url} correction={r.correction}/>:null}
@@ -41,7 +41,7 @@ function PhotoReviewContents(props:PhotoReviewProps) {
   const m=usePhotoCorrectionReview(props), url=`${props.assetRoutePrefix??`/api/floor-plan-imports/${encodeURIComponent(props.jobId)}/assets`}/${encodeURIComponent(props.page.assetKey)}`;
   const recompute=useContext(PhotoReviewAction),reviewed=m.proposal?.result.correction?m.proposal.constraints:
     !props.document.floors.find(f=>f.id===props.floorId)?.photoReviewDrafts?.length?props.calibration?.photoCorrection?.constraints:null;
-  return <details className="mt-3 rounded-lg border border-neutral-200 bg-white p-3 text-neutral-800">
+  return <details className="mt-3 rounded-lg border border-separator bg-surface-floating p-3 text-label">
     <summary className="cursor-pointer text-sm font-semibold">Correct a photographed plan</summary>
     <fieldset disabled={props.disabled} className="mt-2 text-xs">
       <p>Check the actual dimension end ticks first. A camera correction uses six printed spans and a square corner; at least two other spans check the result independently. Your original stays unchanged.</p>
@@ -59,7 +59,7 @@ function PhotoReviewContents(props:PhotoReviewProps) {
         <Button size="compact" onClick={()=>m.setEdge("second")}>Set corner edge B{m.second?" ✓":""}</Button></div>
       <label className="mt-2 flex gap-2"><input type="checkbox" checked={m.confirmed} onChange={(e)=>m.confirm(e.target.checked)}/>I confirm this corner is 90°. This does not assume every room is rectangular.</label>
       <Button size="compact" className="mt-3" onClick={m.propose}>Preview photo correction</Button>
-      <Result model={m} url={url}/>{m.error?<p role="alert" className="mt-2 text-red-700">{m.error}</p>:null}
+      <Result model={m} url={url}/>{m.error?<p role="alert" className="mt-2 text-on-danger-tint">{m.error}</p>:null}
       {recompute&&reviewed?<div className="mt-3"><p>Re-extract locally into a separate review. Your earlier draft, geometry and saved design stay available.</p>
         <Button size="compact" className="mt-2" onClick={()=>recompute({constraints:reviewed,pageNumber:props.page.pageNumber})}>Create separate corrected review</Button></div>:null}
     </fieldset>

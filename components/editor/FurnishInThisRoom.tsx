@@ -13,7 +13,7 @@ type FurnishInThisRoomProps = {
 };
 
 const ROW_CLASS =
-  "flex min-h-11 w-full items-center gap-2.5 rounded-lg border px-2 py-1.5 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-sky-500 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-10";
+  "flex min-h-11 w-full items-center gap-2.5 rounded-lg border px-2 py-1.5 text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50 md:min-h-10";
 
 function PlacedItemRow({
   item,
@@ -37,7 +37,7 @@ function PlacedItemRow({
         data-testid={`placed-item-select-${item.instanceId}`}
         disabled={!canEdit}
         onClick={() => onSelect(item.instanceId)}
-        className={`${ROW_CLASS} ${selected ? "border-sky-400 bg-accent-tint" : "border-box-border bg-field hover:bg-control-secondary-hover"}`}
+        className={`${ROW_CLASS} ${selected ? "border-blue-400 bg-accent-tint" : "border-box-border bg-field hover:bg-control-secondary-hover"}`}
       >
         <span className="h-9 w-9 shrink-0 overflow-hidden rounded-md bg-tile">
           {item.imageUrl ? (

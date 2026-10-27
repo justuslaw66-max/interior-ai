@@ -25,8 +25,8 @@ type FloorPlanUploadChooseStepProps = FloorPlanUploadChooseState & {
 };
 
 const shellClass =
-  "flex min-h-[420px] flex-col items-center justify-center gap-4 rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-sm";
-const subtleClass = "text-neutral-600";
+  "flex min-h-[420px] flex-col items-center justify-center gap-4 rounded-2xl border border-box-border bg-surface-elevated-secondary p-6 text-center shadow-sm";
+const subtleClass = "text-label-secondary";
 
 /** A file dragged from the desktop onto the step is chosen as if picked. */
 function useFileDrop(disabled: boolean, onFileDropped: (file: File) => void) {
@@ -57,7 +57,7 @@ function useFileDrop(disabled: boolean, onFileDropped: (file: File) => void) {
 
 function GuestSignInStep({ formats }: Pick<FloorPlanUploadChooseStepProps, "formats">) {
   return (
-    <div className={shellClass} data-testid="floor-plan-upload-sign-in" data-floor-plan-workspace-state="sign-in">
+    <div className={shellClass} data-surface="floating" data-testid="floor-plan-upload-sign-in" data-floor-plan-workspace-state="sign-in">
       <h3 className="text-lg font-bold">Sign in to upload your floor plan</h3>
       <p className={`max-w-md text-sm leading-6 ${subtleClass}`}>
         We read your floor plan on our servers, so uploading needs a free account. You choose the
@@ -89,10 +89,10 @@ export function FloorPlanUploadChooseStep(props: FloorPlanUploadChooseStepProps)
   const { dragging, dropProps } = useFileDrop(disabled, props.onFileDropped);
   if (!props.signedIn) return <GuestSignInStep formats={formats} />;
   return (
-    <div {...dropProps} className={shellClass} data-testid="floor-plan-import-dialog-empty-state"
+    <div {...dropProps} className={shellClass} data-surface="floating" data-testid="floor-plan-import-dialog-empty-state"
       data-floor-plan-workspace-state="empty" data-dragging={dragging ? "true" : undefined}>
       <div className={`flex w-full max-w-lg flex-col items-center gap-3 rounded-2xl border-2 border-dashed px-5 py-8 ${
-        dragging ? "border-blue-500 bg-blue-50" : "border-neutral-300 bg-neutral-50"
+        dragging ? "border-blue-500 bg-accent-tint" : "border-control-handle bg-tile"
       }`} data-testid="floor-plan-upload-drop-zone">
         <FileUp aria-hidden="true" className="h-7 w-7" strokeWidth={1.8} />
         <h3 className="text-base font-bold">Drop your floor plan here</h3>
@@ -111,7 +111,7 @@ export function FloorPlanUploadChooseStep(props: FloorPlanUploadChooseStepProps)
         </p>
       </div>
       {fileProblem ? (
-        <p role="alert" className="max-w-lg text-sm font-semibold text-red-700"
+        <p role="alert" className="max-w-lg text-sm font-semibold text-on-danger-tint"
           data-testid="floor-plan-upload-file-problem">
           {fileProblem}
         </p>

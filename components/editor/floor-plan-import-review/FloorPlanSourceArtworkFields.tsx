@@ -15,7 +15,7 @@ function FloorPlanSourceArtworkFields({ annotation, document, floorId, onChange,
   onUseScaleEndpoints?: (points: Array<{ x: number; y: number }>) => void;
 }) {
   const textMark = annotation.geometry.kind === "source_drawing" && annotation.geometry.command === "text";
-  return <form key={annotation.id} className="mt-2 rounded border bg-white p-3 text-xs text-neutral-800"
+  return <form key={annotation.id} className="mt-2 rounded border bg-surface-floating p-3 text-xs text-label"
     onSubmit={(event) => {
       event.preventDefault();
       if (!onChange || disabled) return;
@@ -55,9 +55,9 @@ export default function FloorPlanSourceArtworkSelection(props: {
   onUseScaleEndpoints?: (points: Array<{ x: number; y: number }>) => void;
 }) {
   return <>
-    {props.count ? <div className="mb-3 rounded border border-violet-200 bg-white p-2 text-xs text-neutral-700">
+    {props.count ? <div className="mb-3 rounded border border-accent-tint-border bg-surface-floating p-2 text-xs text-label-secondary">
       <label className="flex flex-wrap items-center gap-2">Review overlay
-        <select aria-label="Review overlay" className="max-w-full rounded border bg-white px-2 py-1" value={props.layer} onChange={event => props.onLayer(event.target.value)}>
+        <select aria-label="Review overlay" className="max-w-full rounded border bg-field px-2 py-1" value={props.layer} onChange={event => props.onLayer(event.target.value)}>
           {SOURCE_REVIEW_LAYERS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </label>
@@ -66,6 +66,6 @@ export default function FloorPlanSourceArtworkSelection(props: {
     </div> : null}
     {props.annotation ? <FloorPlanSourceArtworkFields {...props} annotation={props.annotation}
       disabled={props.disabled || props.previewOnly} /> : null}
-    {props.error ? <p role="alert" className="text-xs text-red-700">{props.error}</p> : null}
+    {props.error ? <p role="alert" className="text-xs text-on-danger-tint">{props.error}</p> : null}
   </>;
 }

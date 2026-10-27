@@ -41,13 +41,13 @@ const RETAILER_LINK_CLASS = buttonClassName({ variant: "secondary", size: "compa
 
 function AddSummary({ summary, placesDirectly }: Pick<CatalogItemDrawerAddSectionProps, "summary" | "placesDirectly">) {
   return (
-    <div className="mb-2 rounded-xl bg-neutral-50 px-3 py-2 text-xs text-neutral-600">
-      {placesDirectly ? null : <span className="font-semibold text-neutral-900">Ready to preview: </span>}
+    <div className="mb-2 rounded-xl bg-tile px-3 py-2 text-xs text-label-secondary">
+      {placesDirectly ? null : <span className="font-semibold text-label">Ready to preview: </span>}
       {summary.finishLabel} · {summary.optionLabel} · {summary.dimsLabel} · {summary.roomLabel}
       {summary.price ? (
-        <span className="ml-1 font-semibold text-neutral-900">
+        <span className="ml-1 font-semibold text-label">
           {summary.price}
-          {summary.compareAt ? <span className="ml-1 font-medium text-neutral-400 line-through">{summary.compareAt}</span> : null}
+          {summary.compareAt ? <span className="ml-1 font-medium text-label-secondary line-through">{summary.compareAt}</span> : null}
         </span>
       ) : null}
     </div>
@@ -62,7 +62,7 @@ function DetailFavourite({ favourite }: { favourite: CatalogItemDrawerFavourite 
       data-testid="catalog-detail-favorite-toggle"
       aria-pressed={favourite.isFavorite}
       aria-label={favouriteLabel(favourite.title, favourite.isFavorite)}
-      className="grid w-12 shrink-0 place-items-center rounded-xl border border-neutral-200 text-neutral-900 hover:bg-neutral-50"
+      className="grid w-12 shrink-0 place-items-center rounded-xl border border-separator text-label hover:bg-control-secondary-hover"
       onClick={favourite.onToggle}
     >
       <Heart className={favourite.isFavorite ? "h-5 w-5 fill-current text-rose-600" : "h-5 w-5"} aria-hidden="true" />
@@ -74,7 +74,7 @@ function DetailFavourite({ favourite }: { favourite: CatalogItemDrawerFavourite 
 export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionProps) {
   const { productId, variantId, purchaseOptionId, summary, addQuantity, placesDirectly, onChooseSpot } = props;
   return (
-    <div className="border-t border-neutral-100 bg-white px-4 pb-4 pt-3">
+    <div className="border-t border-separator-subtle bg-surface-floating px-4 pb-4 pt-3">
       <AddSummary summary={summary} placesDirectly={placesDirectly} />
       <div className="flex gap-2">
         <Button
@@ -103,7 +103,7 @@ export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionPr
           Choose where it goes
         </Button>
       ) : (
-        <div className="mt-2 text-center text-xs text-neutral-500">
+        <div className="mt-2 text-center text-xs text-label-secondary">
           Next: confirm the placement ghost before it becomes part of the room.
         </div>
       )}
@@ -113,7 +113,7 @@ export function CatalogItemDrawerAddSection(props: CatalogItemDrawerAddSectionPr
             Retailer link
           </a>
         ) : (
-          <div className="rounded-lg border border-neutral-100 px-3 py-2 text-center text-xs text-neutral-400">
+          <div className="rounded-lg border border-separator-subtle px-3 py-2 text-center text-xs text-label-secondary">
             No retailer link
           </div>
         )}

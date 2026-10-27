@@ -19,9 +19,9 @@ export default function GlobalError({
 
   return (
     <main className="flex min-h-[60vh] items-center justify-center p-6">
-      <section className="max-w-md rounded-2xl border border-neutral-200 bg-white p-6 text-center shadow-sm">
-        <h1 className="text-xl font-semibold text-neutral-900">Something went wrong</h1>
-        <p className="mt-2 text-sm text-neutral-600">
+      <section className="max-w-md rounded-2xl border border-box-border bg-surface-secondary p-6 text-center shadow-sm">
+        <h1 className="text-xl font-semibold text-label">Something went wrong</h1>
+        <p className="mt-2 text-sm text-label-secondary">
           Your saved design data has not been removed. Retry this screen; if the
           problem continues, return to My designs and reopen the design.
         </p>

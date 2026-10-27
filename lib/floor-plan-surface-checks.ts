@@ -15,6 +15,8 @@ import { normalizeSurfaceMaterialId } from "@/lib/surface-settings";
  * 3. A floor ABK's sheet calls a white-body wall tile (EN 14411 group BIII, water absorption over 10%).
  * 4. A balcony floor that isn't in ABK's outdoor range (outdoor paths need R11).
  * 5. Balcony walls in a white-body wall tile.
+ * 6. Bathroom walls in a laminate sheet (J, 25 Oct 2026: "Warn on bathroom walls"), from Greenlam's pasting manual and its
+ *    compact range: its laminates are bonded to a board, and its shower walls are a compact.
  */
 type CheckedMaterial = { record: SurfaceMaterialRenderRecord | null; name: string };
 
@@ -34,6 +36,9 @@ const SOURCES = {
   washroom: "Workplace washrooms and showers need R10 (ASR A1.5); homes aren't regulated.",
   shower: "Shower areas need barefoot class B (DGUV 207-006); homes aren't regulated.",
   outdoor: "Outdoor paths need R11 (ASR A1.5); ABK's outdoor tiles are R11 and 20 mm.",
+  laminate:
+    "Greenlam's pasting manual bonds its laminates to a board, not to plaster or concrete, and for showers Greenlam makes " +
+    "Shower Surfaces, a 3 mm compact sold as waterproof.",
 };
 
 export function getSlipClassNumber(slipRating: string | null | undefined): number | null {
@@ -41,13 +46,18 @@ export function getSlipClassNumber(slipRating: string | null | undefined): numbe
   return match ? Number(match[1]) : null;
 }
 
+/**
+ * The room's own wall finishes: its default, its faces and its panels. A panel saved for a wall's outside face (an id
+ * ending ":exterior", house-plan-3d/geometry.ts) faces whatever is beyond the wall, so the room's checks leave it out.
+ */
 export function toSurfaceCheckRoom(room: RoomWithSurfaces): SurfaceCheckRoom {
   const surfaces: RoomSurfaceFinishes | undefined = room.surfaces ?? room.surfaceFinishes;
   const walls = surfaces?.walls;
+  const insidePanels = Object.entries(walls?.panels ?? {}).filter(([panelId]) => !panelId.endsWith(":exterior"));
   const wallMaterialIds = [
     walls?.default?.materialId ?? surfaces?.wallMaterialId,
     ...Object.values(walls?.faces ?? {}).map((face) => face.materialId),
-    ...Object.values(walls?.panels ?? {}).map((panel) => panel.materialId),
+    ...insidePanels.map(([, panel]) => panel.materialId),
   ].map(normalizeSurfaceMaterialId).filter((id): id is string => id !== null);
   return {
     id: room.id,
@@ -149,6 +159,16 @@ function balconyWallIssues(room: SurfaceCheckRoom): FloorPlanQualityIssue[] {
   })];
 }
 
+function bathroomWallIssues(room: SurfaceCheckRoom): FloorPlanQualityIssue[] {
+  const wall = wallMaterials(room).find((material) => material.record?.suitability?.laminate_sheet);
+  if (!wall) return [];
+  return [issue(room, "laminate-wall", {
+    title: `${room.name}: laminate panels on the walls`,
+    detail: `${wall.name} is a laminate sheet for dry walls. ${SOURCES.laminate}`,
+    suggestedFix: "If this bathroom has a shower, keep the panels to its dry walls and tile the shower walls.",
+  })];
+}
+
 /** Checks 1 to 4: what a room's floor gets flagged for. AI notes' floor swaps must clear all of them (18 Oct 2026). */
 export function buildFloorSurfaceIssues(room: SurfaceCheckRoom): FloorPlanQualityIssue[] {
   const floor = checkedMaterial(room.floorMaterialId, "This floor");
@@ -159,9 +179,13 @@ export function buildFloorSurfaceIssues(room: SurfaceCheckRoom): FloorPlanQualit
   ];
 }
 
-/** All five checks for one room: its floor's, then its balcony walls'. */
+/** All six checks for one room: its floor's, then its balcony or bathroom walls'. */
 export function buildRoomSurfaceSuitabilityIssues(room: SurfaceCheckRoom): FloorPlanQualityIssue[] {
-  return [...buildFloorSurfaceIssues(room), ...(room.roomType === "balcony" ? balconyWallIssues(room) : [])];
+  return [
+    ...buildFloorSurfaceIssues(room),
+    ...(room.roomType === "balcony" ? balconyWallIssues(room) : []),
+    ...(room.roomType === "toilet" ? bathroomWallIssues(room) : []),
+  ];
 }
 
 export function buildSurfaceSuitabilityIssues(rooms: readonly RoomWithSurfaces[]): FloorPlanQualityIssue[] {

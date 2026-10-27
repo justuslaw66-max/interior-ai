@@ -37,9 +37,9 @@ function BuyListRow({ line, retailer, opened, busy, onOpenLine }: {
   return (
     <li data-testid="shopping-buy-list-row" data-instance-id={line.instanceId} data-opened={opened ? "true" : "false"} className="flex items-center gap-3 py-2.5">
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-bold text-neutral-900" title={line.title}>{line.title}</div>
-        <div className="truncate text-xs text-neutral-600" title={line.detail}>{line.detail}</div>
-        <div data-testid="shopping-buy-list-add" className="text-xs font-bold text-neutral-800">{addLabel(line)}</div>
+        <div className="truncate text-sm font-bold text-label" title={line.title}>{line.title}</div>
+        <div className="truncate text-xs text-label-secondary" title={line.detail}>{line.detail}</div>
+        <div data-testid="shopping-buy-list-add" className="text-xs font-bold text-label">{addLabel(line)}</div>
       </div>
       <Button
         data-testid="shopping-buy-list-open"
@@ -48,7 +48,7 @@ function BuyListRow({ line, retailer, opened, busy, onOpenLine }: {
         onClick={() => onOpenLine(line)}
         className="shrink-0"
       >
-        {opened ? <Check className="h-4 w-4 text-emerald-700" aria-hidden="true" /> : null}
+        {opened ? <Check className="h-4 w-4 text-on-success-tint" aria-hidden="true" /> : null}
         {opened ? "Opened" : "Open"}
         {opened ? null : <ExternalLink className="h-4 w-4" aria-hidden="true" />}
       </Button>
@@ -58,7 +58,7 @@ function BuyListRow({ line, retailer, opened, busy, onOpenLine }: {
 
 /** Always in place while the list is open, so a screen reader hears a blocked tab when it happens. */
 function BuyListNotice({ notice }: { notice: ShoppingNotice | null }) {
-  const tone = notice?.tone === "error" ? "border-red-200 bg-red-50 text-red-800" : "border-amber-200 bg-amber-50 text-amber-900";
+  const tone = notice?.tone === "error" ? "border-danger-tint-border bg-danger-tint text-on-danger-tint" : "border-warning-tint-border bg-warning-tint text-on-warning-tint";
   return (
     <p role="status" data-testid="shopping-buy-list-notice" className={notice ? `mt-2 rounded-lg border px-3 py-2 text-[13px] ${tone}` : "sr-only"}>
       {notice?.message ?? ""}
@@ -102,16 +102,16 @@ export function ShoppingBuyListDialog({ retailer, openedIds, notice, busy, onOpe
     >
       {retailer ? (
         <>
-          <p data-testid="shopping-buy-list-progress" aria-live="polite" className="text-[13px] text-neutral-600">
+          <p data-testid="shopping-buy-list-progress" aria-live="polite" className="text-[13px] text-label-secondary">
             {opened} of {retailer.lines.length} opened
           </p>
           <BuyListNotice notice={notice} />
-          <ul className="mt-1 divide-y divide-neutral-100">
+          <ul className="mt-1 divide-y divide-separator-subtle">
             {retailer.lines.map((line) => (
               <BuyListRow key={line.instanceId} line={line} retailer={retailer} opened={openedIds.has(line.instanceId)} busy={busy} onOpenLine={onOpenLine} />
             ))}
           </ul>
-          <p className="mt-2 text-[13px] text-neutral-600">{retailerCheckoutNote(retailer)}</p>
+          <p className="mt-2 text-[13px] text-label-secondary">{retailerCheckoutNote(retailer)}</p>
         </>
       ) : null}
     </EditorDialog>

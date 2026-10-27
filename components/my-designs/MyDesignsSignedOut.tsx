@@ -16,9 +16,9 @@ export function MyDesignsSignedOut() {
       className="mx-auto flex w-full max-w-[1120px] flex-col px-4 pb-16 pt-8 sm:px-8">
       <h1 className="text-[30px] font-bold leading-9 tracking-tight">My designs</h1>
       <section aria-labelledby="my-designs-sign-in-title"
-        className="mt-6 flex max-w-[560px] flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-6">
+        className="mt-6 flex max-w-[560px] flex-col gap-3 rounded-2xl border border-box-border bg-surface-secondary p-6">
         <h2 id="my-designs-sign-in-title" className="text-lg font-bold">Sign in to see your designs</h2>
-        <p className="text-[15px] leading-[22px] text-neutral-600">
+        <p className="text-[15px] leading-[22px] text-label-secondary">
           Designs you save to your account show up here, on any device. A design you started without
           an account moves in when you sign in.
         </p>

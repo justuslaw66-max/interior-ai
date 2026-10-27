@@ -36,23 +36,23 @@ export function ShareDesignDialog(props: ShareDesignDialogProps) {
         <div className="flex min-w-0 gap-2">
           <input type="text" readOnly aria-label="Link to this design" value={url} data-testid="my-design-share-url"
             onFocus={(event) => event.currentTarget.select()}
-            className="min-h-11 min-w-0 flex-1 rounded-lg border border-neutral-300 px-3 text-sm text-neutral-800 outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600" />
+            className="min-h-11 min-w-0 flex-1 rounded-lg border border-control-secondary-border bg-surface-elevated-secondary px-3 text-sm text-label outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600" />
           <EditorDialogButton variant="primary" data-testid="my-design-share-copy" onClick={props.onCopy}>
             Copy link
           </EditorDialogButton>
         </div>
       ) : (
-        <p data-testid="my-design-share-pending" className="text-sm text-neutral-600">
+        <p data-testid="my-design-share-pending" className="text-sm text-label-secondary">
           {errorMessage ?? "Making the link…"}
         </p>
       )}
-      <p role="status" aria-live="polite" data-testid="my-design-share-status" className="mt-2 min-h-5 text-sm text-neutral-700">
+      <p role="status" aria-live="polite" data-testid="my-design-share-status" className="mt-2 min-h-5 text-sm text-label-secondary">
         {url && errorMessage ? errorMessage : copied ? "Link copied." : ""}
       </p>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
         {url ? (
           <a href={url} target="_blank" rel="noopener noreferrer" data-testid="my-design-share-preview"
-            className="flex min-h-11 items-center rounded-md text-sm font-bold text-blue-800 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-blue-600">
+            className="flex min-h-11 items-center rounded-md text-sm font-bold text-link outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-blue-600">
             Preview what they see
           </a>
         ) : <span />}

@@ -105,7 +105,7 @@ export default function DuplicateDesignButton({
         data-testid={testId}
         className={
           className ??
-          "rounded-lg border px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-70"
+          "rounded-lg border border-control-secondary-border px-3 py-2 text-sm text-label-secondary hover:bg-control-secondary-hover disabled:cursor-not-allowed disabled:opacity-70"
         }
         onClick={handleDuplicate}
         disabled={busy}
@@ -117,7 +117,7 @@ export default function DuplicateDesignButton({
             : (children ?? "Make a copy")}
       </button>
       {message && (
-        <span className="text-xs text-red-600" role="alert">
+        <span className="text-xs text-on-danger-tint" role="alert">
           {message}
         </span>
       )}

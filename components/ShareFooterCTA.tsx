@@ -7,8 +7,8 @@ import DuplicateDesignButton from "@/components/DuplicateDesignButton";
 export function ShareFooterCTA({ shareToken }: { shareToken?: string }) {
   return (
     <footer className="mx-auto max-w-6xl px-6 pb-10">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 shadow">
-        <div className="text-sm text-neutral-600">Made with Interior AI</div>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-box-border bg-surface-secondary px-4 py-3 shadow">
+        <div className="text-sm text-label-secondary">Made with Interior AI</div>
         <div
           className="flex flex-wrap items-center justify-end gap-2"
           data-testid="share-footer-actions"
@@ -17,7 +17,7 @@ export function ShareFooterCTA({ shareToken }: { shareToken?: string }) {
             <DuplicateDesignButton
               shareToken={shareToken}
               data-share-touch-target="true"
-              className="inline-flex min-h-11 items-center rounded-lg bg-neutral-900 px-3 py-2 text-sm text-white outline-offset-2 focus-visible:outline-2 disabled:opacity-70"
+              className="inline-flex min-h-11 items-center rounded-lg bg-control-primary px-3 py-2 text-sm text-control-on-primary outline-offset-2 focus-visible:outline-2 disabled:opacity-70"
             >
               Make a copy
             </DuplicateDesignButton>
@@ -25,7 +25,7 @@ export function ShareFooterCTA({ shareToken }: { shareToken?: string }) {
           <Link
             href="/?source=share"
             data-share-touch-target="true"
-            className="inline-flex min-h-11 items-center rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-offset-2 hover:bg-neutral-50 focus-visible:outline-2"
+            className="inline-flex min-h-11 items-center rounded-lg border border-control-secondary-border bg-control-secondary px-3 py-2 text-sm text-label outline-offset-2 hover:bg-control-secondary-hover focus-visible:outline-2"
             onClick={() => track("share_cta_clicked", { source: "share_page" })}
           >
             Start your own design

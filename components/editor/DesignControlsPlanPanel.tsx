@@ -1378,12 +1378,12 @@ export default function DesignControlsPlanPanel({
                             {textureSource ? "Texture" : "Swatch only"}
                           </span>
                           {tileable ? (
-                            <span className="rounded-full bg-cyan-50 px-1.5 py-0.5 text-xs font-semibold text-cyan-700">
+                            <span className="rounded-full bg-control-track px-1.5 py-0.5 text-xs font-semibold text-label-secondary">
                               Tileable
                             </span>
                           ) : null}
                           {sampleAvailable ? (
-                            <span className="rounded-full bg-violet-50 px-1.5 py-0.5 text-xs font-semibold text-violet-700">
+                            <span className="rounded-full bg-control-track px-1.5 py-0.5 text-xs font-semibold text-label-secondary">
                               Sample
                             </span>
                           ) : null}
@@ -1620,7 +1620,7 @@ export default function DesignControlsPlanPanel({
                       {row.room.name} · {row.surfaceLabel}
                     </div>
                     <div className={progressMetaClass}>
-                      {row.materialName} · {formatDisplayArea(row.areaSqm, measurementUnit)}
+                      {row.materialName} · {formatDisplayArea(row.areaSqm, measurementUnit)}{row.sheetsLabel ? ` · ${row.sheetsLabel}` : null}
                     </div>
                     <div className={progressMetaClass}>
                       {getFloorPatternLabel(row.settings.pattern)} · {row.settings.rotationDeg}° · Scale {row.settings.scale.toFixed(2)}x · Joint {row.settings.jointSizeMm} mm

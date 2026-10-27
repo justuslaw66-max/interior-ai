@@ -60,14 +60,14 @@ export function DesignRenameDialog({
       }
     >
       <label className="block">
-        <span className="text-xs font-semibold text-neutral-700">
+        <span className="text-xs font-semibold text-label-secondary">
           Design name
         </span>
         <input
           data-testid="design-rename-input"
           data-editor-dialog-initial-focus="true"
           maxLength={DESIGN_TITLE_MAX_LENGTH}
-          className="mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30 border-neutral-200 bg-white text-neutral-950"
+          className="mt-1 min-h-11 w-full rounded-lg border px-3 text-sm outline-hidden focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/30 border-box-border bg-surface-elevated-secondary text-label"
           value={value}
           onChange={(event) => onValueChange(event.currentTarget.value)}
           onFocus={(event) => event.currentTarget.select()}

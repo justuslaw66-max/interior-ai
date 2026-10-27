@@ -54,7 +54,7 @@ function SectionHeading({
       <h3 id={id} className="text-sm font-bold">
         {title}
       </h3>
-      <p className="mt-0.5 text-xs text-neutral-600">
+      <p className="mt-0.5 text-xs text-label-secondary">
         {detail}
       </p>
     </div>
@@ -79,13 +79,13 @@ function SwitchControl({
       aria-checked={checked}
       data-testid={testId}
       className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-        checked ? "bg-emerald-500" : "bg-neutral-300"
+        checked ? "bg-emerald-500" : "bg-control-handle"
       }`}
       onClick={() => onChange(!checked)}
     >
       <span
         aria-hidden="true"
-        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+        className={`absolute top-1 h-5 w-5 rounded-full bg-control-switch-knob shadow transition-transform ${
           checked ? "translate-x-6" : "translate-x-1"
         }`}
       />
@@ -107,7 +107,7 @@ export function LightingSettingsControls({
   onShadowsEnabledChange,
   onSettingsChange,
 }: LightingSettingsControlsProps) {
-  const panelClass = "rounded-2xl border border-neutral-200 bg-neutral-50 p-4";
+  const panelClass = "rounded-2xl border border-box-border bg-tile p-4";
   const selectedMode = resolveLightingMode(settings.preset);
 
   return (
@@ -129,8 +129,8 @@ export function LightingSettingsControls({
                 data-persisted-preset={preset.persistedId ?? undefined}
                 className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
                   selected
-                    ? "border-neutral-950 bg-neutral-50"
-                    : "border-neutral-200 hover:bg-neutral-50"
+                    ? "border-control-primary bg-tile"
+                    : "border-separator hover:bg-control-secondary-hover"
                 }`}
                 onClick={() =>
                   onPresetChange(resolvePersistedLightingPreset(mode))
@@ -140,7 +140,7 @@ export function LightingSettingsControls({
                   <span className="block text-sm font-bold">
                     {preset.label}
                   </span>
-                  <span className="mt-0.5 block text-xs text-neutral-600">
+                  <span className="mt-0.5 block text-xs text-label-secondary">
                     {preset.description}
                   </span>
                 </span>
@@ -148,8 +148,8 @@ export function LightingSettingsControls({
                   aria-hidden="true"
                   className={`h-4 w-4 rounded-full border-4 ${
                     selected
-                      ? "border-neutral-950 bg-white"
-                      : "border-neutral-300"
+                      ? "border-control-primary bg-control-on-primary"
+                      : "border-control-handle"
                   }`}
                 />
               </button>
@@ -209,7 +209,7 @@ export function LightingSettingsControls({
           {liteEnabled && settings.shadowsEnabled ? (
             <p
               data-testid="lighting-lite-shadow-message"
-              className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800"
+              className="mt-3 rounded-xl bg-warning-tint px-3 py-2 text-xs font-semibold text-on-warning-tint"
             >
               Shadows are paused in Lite mode.
             </p>
@@ -223,7 +223,7 @@ export function LightingSettingsControls({
                 <input
                   type="time"
                   data-testid="lighting-time-input"
-                  className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
+                  className="mt-1 h-9 w-full rounded-lg border border-box-border bg-field px-2 text-xs" data-surface="floating"
                   value={formatTimeMinutes(settings.timeMinutes)}
                   onChange={(event) => {
                     const timeMinutes = parseTimeMinutes(
@@ -238,7 +238,7 @@ export function LightingSettingsControls({
                 <input
                   type="date"
                   data-testid="lighting-date-input"
-                  className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
+                  className="mt-1 h-9 w-full rounded-lg border border-box-border bg-field px-2 text-xs" data-surface="floating"
                   value={settings.dateIso ?? ""}
                   onChange={(event) =>
                     onSettingsChange({
@@ -274,7 +274,7 @@ export function LightingSettingsControls({
                 <input
                   type="number"
                   data-testid="lighting-latitude-input"
-                  className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
+                  className="mt-1 h-9 w-full rounded-lg border border-box-border bg-field px-2 text-xs" data-surface="floating"
                   min={-90}
                   max={90}
                   step={0.01}
@@ -297,7 +297,7 @@ export function LightingSettingsControls({
                 <input
                   type="number"
                   data-testid="lighting-longitude-input"
-                  className="mt-1 h-9 w-full rounded-lg border border-neutral-200 bg-white px-2 text-xs"
+                  className="mt-1 h-9 w-full rounded-lg border border-box-border bg-field px-2 text-xs" data-surface="floating"
                   min={-180}
                   max={180}
                   step={0.01}
@@ -374,7 +374,7 @@ export function LightingSettingsControls({
         </section>
       ) : null}
 
-      <p className="border-t border-neutral-200 pt-4 text-xs text-neutral-500">
+      <p className="border-t border-separator pt-4 text-xs text-label-secondary">
         Interactive visualisation only; this is not certified photometric
         analysis.
       </p>

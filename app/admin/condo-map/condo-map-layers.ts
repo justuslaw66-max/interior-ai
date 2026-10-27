@@ -60,6 +60,12 @@ export function condoModels(dev: CondoDevelopmentMap): Array<[string, string]> {
   return (dev.models?.items ?? []).map((item) => [condoModelId(dev.slug, item.id), condoMapFileUrl(dev.slug, "models", item.file)]);
 }
 
+/** The development a failed request was for, when it was one of its models (`/api/admin/condo-map/<slug>/models/…`). */
+export function condoModelSlug(url: string): string | null {
+  const match = /\/api\/admin\/condo-map\/([a-z0-9][a-z0-9-]{0,63})\/models\//.exec(url);
+  return match ? match[1] : null;
+}
+
 function extrusion(slug: string, part: string, source: string, paint: Record<string, MapboxJson>): MapboxLayer {
   return {
     id: condoLayerId(slug, part),
@@ -149,25 +155,25 @@ function floorFilters(floor: number | null, unit: string | null): Array<[string,
   return [["floor", ["==", F, floor]], ["unit", chosenUnit], ["pick", ["<=", F, floor]], ["ghost", [">", F, floor]]];
 }
 
+// The chosen unit shows on its floor as its painted rooms and the accent box; a detailed development's models stop below
+// the chosen floor (modelFilter), so the unit's own model is never drawn and needs no colour of its own.
 function paintUpdates(dev: CondoDevelopmentMap, unit: string | null): CondoPaintUpdate[] {
   const chosen: MapboxJson = ["==", ["get", "unit"], unit ?? ""];
   const rooms: MapboxJson = ["case", chosen, CONDO_MAP_COLOURS.selectedRoom, ["==", ["get", "kind"], "room"], CONDO_MAP_COLOURS.room, CONDO_MAP_COLOURS.open];
-  const paint: CondoPaintUpdate[] = [[condoLayerId(dev.slug, "floor"), "fill-extrusion-color", rooms]];
-  if (!dev.models) return paint;
-  // the chosen unit's walls and glass take the accent colour; the rest keep the models' own
-  const models = condoLayerId(dev.slug, "models");
-  paint.push([models, "model-color", ["case", chosen, CONDO_MAP_COLOURS.selectedUnit, "#ffffff"]]);
-  paint.push([models, "model-color-mix-intensity", ["case", chosen, 0.55, 0]]);
-  return paint;
+  return [[condoLayerId(dev.slug, "floor"), "fill-extrusion-color", rooms]];
 }
 
-/** What a view sets on a development's layers: their filters, and the colours of the chosen floor's rooms and unit. */
-export function condoViewUpdates(dev: CondoDevelopmentMap, view: CondoMapView) {
+/**
+ * What a view sets on a development's layers: their filters, and the colours of the chosen floor's rooms. A detailed
+ * development whose models failed to load is drawn as massing instead (and its model layer shows nothing).
+ */
+export function condoViewUpdates(dev: CondoDevelopmentMap, view: CondoMapView, modelsFailed = false) {
   const here = view.slug === dev.slug;
   const floor = here ? view.floor : null;
   const unit = here ? view.unit : null;
-  const parts = [...massingFilters(Boolean(dev.models), floor), ...floorFilters(floor, unit)];
-  if (dev.models) parts.push(["models", modelFilter(floor)]);
+  const detailed = Boolean(dev.models) && !modelsFailed;
+  const parts = [...massingFilters(detailed, floor), ...floorFilters(floor, unit)];
+  if (dev.models) parts.push(["models", detailed ? modelFilter(floor) : NONE]);
   const filters: CondoFilterUpdate[] = parts.map(([part, filter]) => [condoLayerId(dev.slug, part), filter]);
   return { filters, paint: paintUpdates(dev, unit) };
 }

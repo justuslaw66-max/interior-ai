@@ -168,11 +168,11 @@ export default function FloorPlanVisualReviewTools({
         pickingOpening={pickingOpening}
         sourceId={sourceId}
       />
-      <details className="mt-3 rounded-lg border border-neutral-200 bg-white p-3">
-        <summary className="cursor-pointer text-xs font-semibold text-neutral-700">
+      <details className="mt-3 rounded-lg border border-separator bg-surface-floating p-3">
+        <summary className="cursor-pointer text-xs font-semibold text-label-secondary">
           Advanced corrections (only if the outline is wrong)
         </summary>
-        <p className="mt-2 text-xs leading-4 text-neutral-500">
+        <p className="mt-2 text-xs leading-4 text-label-secondary">
           Most uploads do not need these controls. Use them only to repair a specific wall, opening, structural object, dimension, or orientation.
         </p>
         <FloorPlanTopologyCorrectionPanel
@@ -190,7 +190,7 @@ export default function FloorPlanVisualReviewTools({
         />
       </details>
       {error ? (
-        <p className="mt-2 rounded-md bg-red-50 p-2 text-xs text-red-700" role="alert">
+        <p className="mt-2 rounded-md bg-danger-tint p-2 text-xs text-on-danger-tint" role="alert">
           {error}
         </p>
       ) : null}
@@ -206,7 +206,7 @@ export default function FloorPlanVisualReviewTools({
         {canvas}
         <details
           id="floor-plan-manual-tools"
-          className="mt-4 rounded-xl border border-neutral-200 bg-white p-4"
+          className="mt-4 rounded-xl border border-separator bg-surface-floating p-4"
           open={manualToolsOpen}
           onToggle={(event) => {
             const open = event.currentTarget.open;
@@ -216,7 +216,7 @@ export default function FloorPlanVisualReviewTools({
           <summary className="cursor-pointer text-sm font-semibold">
             Help AI finish this plan
           </summary>
-          <p className="mt-2 text-xs leading-5 text-neutral-600">
+          <p className="mt-2 text-xs leading-5 text-label-secondary">
             Only use these tools when the preview is missing a room, scale,
             door, or wall. Your changes are checked again before a design can
             be created.
@@ -239,9 +239,9 @@ export default function FloorPlanVisualReviewTools({
   return (
     <div ref={root} className="mt-4 grid items-start gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(330px,0.7fr)]">
       <div className="min-w-0 xl:sticky xl:top-4">{canvas}</div>
-      <aside className="min-w-0 rounded-xl border bg-neutral-50 p-3 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto">
-        <div className="rounded-lg bg-white p-3 text-xs leading-5 text-neutral-700">
-          <div className="font-semibold text-neutral-900">Follow these steps</div>
+      <aside className="min-w-0 rounded-xl border bg-surface-band p-3 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto">
+        <div className="rounded-lg bg-surface-floating p-3 text-xs leading-5 text-label-secondary">
+          <div className="font-semibold text-label">Follow these steps</div>
           <ol className="mt-1 list-inside list-decimal">
             <li>Set one printed measurement.</li>
             <li>Trace each room around its inside corners.</li>

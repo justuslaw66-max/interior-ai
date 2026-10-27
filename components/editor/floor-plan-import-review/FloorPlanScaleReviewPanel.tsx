@@ -41,11 +41,11 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
   const { input, printedMm, hasConflict, mode, setMode, floor, canMapExistingVertices, scale, apply, canApply,
     firstVertexId, setFirstVertexId, secondVertexId, setSecondVertexId, estimateMarks, applyEstimateMark, assumedMm } = useFloorPlanScaleReview(props);
   const status = scaleReviewStatus(hasConflict, calibration);
-  const control = "rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-xs";
-  const subtle = "text-neutral-600";
+  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs";
+  const subtle = "text-label-secondary";
 
   return (
-    <details data-review-controls="scale" className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3" open={openByDefault || status.open}>
+    <details data-review-controls="scale" className="mt-3 rounded-lg border border-accent-tint-border bg-accent-tint p-3" open={openByDefault || status.open}>
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">1</span>
         Set scale
@@ -117,7 +117,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
             </label>
           </div>
         ) : null}
-        <div className="rounded bg-white p-2 text-xs leading-4 text-neutral-600">
+        <div className="rounded bg-surface-floating p-2 text-xs leading-4 text-label-secondary">
           {scalePoints.length !== 2
             ? "No measurement selected yet."
             : scale?.measurementValid
@@ -134,7 +134,7 @@ export default function FloorPlanScaleReviewPanel(props: FloorPlanScaleReviewPan
           ) : null}
         </div>
         {!calibration && (floor?.vertices.length ?? 0) < 2 ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-4 text-amber-900">
+          <div className="rounded-md border border-warning-tint-border bg-warning-tint p-2 text-xs leading-4 text-on-warning-tint">
             Automatic wall detection was empty. That is okay—set this
             measurement first, then outline the rooms in Step 2.
           </div>

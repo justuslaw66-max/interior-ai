@@ -29,13 +29,13 @@ function SourceTracePanelSession({document,jobId,pageNumber,sourceId,assetUrl,di
     finally{if(!current.signal.aborted)setBusy(false);}
   };
   const cancel=()=>{controller.current?.abort();setBusy(false);setPreview(null);};
-  return <details className="mb-3 rounded border bg-white p-3 text-xs text-neutral-800">
+  return <details className="mb-3 rounded border bg-surface-floating p-3 text-xs text-label">
     <summary className="cursor-pointer font-semibold">Trace visible drawing</summary>
     <p className="my-2">Trace the displayed source locally as editable strokes, curves and fills. Scale and room recognition are not required. Text shapes stay in the trace; OCR readings remain a separate review layer.</p>
     {!saved?<p>Save your review edits before tracing.</p>:null}
     <Button size="compact" disabled={disabled||busy||!saved} onClick={()=>void trace()}>Preview local vector trace</Button>
     {busy?<Button size="compact" className="ml-2" onClick={cancel}>Cancel tracing</Button>:null}
-    {error?<p role="alert" className="my-2 text-red-700">{error}</p>:null}
+    {error?<p role="alert" className="my-2 text-on-danger-tint">{error}</p>:null}
     {preview?<div className="mt-3">
       <p>{preview.trace.paths.length} source paths, {preview.trace.diagnostics.curves} curve spans. Check fine details before keeping this trace.</p>
       <label>Trace preview <select aria-label="Trace preview" value={view} onChange={e=>setView(e.target.value)}>

@@ -370,9 +370,10 @@ function assertSurfaceCatalogChunkBoundary(requireBuild = false): void {
 async function assertSurfaceMaterialRuntimeBoundary(): Promise<void> {
   assert.equal(SURFACE_MATERIAL_RENDER_GENERATED_MARKER, "surface_render_registry_v1");
   assert.equal(SURFACE_MATERIAL_CATALOG_GENERATED_MARKER, "surface_catalog_metadata_v1");
-  assert.equal(PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.length, 1405);
-  assert.equal(PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.length, 1405);
-  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.length, 1405);
+  // 1,405 YAML records and 233 laminate wall panels (25 Oct 2026).
+  assert.equal(PRODUCTION_SURFACE_MATERIAL_RENDER_TUPLES.length, 1638);
+  assert.equal(PRODUCTION_SURFACE_MATERIAL_CATALOG_METADATA.length, 1638);
+  assert.equal(SURFACE_MATERIAL_RENDER_REGISTRY.length, 1638);
 
   const renderIds = SURFACE_MATERIAL_RENDER_REGISTRY.map(
     (record) => record.surface_material.material_id

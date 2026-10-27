@@ -32,7 +32,8 @@ export type SurfaceMaterialRenderRecord = {
 
 /**
  * Plan review's surface checks (17 Oct 2026): a tile's DIN 51130 slip class and DIN 51097 barefoot class, the ABK technical
- * sheet they come from, whether it is in ABK's outdoor range, and whether that sheet calls it a white-body wall tile.
+ * sheet they come from, whether it is in ABK's outdoor range, and whether that sheet calls it a white-body wall tile. And
+ * (26 Oct 2026) whether it is a thin laminate sheet for walls, a Greenlam HPL wall panel, which is for dry walls.
  */
 export type SurfaceSuitabilityFacts = {
   slip_rating: string | null;
@@ -41,9 +42,13 @@ export type SurfaceSuitabilityFacts = {
   datasheet: string | null;
   outdoor_floor: boolean;
   wall_tile_body: boolean;
+  laminate_sheet: boolean;
 };
 
-/** The same facts in the render tuple: the flags are 1 for an outdoor floor and 2 for a white-body wall tile. */
+/**
+ * The same facts in the render tuple: the flags are 1 for an outdoor floor, 2 for a white-body wall tile and 4 for a
+ * laminate sheet.
+ */
 export type SurfaceSuitabilityTuple = readonly [
   slipRating: string | null,
   barefootSlipRating: string | null,
