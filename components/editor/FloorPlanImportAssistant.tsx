@@ -14,7 +14,7 @@ import {
 } from "@/lib/floor-plan-imports/types";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 import FloorPlanImportReviewPanel from "./floor-plan-import-review/FloorPlanImportReviewPanel";
-import { prepareFloorPlanReviewSubmission } from "@/lib/floor-plan-import-review-submission";
+import { floorPlanReviewSubmissionForSending } from "@/lib/floor-plan-import-review-submission";
 import FloorPlanReviewDraftSave from "./floor-plan-import-review/FloorPlanReviewDraftSave";
 import FloorPlanVisualReviewTools from "./floor-plan-import-review/FloorPlanVisualReviewTools";
 import { SourceTraceAction,type SourceTraceRequest } from "./floor-plan-import-review/source-trace-action";
@@ -183,7 +183,7 @@ export default function FloorPlanImportAssistant({
     setSubmitting(true);
     setReviewError(null);
     try {
-      const nextCandidate = prepareFloorPlanReviewSubmission(candidate, entranceOpeningId);
+      const nextCandidate = floorPlanReviewSubmissionForSending(candidate, entranceOpeningId);
       await floorPlanImportResponseJson(
         await fetch(`/api/floor-plan-imports/${activeJob.id}/candidate`, {
           method: "PATCH",

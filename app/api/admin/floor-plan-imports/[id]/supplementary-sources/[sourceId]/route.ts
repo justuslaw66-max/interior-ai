@@ -15,6 +15,7 @@ import {
 import { compileCandidateFloorPlanDocumentV2 } from "@/lib/floor-plan-imports/validation";
 import { hashCanonicalJson } from "@/lib/floor-plan-imports/json";
 import { prisma } from "@/lib/prisma";
+import { packFloorPlanCandidateForStorage } from "@/lib/floor-plan-imports/candidate-storage";
 
 export const runtime = "nodejs";
 
@@ -157,7 +158,7 @@ export async function POST(
           revision: { is: null },
         },
         data: {
-          candidateJson: next as unknown as Prisma.InputJsonValue,
+          candidateJson: packFloorPlanCandidateForStorage(next) as Prisma.InputJsonValue,
           correctionLogJson: log as Prisma.InputJsonValue,
           candidateVersion: nextVersion,
           sourceObservationManifestJson: Prisma.DbNull,
@@ -253,7 +254,7 @@ export async function DELETE(
           revision: { is: null },
         },
         data: {
-          candidateJson: next as unknown as Prisma.InputJsonValue,
+          candidateJson: packFloorPlanCandidateForStorage(next) as Prisma.InputJsonValue,
           correctionLogJson: log as Prisma.InputJsonValue,
           candidateVersion: nextVersion,
           sourceObservationManifestJson: Prisma.DbNull,

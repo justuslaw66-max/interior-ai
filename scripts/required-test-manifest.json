@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 330,
-      "expectedPathSha256": "48b2edf35096aa0a4ceafcc5dd0171bb78348daa71288121ad6d686cca651967"
+      "expectedFileCount": 331,
+      "expectedPathSha256": "0d2d265d87b0878cce921cec3a9f6fa2fe4b9a51ab0a0fd1186fa76c7bbc2a0f"
     },
     {
       "id": "browser-specs",
@@ -506,7 +506,7 @@
       "blocking": true,
       "command": "npm run test:floor-plan-required",
       "packageScript": "test:floor-plan-required",
-      "packageClosure": { "expectedScriptCount": 62, "expectedSha256": "c07f09738a2a93cb22fcc90014142f1dcecc967b3d327294596ed800811c22b3" },
+      "packageClosure": { "expectedScriptCount": 63, "expectedSha256": "1cb75356e5a500eb492fff79973a61205ed9093b43a4c3c4bebe7425c72904aa" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-floor-plan-directory-privacy.ts",

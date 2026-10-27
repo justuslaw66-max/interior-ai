@@ -1,6 +1,7 @@
 import path from "node:path";
 import { z } from "zod";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import { unpackFloorPlanCandidate } from "./candidate-storage";
 import {
   compileFloorPlanDocumentV2,
   FloorPlanDocumentValidationErrorV2,
@@ -245,15 +246,20 @@ export function hasUnresolvedCriticalIssues(issues: FloorPlanReviewIssue[]) {
   return issues.some(isFloorPlanMvpBlockingIssue);
 }
 
+/**
+ * A candidate, packed or not (candidate-storage.ts), unpacked. The cap is on the unpacked candidate, the document every
+ * reader gets: a design keeps it whole (`floorPlan.canonicalDocument`), so packing doesn't raise what a page may hold.
+ */
 export function parseCandidate(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("candidate must be a JSON object");
   }
-  const bytes = Buffer.byteLength(JSON.stringify(value), "utf8");
+  const candidate = unpackFloorPlanCandidate(value) as Record<string, unknown>;
+  const bytes = Buffer.byteLength(JSON.stringify(candidate), "utf8");
   if (bytes > MAX_FLOOR_PLAN_CANDIDATE_BYTES) {
     throw new Error("candidate is larger than 5 MB");
   }
-  return value as Record<string, unknown>;
+  return candidate;
 }
 
 export function compileCandidateFloorPlanDocumentV2(value: unknown) {

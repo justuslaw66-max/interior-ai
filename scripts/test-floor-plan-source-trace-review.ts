@@ -3,6 +3,7 @@ import Module from "node:module";
 import { acceptedPhotoFixture } from "./fixtures/scan-to-editable-plan/photo-calibration";
 import { TRACE_SETTINGS } from "../lib/floor-plan-imports/source-trace-mask";
 import { editSourceTrace,isFinalSourceTrace } from "../lib/floor-plan-source-trace";
+import { STORE_SOURCE_DRAWING_PACKED,unpackFloorPlanCandidate } from "../lib/floor-plan-imports/candidate-storage";
 import { canRequestDetectionReview } from "../components/editor/floor-plan-import-review/photo-review-action";
 async function main(){
   for(const status of ["needs_review","ready","applied"])assert.ok(canRequestDetectionReview(status,true));
@@ -20,7 +21,9 @@ async function main(){
   assets.set("page",{fileName:"original.png",mimeType:"image/png",bytes:new Uint8Array([1,2,3])});
   const stub=(name:string,exports:object)=>{const id=require.resolve(name);saved.set(id,require.cache[id]);const m=new Module(id);m.exports=exports;m.loaded=true;require.cache[id]=m;};
   const findFirst=async({where}:{where:{userId:string}})=>where.userId===state.userId&&!state.historyDeletedAt?structuredClone(state):null;
-  const tx={$queryRaw:async()=>[{id:sourceId}],floorPlanImportJob:{findFirst,update:async({where,data}:{where:{id:string};data:{candidateJson:typeof document}})=>{assert.equal(where.id,"child");savedChild=data.candidateJson;}},floorPlanDerivedAsset:{findFirst:async()=>owned?{id:"trace"}:null}};
+  const tx={$queryRaw:async()=>[{id:sourceId}],floorPlanImportJob:{findFirst,update:async({where,data}:{where:{id:string};data:{candidateJson:typeof document}})=>{assert.equal(where.id,"child");
+    assert.equal("sourceDrawingPack" in data.candidateJson.floors[0],STORE_SOURCE_DRAWING_PACKED,"The child candidate is stored in the form STORE_SOURCE_DRAWING_PACKED says.");
+    savedChild=unpackFloorPlanCandidate(data.candidateJson) as typeof document;}},floorPlanDerivedAsset:{findFirst:async()=>owned?{id:"trace"}:null}};
   stub("@/lib/auth",{auth:async()=>user?{user:{id:user}}:null});stub("@/lib/shared-rate-limit",{takeSharedRateLimit:async()=>({ok:true})});
   stub("@/lib/prisma",{prisma:{...tx,$transaction:async(callback:(transaction:typeof tx)=>Promise<unknown>)=>callback(tx)}});
   stub("@/lib/floor-plan-imports/prisma-repository",{PrismaFloorPlanImportJobRepository:class{async create(){created++;return{id:"child"};}}});

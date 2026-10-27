@@ -9,6 +9,7 @@ import { compileCandidateFloorPlanDocumentV2,parseRenderedPages } from "./valida
 import { asEnvelope } from "./pdf-raster-evidence";
 import { recomputeCorrectedPhoto } from "./photo-recompute";
 import { PdfRasterFloorPlanSourceAdapter } from "./pdf-raster-adapter";
+import { packFloorPlanCandidateForStorage } from "./candidate-storage";
 
 type Input={jobId:string;userId:string;candidateVersion:number;pageNumber:number;constraints:unknown};
 type ReviewJob=NonNullable<Awaited<ReturnType<typeof loadJob>>>;
@@ -62,7 +63,7 @@ async function commitFork(input:Input,job:ReviewJob,pages:ReturnType<typeof pars
       priorGeometryPreserved:true,priorSavedDesignPreserved:true}};
     await transaction.floorPlanImportJob.update({where:{id:created.id},data:{status:"needs_review",progress:85,statusChangedAt:new Date(),
       adapterId:job.adapterId,extractionVersion:job.extractionVersion,candidateVersion:1,renderedPagesJson:copies as Prisma.InputJsonValue,
-      candidateJson:document as unknown as Prisma.InputJsonValue,sourceManifestJson:sourceManifest as unknown as Prisma.InputJsonValue,
+      candidateJson:packFloorPlanCandidateForStorage(document) as Prisma.InputJsonValue,sourceManifestJson:sourceManifest as unknown as Prisma.InputJsonValue,
       reviewIssuesJson:result.reviewIssues as Prisma.InputJsonValue}});
     return {id:created.id,priorJobId:job.id};
   },{timeout:20_000});
