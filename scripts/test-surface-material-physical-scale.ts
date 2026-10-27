@@ -62,6 +62,8 @@ import {
 } from "../lib/surface-material-plein-air-system";
 import type { SurfaceMaterialRenderTuple } from "../lib/surface-material-runtime-types";
 import { findGardeniaEntriesAWriteRunWouldLose } from "./gardenia-import-guard";
+import { createSurfaceTilePainter } from "../components/editor/renderers/surfaceTilePainter";
+import { getWallPanelSheetPatternTransform } from "../components/editor/renderers/wallPanelSheetPainter";
 
 function assertClose(actual: number, expected: number, message: string, tolerance = 0.000001): void {
   assert.ok(Math.abs(actual - expected) < tolerance, `${message}: expected ${expected}, got ${actual}`);
@@ -303,31 +305,101 @@ for (const material of physicalMaterials.filter((entry) => !isLaminateWallPanel(
     assertClose(sample.needWidthMm / sample.rect.width, 1, `${id} is drawn at the picture's scale`);
   }
 }
-// Each laminate wall panel is one 1220x2440 mm sheet, drawn from its one picture: the whole picture when it covers the sheet
-// (219 of them exactly, nine more within 3%), or a sheet-sized window of the five taller ones, never repeated.
+// Each laminate wall panel is one sheet, drawn from its one picture. On a 4'x8' sheet the picture covers it: the whole
+// picture (219 exactly, nine more within 3%), or a sheet-sized window of the five taller ones, never repeated; a flat colour
+// covers it too. A 4.25'x10' picture covers 2600 of the 3050 mm sheet (Tuscany Oak 2816, Albin Oak Black's 1299 mm tile), so
+// it is undersized and drawn from the sheet's foot at its own scale (wallPanelSheetPainter.ts; J, 27 Oct 2026).
 const laminateWallPanels = physicalMaterials.filter(isLaminateWallPanel);
-assert.equal(laminateWallPanels.length, 233, "Greenlam's 4'x8' patterned designs, as wall panels");
+assert.equal(laminateWallPanels.length, 372, "Greenlam's designs as wall panels");
 const laminatePanelModes = new Map<string, number>();
 for (const panel of laminateWallPanels) {
   const id = panel.surface_material.material_id;
   const sources = getSurfacePhysicalImageSources(panel.texture_assets);
   assert.deepEqual(sources.map((source) => source.url), [panel.texture_assets.base_color_url], `${id} has one picture`);
   const [source] = sources;
+  const sheet = { width: panel.physical_specs.tile_width_mm ?? 0, height: panel.physical_specs.tile_length_mm ?? 0 };
+  // The painter never turns a sheet's picture (surfaceTilePainter.ts): the grain runs as the sheet stands.
   const sample = resolveSurfacePhysicalTileSample({
     sourceWidthPx: source.widthMm,
     sourceHeightPx: source.heightMm,
     sourceWidthMm: source.widthMm,
     sourceHeightMm: source.heightMm,
-    tileWidthMm: 1220,
-    tileHeightMm: 2440,
+    tileWidthMm: sheet.width,
+    tileHeightMm: sheet.height,
     seed: 1,
+    allowQuarterTurn: false,
   });
-  assert.equal(sample.quarterTurn, false, `${id} stands upright, as the sheet does`);
-  assert.notEqual(sample.mode, "undersized", `${id}'s picture covers its sheet`);
-  assertClose(sample.needWidthMm / sample.rect.width, 1, `${id} is drawn at the picture's scale`);
-  laminatePanelModes.set(sample.mode, (laminatePanelModes.get(sample.mode) ?? 0) + 1);
+  assert.equal(sample.mode === "undersized", sheet.height === 3050 && source.heightMm < 3050, `${id}: only a 10' picture is shorter than its sheet`);
+  if (sample.mode !== "undersized") assertClose(sample.needWidthMm / sample.rect.width, 1, `${id} is drawn at the picture's scale`);
+  else assertClose(source.widthMm / sheet.width, 1, `${id}'s picture is the sheet's width`);
+  const key = `${sheet.width}x${sheet.height}:${sample.mode}`;
+  laminatePanelModes.set(key, (laminatePanelModes.get(key) ?? 0) + 1);
 }
-assert.deepEqual(Object.fromEntries(laminatePanelModes), { whole_face: 228, window: 5 });
+// Albin Oak Black's square tile would be turned a quarter turn if the painter allowed it, which would lay its grain across.
+assert.equal(resolveSurfacePhysicalTileSample({ sourceWidthPx: 900, sourceHeightPx: 899, sourceWidthMm: 1300, sourceHeightMm: 1299,
+  tileWidthMm: 1300, tileHeightMm: 3050, seed: 1 }).quarterTurn, true);
+assert.deepEqual(Object.fromEntries(laminatePanelModes), {
+  "1220x2440:whole_face": 336,
+  "1220x2440:window": 5,
+  "1300x3050:whole_face": 10,
+  "1300x3050:undersized": 21,
+});
+
+// The painter (surfaceTilePainter.ts with `wallPanel`, wallPanelSheetPainter.ts): a 10' picture stands on its sheet's foot
+// at real size and repeats straight up from the source picture, never mirrored, offset or turned. A 1300x3050 sheet drawn
+// 130x305 px: the 900x1800 px picture covers its bottom 260 px (2600 mm) and starts again above.
+assert.deepEqual(
+  getWallPanelSheetPatternTransform({
+    imageHeightPx: 1800, sample: { needWidthMm: 1300, needHeightMm: 3050, pxPerMm: { x: 900 / 1300, y: 1800 / 2600 } },
+    drawWidth: 130, drawHeight: 305,
+  }).map((value) => Math.round(value * 1e6) / 1e6),
+  [0.144444, 0, 0, 0.144444, -65, -107.5]
+);
+type PaintCall = [string, ...unknown[]];
+function paintSheet(source: { widthMm: number; heightMm: number; widthPx: number; heightPx: number }, wallPanel: boolean) {
+  const calls: PaintCall[] = [];
+  const image = { width: source.widthPx, height: source.heightPx };
+  const record = (name: string) => (...args: unknown[]) => { calls.push([name, ...args]); };
+  const context = {
+    save: record("save"), restore: record("restore"), beginPath: record("beginPath"), rect: record("rect"), clip: record("clip"),
+    translate: record("translate"), rotate: record("rotate"), scale: record("scale"), fillRect: record("fillRect"),
+    drawImage: record("drawImage"),
+    createPattern: (patternImage: unknown) => {
+      calls.push(["createPattern", patternImage === image ? "source picture" : "another picture"]);
+      return { setTransform: (matrix: { init: unknown }) => calls.push(["setTransform", matrix.init]) };
+    },
+  } as unknown as CanvasRenderingContext2D;
+  const painter = createSurfaceTilePainter({
+    context,
+    physicalSources: [{ url: "picture.webp", widthMm: source.widthMm, heightMm: source.heightMm, image: image as unknown as CanvasImageSource }],
+    tileSizeMeters: { width: 1.3, height: 3.05 },
+    paintLegacyTile: () => calls.push(["legacy"]),
+    wallPanel,
+  });
+  painter({ row: 0, col: 0, x: 0, y: 0, width: 130, height: 305, seed: 7 });
+  return calls;
+}
+const globalScope = globalThis as unknown as { DOMMatrix?: unknown };
+const previousDomMatrix = globalScope.DOMMatrix;
+globalScope.DOMMatrix = class { init: unknown; constructor(init: unknown) { this.init = init; } };
+const recoWood = paintSheet({ widthMm: 1300, heightMm: 2600, widthPx: 900, heightPx: 1800 }, true);
+assert.deepEqual(recoWood.filter(([name]) => name === "createPattern" || name === "setTransform" || name === "rotate").map(String), [
+  "createPattern,source picture",
+  `setTransform,${getWallPanelSheetPatternTransform({ imageHeightPx: 1800, sample: { needWidthMm: 1300, needHeightMm: 3050,
+    pxPerMm: { x: 900 / 1300, y: 1800 / 2600 } }, drawWidth: 130, drawHeight: 305 })}`,
+], "a 10' picture is painted from the source picture, standing on the sheet's foot, unturned");
+assert.ok(recoWood.some((call) => String(call) === "fillRect,-65,-152.5,130,305"), "over the whole sheet");
+const albinOakBlack = { widthMm: 1300, heightMm: 1299, widthPx: 900, heightPx: 899 };
+assert.ok(!paintSheet(albinOakBlack, true).some(([name]) => name === "rotate"), "Albin Oak Black's square tile stays upright on a sheet");
+assert.ok(paintSheet(albinOakBlack, false).some(([name]) => name === "rotate"), "as a tile it would be turned");
+assert.ok(!paintSheet({ widthMm: 1300, heightMm: 2600, widthPx: 900, heightPx: 1800 }, false)
+  .some((call) => String(call) === "createPattern,source picture"), "a tile's short picture keeps the mirrored repeat");
+globalScope.DOMMatrix = previousDomMatrix;
+assert.match(
+  readFileSync(path.join(process.cwd(), "components/editor/renderers/useSurfaceMaterialTexture.ts"), "utf8"),
+  /createSurfaceTilePainter\(\{[^}]*wallPanel: isWallPanel\(material\)/,
+  "the 3D view's painter is told when the finish is a wall panel"
+);
 
 const cutFromSlab = physicalMaterials.find((material) => material.surface_material.material_id.includes("757828"));
 assert.ok(cutFromSlab, "the 60x120 cut from 120x240 pictures is in the catalogue");

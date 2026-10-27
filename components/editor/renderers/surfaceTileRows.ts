@@ -9,7 +9,8 @@ export type SurfaceTileRows = { first: number; end: number; top: (row: number) =
  */
 export type SurfaceTileColumns = { first: number; end: number; left: (col: number, rowOffset: number) => number };
 
-function isWallPanel(material: SurfaceMaterialRenderInfo): boolean {
+/** A wall panel (a laminate sheet) is laid from the floor and the face's start, and never turns its picture. */
+export function isWallPanel(material: SurfaceMaterialRenderInfo): boolean {
   return material.surface_material.surface_category === "wall_panel";
 }
 

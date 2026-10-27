@@ -6,6 +6,7 @@ import type {
   RoomSurfaceAssignments,
   RoomType,
 } from "@/lib/room-types";
+import { isLaminateFlatPicture } from "@/lib/laminate-flat-pictures";
 import type { RoomWallFinishQuantities } from "@/lib/surface-material-wall-panels";
 import {
   getSurfaceMaterialPreviewSource,
@@ -243,7 +244,11 @@ export function buildSurfaceMaterialProductGroups(
         variants: sortedVariants,
       };
     })
+    // A to Z, with the laminates' flat colours after everything else (J, 27 Oct 2026: "Flat colours last"), so the first
+    // page mixes tiles and designs rather than 118 plain colours.
     .sort((a, b) =>
+      Number(isLaminateFlatPicture(a.primary.texture_assets.base_color_url)) -
+        Number(isLaminateFlatPicture(b.primary.texture_assets.base_color_url)) ||
       getSurfaceMaterialProductDisplayName(a.primary).localeCompare(
         getSurfaceMaterialProductDisplayName(b.primary)
       )

@@ -14,8 +14,10 @@ import {
   getSurfaceMaterialSizeLabel,
   getSurfaceMaterialSupplierLabel,
   getSurfaceMaterialSwatchStyle,
+  SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT,
   type SurfaceFilterState,
 } from "../components/editor/design-controls-plan/surfaceCatalog";
+import { isLaminateFlatPicture } from "../lib/laminate-flat-pictures";
 import {
   buildSurfaceFilterOptions,
   filterSurfaceMaterialGroups,
@@ -51,8 +53,8 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-// 1,405 YAML records and, since 25 Oct 2026, 233 laminate wall panels from catalog/laminates.
-assert.equal(records.length, 1638, "the browser must join all 1638 render and catalog identities");
+// 1,405 YAML records and the laminate wall panels from catalog/laminates: 233 since 25 Oct 2026, 372 since 27 Oct.
+assert.equal(records.length, 1777, "the browser must join all 1777 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);
@@ -126,12 +128,43 @@ assert.deepEqual(
   ["Greenlam", "Woodgrains", "Nordic Acacia 5394", "1220x2440 mm", "Wood"],
   "a laminate wall panel's card"
 );
+// A flat colour on a 4.25'x10' sheet (27 Oct 2026): its swatch is its one-colour picture.
+const brilliantWhite = records.find((record) => record.surface_material.material_id === "greenlam-solids-112");
+assert.ok(brilliantWhite);
+assert.deepEqual(
+  [
+    getSurfaceMaterialCollectionLabel(brilliantWhite),
+    getSurfaceMaterialModelName(brilliantWhite),
+    getSurfaceMaterialSizeLabel(brilliantWhite),
+    getSurfaceMaterialEffectLabel(brilliantWhite),
+    brilliantWhite.texture_assets.swatch_url,
+  ],
+  ["Solids", "Brilliant White 112", "1300x3050 mm", "Plain", "/assets/catalog/laminates/flat-colours/f7f7f7.png"],
+  "a flat colour's card"
+);
 // The browser sorts by name: a laminate wall panel sits among the tiles by its design's name, not ahead of them by its code.
 const wallGroupNames = buildSurfaceMaterialProductGroups(
   records.filter((record) => ["wall_tile", "wall_panel"].includes(record.surface_material.surface_category))
 ).map((group) => getSurfaceMaterialProductDisplayName(group.primary));
-assert.ok(wallGroupNames.indexOf("Anima Beige") < 32, "Anima Beige stays on the wall browser's first page");
+// The first page is the browser's first 16 cards (SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT). The laminates' 118 flat colours
+// come after every other card, A to Z (J, 27 Oct 2026: "Flat colours last"); before that, Absolute White and twelve AFX
+// colours had pushed Anima Beige to the second page, and two wall panel browser tests couldn't find it.
+const wallGroups = buildSurfaceMaterialProductGroups(
+  records.filter((record) => ["wall_tile", "wall_panel"].includes(record.surface_material.surface_category))
+);
+assert.ok(wallGroupNames.indexOf("Anima Beige") < SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT, "Anima Beige stays on the wall browser's first page");
 assert.ok(wallGroupNames.indexOf("Akita Grey 5644") < wallGroupNames.indexOf("Anima Beige"));
+const firstFlat = wallGroups.findIndex((group) => isLaminateFlatPicture(group.primary.texture_assets.base_color_url));
+assert.deepEqual(
+  [firstFlat, wallGroups.slice(firstFlat).every((group) => isLaminateFlatPicture(group.primary.texture_assets.base_color_url))],
+  [wallGroups.length - 118, true],
+  "the 118 flat colours close the wall browser"
+);
+assert.deepEqual(
+  wallGroups.slice(firstFlat, firstFlat + 3).map((group) => getSurfaceMaterialProductDisplayName(group.primary)),
+  ["Absolute White 108", "AFX Anthracite 9853", "AFX Basalt Grey 9855"],
+  "the flat colours are A to Z among themselves"
+);
 assert.ok(facets.effect.includes("Pattern") && facets.effect.includes("Metallic"), "the laminates' own effects are filters");
 assert.ok(allOptions.collection.includes("Ardoise") && allOptions.collection.includes("Dorica"));
 const gardeniaOptions = buildSurfaceFilterOptions(records, "Gardenia & Ariana");
@@ -284,11 +317,19 @@ const outdoorGroupIds = groups
   .map((group) => group.id)
   .sort();
 assert.equal(outdoorGroupIds.length, 66, "cards with an outdoor size: 36 of catalogued colours, 30 of Plein Air's own");
+// A card named for the word is found too: Greenlam's Grass Green 250, a wall panel since 27 Oct 2026.
+const namedFor = (query: string) => groups
+  .filter((group) => group.variants.some((variant) => variant.surface_material.product_name.toLowerCase().includes(query.toLowerCase())))
+  .map((group) => group.id);
+assert.deepEqual(
+  ["terrace", "Patio", "pool", "outdoor", "driveway", "steps", "shower", "grass", "Gravel", "raised"].flatMap(namedFor),
+  ["greenlam-solids-250"]
+);
 for (const query of ["terrace", "Patio", "pool", "outdoor", "driveway", "steps", "shower", "grass", "Gravel", "raised"]) {
   assert.deepEqual(
     runProductionSurfaceFilter({ search: query }).map((group) => group.id).sort(),
-    outdoorGroupIds,
-    `a search for "${query}" finds the cards with an outdoor size`
+    [...outdoorGroupIds, ...namedFor(query)].sort(),
+    `a search for "${query}" finds the cards with an outdoor size, and any named for it`
   );
 }
 
