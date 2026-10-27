@@ -221,7 +221,7 @@ export function CabinetPreviewViewSelector({
       role="group"
       aria-label="Preview view"
       aria-describedby={instructionsId}
-      className="inline-flex rounded-lg border border-white/60 bg-white/90 p-1 text-xs font-semibold text-neutral-700 shadow-sm backdrop-blur"
+      className="inline-flex rounded-lg bg-surface-floating/90 p-1 text-xs font-semibold text-control-label-idle shadow-sm ring-1 ring-surface-floating-edge backdrop-blur"
       data-testid="cabinet-preview-view-selector"
     >
       <span id={instructionsId} className="sr-only">
@@ -238,7 +238,7 @@ export function CabinetPreviewViewSelector({
           aria-pressed={value === option.value}
           data-testid={`cabinet-preview-view-${option.value}`}
           className={`inline-flex min-h-7 items-center rounded-md px-2 py-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 ${
-            value === option.value ? "bg-neutral-950 text-white" : "hover:bg-neutral-100"
+            value === option.value ? "bg-control-primary text-control-on-primary" : "hover:bg-control-quiet-hover"
           }`}
           onClick={() => onChange(option.value)}
           onKeyDown={(event) => selectViewWithKeyboard(index, event)}

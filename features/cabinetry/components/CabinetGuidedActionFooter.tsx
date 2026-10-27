@@ -50,7 +50,7 @@ export function CabinetGuidedActionFooter({
   const interactionDisabled = busyAction !== null;
 
   return (
-    <footer className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-t border-neutral-200 bg-white px-4 py-2 sm:px-6">
+    <footer className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-t border-separator bg-surface px-4 py-2 sm:px-6">
       <div className="flex items-center gap-2">
         <Button
           data-testid="cabinet-guided-back"
@@ -75,7 +75,7 @@ export function CabinetGuidedActionFooter({
           <span
             data-testid="cabinet-action-error"
             role="alert"
-            className="max-w-full text-xs font-medium leading-5 text-red-700"
+            className="max-w-full text-xs font-medium leading-5 text-on-danger-tint"
           >
             {formatFeedback(actionError)}
           </span>
@@ -84,7 +84,7 @@ export function CabinetGuidedActionFooter({
           <span
             data-testid="cabinet-action-success"
             role="status"
-            className="max-w-full text-xs font-medium leading-5 text-emerald-700"
+            className="max-w-full text-xs font-medium leading-5 text-on-success-tint"
           >
             {formatFeedback(actionSuccess)}
           </span>

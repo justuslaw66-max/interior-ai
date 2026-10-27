@@ -32,18 +32,18 @@ export function CabinetGuidedStepNavigation({
             aria-current={isActive ? "step" : undefined}
             className={`group grid min-w-0 gap-1 rounded-xl px-0.5 py-2 text-center transition sm:px-3 ${
               isActive
-                ? "bg-neutral-950 text-white shadow-sm"
-                : "text-neutral-500 hover:bg-white hover:text-neutral-950"
+                ? "bg-control-primary text-control-on-primary shadow-sm"
+                : "text-label-secondary hover:bg-surface-secondary hover:text-label"
             }`}
             onClick={() => onStepChange(index)}
           >
             <span
               className={`mx-auto grid h-6 w-6 place-items-center rounded-full ${
                 isActive
-                  ? "bg-white/15"
+                  ? "bg-control-on-primary/15"
                   : isComplete
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-neutral-200/70"
+                    ? "bg-success-tint text-on-success-tint"
+                    : "bg-control-badge"
               }`}
             >
               {isComplete ? (
