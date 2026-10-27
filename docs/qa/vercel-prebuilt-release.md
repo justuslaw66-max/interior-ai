@@ -24,6 +24,11 @@ Gate A3 against the staged URL, and promote the already-tested deployment.
 - Production-environment certification must use production-safe test accounts
   and isolation. If the staged deployment cannot safely run the full Gate A3
   suite, do not certify or promote it.
+- Functions run in `syd1` (`"regions"` in `vercel.json`), beside the production
+  Neon database in Sydney (`ap-southeast-2`). Most requests make several
+  database round trips, so the function region follows the database: if the
+  database moves, change `"regions"` with it. Until 28 Oct 2026 functions ran in
+  `sfo1`, and every request crossed the Pacific to the database and back.
 
 ## Local database
 
