@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
 import {
   auditSurfaceMaterialEntry,
   buildSurfaceMaterialAdminAuditSummaries,
@@ -63,6 +64,12 @@ import {
   surfaceMaterialHasJoints,
 } from "../lib/design-page-surface-inspector";
 import { CABINET_LAMINATE_COLLECTIONS } from "../lib/generated/cabinet-laminates.generated";
+import { getLaminateCollectionSourcePath, getLaminateFlatPictureUrl } from "../lib/laminate-wall-panel-materials";
+import {
+  buildFlatColourPng,
+  buildLaminateFlatPictures,
+  LAMINATE_FLAT_PICTURE_DIRECTORY,
+} from "./generate-laminate-flat-pictures";
 import { LAMINATE_SURFACE_BY_CATEGORY } from "../lib/laminate-surface-finish";
 import { getSurfacePhysicalAssetFailures } from "../lib/surface-material-physical-sampling";
 import { getSurfaceTileColumns, getSurfaceTileRows } from "../components/editor/renderers/surfaceTileRows";
@@ -865,13 +872,17 @@ for (const runtimeMaterial of SURFACE_MATERIAL_RENDER_REGISTRY) {
   );
 }
 
-// Greenlam's 4'x8' patterned laminates as wall panels (J, 25 Oct 2026): one published record per design whose picture covers
-// its sheet, with the cabinets' id, picture and sheet size, audited like the YAML (lib/laminate-wall-panel-materials.ts).
-const laminateSheetDesigns = (
-  CABINET_LAMINATE_COLLECTIONS.find((collection) => collection.id === "hpl-1220x2440")?.laminates ?? []
-).filter((laminate) => laminate[5] !== null);
-assert.equal(laminateSheetDesigns.length, 234, "the 4'x8' collection has 234 patterned designs");
-assert.equal(laminatePanelEntries.length, 233, "every 4'x8' patterned design but one is a wall panel");
+// Greenlam's laminates as wall panels (J, 25 and 27 Oct 2026): one published record per design, with the cabinets' id and
+// sheet size, audited like the YAML (lib/laminate-wall-panel-materials.ts). A patterned design draws the cabinets' picture at
+// the size it covers; a flat colour draws a one-colour picture of its catalogue colour over the whole sheet.
+const laminateCollectionById = new Map(CABINET_LAMINATE_COLLECTIONS.map((collection) => [collection.id, collection]));
+const laminatesOf = (collectionId: string) => laminateCollectionById.get(collectionId)?.laminates ?? [];
+assert.deepEqual(
+  ["hpl-1220x2440", "hpl-1300x3050"].map((id) => [laminatesOf(id).length, laminatesOf(id).filter((laminate) => laminate[5] === null).length]),
+  [[342, 108], [31, 10]],
+  "the 4'x8' collection's 342 designs, 108 of them flat colours; the 4.25'x10' collection's 31, 10 of them flat"
+);
+assert.equal(laminatePanelEntries.length, 372, "every design is a wall panel but 5338 Steamed Bouchle");
 // The panels' file_path is a label relative to the repository. Joined to process.cwd() with a computed name, it made Next's
 // file tracer copy the whole repository, tests included, into /api/catalog's server build, which the production artifact
 // check refuses (PR #207's first CI run, 25 Oct 2026).
@@ -881,18 +892,16 @@ assert.doesNotMatch(
   "the laminate wall panels' sources never build a path from process.cwd()"
 );
 assert.ok(
-  laminatePanelEntries.every((entry) => entry.file_path === "catalog/laminates/greenlam/hpl-1220x2440.json"),
-  "each laminate wall panel names its catalogue by its path in the repository"
-);
-assert.ok(
   !sourceByMaterialId.has("greenlam-woodgrains-5338"),
-  "5338 Steamed Bouchle's picture covers 1220x2115 mm, less than its sheet, so it can't be drawn on a wall at real size"
+  "5338 Steamed Bouchle's picture covers 1220x2115 mm of its 4'x8' sheet, so it would repeat on every sheet"
 );
+const flatPictures = buildLaminateFlatPictures();
 for (const panel of laminatePanelEntries) {
   const id = panel.surface_material.material_id;
-  const laminate = laminateSheetDesigns.find((design) => design[0] === id);
-  assert.ok(laminate, `${id} is a 4'x8' cabinet laminate`);
-  assert.ok(panel.file_path.endsWith("catalog/laminates/greenlam/hpl-1220x2440.json"), `${id} comes from the laminate catalogue`);
+  const collection = CABINET_LAMINATE_COLLECTIONS.find((candidate) => candidate.laminates.some((design) => design[0] === id));
+  const laminate = collection?.laminates.find((design) => design[0] === id);
+  assert.ok(collection && laminate, `${id} is a cabinet laminate`);
+  assert.equal(panel.file_path, getLaminateCollectionSourcePath(collection), `${id} names its catalogue by its path in the repository`);
   assert.deepEqual(
     [...auditSurfaceMaterialEntry(panel, panel.file_path).failures, ...getSurfacePhysicalAssetFailures(panel)],
     [],
@@ -904,12 +913,23 @@ for (const panel of laminatePanelEntries) {
     `${id} is a published wall panel`
   );
   assert.equal(panel.surface_material.product_name, `Greenlam ${laminate[2]} ${laminate[1]}`, `${id} is named, then numbered`);
-  assert.deepEqual([panel.physical_specs.tile_width_mm, panel.physical_specs.tile_length_mm], [1220, 2440], `${id} is a 4'x8' sheet`);
+  assert.deepEqual(
+    [panel.physical_specs.tile_width_mm, panel.physical_specs.tile_length_mm, panel.physical_specs.total_thickness_mm],
+    [collection.sheetMm.width, collection.sheetMm.height, collection.sheetMm.thickness],
+    `${id} is its collection's sheet`
+  );
+  const flatUrl = getLaminateFlatPictureUrl(laminate[4]);
   assert.deepEqual(
     [panel.texture_assets.base_color_url, panel.texture_assets.swatch_url, panel.texture_assets.image_physical_size_mm],
-    [laminate[5], laminate[6], { width: laminate[7], height: laminate[8] }],
-    `${id} draws the cabinets' picture at the size it covers`
+    laminate[5] === null
+      ? [flatUrl, flatUrl, { width: collection.sheetMm.width, height: collection.sheetMm.height }]
+      : [laminate[5], laminate[6], { width: laminate[7], height: laminate[8] }],
+    `${id} draws the cabinets' picture at the size it covers, or its flat colour over the whole sheet`
   );
+  if (laminate[5] === null) {
+    const file = path.join("public", flatUrl);
+    assert.ok(fs.readFileSync(file).equals(buildFlatColourPng(laminate[4])), `${id}: ${file} is one colour, ${laminate[4]}`);
+  }
   assert.deepEqual(panel.rendering.available_pattern_layouts, ["straight"], `${id} is laid straight`);
   assert.deepEqual(
     [panel.rendering.roughness, panel.rendering.metalness],
@@ -921,22 +941,43 @@ for (const panel of laminatePanelEntries) {
     `${id}: thin HPL is for dry walls`
   );
 }
+assert.deepEqual(
+  [...flatPictures.keys()].sort(),
+  fs.readdirSync(LAMINATE_FLAT_PICTURE_DIRECTORY).filter((name) => name.endsWith(".png"))
+    .map((name) => path.join(LAMINATE_FLAT_PICTURE_DIRECTORY, name)).sort(),
+  "one flat picture per flat colour (114 colours for 118 designs), and no others"
+);
+assert.equal(flatPictures.size, 114);
+assert.deepEqual(
+  laminatePanelEntries
+    .filter((panel) => panel.physical_specs.tile_length_mm === 3050 && panel.texture_assets.base_color_url?.endsWith(".webp"))
+    .map((panel) => panel.texture_assets.image_physical_size_mm?.height)
+    .reduce<Record<string, number>>((counts, height) => ({ ...counts, [String(height)]: (counts[String(height)] ?? 0) + 1 }), {}),
+  { 1299: 1, 2600: 19, 2816: 1 },
+  "the 10' pictures are shorter than their 3050 mm sheet, so they are drawn from its foot (wallPanelSheetPainter.ts)"
+);
 assert.equal(
   getSurfaceMaterialById("greenlam-woodgrains-5394")?.surface_material.surface_category,
   "wall_panel",
   "the server registry serves the laminate wall panels"
 );
+assert.equal(getSurfaceMaterialById("greenlam-solids-112")?.physical_specs.tile_length_mm, 3050, "and the 10' sheets");
 const panelEffectCounts = laminatePanelEntries.reduce<Record<string, number>>((counts, panel) => {
   counts[panel.classification.design_effect] = (counts[panel.classification.design_effect] ?? 0) + 1;
   return counts;
 }, {});
 assert.deepEqual(
   panelEffectCounts,
-  { wood: 158, woven: 7, pattern: 30, marble: 6, stone: 4, concrete: 1, metallic: 19, plain: 8 },
+  { wood: 167, woven: 7, pattern: 38, marble: 7, stone: 6, concrete: 1, metallic: 20, plain: 126 },
   "wood for woodgrains, plain for solids and Unicore, metallic for metals and pearlescents, and an abstract's effect from its name"
 );
 assert.equal(sourceByMaterialId.get("greenlam-abstracts-5571")?.classification.design_effect, "marble", "Creme Marquina");
 assert.equal(sourceByMaterialId.get("greenlam-abstracts-5641")?.classification.design_effect, "pattern", "Kimono");
+assert.deepEqual(
+  ["greenlam-abstracts-5794", "greenlam-abstracts-5865"].map((id) => [sourceByMaterialId.get(id)?.surface_material.product_name, sourceByMaterialId.get(id)?.classification.design_effect]),
+  [["Greenlam Grey Onyx 5794", "stone"], ["Greenlam Dune Pietra 5865", "stone"]],
+  "onyx and pietra (Italian for stone) name stones"
+);
 
 // Wall panels are laid from the floor up, so the cut sheet is at the top of a 2.7 m wall, and the parts of a wall around a
 // door or window, each painted on its own canvas, share one set of joints. Tiles keep their rows from the canvas top.

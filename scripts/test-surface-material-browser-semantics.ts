@@ -51,8 +51,8 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-// 1,405 YAML records and, since 25 Oct 2026, 233 laminate wall panels from catalog/laminates.
-assert.equal(records.length, 1638, "the browser must join all 1638 render and catalog identities");
+// 1,405 YAML records and the laminate wall panels from catalog/laminates: 233 since 25 Oct 2026, 372 since 27 Oct.
+assert.equal(records.length, 1777, "the browser must join all 1777 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);
@@ -125,6 +125,20 @@ assert.deepEqual(
   ],
   ["Greenlam", "Woodgrains", "Nordic Acacia 5394", "1220x2440 mm", "Wood"],
   "a laminate wall panel's card"
+);
+// A flat colour on a 4.25'x10' sheet (27 Oct 2026): its swatch is its one-colour picture.
+const brilliantWhite = records.find((record) => record.surface_material.material_id === "greenlam-solids-112");
+assert.ok(brilliantWhite);
+assert.deepEqual(
+  [
+    getSurfaceMaterialCollectionLabel(brilliantWhite),
+    getSurfaceMaterialModelName(brilliantWhite),
+    getSurfaceMaterialSizeLabel(brilliantWhite),
+    getSurfaceMaterialEffectLabel(brilliantWhite),
+    brilliantWhite.texture_assets.swatch_url,
+  ],
+  ["Solids", "Brilliant White 112", "1300x3050 mm", "Plain", "/assets/catalog/laminates/flat-colours/f7f7f7.png"],
+  "a flat colour's card"
 );
 // The browser sorts by name: a laminate wall panel sits among the tiles by its design's name, not ahead of them by its code.
 const wallGroupNames = buildSurfaceMaterialProductGroups(
@@ -284,11 +298,19 @@ const outdoorGroupIds = groups
   .map((group) => group.id)
   .sort();
 assert.equal(outdoorGroupIds.length, 66, "cards with an outdoor size: 36 of catalogued colours, 30 of Plein Air's own");
+// A card named for the word is found too: Greenlam's Grass Green 250, a wall panel since 27 Oct 2026.
+const namedFor = (query: string) => groups
+  .filter((group) => group.variants.some((variant) => variant.surface_material.product_name.toLowerCase().includes(query.toLowerCase())))
+  .map((group) => group.id);
+assert.deepEqual(
+  ["terrace", "Patio", "pool", "outdoor", "driveway", "steps", "shower", "grass", "Gravel", "raised"].flatMap(namedFor),
+  ["greenlam-solids-250"]
+);
 for (const query of ["terrace", "Patio", "pool", "outdoor", "driveway", "steps", "shower", "grass", "Gravel", "raised"]) {
   assert.deepEqual(
     runProductionSurfaceFilter({ search: query }).map((group) => group.id).sort(),
-    outdoorGroupIds,
-    `a search for "${query}" finds the cards with an outdoor size`
+    [...outdoorGroupIds, ...namedFor(query)].sort(),
+    `a search for "${query}" finds the cards with an outdoor size, and any named for it`
   );
 }
 

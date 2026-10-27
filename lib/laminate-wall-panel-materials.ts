@@ -9,18 +9,31 @@ import { SURFACE_PHYSICAL_SIZE_TOLERANCE } from "./surface-material-physical-sam
 import type { SurfaceDesignEffect, SurfaceMaterial } from "./surface-material-schema";
 
 /**
- * Laminate sheets as wall panels, from the one laminate catalogue the cabinets use (J, 22 and 25 Oct 2026).
+ * Laminate sheets as wall panels, from the one laminate catalogue the cabinets use (J, 22, 25 and 27 Oct 2026).
  *
- * Each patterned design of Greenlam's 4'x8' collection becomes a `wall_panel` surface material with the same id, picture and
- * sizes: a portrait 1220x2440 mm sheet whose one face is the design's picture, drawn at the size it covers. There is no YAML
- * copy; the surface generator and the server registry both read these records, and they are audited like the YAML ones.
- * See docs/architecture/cabinet-laminates.md.
+ * Each design becomes a `wall_panel` surface material with the same id and sheet size: a portrait sheet whose one face is the
+ * design's picture, drawn at the size it covers. There is no YAML copy; the surface generator and the server registry both
+ * read these records, and they are audited like the YAML ones. See docs/architecture/cabinet-laminates.md.
  *
- * Left out: the flat colours (the surface schema needs a picture), the 4.25'x10' collection (its pictures cover 2600 of a
- * sheet's 3050 mm), and a design whose picture covers less than its sheet (5338 Steamed Bouchle, 1220x2115 mm), which can't
- * be drawn at real size.
+ * - **Patterned designs** use their picture.
+ * - **Flat colours** (the solids, whose scans are unevenly lit, so the cabinets draw them flat) use a one-colour picture of
+ *   their catalogue colour that covers the sheet (`getLaminateFlatPictureUrl`, written by
+ *   scripts/generate-laminate-flat-pictures.ts).
+ * - **The 4'x8' collection's pictures must cover the sheet.** 5338 Steamed Bouchle (1220x2115 mm) is left out, because it
+ *   would repeat on every sheet.
+ * - **The 4.25'x10' collection's pictures cover only 2600 of a sheet's 3050 mm** (Tuscany Oak 2816; Albin Oak Black is a
+ *   1299 mm tile that repeats by design). They are drawn at real size from the sheet's foot, and repeat above it
+ *   (`PICTURE_FROM_SHEET_FOOT_COLLECTION_IDS`; J, 27 Oct: "Real size, from the floor").
  */
-export const LAMINATE_WALL_PANEL_COLLECTION_IDS: readonly string[] = ["hpl-1220x2440"];
+export const LAMINATE_WALL_PANEL_COLLECTION_IDS: readonly string[] = ["hpl-1220x2440", "hpl-1300x3050"];
+
+/** Collections whose pictures may be shorter than the sheet: drawn from its foot, repeating above (wallPanelSheetPainter.ts). */
+const PICTURE_FROM_SHEET_FOOT_COLLECTION_IDS: readonly string[] = ["hpl-1300x3050"];
+
+/** A flat colour's picture: one colour, the same for every design of that colour. */
+export function getLaminateFlatPictureUrl(colour: string): string {
+  return `/assets/catalog/laminates/flat-colours/${colour.replace(/^#/, "").toLowerCase()}.png`;
+}
 
 const COLLECTION_LABEL: Record<CabinetLaminateCategory, string> = {
   abstracts: "Abstracts",
@@ -31,11 +44,11 @@ const COLLECTION_LABEL: Record<CabinetLaminateCategory, string> = {
   woodgrains: "Woodgrains",
 };
 
-// An abstract's effect is read from its name only where the name says it (Creme Marquina, Tivoli Travertine, Urban Concrete,
-// Grey Mesh); the rest are patterns.
+// An abstract's effect is read from its name only where the name says it (Creme Marquina, Tivoli Travertine, Grey Onyx, Dune
+// Pietra, Urban Concrete, Grey Mesh); the rest are patterns.
 const ABSTRACT_EFFECT_BY_NAME: ReadonlyArray<[RegExp, SurfaceDesignEffect]> = [
   [/\b(marble|marmor|marquina|statuario)\b/i, "marble"],
-  [/\b(travertine|sandstone)\b/i, "stone"],
+  [/\b(travertine|sandstone|onyx|pietra)\b/i, "stone"],
   [/\bconcrete\b/i, "concrete"],
   [/\b(mesh|woven|twine)\b/i, "woven"],
 ];
@@ -52,14 +65,25 @@ export function getLaminateCollectionSourcePath(collection: Pick<CabinetLaminate
   return `catalog/laminates/${collection.supplier.toLowerCase()}/${collection.id}.json`;
 }
 
-/** A picture drawn on a sheet must cover the whole sheet, within the tolerance of supplier pictures. */
-function coversSheet(widthMm: number, heightMm: number, sheet: CabinetLaminateCollection["sheetMm"]): boolean {
+/**
+ * A picture drawn on a sheet must cover the sheet's width, and its height too unless the collection draws its pictures from
+ * the sheet's foot, within the tolerance of supplier pictures.
+ */
+function fitsSheet(widthMm: number, heightMm: number, collection: CabinetLaminateCollection): boolean {
   const enough = 1 - SURFACE_PHYSICAL_SIZE_TOLERANCE;
-  return widthMm / sheet.width >= enough && heightMm / sheet.height >= enough;
+  const sheet = collection.sheetMm;
+  if (widthMm / sheet.width < enough) return false;
+  return heightMm / sheet.height >= enough || PICTURE_FROM_SHEET_FOOT_COLLECTION_IDS.includes(collection.id);
 }
 
 type SheetMm = CabinetLaminateCollection["sheetMm"];
-type PanelPicture = { textureUrl: string; swatchUrl: string; widthMm: number; heightMm: number };
+type PanelPicture = { textureUrl: string; swatchUrl: string; widthMm: number; heightMm: number; flatColour: string | null };
+
+function pictureNote(picture: PanelPicture, sheet: SheetMm): string {
+  if (picture.flatColour) return `A flat colour, ${picture.flatColour}, as the cabinets draw it, over the whole sheet.`;
+  const covers = `One picture is one sheet: it covers ${picture.widthMm}x${picture.heightMm} mm of the ${sheet.width}x${sheet.height} mm sheet`;
+  return picture.heightMm < sheet.height ? `${covers}, drawn from its foot and repeating above.` : `${covers}.`;
+}
 
 function panelSource(collection: CabinetLaminateCollection, picture: PanelPicture): SurfaceMaterial["source"] {
   const sheet = collection.sheetMm;
@@ -70,8 +94,8 @@ function panelSource(collection: CabinetLaminateCollection, picture: PanelPictur
     license_status: "confirmed",
     notes: [
       `From ${getLaminateCollectionSourcePath(collection)}, ${collection.supplier}'s ${collection.name} collection, the catalogue the cabinets use.`,
-      `One picture is one sheet: it covers ${picture.widthMm}x${picture.heightMm} mm of the ${sheet.width}x${sheet.height} mm sheet.`,
-      "Greenlam's permission given (J, 22 Oct 2026); confirmed for wall panels (J, 25 Oct 2026).",
+      pictureNote(picture, sheet),
+      "Greenlam's permission given (J, 22 Oct 2026); confirmed for wall panels (J, 25 Oct 2026; solids and 10' designs 27 Oct).",
     ],
   };
 }
@@ -121,11 +145,22 @@ function panelTextureAssets(sheet: SheetMm, picture: PanelPicture): SurfaceMater
   };
 }
 
+/** The design's picture, or for a flat colour its one-colour picture over the whole sheet; null for one that doesn't fit. */
+function panelPicture(collection: CabinetLaminateCollection, tuple: CabinetLaminateTuple): PanelPicture | null {
+  const [, , , , colour, textureUrl, swatchUrl, widthMm, heightMm] = tuple;
+  if (!textureUrl) {
+    const flatUrl = getLaminateFlatPictureUrl(colour);
+    const { width, height } = collection.sheetMm;
+    return { textureUrl: flatUrl, swatchUrl: flatUrl, widthMm: width, heightMm: height, flatColour: colour };
+  }
+  if (!swatchUrl || !widthMm || !heightMm || !fitsSheet(widthMm, heightMm, collection)) return null;
+  return { textureUrl, swatchUrl, widthMm, heightMm, flatColour: null };
+}
+
 function toWallPanelMaterial(collection: CabinetLaminateCollection, tuple: CabinetLaminateTuple): SurfaceMaterial | null {
-  const [id, code, name, category, , textureUrl, swatchUrl, widthMm, heightMm] = tuple;
-  if (!textureUrl || !swatchUrl || !widthMm || !heightMm) return null;
-  if (!coversSheet(widthMm, heightMm, collection.sheetMm)) return null;
-  const picture: PanelPicture = { textureUrl, swatchUrl, widthMm, heightMm };
+  const [id, code, name, category] = tuple;
+  const picture = panelPicture(collection, tuple);
+  if (!picture) return null;
   return {
     schema_version: 1,
     surface_material: {

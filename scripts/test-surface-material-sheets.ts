@@ -166,6 +166,10 @@ assert.deepEqual(
 assert.equal(buildRoomSurfaceMaterialBomRows([panelled], [door("north")])[0].orderSheets, 13, "the door's sheet is notched");
 const sheetSquare = { ...room({ walls: { default: { materialId: NORDIC_ACACIA } } }), geometry: { width: 2.56, depth: 2.56, height: 2.44 } };
 assert.equal(buildRoomSurfaceMaterialBomRows([sheetSquare])[0].orderSheets, 8, "drawn faces of exactly 2440 x 2440 mm: two whole sheets each");
+// A 4.25'x10' sheet (27 Oct 2026) stands floor to ceiling, so on 2.6 m walls every sheet is trimmed and none is whole: one
+// per position, 1300 mm wide, except the two 280 mm end columns, which share one.
+const [tenFootRow] = buildRoomSurfaceMaterialBomRows([room({ walls: { default: { materialId: "greenlam-solids-112" } } })]);
+assert.deepEqual([tenFootRow.sheetSizeMm, tenFootRow.orderSheets], [{ widthMm: 1300, heightMm: 3050 }, 11]);
 const tiled = buildRoomSurfaceMaterialBomRows([room({ walls: { default: { materialId: ANIMA_WALL_TILE } } })])[0];
 assert.deepEqual([tiled.orderAreaSqm, tiled.sheetSizeMm, tiled.orderSheets], [40.04, null, null], "tiles stay by area");
 

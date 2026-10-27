@@ -21,7 +21,7 @@ import {
 import { paintChevronSurface } from "./surfaceChevronPainter";
 import { paintHerringboneSurface } from "./surfaceHerringbonePainter";
 import { configureSurfaceTexture, type SurfaceTextureUvMode } from "./surfaceTextureSetup";
-import { getSurfaceTileGrid } from "./surfaceTileRows";
+import { getSurfaceTileGrid, isWallPanel } from "./surfaceTileRows";
 import {
   createSurfaceTilePainter,
   getImageSize,
@@ -633,7 +633,7 @@ function createPatternedSurfaceTexture({
   const paintTile = createSurfaceTilePainter({
     context,
     physicalSources,
-    tileSizeMeters: tileSize,
+    tileSizeMeters: tileSize, wallPanel: isWallPanel(material),
     paintLegacyTile: (tile) =>
       drawImageCroppedToTile({ context, image, ...tile, rotateSourceQuarterTurn, allowQuarterTurnVariation, detailStrength }),
   });
