@@ -82,29 +82,29 @@ export function SelectedCabinetPanel({
           aria-hidden={isClientPreview}
         >
           <div
-            data-testid="selected-cabinet-panel" data-touch-area
-            className="w-full rounded-xl bg-white p-4 shadow"
+            data-testid="selected-cabinet-panel" data-touch-area data-surface="floating"
+            className="w-full rounded-xl bg-surface-floating p-4 shadow ring-1 ring-surface-floating-edge"
           >
-            <div className="sticky top-0 z-20 -mx-4 mb-3 border-b border-neutral-200 bg-white/95 px-4 py-2 text-sm font-semibold text-neutral-900 backdrop-blur">
+            <div className="sticky top-0 z-20 -mx-4 mb-3 border-b border-separator bg-surface-floating/95 px-4 py-2 text-sm font-semibold text-label backdrop-blur">
               Selected built-in
             </div>
-            <div className="text-neutral-900">
+            <div className="text-label">
               <div className="text-sm font-semibold">
                 {selectedCabinetItem.name ?? selectedCabinetItem.cabinetDefinition.name}
               </div>
-              <div className="mt-1 text-xs text-neutral-500">
+              <div className="mt-1 text-xs text-label-secondary">
                 W {formatDisplayLength(selectedCabinetItem.cabinetDefinition.totalWidth, measurementUnit)} × H {formatDisplayLength(selectedCabinetItem.cabinetDefinition.height, measurementUnit)} × D {formatDisplayLength(selectedCabinetItem.cabinetDefinition.depth, measurementUnit)}
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-lg bg-neutral-50 p-2">
-                  <div className="text-neutral-500">Modules</div>
+                <div className="rounded-lg bg-tile p-2">
+                  <div className="text-label-secondary">Modules</div>
                   <div className="mt-1 font-semibold">
                     {selectedCabinetItem.cabinetDefinition.modules.length}
                   </div>
                 </div>
                 {isDesigner ? (
-                  <div className="rounded-lg bg-neutral-50 p-2">
-                    <div className="text-neutral-500">BOM lines</div>
+                  <div className="rounded-lg bg-tile p-2">
+                    <div className="text-label-secondary">BOM lines</div>
                     <div className="mt-1 font-semibold">
                       {cabinet.bomLineCount}
                     </div>
@@ -114,10 +114,10 @@ export function SelectedCabinetPanel({
                     data-testid="selected-cabinet-consumer-estimate"
                     data-currency={selectedCabinetDocumentationSnapshot.quoteSummary.currency}
                     data-estimated-total={String(selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal)}
-                    className="rounded-lg bg-blue-50 p-2"
+                    className="rounded-lg bg-accent-tint p-2"
                   >
-                    <div className="text-blue-700">Preliminary estimate</div>
-                    <div className="mt-1 font-semibold text-blue-950">
+                    <div className="text-on-accent-tint">Preliminary estimate</div>
+                    <div className="mt-1 font-semibold text-on-accent-tint">
                       {selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal.toLocaleString("en-US", {
                         style: "currency",
                         currency: selectedCabinetDocumentationSnapshot.quoteSummary.currency,
@@ -131,12 +131,12 @@ export function SelectedCabinetPanel({
                 data-testid="selected-cabinet-placement-controls"
                 data-position={selectedCabinetItem.position.join(",")}
                 data-rotation-y={String(cabinet.rotationY)}
-                className="mt-3 rounded-lg bg-neutral-50 p-3"
+                className="mt-3 rounded-lg bg-tile p-3"
               >
-                <div className="text-xs font-semibold text-neutral-800">
+                <div className="text-xs font-semibold text-label">
                   Placement
                 </div>
-                <div className="mt-1 text-xs text-neutral-500">
+                <div className="mt-1 text-xs text-label-secondary">
                   {selectedCabinetPlanningDimensionsMm
                     ? `${formatDisplayLength(selectedCabinetPlanningDimensionsMm.w, measurementUnit)} × ${formatDisplayLength(selectedCabinetPlanningDimensionsMm.d, measurementUnit)} footprint`
                     : "Footprint unavailable"}
@@ -249,64 +249,64 @@ export function SelectedCabinetPanel({
                   data-generated-output-durable={
                     selectedCabinetAssetManifest?.generatedOutput.durable ? "true" : "false"
                   }
-                  className="mt-3 rounded-lg bg-neutral-50 p-3"
+                  className="mt-3 rounded-lg bg-tile p-3"
                 >
-                  <div className="text-xs font-semibold text-neutral-800">
+                  <div className="text-xs font-semibold text-label">
                     Design-to-build data
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Quote total</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Quote total</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.quoteSummary.currency}{" "}
                         {selectedCabinetDocumentationSnapshot.quoteSummary.estimatedTotal.toLocaleString()}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">RFQ status</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">RFQ status</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.supplierReadiness.status.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Cut list</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Cut list</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.cutList.length} parts
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Edge banding</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Edge banding</div>
                       <div className="mt-1 font-semibold">
                         {formatDisplayLength(edgeBandingTotalM * 1000, measurementUnit)}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Release gates</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Release gates</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.releaseChecklist.length}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Release status</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Release status</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.fabricationReleaseReadiness.status.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Built-in type</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Built-in type</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.assemblyProfile.label}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Complexity</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Complexity</div>
                       <div className="mt-1 font-semibold">
                         {selectedCabinetDocumentationSnapshot.assemblyProfile.fabricationComplexity}
                       </div>
                     </div>
                   </div>
                   <div className="mt-3 grid gap-2">
-                    <div className="text-xs font-semibold text-neutral-700">
+                    <div className="text-xs font-semibold text-control-label-idle">
                       Materials
                     </div>
                     <div className="grid max-h-28 gap-1 overflow-auto">
@@ -314,16 +314,16 @@ export function SelectedCabinetPanel({
                         <div
                           key={item.id}
                           data-testid="selected-cabinet-material-row"
-                          className="flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"
+                          className="flex justify-between gap-2 rounded-md bg-surface-floating px-2 py-1 text-xs ring-1 ring-surface-floating-edge"
                         >
                           <span className="truncate">{item.materialName}</span>
-                          <span className="shrink-0 text-neutral-500">
+                          <span className="shrink-0 text-label-secondary">
                             {item.partCount} parts
                           </span>
                         </div>
                       ))}
                     </div>
-                    <div className="text-xs font-semibold text-neutral-700">
+                    <div className="text-xs font-semibold text-control-label-idle">
                       Hardware
                     </div>
                     <div className="grid max-h-24 gap-1 overflow-auto">
@@ -332,16 +332,16 @@ export function SelectedCabinetPanel({
                           <div
                             key={item.id}
                             data-testid="selected-cabinet-hardware-row"
-                            className="flex justify-between gap-2 rounded-md bg-white px-2 py-1 text-xs"
+                            className="flex justify-between gap-2 rounded-md bg-surface-floating px-2 py-1 text-xs ring-1 ring-surface-floating-edge"
                           >
                             <span className="truncate">{item.hardwareName}</span>
-                            <span className="shrink-0 text-neutral-500">
+                            <span className="shrink-0 text-label-secondary">
                               {item.quantity} ea
                             </span>
                           </div>
                         ))
                       ) : (
-                        <div className="text-xs text-neutral-500">
+                        <div className="text-xs text-label-secondary">
                           No hardware scheduled.
                         </div>
                       )}
@@ -390,51 +390,51 @@ export function SelectedCabinetPanel({
                   data-can-issue-purchase-review={
                     projectCabinetHandoffPackage.canIssueForPurchaseReview ? "true" : "false"
                   }
-                  className="mt-3 rounded-lg bg-neutral-50 p-3"
+                  className="mt-3 rounded-lg bg-tile p-3"
                 >
-                  <div className="text-xs font-semibold text-neutral-800">
+                  <div className="text-xs font-semibold text-label">
                     Project readiness
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Handoff</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Handoff</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.handoffStatus.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Scope</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Scope</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.scopePackage.totals.familyCount} family /{" "}
                         {projectCabinetHandoffPackage.packages.scopePackage.totals.assemblyTypeCount} type
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Quote</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Quote</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.quotePackage.quoteStatus.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Purchase</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Purchase</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.purchaseReadinessPackage.purchaseReadiness.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Fabrication</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Fabrication</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.fabricationReleasePackage.status.replace(/_/g, " ")}
                       </div>
                     </div>
-                    <div className="rounded-md bg-white p-2">
-                      <div className="text-neutral-500">Install</div>
+                    <div className="rounded-md bg-surface-floating p-2 ring-1 ring-surface-floating-edge">
+                      <div className="text-label-secondary">Install</div>
                       <div className="mt-1 font-semibold">
                         {projectCabinetHandoffPackage.packages.installationPlanPackage.installationReadiness.replace(/_/g, " ")}
                       </div>
                     </div>
                   </div>
-                  <div className="mt-2 text-xs text-neutral-500">
+                  <div className="mt-2 text-xs text-label-secondary">
                     {projectCabinetHandoffPackage.totals.requiredApprovalCount} approvals ·{" "}
                     {projectCabinetHandoffPackage.totals.fieldVerificationRequiredCount} field checks ·{" "}
                     {projectCabinetHandoffPackage.packages.procurementPackage.totals.customQuoteRequiredCount} quote rows
