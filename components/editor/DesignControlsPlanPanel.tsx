@@ -79,6 +79,7 @@ import {
 } from "./design-controls-plan/EmptyFloorPlanSurfacesActions";
 import { WallPaintPicker } from "./design-controls-plan/WallPaintPicker";
 import { SurfaceMaterialCatalogBoundary } from "./design-controls-plan/SurfaceMaterialCatalogBoundary";
+import { SurfaceBrowserFilterBar } from "./design-controls-plan/SurfaceBrowserFilterBar";
 import { SurfaceBrowserHeader } from "./design-controls-plan/SurfaceBrowserHeader";
 import { RoomSurfaceRows, openRoomSurfaceTarget, roomSurfaceRowsOf, type RoomSurfaceTarget } from "./design-controls-plan/RoomSurfaceRows";
 import {
@@ -1117,28 +1118,6 @@ export default function DesignControlsPlanPanel({
       value: nextRecommendedOnly ? activeRoomType : null,
     });
   };
-  const renderSurfaceFilterSelect = (
-    key: SurfaceFilterKey,
-    label: string,
-    options: string[]
-  ) => (
-    <label className="block text-xs font-semibold text-control-label-idle">
-      {label}
-      <select
-        data-testid={`surfaces-filter-${key}`}
-        value={surfaceFilters[key] ?? ""}
-        className="mt-1 h-9 w-full rounded-lg border border-box-border bg-field px-2 text-xs text-control-label"
-        onChange={(event) => setSurfaceFilter(key, event.currentTarget.value)}
-      >
-      <option value="">All</option>
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  </label>
-  );
   const floorMaterialMetaClass = "block text-xs text-label-secondary";
   const floorFieldLabelClass = "text-xs font-semibold text-control-label-idle";
   const floorInputClass = "h-9 w-full rounded-lg border border-box-border bg-field px-2 text-right text-sm text-label";
@@ -1245,71 +1224,23 @@ export default function DesignControlsPlanPanel({
             renderWallPaintPicker()
           ) : (
             <>
-          <div className="mt-2 grid grid-cols-[1fr_auto] gap-2">
-            <label className="block">
-              <span className="sr-only">Search surface materials</span>
-              <input
-                ref={surfaceSearchInputRef}
-                type="search"
-                data-testid="surfaces-search"
-                value={flooringSearch}
-                onChange={(event) => setFlooringSearch(event.currentTarget.value)}
-                placeholder={activeSurfaceTarget === "floor" ? "Search flooring" : "Search wall finishes"}
-                className="h-9 w-full rounded-lg border border-box-border bg-field px-2.5 text-sm text-label placeholder:text-label-tertiary"
-              />
-            </label>
-            <Button
-              size="regular"
-              data-testid="surfaces-filter-toggle"
-              onClick={() => setSurfaceFilterDrawerOpen((open) => !open)}
-            >
-              Filter
-            </Button>
-          </div>
-          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <Button
-              data-testid="surfaces-recommended-filter"
-              size="compact"
-              pressed={surfaceFilters.recommendedOnly}
-              onClick={toggleRecommendedSurfaceFilter}
-            >
-              Recommended
-            </Button>
-            <Button
-              data-testid="surfaces-favorites-filter"
-              size="compact"
-              pressed={surfaceFilters.favoritesOnly}
-              onClick={toggleFavoriteSurfaceFilter}
-            >
-              Favourites
-            </Button>
-            <Button
-              data-testid="surfaces-view-toggle"
-              variant="secondary" size="compact"
-              onClick={() => setSurfaceViewMode((mode) => (mode === "grid" ? "list" : "grid"))}
-            >
-              {surfaceViewMode === "grid" ? "List" : "Grid"}
-            </Button>
-            {hasSurfaceFilters ? (
-              <Button
-                data-testid="surfaces-clear-filters"
-                variant="secondary" size="compact"
-                onClick={clearSurfaceFilters}
-              >
-                Clear
-              </Button>
-            ) : null}
-          </div>
-
-          {surfaceFilterDrawerOpen ? (
-            <div data-testid="surfaces-filter-drawer" className="mt-2 grid gap-2 rounded-lg border border-box-border bg-field p-2">
-              {renderSurfaceFilterSelect("brand", "Brand", surfaceFilterOptions.brand)}
-              {renderSurfaceFilterSelect("collection", "Collection", surfaceFilterOptions.collection)}
-              {renderSurfaceFilterSelect("effect", "Effect", surfaceFilterOptions.effect)}
-              {renderSurfaceFilterSelect("size", "Size", surfaceFilterOptions.size)}
-              {renderSurfaceFilterSelect("color", "Color", surfaceFilterOptions.color)}
-            </div>
-          ) : null}
+          <SurfaceBrowserFilterBar
+            search={flooringSearch}
+            searchPlaceholder={activeSurfaceTarget === "floor" ? "Search flooring" : "Search wall finishes"}
+            searchInputRef={surfaceSearchInputRef}
+            filters={surfaceFilters}
+            filterOptions={surfaceFilterOptions}
+            filterDrawerOpen={surfaceFilterDrawerOpen}
+            viewMode={surfaceViewMode}
+            hasFilters={hasSurfaceFilters}
+            onSearchChange={setFlooringSearch}
+            onFilterChange={setSurfaceFilter}
+            onToggleFilterDrawer={() => setSurfaceFilterDrawerOpen((open) => !open)}
+            onToggleRecommended={toggleRecommendedSurfaceFilter}
+            onToggleFavorites={toggleFavoriteSurfaceFilter}
+            onToggleViewMode={() => setSurfaceViewMode((mode) => (mode === "grid" ? "list" : "grid"))}
+            onClear={clearSurfaceFilters}
+          />
 
           {filteredSurfaceMaterialGroups.length > 0 ? (
             <div className={progressMetaClass}>

@@ -123,6 +123,7 @@ const typescriptGuardFiles = [
   "test-pro-plan-display.tsx",
   "test-plan-words.tsx",
   "test-surface-inspector.tsx",
+  "test-surface-search-colour.tsx",
   "test-item-panel-in-plan.tsx",
   "test-template-review.tsx",
   "test-admin-statuses.tsx",
