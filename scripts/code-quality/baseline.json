@@ -593,7 +593,7 @@
       "limit": 400
     },
     "lib/surface-settings.ts": {
-      "lines": 456,
+      "lines": 404,
       "limit": 400
     },
     "lib/useDesignPageAiLayout.ts": {
@@ -3906,12 +3906,6 @@
       "complexFunctions": {
         "count": 2,
         "maximum": 16
-      }
-    },
-    "lib/surface-settings.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 62
       }
     },
     "lib/useDesignPageAiLayout.ts": {

@@ -257,6 +257,21 @@ export function getDefaultWallSurfaceSettings(
   );
 }
 
+/** A face's or panel's own settings, field by field, over those it sits on: the room's walls, or its face. */
+function inheritSurfaceSettings(own: SurfaceSettings | undefined, parent: NormalizedSurfaceSettings): SurfaceSettings {
+  return {
+    materialId: hasOwnSurfaceSetting(own, "materialId") ? own?.materialId : parent.materialId,
+    paintColorHex: hasOwnSurfaceSetting(own, "paintColorHex") ? own?.paintColorHex : parent.paintColorHex,
+    paintName: hasOwnSurfaceSetting(own, "paintName") ? own?.paintName : parent.paintName,
+    pattern: hasOwnSurfaceSetting(own, "pattern") ? own?.pattern : parent.pattern,
+    rotationDeg: hasOwnSurfaceSetting(own, "rotationDeg") ? own?.rotationDeg : parent.rotationDeg,
+    scale: hasOwnSurfaceSetting(own, "scale") ? own?.scale : parent.scale,
+    offset: hasOwnSurfaceSetting(own, "offset") ? own?.offset : parent.offset,
+    jointSizeMm: hasOwnSurfaceSetting(own, "jointSizeMm") ? own?.jointSizeMm : parent.jointSizeMm,
+    jointColor: hasOwnSurfaceSetting(own, "jointColor") ? own?.jointColor : parent.jointColor,
+  };
+}
+
 export function getWallFaceSurfaceSettings(
   surfaces: RoomSurfaceAssignments | undefined,
   faceId: string | null | undefined,
@@ -265,42 +280,9 @@ export function getWallFaceSurfaceSettings(
 ): NormalizedSurfaceSettings {
   const defaultSettings = getDefaultWallSurfaceSettings(surfaces, normalizeRotationDeg, clampScale);
   const faceSettings = faceId ? surfaces?.walls?.faces?.[faceId] : undefined;
-  return normalizeSurfaceSettings(
-    {
-      materialId: hasOwnSurfaceSetting(faceSettings, "materialId")
-        ? faceSettings?.materialId
-        : defaultSettings.materialId,
-      paintColorHex: hasOwnSurfaceSetting(faceSettings, "paintColorHex")
-        ? faceSettings?.paintColorHex
-        : defaultSettings.paintColorHex,
-      paintName: hasOwnSurfaceSetting(faceSettings, "paintName")
-        ? faceSettings?.paintName
-        : defaultSettings.paintName,
-      pattern: hasOwnSurfaceSetting(faceSettings, "pattern")
-        ? faceSettings?.pattern
-        : defaultSettings.pattern,
-      rotationDeg: hasOwnSurfaceSetting(faceSettings, "rotationDeg")
-        ? faceSettings?.rotationDeg
-        : defaultSettings.rotationDeg,
-      scale: hasOwnSurfaceSetting(faceSettings, "scale")
-        ? faceSettings?.scale
-        : defaultSettings.scale,
-      offset: hasOwnSurfaceSetting(faceSettings, "offset")
-        ? faceSettings?.offset
-        : defaultSettings.offset,
-      jointSizeMm: hasOwnSurfaceSetting(faceSettings, "jointSizeMm")
-        ? faceSettings?.jointSizeMm
-        : defaultSettings.jointSizeMm,
-      jointColor: hasOwnSurfaceSetting(faceSettings, "jointColor")
-        ? faceSettings?.jointColor
-        : defaultSettings.jointColor,
-    },
-    normalizeRotationDeg,
-    clampScale,
-    {
-      jointColor: DEFAULT_WALL_JOINT_COLOR,
-    }
-  );
+  return normalizeSurfaceSettings(inheritSurfaceSettings(faceSettings, defaultSettings), normalizeRotationDeg, clampScale, {
+    jointColor: DEFAULT_WALL_JOINT_COLOR,
+  });
 }
 
 export function getWallPanelSurfaceSettings(
@@ -327,43 +309,9 @@ export function getWallPanelSurfaceSettings(
       .map((fallbackPanelId) => surfaces?.walls?.panels?.[fallbackPanelId])
       .find((settings) => Boolean(settings));
   if (!panelSettings) return faceSettings;
-
-  return normalizeSurfaceSettings(
-    {
-      materialId: hasOwnSurfaceSetting(panelSettings, "materialId")
-        ? panelSettings.materialId
-        : faceSettings.materialId,
-      paintColorHex: hasOwnSurfaceSetting(panelSettings, "paintColorHex")
-        ? panelSettings.paintColorHex
-        : faceSettings.paintColorHex,
-      paintName: hasOwnSurfaceSetting(panelSettings, "paintName")
-        ? panelSettings.paintName
-        : faceSettings.paintName,
-      pattern: hasOwnSurfaceSetting(panelSettings, "pattern")
-        ? panelSettings.pattern
-        : faceSettings.pattern,
-      rotationDeg: hasOwnSurfaceSetting(panelSettings, "rotationDeg")
-        ? panelSettings.rotationDeg
-        : faceSettings.rotationDeg,
-      scale: hasOwnSurfaceSetting(panelSettings, "scale")
-        ? panelSettings.scale
-        : faceSettings.scale,
-      offset: hasOwnSurfaceSetting(panelSettings, "offset")
-        ? panelSettings.offset
-        : faceSettings.offset,
-      jointSizeMm: hasOwnSurfaceSetting(panelSettings, "jointSizeMm")
-        ? panelSettings.jointSizeMm
-        : faceSettings.jointSizeMm,
-      jointColor: hasOwnSurfaceSetting(panelSettings, "jointColor")
-        ? panelSettings.jointColor
-        : faceSettings.jointColor,
-    },
-    normalizeRotationDeg,
-    clampScale,
-    {
-      jointColor: DEFAULT_WALL_JOINT_COLOR,
-    }
-  );
+  return normalizeSurfaceSettings(inheritSurfaceSettings(panelSettings, faceSettings), normalizeRotationDeg, clampScale, {
+    jointColor: DEFAULT_WALL_JOINT_COLOR,
+  });
 }
 
 export function replaceAllWallSurfaceSettings(
