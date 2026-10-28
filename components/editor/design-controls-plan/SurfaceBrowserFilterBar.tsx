@@ -1,6 +1,6 @@
 "use client";
 
-import type { RefObject } from "react";
+import { useRef } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
@@ -10,7 +10,6 @@ import { getSurfaceSearchColour } from "./surfaceMaterialFilters";
 export type SurfaceBrowserFilterBarProps = {
   search: string;
   searchPlaceholder: string;
-  searchInputRef: RefObject<HTMLInputElement | null>;
   filters: SurfaceFilterState;
   filterOptions: Record<SurfaceFilterKey, string[]>;
   filterDrawerOpen: boolean;
@@ -91,19 +90,12 @@ function SearchColourChip({ colour, onRemove }: { colour: string; onRemove: () =
   );
 }
 
-/** Clears a colour search and returns to the search box, which the chip's removal would otherwise leave without focus. */
-function removeSearchColour(props: SurfaceBrowserFilterBarProps) {
-  props.onSearchChange("");
-  props.searchInputRef.current?.focus();
-  track("floor_surface_filter_changed", { key: "search_colour", value: null });
-}
-
 /** The quick filters under the search: a search's colour, Recommended, Favourites, the view, and Clear. */
-function SurfaceQuickFilters(props: SurfaceBrowserFilterBarProps) {
+function SurfaceQuickFilters(props: SurfaceBrowserFilterBarProps & { onRemoveSearchColour: () => void }) {
   const searchColour = getSurfaceSearchColour(props.search);
   return (
     <div className="mt-2 flex flex-wrap items-center gap-1.5">
-      {searchColour ? <SearchColourChip colour={searchColour} onRemove={() => removeSearchColour(props)} /> : null}
+      {searchColour ? <SearchColourChip colour={searchColour} onRemove={props.onRemoveSearchColour} /> : null}
       <Button
         data-testid="surfaces-recommended-filter"
         size="compact"
@@ -132,15 +124,25 @@ function SurfaceQuickFilters(props: SurfaceBrowserFilterBarProps) {
   );
 }
 
-/** The surface browser's search, quick filters and filter drawer. */
+/**
+ * The surface browser's search, quick filters and filter drawer. The bar holds the search box's ref itself: a ref passed in
+ * with the other props makes React's lint rule (react-hooks/refs) treat every prop read during render as a ref read.
+ */
 export function SurfaceBrowserFilterBar(props: SurfaceBrowserFilterBarProps) {
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  // Clears a colour search and returns to the search box, which the chip's removal would otherwise leave without focus.
+  const removeSearchColour = () => {
+    props.onSearchChange("");
+    searchInputRef.current?.focus();
+    track("floor_surface_filter_changed", { key: "search_colour", value: null });
+  };
   return (
     <>
       <div className="mt-2 grid grid-cols-[1fr_auto] gap-2">
         <label className="block">
           <span className="sr-only">Search surface materials</span>
           <input
-            ref={props.searchInputRef}
+            ref={searchInputRef}
             type="search"
             data-testid="surfaces-search"
             value={props.search}
@@ -153,7 +155,7 @@ export function SurfaceBrowserFilterBar(props: SurfaceBrowserFilterBarProps) {
           Filter
         </Button>
       </div>
-      <SurfaceQuickFilters {...props} />
+      <SurfaceQuickFilters {...props} onRemoveSearchColour={removeSearchColour} />
       {props.filterDrawerOpen ? (
         <div data-testid="surfaces-filter-drawer" className="mt-2 grid gap-2 rounded-lg border border-box-border bg-field p-2">
           {FILTER_SELECTS.map(([key, label]) => (

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { createElement, createRef } from "react";
+import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import {
@@ -97,7 +97,6 @@ async function main(): Promise<void> {
   const props = (text: string): SurfaceBrowserFilterBarProps => ({
     search: text,
     searchPlaceholder: "Search wall finishes",
-    searchInputRef: createRef<HTMLInputElement>(),
     filters: {},
     filterOptions: { brand: [], collection: [], effect: [], size: [], color: colourOptions },
     filterDrawerOpen: false,

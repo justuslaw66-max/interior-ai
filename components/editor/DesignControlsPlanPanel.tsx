@@ -318,7 +318,6 @@ export default function DesignControlsPlanPanel({
   const floorFinishPanelOpenSignalRef = useRef(0);
   const pendingSurfaceRevealRef = useRef(false);
   const surfaceWorkspaceRef = useRef<HTMLDivElement | null>(null);
-  const surfaceSearchInputRef = useRef<HTMLInputElement | null>(null);
   const planStartMode = controlledPlanStartMode ?? localPlanStartMode;
   const setPlanStartMode = (mode: PlanStartMode) => {
     setLocalPlanStartMode(mode);
@@ -1227,7 +1226,6 @@ export default function DesignControlsPlanPanel({
           <SurfaceBrowserFilterBar
             search={flooringSearch}
             searchPlaceholder={activeSurfaceTarget === "floor" ? "Search flooring" : "Search wall finishes"}
-            searchInputRef={surfaceSearchInputRef}
             filters={surfaceFilters}
             filterOptions={surfaceFilterOptions}
             filterDrawerOpen={surfaceFilterDrawerOpen}
