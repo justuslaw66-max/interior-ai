@@ -1,12 +1,13 @@
 # Admin condo map
 
 `/admin/condo-map` shows the developments from the floor-plan masters on a Mapbox map, each on its own site: the
-whole building as grey massing (33 Residences as its detailed 3D models), a chosen floor cut open with its units' rooms
+whole building as its detailed 3D models (grey massing where they don't load), a chosen floor cut open with its units' rooms
 painted on it, and a chosen unit's card with its plan. It is admin-only and unlisted (not in the admin menu) while J
 decides what it becomes. J's choices, 24 Oct 2026: admins only; all nine developments. 25 Oct 2026: 32 Gilstead
 added, and 12 On Shan taken off (it is a single-owner serviced-apartment building now, Weave Suites – Novena, so its
 units aren't sold one by one; its package is kept in the masters), so nine. Each new development in the masters joins
-the map with a re-export.
+the map with a re-export. 28 Oct 2026: every development has detailed 3D models, as 33 Residences had from the start
+(J: "can we do it for the rest as well"); until then the other eight were grey massing.
 
 ## Decisions
 
@@ -23,7 +24,10 @@ the map with a re-export.
   `<slug>/plans/<picture>` and `<slug>/models/<model>.glb` (`lib/condo-map/condo-map-paths.ts`). `next.config.ts`
   traces the folder into that route and the index into the page. The data is checked as it is read
   (`lib/condo-map/condo-map-data.ts`), so a changed export fails loudly.
-- **33 Residences' models are in Git LFS** (`*.glb`), like the catalogue's models.
+- **The developments' models are in Git LFS** (`*.glb`), like the catalogue's models. The masters build them from
+  each unit's brochure plan (walls, windows and balcony doors read off the plan, laid on the unit's outline) and the
+  brochure's pictures (colours, roofs, fins, screens): `_tools/models3d` there. All nine come to about 17 MB, and the
+  map loads every development's models when it opens.
 - **What a view shows is pure and tested.** `condo-map-view.ts` (choosing a development, floor or unit; a unit brings
   its floor) and `condo-map-layers.ts` (the sources, layers, filters and colours) don't touch Mapbox;
   `scripts/test-condo-map.ts` runs the filters against the real features. `condo-map-mapbox.ts` does the Mapbox work

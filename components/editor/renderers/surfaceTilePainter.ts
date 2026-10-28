@@ -8,6 +8,7 @@ import {
   type SurfacePhysicalTileSample,
 } from "@/lib/surface-material-physical-sampling";
 import type { SurfaceMaterialRenderInfo } from "@/lib/surface-material-runtime";
+import { fillWallPanelSheetFromFoot } from "./wallPanelSheetPainter";
 
 export type ImageSize = { width: number; height: number };
 
@@ -160,18 +161,13 @@ function fillUndersizedTile({
   context.fillRect(-drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
 }
 
-function drawPhysicalTile({
-  context,
-  source,
-  tile,
-  tileWidthMm,
-  tileHeightMm,
-}: {
+function drawPhysicalTile({ context, source, tile, tileWidthMm, tileHeightMm, wallPanel }: {
   context: CanvasRenderingContext2D;
   source: LoadedSurfacePhysicalSource;
   tile: SurfaceTileRect;
   tileWidthMm: number;
   tileHeightMm: number;
+  wallPanel: boolean;
 }) {
   const imageSize = getImageSize(source.image);
   const sample = resolveSurfacePhysicalTileSample({
@@ -182,6 +178,7 @@ function drawPhysicalTile({
     tileWidthMm,
     tileHeightMm,
     seed: tile.seed,
+    allowQuarterTurn: !wallPanel, // a sheet's grain runs as the sheet stands
   });
   const drawWidth = sample.quarterTurn ? tile.height : tile.width;
   const drawHeight = sample.quarterTurn ? tile.width : tile.height;
@@ -194,7 +191,9 @@ function drawPhysicalTile({
   if (sample.quarterTurn) context.rotate(Math.PI / 2);
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
-  if (sample.mode === "undersized") {
+  if (sample.mode === "undersized" && wallPanel) { // a sheet's shorter picture stands on the sheet's foot
+    fillWallPanelSheetFromFoot({ context, image: source.image, imageHeightPx: imageSize.height, sample, drawWidth, drawHeight });
+  } else if (sample.mode === "undersized") {
     fillUndersizedTile({ context, image: source.image, sample, seed: tile.seed, drawWidth, drawHeight });
   } else {
     const { rect } = sample;
@@ -219,18 +218,22 @@ const LAID_NEIGHBOUR_OFFSETS = [[0, -1], [-1, 0], [-1, 1], [-1, -1]] as const;
 /**
  * Returns the painter for one tile. Materials with physical-scale images lay
  * one face (or one true-scale window) per tile and never repeat a face next to
- * itself; every other material keeps the legacy painter it was given.
+ * itself; every other material keeps the legacy painter it was given. A wall
+ * panel's sheet (`wallPanel`) never turns its picture, and paints a shorter one
+ * from its foot (wallPanelSheetPainter.ts).
  */
 export function createSurfaceTilePainter({
   context,
   physicalSources,
   tileSizeMeters,
   paintLegacyTile,
+  wallPanel = false,
 }: {
   context: CanvasRenderingContext2D;
   physicalSources: readonly LoadedSurfacePhysicalSource[] | null;
   tileSizeMeters: { width: number; height: number };
   paintLegacyTile: SurfaceTilePainter;
+  wallPanel?: boolean;
 }): SurfaceTilePainter {
   if (!physicalSources || physicalSources.length === 0) return paintLegacyTile;
 
@@ -252,6 +255,7 @@ export function createSurfaceTilePainter({
       tile,
       tileWidthMm: tileSizeMeters.width * 1000,
       tileHeightMm: tileSizeMeters.height * 1000,
+      wallPanel,
     });
   };
 }

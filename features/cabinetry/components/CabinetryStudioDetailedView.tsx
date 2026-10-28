@@ -588,7 +588,7 @@ export function CabinetryStudioDetailedView({
         data-testid="cabinetry-studio"
         data-mode={mode}
         data-busy-action={busyAction ?? ""}
-        className="flex h-full min-h-[680px] flex-col bg-neutral-50 text-neutral-950"
+        className="flex h-full min-h-[680px] flex-col bg-surface-page text-label"
       >
       <CabinetStudioHeader
         experience="detailed"
@@ -603,7 +603,7 @@ export function CabinetryStudioDetailedView({
         onClose={onCancel}
       />
 
-      <div className="flex items-center justify-between gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 lg:hidden">
+      <div className="flex items-center justify-between gap-3 border-b border-warning-tint-border bg-warning-tint px-4 py-2 text-xs text-on-warning-tint lg:hidden">
         <span>Detailed controls work best on a larger screen.</span>
         <Button variant="link" size="inline" className="shrink-0" onClick={() => chooseExperienceMode("guided")}>
           Use guided setup
@@ -626,7 +626,7 @@ export function CabinetryStudioDetailedView({
       />
 
       <div className="hidden flex-1 grid-cols-[290px_minmax(360px,1fr)_310px] overflow-hidden lg:grid">
-        <aside className="overflow-auto border-r border-neutral-200 bg-white p-4">
+        <aside className="overflow-auto border-r border-separator bg-surface p-4">
           <div className="grid gap-5">
             <CabinetStudioNavigator
               activePresetId={activePresetId}
@@ -859,9 +859,9 @@ export function CabinetryStudioDetailedView({
                         <CabinetNumberField label="Drawers" hideLabel compact testId="cabinet-input-drawers" fieldPath="drawerCount" min={0} step={1} integer issues={getIssuesForField("drawerCount", activeModule.id)} value={activeModule.drawerCount} onCommit={(nextValue) => updateModule(activeModule.id, { drawerCount: nextValue })} />
                       </Field>
                     </div>
-                    <div className="grid gap-2 rounded-md border border-neutral-200 bg-neutral-50 p-2">
+                    <div className="grid gap-2 rounded-md border border-box-border bg-tile p-2">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-semibold text-neutral-700">Shelf spacing</span>
+                        <span className="text-xs font-semibold text-control-label-idle">Shelf spacing</span>
                         <Button
                           data-testid="cabinet-shelf-spacing-lock"
                           aria-pressed={activeShelfSpacingLocked}
@@ -903,10 +903,10 @@ export function CabinetryStudioDetailedView({
                   </>
                   ) : null}
                   {!activeIsCabinetComponent ? (
-                    <div className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3" data-testid="cabinet-specialty-inspector">
+                    <div className="grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint p-3" data-testid="cabinet-specialty-inspector">
                       <div>
-                        <p className="text-xs font-semibold text-blue-950">{formatCabinetLabel(activeComponentType)} properties</p>
-                        <p className="mt-1 text-xs leading-5 text-blue-700">
+                        <p className="text-xs font-semibold text-on-accent-tint">{formatCabinetLabel(activeComponentType)} properties</p>
+                        <p className="mt-1 text-xs leading-5 text-on-accent-tint">
                           Only controls that generate this specialty component are shown.
                         </p>
                       </div>
@@ -936,14 +936,14 @@ export function CabinetryStudioDetailedView({
                         ))}
                       </div>
                       {isCabinetWallBedPanel(activeModule) ? (
-                        <div className="grid gap-3 rounded-lg border border-blue-200 bg-white p-3" data-testid="cabinet-wall-bed-controls">
+                        <div className="grid gap-3 rounded-lg border border-accent-tint-border bg-surface-secondary p-3" data-testid="cabinet-wall-bed-controls">
                           <div>
-                            <p className="text-xs font-semibold text-blue-950">Mattress and opening</p>
-                            <p className="mt-1 text-xs leading-5 text-blue-700">
+                            <p className="text-xs font-semibold text-on-accent-tint">Mattress and opening</p>
+                            <p className="mt-1 text-xs leading-5 text-on-accent-tint">
                               The preview can show either the closed front or deployed bed, plus its required floor clearance.
                             </p>
                           </div>
-                          <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-2 text-blue-950">
+                          <div className="rounded-lg border border-accent-tint-border bg-accent-tint p-2 text-on-accent-tint">
                             <CabinetWallBedConfigurationPreview
                               mattressSize={getCabinetWallBedMattressSize(activeModule)}
                               orientation={getCabinetWallBedOrientation(activeModule)}
@@ -1014,7 +1014,7 @@ export function CabinetryStudioDetailedView({
                               </ChoiceTile>
                             ))}
                           </div>
-                          <label className="flex items-start gap-2 rounded-md bg-sky-50 p-2 text-xs text-sky-900">
+                          <label className="flex items-start gap-2 rounded-md bg-accent-tint p-2 text-xs text-on-accent-tint">
                             <input
                               data-testid="cabinet-wall-bed-clearance-visible"
                               type="checkbox"
@@ -1027,7 +1027,7 @@ export function CabinetryStudioDetailedView({
                             </span>
                           </label>
                           <div className="grid gap-2">
-                            <span className="text-xs font-medium text-neutral-600">Side storage</span>
+                            <span className="text-xs font-medium text-label-secondary">Side storage</span>
                             <div role="group" aria-label="Wall-bed side-storage configuration" className="grid grid-cols-2 gap-2">
                               {(["none", "left", "right", "both"] as CabinetWallBedSideStorage[]).map((sideStorage) => {
                                 const selected = getCabinetWallBedSideStorage(activeModule) === sideStorage;
@@ -1108,7 +1108,7 @@ export function CabinetryStudioDetailedView({
                               </select>
                             </Field>
                           </div>
-                          <label className="flex items-center gap-2 text-xs font-semibold text-blue-950">
+                          <label className="flex items-center gap-2 text-xs font-semibold text-on-accent-tint">
                             <input
                               data-testid="cabinet-input-trim-reveal-strip-enabled"
                               type="checkbox"
@@ -1146,7 +1146,7 @@ export function CabinetryStudioDetailedView({
                     type="button"
                     data-testid="cabinet-module-options-toggle"
                     aria-expanded={moduleOptionsOpen}
-                    className="flex min-h-9 items-center justify-between rounded-md border border-neutral-200 bg-neutral-50 px-3 text-left text-xs font-semibold text-neutral-700 hover:border-neutral-400"
+                    className="flex min-h-9 items-center justify-between rounded-md border border-box-border bg-tile px-3 text-left text-xs font-semibold text-control-label-idle hover:border-control-edge-hover"
                     onClick={() => {
                       const nextOpen = !moduleOptionsOpen;
                       setModuleOptionsOpen(nextOpen);
@@ -1158,7 +1158,7 @@ export function CabinetryStudioDetailedView({
                     }}
                   >
                     <span>{moduleOptionsOpen ? "Hide module options" : "More module options"}</span>
-                    <span className="text-xs font-medium text-neutral-400">
+                    <span className="text-xs font-medium text-label-secondary">
                       {formatCabinetLabel(activeModule.millworkComponentType ?? "cabinet")}
                     </span>
                   </button>
@@ -1169,8 +1169,8 @@ export function CabinetryStudioDetailedView({
                     id="installation_cleat"
                     visible={visibleModuleOptionGroupIds.has("installation_cleat")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-installation-cleat-enabled"
                         type="checkbox"
@@ -1203,8 +1203,8 @@ export function CabinetryStudioDetailedView({
                     id="anti_tip"
                     visible={visibleModuleOptionGroupIds.has("anti_tip")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-anti-tip-anchor-enabled"
                         type="checkbox"
@@ -1253,8 +1253,8 @@ export function CabinetryStudioDetailedView({
                     id="shelf_pins"
                     visible={visibleModuleOptionGroupIds.has("shelf_pins")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-shelf-pin-rows-enabled"
                         type="checkbox"
@@ -1296,8 +1296,8 @@ export function CabinetryStudioDetailedView({
                     id="hamper"
                     visible={visibleModuleOptionGroupIds.has("hamper")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-hamper-pullout-enabled"
                         type="checkbox"
@@ -1350,10 +1350,10 @@ export function CabinetryStudioDetailedView({
                   </div>
                   </CabinetModuleOptionGroup>
                   {definition.millworkAssemblyType === "wall_paneling" ? (
-                    <div className="grid gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-neutral-800" data-testid="cabinet-wall-panel-pattern-preview">
+                    <div className="grid gap-3 rounded-lg border border-box-border bg-tile p-3 text-label" data-testid="cabinet-wall-panel-pattern-preview">
                       <div>
-                        <p className="text-xs font-semibold text-neutral-800">Panel pattern</p>
-                        <p className="mt-1 text-xs text-neutral-500">
+                        <p className="text-xs font-semibold text-label">Panel pattern</p>
+                        <p className="mt-1 text-xs text-label-secondary">
                           Start with a visual arrangement, then refine rows and columns numerically.
                         </p>
                       </div>
@@ -1491,8 +1491,8 @@ export function CabinetryStudioDetailedView({
                       <CabinetNumberField label="Miter angle" hideLabel compact testId="cabinet-input-trim-miter-angle" min={1} max={89} step={1} unit="°" {...detailedModuleNumberFieldProps("trimMiterAngle", activeModule.trimMiterAngle ?? 45)} />
                     </Field>
                   </div>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-trim-reveal-strip-enabled"
                         type="checkbox"
@@ -1641,7 +1641,7 @@ export function CabinetryStudioDetailedView({
                     id="room_divider"
                     visible={visibleModuleOptionGroupIds.has("room_divider")}
                   >
-                  <label className="flex min-h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-700">
+                  <label className="flex min-h-9 items-center gap-2 rounded-md border border-box-border bg-surface-secondary px-2 text-xs font-medium text-control-label-idle">
                     <input
                       data-testid="cabinet-input-room-divider-finished-back"
                       type="checkbox"
@@ -1703,8 +1703,8 @@ export function CabinetryStudioDetailedView({
                     id="pantry"
                     visible={visibleModuleOptionGroupIds.has("pantry")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-pantry-pullouts-enabled"
                         type="checkbox"
@@ -1763,8 +1763,8 @@ export function CabinetryStudioDetailedView({
                       <CabinetNumberField label="Rack thickness" hideLabel compact testId="cabinet-input-wine-rack-divider-thickness" min={0} step={1} unit="mm" {...detailedModuleNumberFieldProps("wineRackDividerThickness", activeModule.wineRackDividerThickness ?? 0)} />
                     </Field>
                   </div>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-stemware-rack-enabled"
                         type="checkbox"
@@ -1862,8 +1862,8 @@ export function CabinetryStudioDetailedView({
                     id="sink"
                     visible={visibleModuleOptionGroupIds.has("sink")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-sink-cutout-enabled"
                         type="checkbox"
@@ -1914,8 +1914,8 @@ export function CabinetryStudioDetailedView({
                     id="laundry"
                     visible={visibleModuleOptionGroupIds.has("laundry")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-laundry-appliance-bay-enabled"
                         type="checkbox"
@@ -1978,7 +1978,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-xs leading-5 text-neutral-500">Enable the laundry appliance bay to edit utility chase dimensions.</p>
+                      <p className="text-xs leading-5 text-label-secondary">Enable the laundry appliance bay to edit utility chase dimensions.</p>
                     )}
                   </div>
                   </CabinetModuleOptionGroup>
@@ -1986,8 +1986,8 @@ export function CabinetryStudioDetailedView({
                     id="office"
                     visible={visibleModuleOptionGroupIds.has("office")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-office-worksurface-enabled"
                         type="checkbox"
@@ -2040,7 +2040,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-xs leading-5 text-neutral-500">Enable the office workstation to edit power chase dimensions.</p>
+                      <p className="text-xs leading-5 text-label-secondary">Enable the office workstation to edit power chase dimensions.</p>
                     )}
                   </div>
                   </CabinetModuleOptionGroup>
@@ -2048,8 +2048,8 @@ export function CabinetryStudioDetailedView({
                     id="media"
                     visible={visibleModuleOptionGroupIds.has("media")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-media-wall-enabled"
                         type="checkbox"
@@ -2118,8 +2118,8 @@ export function CabinetryStudioDetailedView({
                     id="library"
                     visible={visibleModuleOptionGroupIds.has("library")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-library-ladder-rail-enabled"
                         type="checkbox"
@@ -2158,7 +2158,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-xs leading-5 text-neutral-500">Enable the ladder rail to edit standoff details.</p>
+                      <p className="text-xs leading-5 text-label-secondary">Enable the ladder rail to edit standoff details.</p>
                     )}
                   </div>
                   </CabinetModuleOptionGroup>
@@ -2166,8 +2166,8 @@ export function CabinetryStudioDetailedView({
                     id="lighting"
                     visible={visibleModuleOptionGroupIds.has("lighting")}
                   >
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-lighting-channel-enabled"
                         type="checkbox"
@@ -2219,12 +2219,12 @@ export function CabinetryStudioDetailedView({
                   </Field>
                   {activeHasDoorFront ? (
                     <>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <span className="text-xs font-semibold text-neutral-700">Door count</span>
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <span className="text-xs font-semibold text-control-label-idle">Door count</span>
                     <SegmentedControl label="Door count" size="compact" fill value={activeDoorLayoutMode} onChange={setActiveDoorLayoutMode}
                       options={[{ value: "recommended", label: `Recommended · ${activeDoorCount}`, testId: "cabinet-door-layout-recommended" },
                         { value: "manual", label: "Manual", testId: "cabinet-door-layout-manual" }]} />
-                    <p className="text-xs leading-5 text-neutral-500">
+                    <p className="text-xs leading-5 text-label-secondary">
                       Manual preserves the current recommendation. Returning to Recommended replaces the override as width changes.
                     </p>
                   </div>
@@ -2242,8 +2242,8 @@ export function CabinetryStudioDetailedView({
                       {hingeSides.map((hingeSide) => <option key={hingeSide} value={hingeSide}>{formatCabinetLabel(hingeSide)}</option>)}
                     </select>
                   </Field>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-door-hinge-hardware-enabled"
                         type="checkbox"
@@ -2268,15 +2268,15 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-xs leading-5 text-neutral-500">Enable concealed hinges to edit count and inset.</p>
+                      <p className="text-xs leading-5 text-label-secondary">Enable concealed hinges to edit count and inset.</p>
                     )}
                   </div>
                     </>
                   ) : null}
                   {activeHasDrawerFront ? (
                     <>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <span className="text-xs font-semibold text-neutral-700">Drawer-front heights</span>
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <span className="text-xs font-semibold text-control-label-idle">Drawer-front heights</span>
                     <div
                       role="group"
                       aria-label="Drawer-front height configuration"
@@ -2298,7 +2298,7 @@ export function CabinetryStudioDetailedView({
                         </ChoiceTile>
                       ))}
                     </div>
-                    <p className="text-xs leading-5 text-neutral-500">
+                    <p className="text-xs leading-5 text-label-secondary">
                       Custom starts from the generated stack. Switching back replaces custom proportions.
                     </p>
                     {activeDrawerHeightMode === "custom" ? (
@@ -2321,8 +2321,8 @@ export function CabinetryStudioDetailedView({
                       </div>
                     ) : null}
                   </div>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-drawer-box-enabled"
                         type="checkbox"
@@ -2355,11 +2355,11 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-xs leading-5 text-neutral-500">Enable drawer boxes to edit construction clearances.</p>
+                      <p className="text-xs leading-5 text-label-secondary">Enable drawer boxes to edit construction clearances.</p>
                     )}
                   </div>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-drawer-slide-hardware-enabled"
                         type="checkbox"
@@ -2384,7 +2384,7 @@ export function CabinetryStudioDetailedView({
                       </Field>
                     </div>
                     ) : (
-                      <p className="text-xs leading-5 text-neutral-500">Enable drawer slides to edit length and side clearance.</p>
+                      <p className="text-xs leading-5 text-label-secondary">Enable drawer slides to edit length and side clearance.</p>
                     )}
                   </div>
                     </>
@@ -2414,12 +2414,12 @@ export function CabinetryStudioDetailedView({
                     </select>
                   </Field>
                   {activeHandlePlacementAvailable || activeHandlePlacementMode === "custom" ? (
-                    <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                      <span className="text-xs font-semibold text-neutral-700">Handle placement</span>
+                    <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                      <span className="text-xs font-semibold text-control-label-idle">Handle placement</span>
                       <SegmentedControl label="Handle placement" size="compact" fill value={activeHandlePlacementMode} onChange={setActiveHandlePlacementMode}
                         options={(["automatic", "custom"] as const).map((mode) => ({ value: mode, label: formatCabinetLabel(mode), testId: `cabinet-handle-placement-${mode}`,
                           disabled: mode === "custom" && !activeHandlePlacementAvailable }))} />
-                      <p className="text-xs leading-5 text-neutral-500">
+                      <p className="text-xs leading-5 text-label-secondary">
                         Custom shifts every generated handle from its safe automatic position. Returning to Automatic removes both offsets.
                       </p>
                       {activeHandlePlacementMode === "custom" && activeHandlePlacementAvailable ? (
@@ -2459,10 +2459,10 @@ export function CabinetryStudioDetailedView({
                       role={activeHardwareCompatibility.status === "incompatible" ? "alert" : "status"}
                       className={`rounded-md border p-2 text-xs leading-5 ${
                         activeHardwareCompatibility.status === "compatible"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                          ? "border-success-tint-border bg-success-tint text-on-success-tint"
                           : activeHardwareCompatibility.status === "review_required"
-                            ? "border-amber-200 bg-amber-50 text-amber-800"
-                            : "border-red-200 bg-red-50 text-red-800"
+                            ? "border-warning-tint-border bg-warning-tint text-on-warning-tint"
+                            : "border-danger-tint-border bg-danger-tint text-on-danger-tint"
                       }`}
                     >
                       <span className="block font-semibold">
@@ -2481,10 +2481,10 @@ export function CabinetryStudioDetailedView({
                   ) : null}
                 </div>
 
-                <div className="grid gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3" data-testid="cabinet-fabrication-details">
+                <div className="grid gap-3 rounded-lg border border-box-border bg-tile p-3" data-testid="cabinet-fabrication-details">
                   <button
                     type="button"
-                    className="flex items-center justify-between text-left text-xs font-semibold text-neutral-800"
+                    className="flex items-center justify-between text-left text-xs font-semibold text-label"
                     aria-expanded={fabricationOpen}
                     onClick={() => {
                       const nextOpen = !fabricationOpen;
@@ -2500,7 +2500,7 @@ export function CabinetryStudioDetailedView({
                     <span aria-hidden="true">{fabricationOpen ? "−" : "+"}</span>
                   </button>
                   {!fabricationOpen ? (
-                    <p className="text-xs leading-5 text-neutral-500">
+                    <p className="text-xs leading-5 text-label-secondary">
                       Grain, finished edges, exposed faces, and selected-part cut information.
                     </p>
                   ) : (
@@ -2549,8 +2549,8 @@ export function CabinetryStudioDetailedView({
                       {activeModule.edgeTreatment === "contrasting_edge_band" || activeModule.edgeTreatment === "solid_lipping" ? (
                         <CabinetFinishField key={`${activeModule.id}:edge`} label={activeModule.edgeTreatment === "contrasting_edge_band" ? "Contrasting edge finish" : "Lipping material"} testId="cabinet-input-edge-material" value={activeModule.edgeMaterialId} materials={definition.materials} onChange={(edgeMaterialId) => updateModule(activeModule.id, { edgeMaterialId })} />
                       ) : null}
-                      <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                        <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                      <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                        <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                           <input
                             data-testid="cabinet-input-exposed-faces-automatic"
                             type="checkbox"
@@ -2567,9 +2567,9 @@ export function CabinetryStudioDetailedView({
                         </label>
                         {activeModule.exposedFaces !== undefined ? (
                           <fieldset className="grid grid-cols-2 gap-1.5">
-                            <legend className="mb-1 text-xs font-semibold text-neutral-600">Finished faces</legend>
+                            <legend className="mb-1 text-xs font-semibold text-label-secondary">Finished faces</legend>
                             {exposedFaceOptions.map((option) => (
-                              <label key={option.value} className="flex min-h-7 items-center gap-2 text-xs text-neutral-700">
+                              <label key={option.value} className="flex min-h-7 items-center gap-2 text-xs text-control-label-idle">
                                 <input
                                   data-testid={`cabinet-input-exposed-face-${option.value}`}
                                   type="checkbox"
@@ -2588,13 +2588,13 @@ export function CabinetryStudioDetailedView({
                             ))}
                           </fieldset>
                         ) : (
-                          <p className="text-xs leading-5 text-neutral-500">
+                          <p className="text-xs leading-5 text-label-secondary">
                             Resolved for this module: {resolveCabinetModuleExposedFaces(definition, activeModule).map(formatCabinetLabel).join(", ")}.
                           </p>
                         )}
                       </div>
                       {selectedPart && selectedPartFabrication ? (
-                        <div className="grid gap-1 rounded-md border border-blue-200 bg-blue-50 p-2 text-xs leading-5 text-blue-900" data-testid="cabinet-selected-part-fabrication">
+                        <div className="grid gap-1 rounded-md border border-accent-tint-border bg-accent-tint p-2 text-xs leading-5 text-on-accent-tint" data-testid="cabinet-selected-part-fabrication">
                           <span className="font-semibold">Selected {formatCabinetLabel(selectedPart.type)}</span>
                           <span>Cut face: {formatCabinetLabel(selectedPartFabrication.cutFace.widthAxis)} × {formatCabinetLabel(selectedPartFabrication.cutFace.heightAxis)}; thickness {formatCabinetLabel(selectedPartFabrication.cutFace.thicknessAxis)}</span>
                           <span>Grain: {formatCabinetLabel(selectedPartFabrication.grainDirection)} ({formatCabinetLabel(selectedPartFabrication.grainAxis)})</span>
@@ -2602,7 +2602,7 @@ export function CabinetryStudioDetailedView({
                           <span>Exposed faces: {selectedPartFabrication.exposedFaces.length ? selectedPartFabrication.exposedFaces.map(formatCabinetLabel).join(", ") : "none"}</span>
                         </div>
                       ) : (
-                        <p className="text-xs leading-5 text-neutral-500">
+                        <p className="text-xs leading-5 text-label-secondary">
                           Select a generated panel in the preview to inspect its resolved cut face, grain, and edges.
                         </p>
                       )}
@@ -2617,7 +2617,7 @@ export function CabinetryStudioDetailedView({
               <div className="flex items-center justify-between gap-3">
                 <button
                   type="button"
-                  className="text-left text-xs font-semibold text-neutral-700 underline-offset-2 hover:underline"
+                  className="text-left text-xs font-semibold text-control-label-idle underline-offset-2 hover:underline"
                   onClick={() => {
                     const nextOpen = !advancedOpen;
                     setAdvancedOpen(nextOpen);
@@ -2642,7 +2642,7 @@ export function CabinetryStudioDetailedView({
               </div>
               {advancedOpen ? (
                 <div className="grid gap-3">
-                  <p className="text-xs leading-5 text-neutral-500">
+                  <p className="text-xs leading-5 text-label-secondary">
                     Construction reset restores template geometry and options only. Module layout, finish assignments, and locked values remain unchanged.
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -2749,7 +2749,7 @@ export function CabinetryStudioDetailedView({
                             />
                           </Field>
                           {hasAutomaticProvenance ? (
-                            <div className="flex items-center justify-between gap-2 text-xs font-medium text-neutral-400">
+                            <div className="flex items-center justify-between gap-2 text-xs font-medium text-label-secondary">
                               <span
                                 data-testid={`cabinet-parameter-source-${parameterPath}`}
                                 data-parameter-path={parameterPath}
@@ -2772,7 +2772,7 @@ export function CabinetryStudioDetailedView({
                     })}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <label className="flex min-h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-700">
+                    <label className="flex min-h-9 items-center gap-2 rounded-md border border-box-border bg-surface-secondary px-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-left-end-panel"
                         type="checkbox"
@@ -2787,7 +2787,7 @@ export function CabinetryStudioDetailedView({
                       />
                       Left finished side panel
                     </label>
-                    <label className="flex min-h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-700">
+                    <label className="flex min-h-9 items-center gap-2 rounded-md border border-box-border bg-surface-secondary px-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-right-end-panel"
                         type="checkbox"
@@ -2803,8 +2803,8 @@ export function CabinetryStudioDetailedView({
                       Right finished side panel
                     </label>
                   </div>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-leveling-feet-enabled"
                         type="checkbox"
@@ -2862,8 +2862,8 @@ export function CabinetryStudioDetailedView({
                       </div>
                     ) : null}
                   </div>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-face-frame-enabled"
                         type="checkbox"
@@ -2918,8 +2918,8 @@ export function CabinetryStudioDetailedView({
                       </>
                     ) : null}
                   </div>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-countertop-enabled"
                         type="checkbox"
@@ -2993,8 +2993,8 @@ export function CabinetryStudioDetailedView({
                           ))}
                         </div>
                         <CabinetFinishField label="Top material" testId="cabinet-input-countertop-material" value={definition.countertopMaterialId ?? resolveCabinetModuleFinishId(activeModule) ?? CABINET_DEFAULT_FINISH_ID} materials={definition.materials} onChange={(countertopMaterialId) => updateDefinition((prev) => ({ ...prev, countertopMaterialId }))} />
-                        <div className="grid gap-2 rounded-md border border-neutral-200 bg-neutral-50 p-2">
-                          <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                        <div className="grid gap-2 rounded-md border border-box-border bg-tile p-2">
+                          <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                             <input
                               data-testid="cabinet-input-backsplash-enabled"
                               type="checkbox"
@@ -3052,8 +3052,8 @@ export function CabinetryStudioDetailedView({
                       </>
                     ) : null}
                   </div>
-                  <div className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-neutral-700">
+                  <div className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                    <label className="flex min-h-8 items-center gap-2 text-xs font-medium text-control-label-idle">
                       <input
                         data-testid="cabinet-input-island-seating-enabled"
                         type="checkbox"

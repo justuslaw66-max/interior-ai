@@ -41,7 +41,7 @@ export function CabinetAssemblyInspector({
 }: CabinetAssemblyInspectorProps) {
   return (
     <div
-      className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3"
+      className="grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint p-3"
       data-testid="cabinet-assembly-inspector"
     >
       {sectionTitle("Complete assembly size")}
@@ -92,7 +92,7 @@ export function CabinetAssemblyInspector({
         {widthLocked ? "Overall width locked" : "Lock overall width"}
       </Button>
       {widthBlockedByModuleLocks ? (
-        <p className="text-xs leading-5 text-amber-700">
+        <p className="text-xs leading-5 text-on-warning-tint">
           Unlock a bay or release equal sizing before resizing the complete
           assembly.
         </p>

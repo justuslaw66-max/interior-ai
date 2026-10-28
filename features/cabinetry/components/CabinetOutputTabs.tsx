@@ -60,7 +60,7 @@ export function CabinetOutputTabs({
       role="tablist"
       aria-label="Built-in outputs"
       data-testid="cabinet-output-tabs"
-      className="sticky top-0 z-10 grid grid-cols-3 gap-1 rounded-xl border border-neutral-200 bg-white/95 p-1 shadow-sm backdrop-blur"
+      className="sticky top-0 z-10 grid grid-cols-3 gap-1 rounded-xl border border-separator bg-surface/95 p-1 shadow-sm backdrop-blur"
     >
       {CABINET_OUTPUT_TABS.map(([tabValue, label]) => (
         <button
@@ -74,8 +74,8 @@ export function CabinetOutputTabs({
           tabIndex={value === tabValue ? 0 : -1}
           className={`rounded-lg px-2 py-2 text-xs font-semibold ${
             value === tabValue
-              ? "bg-neutral-950 text-white"
-              : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+              ? "bg-control-primary text-control-on-primary"
+              : "text-label-secondary hover:bg-control-quiet-hover hover:text-label"
           }`}
           onClick={() => onChange(tabValue)}
           onKeyDown={(event) => handleKeyDown(event, tabValue)}

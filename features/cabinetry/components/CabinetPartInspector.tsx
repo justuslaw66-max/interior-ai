@@ -130,7 +130,7 @@ export function CabinetPartInspector({
 
   return (
     <div
-      className="grid gap-4 rounded-xl border border-blue-200 bg-blue-50/50 p-3"
+      className="grid gap-4 rounded-xl border border-accent-tint-border bg-accent-tint p-3"
       data-testid="cabinet-part-inspector"
       data-part-type={selectedPart?.type ?? selectedPartType ?? "unknown"}
     >
@@ -139,7 +139,7 @@ export function CabinetPartInspector({
           {sectionTitle(
             selectedPart ? formatCabinetLabel(selectedPart.type) : "Selected part"
           )}
-          <p className="mt-1 text-xs leading-5 text-blue-800">
+          <p className="mt-1 text-xs leading-5 text-on-accent-tint">
             These controls update the selected part&apos;s parent module without
             exposing unrelated module settings.
           </p>
@@ -150,7 +150,7 @@ export function CabinetPartInspector({
       {!selectedPart ? (
         <p
           role="status"
-          className="rounded-md border border-amber-200 bg-amber-50 p-2 text-xs leading-5 text-amber-800"
+          className="rounded-md border border-warning-tint-border bg-warning-tint p-2 text-xs leading-5 text-on-warning-tint"
         >
           This generated part is updating. Open its parent module if you need
           the full controls now.
@@ -159,7 +159,7 @@ export function CabinetPartInspector({
         <>
           <div className="grid gap-2" data-testid="cabinet-part-material-control">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-semibold text-neutral-700">
+              <span className="text-xs font-semibold text-control-label-idle">
                 {materialTarget === "front" ? "Front material" : "Part material"}
               </span>
               {materialTarget === "front" || materialTarget === "carcass" ? (
@@ -188,9 +188,9 @@ export function CabinetPartInspector({
                 onChange={onUpdatePartMaterial}
               />
             ) : (
-              <div className="rounded-md border border-neutral-200 bg-white px-2.5 py-2 text-xs text-neutral-700">
+              <div className="rounded-md border border-box-border bg-surface-secondary px-2.5 py-2 text-xs text-control-label-idle">
                 <span className="block font-semibold">{materialName}</span>
-                <span className="mt-0.5 block text-xs text-neutral-500">
+                <span className="mt-0.5 block text-xs text-label-secondary">
                   This generated or hardware finish is controlled by its parent
                   system.
                 </span>
@@ -302,8 +302,8 @@ export function CabinetPartInspector({
                   ))}
                 </select>
               </Field>
-              <fieldset className="grid gap-2 rounded-md border border-neutral-200 bg-white p-2">
-                <legend className="px-1 text-xs font-semibold text-neutral-700">
+              <fieldset className="grid gap-2 rounded-md border border-box-border bg-surface-secondary p-2">
+                <legend className="px-1 text-xs font-semibold text-control-label-idle">
                   Handle placement
                 </legend>
                 <SegmentedControl label="Handle placement" size="compact" fill value={handlePlacementMode}
@@ -370,10 +370,10 @@ export function CabinetPartInspector({
               }
               className={`rounded-md border p-2 text-xs leading-5 ${
                 hardwareCompatibility.status === "compatible"
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                  ? "border-success-tint-border bg-success-tint text-on-success-tint"
                   : hardwareCompatibility.status === "review_required"
-                    ? "border-amber-200 bg-amber-50 text-amber-800"
-                    : "border-red-200 bg-red-50 text-red-800"
+                    ? "border-warning-tint-border bg-warning-tint text-on-warning-tint"
+                    : "border-danger-tint-border bg-danger-tint text-on-danger-tint"
               }`}
             >
               <span className="block font-semibold">
@@ -396,7 +396,7 @@ export function CabinetPartInspector({
           {isShelf ? (
             <div className="grid gap-3" data-testid="cabinet-part-shelf-controls">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-neutral-700">
+                <span className="text-xs font-semibold text-control-label-idle">
                   Shelf layout
                 </span>
                 <Button
@@ -545,13 +545,13 @@ export function CabinetPartInspector({
           ) : null}
 
           <dl
-            className="grid grid-cols-3 gap-2 rounded-md border border-neutral-200 bg-white p-2 text-xs"
+            className="grid grid-cols-3 gap-2 rounded-md border border-box-border bg-surface-secondary p-2 text-xs"
             data-testid="cabinet-part-dimensions"
           >
             {(["width", "height", "depth"] as const).map((axis) => (
               <div key={axis}>
-                <dt className="text-neutral-500">{formatCabinetLabel(axis)}</dt>
-                <dd className="mt-0.5 font-semibold text-neutral-900">
+                <dt className="text-label-secondary">{formatCabinetLabel(axis)}</dt>
+                <dd className="mt-0.5 font-semibold text-label">
                   {formatMeasurement(selectedPart.size[axis])}
                 </dd>
               </div>
@@ -560,7 +560,7 @@ export function CabinetPartInspector({
 
           {fabrication ? (
             <div
-              className="grid gap-1 rounded-md border border-blue-200 bg-white p-2 text-xs leading-5 text-blue-900"
+              className="grid gap-1 rounded-md border border-accent-tint-border bg-surface-secondary p-2 text-xs leading-5 text-on-accent-tint"
               data-testid="cabinet-selected-part-fabrication"
             >
               <span className="font-semibold">Resolved fabrication</span>
@@ -587,21 +587,21 @@ export function CabinetPartInspector({
               </span>
             </div>
           ) : (
-            <p className="rounded-md border border-neutral-200 bg-white p-2 text-xs leading-5 text-neutral-500">
+            <p className="rounded-md border border-box-border bg-surface-secondary p-2 text-xs leading-5 text-label-secondary">
               This generated marker has no cut-sheet fabrication treatment.
             </p>
           )}
 
           {issues.length ? (
             <div className="grid gap-1" data-testid="cabinet-part-validation">
-              <span className="text-xs font-semibold text-neutral-700">
+              <span className="text-xs font-semibold text-control-label-idle">
                 Parent module validation
               </span>
               {issues.slice(0, 3).map((issue) => (
                 <button
                   key={issue.id}
                   type="button"
-                  className="rounded-md border border-neutral-200 bg-white p-2 text-left text-xs leading-5 text-neutral-700"
+                  className="rounded-md border border-box-border bg-surface-secondary p-2 text-left text-xs leading-5 text-control-label-idle"
                   onClick={() => onFocusIssue(issue)}
                 >
                   <span className="font-semibold">

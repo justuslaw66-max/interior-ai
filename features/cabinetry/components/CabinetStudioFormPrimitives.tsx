@@ -7,11 +7,11 @@ import type { CabinetValidationIssue } from "../types";
 import { CabinetNumberField } from "./CabinetNumberField";
 
 export function selectClass() {
-  return "h-8 w-full rounded-md border border-neutral-300 bg-white px-2 text-sm text-neutral-900 focus:border-neutral-900";
+  return "h-8 w-full rounded-md border border-control-secondary-border bg-field px-2 text-sm text-label focus-visible:border-blue-600";
 }
 
 export function sectionTitle(title: string) {
-  return <h3 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{title}</h3>;
+  return <h3 className="text-xs font-semibold uppercase tracking-wide text-label-secondary">{title}</h3>;
 }
 
 export function Field({
@@ -24,10 +24,10 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <label className="grid gap-1 text-xs font-medium text-neutral-600">
+    <label className="grid gap-1 text-xs font-medium text-label-secondary">
       <span>{label}</span>
       {children}
-      {helper ? <span className="text-xs font-normal leading-4 text-neutral-400">{helper}</span> : null}
+      {helper ? <span className="text-xs font-normal leading-4 text-label-secondary">{helper}</span> : null}
     </label>
   );
 }

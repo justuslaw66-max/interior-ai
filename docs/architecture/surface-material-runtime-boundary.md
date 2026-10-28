@@ -72,6 +72,10 @@ server registry (`catalog-registry`), and the generator audits them with the sam
 about 148 KB raw to the lazy catalog metadata. The admin surface QA page still lists the YAML files only. See
 `docs/architecture/cabinet-laminates.md`.
 
+27 Oct 2026: the solid colours (as flat sheets) and the 4.25'×10' designs join them: 372 panels, 1,777 records in all. They
+add about 65 KB raw (3.8 KB gzip) to the eager render tuples and 87 KB raw (0.9 KB gzip) to the lazy catalog metadata. A flat
+colour's picture is a 172-byte PNG in `public/assets/catalog/laminates/flat-colours/`, loaded like any other picture.
+
 26 Oct 2026: the panels carry plan review's laminate-sheet flag (4) in field 34, for the bathroom-wall check: about 6.7 KB raw;
 the gzip size is unchanged. Quantities read the sheet size from the render data's tile size (`lib/surface-material-sheets.ts`),
 so the Shopping list and surface summary count sheets in the browser, and the server's bill of materials counts them the same way.

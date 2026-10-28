@@ -76,10 +76,10 @@ assert.deepEqual(
     whiteBodyWalls: facts.filter(({ material, facts: f }) => material.surface_material.surface_category !== "flooring" && f.wall_tile_body).length,
     laminateSheets: facts.filter(({ facts: f }) => f.laminate_sheet).length,
   },
-  { r9Floors: 14, barefootWithoutB: 23, noSettledClass: 87, outdoorFloors: 106, whiteBodyFloors: 0, whiteBodyWalls: 9, laminateSheets: 233 },
+  { r9Floors: 14, barefootWithoutB: 23, noSettledClass: 87, outdoorFloors: 106, whiteBodyFloors: 0, whiteBodyWalls: 9, laminateSheets: 372 },
   "published entries the checks can flag (Gioia's floors are its porcelain decors; its white-body plain colours are wall tiles)"
 );
-assert.equal(laminatePanels.length, 233);
+assert.equal(laminatePanels.length, 372);
 assert.ok(
   facts.every(({ material, facts: f }) => !f.laminate_sheet || material.surface_material.surface_category === "wall_panel"),
   "only the laminate catalogue's wall panels are laminate sheets: Goodrich's laminate floors aren't"

@@ -241,7 +241,7 @@ async function main() {
     "app/api/floor-plan-imports/[id]/process/route.ts"
   );
   const statusRoute = read("app/api/floor-plan-imports/[id]/route.ts");
-  const assistant = read("components/editor/FloorPlanImportAssistant.tsx");
+  const progressCard = read("components/editor/FloorPlanImportProgressCard.tsx");
   const workspace = read("components/editor/FloorPlanImportWorkspace.tsx");
   assert.doesNotMatch(
     processRoute,
@@ -253,8 +253,8 @@ async function main() {
     /\{\s*job,\s*progressEstimate\s*\}/,
     "The owner status response should expose additive ETA metadata."
   );
-  assert.match(assistant, /Estimated progress/);
-  assert.match(assistant, />\s*Live\s*</);
+  assert.match(progressCard, /Estimated progress/);
+  assert.match(progressCard, />\s*Live\s*</);
   assert.match(workspace, /activeJobSnapshot[\s\S]*?onJobUpdate/);
   console.log("Floor-plan live progress and ETA checks passed.");
 }
