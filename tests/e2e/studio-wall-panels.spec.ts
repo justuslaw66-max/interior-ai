@@ -999,7 +999,15 @@ test.describe("Studio canonical wall panels", () => {
     const selectedInspector = page.locator(`[${PANEL_ATTRIBUTE}]`);
     await clickPanelAt(page, middleHit.x, middleHit.y);
     await page.getByRole("button", { name: "Change material" }).click();
-    await page.locator('[data-testid="surfaces-search"]:visible').first().fill("5394");
+    // A search that is just a colour is the colour filter, shown as a chip that clears it (28 Oct 2026).
+    const surfaceSearch = page.locator('[data-testid="surfaces-search"]:visible').first();
+    await surfaceSearch.fill("blue");
+    const searchColour = page.locator('[data-testid="surfaces-search-colour"]:visible').first();
+    await expect(searchColour).toHaveText(/Colour: Blue/);
+    await searchColour.click();
+    await expect(surfaceSearch).toHaveValue("");
+    await surfaceSearch.fill("5394");
+    await expect(searchColour).toBeHidden();
     await page.locator('[data-material-name="Nordic Acacia 5394"] button').first().click();
     await expect(selectedInspector).toContainText("Nordic Acacia 5394");
     await openAdjustPattern(page);
