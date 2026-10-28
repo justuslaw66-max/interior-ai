@@ -3,7 +3,7 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["sfo1"],
+  "regions": ["syd1"],
   "env": {
     "APP_ENV": "staging"
   },
