@@ -28,6 +28,7 @@ import { SnapGuides } from "@/components/SnapGuides";
 import { Measurements } from "@/components/Measurements";
 import { GLBScaledModel } from "@/components/scene/GLBScaledModel";
 import ItemRenderer2D from "@/components/editor/renderers/ItemRenderer2D";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 import { radiansToDeg } from "@/lib/editorScene";
 import {
   clampToRoom,
@@ -146,6 +147,7 @@ export function Furniture({
   const [hovered, setHovered] = useState(false);
   const [invalidPlacement, setInvalidPlacement] = useState(false);
   const [rotateDragging, setRotateDragging] = useState(false);
+  const { colour } = useCanvasPalette();
   const [reportedModelLoad, setReportedModelLoad] = useState<{
     url: string | null;
     state: "loading" | "ready" | "error";
@@ -818,11 +820,9 @@ export function Furniture({
             [-planningWidth / 2, 0.01, planningDepth / 2],
             [-planningWidth / 2, 0.01, -planningDepth / 2],
           ]}
-          color="#d97706"
+          color={colour("#d97706")}
           lineWidth={1.5}
-          dashed
-          dashSize={0.08}
-          gapSize={0.05}
+          dashed dashSize={0.08} gapSize={0.05}
         />
       ) : null}
       {viewMode === "2d" && showSelection && isPrimarySelected && !dragging && !rotateDragging && (
@@ -839,9 +839,9 @@ export function Furniture({
               alignItems: "center",
               gap: 4,
               padding: 4,
-              border: "1px solid rgba(37,99,235,0.24)",
+              border: colour("1px solid rgba(37,99,235,0.24)"),
               borderRadius: 999,
-              background: "rgba(255,255,255,0.96)",
+              background: colour("rgba(255,255,255,0.96)"),
               boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
               pointerEvents: "auto",
               whiteSpace: "nowrap",
@@ -887,8 +887,8 @@ export function Furniture({
                 style={{
                   border: "none",
                   borderRadius: 999,
-                  background: chip.id === "delete" ? "#fee2e2" : "#f3f4f6",
-                  color: chip.id === "delete" ? "#991b1b" : "#111827",
+                  background: colour(chip.id === "delete" ? "#fee2e2" : "#f3f4f6"),
+                  color: colour(chip.id === "delete" ? "#991b1b" : "#111827"),
                   cursor: chip.disabled ? "not-allowed" : "pointer",
                   fontSize: 12,
                   fontWeight: 800,

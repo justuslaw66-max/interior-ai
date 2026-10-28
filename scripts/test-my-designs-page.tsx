@@ -75,7 +75,8 @@ const twoFloors: DesignSnapshot = {
   activeRoomId: "living",
 };
 const groundFloor = buildDesignPlanThumbnail(twoFloors);
-assert.deepEqual(groundFloor?.rooms.map((entry) => [entry.id, entry.fill]), [["living", "#e7e5e4"], ["bed", "#ede9fe"]]);
+// The room fills are the plan tokens (light #E7E5E4 and #EDE9FE, dimmed in dark: dark mode PR 4).
+assert.deepEqual(groundFloor?.rooms.map((entry) => [entry.id, entry.fill]), [["living", "var(--plan-room)"], ["bed", "var(--plan-room-bedroom)"]]);
 for (const point of groundFloor?.rooms.flatMap((entry) => entry.points.split(" ")) ?? []) {
   const [x, y] = point.split(",").map(Number);
   assert.ok(x >= 0 && x <= 240 && y >= 0 && y <= 140, `${point} sits inside the 240 × 140 frame.`);

@@ -4,14 +4,17 @@ import type { RoomType } from "@/lib/room-types";
 
 type Point = { x: number; z: number };
 
-/** Room colours shared by the template cards (Start a new design) and the My designs cards. */
+/**
+ * Room colours shared by the template cards (Start a new design) and the My designs cards: the
+ * plan tokens, so they dim on a dark device (dark mode PR 4). Drawn as a style's fill.
+ */
 export const PLAN_THUMBNAIL_ROOM_FILLS: Partial<Record<RoomType, string>> = {
-  toilet: "#dbeafe",
-  kitchen: "#dcfce7",
-  bedroom: "#ede9fe",
-  dining: "#fef3c7",
+  toilet: "var(--plan-room-toilet)",
+  kitchen: "var(--plan-room-kitchen)",
+  bedroom: "var(--plan-room-bedroom)",
+  dining: "var(--plan-room-dining)",
 };
-export const PLAN_THUMBNAIL_DEFAULT_FILL = "#e7e5e4";
+export const PLAN_THUMBNAIL_DEFAULT_FILL = "var(--plan-room)";
 export const PLAN_THUMBNAIL_WIDTH = 240;
 export const PLAN_THUMBNAIL_HEIGHT = 140;
 const PADDING = 12;

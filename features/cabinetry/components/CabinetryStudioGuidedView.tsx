@@ -430,7 +430,7 @@ export function CabinetryStudioGuidedView({
                   <div
                     id="cabinet-mobile-preview"
                     data-testid="cabinet-mobile-preview"
-                    className="relative mt-3 h-72 overflow-hidden rounded-2xl border border-box-border bg-[#e5e7e1]"
+                    className="relative mt-3 h-72 overflow-hidden rounded-2xl border border-box-border bg-(--scene-preview-ground)"
                   >
                     <CabinetPreview3D
                       definition={deferredDefinition}

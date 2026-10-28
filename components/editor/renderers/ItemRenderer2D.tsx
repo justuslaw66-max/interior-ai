@@ -5,6 +5,7 @@ import { Html } from "@react-three/drei/web/Html";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 
 type ItemRenderer2DProps = {
   width: number;
@@ -54,18 +55,18 @@ export default function ItemRenderer2D({
   onRotateHandlePointerUp,
 }: ItemRenderer2DProps) {
   const htmlZIndexRange: [number, number] = [5, 0];
-
+  const { colour } = useCanvasPalette();
   const borderColor = invalidPlacement
-    ? "#d91f1f"
+    ? colour("#d91f1f")
     : selected
-      ? "#2a66ff"
+      ? colour("#2a66ff")
       : hovered
-        ? "#0f766e"
+        ? colour("#0f766e")
       : snapped && dragging
-        ? "#4ea81f"
-        : "#5f6770";
+        ? colour("#4ea81f")
+        : colour("#5f6770");
 
-  const fillColor = invalidPlacement ? "#f8b6b6" : color;
+  const fillColor = invalidPlacement ? colour("#f8b6b6") : color;
 
   const corner = 0.04;
   const formatDimension = (meters: number) =>
@@ -102,7 +103,7 @@ export default function ItemRenderer2D({
             [-width / 2 + 0.02, 0.0025, -depth / 2 + 0.03],
             [width / 2 - 0.02, 0.0025, -depth / 2 + 0.03],
           ]}
-          color="#38424c"
+          color={colour("#38424c")}
           lineWidth={1.8}
         />
       )}
@@ -113,7 +114,7 @@ export default function ItemRenderer2D({
             [-width / 2 + 0.03, 0.0025, -depth / 2 + 0.03],
             [width / 2 - 0.03, 0.0025, -depth / 2 + 0.03],
           ]}
-          color="#38424c"
+          color={colour("#38424c")}
           lineWidth={1.4}
         />
       )}
@@ -125,7 +126,7 @@ export default function ItemRenderer2D({
               [-width / 2 + 0.03, 0.0025, -depth / 2 + 0.08],
               [width / 2 - 0.03, 0.0025, -depth / 2 + 0.08],
             ]}
-            color="#38424c"
+            color={colour("#38424c")}
             lineWidth={1.8}
           />
           <Line
@@ -133,7 +134,7 @@ export default function ItemRenderer2D({
               [0, 0.0025, -depth / 2 + 0.08],
               [0, 0.0025, depth / 2 - 0.03],
             ]}
-            color="#38424c"
+            color={colour("#38424c")}
             lineWidth={1.2}
           />
         </>
@@ -145,7 +146,7 @@ export default function ItemRenderer2D({
             [-width / 2 + 0.03, 0.0025, 0],
             [width / 2 - 0.03, 0.0025, 0],
           ]}
-          color="#38424c"
+          color={colour("#38424c")}
           lineWidth={1.2}
         />
       )}
@@ -157,7 +158,7 @@ export default function ItemRenderer2D({
               [-width / 6, 0.0025, -depth / 2 + 0.03],
               [-width / 6, 0.0025, depth / 2 - 0.03],
             ]}
-            color="#38424c"
+            color={colour("#38424c")}
             lineWidth={1.1}
           />
           <Line
@@ -165,7 +166,7 @@ export default function ItemRenderer2D({
               [width / 6, 0.0025, -depth / 2 + 0.03],
               [width / 6, 0.0025, depth / 2 - 0.03],
             ]}
-            color="#38424c"
+            color={colour("#38424c")}
             lineWidth={1.1}
           />
         </>
@@ -182,7 +183,7 @@ export default function ItemRenderer2D({
         cornerPoints.map((p, idx) => (
           <mesh key={idx} rotation-x={-Math.PI / 2} position={p}>
             <planeGeometry args={[corner, corner]} />
-            <meshBasicMaterial color="#2a66ff" />
+            <meshBasicMaterial color={colour("#2a66ff")} />
           </mesh>
         ))}
 
@@ -193,12 +194,12 @@ export default function ItemRenderer2D({
               [0, 0.002, -depth / 2],
               [0, 0.002, -depth / 2 - 0.16],
             ]}
-            color="#2a66ff"
+            color={colour("#2a66ff")}
             lineWidth={1.8}
           />
           <mesh rotation-x={-Math.PI / 2} position={[0, 0.0023, -depth / 2 - 0.18]}>
             <circleGeometry args={[0.03, 24]} />
-            <meshBasicMaterial color="#2a66ff" />
+            <meshBasicMaterial color={colour("#2a66ff")} />
           </mesh>
           <mesh
             rotation-x={-Math.PI / 2}
@@ -257,11 +258,9 @@ export default function ItemRenderer2D({
                 fontSize: 12,
                 padding: "2px 6px",
                 borderRadius: 6,
-                background: "rgba(255,255,255,0.9)",
-                border: selected
-                  ? "1px solid rgba(37,99,235,0.62)"
-                  : "1px solid rgba(120,120,120,0.35)",
-                color: "#1f2937",
+                background: colour("rgba(255,255,255,0.9)"),
+                border: colour(selected ? "1px solid rgba(37,99,235,0.62)" : "1px solid rgba(120,120,120,0.35)"),
+                color: colour("#1f2937"),
                 cursor: "pointer",
                 whiteSpace: "nowrap",
                 pointerEvents: "auto",
@@ -275,9 +274,9 @@ export default function ItemRenderer2D({
                 fontSize: 12,
                 padding: "2px 6px",
                 borderRadius: 6,
-                background: "rgba(255,255,255,0.9)",
-                border: "1px solid rgba(120,120,120,0.35)",
-                color: "#1f2937",
+                background: colour("rgba(255,255,255,0.9)"),
+                border: colour("1px solid rgba(120,120,120,0.35)"),
+                color: colour("#1f2937"),
                 whiteSpace: "nowrap",
                 pointerEvents: "none",
               }}
@@ -296,9 +295,9 @@ export default function ItemRenderer2D({
                 fontSize: 12,
                 padding: "2px 6px",
                 borderRadius: 6,
-                background: "rgba(255,255,255,0.92)",
-                border: "1px solid rgba(120,120,120,0.35)",
-                color: "#111827",
+                background: colour("rgba(255,255,255,0.92)"),
+                border: colour("1px solid rgba(120,120,120,0.35)"),
+                color: colour("#111827"),
                 whiteSpace: "nowrap",
                 pointerEvents: "none",
               }}
@@ -312,9 +311,9 @@ export default function ItemRenderer2D({
                 fontSize: 12,
                 padding: "2px 6px",
                 borderRadius: 6,
-                background: "rgba(255,255,255,0.92)",
-                border: "1px solid rgba(120,120,120,0.35)",
-                color: "#111827",
+                background: colour("rgba(255,255,255,0.92)"),
+                border: colour("1px solid rgba(120,120,120,0.35)"),
+                color: colour("#111827"),
                 whiteSpace: "nowrap",
                 pointerEvents: "none",
               }}

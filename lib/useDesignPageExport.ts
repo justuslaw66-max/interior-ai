@@ -7,6 +7,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { track } from "@/lib/analytics";
+import { renderLightCapture } from "@/lib/canvas-capture";
 import type { CameraView } from "@/lib/design-page-types";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
 import { getItemPrice } from "@/lib/design-page-utils";
@@ -114,48 +115,45 @@ export function useDesignPageExport({
   const canExportPdf = capabilities.exportPdf;
   const exportWithoutWatermark = capabilities.exportWithoutWatermark;
 
+  // The pictures are drawn light whatever the device (exports stay light, J 13 Oct).
   const captureCanvasImage = useCallback((): string | null => {
     if (!cameraRef.current || !rendererRef.current || !sceneRef.current) return null;
-    rendererRef.current.render(sceneRef.current, cameraRef.current);
-    const canvas = rendererRef.current.domElement ?? canvasRef.current;
-    if (!canvas) return null;
+    return renderLightCapture(rendererRef.current, sceneRef.current, cameraRef.current, (canvas) => {
+      const { width, height } = canvas;
+      const offscreenCanvas = document.createElement("canvas");
+      offscreenCanvas.width = width * 2;
+      offscreenCanvas.height = height * 2;
+      const context = offscreenCanvas.getContext("2d");
+      if (!context) return null;
 
-    const { width, height } = canvas;
-    const offscreenCanvas = document.createElement("canvas");
-    offscreenCanvas.width = width * 2;
-    offscreenCanvas.height = height * 2;
-    const context = offscreenCanvas.getContext("2d");
-    if (!context) return null;
-
-    context.scale(2, 2);
-    context.drawImage(canvas, 0, 0);
-    if (!exportWithoutWatermark) {
-      context.resetTransform();
-      context.fillStyle = "rgba(0, 0, 0, 0.6)";
-      context.font = "bold 32px sans-serif";
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillText("Free Tier - Interior AI", width, height);
-    }
-    return offscreenCanvas.toDataURL("image/png");
-  }, [cameraRef, canvasRef, exportWithoutWatermark, rendererRef, sceneRef]);
+      context.scale(2, 2);
+      context.drawImage(canvas, 0, 0);
+      if (!exportWithoutWatermark) {
+        context.resetTransform();
+        context.fillStyle = "rgba(0, 0, 0, 0.6)";
+        context.font = "bold 32px sans-serif";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText("Free Tier - Interior AI", width, height);
+      }
+      return offscreenCanvas.toDataURL("image/png");
+    });
+  }, [cameraRef, exportWithoutWatermark, rendererRef, sceneRef]);
 
   const captureCanvasImageForPdf = useCallback((): string | null => {
     if (!cameraRef.current || !rendererRef.current || !sceneRef.current) return null;
-    rendererRef.current.render(sceneRef.current, cameraRef.current);
-    const canvas = rendererRef.current.domElement ?? canvasRef.current;
-    if (!canvas) return null;
-
-    const width = Math.max(1, Math.floor(canvas.width * 0.6));
-    const height = Math.max(1, Math.floor(canvas.height * 0.6));
-    const offscreenCanvas = document.createElement("canvas");
-    offscreenCanvas.width = width;
-    offscreenCanvas.height = height;
-    const context = offscreenCanvas.getContext("2d");
-    if (!context) return null;
-    context.drawImage(canvas, 0, 0, width, height);
-    return offscreenCanvas.toDataURL("image/jpeg", 0.8);
-  }, [cameraRef, canvasRef, rendererRef, sceneRef]);
+    return renderLightCapture(rendererRef.current, sceneRef.current, cameraRef.current, (canvas) => {
+      const width = Math.max(1, Math.floor(canvas.width * 0.6));
+      const height = Math.max(1, Math.floor(canvas.height * 0.6));
+      const offscreenCanvas = document.createElement("canvas");
+      offscreenCanvas.width = width;
+      offscreenCanvas.height = height;
+      const context = offscreenCanvas.getContext("2d");
+      if (!context) return null;
+      context.drawImage(canvas, 0, 0, width, height);
+      return offscreenCanvas.toDataURL("image/jpeg", 0.8);
+    });
+  }, [cameraRef, rendererRef, sceneRef]);
 
   const captureExportImages = useCallback(async () => {
     if (!canvasRef.current || !cameraRef.current || !sceneReady) {
