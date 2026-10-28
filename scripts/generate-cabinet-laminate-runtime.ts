@@ -25,6 +25,9 @@ type CatalogEntry = {
   render: string;
   grain: string;
   texture?: { url: string; swatch_url: string; width_mm: number; height_mm: number };
+  /** The scan the colour is the mean of; a colour Greenlam states instead has its `colour_source` (28 Oct 2026). */
+  picture?: { path: string };
+  colour_source?: string;
 };
 type CatalogFile = {
   schema_version: number;
@@ -54,6 +57,7 @@ function toTuple(file: string, entry: CatalogEntry): CabinetLaminateTuple {
   if (!/^#[0-9a-f]{6}$/.test(entry.colour)) fail(file, `${entry.id} has a malformed colour`);
   const texture = entry.texture;
   if ((entry.render === "texture") !== Boolean(texture)) fail(file, `${entry.id} render and texture disagree`);
+  if (!entry.picture && !entry.colour_source) fail(file, `${entry.id} has neither a picture nor a colour_source for its colour`);
   if (texture && !(texture.width_mm > 0 && texture.height_mm > 0)) fail(file, `${entry.id} has no texture size`);
   return [
     entry.id,

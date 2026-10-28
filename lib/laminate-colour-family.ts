@@ -9,8 +9,9 @@ import type { SurfaceColorFamily } from "./surface-material-schema";
  * a pale blue, its Dull Pink a dusty red). Patterns, metals and pearlescents have no one colour and stay `unknown`.
  *
  * The colour is taken to CIELab (sRGB, D65): lightness L* from 0 to 100, chroma C* (how far from grey) and hue angle h in
- * degrees (0 pink-red, 60 orange, 90 yellow, 140 green, 240 blue, 310 purple). The thresholds were set on Greenlam's 375
- * designs and checked by eye on a contact sheet; scripts/test-laminate-colour-family.ts pins examples of each family.
+ * degrees. In CIELab the screen's primaries are not evenly spaced: pure red is at 40, orange 73, yellow 103, green 136, cyan
+ * 196, pure blue 306 and purple 328. The thresholds were set on Greenlam's 375 designs, checked by eye on a contact sheet and
+ * against the standard web colours; scripts/test-laminate-colour-family.ts pins examples of each family.
  */
 export type CieLab = { lightness: number; chroma: number; hue: number };
 
@@ -45,9 +46,13 @@ const isGreyish = ({ chroma }: CieLab) => chroma < 10;
 const isReddishHue = ({ hue }: CieLab) => hue < 50 || hue >= 350;
 const isWarmHue = ({ hue }: CieLab) => hue >= 50 && hue < 112;
 
-/** Solid colours, first rule that matches. Near-greys first, then the light warm tints, browns, and the hue bands. */
+/**
+ * Solid colours, first rule that matches: anything nearly black, then the near-greys by lightness (with their faint pink,
+ * cream and beige tints), then the light warm tints, browns, and the hue bands.
+ */
 const SOLID_RULES: readonly Rule[] = [
   [({ lightness }) => lightness < 12, "black"],
+  [(lab) => isGreyish(lab) && lab.lightness >= 95, "white"],
   [(lab) => isGreyish(lab) && isReddishHue(lab) && lab.chroma >= 8 && lab.lightness >= 75, "pink"],
   [(lab) => isGreyish(lab) && isWarmHue(lab) && lab.chroma >= 7.5 && lab.lightness >= 85, "cream"],
   [(lab) => isGreyish(lab) && isWarmHue(lab) && lab.chroma >= 7.5 && lab.lightness >= 75, "beige"],
@@ -56,15 +61,15 @@ const SOLID_RULES: readonly Rule[] = [
   [(lab) => isGreyish(lab) && lab.lightness >= 22, "charcoal"],
   [isGreyish, "black"],
   [({ hue }) => hue >= 350 || hue < 10, "pink"],
-  [({ hue, lightness }) => hue < 60 && lightness >= 65, "pink"],
+  [({ hue, lightness, chroma }) => hue < 60 && lightness >= 65 && chroma < 50, "pink"],
   [({ hue, lightness, chroma }) => hue >= 60 && hue < 112 && lightness >= 85 && chroma < 30, "cream"],
   [({ hue, lightness, chroma }) => hue >= 60 && hue < 112 && lightness >= 65 && lightness < 85 && chroma < 32, "beige"],
   [({ hue, lightness, chroma }) => hue >= 40 && hue < 100 && lightness < 68 && chroma <= 55, "brown"],
-  [({ hue }) => hue < 40, "red"],
+  [({ hue }) => hue < 42, "red"],
   [({ hue }) => hue < 78, "orange"],
   [({ hue }) => hue < 105, "yellow"],
   [({ hue }) => hue < 190, "green"],
-  [({ hue }) => hue < 290, "blue"],
+  [({ hue }) => hue < 310, "blue"],
   [() => true, "purple"],
 ];
 

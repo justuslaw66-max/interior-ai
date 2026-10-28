@@ -31,6 +31,9 @@ const examples: Array<[Parameters<typeof getLaminateColourFamily>[0], string, st
   ["solids", "#f04e8a", "pink", "Barbie Pink 173"],
   ["solids", "#fee7e1", "pink", "Pink 168, a very pale pink"],
   ["solids", "#bb5557", "red", "Dull Pink 219, drawn a dusty red"],
+  ["solids", "#4b259e", "blue", "Robin Blue 300, an indigo"],
+  ["solids", "#f8f5e6", "white", "Frosty White 113: near-greys this light are white whatever their faint tint"],
+  ["solids", "#e8e9ee", "white", "Snow White 103"],
   ["unicore", "#c83428", "red", "Unicore Red Dynasty 90204: a colour through the core, drawn from its picture"],
   ["woodgrains", "#f7f2d8", "white", "White Ash 5310"],
   ["woodgrains", "#dbc5ab", "light_oak", "Samara Oak 5524"],
@@ -47,6 +50,14 @@ const examples: Array<[Parameters<typeof getLaminateColourFamily>[0], string, st
   ["metals", "#e0ddda", "unknown", "Silver Metal 9031"],
   ["pearlescents", "#9b9b9b", "unknown", "a pearlescent"],
 ];
+// The standard web colours land where they should: in CIELab pure red is at hue 40 and pure blue at 306 (review, 28 Oct).
+for (const [colour, family] of [
+  ["#ff0000", "red"], ["#ff1100", "red"], ["#8b0000", "red"], ["#ff7518", "orange"], ["#ffa500", "orange"],
+  ["#ffd700", "yellow"], ["#008000", "green"], ["#4169e1", "blue"], ["#0000ff", "blue"], ["#000080", "blue"],
+  ["#4b0082", "purple"], ["#800080", "purple"], ["#ff69b4", "pink"], ["#ffc0cb", "pink"], ["#a0522d", "brown"],
+] as const) {
+  assert.equal(getLaminateColourFamily("solids", colour), family, `${colour} is ${family}`);
+}
 for (const [category, colour, family, design] of examples) {
   assert.equal(getLaminateColourFamily(category, colour), family, `${design} (${colour}) is ${family}`);
 }
@@ -62,8 +73,8 @@ for (const collection of CABINET_LAMINATE_COLLECTIONS) {
   }
 }
 assert.deepEqual(familyCounts, {
-  unknown: 79, grey: 53, brown: 31, walnut: 31, light_oak: 28, white: 24, warm_oak: 22, blue: 18, charcoal: 16,
-  natural_oak: 12, green: 11, black: 10, cream: 8, red: 7, yellow: 6, pink: 6, purple: 6, beige: 4, orange: 3,
+  unknown: 79, grey: 53, brown: 31, walnut: 31, light_oak: 28, white: 25, warm_oak: 22, blue: 19, charcoal: 16,
+  natural_oak: 12, green: 11, black: 10, cream: 7, red: 7, yellow: 6, pink: 6, purple: 5, beige: 4, orange: 3,
 });
 
 // The wall panels carry it, so the surface browser's colour filter finds them.
