@@ -11,6 +11,7 @@ import {
   normalizeFloorRotationDeg,
 } from "@/lib/floor-materials";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
+import { getWallFinishDepthMeters } from "@/lib/laminate-wall-backing";
 import { getWallPanelSurfaceSettings } from "@/lib/surface-settings";
 import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
 import { moveOpeningCenterFromWorldPoint, projectWorldPointToOpeningHost } from "@/lib/design-page-opening-interaction";
@@ -165,12 +166,10 @@ function WallSurfaceSideMesh({
     0.5 +
     (surfaceCenterWithinPanel + partLength / 2) /
       normalizedTexturePanelLength;
+  // A laminate sheet stands off the wall on its board (J, 28 Oct 2026); its ends and opening edges show, banded in the laminate.
+  const finishDepth = getWallFinishDepthMeters(wallSurfaceMaterial, settings, WALL_SURFACE_THICKNESS_METERS);
   const surfaceGeometry = useMemo(() => {
-    const geometry = buildWallFinishShellGeometry({
-      widthMeters: partLength,
-      heightMeters: partHeight,
-      thicknessMeters: WALL_SURFACE_THICKNESS_METERS,
-    });
+    const geometry = buildWallFinishShellGeometry({ widthMeters: partLength, heightMeters: partHeight, thicknessMeters: finishDepth });
     const uv = geometry.getAttribute("uv");
     for (let index = 0; index < uv.count; index += 1) {
       uv.setX(
@@ -184,7 +183,7 @@ function WallSurfaceSideMesh({
     }
     uv.needsUpdate = true;
     return geometry;
-  }, [partHeight, partLength, textureEndU, textureStartU]);
+  }, [finishDepth, partHeight, partLength, textureEndU, textureStartU]);
   const wallTexture = useWallSurfaceTexture({
     material: wallSurfaceMaterial,
     settings,
@@ -205,9 +204,7 @@ function WallSurfaceSideMesh({
     paintColorHex: settings.paintColorHex,
     neutralFillIntensity: WALL_INDIRECT_FILL_INTENSITY,
   });
-  const surfaceOffsetZ =
-    side *
-    (wallThickness / 2 + WALL_SURFACE_THICKNESS_METERS / 2);
+  const surfaceOffsetZ = side * (wallThickness / 2 + finishDepth / 2);
   const surfaceRotationY = side === 1 ? 0 : Math.PI;
   const raycastWhenPickable = useCallback(
     (raycaster: THREE.Raycaster, intersects: THREE.Intersection[]) => {
@@ -836,7 +833,8 @@ export function WallSurfacePanelMesh({
     pickEnabledRef.current = renderState.visible;
   });
 
-  const outlineZ = panel.side * (wallThickness / 2 + WALL_SURFACE_THICKNESS_METERS + 0.003);
+  const finishDepth = getWallFinishDepthMeters(getRuntimeSurfaceMaterialById(settings.materialId), settings, WALL_SURFACE_THICKNESS_METERS);
+  const outlineZ = panel.side * (wallThickness / 2 + finishDepth + 0.003);
   const left = joinedSurface.centerDelta - joinedSurface.length / 2;
   const right = joinedSurface.centerDelta + joinedSurface.length / 2;
   const bottom = -partHeight / 2 + 0.025, top = partHeight / 2 - 0.025;

@@ -9,7 +9,7 @@
  *   beside or above an opening) is cut from shared sheets. All the cut pieces of one finish in one room share sheets,
  *   upright, so the grain runs the way it is drawn; they are packed in shelves, tallest first (first-fit decreasing
  *   height), which a fitter can match or beat.
- * Saw cuts and the 1 mm joints between sheets are not allowed for.
+ * Saw cuts and the joints between sheets (at least 3 mm, lib/laminate-wall-backing.ts) are not allowed for.
  */
 
 /** A rectangle of a wall finish on one wall face, in metres. */

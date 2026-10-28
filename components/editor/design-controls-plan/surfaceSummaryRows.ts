@@ -9,6 +9,7 @@ import { getOrderAreaSqm } from "@/lib/surface-material-areas";
 import { buildRoomWallFinishQuantities } from "@/lib/surface-material-wall-panels";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { countSurfaceSheets, formatSheetCount, getSurfaceSheetSize, type WallFinishPiece } from "@/lib/surface-material-sheets";
+import { formatWallPanelBoardMaterial, getWallPanelBacking } from "@/lib/laminate-wall-backing";
 import {
   getCeilingSurfaceSettings,
   getDefaultWallSurfaceSettings,
@@ -64,15 +65,20 @@ type WallFinishScope = {
   pieces: WallFinishPiece[] | null;
 };
 
-/** "12 sheets" for a wall panel finish, counted as the bill of materials counts them; null for one ordered by area. */
+/**
+ * "12 sheets" for a wall panel finish, counted as the bill of materials counts them, and for a laminate its board: "13 sheets
+ * on MDF, 9 mm" (lib/laminate-wall-backing.ts); null for one ordered by area.
+ */
 function wallFinishSheetsLabel(
   material: ReturnType<typeof getRuntimeSurfaceMaterialById>,
   { pieces, areaSqm }: WallFinishScope,
-  rotationDeg: number
+  settings: NormalizedSurfaceSettings
 ): string | null {
   const sheet = getSurfaceSheetSize(material);
   if (!sheet) return null;
-  return formatSheetCount(countSurfaceSheets({ pieces, orderAreaSqm: getOrderAreaSqm(areaSqm), rotationDeg, sheet }));
+  const sheets = formatSheetCount(countSurfaceSheets({ pieces, orderAreaSqm: getOrderAreaSqm(areaSqm), rotationDeg: settings.rotationDeg, sheet }));
+  if (!material?.suitability?.laminate_sheet) return sheets;
+  return `${sheets} on ${formatWallPanelBoardMaterial(getWallPanelBacking(settings))}`;
 }
 
 function buildWallFinishRow(
@@ -87,7 +93,7 @@ function buildWallFinishRow(
   const { id, target, surfaceLabel, areaSqm } = scope;
   return {
     id, target, surfaceLabel, areaSqm,
-    sheetsLabel: wallFinishSheetsLabel(material, scope, settings.rotationDeg),
+    sheetsLabel: wallFinishSheetsLabel(material, scope, settings),
     room,
     materialId: material?.surface_material.material_id ?? starter?.id ?? `paint:${settings.paintColorHex}`,
     materialName:

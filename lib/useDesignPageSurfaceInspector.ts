@@ -42,7 +42,6 @@ import {
   getFlooringInspectorProductName,
   getFlooringInspectorSizeLabel,
   getFlooringInspectorSurfaceSwatchStyle,
-  getSurfaceJointLabel,
   surfaceMaterialHasJoints,
 } from "@/lib/design-page-surface-inspector";
 import {
@@ -60,6 +59,8 @@ import type {
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { RoomFloorPattern, RoomSnapshot } from "@/lib/room-types";
 import { getWallPaintDisplayName } from "@/lib/wall-paint";
+import { buildWallBackingControls, buildWallJointControls } from "@/lib/design-page-wall-finish-controls";
+import { getWallPanelBacking, normalizeWallPanelBacking, type NormalizedWallPanelBacking } from "@/lib/laminate-wall-backing";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 
 type InspectorRoom = HousePlan2D["rooms"][number];
@@ -639,8 +640,14 @@ export function useDesignPageSurfaceInspector({
       offset: wallInspectorSettings.offset,
       jointSizeMm: wallInspectorSettings.jointSizeMm,
       jointColor: wallInspectorSettings.jointColor,
+      // A laminate's board goes with it to the room or every wall (lib/laminate-wall-backing.ts).
+      ...(getRuntimeSurfaceMaterialById(wallInspectorSettings.materialId)?.suitability?.laminate_sheet
+        ? { panelBacking: normalizeWallPanelBacking(wallInspectorSettings.panelBacking) }
+        : {}),
     }),
     [
+      wallInspectorSettings.materialId,
+      wallInspectorSettings.panelBacking,
       wallInspectorSettings.jointColor,
       wallInspectorSettings.jointSizeMm,
       wallInspectorSettings.offset,
@@ -814,6 +821,15 @@ export function useDesignPageSurfaceInspector({
       wallInspectorFaceId,
     ]
   );
+  // A laminate wall finish's board: the whole backing is saved, so a face or panel never half-inherits it.
+  const onChangeWallBacking = useCallback(
+    (patch: Partial<NormalizedWallPanelBacking>) => {
+      if (!selectedPlanRoom) return;
+      const panelBacking = { ...getWallPanelBacking(wallInspectorSettings), ...patch };
+      surface.changeActiveWallSurfaceSettings({ panelBacking }, selectedPlanRoom.id, wallInspectorFaceId);
+    },
+    [selectedPlanRoom, surface, wallInspectorFaceId, wallInspectorSettings]
+  );
   const onMovePattern = useCallback(
     (deltaX: number, deltaY: number) => {
       if (!selectedPlanRoom) return;
@@ -982,36 +998,16 @@ export function useDesignPageSurfaceInspector({
                   disabled: !canEdit,
                 }
               : null;
+          // The wall finish's joints and, for a laminate sheet, its board (design-page-wall-finish-controls.ts).
+          const wallMaterial = getRuntimeSurfaceMaterialById(surfaceInspectorMaterialId) ?? null;
+          const wallFinish = { material: wallMaterial, settings: wallInspectorSettings, disabled: !canEdit };
           const wallGrout =
             surfaceInspectorIsWall && wallInspectorSupportsGrout
-              ? {
-                  label: getSurfaceJointLabel(getRuntimeSurfaceMaterialById(surfaceInspectorMaterialId)),
-                  groutSizes: FLOOR_GROUT_SIZE_PRESETS_MM.map((sizeMm) => {
-                    const selected = wallInspectorSettings.jointSizeMm === sizeMm;
-                    return {
-                      valueMm: sizeMm,
-                      selected,
-                      testId: selected
-                        ? "wall-surface-joint-size"
-                        : `wall-surface-joint-size-${String(sizeMm).replace(".", "-")}`,
-                    };
-                  }),
-                  groutColor: wallInspectorSettings.jointColor,
-                  groutPaletteOpen,
-                  groutColors: FLOOR_GROUT_COLOR_PALETTE.map((color) => {
-                    const normalizedColor = normalizeFloorJointColor(color);
-                    return {
-                      key: color,
-                      color: normalizedColor,
-                      selected:
-                        normalizedColor.toLowerCase() ===
-                        wallInspectorSettings.jointColor.toLowerCase(),
-                      testId: `wall-surface-grout-color-${color.replace("#", "")}`,
-                    };
-                  }),
-                  disabled: !canEdit,
-                }
+              ? buildWallJointControls({
+                  ...wallFinish, paletteOpen: groutPaletteOpen, presets: { sizesMm: FLOOR_GROUT_SIZE_PRESETS_MM, colours: FLOOR_GROUT_COLOR_PALETTE },
+                })
               : null;
+          const wallBacking = surfaceInspectorIsWall ? buildWallBackingControls(wallFinish) : null;
           const headerLabel = surfaceInspectorIsWall
             ? getWallFaceLabel(wallInspectorFaceId)
             : surfaceInspectorIsCeiling
@@ -1057,6 +1053,7 @@ export function useDesignPageSurfaceInspector({
             },
             sizeOptions,
             wallGrout,
+            wallBacking,
             controls: {
               changeDisabled: !canEdit,
               rotateDisabled:
@@ -1097,6 +1094,7 @@ export function useDesignPageSurfaceInspector({
       onSelectGroutSize,
       onToggleGroutPalette: inspectorUi.toggleGroutPalette,
       onSelectGroutColor,
+      onChangeWallBacking,
       onMovePattern,
       onResetPattern,
       onResetSurface,

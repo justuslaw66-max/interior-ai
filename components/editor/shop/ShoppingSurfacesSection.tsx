@@ -3,12 +3,19 @@
 import LazyImage from "@/components/common/LazyImage";
 import type { ShoppingSurface } from "@/lib/shopping-surfaces";
 import { formatSheetCount, formatSheetSize } from "@/lib/surface-material-sheets";
+import { formatWallPanelBackingOrder } from "@/lib/laminate-wall-backing";
 
 /** How much to order: whole sheets, with the area they cover, or square metres with 10% for cuts. */
 function orderText({ sheetOrder, orderAreaSqm }: ShoppingSurface) {
   if (!sheetOrder) return `Order about ${orderAreaSqm} m², including 10% extra for cuts`;
   const area = Math.round(sheetOrder.surfaceAreaSqm * 10) / 10;
   return `Order ${formatSheetCount(sheetOrder.sheets)} of ${formatSheetSize(sheetOrder.sheet)}, for ${area} m²`;
+}
+
+/** A laminate's boards, never left out: "On 13 MDF boards, 9 mm, glued". */
+function backingText({ sheetOrder }: ShoppingSurface) {
+  const text = (sheetOrder?.backing ?? []).map(formatWallPanelBackingOrder).join("; ");
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : null;
 }
 
 /**
@@ -51,6 +58,11 @@ export function ShoppingSurfacesSection({ surfaces }: { surfaces: readonly Shopp
               <div data-testid="shopping-surface-order" className="mt-0.5 text-xs text-label-secondary md:text-[13px]">
                 {orderText(surface)}
               </div>
+              {backingText(surface) ? (
+                <div data-testid="shopping-surface-backing" className="mt-0.5 text-xs text-label-secondary md:text-[13px]">
+                  {backingText(surface)}
+                </div>
+              ) : null}
             </div>
             {/* Phones have the section's "Priced by the supplier" and the room for the text. */}
             <span data-testid="shopping-surface-price" className="hidden shrink-0 text-[13px] text-label-secondary md:block">

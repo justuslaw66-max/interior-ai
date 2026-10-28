@@ -5,10 +5,8 @@ import type {
   SurfacePatternOffset,
   SurfaceSettings,
 } from "./room-types";
-import {
-  normalizeWallPaintColorHex,
-  normalizeWallPaintName,
-} from "./wall-paint";
+import { normalizeWallPaintColorHex, normalizeWallPaintName } from "./wall-paint";
+import { normalizeWallPanelBacking, type NormalizedWallPanelBacking } from "./laminate-wall-backing";
 
 export type FloorPatternOption = { id: RoomFloorPattern; label: string };
 
@@ -78,6 +76,8 @@ export type NormalizedSurfaceSettings = {
   offset: SurfacePatternOffset;
   jointSizeMm: number;
   jointColor: string;
+  /** A wall finish's board, set by normalizeSurfaceSettings; read it with getWallPanelBacking (lib/laminate-wall-backing.ts). */
+  panelBacking?: NormalizedWallPanelBacking;
 };
 
 export type FloorSurfacePatch = Partial<
@@ -181,6 +181,7 @@ export function normalizeSurfaceSettings(
     offset: normalizeFloorPatternOffset(settings?.offset),
     jointSizeMm: normalizeFloorJointSizeMm(settings?.jointSizeMm),
     jointColor: normalizeSurfaceJointColor(settings?.jointColor, options.jointColor ?? DEFAULT_FLOOR_JOINT_COLOR),
+    panelBacking: normalizeWallPanelBacking(settings?.panelBacking),
   };
 }
 
@@ -269,6 +270,7 @@ function inheritSurfaceSettings(own: SurfaceSettings | undefined, parent: Normal
     offset: hasOwnSurfaceSetting(own, "offset") ? own?.offset : parent.offset,
     jointSizeMm: hasOwnSurfaceSetting(own, "jointSizeMm") ? own?.jointSizeMm : parent.jointSizeMm,
     jointColor: hasOwnSurfaceSetting(own, "jointColor") ? own?.jointColor : parent.jointColor,
+    panelBacking: hasOwnSurfaceSetting(own, "panelBacking") ? own?.panelBacking : parent.panelBacking,
   };
 }
 
@@ -293,16 +295,8 @@ export function getWallPanelSurfaceSettings(
   clampScale: (scale?: number | null) => number,
   fallbackPanelIds?: string | readonly string[] | null
 ): NormalizedSurfaceSettings {
-  const faceSettings = getWallFaceSurfaceSettings(
-    surfaces,
-    faceId,
-    normalizeRotationDeg,
-    clampScale
-  );
-  const fallbackIds =
-    typeof fallbackPanelIds === "string"
-      ? [fallbackPanelIds]
-      : fallbackPanelIds ?? [];
+  const faceSettings = getWallFaceSurfaceSettings(surfaces, faceId, normalizeRotationDeg, clampScale);
+  const fallbackIds = typeof fallbackPanelIds === "string" ? [fallbackPanelIds] : fallbackPanelIds ?? [];
   const panelSettings =
     (panelId ? surfaces?.walls?.panels?.[panelId] : undefined) ??
     fallbackIds
@@ -372,6 +366,7 @@ export function createSurfaceSettingsPatch(
     offset: normalized.offset,
     jointSizeMm: normalized.jointSizeMm,
     jointColor: normalized.jointColor,
+    ...(patch.panelBacking || base?.panelBacking ? { panelBacking: normalized.panelBacking } : {}),
   };
 }
 

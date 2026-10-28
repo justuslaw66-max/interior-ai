@@ -46,11 +46,8 @@ import {
   type CanonicalOpeningDragMode,
   type CanonicalOpeningEditHandler,
 } from "./canonical-floor-plan/openingDrag";
-import {
-  WALL_SURFACE_TEXTURE_RESOLUTION,
-  resolveRoomSurfaceAssignments,
-  surfaceMaterialFallbackColor,
-} from "./canonical-floor-plan/surfaceMaterials";
+import { WALL_SURFACE_TEXTURE_RESOLUTION, resolveRoomSurfaceAssignments, surfaceMaterialFallbackColor } from "./canonical-floor-plan/surfaceMaterials";
+import { getDrawnWallJointMm } from "@/lib/laminate-wall-backing";
 import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
 import { useCanonicalWallBands } from "./canonical-floor-plan/useCanonicalWallBands";
 import { usePrebuiltCanonicalWallBands } from "./canonical-floor-plan/usePrebuiltCanonicalWallBands";
@@ -572,7 +569,7 @@ const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh({
     rotationRad: (settings.rotationDeg * Math.PI) / 180,
     floorPattern: settings.pattern,
     patternOffset: settings.offset,
-    jointSizeMm: settings.jointSizeMm,
+    jointSizeMm: getDrawnWallJointMm(material, settings.jointSizeMm),
     jointColor: settings.jointColor,
     maxAnisotropy: gl.capabilities.getMaxAnisotropy(),
     uvMode: "normalized",

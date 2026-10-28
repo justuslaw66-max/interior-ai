@@ -177,7 +177,7 @@
       "limit": 250
     },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
-      "lines": 272,
+      "lines": 271,
       "limit": 250
     },
     "components/editor/DesignControlsAiPanel.tsx": {
@@ -229,7 +229,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1209,
+      "lines": 1206,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -241,7 +241,7 @@
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
-      "lines": 1100,
+      "lines": 1098,
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
@@ -585,15 +585,11 @@
       "limit": 400
     },
     "lib/room-types.ts": {
-      "lines": 565,
+      "lines": 562,
       "limit": 400
     },
     "lib/surface-material-audit.ts": {
       "lines": 505,
-      "limit": 400
-    },
-    "lib/surface-settings.ts": {
-      "lines": 404,
       "limit": 400
     },
     "lib/useDesignPageAiLayout.ts": {
@@ -677,7 +673,7 @@
       "limit": 400
     },
     "lib/useDesignPageSurfaceInspector.ts": {
-      "lines": 1105,
+      "lines": 1103,
       "limit": 400
     },
     "lib/useFloorPlanRoomDrawing.ts": {
@@ -1757,7 +1753,7 @@
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 86
+        "maximum": 81
       },
       "complexFunctions": {
         "count": 1,
@@ -4509,7 +4505,7 @@
     "lib/useDesignPageSurfaceInspector.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 614
+        "maximum": 611
       },
       "complexFunctions": {
         "count": 2,
