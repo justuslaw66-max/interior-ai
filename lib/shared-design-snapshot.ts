@@ -19,6 +19,8 @@ import {
   removeLegacySharedDesignRootFields,
   resolveSharedDesignPresentation,
 } from "@/lib/shared-design-projection-schema";
+import { unpackFloorPlanCandidate } from "@/lib/floor-plan-imports/candidate-storage";
+import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 
 export { assertSharedDesignSnapshotPublic } from "@/lib/shared-design-projection-schema";
 
@@ -29,8 +31,9 @@ function projectSharedCanonicalDocument(
   floorPlan: PersistedFloorPlanState
 ) {
   if (!floorPlan.canonicalDocument) return undefined;
+  // A stored design may carry its plan packed (design-floor-plan-storage.ts); the projection removes its source drawing.
   const publicDocument = projectPublicFloorPlanDocumentV2(
-    floorPlan.canonicalDocument,
+    unpackFloorPlanCandidate(floorPlan.canonicalDocument) as FloorPlanDocumentV2,
     floorPlan.canonicalGeometryHash
   );
   const geometryHash =

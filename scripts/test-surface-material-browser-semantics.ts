@@ -252,9 +252,11 @@ assert.match(
   /const filteredSurfaceMaterialGroups = filterSurfaceMaterialGroups\(surfaceMaterialProductGroups, \{\n    search: flooringSearch,\n    filters: surfaceFilters,\n    favoriteIds: favoriteSurfaceMaterialIdSet,\n    roomType: activeRoomType,\n  \}\);/,
   "the Surfaces browser must filter with the shared predicate"
 );
+// The search, quick filters and filter drawer are SurfaceBrowserFilterBar (28 Oct 2026).
+assert.match(panelSource, /<SurfaceBrowserFilterBar\n[\s\S]{0,400}filterOptions=\{surfaceFilterOptions\}/);
 assert.match(
-  panelSource,
-  /renderSurfaceFilterSelect\("brand", "Brand", surfaceFilterOptions\.brand\)\}\n\s*\{renderSurfaceFilterSelect\("collection", "Collection", surfaceFilterOptions\.collection\)/,
+  readFileSync("components/editor/design-controls-plan/SurfaceBrowserFilterBar.tsx", "utf8"),
+  /\["brand", "Brand"\],\n\s*\["collection", "Collection"\],/,
   "Brand comes first, then its collections"
 );
 assert.match(panelSource, /\{getSurfaceMaterialCollectionLabel\(material\)\}<\/span>[\s\S]{0,240}\{getSurfaceMaterialModelName\(material\)\}/);

@@ -41,8 +41,9 @@ anything that isn't a candidate with `floors` (the page-selection envelope, for 
   document whichever form it came in; hashes are of the unpacked candidate.
 - **The cap stays on the unpacked candidate.** `parseCandidate` accepts either form, unpacks it, and refuses one whose
   unpacked JSON is over 5 MB. A design keeps the whole canonical document (`floorPlan.canonicalDocument`, written by
-  `floor-plan-legacy-adapters.ts`) and is itself capped at 5 MB on save, so packing the candidate alone can't let a
-  page hold more. A larger page needs the design's copy packed too: a separate change.
+  `floor-plan-legacy-adapters.ts`), and a design is limited to 4 MiB as stored (`DESIGN_DOCUMENT_LIMITS`) and 5 MiB
+  per save request, so packing the candidate alone can't let a page hold more. Designs pack their copy too (below);
+  the cap can rise once both store packed.
 - **Guards:** `scripts/check-floor-plan-architecture.mjs` fails when an app or lib file writes `candidateJson` other
   than through `packFloorPlanCandidateForStorage` (shorthand included), or when a server file reads it without
   unpacking or compiling it anywhere. `scripts/test-floor-plan-candidate-storage-routes.ts` checks that the import,
@@ -75,7 +76,52 @@ candidate. Packing ships in two releases:
 
 A future format follows the same two steps: readers first, then writers.
 
+## Designs
+
+A design carries up to two plan documents: `floorPlan.canonicalDocument`, and `floorPlan.proposal.originalDocument`
+while a proposal is open. `lib/design-floor-plan-storage.ts` packs and unpacks both with the same codec, behind its own
+switch, `STORE_DESIGN_SOURCE_DRAWING_PACKED`. A design made from 111 Emerald Hill p24 carries its 5.2 MB plan, past
+the 4 MiB design limit (read from the code on 28 Oct 2026, not tried live): the confirm route creates it without a
+size check, but saving, sharing, duplicating and the browser backup refuse it. Packed, the plan is about 0.9 MB.
+
+- **The stored form** is what `snapshotToStored` and `sanitizeStoredDesign` give: the database row, the browser backup
+  (`interior-ai:v1:livingroom-design` and its last-known-valid copy), guest designs, every save and claim request,
+  duplicates, and the designs the confirm and floor-plan-update routes create. The owner GET answers with it as
+  stored.
+- **The unpacked form** is what `storedToSnapshot` (and `legacyApiToSnapshot`, which calls it) gives: the editor's
+  snapshot after a cloud load or a backup restore, share pages, and the floor-plan-update route's copy. The editor's
+  fingerprint is taken on it, so it doesn't change with the stored form.
+- **Saving checks the plan.** `sanitizeStoredDesign` unpacks both documents against one budget
+  (`MAX_UNPACKED_DESIGN_PLAN_BYTES`: the 4 MiB design limit while designs are stored unpacked, since a design past it is
+  refused anyway; four times it once they are stored packed). A malformed pack, or one past the budget, makes the design
+  invalid (a 400 on save). It gives both documents back in the stored form and measures the 4 MiB limit on that form.
+  So a crafted save can't make the server expand more than the budget: the save routes include the unauthenticated
+  guest claim (`/api/designs/claim`), which parses its body before its rate limit.
+- **Reading never fails on a pack.** `storedToSnapshot` gives a plan it can't unpack (malformed, or past this build's
+  budget) as stored: the plan shows without its source drawing, `snapshotToStored` passes it through, and the server
+  refuses to save it. Nothing is lost.
+- **Sharing** unpacks the plan before `projectPublicFloorPlanDocumentV2`, which removes its source drawing.
+  `sourceDrawingPack` is a private key for the share checks, so a pack that slipped into a public snapshot would be
+  refused rather than published.
+- `scripts/test-design-floor-plan-storage.ts` checks the conversions (both settings of the switch), the save check
+  (either document, a crafted expansion refused quickly), the 4 MiB limit on the stored form, reading a pack that can't
+  be unpacked, the share projection and its key check, and the editor's cloud load with a packed design.
+
+The rollout is the candidates' (above): this release reads packed designs everywhere and stores none
+(`STORE_DESIGN_SOURCE_DRAWING_PACKED = false`). The second step also waits for editor tabs opened before this release
+to be gone, since the browser reads designs too. Things to settle in that step:
+
+- **Rolling back.** The second step lets a design hold a plan past 4 MiB unpacked (it measures the packed form). Rolled
+  back to this release, such a design opens without its source drawing (past this release's budget), and saving,
+  sharing, duplicating and the browser backup refuse it, as they refuse any design past the limit today. Nothing is
+  lost; rolling forward restores it.
+- **The editor's cost per change.** Every change takes the stored form (for the fingerprint and the browser backup),
+  so with the switch on each change packs and unpacks the plan: about 0.8 s for a 9 MiB plan in the review's
+  measurement. It needs caching by document before larger plans are allowed.
+- **The import cap.** `compileCandidateFloorPlanDocumentV2` caps a document at 5 MB unpacked, and the floor-plan-update
+  route compiles a design's plan with it; raise the two together.
+
 ## Not changed
 
-The canonical document and its compiler, the design's copy of it, published revisions (stored apart from the
-candidate), the public document, exports, Compare and the review's own state.
+The canonical document and its compiler, published revisions (stored apart from the candidate), the public document,
+exports, Compare and the review's own state.
