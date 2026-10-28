@@ -11,7 +11,7 @@ import {
   normalizeFloorRotationDeg,
 } from "@/lib/floor-materials";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
-import { getWallFinishDepthMeters } from "@/lib/laminate-wall-backing";
+import { getWallFinishDepthMm } from "@/lib/laminate-wall-backing";
 import { mapWallFinishShellUvs } from "./wallFinishShellUvs";
 import { getWallPanelSurfaceSettings } from "@/lib/surface-settings";
 import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
@@ -167,8 +167,8 @@ function WallSurfaceSideMesh({
     0.5 +
     (surfaceCenterWithinPanel + partLength / 2) /
       normalizedTexturePanelLength;
-  // A laminate sheet stands off the wall on its board (J, 28 Oct 2026); its ends and opening edges show, banded in the laminate.
-  const finishDepth = getWallFinishDepthMeters(wallSurfaceMaterial, settings, WALL_SURFACE_THICKNESS_METERS);
+  // A laminate stands off the wall on its board. Divided into metres here, it's a plain number to React's compiler (a memo dep).
+  const finishDepth = getWallFinishDepthMm(wallSurfaceMaterial, settings, WALL_SURFACE_THICKNESS_METERS * 1000) / 1000;
   const surfaceGeometry = useMemo(() => {
     const geometry = buildWallFinishShellGeometry({ widthMeters: partLength, heightMeters: partHeight, thicknessMeters: finishDepth });
     mapWallFinishShellUvs(geometry, textureStartU, textureEndU);
@@ -823,7 +823,7 @@ export function WallSurfacePanelMesh({
     pickEnabledRef.current = renderState.visible;
   });
 
-  const finishDepth = getWallFinishDepthMeters(getRuntimeSurfaceMaterialById(settings.materialId), settings, WALL_SURFACE_THICKNESS_METERS);
+  const finishDepth = getWallFinishDepthMm(getRuntimeSurfaceMaterialById(settings.materialId), settings, WALL_SURFACE_THICKNESS_METERS * 1000) / 1000;
   const outlineZ = panel.side * (wallThickness / 2 + finishDepth + 0.003);
   const left = joinedSurface.centerDelta - joinedSurface.length / 2;
   const right = joinedSurface.centerDelta + joinedSurface.length / 2;

@@ -15,7 +15,7 @@ import {
   formatWallPanelBoard,
   formatWallPanelBoardMaterial,
   getDrawnWallJointMm,
-  getWallFinishDepthMeters,
+  getWallFinishDepthMm,
   getWallPanelBacking,
   getWallPanelBuildUpMm,
   normalizeWallPanelBacking,
@@ -55,9 +55,9 @@ assert.equal(getWallPanelBuildUpMm(0.7, { board: "hdf", boardThicknessMm: 6, fix
 const laminate = getRuntimeSurfaceMaterialById(NORDIC_ACACIA);
 const tile = getRuntimeSurfaceMaterialById(ANIMA_WALL_TILE);
 assert.ok(laminate?.suitability?.laminate_sheet && !tile?.suitability?.laminate_sheet);
-assert.equal(getWallFinishDepthMeters(laminate, { panelBacking: DEFAULT_WALL_PANEL_BACKING }, 0.0015), 0.01, "the 3D view draws it 10 mm deep");
-assert.equal(getWallFinishDepthMeters(laminate, { panelBacking: { board: "mdf", boardThicknessMm: 18, fixing: "battens" } }, 0.0015), 0.044);
-assert.equal(getWallFinishDepthMeters(tile, { panelBacking: DEFAULT_WALL_PANEL_BACKING }, 0.0015), 0.0015, "a tile keeps its thin skin");
+assert.equal(getWallFinishDepthMm(laminate, { panelBacking: DEFAULT_WALL_PANEL_BACKING }, 1.5), 10, "the 3D view draws it 10 mm deep");
+assert.equal(getWallFinishDepthMm(laminate, { panelBacking: { board: "mdf", boardThicknessMm: 18, fixing: "battens" } }, 1.5), 44);
+assert.equal(getWallFinishDepthMm(tile, { panelBacking: DEFAULT_WALL_PANEL_BACKING }, 1.5), 1.5, "a tile keeps its thin skin");
 
 // Joints: a laminate's are at least Greenlam's 3 mm, as drawn and as offered; a tile's are as saved.
 assert.equal(getDrawnWallJointMm(laminate, 1), 3);

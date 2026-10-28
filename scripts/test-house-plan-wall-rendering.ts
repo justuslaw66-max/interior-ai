@@ -514,7 +514,7 @@ assert.match(
 );
 assert.match(
   wallSurfaceSideSource,
-  /const finishDepth = getWallFinishDepthMeters\(wallSurfaceMaterial, settings, WALL_SURFACE_THICKNESS_METERS\);[\s\S]*?buildWallFinishShellGeometry\(\{ widthMeters: partLength, heightMeters: partHeight, thicknessMeters: finishDepth \}\)/,
+  /const finishDepth = getWallFinishDepthMm\(wallSurfaceMaterial, settings, WALL_SURFACE_THICKNESS_METERS \* 1000\) \/ 1000;[\s\S]*?buildWallFinishShellGeometry\(\{ widthMeters: partLength, heightMeters: partHeight, thicknessMeters: finishDepth \}\)/,
   "The visible finish must provide its own physical broad face, top, bottom, and edge depth: the 1.5 mm shell, or a laminate on its board (28 Oct 2026)."
 );
 assert.match(wallSurfaceSideSource, /const surfaceOffsetZ = side \* \(wallThickness \/ 2 \+ finishDepth \/ 2\);/, "the finish stands on the wall face");

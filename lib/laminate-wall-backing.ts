@@ -113,16 +113,18 @@ export function getLaminateWallPanelJointMm(jointSizeMm: number): number {
 }
 
 /**
- * How deep the 3D view draws a wall finish off the wall face: a laminate sheet on its board (and battens) at its real build-up,
- * anything else as the thin skin it gives (`skinMeters`).
+ * How deep, in millimetres, the 3D view draws a wall finish off the wall face: a laminate sheet on its board (and battens) at
+ * its real build-up, anything else as the thin skin it gives (`skinMm`). The 3D view divides it into metres where it reads it,
+ * which also makes it a plain number to React's compiler rather than a value that might share the material object, which
+ * failed react-hooks/preserve-manual-memoization (28 Oct 2026).
  */
-export function getWallFinishDepthMeters(
+export function getWallFinishDepthMm(
   material: { suitability?: { laminate_sheet?: boolean } } | null | undefined,
   settings: { panelBacking?: NormalizedWallPanelBacking } | null | undefined,
-  skinMeters: number
+  skinMm: number
 ): number {
-  if (!material?.suitability?.laminate_sheet) return skinMeters;
-  return getWallPanelBuildUpMm(LAMINATE_SHEET_THICKNESS_MM, getWallPanelBacking(settings)) / 1000;
+  if (!material?.suitability?.laminate_sheet) return skinMm;
+  return getWallPanelBuildUpMm(LAMINATE_SHEET_THICKNESS_MM, getWallPanelBacking(settings));
 }
 
 /** The joint a wall finish is drawn with: a laminate sheet's (the render data's laminate-sheet fact) at least 3 mm. */
