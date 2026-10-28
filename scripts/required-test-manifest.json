@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 330,
-      "expectedPathSha256": "48b2edf35096aa0a4ceafcc5dd0171bb78348daa71288121ad6d686cca651967"
+      "expectedFileCount": 331,
+      "expectedPathSha256": "5c329141df2682b1f90c2ba456c979d66c45c672e183535d97c2a78cfa9046d0"
     },
     {
       "id": "browser-specs",
@@ -543,7 +543,7 @@
       "blocking": true,
       "command": "npm run test:catalog-audit && npm run test:catalog-asset-availability && npm run test:surface-material-semantics",
       "packageScripts": ["test:catalog-audit", "test:catalog-asset-availability", "test:surface-material-semantics"],
-      "packageClosure": { "expectedScriptCount": 15, "expectedSha256": "29ed67fbd698c20f917ffffc3742d2d93716579e467b0904289598967e69d4c0" },
+      "packageClosure": { "expectedScriptCount": 16, "expectedSha256": "cfa1bcc29596f5e850fe7c58c4e301f5333807362b0444445b30bb42e4a35bbf" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-catalog-quality-audit.ts",
