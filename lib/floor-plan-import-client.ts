@@ -1,7 +1,14 @@
-import type { FloorPlanImportStatus } from "@/lib/floor-plan-imports/types";
+import {
+  FLOOR_PLAN_IMPORT_STATUSES,
+  type FloorPlanImportStatus,
+} from "@/lib/floor-plan-imports/types";
 
 export const ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY =
   "interior-ai:active-floor-plan-import:v1";
+
+/** What the browser last heard about the stored upload, kept beside its id (which stays a plain string). */
+export const ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY =
+  "interior-ai:active-floor-plan-import-hint:v1";
 
 export const RESUMABLE_FLOOR_PLAN_IMPORT_STATUSES = new Set<FloorPlanImportStatus>([
   "received",
@@ -172,4 +179,112 @@ export function writeActiveFloorPlanImportId(
 ) {
   if (jobId) storage.setItem(ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY, jobId);
   else storage.removeItem(ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY);
+}
+
+/**
+ * The stored upload as this browser last saw it: its status and file name, whether the server was still working on it,
+ * and a short hash of the account it belongs to. It only decides what the upload window shows before the server
+ * answers, and only for the same account; the job itself is always loaded before any action.
+ */
+export type FloorPlanImportHint = {
+  id: string;
+  status: FloorPlanImportStatus;
+  fileName: string | null;
+  /** An attempt is scheduled or a worker holds the lease: still being read, whatever the status says. */
+  busy: boolean;
+  account: string;
+};
+
+function isFloorPlanImportStatus(value: unknown): value is FloorPlanImportStatus {
+  return FLOOR_PLAN_IMPORT_STATUSES.some((status) => status === value);
+}
+
+/** A short, stable hash (FNV-1a) of the account key, so the hint doesn't keep the account's id or email itself. */
+export function floorPlanImportHintAccount(accountKey: string) {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < accountKey.length; index++) {
+    hash ^= accountKey.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(36);
+}
+
+/** The hint for a job the window has just heard about. */
+export function floorPlanImportHintFor(
+  job: { id: string; status: FloorPlanImportStatus; nextAttemptAt: string | null; leaseExpiresAt: string | null;
+    sourceAsset?: { fileName?: string } },
+  accountKey: string,
+  now = Date.now()
+): FloorPlanImportHint {
+  const leaseExpiresAt = job.leaseExpiresAt ? Date.parse(job.leaseExpiresAt) : Number.NaN;
+  return {
+    id: job.id,
+    status: job.status,
+    fileName: job.sourceAsset?.fileName ?? null,
+    busy: Boolean(job.nextAttemptAt) || (Number.isFinite(leaseExpiresAt) && leaseExpiresAt > now),
+    account: floorPlanImportHintAccount(accountKey),
+  };
+}
+
+/** The hint for this upload and account, or null. Storage that can't be read means no hint. */
+export function readFloorPlanImportHint(
+  storage: Pick<Storage, "getItem">,
+  jobId: string,
+  accountKey: string
+): FloorPlanImportHint | null {
+  let parsed: unknown = null;
+  try {
+    parsed = JSON.parse(storage.getItem(ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY) ?? "null");
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object") return null;
+  const { id, status, fileName, busy, account } = parsed as Record<string, unknown>;
+  if (id !== jobId || !isFloorPlanImportStatus(status) || typeof busy !== "boolean") return null;
+  if (account !== floorPlanImportHintAccount(accountKey)) return null;
+  return {
+    id: jobId,
+    status,
+    fileName: typeof fileName === "string" && fileName.trim() ? fileName.trim().slice(0, 200) : null,
+    busy,
+    account,
+  };
+}
+
+/** Best effort: storage that is full or blocked leaves the hint as it was, and never fails an import. */
+export function writeFloorPlanImportHint(
+  storage: Pick<Storage, "setItem" | "removeItem">,
+  hint: FloorPlanImportHint | null
+) {
+  try {
+    if (hint) storage.setItem(ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY, JSON.stringify(hint));
+    else storage.removeItem(ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY);
+  } catch {
+    // A missing or stale hint only means the window reopens the upload, as it did before hints.
+  }
+}
+
+/** Uploads that wait on the person: offered to continue, not reopened by themselves. */
+const WAITING_FOR_PERSON_STATUSES = new Set<FloorPlanImportStatus>([
+  "selecting_page",
+  "needs_review",
+  "ready",
+  "failed",
+]);
+
+/**
+ * What the upload window does with the stored upload when it opens. An upload still being read
+ * (by its status, or busy: a chosen page or a saved review waiting for the worker) reopens, as one
+ * with no hint for this account does; one waiting on the person is offered as a card beside Choose a
+ * file, so opening the window to upload a new plan doesn't first load the old one.
+ */
+export function planFloorPlanImportReopen(
+  storedJobId: string | null,
+  hint: FloorPlanImportHint | null
+): { resumeJobId: string | null; lastUpload: FloorPlanImportHint | null } {
+  if (!storedJobId) return { resumeJobId: null, lastUpload: null };
+  if (!hint || hint.busy) return { resumeJobId: storedJobId, lastUpload: null };
+  if (WAITING_FOR_PERSON_STATUSES.has(hint.status)) return { resumeJobId: null, lastUpload: hint };
+  if (isPausedFloorPlanImportStatus(hint.status)) return { resumeJobId: null, lastUpload: null };
+  return { resumeJobId: storedJobId, lastUpload: null };
 }

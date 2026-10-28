@@ -22,12 +22,12 @@ import { PhotoReviewAction,requestDetectionReview,photoReviewBusy,canRequestDete
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
 import { readFloorPlanPageSelection } from "@/lib/floor-plan-imports/page-selection";
-import { formatFloorPlanRemainingTime } from "@/lib/floor-plan-imports/progress-estimate";
 import { useConsumerFloorPlanImportActionScope } from "./useConsumerFloorPlanImportActionScope";
 import { useConsumerFloorPlanImportCreation } from "./useConsumerFloorPlanImportCreation";
 import { FloorPlanImportRetentionNotice } from "./FloorPlanImportRetentionNotice";
 import { FloorPlanImportPausedNotice } from "./FloorPlanImportPausedNotice";
 import FloorPlanPageSelectionPanel from "./FloorPlanPageSelectionPanel";
+import { FloorPlanImportOpeningCard, FloorPlanImportProgressCard } from "./FloorPlanImportProgressCard";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { Button } from "@/components/ui/Button";
 
@@ -35,7 +35,7 @@ type FloorPlanImportAssistantProps = {
   file: File | null;
   trainingBenchmarkOptIn?: boolean;
   disabled?: boolean; proMode?: boolean;
-  resumeJobId?: string | null;
+  resumeJobId?: string | null; resumeFileName?: string | null;
   onChooseFile?: () => void;
   onActiveJobIdChange?: (jobId: string | null) => void;
   onJobUpdate?: (job: ConsumerFloorPlanImportJob) => void;
@@ -64,7 +64,7 @@ export default function FloorPlanImportAssistant({
   file,
   trainingBenchmarkOptIn = false,
   disabled = false, proMode = false,
-  resumeJobId = null,
+  resumeJobId = null, resumeFileName = null,
   onChooseFile,
   onActiveJobIdChange,
   onJobUpdate,
@@ -343,89 +343,12 @@ export default function FloorPlanImportAssistant({
   };
 
   if ((!file && !resumeJobId) || state.kind === "idle") return null;
+  if (state.kind === "opening") return <FloorPlanImportOpeningCard fileName={resumeFileName} />;
   const surface = "rounded-xl border border-success-tint-border bg-success-tint p-4 shadow-sm sm:p-5";
   const subtle = "text-label-secondary";
   const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs text-label";
 
-  if (state.kind === "working") {
-    const estimate = state.estimate;
-    const progress = Math.max(0, Math.min(99, Math.round(state.progress)));
-    const retrySeconds =
-      estimate?.activity === "retrying" && estimate.nextAttemptAt
-        ? Math.max(
-            1,
-            Math.ceil((Date.parse(estimate.nextAttemptAt) - Date.now()) / 1_000)
-          )
-        : null;
-    const timingMessage =
-      estimate?.activity === "queued"
-        ? "Waiting to start"
-        : estimate?.activity === "retrying"
-          ? `Retrying in ${retrySeconds ?? 1} sec`
-          : estimate?.activity === "awaiting_user"
-            ? "Waiting for your review"
-            : estimate?.activity === "attention" &&
-                !estimate.heartbeatHealthy
-              ? "Processing connection delayed"
-              : estimate?.unusuallySlow
-                ? "Taking longer than usual — AI is still working"
-                : formatFloorPlanRemainingTime(
-                    estimate?.remainingRangeMs ?? null,
-                    estimate?.confidence ?? null
-                  );
-    return (
-      <div
-        className={`${surface} flex min-h-[440px] flex-col items-center justify-center text-center`}
-        data-testid="floor-plan-import-progress" data-floor-plan-workspace-state="working"
-      >
-        <div className="relative h-14 w-14">
-          <div className="absolute inset-0 rounded-full border-4 border-success-tint" />
-          <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-emerald-600" />
-        </div>
-        <h3 className="mt-5 text-xl font-semibold">AI is reading your floor plan</h3>
-        <p className={`mt-2 max-w-lg text-sm leading-6 ${subtle}`}>
-          Finding walls, printed dimensions, room names, doors, and windows.
-          You can leave this screen and return later.
-        </p>
-        <div className="mt-5 w-full max-w-xl">
-          <div className="flex items-center justify-between gap-2 text-xs font-semibold">
-            <span className="flex items-center gap-2 text-left">
-              {state.message}
-              {estimate?.heartbeatHealthy ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-surface-floating px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-on-success-tint">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Live
-                </span>
-              ) : null}
-            </span>
-            <span>{progress}%</span>
-          </div>
-          <div
-            role="progressbar"
-            aria-label="Estimated progress reading your floor plan"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={progress}
-            className="mt-2 h-2 overflow-hidden rounded-full bg-surface-floating"
-          >
-            <div
-              className="h-full rounded-full bg-emerald-500 transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div className={`mt-3 text-xs font-medium ${subtle}`}>
-            Estimated progress
-          </div>
-          <div className={`mt-1 min-h-5 text-sm ${subtle}`} aria-live="polite">
-            {timingMessage ?? "Calculating time remaining…"}
-          </div>
-          <div className={`mt-2 text-xs ${subtle}`}>
-            Upload · Detection · Dimensions · Editable plan
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (state.kind === "working") return <FloorPlanImportProgressCard state={state} />;
 
   if (state.kind === "error") {
     return (

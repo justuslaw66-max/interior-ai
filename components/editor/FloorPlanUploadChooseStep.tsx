@@ -5,6 +5,8 @@ import { FileUp } from "lucide-react";
 import type { FloorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import { requestFloorPlanUploadSignIn } from "@/lib/floor-plan-upload-request";
 import { Button } from "@/components/ui/Button";
+import type { FloorPlanImportHint } from "@/lib/floor-plan-import-client";
+import { FloorPlanLastUploadCard } from "./FloorPlanLastUploadCard";
 
 /** Said before any file is chosen (audit finding ST5), where it used to come only at the end. */
 export const FLOOR_PLAN_UPLOAD_NEW_DESIGN_NOTE =
@@ -17,11 +19,16 @@ export type FloorPlanUploadChooseState = {
   /** Why the last file chosen can't be uploaded, in words for the person. */
   fileProblem: string | null;
   onFileDropped: (file: File) => void;
+  /** The signed-in account's key ("guest" signed out): the stored upload's hint is only read for the account that wrote it. */
+  accountKey?: string;
 };
 
 type FloorPlanUploadChooseStepProps = FloorPlanUploadChooseState & {
   disabled: boolean;
   onChooseFile: () => void;
+  /** An earlier upload waiting on the person, offered to continue under the drop zone. */
+  lastUpload?: FloorPlanImportHint | null;
+  onContinueLastUpload?: (jobId: string) => void;
 };
 
 const shellClass =
@@ -119,6 +126,9 @@ export function FloorPlanUploadChooseStep(props: FloorPlanUploadChooseStepProps)
       <p className={`max-w-lg text-sm leading-6 ${subtleClass}`} data-testid="floor-plan-upload-new-design-note">
         {FLOOR_PLAN_UPLOAD_NEW_DESIGN_NOTE}
       </p>
+      {props.lastUpload && props.onContinueLastUpload ? (
+        <FloorPlanLastUploadCard upload={props.lastUpload} disabled={disabled} onContinue={props.onContinueLastUpload} />
+      ) : null}
     </div>
   );
 }

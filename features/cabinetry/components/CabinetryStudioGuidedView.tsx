@@ -390,7 +390,7 @@ export function CabinetryStudioGuidedView({
         <div
           key={projectMeasurementUnit}
           data-testid="cabinetry-studio"
-          className="flex h-full min-h-[680px] flex-col overflow-hidden bg-[#f6f4ef] text-neutral-950"
+          className="flex h-full min-h-[680px] flex-col overflow-hidden bg-surface-page text-label"
         >
           <CabinetStudioHeader
             experience="guided"
@@ -406,7 +406,7 @@ export function CabinetryStudioGuidedView({
           />
 
           <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(560px,1.08fr)_minmax(380px,0.92fr)]">
-            <section className="min-h-0 overflow-y-auto border-r border-neutral-200 px-4 py-5 sm:px-6 lg:px-8">
+            <section className="min-h-0 overflow-y-auto border-r border-separator px-4 py-5 sm:px-6 lg:px-8">
               <CabinetGuidedStepNavigation
                 currentStepIndex={guidedStep}
                 onStepChange={setGuidedStep}
@@ -418,11 +418,11 @@ export function CabinetryStudioGuidedView({
                   data-testid="cabinet-mobile-preview-toggle"
                   aria-expanded={mobilePreviewOpen}
                   aria-controls="cabinet-mobile-preview"
-                  className="flex min-h-11 w-full items-center justify-between rounded-xl border border-neutral-300 bg-white px-4 text-sm font-semibold text-neutral-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+                  className="flex min-h-11 w-full items-center justify-between rounded-xl border border-control-secondary-border bg-control-secondary px-4 text-sm font-semibold text-label focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-page"
                   onClick={() => setMobilePreviewOpen((open) => !open)}
                 >
                   <span>{mobilePreviewOpen ? "Hide 3D preview" : "View 3D preview"}</span>
-                  <span className="text-xs font-medium text-neutral-500">
+                  <span className="text-xs font-medium text-label-secondary">
                     {formatProjectMeasurement(definition.totalWidth)} × {formatProjectMeasurement(definition.height)} × {formatProjectMeasurement(definition.depth)}
                   </span>
                 </button>
@@ -430,7 +430,7 @@ export function CabinetryStudioGuidedView({
                   <div
                     id="cabinet-mobile-preview"
                     data-testid="cabinet-mobile-preview"
-                    className="relative mt-3 h-72 overflow-hidden rounded-2xl border border-neutral-200 bg-[#e5e7e1]"
+                    className="relative mt-3 h-72 overflow-hidden rounded-2xl border border-box-border bg-[#e5e7e1]"
                   >
                     <CabinetPreview3D
                       definition={deferredDefinition}
@@ -446,7 +446,7 @@ export function CabinetryStudioGuidedView({
                     <span
                       role="status"
                       aria-live="polite"
-                      className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-white/90 px-2.5 py-1.5 text-xs font-medium text-neutral-700 shadow-sm"
+                      className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-surface-floating/90 px-2.5 py-1.5 text-xs font-medium text-control-label-idle shadow-sm ring-1 ring-surface-floating-edge"
                     >
                       {previewStatus === "regenerating" ? "Updating preview…" : "Preview ready"}
                     </span>
@@ -456,10 +456,10 @@ export function CabinetryStudioGuidedView({
 
               <div className="mx-auto w-full max-w-4xl">
                 <div className="mb-6">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-on-warning-tint">
                     Step {guidedStep + 1} of {CABINET_GUIDED_STEPS.length}
                   </p>
-                  <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 sm:text-3xl">
+                  <h1 className="text-2xl font-semibold tracking-tight text-label sm:text-3xl">
                     {currentStep.hint}
                   </h1>
                 </div>
@@ -473,11 +473,11 @@ export function CabinetryStudioGuidedView({
                       onShow={showOnboardingHelp}
                     />
                     <div className="relative">
-                      <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                      <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-label-secondary" />
                       <input
                         data-testid="cabinet-template-search"
                         aria-label="Search built-in templates"
-                        className="h-12 w-full rounded-2xl border border-neutral-300 bg-white pl-10 pr-4 text-sm outline-hidden transition placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10"
+                        className="h-12 w-full rounded-2xl border border-control-secondary-border bg-field pl-10 pr-4 text-sm outline-hidden transition placeholder:text-label-tertiary focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/20"
                         type="search"
                         value={templateQuery}
                         placeholder="Search wardrobe, media wall, drawers…"
@@ -521,26 +521,26 @@ export function CabinetryStudioGuidedView({
                               />
                               <span className="grid gap-1">
                                 <span className="flex items-start justify-between gap-2">
-                                  <span className="text-sm font-semibold text-neutral-950">{preset.label}</span>
+                                  <span className="text-sm font-semibold text-label">{preset.label}</span>
                                   {isSelected ? (
-                                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-neutral-950 text-white">
+                                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-control-primary text-control-on-primary">
                                       <Check className="h-3 w-3" />
                                     </span>
                                   ) : null}
                                 </span>
-                                <span className="line-clamp-2 text-xs leading-5 text-neutral-500">{preset.description}</span>
+                                <span className="line-clamp-2 text-xs leading-5 text-label-secondary">{preset.description}</span>
                               </span>
-                              <span className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                                <span className="rounded-full bg-neutral-100 px-2 py-1">{preset.difficulty}</span>
+                              <span className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-label-secondary">
+                                <span className="rounded-full bg-control-track px-2 py-1">{preset.difficulty}</span>
                                 <span className="inline-flex items-center gap-1">
                                   <Clock3 className="h-3 w-3" /> {preset.estimatedMinutes} min
                                 </span>
                                 <span>{preset.host}</span>
-                                <span className={preset.safetyClassification === "standard" ? "" : "text-amber-700"}>
+                                <span className={preset.safetyClassification === "standard" ? "" : "text-on-warning-tint"}>
                                   {formatCabinetLabel(preset.safetyClassification)}
                                 </span>
                               </span>
-                              <span className="line-clamp-2 text-xs text-neutral-400" title={preset.applicableRoomTypes.map(formatCabinetLabel).join(", ")}>
+                              <span className="line-clamp-2 text-xs text-label-secondary" title={preset.applicableRoomTypes.map(formatCabinetLabel).join(", ")}>
                                 Best for {preset.applicableRoomTypes.slice(0, 3).map(formatCabinetLabel).join(", ")}
                               </span>
                             </ChoiceTile>
@@ -548,8 +548,8 @@ export function CabinetryStudioGuidedView({
                         })}
                       </div>
                     ) : visibleSavedTemplates.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-neutral-300 bg-white p-8 text-center">
-                        <p className="text-sm font-semibold text-neutral-800">No templates match that search.</p>
+                      <div className="rounded-2xl border border-dashed border-control-handle bg-surface-secondary p-8 text-center">
+                        <p className="text-sm font-semibold text-label">No templates match that search.</p>
                         <Button
                           variant="link" size="inline" className="mt-3 text-sm"
                           onClick={() => {
@@ -564,8 +564,8 @@ export function CabinetryStudioGuidedView({
                     {visibleSavedTemplates.length ? (
                       <section className="grid gap-3" data-testid="cabinet-custom-templates">
                         <div>
-                          <h3 className="text-sm font-semibold text-neutral-950">My reusable templates</h3>
-                          <p className="mt-1 text-xs text-neutral-500">
+                          <h3 className="text-sm font-semibold text-label">My reusable templates</h3>
+                          <p className="mt-1 text-xs text-label-secondary">
                             Templates saved in this browser. Placement and room host data are excluded.
                           </p>
                         </div>
@@ -573,10 +573,10 @@ export function CabinetryStudioGuidedView({
                           {visibleSavedTemplates.map((template) => (
                             <div
                               key={template.id}
-                              className={`grid gap-2 rounded-2xl border bg-white p-3 ${
+                              className={`grid gap-2 rounded-2xl border bg-surface-secondary p-3 ${
                                 activeSavedTemplateId === template.id
                                   ? "border-blue-600 ring-2 ring-blue-600/10"
-                                  : "border-neutral-200"
+                                  : "border-box-border"
                               }`}
                             >
                               <button
@@ -587,10 +587,10 @@ export function CabinetryStudioGuidedView({
                               >
                                 <CabinetTemplateDiagram definition={template.definition} />
                                 <span>
-                                  <span className="block text-sm font-semibold text-neutral-950">
+                                  <span className="block text-sm font-semibold text-label">
                                     {template.name}
                                   </span>
-                                  <span className="mt-1 block text-xs uppercase tracking-wide text-neutral-400">
+                                  <span className="mt-1 block text-xs uppercase tracking-wide text-label-secondary">
                                     Saved {new Date(template.savedAt).toLocaleDateString()}
                                   </span>
                                 </span>
@@ -610,7 +610,7 @@ export function CabinetryStudioGuidedView({
                     {deletedTemplateUndo ? (
                       <div
                         data-testid="cabinet-template-delete-undo"
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warning-tint-border bg-warning-tint px-4 py-3 text-sm text-on-warning-tint"
                       >
                         <span role="status" aria-live="polite">
                           <span className="font-semibold">{deletedTemplateUndo.template.name}</span>{" "}
@@ -629,11 +629,11 @@ export function CabinetryStudioGuidedView({
 
                 {guidedStep === 1 ? (
                   <div className="grid gap-5" data-testid="cabinet-guided-space-panel">
-                    <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+                    <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
                       <div className="mb-4 flex items-start justify-between gap-4">
                         <div>
                           <h3 className="text-base font-semibold">Measured room surfaces</h3>
-                          <p className="mt-1 text-sm leading-6 text-neutral-500">
+                          <p className="mt-1 text-sm leading-6 text-label-secondary">
                             Choose a wall from the current room. Doors and windows divide it into usable fitting segments automatically.
                           </p>
                         </div>
@@ -702,27 +702,27 @@ export function CabinetryStudioGuidedView({
                                 <span className="flex items-start justify-between gap-3">
                                   <span>
                                     <span className="block text-sm font-semibold">{space.label}</span>
-                                    <span className="mt-1 block text-xs text-neutral-500">
+                                    <span className="mt-1 block text-xs text-label-secondary">
                                       {space.roomName ?? "Current room"}
                                     </span>
                                   </span>
                                   {isSelected ? (
-                                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-neutral-950 text-white">
+                                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-control-primary text-control-on-primary">
                                       <Check className="h-3.5 w-3.5" />
                                     </span>
                                   ) : null}
                                 </span>
                                 <span className="grid grid-cols-2 gap-2 text-xs">
-                                  <span className="rounded-lg bg-neutral-50 px-2.5 py-2">
+                                  <span className="rounded-lg bg-tile px-2.5 py-2">
                                     <span className="block text-xs uppercase tracking-wide opacity-60">Wall</span>
                                     <span className="mt-0.5 block font-semibold">{formatProjectMeasurement(space.availableWidthMm)} × {formatProjectMeasurement(space.availableHeightMm)}</span>
                                   </span>
-                                  <span className="rounded-lg bg-neutral-50 px-2.5 py-2">
+                                  <span className="rounded-lg bg-tile px-2.5 py-2">
                                     <span className="block text-xs uppercase tracking-wide opacity-60">Usable segment</span>
                                     <span className="mt-0.5 block font-semibold">{formatProjectMeasurement(largestSegmentMm)}</span>
                                   </span>
                                 </span>
-                                <span className="text-xs text-neutral-500">
+                                <span className="text-xs text-label-secondary">
                                   {space.openings.length
                                     ? `${space.openings.length} ${space.openings.length === 1 ? "opening" : "openings"} considered`
                                     : "Clear wall · no recorded openings"}
@@ -731,10 +731,10 @@ export function CabinetryStudioGuidedView({
                                   <span
                                     className={`rounded-lg px-2.5 py-2 text-xs font-medium ${
                                       hostCompatibility.status === "incompatible"
-                                          ? "bg-red-50 text-red-800"
+                                          ? "bg-danger-tint text-on-danger-tint"
                                           : hostCompatibility.status === "review_required"
-                                            ? "bg-amber-50 text-amber-800"
-                                            : "bg-emerald-50 text-emerald-800"
+                                            ? "bg-warning-tint text-on-warning-tint"
+                                            : "bg-success-tint text-on-success-tint"
                                     }`}
                                   >
                                     {hostCompatibility.status === "compatible"
@@ -769,7 +769,7 @@ export function CabinetryStudioGuidedView({
                           })}
                         </div>
                       ) : (
-                        <div className="rounded-xl border border-dashed border-neutral-300 bg-neutral-50 p-5 text-sm text-neutral-600">
+                        <div className="rounded-xl border border-dashed border-control-handle bg-tile p-5 text-sm text-label-secondary">
                           Add or select a measured room to enable Fit to Space. You can still configure the assembly manually.
                         </div>
                       )}
@@ -785,7 +785,7 @@ export function CabinetryStudioGuidedView({
                       >
                         <span>
                           <span className="font-semibold">Enter dimensions manually</span>
-                          <span className="mt-0.5 block text-xs text-neutral-500">
+                          <span className="mt-0.5 block text-xs text-label-secondary">
                             Create without a host and place it freely later.
                           </span>
                         </span>
@@ -797,12 +797,12 @@ export function CabinetryStudioGuidedView({
                           type="button"
                           data-testid="cabinet-custom-space-toggle"
                           aria-expanded={customSpaceFormOpen}
-                          className="mt-3 flex w-full items-center justify-between rounded-xl border border-dashed border-blue-300 bg-blue-50 px-4 py-3 text-left text-sm text-blue-900"
+                          className="mt-3 flex w-full items-center justify-between rounded-xl border border-dashed border-accent-tint-border bg-accent-tint px-4 py-3 text-left text-sm text-on-accent-tint"
                           onClick={() => setCustomSpaceFormOpen((value) => !value)}
                         >
                           <span>
                             <span className="font-semibold">Add a measured niche or area</span>
-                            <span className="mt-0.5 block text-xs text-blue-700">
+                            <span className="mt-0.5 block text-xs text-on-accent-tint">
                               Use field measurements when the room model does not contain this host yet.
                             </span>
                           </span>
@@ -811,12 +811,12 @@ export function CabinetryStudioGuidedView({
                       ) : null}
 
                       {isProWorkspace && customSpaceFormOpen ? (
-                        <div data-testid="cabinet-custom-space-form" className="mt-3 grid gap-3 rounded-xl border border-blue-200 bg-blue-50/60 p-4 sm:grid-cols-2">
-                          <label className="grid gap-1.5 text-xs font-semibold text-blue-950">
+                        <div data-testid="cabinet-custom-space-form" className="mt-3 grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint p-4 sm:grid-cols-2">
+                          <label className="grid gap-1.5 text-xs font-semibold text-on-accent-tint">
                             Host type
                             <select
                               data-testid="cabinet-custom-space-kind"
-                              className="h-10 rounded-lg border border-blue-200 bg-white px-3 text-sm"
+                              className="h-10 rounded-lg border border-accent-tint-border bg-field px-3 text-sm text-label"
                               value={customSpaceDraft.kind}
                               onChange={(event) =>
                                 setCustomSpaceDraft((current) => ({
@@ -830,11 +830,11 @@ export function CabinetryStudioGuidedView({
                               <option value="rectangular_area">Rectangular area</option>
                             </select>
                           </label>
-                          <label className="grid gap-1.5 text-xs font-semibold text-blue-950">
+                          <label className="grid gap-1.5 text-xs font-semibold text-on-accent-tint">
                             Name
                             <input
                               data-testid="cabinet-custom-space-label"
-                              className="h-10 rounded-lg border border-blue-200 bg-white px-3 text-sm"
+                              className="h-10 rounded-lg border border-accent-tint-border bg-field px-3 text-sm text-label"
                               maxLength={80}
                               value={customSpaceDraft.label}
                               onChange={(event) =>
@@ -848,7 +848,7 @@ export function CabinetryStudioGuidedView({
                             ["depth", "Depth", 1],
                             ["baseboard", "Baseboard stand-off", 0],
                           ] as const).map(([field, label, min]) => (
-                            <label key={field} className="grid gap-1.5 text-xs font-semibold text-blue-950">
+                            <label key={field} className="grid gap-1.5 text-xs font-semibold text-on-accent-tint">
                               {label} ({projectMeasurementUnit})
                               <input
                                 data-testid={`cabinet-custom-space-${field}`}
@@ -867,7 +867,7 @@ export function CabinetryStudioGuidedView({
                                     ? 0.125
                                     : toProjectMeasurementValue(10)
                                 }
-                                className="h-10 rounded-lg border border-blue-200 bg-white px-3 text-sm"
+                                className="h-10 rounded-lg border border-accent-tint-border bg-field px-3 text-sm text-label"
                                 value={customSpaceDraft[field]}
                                 onChange={(event) =>
                                   setCustomSpaceDraft((current) => ({
@@ -885,7 +885,7 @@ export function CabinetryStudioGuidedView({
                           >
                             Use this measured area
                           </Button>
-                          <p className="text-xs leading-5 text-blue-700 sm:col-span-2">
+                          <p className="text-xs leading-5 text-on-accent-tint sm:col-span-2">
                             Custom areas coordinate dimensions and clearances. Without a modelled wall face, final plan position remains manual.
                           </p>
                         </div>
@@ -893,19 +893,19 @@ export function CabinetryStudioGuidedView({
                     </div>
 
                     {selectedSpace ? (
-                      <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+                      <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
                         <div className="mb-5 flex items-start justify-between gap-4">
                           <div>
                             <h3 className="text-base font-semibold">Fit settings</h3>
-                            <p className="mt-1 text-sm text-neutral-500">Review the automatic change before applying it.</p>
+                            <p className="mt-1 text-sm text-label-secondary">Review the automatic change before applying it.</p>
                           </div>
-                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          <span className="rounded-full bg-success-tint px-3 py-1 text-xs font-semibold text-on-success-tint">
                             Undoable
                           </span>
                         </div>
                         <div className="grid gap-5 sm:grid-cols-3">
                           <fieldset className="grid gap-2">
-                            <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Fit</legend>
+                            <legend className="text-xs font-semibold uppercase tracking-wide text-label-secondary">Fit</legend>
                             <div className="grid grid-cols-2 gap-1">
                               {([
                                 ["fit_width", "Width only"],
@@ -925,11 +925,11 @@ export function CabinetryStudioGuidedView({
                             </div>
                           </fieldset>
                           <fieldset className="grid gap-2">
-                            <legend className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Alignment</legend>
+                            <legend className="text-xs font-semibold uppercase tracking-wide text-label-secondary">Alignment</legend>
                             <SegmentedControl label="Alignment" size="compact" fill value={fitAlignment} onChange={setFitAlignment}
                               options={(["left", "center", "right"] as const).map((value) => ({ value, label: formatCabinetLabel(value), testId: `cabinet-fit-align-${value}` }))} />
                           </fieldset>
-                          <label className="grid gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                          <label className="grid gap-2 text-xs font-semibold uppercase tracking-wide text-label-secondary">
                             Bottom above floor
                             <span className="relative block">
                               <input
@@ -942,11 +942,11 @@ export function CabinetryStudioGuidedView({
                                     ? 0.125
                                     : toProjectMeasurementValue(10)
                                 }
-                                className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 pr-10 text-sm font-medium normal-case tracking-normal text-neutral-900 focus:border-neutral-900"
+                                className="h-10 w-full rounded-xl border border-control-secondary-border bg-field px-3 pr-10 text-sm font-medium normal-case tracking-normal text-label focus-visible:border-blue-600"
                                 value={mountingHeightDraft}
                                 onChange={(event) => setMountingHeightDraft(event.target.value)}
                               />
-                              <span className="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-xs normal-case tracking-normal text-neutral-400">{projectMeasurementUnit}</span>
+                              <span className="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-xs normal-case tracking-normal text-label-secondary">{projectMeasurementUnit}</span>
                             </span>
                           </label>
                         </div>
@@ -965,7 +965,7 @@ export function CabinetryStudioGuidedView({
                           <MapPin className="h-4 w-4" /> Fit to {selectedSpace.label}
                         </Button>
 
-                        <p className="mt-3 text-xs leading-5 text-neutral-500">
+                        <p className="mt-3 text-xs leading-5 text-label-secondary">
                           The current plan provides wall, ceiling, door, and window measurements. Outlet and baseboard locations are only considered when recorded.
                         </p>
                       </div>
@@ -975,14 +975,14 @@ export function CabinetryStudioGuidedView({
                       <div
                         data-testid="cabinet-fit-feedback"
                         data-fit-status={fitFeedback.ok ? "success" : "error"}
-                        className={`rounded-2xl border p-5 ${fitFeedback.ok ? "border-emerald-200 bg-emerald-50" : "border-red-200 bg-red-50"}`}
+                        className={`rounded-2xl border p-5 ${fitFeedback.ok ? "border-success-tint-border bg-success-tint" : "border-danger-tint-border bg-danger-tint"}`}
                       >
-                        <h3 className={`text-sm font-semibold ${fitFeedback.ok ? "text-emerald-950" : "text-red-950"}`}>
+                        <h3 className={`text-sm font-semibold ${fitFeedback.ok ? "text-on-success-tint" : "text-on-danger-tint"}`}>
                           {fitFeedback.ok ? "Fit applied" : "This layout cannot fit yet"}
                         </h3>
                         <div className="mt-3 grid gap-2">
                           {fitFeedback.issues.map((issue) => (
-                            <div key={`${issue.code}-${issue.message}`} className="rounded-xl bg-white/70 px-3 py-2 text-xs leading-5">
+                            <div key={`${issue.code}-${issue.message}`} className="rounded-xl bg-surface-secondary/80 px-3 py-2 text-xs leading-5">
                               <span className="font-semibold">{formatCabinetLabel(issue.severity)}:</span> {formatProjectFeedback(issue.message)}
                               {issue.moduleIds?.length && issue.suggestedAction === "unlock_modules" ? (
                                 <Button
@@ -1007,9 +1007,9 @@ export function CabinetryStudioGuidedView({
                             </div>
                           ))}
                           {fitFeedback.adjustments.length ? (
-                            <div className="rounded-xl bg-white/70 p-3 text-xs">
+                            <div className="rounded-xl bg-surface-secondary/80 p-3 text-xs">
                               <p className="font-semibold">Automatic assembly changes</p>
-                              <ul className="mt-2 grid gap-1.5 text-neutral-700">
+                              <ul className="mt-2 grid gap-1.5 text-control-label-idle">
                                 {fitFeedback.adjustments.map((adjustment) => (
                                   <li key={`${adjustment.field}-${adjustment.previousValue}-${adjustment.nextValue}`}>
                                     {formatProjectFeedback(adjustment.reason)}: {formatProjectMeasurement(adjustment.previousValue)} → {formatProjectMeasurement(adjustment.nextValue)}
@@ -1019,9 +1019,9 @@ export function CabinetryStudioGuidedView({
                             </div>
                           ) : null}
                           {fitFeedback.moduleAdjustments.length ? (
-                            <div className="rounded-xl bg-white/70 p-3 text-xs">
+                            <div className="rounded-xl bg-surface-secondary/80 p-3 text-xs">
                               <p className="font-semibold">Module widths</p>
-                              <ul className="mt-2 grid gap-1.5 text-neutral-700">
+                              <ul className="mt-2 grid gap-1.5 text-control-label-idle">
                                 {fitFeedback.moduleAdjustments.map((adjustment) => (
                                   <li key={adjustment.moduleId}>
                                     Module {definition.modules.findIndex((module) => module.id === adjustment.moduleId) + 1}: {formatProjectMeasurement(adjustment.previousWidthMm)} → {formatProjectMeasurement(adjustment.nextWidthMm)} ({formatCabinetLabel(adjustment.source)})
@@ -1031,7 +1031,7 @@ export function CabinetryStudioGuidedView({
                             </div>
                           ) : null}
                           {fitFeedback.ok && !fitFeedback.issues.length ? (
-                            <p className="text-xs text-emerald-800">
+                            <p className="text-xs text-on-success-tint">
                               Widths, fitting panels, clearances, and placement host are coordinated.
                             </p>
                           ) : null}
@@ -1049,15 +1049,15 @@ export function CabinetryStudioGuidedView({
                       onDismiss={dismissOnboarding}
                       onShow={showOnboardingHelp}
                     />
-                    <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+                    <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
                       <div className="mb-5 flex items-start justify-between gap-4">
                         <div>
                           <h3 className="text-base font-semibold">Overall size</h3>
-                          <p className="mt-1 text-sm leading-6 text-neutral-500">
+                          <p className="mt-1 text-sm leading-6 text-label-secondary">
                             Enter the available size. Module proportions stay coordinated automatically.
                           </p>
                         </div>
-                        <span className="shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+                        <span className="shrink-0 rounded-full bg-warning-tint px-3 py-1 text-xs font-semibold text-on-warning-tint">
                           {activePreset?.host ?? "Flexible"} placement
                         </span>
                         <Button
@@ -1115,7 +1115,7 @@ export function CabinetryStudioGuidedView({
                             {overallWidthLocked ? "Overall width locked" : "Lock overall width"}
                           </Button>
                           {overallWidthBlockedByModuleLocks ? (
-                            <p className="mt-2 text-xs text-amber-700">
+                            <p className="mt-2 text-xs text-on-warning-tint">
                               All bay widths are constrained by locks. Unlock a bay or release equal sizing before resizing the assembly.
                             </p>
                           ) : null}
@@ -1123,19 +1123,19 @@ export function CabinetryStudioGuidedView({
                       ) : null}
                     </div>
 
-                    <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+                    <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <div>
                           <h3 className="text-sm font-semibold">
                             {automation.moduleSizingMode === "automatic" ? "Automatic module distribution" : "Manual module sizing"}
                           </h3>
-                          <p className="mt-1 text-xs leading-5 text-neutral-500">
+                          <p className="mt-1 text-xs leading-5 text-label-secondary">
                             {automation.moduleSizingMode === "automatic"
                               ? "Width changes are shared proportionally across unlocked modules. Fine-tune or lock an individual bay in Layout."
                               : "Each bay keeps its entered width. Switch back to Automatic when you want the system to distribute remaining space."}
                           </p>
                         </div>
-                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                        <span className="rounded-full bg-success-tint px-2.5 py-1 text-xs font-semibold text-on-success-tint">
                           {definition.modules.length} {definition.modules.length === 1 ? "module" : "modules"}
                         </span>
                       </div>
@@ -1147,7 +1147,7 @@ export function CabinetryStudioGuidedView({
                             onClick={() => selectStudioModule(module.id)}
                           >
                             <span className="font-semibold">Bay {index + 1}</span>
-                            <span className="text-neutral-500">
+                            <span className="text-label-secondary">
                               {formatProjectMeasurement(module.width)}
                             </span>
                             <ModuleIssueBadges issues={getIssuesForModule(module.id)} />
@@ -1167,10 +1167,10 @@ export function CabinetryStudioGuidedView({
                       onShow={showOnboardingHelp}
                     />
                     {isProWorkspace ? (
-                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-box-border bg-surface-secondary p-4">
                       <div>
                         <h3 className="text-sm font-semibold">Module sizing</h3>
-                        <p className="mt-1 text-xs text-neutral-500">
+                        <p className="mt-1 text-xs text-label-secondary">
                           Automatic mode preserves the overall target and shares available width across unlocked bays. Returning to it can replace unlocked manual width overrides.
                         </p>
                       </div>
@@ -1229,7 +1229,7 @@ export function CabinetryStudioGuidedView({
 
                     {supportsGuidedLayout ? (
                       <>
-                        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+                        <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
                           <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
                               <h3 className="text-base font-semibold">
@@ -1238,7 +1238,7 @@ export function CabinetryStudioGuidedView({
                                   ? "wardrobe arrangement"
                                   : "arrangement"}
                               </h3>
-                              <p className="mt-1 text-sm text-neutral-500">
+                              <p className="mt-1 text-sm text-label-secondary">
                                 {supportsGuidedWardrobeArrangements
                                   ? "Choose a complete hanging and storage arrangement for this wardrobe bay."
                                   : "Choose a recognizable starting layout."}
@@ -1265,10 +1265,10 @@ export function CabinetryStudioGuidedView({
                                       onClick={() => applyGuidedWardrobeArrangement(option.id)}
                                     >
                                       <CabinetWardrobeArrangementDiagram option={option} />
-                                      <span className="text-xs font-semibold text-neutral-800">
+                                      <span className="text-xs font-semibold text-label">
                                         {option.label}
                                       </span>
-                                      <span className="text-xs leading-4 text-neutral-500">
+                                      <span className="text-xs leading-4 text-label-secondary">
                                         {option.description}
                                       </span>
                                     </ChoiceTile>
@@ -1292,7 +1292,7 @@ export function CabinetryStudioGuidedView({
                                       <CabinetTemplateDiagram
                                         definition={{ ...definition, modules: [previewModule] }}
                                       />
-                                      <span className="text-xs font-semibold text-neutral-800">
+                                      <span className="text-xs font-semibold text-label">
                                         {formatCabinetLabel(frontType)}
                                       </span>
                                     </ChoiceTile>
@@ -1301,7 +1301,7 @@ export function CabinetryStudioGuidedView({
                           </div>
                         </div>
 
-                        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+                        <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
                           <div className="mb-4 flex items-center justify-between gap-3">
                             <h3 className="text-sm font-semibold">Storage details</h3>
                             {isProWorkspace ? (
@@ -1316,10 +1316,10 @@ export function CabinetryStudioGuidedView({
                             ) : null}
                           </div>
                           {isProWorkspace ? (
-                          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-neutral-50 p-3">
+                          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-tile p-3">
                             <div>
-                              <p className="text-xs font-semibold text-neutral-800">Shelf spacing</p>
-                              <p className="mt-0.5 text-xs text-neutral-500">
+                              <p className="text-xs font-semibold text-label">Shelf spacing</p>
+                              <p className="mt-0.5 text-xs text-label-secondary">
                                 Custom starts from the current even layout. Returning to Even replaces custom heights.
                               </p>
                             </div>
@@ -1368,7 +1368,7 @@ export function CabinetryStudioGuidedView({
                               <div
                                 data-testid="cabinet-guided-recommended-doors"
                                 data-door-count={String(activeDoorCount)}
-                                className="grid gap-1 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900"
+                                className="grid gap-1 rounded-xl border border-success-tint-border bg-success-tint px-3 py-2 text-xs text-on-success-tint"
                               >
                                 <span className="font-medium">Recommended doors</span>
                                 <span className="text-sm font-semibold">
@@ -1403,10 +1403,10 @@ export function CabinetryStudioGuidedView({
                             />
                           </div>
                           {isProWorkspace && activeHasDoorFront ? (
-                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 p-3">
+                            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-separator p-3">
                               <div>
-                                <p className="text-xs font-semibold text-neutral-800">Door layout</p>
-                                <p className="mt-0.5 text-xs text-neutral-500">
+                                <p className="text-xs font-semibold text-label">Door layout</p>
+                                <p className="mt-0.5 text-xs text-label-secondary">
                                   Manual starts with the current recommendation. Returning to Recommended replaces the manual count.
                                 </p>
                               </div>
@@ -1416,11 +1416,11 @@ export function CabinetryStudioGuidedView({
                             </div>
                           ) : null}
                           {isProWorkspace && activeHasDrawerFront ? (
-                            <div className="mt-4 grid gap-3 rounded-xl border border-neutral-200 p-3">
+                            <div className="mt-4 grid gap-3 rounded-xl border border-separator p-3">
                               <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
-                                  <p className="text-xs font-semibold text-neutral-800">Drawer heights</p>
-                                  <p className="mt-0.5 text-xs text-neutral-500">
+                                  <p className="text-xs font-semibold text-label">Drawer heights</p>
+                                  <p className="mt-0.5 text-xs text-label-secondary">
                                     Custom starts from the visible stack. Equal or Recommended replaces custom proportions.
                                   </p>
                                 </div>
@@ -1470,7 +1470,7 @@ export function CabinetryStudioGuidedView({
                             </div>
                           ) : null}
                           {isProWorkspace && activeShelfSpacingMode === "custom" && activeShelfPositions.length ? (
-                            <div className="mt-4 grid gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3 sm:grid-cols-2">
+                            <div className="mt-4 grid gap-3 rounded-xl border border-accent-tint-border bg-accent-tint p-3 sm:grid-cols-2">
                               {activeShelfPositions.map((position, index) => (
                                 <GuidedNumberField
                                   key={index}
@@ -1500,9 +1500,9 @@ export function CabinetryStudioGuidedView({
                         </div>
                       </>
                     ) : (
-                      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-                        <h3 className="text-base font-semibold text-amber-950">Specialised layout included</h3>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-amber-900/75">
+                      <div className="rounded-2xl border border-warning-tint-border bg-warning-tint p-6">
+                        <h3 className="text-base font-semibold text-on-warning-tint">Specialised layout included</h3>
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-on-warning-tint">
                           {activePreset?.label ?? "This template"} already includes a professionally configured {formatCabinetLabel(activeModule.millworkComponentType ?? "component")} layout. {isProWorkspace
                             ? "Use the detailed editor only if you need to change its construction-specific settings."
                             : "Its internal arrangement stays coordinated automatically while you choose the size and finish."}
@@ -1523,7 +1523,7 @@ export function CabinetryStudioGuidedView({
                 {guidedStep === 4 && activeModule ? (
                   <div className="grid gap-5" data-testid="cabinet-guided-style-panel">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="text-xs leading-5 text-neutral-500">
+                      <p className="text-xs leading-5 text-label-secondary">
                         Finish, fronts, and opening hardware are one reversible style section.
                       </p>
                       <Button
@@ -1534,11 +1534,11 @@ export function CabinetryStudioGuidedView({
                         Reset style
                       </Button>
                     </div>
-                    <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+                    <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
                       <div className="mb-4 flex items-start justify-between gap-4">
                         <div>
                           <h3 className="text-base font-semibold">Main finish</h3>
-                          <p className="mt-1 text-sm text-neutral-500">
+                          <p className="mt-1 text-sm text-label-secondary">
                             {isProWorkspace
                               ? "Applied to unlocked modules. Individual overrides remain available in Detailed editor."
                               : "Applied consistently across the complete design."}
@@ -1563,7 +1563,7 @@ export function CabinetryStudioGuidedView({
 
                     {supportsGuidedLayout ? (
                       <div className="grid gap-5 xl:grid-cols-2">
-                        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+                        <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
                           <h3 className="mb-4 text-sm font-semibold">Door style</h3>
                           <div className="grid grid-cols-2 gap-2">
                             {doorStyles.map((doorStyle) => (
@@ -1588,7 +1588,7 @@ export function CabinetryStudioGuidedView({
                           </div>
                         </div>
 
-                        <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+                        <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
                           <h3 className="mb-4 text-sm font-semibold">Handles & opening</h3>
                           <div className="grid gap-2">
                             {guidedHardwareOptions.map((hardware) => (

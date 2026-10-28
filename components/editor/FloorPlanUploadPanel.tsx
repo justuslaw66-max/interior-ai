@@ -127,7 +127,7 @@ function useFloorPlanUploadChoice(identity: FloorPlanLifecycleIdentity, training
     setFileProblem(null);
   }, []);
   const signedIn = (identity.authScopeKey || "guest") !== "guest";
-  return { request, fileProblem, formats: floorPlanUploadFormats(importCad), signedIn, choose, forget };
+  return { request, fileProblem, formats: floorPlanUploadFormats(importCad), signedIn, accountKey: identity.authScopeKey || "guest", choose, forget };
 }
 
 export default function FloorPlanUploadPanel({
@@ -747,7 +747,7 @@ export default function FloorPlanUploadPanel({
     </div>
     <FloorPlanUploadWorkspaceDialog {...dialog} disabled={disabled} proMode={isDesigner}
       request={choice.request}
-      choose={{ signedIn: choice.signedIn, formats: choice.formats, fileProblem: choice.fileProblem, onFileDropped: choice.choose }}
+      choose={{ signedIn: choice.signedIn, accountKey: choice.accountKey, formats: choice.formats, fileProblem: choice.fileProblem, onFileDropped: choice.choose }}
       trainingBenchmarkOptIn={trainingBenchmarkOptIn} onClose={dialog.requestClose}
       onChooseFile={() => inputRef.current?.click()}
       onConfirmationOpenChange={dialog.setHistoryConfirmationOpen}

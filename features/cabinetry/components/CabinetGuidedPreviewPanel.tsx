@@ -80,10 +80,10 @@ export function CabinetGuidedPreviewPanel({
           data-testid="cabinet-guided-preview-summary"
           className="pointer-events-none flex min-w-0 flex-wrap gap-2"
         >
-          <span className="max-w-full rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-sm backdrop-blur">
+          <span className="max-w-full rounded-full bg-surface-floating/90 px-3 py-1.5 text-xs font-semibold text-label shadow-sm ring-1 ring-surface-floating-edge backdrop-blur">
             {presetLabel}
           </span>
-          <span className="max-w-full rounded-full bg-white/90 px-3 py-1.5 text-xs text-neutral-600 shadow-sm backdrop-blur">
+          <span className="max-w-full rounded-full bg-surface-floating/90 px-3 py-1.5 text-xs text-label-secondary shadow-sm ring-1 ring-surface-floating-edge backdrop-blur">
             {dimensionsLabel}
           </span>
           <span className="max-w-full rounded-full bg-blue-600/90 px-3 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur">
@@ -101,29 +101,29 @@ export function CabinetGuidedPreviewPanel({
           data-validation-policy="errors_block_warnings_allow"
           data-error-count={String(errorCount)}
           data-warning-count={String(warningCount)}
-          data-info-count={String(infoCount)}
-          className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow-lg backdrop-blur"
+          data-info-count={String(infoCount)} data-surface="floating"
+          className="rounded-2xl bg-surface-floating/90 p-4 shadow-lg ring-1 ring-surface-floating-edge backdrop-blur"
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-neutral-900">
+              <p className="text-xs font-semibold text-label">
                 {errorCount
                   ? "Needs attention"
                   : warningCount
                     ? "Valid with recommendations"
                     : "Design is valid"}
               </p>
-              <p className="mt-1 text-xs text-neutral-500">
+              <p className="mt-1 text-xs text-label-secondary">
                 {materialLabel} · {hardwareLabel}
               </p>
             </div>
             <span
               className={`rounded-full px-2.5 py-1 text-xs font-bold uppercase ${
                 errorCount
-                  ? "bg-red-100 text-red-700"
+                  ? "bg-danger-tint text-on-danger-tint"
                   : warningCount
-                    ? "bg-amber-100 text-amber-700"
-                    : "bg-emerald-100 text-emerald-700"
+                    ? "bg-warning-tint text-on-warning-tint"
+                    : "bg-success-tint text-on-success-tint"
               }`}
             >
               {errorCount
