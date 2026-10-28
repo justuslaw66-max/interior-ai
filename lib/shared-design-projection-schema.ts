@@ -3,7 +3,7 @@ const PRIVATE_SHARED_SNAPSHOT_KEYS = new Set([
   "autosaveState", "baselineFingerprint", "cookie", "dirtyFingerprint",
   "email", "parentRevisionId", "password", "privateNotes", "reviewerId",
   "sessionToken", "sha256", "shareToken", "sourceAssetSha256", "sourceJobId",
-  "sourceRevisionGeometryHash", "surfaceMigrationReviewIssues", "underlay",
+  "sourceDrawingPack", "sourceRevisionGeometryHash", "surfaceMigrationReviewIssues", "underlay",
   "uri", "userId",
 ].map((key) => key.toLowerCase().replace(/[^a-z0-9]+/g, "")));
 
