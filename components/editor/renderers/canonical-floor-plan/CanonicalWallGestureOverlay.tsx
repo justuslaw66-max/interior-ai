@@ -22,7 +22,7 @@ export function CanonicalWallGestureOverlay({ wall, floorId, revisionId, control
     {([["start", start, "Start endpoint", "A"], ["wall", center, "Wall centre", "↔"], ["end", end, "End endpoint", "B"]] as const).map(([mode, point, label, glyph]) => (
       <Html key={mode} center position={[point.xMm / 1000, 0.16, point.zMm / 1000]} zIndexRange={[25, 0]}>
         <button type="button" data-testid={`canonical-wall-drag-${mode}`} aria-label={`Drag ${label.toLowerCase()}`} title={`${label}: drag, or use arrow keys for 10 mm (Shift: 100 mm). Escape cancels a drag.`}
-          className="flex h-7 w-7 touch-none items-center justify-center rounded-full border-2 border-blue-600 bg-white text-xs font-bold text-blue-700 shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+          className="flex h-7 w-7 touch-none items-center justify-center rounded-full border-2 border-blue-600 bg-surface-floating text-xs font-bold text-on-accent-tint shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
           onPointerDownCapture={(event) => begin(mode, event)} onPointerMoveCapture={move} onPointerUpCapture={finish}
           onPointerCancelCapture={(event) => { event.stopPropagation(); cancel(); }} onLostPointerCapture={cancel}
           onKeyDown={(event) => { if (nudge(mode, event.key, event.shiftKey)) { event.preventDefault(); event.stopPropagation(); } }}>

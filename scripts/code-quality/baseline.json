@@ -2223,7 +2223,7 @@
     "components/ShareFloorPlanPreview.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 96
+        "maximum": 95
       }
     },
     "components/ShareShoppingCheckout.tsx": {

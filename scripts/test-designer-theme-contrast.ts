@@ -532,6 +532,32 @@ assert.doesNotMatch(
   "Until the editor is on the colour tokens, dark follows data-color-scheme only, not the device (J, 22 Oct)."
 );
 
+// The plan drawings (dark mode PR 4, J 28 Oct): light keeps what they drew with before; dark has the
+// plan's dark paper, rooms a dim tint of their colour, walls light.
+const PLAN_TOKENS: Record<string, readonly [string, string]> = {
+  "plan-paper": ["#f6f5f1", "#1c1c1e"],
+  "plan-line": ["#78716c", "#98989d"],
+  "plan-room": ["#e7e5e4", "#3a3a3c"],
+  "plan-room-toilet": ["#dbeafe", "#22303f"],
+  "plan-room-kitchen": ["#dcfce7", "#24372a"],
+  "plan-room-bedroom": ["#ede9fe", "#30293d"],
+  "plan-room-dining": ["#fef3c7", "#3a3222"],
+  "plan-marker": ["#1c1917", "#e5e5ea"],
+  "plan-marker-seat": ["#2563eb", "#409cff"],
+  "plan-marker-table": ["#d97706", "#ff9f0a"],
+  "plan-marker-rug": ["#14b8a6", "#40c8e0"],
+  "plan-sheet": ["#ffffff", "#1c1c1e"],
+  "plan-sheet-room": ["#f5f5f4", "#2c2c2e"],
+  "plan-wall": ["#262626", "#e5e5ea"],
+  "plan-door": ["#d97706", "#ff9f0a"],
+  "plan-window": ["#0284c7", "#409cff"],
+  "scene-preview-ground": ["#e5e7e1", "#232325"],
+};
+for (const [name, [light, dark]] of Object.entries(PLAN_TOKENS)) {
+  assert.equal(lightTokens.get(name), light, `Light --${name} is the colour the drawing drew with before.`);
+  assert.equal(darkTokens.get(name), dark, `Dark --${name} is the plan's dark look (J, 28 Oct).`);
+}
+
 // The canvases (dark mode PR 4): WebGL can't read the tokens, so lib/canvas-colours swaps each light
 // colour the 2D plan and the 3D view's surroundings draw with for its dark one. J's look (28 Oct):
 // the canvas card's #1C1C1E paper, Apple's dark green, blue and orange, labels floating at #2C2C2E.

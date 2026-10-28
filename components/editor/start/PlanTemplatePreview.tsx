@@ -9,12 +9,13 @@ import {
   PLAN_THUMBNAIL_WIDTH,
 } from "@/lib/plan-thumbnail-frame";
 
+/** The furniture's dots, from the plan tokens (dark mode PR 4). */
 const MARKER_FILLS: Record<string, string> = {
-  sofa: "#2563eb",
-  accent_chair: "#2563eb",
-  dining_table: "#d97706",
-  dining_bench: "#d97706",
-  rug: "#14b8a6",
+  sofa: "var(--plan-marker-seat)",
+  accent_chair: "var(--plan-marker-seat)",
+  dining_table: "var(--plan-marker-table)",
+  dining_bench: "var(--plan-marker-table)",
+  rug: "var(--plan-marker-rug)",
 };
 
 function planFrame(template: HousePlanTemplate) {
@@ -43,7 +44,7 @@ export function PlanTemplatePreview({ template, furnishingPackId = null }: PlanT
       viewBox={`0 0 ${PLAN_THUMBNAIL_WIDTH} ${PLAN_THUMBNAIL_HEIGHT}`}
       aria-hidden="true"
       data-testid={`start-template-preview-${template.id}`}
-      className="block h-[140px] w-full bg-[#f6f5f1]"
+      className="block h-[140px] w-full bg-plan-paper"
     >
       {template.rooms.map((room) => (
         <rect
@@ -52,8 +53,8 @@ export function PlanTemplatePreview({ template, furnishingPackId = null }: PlanT
           y={frame.y(room.z - room.depth / 2)}
           width={room.width * frame.scale}
           height={room.depth * frame.scale}
-          fill={PLAN_THUMBNAIL_ROOM_FILLS[room.roomType] ?? PLAN_THUMBNAIL_DEFAULT_FILL}
-          stroke="#78716c"
+          style={{ fill: PLAN_THUMBNAIL_ROOM_FILLS[room.roomType] ?? PLAN_THUMBNAIL_DEFAULT_FILL }}
+          className="stroke-plan-line"
           strokeWidth="1.5"
         />
       ))}
@@ -66,7 +67,7 @@ export function PlanTemplatePreview({ template, furnishingPackId = null }: PlanT
             cx={frame.x(room.x + intent.x)}
             cy={frame.y(room.z + intent.z)}
             r={intent.category === "rug" ? 4 : 2.6}
-            fill={MARKER_FILLS[intent.category] ?? "#1c1917"}
+            style={{ fill: MARKER_FILLS[intent.category] ?? "var(--plan-marker)" }}
             fillOpacity={intent.category === "rug" ? 0.35 : 0.85}
           />
         );

@@ -50,7 +50,7 @@ export function CabinetGuidedPreviewPanel({
   return (
     <aside
       data-testid="cabinet-guided-preview"
-      className={`relative hidden min-h-0 overflow-hidden bg-[#e5e7e1] lg:block ${
+      className={`relative hidden min-h-0 overflow-hidden bg-(--scene-preview-ground) lg:block ${
         interaction.showDimensionHandles
           ? "[&_[data-dimension-field=depth]]:!top-52"
           : ""
