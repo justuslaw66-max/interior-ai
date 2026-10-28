@@ -30,6 +30,11 @@ import {
   type DesignDocumentUnits,
 } from "./design-document-contract";
 import { migrateDesignDocument } from "./design-document-migrations";
+import {
+  checkedDesignFloorPlanForStorage,
+  packDesignFloorPlanForStorage,
+  readDesignFloorPlan,
+} from "./design-floor-plan-storage";
 
 export function isPersistableFloorPlanAssetUrl(assetUrl: string): boolean {
   return (
@@ -116,7 +121,15 @@ export function sanitizeStoredDesign(value: unknown): StoredDesign | null {
   }
   const migrated = migrateDesignDocument(value);
   if (!migrated.ok) return null;
-  const serialized = JSON.stringify(migrated.document);
+  // Checked in the form it is stored in; a malformed packed plan makes the design invalid.
+  let document = migrated.document;
+  try {
+    const floorPlan = document.floorPlan && checkedDesignFloorPlanForStorage(document.floorPlan);
+    if (floorPlan) document = { ...document, floorPlan };
+  } catch {
+    return null;
+  }
+  const serialized = JSON.stringify(document);
   if (
     getSerializedDesignDocumentByteLength(serialized) >
     DESIGN_DOCUMENT_LIMITS.maxSerializedBytes
@@ -198,7 +211,7 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
     lighting,
     lightingPreset: lighting.preset,
     notes: v3.notes,
-    floorPlan: v3.floorPlan,
+    floorPlan: packDesignFloorPlanForStorage(v3.floorPlan),
   };
 }
 
@@ -225,7 +238,7 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
       lighting,
       lightingPreset: lighting.preset,
       notes: stored.notes,
-      floorPlan: stored.floorPlan,
+      floorPlan: readDesignFloorPlan(stored.floorPlan),
     };
   }
 
