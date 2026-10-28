@@ -551,6 +551,17 @@ for (const [file, holds] of [
 ] as const) {
   assert.match(read(file), holds, `${file} stays light on a dark device (Admin, the export page, the internal tools and QA pages).`);
 }
+// Text colour is inherited as the body's (white on a dark device), so each held-light root sets its own.
+const exportHolds = read("app/share/[shareToken]/export/page.tsx").match(/<main className="[^"]*" data-color-scheme="light">/g) ?? [];
+assert.equal(exportHolds.length, 2, "The export page holds both of its pages light.");
+for (const hold of exportHolds) {
+  assert.match(hold, /\btext-foreground\b/, "The export page's words and default borders stay dark on a dark device.");
+}
+assert.match(
+  read("app/admin/operations-dashboard.module.css"),
+  /^\.page \{[^}]*\n  color: var\(--ops-ink\);\n\}/m,
+  "Admin's words stay dark on a dark device."
+);
 assert.match(
   read("components/HeldLight.tsx"),
   /data-color-scheme="light" className="min-h-screen bg-background text-foreground"/,
