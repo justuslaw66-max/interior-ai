@@ -30,9 +30,9 @@ export function CabinetProductionOutputs({
         className="grid gap-2"
       >
         {sectionTitle("BOM")}
-        <div className="max-h-72 overflow-auto rounded-md border border-neutral-200">
+        <div className="max-h-72 overflow-auto rounded-md border border-separator">
           <table className="w-full text-left text-xs">
-            <thead className="sticky top-0 bg-neutral-50 text-neutral-500">
+            <thead className="sticky top-0 bg-tile text-label-secondary">
               <tr>
                 <th className="px-2 py-2 font-medium">Part</th>
                 <th className="px-2 py-2 font-medium">Qty</th>
@@ -44,11 +44,11 @@ export function CabinetProductionOutputs({
                 <tr
                   key={item.id}
                   data-testid="cabinet-bom-row"
-                  className="border-t border-neutral-100"
+                  className="border-t border-separator-subtle"
                 >
                   <td className="px-2 py-2">{item.name}</td>
                   <td className="px-2 py-2">{item.quantity}</td>
-                  <td className="px-2 py-2 text-neutral-500">
+                  <td className="px-2 py-2 text-label-secondary">
                     {item.width}×{item.height}×{item.depth}
                   </td>
                 </tr>
@@ -73,8 +73,8 @@ export function CabinetProductionOutputs({
         className="grid gap-2"
       >
         {sectionTitle("Assembly Profile")}
-        <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-700">
-          <div className="flex items-center justify-between gap-3 text-sm font-semibold text-neutral-900">
+        <div className="rounded-md border border-box-border bg-tile p-3 text-xs text-control-label-idle">
+          <div className="flex items-center justify-between gap-3 text-sm font-semibold text-label">
             <span>{documentation.assemblyProfile.label}</span>
             <span>{documentation.assemblyProfile.fabricationComplexity}</span>
           </div>
@@ -88,7 +88,7 @@ export function CabinetProductionOutputs({
               {documentation.assemblyProfile.placementKind.replace(/_/g, " ")}
             </span>
           </div>
-          <p className="mt-2 text-xs leading-4 text-neutral-500">
+          <p className="mt-2 text-xs leading-4 text-label-secondary">
             {documentation.assemblyProfile.quoteDrivers.join(", ")}
           </p>
         </div>
@@ -102,8 +102,8 @@ export function CabinetProductionOutputs({
         className="grid gap-2"
       >
         {sectionTitle("Preliminary Quote")}
-        <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-700">
-          <div className="flex items-center justify-between text-sm font-semibold text-neutral-900">
+        <div className="rounded-md border border-box-border bg-tile p-3 text-xs text-control-label-idle">
+          <div className="flex items-center justify-between text-sm font-semibold text-label">
             <span>Estimated total</span>
             <span>
               {documentation.quoteSummary.currency}{" "}
@@ -132,7 +132,7 @@ export function CabinetProductionOutputs({
               {documentation.quoteSummary.contingency.toLocaleString()}
             </span>
           </div>
-          <p className="mt-2 text-xs leading-4 text-neutral-500">
+          <p className="mt-2 text-xs leading-4 text-label-secondary">
             Preliminary only; supplier pricing and fabrication quotes are not
             connected yet.
           </p>
@@ -157,10 +157,10 @@ export function CabinetProductionOutputs({
         className="grid gap-2"
       >
         {sectionTitle("Supplier Readiness")}
-        <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-700">
-          <div className="flex items-center justify-between gap-3 text-sm font-semibold text-neutral-900">
+        <div className="rounded-md border border-box-border bg-tile p-3 text-xs text-control-label-idle">
+          <div className="flex items-center justify-between gap-3 text-sm font-semibold text-label">
             <span>RFQ status</span>
-            <span className="text-right text-xs uppercase text-neutral-600">
+            <span className="text-right text-xs uppercase text-label-secondary">
               {documentation.supplierReadiness.status.replace(/_/g, " ")}
             </span>
           </div>
@@ -183,9 +183,9 @@ export function CabinetProductionOutputs({
             </span>
           </div>
         </div>
-        <div className="max-h-44 overflow-auto rounded-md border border-neutral-200">
+        <div className="max-h-44 overflow-auto rounded-md border border-separator">
           <table className="w-full text-left text-xs">
-            <thead className="sticky top-0 bg-neutral-50 text-neutral-500">
+            <thead className="sticky top-0 bg-tile text-label-secondary">
               <tr>
                 <th className="px-2 py-2 font-medium">Item</th>
                 <th className="px-2 py-2 font-medium">SKU</th>
@@ -199,13 +199,13 @@ export function CabinetProductionOutputs({
                   data-testid="cabinet-supplier-sku-row"
                   data-source-type={item.sourceType}
                   data-status={item.status}
-                  className="border-t border-neutral-100"
+                  className="border-t border-separator-subtle"
                 >
                   <td className="px-2 py-2">{item.displayName}</td>
-                  <td className="px-2 py-2 text-neutral-500">
+                  <td className="px-2 py-2 text-label-secondary">
                     {item.skuId ?? "Quote"}
                   </td>
-                  <td className="px-2 py-2 text-neutral-500">
+                  <td className="px-2 py-2 text-label-secondary">
                     {item.status.replace(/_/g, " ")}
                   </td>
                 </tr>
@@ -239,10 +239,10 @@ export function CabinetProductionOutputs({
         className="grid gap-2"
       >
         {sectionTitle("Fabrication Release")}
-        <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-700">
-          <div className="flex items-center justify-between gap-3 text-sm font-semibold text-neutral-900">
+        <div className="rounded-md border border-box-border bg-tile p-3 text-xs text-control-label-idle">
+          <div className="flex items-center justify-between gap-3 text-sm font-semibold text-label">
             <span>Release status</span>
-            <span className="text-right text-xs uppercase text-neutral-600">
+            <span className="text-right text-xs uppercase text-label-secondary">
               {documentation.fabricationReleaseReadiness.status.replace(/_/g, " ")}
             </span>
           </div>
@@ -349,9 +349,9 @@ export function CabinetProductionOutputs({
         className="grid gap-2"
       >
         {sectionTitle("Edge Banding")}
-        <div className="max-h-36 overflow-auto rounded-md border border-neutral-200">
+        <div className="max-h-36 overflow-auto rounded-md border border-separator">
           <table className="w-full text-left text-xs">
-            <thead className="sticky top-0 bg-neutral-50 text-neutral-500">
+            <thead className="sticky top-0 bg-tile text-label-secondary">
               <tr>
                 {(["Material", "Treatment", "Length", "Parts"] as const).map(
                   (heading) => (
@@ -368,13 +368,13 @@ export function CabinetProductionOutputs({
                   <tr
                     key={item.id}
                     data-testid="cabinet-edge-banding-row"
-                    className="border-t border-neutral-100"
+                    className="border-t border-separator-subtle"
                   >
                     <td className="px-2 py-2">{item.edgeMaterialName}</td>
-                    <td className="px-2 py-2 text-neutral-500">
+                    <td className="px-2 py-2 text-label-secondary">
                       {formatCabinetLabel(item.edgeTreatment ?? "matching_edge_band")}
                     </td>
-                    <td className="px-2 py-2 text-neutral-500">
+                    <td className="px-2 py-2 text-label-secondary">
                       {item.totalLengthM} m
                     </td>
                     <td className="px-2 py-2">{item.partCount}</td>
@@ -382,7 +382,7 @@ export function CabinetProductionOutputs({
                 ))
               ) : (
                 <tr>
-                  <td className="px-2 py-2 text-neutral-500" colSpan={4}>
+                  <td className="px-2 py-2 text-label-secondary" colSpan={4}>
                     No edge banding scheduled.
                   </td>
                 </tr>
@@ -399,9 +399,9 @@ export function CabinetProductionOutputs({
         className="grid gap-2"
       >
         {sectionTitle("Cut List")}
-        <div className="max-h-48 overflow-auto rounded-md border border-neutral-200">
+        <div className="max-h-48 overflow-auto rounded-md border border-separator">
           <table className="w-full min-w-[760px] text-left text-xs">
-            <thead className="sticky top-0 bg-neutral-50 text-neutral-500">
+            <thead className="sticky top-0 bg-tile text-label-secondary">
               <tr>
                 {(["Part", "Module", "Size", "Grain", "Edge", "Exposed"] as const).map(
                   (heading) => (
@@ -417,22 +417,22 @@ export function CabinetProductionOutputs({
                 <tr
                   key={item.id}
                   data-testid="cabinet-cut-list-row"
-                  className="border-t border-neutral-100"
+                  className="border-t border-separator-subtle"
                 >
                   <td className="px-2 py-2">{item.name}</td>
                   <td className="px-2 py-2">
                     {item.moduleId.replace("module-", "")}
                   </td>
-                  <td className="px-2 py-2 text-neutral-500">
+                  <td className="px-2 py-2 text-label-secondary">
                     {item.width}×{item.height}×{item.depth}
                   </td>
-                  <td className="px-2 py-2 text-neutral-500">
+                  <td className="px-2 py-2 text-label-secondary">
                     {formatCabinetLabel(item.grainDirection ?? "none")}
                   </td>
-                  <td className="px-2 py-2 text-neutral-500">
+                  <td className="px-2 py-2 text-label-secondary">
                     {formatCabinetLabel(item.edgeTreatment ?? "none")}
                   </td>
-                  <td className="px-2 py-2 text-neutral-500">
+                  <td className="px-2 py-2 text-label-secondary">
                     {item.exposedFaces?.map(formatCabinetLabel).join(", ") || "—"}
                   </td>
                 </tr>
@@ -449,12 +449,12 @@ export function CabinetProductionOutputs({
         className="grid gap-2"
       >
         {sectionTitle("Installer Notes")}
-        <div className="grid max-h-40 gap-2 overflow-auto rounded-md border border-neutral-200 p-2">
+        <div className="grid max-h-40 gap-2 overflow-auto rounded-md border border-separator p-2">
           {documentation.installerNotes.map((item) => (
             <div
               key={item.id}
               data-testid="cabinet-installer-note-row"
-              className="rounded-md bg-neutral-50 px-2 py-1.5 text-xs text-neutral-700"
+              className="rounded-md bg-tile px-2 py-1.5 text-xs text-control-label-idle"
             >
               <span className="font-semibold">{item.category}:</span>{" "}
               {formatFeedback(item.message)}
@@ -477,20 +477,20 @@ export function CabinetProductionOutputs({
         className="grid gap-2"
       >
         {sectionTitle("Release Checklist")}
-        <div className="grid max-h-44 gap-2 overflow-auto rounded-md border border-neutral-200 p-2">
+        <div className="grid max-h-44 gap-2 overflow-auto rounded-md border border-separator p-2">
           {documentation.releaseChecklist.map((item) => (
             <div
               key={item.id}
               data-testid="cabinet-release-checklist-row"
-              className="rounded-md bg-neutral-50 px-2 py-1.5 text-xs text-neutral-700"
+              className="rounded-md bg-tile px-2 py-1.5 text-xs text-control-label-idle"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="font-semibold">{item.label}</span>
-                <span className="shrink-0 rounded-sm bg-white px-1.5 py-0.5 text-xs uppercase text-neutral-500">
+                <span className="shrink-0 rounded-sm bg-surface-secondary px-1.5 py-0.5 text-xs uppercase text-label-secondary">
                   {item.status}
                 </span>
               </div>
-              <div className="mt-1 text-xs text-neutral-500">
+              <div className="mt-1 text-xs text-label-secondary">
                 {item.owner} · {item.dueBefore.replace(/_/g, " ")}
               </div>
             </div>
@@ -537,10 +537,10 @@ function ScheduleTable({
     >
       {sectionTitle(title)}
       <div
-        className={`${maxHeightClass} overflow-auto rounded-md border border-neutral-200`}
+        className={`${maxHeightClass} overflow-auto rounded-md border border-separator`}
       >
         <table className="w-full text-left text-xs">
-          <thead className="sticky top-0 bg-neutral-50 text-neutral-500">
+          <thead className="sticky top-0 bg-tile text-label-secondary">
             <tr>
               {headings.map((heading) => (
                 <th key={heading} className="px-2 py-2 font-medium">
@@ -555,13 +555,13 @@ function ScheduleTable({
                 <tr
                   key={row.id}
                   data-testid={row.testId}
-                  className="border-t border-neutral-100"
+                  className="border-t border-separator-subtle"
                 >
                   {row.cells.map((cell, index) => (
                     <td
                       key={index}
                       className={`px-2 py-2 ${
-                        index === 0 ? "" : "text-neutral-500"
+                        index === 0 ? "" : "text-label-secondary"
                       }`}
                     >
                       {cell}
@@ -572,7 +572,7 @@ function ScheduleTable({
             ) : emptyMessage ? (
               <tr>
                 <td
-                  className="px-2 py-2 text-neutral-500"
+                  className="px-2 py-2 text-label-secondary"
                   colSpan={headings.length}
                 >
                   {emptyMessage}

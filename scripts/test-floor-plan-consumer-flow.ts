@@ -7,15 +7,22 @@ import {
   groupFloorPlanSearchResults,
 } from "@/lib/floor-plan-consumer-search";
 import {
+  floorPlanImportHintAccount,
+  floorPlanImportHintFor,
+  planFloorPlanImportReopen,
   pollFloorPlanImportJobUntilPaused,
   readActiveFloorPlanImportId,
+  readFloorPlanImportHint,
   writeActiveFloorPlanImportId,
+  writeFloorPlanImportHint,
+  ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY,
 } from "@/lib/floor-plan-import-client";
 import { inverseFloorPlanAddressTransform } from "@/lib/floor-plan-consumer-orientation";
 import { floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import { sourceDrawingStroke } from "@/lib/floor-plan-source-drawing";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
+import type { FloorPlanImportStatus } from "@/lib/floor-plan-imports/types";
 import type { FloorPlanCatalogSearchResult } from "@/lib/floor-plan-catalog-repository";
 import {
   createFloorPlanExactSearchIdentity,
@@ -386,6 +393,58 @@ writeActiveFloorPlanImportId(fakeStorage, "job_resume_1234");
 assert.equal(readActiveFloorPlanImportId(fakeStorage), "job_resume_1234");
 writeActiveFloorPlanImportId(fakeStorage, null);
 assert.equal(readActiveFloorPlanImportId(fakeStorage), null);
+// The stored upload's last-seen status is kept beside its id, which stays a plain string, for the account that wrote it.
+const hintFor = (status: FloorPlanImportStatus, busy = false) =>
+  ({ id: "job_resume_1234", status, fileName: null, busy, account: floorPlanImportHintAccount("owner-1") });
+const seen = floorPlanImportHintFor({ id: "job_resume_1234", status: "needs_review", nextAttemptAt: null,
+  leaseExpiresAt: null, sourceAsset: { fileName: "111-emerald-hill-p24.pdf" } }, "owner-1");
+writeFloorPlanImportHint(fakeStorage, seen);
+assert.deepEqual(readFloorPlanImportHint(fakeStorage, "job_resume_1234", "owner-1"), {
+  id: "job_resume_1234", status: "needs_review", fileName: "111-emerald-hill-p24.pdf", busy: false,
+  account: floorPlanImportHintAccount("owner-1"),
+});
+assert.doesNotMatch(storageValues.get(ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY) ?? "", /owner-1/,
+  "The hint keeps a hash of the account, not its id or email.");
+assert.equal(readFloorPlanImportHint(fakeStorage, "job_resume_1234", "someone-else"), null,
+  "Another account on the same browser never sees this upload's name or status.");
+assert.equal(readFloorPlanImportHint(fakeStorage, "another_job_5678", "owner-1"), null, "A hint belongs to one upload.");
+storageValues.set(ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY, "{not json");
+assert.equal(readFloorPlanImportHint(fakeStorage, "job_resume_1234", "owner-1"), null);
+storageValues.set(ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY, JSON.stringify({ ...seen, status: "teleported" }));
+assert.equal(readFloorPlanImportHint(fakeStorage, "job_resume_1234", "owner-1"), null, "An unknown status is not trusted.");
+writeFloorPlanImportHint(fakeStorage, null);
+assert.equal(storageValues.has(ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY), false);
+// Storage that is full or blocked never fails an import: the hint is skipped.
+const brokenStorage = {
+  getItem: () => { throw new Error("SecurityError"); },
+  setItem: () => { throw new Error("QuotaExceededError"); },
+  removeItem: () => { throw new Error("SecurityError"); },
+};
+assert.doesNotThrow(() => writeFloorPlanImportHint(brokenStorage, seen));
+assert.doesNotThrow(() => writeFloorPlanImportHint(brokenStorage, null));
+assert.equal(readFloorPlanImportHint(brokenStorage, "job_resume_1234", "owner-1"), null);
+// A chosen page or a saved review waiting for the worker keeps a paused status but is busy.
+const now = Date.parse("2026-10-28T00:00:00Z");
+assert.equal(floorPlanImportHintFor({ id: "j", status: "selecting_page", nextAttemptAt: "1970-01-01T00:00:00.000Z",
+  leaseExpiresAt: null }, "owner-1", now).busy, true);
+assert.equal(floorPlanImportHintFor({ id: "j", status: "needs_review", nextAttemptAt: null,
+  leaseExpiresAt: "2026-10-28T00:01:00Z" }, "owner-1", now).busy, true);
+assert.equal(floorPlanImportHintFor({ id: "j", status: "needs_review", nextAttemptAt: null,
+  leaseExpiresAt: "2026-10-27T23:59:00Z" }, "owner-1", now).busy, false);
+// Opening the window: an upload still being read reopens, as one with no hint for this account or a busy one does;
+// one waiting on the person is offered to continue; one already turned into a design is neither.
+assert.deepEqual(planFloorPlanImportReopen(null, null), { resumeJobId: null, lastUpload: null });
+assert.deepEqual(planFloorPlanImportReopen("job_resume_1234", null), { resumeJobId: "job_resume_1234", lastUpload: null });
+for (const status of ["received", "rendered", "extracted", "scale_solved", "topology_built", "validating"] as const) {
+  assert.deepEqual(planFloorPlanImportReopen("job_resume_1234", hintFor(status)), { resumeJobId: "job_resume_1234", lastUpload: null }, status);
+}
+for (const status of ["selecting_page", "needs_review", "ready", "failed"] as const) {
+  assert.deepEqual(planFloorPlanImportReopen("job_resume_1234", hintFor(status)), { resumeJobId: null, lastUpload: hintFor(status) }, status);
+  assert.deepEqual(planFloorPlanImportReopen("job_resume_1234", hintFor(status, true)), { resumeJobId: "job_resume_1234", lastUpload: null }, `${status}, busy`);
+}
+for (const status of ["applied", "published"] as const) {
+  assert.deepEqual(planFloorPlanImportReopen("job_resume_1234", hintFor(status)), { resumeJobId: null, lastUpload: null }, status);
+}
 assert.equal(inverseFloorPlanAddressTransform("rotate_90"), "rotate_270");
 assert.equal(inverseFloorPlanAddressTransform("mirror_x_rotate_90"), "mirror_x_rotate_90");
 const transformFixture = {

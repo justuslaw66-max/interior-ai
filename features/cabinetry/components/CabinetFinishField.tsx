@@ -30,7 +30,7 @@ export function CabinetFinishSummary({
         <span className="text-xs font-semibold text-label-secondary">{label}</span>
         <span className={`${large ? "text-[15px]" : "text-sm"} font-semibold text-label`}>{choice.title}</span>
         {choice.detail ? (
-          <span className={`text-xs leading-4 ${choice.placeholder ? "text-amber-700" : "text-label-secondary"}`}>
+          <span className={`text-xs leading-4 ${choice.placeholder ? "text-on-warning-tint" : "text-label-secondary"}`}>
             {choice.detail}
           </span>
         ) : null}

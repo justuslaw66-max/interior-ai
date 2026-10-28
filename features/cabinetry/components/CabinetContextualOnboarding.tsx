@@ -44,11 +44,11 @@ export function CabinetContextualOnboarding({
     <aside
       data-testid={testIdFor(step, "hint")}
       aria-label="First-use built-ins help"
-      className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-950"
+      className="rounded-2xl border border-accent-tint-border bg-accent-tint p-4 text-on-accent-tint"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="grid gap-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-on-accent-tint">
             First-use tip
           </p>
           {actions.map((action) => (
@@ -56,7 +56,7 @@ export function CabinetContextualOnboarding({
               <p className="text-sm font-semibold">
                 {action.order} of 5 · {action.title}
               </p>
-              <p className="text-xs leading-5 text-blue-800">
+              <p className="text-xs leading-5 text-on-accent-tint">
                 {action.description}
               </p>
             </div>
@@ -66,7 +66,7 @@ export function CabinetContextualOnboarding({
           type="button"
           data-testid={testIdFor(step, "dismiss")}
           aria-label="Dismiss first-use built-ins help"
-          className="shrink-0 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-blue-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+          className="shrink-0 rounded-lg bg-surface-secondary px-2.5 py-1.5 text-xs font-semibold text-on-accent-tint focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-page"
           onClick={onDismiss}
         >
           Got it

@@ -36,7 +36,7 @@ test("History restores a parent review after a new child replaces the active job
   await page.route("**/original-job",route=>route.fulfill({json:{job:parent}}));
   await page.route("**/original-job/retry-detection",route=>route.fulfill({json:{job:{id:child.id}}}));
   await page.route("**/child-job",route=>route.fulfill({json:{job:child}}));
-  await page.reload();await page.addScriptTag({path:bundle});
+  await page.reload();await page.addScriptTag({path:bundle}); await page.getByTestId("floor-plan-last-upload-continue").click();
   await page.getByRole("button",{name:"Rerun AI detection",exact:true}).click();
   await expect(page.getByTestId("floor-plan-import-ready")).toBeVisible();
   await expect.poll(()=>page.evaluate(key=>localStorage.getItem(key),ACTIVE_FLOOR_PLAN_IMPORT_STORAGE_KEY)).toBe(child.id);
@@ -80,6 +80,8 @@ test("An incomplete consumer review draft preserves corrections and conflicts af
     return route.fulfill({ json: { job: stored } });
   });
   await page.reload(); await page.addScriptTag({ path: bundle });
+  // The upload waits on the person, so the window offers it to continue rather than reopening it.
+  await page.getByTestId("floor-plan-last-upload-continue").click();
   const names = page.locator("details").filter({ has: page.getByText("Edit room names (optional)", { exact: true }) });
   await names.locator("summary").click(); await names.locator("input").first().fill("Saved review room");
   await page.getByRole("button", { name: "Save review draft", exact: true }).click();
@@ -88,6 +90,8 @@ test("An incomplete consumer review draft preserves corrections and conflicts af
   expect(stored.reviewIssuesJson.some((issue) => issue.code === "independent_scale_conflict")).toBe(true);
   expect(stored.candidateJson.floors[0].rooms[0].name).toBe("Saved review room");
   await page.reload(); await page.addScriptTag({ path: bundle });
+  // The upload waits on the person, so the window offers it to continue rather than reopening it.
+  await page.getByTestId("floor-plan-last-upload-continue").click();
   await names.locator("summary").click();
   await expect(names.locator("input").first()).toHaveValue("Saved review room");
   await expect(page.getByTestId("floor-plan-import-ready")).toHaveCount(0);
@@ -217,6 +221,8 @@ test("Version conflict requires reopening the latest candidate before confirmati
   await expect(page.getByText(/Creation paused: Another tab/)).toBeVisible();
   expect(attempts).toBe(2);
   await page.reload(); await page.addScriptTag({ path: bundle });
+  // The upload waits on the person, so the window offers it to continue rather than reopening it.
+  await page.getByTestId("floor-plan-last-upload-continue").click();
   await page.getByRole("button", { name: "Create design", exact: true }).click();
   await expect(page).toHaveURL(/\/design\?designId=new-private-design/);
   expect(attempts).toBe(3);

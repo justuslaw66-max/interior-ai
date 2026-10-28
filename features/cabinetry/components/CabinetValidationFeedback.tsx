@@ -25,10 +25,10 @@ export function ValidationIssueCard({
     formatCabinetMeasurementTokens(message, measurementUnit);
   const tone =
     issue.severity === "error"
-      ? "border-red-200 bg-red-50 text-red-950"
+      ? "border-danger-tint-border bg-danger-tint text-on-danger-tint"
       : issue.severity === "warning"
-        ? "border-amber-200 bg-amber-50 text-amber-950"
-        : "border-blue-200 bg-blue-50 text-blue-950";
+        ? "border-warning-tint-border bg-warning-tint text-on-warning-tint"
+        : "border-accent-tint-border bg-accent-tint text-on-accent-tint";
   const testId =
     issue.severity === "error"
       ? "cabinet-validation-error"
@@ -49,15 +49,15 @@ export function ValidationIssueCard({
         onClick={() => onFocus(issue)}
       >
         <span className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">
+          <span className="rounded-full bg-surface-secondary/80 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">
             {issue.severity}
           </span>
           <span className="font-semibold">{formatFeedback(issue.title)}</span>
-          <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">
+          <span className="rounded-full bg-surface-secondary/80 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">
             {issue.target.scope}
           </span>
           {issue.target.moduleIds?.length ? (
-            <span className="rounded-full bg-white/70 px-2 py-0.5 text-xs font-medium">
+            <span className="rounded-full bg-surface-secondary/80 px-2 py-0.5 text-xs font-medium">
               {issue.target.moduleIds.length === 1
                 ? issue.target.moduleIds[0]
                 : `${issue.target.moduleIds.length} modules`}
@@ -99,12 +99,12 @@ export function ModuleIssueBadges({ issues }: { issues: CabinetValidationIssue[]
       aria-label={`${errorCount} errors and ${warningCount} warnings`}
     >
       {errorCount ? (
-        <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-bold text-red-700">
+        <span className="rounded-full bg-danger-tint px-1.5 py-0.5 text-xs font-bold text-on-danger-tint">
           {errorCount}E
         </span>
       ) : null}
       {warningCount ? (
-        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700">
+        <span className="rounded-full bg-warning-tint px-1.5 py-0.5 text-xs font-bold text-on-warning-tint">
           {warningCount}W
         </span>
       ) : null}
@@ -147,17 +147,17 @@ export function ValidationFixPreview({
       role="dialog"
       aria-label={`Preview fix: ${formatFeedback(pending.fix.label)}`}
       data-testid="cabinet-fix-preview"
-      className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-blue-950 shadow-sm"
+      className="rounded-2xl border border-accent-tint-border bg-accent-tint p-4 text-on-accent-tint shadow-sm"
     >
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-blue-700">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-on-accent-tint">
         Preview change
       </p>
       <h4 className="mt-1 text-sm font-semibold">{formatFeedback(pending.fix.label)}</h4>
-      <p className="mt-1 text-xs leading-5 text-blue-900">
+      <p className="mt-1 text-xs leading-5 text-on-accent-tint">
         {formatFeedback(pending.fix.description)}
       </p>
       <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
-        <div className="rounded-xl bg-white/70 p-3">
+        <div className="rounded-xl bg-surface-secondary/80 p-3">
           <span className="font-semibold">Before</span>
           <span className="mt-1 block">
             {formatMeasurement(current.totalWidth)} × {formatMeasurement(current.height)} ×{" "}
@@ -165,7 +165,7 @@ export function ValidationFixPreview({
             {current.modules.length === 1 ? "module" : "modules"}
           </span>
         </div>
-        <div className="rounded-xl bg-white/70 p-3">
+        <div className="rounded-xl bg-surface-secondary/80 p-3">
           <span className="font-semibold">After</span>
           <span className="mt-1 block">
             {formatMeasurement(pending.candidate.totalWidth)} ×{" "}
@@ -173,7 +173,7 @@ export function ValidationFixPreview({
             {formatMeasurement(pending.candidate.depth)} · {pending.candidate.modules.length}{" "}
             {pending.candidate.modules.length === 1 ? "module" : "modules"}
           </span>
-          <span className="mt-1 block text-blue-700">
+          <span className="mt-1 block text-on-accent-tint">
             {candidateErrorCount} errors · {candidateWarningCount} recommendations
           </span>
         </div>

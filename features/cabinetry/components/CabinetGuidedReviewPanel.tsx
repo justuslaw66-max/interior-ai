@@ -86,11 +86,11 @@ export function CabinetGuidedReviewPanel({
           ["Layout", `${moduleCount} ${moduleCount === 1 ? "bay" : "bays"}`],
           ["Finish", finishLabel],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-2xl border border-neutral-200 bg-white p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400">
+          <div key={label} className="rounded-2xl border border-box-border bg-surface-secondary p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-label-secondary">
               {label}
             </p>
-            <p className="mt-2 text-sm font-semibold text-neutral-900">{value}</p>
+            <p className="mt-2 text-sm font-semibold text-label">{value}</p>
           </div>
         ))}
       </div>
@@ -100,11 +100,11 @@ export function CabinetGuidedReviewPanel({
           data-testid="cabinet-consumer-estimate"
           data-currency={quoteSummary.currency}
           data-estimated-total={String(quoteSummary.estimatedTotal)}
-          className="rounded-2xl border border-blue-200 bg-blue-50 p-5 text-blue-950"
+          className="rounded-2xl border border-accent-tint-border bg-accent-tint p-5 text-on-accent-tint"
         >
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-700">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-on-accent-tint">
                 Preliminary estimate
               </p>
               <p
@@ -114,7 +114,7 @@ export function CabinetGuidedReviewPanel({
                 {formatEstimate(quoteSummary.estimatedTotal)}
               </p>
             </div>
-            <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-blue-800">
+            <span className="rounded-full bg-surface-secondary/80 px-3 py-1 text-xs font-semibold text-on-accent-tint">
               Updates with your design
             </span>
           </div>
@@ -128,15 +128,15 @@ export function CabinetGuidedReviewPanel({
               ],
               ["Planning allowance", quoteSummary.contingency],
             ].map(([label, value]) => (
-              <div key={String(label)} className="rounded-xl bg-white/75 p-3">
-                <p className="text-blue-700">{label}</p>
-                <p className="mt-1 font-semibold text-blue-950">
+              <div key={String(label)} className="rounded-xl bg-surface-secondary/80 p-3">
+                <p className="text-on-accent-tint">{label}</p>
+                <p className="mt-1 font-semibold text-on-accent-tint">
                   {formatEstimate(Number(value))}
                 </p>
               </div>
             ))}
           </div>
-          <p className="mt-4 text-xs leading-5 text-blue-800">
+          <p className="mt-4 text-xs leading-5 text-on-accent-tint">
             {quoteSummary.assumptions[0]} Final materials, site conditions,
             delivery, and local services can change the price.
           </p>
@@ -146,10 +146,10 @@ export function CabinetGuidedReviewPanel({
       <div
         className={`rounded-2xl border p-5 ${
           errors.length
-            ? "border-red-200 bg-red-50"
+            ? "border-danger-tint-border bg-danger-tint"
             : warnings.length
-              ? "border-amber-200 bg-amber-50"
-              : "border-emerald-200 bg-emerald-50"
+              ? "border-warning-tint-border bg-warning-tint"
+              : "border-success-tint-border bg-success-tint"
         }`}
       >
         <div className="flex items-start justify-between gap-4">
@@ -157,10 +157,10 @@ export function CabinetGuidedReviewPanel({
             <h3
               className={`text-base font-semibold ${
                 errors.length
-                  ? "text-red-950"
+                  ? "text-on-danger-tint"
                   : warnings.length
-                    ? "text-amber-950"
-                    : "text-emerald-950"
+                    ? "text-on-warning-tint"
+                    : "text-on-success-tint"
               }`}
             >
               {errors.length
@@ -174,10 +174,10 @@ export function CabinetGuidedReviewPanel({
             <p
               className={`mt-1 text-sm ${
                 errors.length
-                  ? "text-red-800"
+                  ? "text-on-danger-tint"
                   : warnings.length
-                    ? "text-amber-800"
-                    : "text-emerald-800"
+                    ? "text-on-warning-tint"
+                    : "text-on-success-tint"
               }`}
             >
               {errors.length
@@ -194,7 +194,7 @@ export function CabinetGuidedReviewPanel({
             </p>
           </div>
           {isProWorkspace ? (
-            <span className="shrink-0 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold">
+            <span className="shrink-0 rounded-full bg-surface-secondary/80 px-3 py-1 text-xs font-semibold">
               {bomCount} BOM rows
             </span>
           ) : null}
@@ -222,21 +222,21 @@ export function CabinetGuidedReviewPanel({
         />
       ) : null}
 
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5">
+      <div className="rounded-2xl border border-box-border bg-surface-secondary p-5">
         <h3 className="text-base font-semibold">What happens next</h3>
-        <div className="mt-4 grid gap-3 text-sm text-neutral-600 sm:grid-cols-3">
-          <div className="rounded-xl bg-neutral-50 p-3">
-            <span className="font-semibold text-neutral-900">1. Place</span>
+        <div className="mt-4 grid gap-3 text-sm text-label-secondary sm:grid-cols-3">
+          <div className="rounded-xl bg-tile p-3">
+            <span className="font-semibold text-label">1. Place</span>
             <br />
             Add this intelligent assembly to the current room.
           </div>
-          <div className="rounded-xl bg-neutral-50 p-3">
-            <span className="font-semibold text-neutral-900">2. Position</span>
+          <div className="rounded-xl bg-tile p-3">
+            <span className="font-semibold text-label">2. Position</span>
             <br />
             Move, rotate, or snap the completed asset to a wall.
           </div>
-          <div className="rounded-xl bg-neutral-50 p-3">
-            <span className="font-semibold text-neutral-900">3. Reopen</span>
+          <div className="rounded-xl bg-tile p-3">
+            <span className="font-semibold text-label">3. Reopen</span>
             <br />
             Edit it later without losing its plan position.
           </div>

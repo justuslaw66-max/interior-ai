@@ -69,10 +69,10 @@ export function CabinetDetailedCompactPreview({
       <div className="absolute right-3 top-3 z-30">
         <CabinetPreviewViewSelector value={view} onChange={onViewChange} />
       </div>
-      <div className="absolute inset-x-3 bottom-3 z-30 rounded-xl border border-white/70 bg-white/95 p-3 shadow-lg backdrop-blur">
+      <div data-surface="floating" className="absolute inset-x-3 bottom-3 z-30 rounded-xl bg-surface-floating/95 p-3 shadow-lg ring-1 ring-surface-floating-edge backdrop-blur">
         <div className="mb-2 flex items-center justify-between gap-2 text-xs">
-          <span className="font-semibold text-neutral-900">Select a module</span>
-          <span role="status" aria-live="polite" className="text-neutral-500">
+          <span className="font-semibold text-label">Select a module</span>
+          <span role="status" aria-live="polite" className="text-label-secondary">
             {status === "regenerating" ? "Updating preview…" : "Preview ready"}
           </span>
         </div>
@@ -132,11 +132,11 @@ export function CabinetDetailedPreviewPanel({
       <CabinetStudioPreviewInteractionController {...interaction} />
       <div className="pointer-events-none absolute inset-x-4 top-4 z-30 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">
         <div
-          data-testid="cabinet-preview-summary"
-          className="pointer-events-none min-w-0 max-w-full justify-self-start rounded-md bg-white/90 px-3 py-2 text-xs text-neutral-700 shadow-sm"
+          data-testid="cabinet-preview-summary" data-surface="floating"
+          className="pointer-events-none min-w-0 max-w-full justify-self-start rounded-md bg-surface-floating/90 px-3 py-2 text-xs text-control-label-idle shadow-sm ring-1 ring-surface-floating-edge"
         >
           <span className="block break-words">{dimensionsLabel}</span>
-          <span className="mt-1 block break-words font-semibold text-blue-700">
+          <span className="mt-1 block break-words font-semibold text-on-accent-tint">
             Selected: {selectionLabel}
           </span>
         </div>
@@ -160,7 +160,7 @@ export function CabinetDetailedPreviewPanel({
           data-testid="cabinet-preview-status"
           role="status"
           aria-live="polite"
-          className="pointer-events-none justify-self-end rounded-md bg-white/90 px-3 py-2 text-xs text-neutral-700 shadow-sm"
+          className="pointer-events-none justify-self-end rounded-md bg-surface-floating/90 px-3 py-2 text-xs text-control-label-idle shadow-sm ring-1 ring-surface-floating-edge"
         >
           {status === "regenerating" ? "Regenerating preview…" : "Preview ready"}
         </div>
