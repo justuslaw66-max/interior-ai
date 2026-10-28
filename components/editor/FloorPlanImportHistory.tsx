@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/Button";
 
 type FloorPlanImportHistoryProps = {
   disabled?: boolean;
-  activeJobId: string | null;
+  activeJobId: string | null; openJobId: string | null;
   activeJobSnapshot: ConsumerFloorPlanImportJob | null;
   refreshKey: number;
   onResume: (jobId: string | null) => void; onConfirmationOpenChange: (open: boolean) => void;
@@ -42,7 +42,7 @@ function statusLabel(job: ConsumerFloorPlanImportSummary) {
 
 export default function FloorPlanImportHistory({
   disabled = false,
-  activeJobId,
+  activeJobId, openJobId,
   activeJobSnapshot,
   refreshKey,
   onResume, onConfirmationOpenChange,
@@ -348,7 +348,7 @@ export default function FloorPlanImportHistory({
       ) : null}
       <div className="mt-2 grid gap-2">
         {jobs.map((job) => {
-          const active = job.id === activeJobId;
+          const active = job.id === openJobId;
           const busy = actionJobId === job.id || bulkDeleting;
           const canResume = isResumableFloorPlanImportStatus(job.status);
           const confirmingDelete = confirmDeleteJobId === job.id;
