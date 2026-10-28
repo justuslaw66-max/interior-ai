@@ -4,6 +4,7 @@ import { Environment } from "@react-three/drei/core/Environment";
 import { Grid } from "@react-three/drei/core/Grid";
 import { Lightformer } from "@react-three/drei/core/Lightformer";
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 
 import type { CabinetDefinition, CabinetPart } from "../types";
 import {
@@ -45,6 +46,7 @@ export function CabinetPreviewScene3D({
   previewHeightMm,
   previewDepthMm,
 }: CabinetPreviewScene3DProps) {
+  const { colour } = useCanvasPalette();
   return (
     <>
       <CabinetPreviewCameraController
@@ -119,14 +121,8 @@ export function CabinetPreviewScene3D({
           onSemanticSelect={onSemanticSelect}
         />
       </group>
-      <Grid
-        args={[6, 6]}
-        cellSize={0.25}
-        sectionSize={1}
-        cellThickness={0.45}
-        sectionThickness={0.8}
-        position={[0, -0.002, 0]}
-      />
+      <Grid args={[6, 6]} position={[0, -0.002, 0]} cellSize={0.25} cellThickness={0.45} cellColor={colour("#000000")}
+        sectionSize={1} sectionThickness={0.8} sectionColor={colour("#2080ff")} />
       <OrbitControls
         target={[0, previewHeightMm / 2000, 0]}
         enableRotate={view === "perspective"}

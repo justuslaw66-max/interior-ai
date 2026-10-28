@@ -249,11 +249,11 @@
       "limit": 250
     },
     "components/editor/renderers/ItemRenderer2D.tsx": {
-      "lines": 329,
+      "lines": 328,
       "limit": 250
     },
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
-      "lines": 503,
+      "lines": 500,
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
@@ -2065,7 +2065,7 @@
     "components/editor/renderers/ItemRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 295
+        "maximum": 293
       },
       "complexFunctions": {
         "count": 1,
@@ -2085,7 +2085,7 @@
     "components/editor/renderers/RoomRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 17,
-        "maximum": 4113
+        "maximum": 4112
       },
       "complexFunctions": {
         "count": 8,
@@ -2333,7 +2333,7 @@
     "features/cabinetry/components/CabinetPreviewScene3D.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 108
+        "maximum": 103
       }
     },
     "features/cabinetry/components/CabinetProductionOutputs.tsx": {

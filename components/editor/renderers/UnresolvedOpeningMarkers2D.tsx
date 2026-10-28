@@ -1,5 +1,6 @@
 import { Html } from "@react-three/drei/web/Html";
 import { Line } from "@react-three/drei/core/Line";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 import type { Opening2D } from "./room-renderer-2d-opening-geometry";
 
 export function UnresolvedOpeningMarkers2D({
@@ -13,6 +14,7 @@ export function UnresolvedOpeningMarkers2D({
   showOpenings: boolean;
   canonicalStructureExpected: boolean;
 }) {
+  const { colour } = useCanvasPalette();
   if (!showOpenings || canonicalStructureExpected) return null;
   return openings.flatMap((opening) => {
     const point = opening.hostWorldCenter;
@@ -30,10 +32,10 @@ export function UnresolvedOpeningMarkers2D({
       >
         <mesh rotation-x={-Math.PI / 2}>
           <circleGeometry args={[0.16, 24]} />
-          <meshBasicMaterial color="#fff7ed" transparent opacity={0.98} />
+          <meshBasicMaterial color={colour("#fff7ed")} transparent opacity={0.98} />
         </mesh>
-        <Line points={[[-0.1, 0.003, -0.1], [0.1, 0.003, 0.1]]} color="#dc2626" lineWidth={4} />
-        <Line points={[[-0.1, 0.003, 0.1], [0.1, 0.003, -0.1]]} color="#dc2626" lineWidth={4} />
+        <Line points={[[-0.1, 0.003, -0.1], [0.1, 0.003, 0.1]]} color={colour("#dc2626")} lineWidth={4} />
+        <Line points={[[-0.1, 0.003, 0.1], [0.1, 0.003, -0.1]]} color={colour("#dc2626")} lineWidth={4} />
         {/* On top like every door's or window's label (UX 4f): the room's toolbar can reach this row. */}
         <Html zIndexRange={[20, 0]} position={[0, 0.08, 0.28]} center transform={false} style={{ pointerEvents: "auto" }}>
           <button
@@ -46,8 +48,8 @@ export function UnresolvedOpeningMarkers2D({
               onSelect?.(opening.id);
             }}
             style={{
-            background: "rgba(255,255,255,0.96)", border: "1px solid rgba(220,38,38,0.45)",
-            borderRadius: 6, color: "#991b1b", fontSize: 12, fontWeight: 800,
+            background: colour("rgba(255,255,255,0.96)"), border: colour("1px solid rgba(220,38,38,0.45)"),
+            borderRadius: 6, color: colour("#991b1b"), fontSize: 12, fontWeight: 800,
             padding: "4px 6px", whiteSpace: "nowrap", cursor: "pointer",
           }}>
             {opening.kind === "door" ? "Door" : "Window"} needs wall repair

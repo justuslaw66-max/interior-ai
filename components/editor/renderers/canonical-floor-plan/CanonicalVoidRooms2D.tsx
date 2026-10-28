@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Line } from "@react-three/drei/core/Line";
 import type { CanonicalFloorPlanFloorRenderModel } from "@/lib/floor-plan-render-model";
 import { isFloorPlanVoidRoom, voidRoomCrossSegments } from "@/lib/floor-plan-void-rooms";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 
 type Floor = CanonicalFloorPlanFloorRenderModel;
 
@@ -17,6 +18,7 @@ function CanonicalVoidRoom2D({
   floorId: string;
   geometryHash: string;
 }) {
+  const { colour } = useCanvasPalette();
   const lines = useMemo(() => {
     const outer = room.wallLoops.find((loop) => loop.kind === "outer");
     const thickness = new Map(walls.map((wall) => [wall.id, wall.thicknessMm]));
@@ -45,7 +47,7 @@ function CanonicalVoidRoom2D({
         <Line
           key={index}
           points={points}
-          color="#64748b"
+          color={colour("#64748b")}
           lineWidth={1.2}
           dashed
           dashSize={0.08}

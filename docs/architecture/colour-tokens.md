@@ -70,6 +70,14 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 
 **One colour system** (J, 25 Oct): status is green, amber and red on their tints, and information is blue (`accent-tint`). Other hues fold in: sky and violet to blue, orange to amber, category chips (Tileable, Sample) to grey chips (`control-track`).
 
+## The canvases
+
+**The 2D plan and the 3D view** (dark mode PR 4, J 28 Oct) are drawn in WebGL, which can't read the tokens. So they draw each colour as its light value through `lib/canvas-colours.ts`: `useCanvasPalette()` gives `colour(light)`, which is that light value in light and its dark value on a dark page, and `floor(light, active)` for a floor's plan tint. The page's scheme comes from `lib/canvas-colour-scheme.ts`: `<html>`'s computed `color-scheme`, watched as `data-color-scheme` and the device change.
+- **In dark:** the paper is `#1C1C1E` (the canvas card); walls and lines turn light; green `#30D158`, blue `#409CFF` (its words `#64B0FF`), orange `#FF9F0A`, teal `#40C8E0`, red `#FF453A`; the labels on the plan float at `#2C2C2E`, keeping their alpha. Floors mix their light tint into the paper, 21% for the room you're in and 14% for the others (question 1, A). Pro has the same paper (question 2, A). In 3D the background is `#1C1C1E` and the workspace ground `#232325` with faint lines.
+- **Not swapped:** what is the real room: paint, wall finishes and their plan colours, floor textures, product colours, lighting and materials, and in 3D the selection outline and hover, the zones and the guide grid, which sit on the room.
+- **Exports stay light:** the image and PDF exports capture the 3D view with `renderLightCapture` (`lib/canvas-capture.ts`), which draws the tagged ground, grid and background in their light colours for that one frame and draws the view again before the browser shows it.
+- **A colour without a dark value stays as written;** `scripts/test-designer-theme-contrast.ts` checks that every colour drawn through `colour()` in the canvas files has one.
+
 ## Moving screens
 
 - **Screens move folder by folder** (plan step 5). Replace hard-coded `bg-white`, `bg-neutral-*`, `text-neutral-*`, `border-neutral-*`, `text-white` and `bg-black` with roles.
