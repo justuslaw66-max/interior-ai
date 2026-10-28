@@ -120,16 +120,28 @@ function matchesSurfaceFacets(material: SurfaceMaterialCatalogRecord, filters: S
   return facets.every(([key, getLabel]) => !filters[key] || getLabel(material) === filters[key]);
 }
 
+/** Unknown and Mixed aren't one colour, so a colour search finds such a material by its name. */
+function hasOneColour(material: SurfaceMaterialCatalogRecord) {
+  const family = material.classification?.color_family ?? "unknown";
+  return family !== "unknown" && family !== "mixed";
+}
+
+/** Whether a material's name (without its brand) has the word as a whole word: "Oxide Green", not "Greenlam". */
+function nameHasWord(material: SurfaceMaterialCatalogRecord, word: string) {
+  const name = getSurfaceMaterialProductDisplayName(material).toLowerCase();
+  const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(^|[^a-z])${escaped}($|[^a-z])`).test(name);
+}
+
 /**
- * A colour search finds the materials of that colour. One whose colour isn't known yet is found by its name, as before, until
- * every material has a colour (the follow-up colour pass).
+ * A colour search finds the materials of that colour. One with no single colour (Unknown, until the follow-up colour pass, or
+ * Mixed) is found by its name: the word typed, or the colour's own name ("gray" finds "Grey").
  */
 function matchesSurfaceSearch(material: SurfaceMaterialCatalogRecord, query: string, searchColour: string | null) {
   if (!query) return true;
-  const known = (material.classification?.color_family ?? "unknown") !== "unknown";
-  if (searchColour && known) return getSurfaceMaterialColorLabel(material) === searchColour;
-  const text = getSurfaceMaterialSearchText(material);
-  return text.includes(query) || Boolean(searchColour && text.includes(searchColour.toLowerCase()));
+  if (!searchColour) return getSurfaceMaterialSearchText(material).includes(query);
+  if (hasOneColour(material)) return getSurfaceMaterialColorLabel(material) === searchColour;
+  return nameHasWord(material, query) || nameHasWord(material, searchColour.toLowerCase());
 }
 
 /** The product groups (one card per model) with a size, colour or finish that passes every filter. */
@@ -144,12 +156,14 @@ export function filterSurfaceMaterialGroups(
 ) {
   const query = search.trim().toLowerCase();
   const searchColour = getSurfaceSearchColour(search);
+  // A colour search takes the place of the drawer's colour, which shows it (SurfaceBrowserFilterBar.tsx).
+  const facetFilters = searchColour ? { ...filters, color: undefined } : filters;
   return groups.filter((group) =>
     group.variants.some((material) => {
       const suitability: readonly string[] = material.classification?.room_suitability ?? [];
       return (
         matchesSurfaceSearch(material, query, searchColour) &&
-        matchesSurfaceFacets(material, filters) &&
+        matchesSurfaceFacets(material, facetFilters) &&
         (!filters.favoritesOnly || favoriteIds.has(material.surface_material.material_id)) &&
         (!filters.recommendedOnly || suitability.includes(roomType) || suitability.includes("living"))
       );

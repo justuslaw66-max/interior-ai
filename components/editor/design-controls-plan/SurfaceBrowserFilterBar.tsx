@@ -3,6 +3,7 @@
 import type { RefObject } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { track } from "@/lib/analytics";
 import type { SurfaceBrowserViewMode, SurfaceFilterKey, SurfaceFilterState } from "./surfaceCatalog";
 import { getSurfaceSearchColour } from "./surfaceMaterialFilters";
 
@@ -29,33 +30,38 @@ const FILTER_SELECTS: ReadonlyArray<[SurfaceFilterKey, string]> = [
   ["collection", "Collection"],
   ["effect", "Effect"],
   ["size", "Size"],
-  ["color", "Color"],
+  ["color", "Colour"],
 ];
 
+/** One of the drawer's filters. `fromSearch` is a colour the search has set: the select shows it and waits for the chip. */
 function SurfaceFilterSelect({
   filterKey,
   label,
   value,
   options,
+  fromSearch,
   onChange,
 }: {
   filterKey: SurfaceFilterKey;
   label: string;
   value: string;
   options: string[];
+  fromSearch: string | null;
   onChange: (key: SurfaceFilterKey, value: string) => void;
 }) {
+  const shown = fromSearch && !options.includes(fromSearch) ? [fromSearch, ...options] : options;
   return (
     <label className="block text-xs font-semibold text-control-label-idle">
-      {label}
+      {fromSearch ? `${label}, from your search` : label}
       <select
         data-testid={`surfaces-filter-${filterKey}`}
-        value={value}
+        value={fromSearch ?? value}
+        disabled={Boolean(fromSearch)}
         className="mt-1 h-9 w-full rounded-lg border border-box-border bg-field px-2 text-xs text-control-label"
         onChange={(event) => onChange(filterKey, event.currentTarget.value)}
       >
         <option value="">All</option>
-        {options.map((option) => (
+        {shown.map((option) => (
           <option key={option} value={option}>
             {option}
           </option>
@@ -67,14 +73,14 @@ function SurfaceFilterSelect({
 
 /**
  * A search that is just a colour ("blue", "light wood") is the colour filter (surfaceMaterialFilters.ts), so the chip says so
- * and takes it off (J, 28 Oct 2026).
+ * and takes it off (J, 28 Oct 2026). It is a remove action, not a toggle, so it has the primary look without `pressed`.
  */
 function SearchColourChip({ colour, onRemove }: { colour: string; onRemove: () => void }) {
   return (
     <Button
       data-testid="surfaces-search-colour"
       size="compact"
-      pressed
+      variant="primary"
       aria-label={`Colour: ${colour}. Remove`}
       title="Your search is a colour, so it shows that colour. Remove to search all again."
       onClick={onRemove}
@@ -85,12 +91,19 @@ function SearchColourChip({ colour, onRemove }: { colour: string; onRemove: () =
   );
 }
 
+/** Clears a colour search and returns to the search box, which the chip's removal would otherwise leave without focus. */
+function removeSearchColour(props: SurfaceBrowserFilterBarProps) {
+  props.onSearchChange("");
+  props.searchInputRef.current?.focus();
+  track("floor_surface_filter_changed", { key: "search_colour", value: null });
+}
+
 /** The quick filters under the search: a search's colour, Recommended, Favourites, the view, and Clear. */
 function SurfaceQuickFilters(props: SurfaceBrowserFilterBarProps) {
   const searchColour = getSurfaceSearchColour(props.search);
   return (
     <div className="mt-2 flex flex-wrap items-center gap-1.5">
-      {searchColour ? <SearchColourChip colour={searchColour} onRemove={() => props.onSearchChange("")} /> : null}
+      {searchColour ? <SearchColourChip colour={searchColour} onRemove={() => removeSearchColour(props)} /> : null}
       <Button
         data-testid="surfaces-recommended-filter"
         size="compact"
@@ -150,6 +163,7 @@ export function SurfaceBrowserFilterBar(props: SurfaceBrowserFilterBarProps) {
               label={label}
               value={props.filters[key] ?? ""}
               options={props.filterOptions[key]}
+              fromSearch={key === "color" ? getSurfaceSearchColour(props.search) : null}
               onChange={props.onFilterChange}
             />
           ))}

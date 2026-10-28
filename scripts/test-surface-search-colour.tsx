@@ -10,6 +10,7 @@ import {
   buildSurfaceMaterialProductGroups,
   getSurfaceMaterialColorLabel,
   getSurfaceMaterialProductDisplayName,
+  type SurfaceFilterState,
 } from "../components/editor/design-controls-plan/surfaceCatalog";
 import {
   buildSurfaceFilterOptions,
@@ -31,8 +32,11 @@ async function main(): Promise<void> {
   const records = await loader.load();
   const walls = records.filter((record) => ["wall_tile", "wall_panel"].includes(record.surface_material.surface_category));
   const groups = buildSurfaceMaterialProductGroups(walls);
-  const search = (text: string) =>
-    filterSurfaceMaterialGroups(groups, { search: text, filters: {}, favoriteIds: new Set(), roomType: "living" });
+  const floorGroups = buildSurfaceMaterialProductGroups(
+    records.filter((record) => record.surface_material.surface_category === "flooring")
+  );
+  const search = (text: string, filters: SurfaceFilterState = {}, among = groups) =>
+    filterSurfaceMaterialGroups(among, { search: text, filters, favoriteIds: new Set(), roomType: "living" });
   const names = (found: ReturnType<typeof search>) => found.map((group) => getSurfaceMaterialProductDisplayName(group.primary));
   const colourOf = (group: (typeof groups)[number]) => group.variants.map(getSurfaceMaterialColorLabel);
 
@@ -50,13 +54,30 @@ async function main(): Promise<void> {
   for (const tone of ["Light Wood", "Natural Wood", "Warm Wood", "Dark Wood"]) assert.ok(colourOptions.includes(tone), tone);
   for (const species of ["Light Oak", "Natural Oak", "Warm Oak", "Walnut"]) assert.ok(!colourOptions.includes(species), species);
 
-  // A colour search finds that colour: Greenlam's blue solids, not Sky Grey's name.
+  // A colour search finds that colour. A material with no single colour (Unknown or Mixed) is found by a whole word of its name,
+  // not by its brand or tone: "green" isn't "Greenlam", and "red" isn't "textured" (review, 28 Oct 2026).
+  const byColourOrName = (found: ReturnType<typeof search>, colour: string, word: string) =>
+    found.every((group) =>
+      colourOf(group).includes(colour) ||
+      group.variants.some((variant) =>
+        ["Unknown", "Mixed"].includes(getSurfaceMaterialColorLabel(variant)) &&
+        new RegExp(`\\b${word}\\b`, "i").test(getSurfaceMaterialProductDisplayName(variant))
+      )
+    );
   const grey = search("grey");
   assert.ok(grey.length > 0);
-  assert.ok(
-    grey.every((group) => colourOf(group).includes("Grey") || colourOf(group).includes("Unknown")),
-    "a colour search finds that colour, and materials whose colour isn't known yet by their name"
-  );
+  assert.ok(byColourOrName(grey, "Grey", "grey"), "grey: the Grey colour, and others named grey with no single colour");
+  const green = search("green");
+  assert.ok(byColourOrName(green, "Green", "green"), "green: no Greenlam abstracts, metals or pearlescents by their brand");
+  assert.ok(green.length >= 11, "the eleven green solids at least");
+  const redFloors = search("red", {}, floorGroups);
+  assert.ok(byColourOrName(redFloors, "Red", "red"), "red: no floors for the tone textured");
+  const greenFloors = search("green", {}, floorGroups);
+  assert.ok(greenFloors.length >= 4, "Gardenia's Mixed floors named green are found by their name");
+  assert.ok(byColourOrName(greenFloors, "Green", "green"));
+
+  // A colour search takes the place of a colour chosen in the drawer.
+  assert.deepEqual(names(search("grey", { color: "White" })), names(grey));
   assert.ok(!names(grey).includes("Sky Grey 273"), "Greenlam Sky Grey 273 is drawn a pale blue");
   assert.ok(names(search("blue")).includes("Sky Grey 273"));
   assert.deepEqual(names(search("sky grey")), ["Sky Grey 273"], "a name with a colour in it is still found by its name");
@@ -92,6 +113,11 @@ async function main(): Promise<void> {
   });
   const withColour = renderToStaticMarkup(createElement(SurfaceBrowserFilterBar, props("light wood")));
   assert.match(withColour, /data-testid="surfaces-search-colour"/);
+  assert.doesNotMatch(withColour, /aria-pressed/, "the chip removes the colour search; it isn't a toggle");
+  const drawerWithColour = renderToStaticMarkup(
+    createElement(SurfaceBrowserFilterBar, { ...props("light wood"), filterDrawerOpen: true })
+  );
+  assert.match(drawerWithColour, /Colour, from your search<select[^>]*data-testid="surfaces-filter-color"[^>]*disabled/);
   assert.match(withColour, /Colour: <!-- -->Light Wood|Colour: Light Wood/);
   const withName = renderToStaticMarkup(createElement(SurfaceBrowserFilterBar, props("walnut")));
   assert.doesNotMatch(withName, /surfaces-search-colour/);
