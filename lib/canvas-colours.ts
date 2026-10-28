@@ -72,11 +72,13 @@ const DARK_HEX: Readonly<Record<string, string>> = {
   "#38bdf8": "#409cff",
   "#60a5fa": "#409cff",
   "#1d4ed8": "#64b0ff",
+  "#1e3a8a": "#64b0ff",
   "#2a66ff": "#0a84ff",
   // Orange: doors, blocked moves, what's being placed.
   "#f97316": "#ff9f0a",
   "#ea580c": "#ff9f0a",
   "#c2410c": "#ff9f0a",
+  "#d97706": "#ff9f0a",
   "#9a3412": "#ff9f0a",
   "#f59e0b": "#ffd60a",
   // Teal (zones, hover), red (overlaps, unresolved openings, Delete) and pink.
@@ -93,6 +95,8 @@ const DARK_HEX: Readonly<Record<string, string>> = {
   "#fed7aa": "#604318",
   "#fee2e2": "#52302f",
   "#f8b6b6": "#6e3433",
+  // The selected piece's Rotate and Copy buttons.
+  "#f3f4f6": "#3a3a3c",
 };
 
 /** Translucent colours, by their red, green and blue; the alpha stays. */
@@ -103,6 +107,7 @@ const DARK_RGB: Readonly<Record<string, string>> = {
   "239,246,255": "44,44,46",
   "255,247,237": "44,44,46",
   "240,253,250": "44,44,46",
+  "254,242,242": "44,44,46",
   "209,250,229": "45,80,55",
   "220,252,231": "45,80,55",
   "243,244,246": "58,58,60",

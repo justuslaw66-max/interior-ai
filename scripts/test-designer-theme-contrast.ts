@@ -590,7 +590,10 @@ const CANVAS_SOURCES = [
   "components/editor/renderers/canonical-floor-plan/CanonicalWallGestureOverlay.tsx",
   "components/editor/renderers/UnresolvedOpeningMarkers2D.tsx",
   "components/editor/design-page/DesignSceneCanvas.tsx",
+  "components/editor/design-page/DesignSceneStructureLayer.tsx",
+  "components/scene/FurnitureItem.tsx",
   "features/cabinetry/components/CabinetPreviewScene3D.tsx",
+  "features/cabinetry/components/CabinetSceneItem.tsx",
 ];
 const COLOUR_IN_STRING = /#[0-9a-fA-F]{6}\b|rgba?\([^)]*\)/g;
 function colourCallArguments(text: string): string[] {
@@ -626,6 +629,16 @@ assert.match(
   read("lib/canvas-colour-scheme.ts"),
   /getComputedStyle\(document\.documentElement\)\.getPropertyValue\("color-scheme"\)[\s\S]*new MutationObserver[\s\S]*matchMedia\(DARK_QUERY\)/,
   "The canvases follow the page's scheme: <html>'s color-scheme, the attribute and the device."
+);
+assert.match(
+  read("components/editor/renderers/RoomRenderer2D.tsx"),
+  /useEffect\(\(\) => drawPlanColoursAsChosen\(gl, canvasPalette\.dark\), \[canvasPalette\.dark, gl\]\);/,
+  "On a dark page the 2D plan turns off tone mapping, which crushed its dark colours (a #2C2C2E room drew near black)."
+);
+assert.match(
+  read("lib/canvas-tone-mapping.ts"),
+  /if \(!dark\) return undefined;[\s\S]*renderer\.toneMapping = THREE\.NoToneMapping;[\s\S]*renderer\.toneMapping = previous;/,
+  "Light keeps the plan's tone mapping, and dark puts it back when the plan goes."
 );
 const exportSource = read("lib/useDesignPageExport.ts");
 assert.equal(

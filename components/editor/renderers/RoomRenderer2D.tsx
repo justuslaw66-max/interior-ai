@@ -4,11 +4,7 @@ import { Html } from "@react-three/drei/web/Html";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import {
-  clampFloorPatternScale,
-  getFloorMaterialById,
-  normalizeFloorRotationDeg,
-} from "@/lib/floor-materials";
+import { clampFloorPatternScale, getFloorMaterialById, normalizeFloorRotationDeg } from "@/lib/floor-materials";
 import type { FloorPlanDrawRoomMode, FloorPlanPoint } from "@/lib/floor-plan-types";
 import type { RoomSurfaceFinishes, RoomType } from "@/lib/room-types";
 import {
@@ -42,6 +38,7 @@ import {
 import { resolveLoneRoomPlanFrame2D } from "@/lib/room-renderer-2d-lone-room";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import { useCanvasPalette, type CanvasPalette } from "@/lib/canvas-colours";
+import { drawPlanColoursAsChosen } from "@/lib/canvas-tone-mapping";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
 import { CanonicalFloorPlanWalls2D } from "./CanonicalFloorPlanStructure";
 import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
@@ -1434,6 +1431,7 @@ export default function RoomRenderer2D({
   const isPro = theme === "pro";
   const canvasPalette = useCanvasPalette();
   const { colour } = canvasPalette;
+  useEffect(() => drawPlanColoursAsChosen(gl, canvasPalette.dark), [canvasPalette.dark, gl]);
   const hasHouseRooms = shouldRenderRoomPlanGeometry(rooms);
   // A lone non-rectangular room draws its own plan geometry instead of the plain frame.
   const loneRoomFrame = useMemo(() => (hasHouseRooms ? null : resolveLoneRoomPlanFrame2D(rooms)), [hasHouseRooms, rooms]);
@@ -3114,11 +3112,7 @@ export default function RoomRenderer2D({
                 : isHoveredRoom
                   ? 2.4
                   : 1.5;
-          const effectiveFillOpacity = isDraggingRoom
-            ? dragStatus === "blocked"
-              ? 0.54
-              : 0.72
-            : 1;
+          const effectiveFillOpacity = isDraggingRoom ? (dragStatus === "blocked" ? 0.54 : 0.72) : 1;
           const dragHudStatusLabel =
             dragStatus === "blocked"
               ? "Overlap blocked"

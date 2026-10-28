@@ -257,7 +257,7 @@
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5472,
+      "lines": 5466,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -1603,7 +1603,7 @@
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 219
+        "maximum": 218
       }
     },
     "components/editor/design-page/DesignValidationFeedback.tsx": {
@@ -2085,7 +2085,7 @@
     "components/editor/renderers/RoomRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 17,
-        "maximum": 4112
+        "maximum": 4109
       },
       "complexFunctions": {
         "count": 8,
@@ -2181,7 +2181,7 @@
     "components/scene/FurnitureItem.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 878
+        "maximum": 877
       },
       "complexFunctions": {
         "count": 1,
@@ -2391,7 +2391,7 @@
     "features/cabinetry/components/CabinetSceneItem.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 363
+        "maximum": 362
       }
     },
     "features/cabinetry/components/CabinetSemanticEditOverlays.tsx": {
