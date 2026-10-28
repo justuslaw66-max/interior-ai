@@ -7,11 +7,7 @@ import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
 import { useMemo, useState } from "react";
 import * as THREE from "three";
-import type {
-  FloorPlanDrawRoomMode,
-  FloorPlanPoint,
-  FloorPlanUnderlay,
-} from "@/lib/floor-plan-types";
+import type { FloorPlanDrawRoomMode, FloorPlanPoint, FloorPlanUnderlay } from "@/lib/floor-plan-types";
 import {
   resolveArcWallDrawPreview,
   resolveRoomDrawPreview,
@@ -22,6 +18,7 @@ import {
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 import { formatRoomDrawPreviewLabel } from "@/lib/plan-room-summary";
 import type { RoomOpening2D } from "@/lib/editorScene";
 
@@ -103,9 +100,9 @@ function ImagePlanUnderlay({
   measurementUnit,
 }: PlanUnderlayRenderer2DProps & { underlay: FloorPlanUnderlay }) {
   const texture = useLoader(PlanUnderlayTextureLoader, underlay.assetUrl);
+  const { colour } = useCanvasPalette();
   const [traceRoomPreviewPoint, setTraceRoomPreviewPoint] = useState<FloorPlanPoint | null>(null);
-  const [traceOpeningPreviewPoint, setTraceOpeningPreviewPoint] =
-    useState<FloorPlanPoint | null>(null);
+  const [traceOpeningPreviewPoint, setTraceOpeningPreviewPoint] = useState<FloorPlanPoint | null>(null);
   const isPickingPoint = calibrationMode || traceRoomMode || traceOpeningMode;
   const isStraightTraceMode = traceRoomMode && traceRoomDrawMode === "straight_wall";
   const isRectangleTraceMode = traceRoomMode && traceRoomDrawMode === "rectangle_wall";
@@ -191,7 +188,7 @@ function ImagePlanUnderlay({
       {calibrationMode && calibrationPoints.length === 2 && (
         <Line
           points={calibrationPoints.map((point) => [point.x, 0.018, point.z])}
-          color="#14b8a6"
+          color={colour("#14b8a6")}
           lineWidth={2}
         />
       )}
@@ -199,7 +196,7 @@ function ImagePlanUnderlay({
       {isStraightTraceMode && straightWallLinePoints.length >= 2 && (
         <Line
           points={straightWallLinePoints}
-          color="#2563eb"
+          color={colour("#2563eb")}
           lineWidth={3}
         />
       )}
@@ -207,7 +204,7 @@ function ImagePlanUnderlay({
       {isRectangleTraceMode && traceRoomLinePoints.length === 2 && (
         <Line
           points={buildRectangleLinePoints(traceRoomLinePoints)}
-          color={roomDrawPreview?.rectangle === null ? "#f97316" : "#2563eb"}
+          color={roomDrawPreview?.rectangle === null ? colour("#f97316") : colour("#2563eb")}
           lineWidth={2}
         />
       )}
@@ -227,11 +224,11 @@ function ImagePlanUnderlay({
             data-testid="floor-plan-room-draw-preview"
             style={{
               border: roomDrawPreview.rectangle
-                ? "1px solid rgba(37,99,235,0.3)"
-                : "1px solid rgba(249,115,22,0.38)",
+                ? colour("1px solid rgba(37,99,235,0.3)")
+                : colour("1px solid rgba(249,115,22,0.38)"),
               borderRadius: 6,
-              background: "rgba(255,255,255,0.9)",
-              color: roomDrawPreview.rectangle ? "#1d4ed8" : "#c2410c",
+              background: colour("rgba(255,255,255,0.9)"),
+              color: roomDrawPreview.rectangle ? colour("#1d4ed8") : colour("#c2410c"),
               fontSize: 12,
               fontWeight: 700,
               padding: "3px 7px",
@@ -260,10 +257,10 @@ function ImagePlanUnderlay({
             <div
               data-testid="floor-plan-rectangle-wall-width"
               style={{
-                border: "1px solid rgba(37,99,235,0.32)",
+                border: colour("1px solid rgba(37,99,235,0.32)"),
                 borderRadius: 5,
-                background: "rgba(255,255,255,0.94)",
-                color: "#1d4ed8",
+                background: colour("rgba(255,255,255,0.94)"),
+                color: colour("#1d4ed8"),
                 fontSize: 12,
                 fontWeight: 800,
                 padding: "2px 7px",
@@ -288,10 +285,10 @@ function ImagePlanUnderlay({
             <div
               data-testid="floor-plan-rectangle-wall-depth"
               style={{
-                border: "1px solid rgba(37,99,235,0.32)",
+                border: colour("1px solid rgba(37,99,235,0.32)"),
                 borderRadius: 5,
-                background: "rgba(255,255,255,0.94)",
-                color: "#1d4ed8",
+                background: colour("rgba(255,255,255,0.94)"),
+                color: colour("#1d4ed8"),
                 fontSize: 12,
                 fontWeight: 800,
                 padding: "2px 7px",
@@ -311,7 +308,7 @@ function ImagePlanUnderlay({
         <>
           <Line
             points={buildArcWallLinePoints(arcWallDrawPreview)}
-            color={arcWallDrawPreview.resolvedRoom ? "#2563eb" : "#f97316"}
+            color={arcWallDrawPreview.resolvedRoom ? colour("#2563eb") : colour("#f97316")}
             lineWidth={3}
           />
           <Html
@@ -327,10 +324,10 @@ function ImagePlanUnderlay({
             <div
               data-testid="floor-plan-arc-wall-length"
               style={{
-                border: "1px solid rgba(37,99,235,0.32)",
+                border: colour("1px solid rgba(37,99,235,0.32)"),
                 borderRadius: 5,
-                background: "rgba(255,255,255,0.94)",
-                color: "#1d4ed8",
+                background: colour("rgba(255,255,255,0.94)"),
+                color: colour("#1d4ed8"),
                 fontSize: 12,
                 fontWeight: 800,
                 padding: "2px 7px",
@@ -355,12 +352,12 @@ function ImagePlanUnderlay({
             <div
               data-testid="floor-plan-arc-wall-angle"
               style={{
-                color: "#171717",
+                color: colour("#171717"),
                 fontSize: 12,
                 fontWeight: 800,
                 pointerEvents: "none",
                 whiteSpace: "nowrap",
-                textShadow: "0 1px 2px rgba(255,255,255,0.9)",
+                textShadow: colour("0 1px 2px rgba(255,255,255,0.9)"),
               }}
             >
               {arcWallDrawPreview.angleDeg.toFixed(1)}°
@@ -372,7 +369,7 @@ function ImagePlanUnderlay({
       {traceOpeningMode && traceOpeningPoints.length === 2 && (
         <Line
           points={traceOpeningPoints.map((point) => [point.x, 0.021, point.z])}
-          color="#db2777"
+          color={colour("#db2777")}
           lineWidth={2}
         />
       )}
@@ -381,7 +378,7 @@ function ImagePlanUnderlay({
         <>
           <Line
             points={openingPreview.segment.map((point) => [point.x, 0.023, point.z])}
-            color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
+            color={openingPreview.status === "valid" ? colour("#0f766e") : colour("#f97316")}
             lineWidth={3}
           />
           <Html
@@ -399,11 +396,11 @@ function ImagePlanUnderlay({
               style={{
                 border:
                   openingPreview.status === "valid"
-                    ? "1px solid rgba(15,118,110,0.32)"
-                    : "1px solid rgba(249,115,22,0.38)",
+                    ? colour("1px solid rgba(15,118,110,0.32)")
+                    : colour("1px solid rgba(249,115,22,0.38)"),
                 borderRadius: 6,
-                background: "rgba(255,255,255,0.94)",
-                color: openingPreview.status === "valid" ? "#0f766e" : "#c2410c",
+                background: colour("rgba(255,255,255,0.94)"),
+                color: openingPreview.status === "valid" ? colour("#0f766e") : colour("#c2410c"),
                 fontSize: 12,
                 fontWeight: 800,
                 padding: "3px 7px",
@@ -426,7 +423,7 @@ function ImagePlanUnderlay({
             rotation-x={-Math.PI / 2}
           >
             <circleGeometry args={[0.08, 24]} />
-            <meshBasicMaterial color={index === 0 ? "#14b8a6" : "#f97316"} />
+            <meshBasicMaterial color={index === 0 ? colour("#14b8a6") : colour("#f97316")} />
           </mesh>
         ))}
 
@@ -438,7 +435,7 @@ function ImagePlanUnderlay({
             rotation-x={-Math.PI / 2}
           >
             <circleGeometry args={[0.08, 24]} />
-            <meshBasicMaterial color={index === 0 ? "#2563eb" : "#f59e0b"} />
+            <meshBasicMaterial color={index === 0 ? colour("#2563eb") : colour("#f59e0b")} />
           </mesh>
         ))}
 
@@ -450,7 +447,7 @@ function ImagePlanUnderlay({
             rotation-x={-Math.PI / 2}
           >
             <circleGeometry args={[0.07, 24]} />
-            <meshBasicMaterial color={index === 0 ? "#db2777" : "#f97316"} />
+            <meshBasicMaterial color={index === 0 ? colour("#db2777") : colour("#f97316")} />
           </mesh>
         ))}
     </>

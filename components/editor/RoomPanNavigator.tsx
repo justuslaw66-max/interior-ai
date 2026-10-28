@@ -238,7 +238,7 @@ export default function RoomPanNavigator({
         <div
         ref={mapRef}
         data-testid="room-pan-map"
-        className="relative touch-none cursor-crosshair bg-[linear-gradient(to_right,rgba(148,163,184,0.24)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.24)_1px,transparent_1px)] bg-[size:8px_8px] bg-slate-50"
+        className="relative touch-none cursor-crosshair bg-[linear-gradient(to_right,rgba(148,163,184,0.24)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.24)_1px,transparent_1px)] bg-[size:8px_8px] bg-plan-paper"
         style={{ width: MAP_WIDTH, height: MAP_HEIGHT }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -255,7 +255,7 @@ export default function RoomPanNavigator({
               y1={cameraY}
               x2={targetX}
               y2={targetY}
-              stroke="#111827"
+              className="stroke-label"
               strokeWidth="1.5"
               strokeDasharray="5 5"
             />
@@ -285,11 +285,11 @@ export default function RoomPanNavigator({
               className={`absolute border ${
                 isTarget
                   ? targetRoomValid
-                    ? "border-blue-600 bg-blue-100/90 ring-2 ring-blue-500"
-                    : "border-red-600 bg-red-100/90 ring-2 ring-red-500"
+                    ? "border-blue-600 bg-accent-tint ring-2 ring-blue-500"
+                    : "border-red-600 bg-danger-tint ring-2 ring-red-500"
                   : isActive
-                    ? "border-green-500 bg-green-100/80"
-                    : "border-neutral-500 bg-stone-200/75"
+                    ? "border-green-500 bg-success-tint"
+                    : "border-plan-line bg-plan-room/75"
               }`}
               style={{
                 left: roomLeft,
@@ -330,11 +330,11 @@ export default function RoomPanNavigator({
           style={{ left: targetX, top: targetY }}
           aria-label="Drag view centre"
         >
-          <span className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-neutral-500 shadow" />
-          <span className="absolute left-1/2 top-1 h-0 w-0 -translate-x-1/2 border-x-[5px] border-b-[7px] border-x-transparent border-b-neutral-500" />
-          <span className="absolute bottom-1 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[7px] border-x-transparent border-t-neutral-500" />
-          <span className="absolute left-1 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[5px] border-r-[7px] border-y-transparent border-r-neutral-500" />
-          <span className="absolute right-1 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[5px] border-l-[7px] border-y-transparent border-l-neutral-500" />
+          <span className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-plan-paper bg-plan-line shadow" />
+          <span className="absolute left-1/2 top-1 h-0 w-0 -translate-x-1/2 border-x-[5px] border-b-[7px] border-x-transparent border-b-plan-line" />
+          <span className="absolute bottom-1 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[7px] border-x-transparent border-t-plan-line" />
+          <span className="absolute left-1 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[5px] border-r-[7px] border-y-transparent border-r-plan-line" />
+          <span className="absolute right-1 top-1/2 h-0 w-0 -translate-y-1/2 border-y-[5px] border-l-[7px] border-y-transparent border-l-plan-line" />
         </button>
         </div>
       )}

@@ -109,6 +109,26 @@
   /* The pages outside the editor (dark mode PR 2, 26 Oct): the grey page behind white cards (the shared
      design, the status pages), black in dark like the other pages. */
   --surface-grouped: var(--color-neutral-100);
+  /* The plan drawings (dark mode PR 4, 28 Oct): My designs' thumbnails, Start's template pictures,
+     the Levels map, the shared design's plan preview and Built-ins' preview. In dark they take the
+     plan's dark paper (#1C1C1E), rooms a dim tint of their colour, walls light (J, 28 Oct). */
+  --plan-paper: #f6f5f1;
+  --plan-line: #78716c;
+  --plan-room: #e7e5e4;
+  --plan-room-toilet: #dbeafe;
+  --plan-room-kitchen: #dcfce7;
+  --plan-room-bedroom: #ede9fe;
+  --plan-room-dining: #fef3c7;
+  --plan-marker: #1c1917;
+  --plan-marker-seat: #2563eb;
+  --plan-marker-table: #d97706;
+  --plan-marker-rug: #14b8a6;
+  --plan-sheet: #ffffff;
+  --plan-sheet-room: #f5f5f4;
+  --plan-wall: #262626;
+  --plan-door: #d97706;
+  --plan-window: #0284c7;
+  --scene-preview-ground: #e5e7e1;
   /* The shared controls (components/ui): Button, SegmentedControl, Chip and ChoiceTile; a step's
      number and the avatar's hover (control-badge), and the phone sheet's handle. */
   --control-primary: var(--color-neutral-900);
@@ -200,6 +220,23 @@
   --surface-page: #000000;
   --surface-well: transparent;
   --surface-grouped: #000000;
+  --plan-paper: #1c1c1e;
+  --plan-line: #98989d;
+  --plan-room: #3a3a3c;
+  --plan-room-toilet: #22303f;
+  --plan-room-kitchen: #24372a;
+  --plan-room-bedroom: #30293d;
+  --plan-room-dining: #3a3222;
+  --plan-marker: #e5e5ea;
+  --plan-marker-seat: #409cff;
+  --plan-marker-table: #ff9f0a;
+  --plan-marker-rug: #40c8e0;
+  --plan-sheet: #1c1c1e;
+  --plan-sheet-room: #2c2c2e;
+  --plan-wall: #e5e5ea;
+  --plan-door: #ff9f0a;
+  --plan-window: #409cff;
+  --scene-preview-ground: #232325;
   --control-primary: #f5f5f7;
   --control-primary-hover: #e5e5ea;
   --control-on-primary: #1c1c1e;
@@ -314,6 +351,14 @@
   --color-surface-page: var(--surface-page);
   --color-surface-well: var(--surface-well);
   --color-surface-grouped: var(--surface-grouped);
+  --color-plan-paper: var(--plan-paper);
+  --color-plan-line: var(--plan-line);
+  --color-plan-room: var(--plan-room);
+  --color-plan-sheet: var(--plan-sheet);
+  --color-plan-sheet-room: var(--plan-sheet-room);
+  --color-plan-wall: var(--plan-wall);
+  --color-plan-door: var(--plan-door);
+  --color-plan-window: var(--plan-window);
   --color-control-danger: var(--control-danger);
   --color-control-danger-hover: var(--control-danger-hover);
   --color-control-danger-border: var(--control-danger-border);

@@ -8,10 +8,10 @@ import {
 export function DesignPlanThumbnailSvg({ thumbnail }: { thumbnail: DesignPlanThumbnail | null }) {
   return (
     <svg viewBox={`0 0 ${PLAN_THUMBNAIL_WIDTH} ${PLAN_THUMBNAIL_HEIGHT}`} aria-hidden="true"
-      data-testid="my-design-thumbnail" className="block h-[150px] w-full bg-[#f6f5f1]">
+      data-testid="my-design-thumbnail" className="block h-[150px] w-full bg-plan-paper">
       {thumbnail?.rooms.map((room) => (
-        <polygon key={room.id} points={room.points} fill={room.fill} stroke="#78716c" strokeWidth="1.5"
-          strokeLinejoin="round" />
+        <polygon key={room.id} points={room.points} style={{ fill: room.fill }} className="stroke-plan-line"
+          strokeWidth="1.5" strokeLinejoin="round" />
       ))}
     </svg>
   );

@@ -10,6 +10,7 @@ import PlanUnderlayRenderer2D from "@/components/editor/renderers/PlanUnderlayRe
 import RoomRenderer2D from "@/components/editor/renderers/RoomRenderer2D";
 import { PlanQualityHintOverlay } from "@/components/editor/design-page/PlanQualityHintOverlay";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 import { useRoomRendererPlanOverlays } from "@/lib/useRoomRendererPlanOverlays";
 import { useLatestCallback } from "@/components/editor/renderers/useLatestCallback";
 import { resolveWallGestureControls, useWholeHomeRendererBindings } from "@/components/editor/design-page/useWholeHomeRendererBindings";
@@ -181,19 +182,19 @@ export function DesignSceneStructureLayer({
   // Stable, so the memoized room fills skip re-rendering when only the page's handlers changed.
   const selectRoom = useLatestCallback(actions.rooms.select);
   const selectSurfaceTarget = useLatestCallback(actions.rooms.selectSurfaceTarget);
+  const { colour } = useCanvasPalette();
   const wholeHome = useWholeHomeRendererBindings(state, actions);
-  const canonicalActiveFloorId =
-    canonicalPlan?.floors.find((floor) => floor.levelIndex + 1 === state.wholeHome.activeFloorLevel)?.id ?? null;
+  const canonicalActiveFloorId = canonicalPlan?.floors.find((floor) => floor.levelIndex + 1 === state.wholeHome.activeFloorLevel)?.id ?? null;
   const canonicalStructureExpected = Boolean(state.plan.canonicalDocument);
   const canonicalIntegrityWarning = canonicalResolution.error ? (
     <Html position={[0, 0.18, 0]} center transform={false} zIndexRange={[30, 0]}>
       <div
         data-testid="canonical-floor-plan-integrity-warning"
         style={{
-          border: "1px solid rgba(220,38,38,0.3)",
+          border: colour("1px solid rgba(220,38,38,0.3)"),
           borderRadius: 8,
-          background: "rgba(254,242,242,0.96)",
-          color: "#991b1b",
+          background: colour("rgba(254,242,242,0.96)"),
+          color: colour("#991b1b"),
           fontSize: 12,
           fontWeight: 700,
           maxWidth: 280,
@@ -206,17 +207,16 @@ export function DesignSceneStructureLayer({
       </div>
     </Html>
   ) : null;
-  const canonicalEditingNotice =
-    canonicalPlan ? (
+  const canonicalEditingNotice = canonicalPlan ? (
       <Html position={[0, 0.1, 0]} center transform={false} zIndexRange={[18, 0]}>
         <div
           data-testid="canonical-room-geometry-lock-reason"
           title="Use the wall tools in 2D to create an editable copy of the uploaded plan."
           style={{
-            border: "1px solid rgba(37,99,235,0.22)",
+            border: colour("1px solid rgba(37,99,235,0.22)"),
             borderRadius: 999,
-            background: "rgba(239,246,255,0.94)",
-            color: "#1e3a8a",
+            background: colour("rgba(239,246,255,0.94)"),
+            color: colour("#1e3a8a"),
             fontSize: 12,
             fontWeight: 700,
             padding: "4px 8px",
