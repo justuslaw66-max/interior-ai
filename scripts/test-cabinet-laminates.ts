@@ -41,12 +41,12 @@ assert.equal(
 
 // The Greenlam catalogue: every design once, every picture present and never stretched.
 // The 4'x8' collection (342 designs, 234 pictures), and the 4.25'x10' collection's designs the
-// 4'x8' one doesn't have (J, 25 Oct 2026: 31 designs, 21 pictures).
+// 4'x8' one doesn't have (J, 25 Oct 2026: 31 designs, 21 pictures; 33 since 28 Oct, with Alabaster and Arctic Grey).
 const inCollection = (id: string) => CABINET_LAMINATES.filter((laminate) => laminate.collectionId === id);
 const fourByEight = inCollection("hpl-1220x2440");
 const tenFoot = inCollection("hpl-1300x3050");
 assert.equal(fourByEight.length, 342, "Greenlam's 4'x8' HPL collection has 342 designs in the catalogue.");
-assert.equal(tenFoot.length, 31, "The 4.25'x10' collection adds 31 designs the 4'x8' one doesn't have.");
+assert.equal(tenFoot.length, 33, "The 4.25'x10' collection adds 33 designs the 4'x8' one doesn't have.");
 assert.equal(CABINET_LAMINATES.length, fourByEight.length + tenFoot.length);
 assert.equal(new Set(CABINET_LAMINATES.map((laminate) => laminate.id)).size, CABINET_LAMINATES.length);
 assert(CABINET_LAMINATES.every((laminate) => !CABINET_MATERIALS.some((material) => material.id === laminate.id)));
@@ -77,13 +77,16 @@ assert.equal(findCabinetLaminate("greenlam-woodgrains-3396"), undefined, "3396's
 assert(findCabinetLaminate("greenlam-woodgrains-5394")?.textureUrl, "5394 uses the full picture from the 4.25'x10' collection.");
 assert(findCabinetLaminate("greenlam-abstracts-5594") && findCabinetLaminate("greenlam-unicore-5594"));
 // The 4.25'x10' pictures that needed care (catalog/laminates/greenlam/hpl-1300x3050.json).
-for (const [code, reason] of [
-  ["115", "115 Alabaster's picture is a stone design, but it is a plain colour"],
-  ["471", "471 Arctic Grey's picture is a woodgrain, but it is a plain colour"],
-  ["9107", "9107's picture is 5004 Lorraine Walnut's, already in the 4'x8' catalogue"],
-]) {
-  assert(!CABINET_LAMINATES.some((laminate) => laminate.supplierCode === code), reason);
-}
+assert(!CABINET_LAMINATES.some((laminate) => laminate.supplierCode === "9107"), "9107's picture is 5004 Lorraine Walnut's, already in the 4'x8' catalogue");
+// Two plain colours whose pictures show another design are drawn flat in the colour Greenlam gives (J, 28 Oct 2026: "Add both").
+assert.deepEqual(
+  ["greenlam-solids-115", "greenlam-solids-471"].map((id) => {
+    const laminate = findCabinetLaminate(id);
+    return [laminate?.designName, laminate?.color, laminate?.textureUrl ?? null];
+  }),
+  [["Alabaster", "#e9e0d2", null], ["Arctic Grey", "#cecdc1", null]],
+  "115 Alabaster in RAL 9001 and 471 Arctic Grey in Pantone 13-4403 TPG, not their pictures (a stone and a woodgrain)"
+);
 assert.equal(findCabinetLaminate("greenlam-abstracts-5784")?.designName, "Athena Aegis", "Athena Aegis is 5784, though its file says 5774.");
 assert.equal(findCabinetLaminate("greenlam-abstracts-5774")?.designName, "Antico");
 assert.deepEqual(

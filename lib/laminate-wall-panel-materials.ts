@@ -4,6 +4,7 @@ import type {
   CabinetLaminateTuple,
 } from "./cabinet-laminate-runtime-types";
 import { CABINET_LAMINATE_COLLECTIONS } from "./generated/cabinet-laminates.generated";
+import { getLaminateColourFamily } from "./laminate-colour-family";
 import { getLaminateFlatPictureUrl } from "./laminate-flat-pictures";
 import { LAMINATE_SURFACE_BY_CATEGORY } from "./laminate-surface-finish";
 import { SURFACE_PHYSICAL_SIZE_TOLERANCE } from "./surface-material-physical-sampling";
@@ -97,11 +98,16 @@ function panelSource(collection: CabinetLaminateCollection, picture: PanelPictur
   };
 }
 
-function panelClassification(category: CabinetLaminateCategory, name: string): SurfaceMaterial["classification"] {
+function panelClassification(
+  category: CabinetLaminateCategory,
+  name: string,
+  colour: string
+): SurfaceMaterial["classification"] {
   return {
     flooring_type: "laminate",
     design_effect: getLaminateDesignEffect(category, name),
-    color_family: "unknown",
+    // Solids and woodgrains by the colour drawn; patterns, metals and pearlescents stay unknown (lib/laminate-colour-family.ts).
+    color_family: getLaminateColourFamily(category, colour),
     tone: ["durable"],
     style_cluster: ["contemporary", "modern"],
     // Thin HPL is for dry walls (Greenlam); bathrooms and balconies take compact panels.
@@ -155,7 +161,7 @@ function panelPicture(collection: CabinetLaminateCollection, tuple: CabinetLamin
 }
 
 function toWallPanelMaterial(collection: CabinetLaminateCollection, tuple: CabinetLaminateTuple): SurfaceMaterial | null {
-  const [id, code, name, category] = tuple;
+  const [id, code, name, category, colour] = tuple;
   const picture = panelPicture(collection, tuple);
   if (!picture) return null;
   return {
@@ -172,7 +178,7 @@ function toWallPanelMaterial(collection: CabinetLaminateCollection, tuple: Cabin
       material_family: "wall_panel",
     },
     source: panelSource(collection, picture),
-    classification: panelClassification(category, name),
+    classification: panelClassification(category, name, colour),
     physical_specs: panelPhysicalSpecs(collection.sheetMm),
     texture_assets: panelTextureAssets(collection.sheetMm, picture),
     rendering: {

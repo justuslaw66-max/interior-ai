@@ -880,10 +880,10 @@ const laminateCollectionById = new Map(CABINET_LAMINATE_COLLECTIONS.map((collect
 const laminatesOf = (collectionId: string) => laminateCollectionById.get(collectionId)?.laminates ?? [];
 assert.deepEqual(
   ["hpl-1220x2440", "hpl-1300x3050"].map((id) => [laminatesOf(id).length, laminatesOf(id).filter((laminate) => laminate[5] === null).length]),
-  [[342, 108], [31, 10]],
-  "the 4'x8' collection's 342 designs, 108 of them flat colours; the 4.25'x10' collection's 31, 10 of them flat"
+  [[342, 108], [33, 12]],
+  "the 4'x8' collection's 342 designs, 108 of them flat colours; the 4.25'x10' collection's 33, 12 of them flat"
 );
-assert.equal(laminatePanelEntries.length, 372, "every design is a wall panel but 5338 Steamed Bouchle");
+assert.equal(laminatePanelEntries.length, 374, "every design is a wall panel but 5338 Steamed Bouchle");
 // The panels' file_path is a label relative to the repository. Joined to process.cwd() with a computed name, it made Next's
 // file tracer copy the whole repository, tests included, into /api/catalog's server build, which the production artifact
 // check refuses (PR #207's first CI run, 25 Oct 2026).
@@ -946,9 +946,9 @@ assert.deepEqual(
   [...flatPictures.keys()].sort(),
   fs.readdirSync(LAMINATE_FLAT_PICTURE_DIRECTORY).filter((name) => name.endsWith(".png"))
     .map((name) => path.join(LAMINATE_FLAT_PICTURE_DIRECTORY, name)).sort(),
-  "one flat picture per flat colour (114 colours for 118 designs), and no others"
+  "one flat picture per flat colour (116 colours for 120 designs), and no others"
 );
-assert.equal(flatPictures.size, 114);
+assert.equal(flatPictures.size, 116);
 assert.deepEqual(
   laminatePanelEntries
     .filter((panel) => panel.physical_specs.tile_length_mm === 3050 && panel.texture_assets.base_color_url?.endsWith(".webp"))
@@ -969,7 +969,7 @@ const panelEffectCounts = laminatePanelEntries.reduce<Record<string, number>>((c
 }, {});
 assert.deepEqual(
   panelEffectCounts,
-  { wood: 167, woven: 7, pattern: 38, marble: 7, stone: 6, concrete: 1, metallic: 20, plain: 126 },
+  { wood: 167, woven: 7, pattern: 38, marble: 7, stone: 6, concrete: 1, metallic: 20, plain: 128 },
   "wood for woodgrains, plain for solids and Unicore, metallic for metals and pearlescents, and an abstract's effect from its name"
 );
 assert.equal(sourceByMaterialId.get("greenlam-abstracts-5571")?.classification.design_effect, "marble", "Creme Marquina");
