@@ -9,7 +9,7 @@ import { getOrderAreaSqm } from "@/lib/surface-material-areas";
 import { buildRoomWallFinishQuantities } from "@/lib/surface-material-wall-panels";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { countSurfaceSheets, formatSheetCount, getSurfaceSheetSize, type WallFinishPiece } from "@/lib/surface-material-sheets";
-import { formatWallPanelBoardMaterial, getWallPanelBacking } from "@/lib/laminate-wall-backing";
+import { formatWallPanelBoardMaterial, getDrawnWallJointMm, getWallPanelBacking } from "@/lib/laminate-wall-backing";
 import {
   getCeilingSurfaceSettings,
   getDefaultWallSurfaceSettings,
@@ -112,7 +112,7 @@ function buildWallFinishRow(
       rotationDeg: settings.rotationDeg,
       scale: settings.scale,
       offset: settings.offset,
-      jointSizeMm: settings.jointSizeMm,
+      jointSizeMm: getDrawnWallJointMm(material, settings.jointSizeMm),
       jointColor: settings.jointColor,
     },
   };

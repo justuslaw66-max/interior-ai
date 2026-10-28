@@ -12,7 +12,7 @@ function orderText({ sheetOrder, orderAreaSqm }: ShoppingSurface) {
   return `Order ${formatSheetCount(sheetOrder.sheets)} of ${formatSheetSize(sheetOrder.sheet)}, for ${area} m²`;
 }
 
-/** A laminate's boards, never left out: "On 13 MDF boards, 9 mm, glued". */
+/** A laminate's boards, never left out: "On 13 MDF boards, 9 mm, glued", and each other kind after a "; ". */
 function backingText({ sheetOrder }: ShoppingSurface) {
   const text = (sheetOrder?.backing ?? []).map(formatWallPanelBackingOrder).join("; ");
   return text ? text.charAt(0).toUpperCase() + text.slice(1) : null;

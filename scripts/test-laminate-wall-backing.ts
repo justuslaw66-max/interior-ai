@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { buildSurfaceRoomSummaries, buildSurfaceSummaryRows } from "../components/editor/design-controls-plan/surfaceSummaryRows";
 import { WallPanelBackingControls } from "../components/editor/design-page/WallPanelBackingControls";
+import { buildWallFinishShellGeometry } from "../components/editor/renderers/house-plan-3d/geometry";
+import { mapWallFinishShellUvs } from "../components/editor/renderers/house-plan-3d/wallFinishShellUvs";
 import { buildWallBackingControls, buildWallJointControls } from "../lib/design-page-wall-finish-controls";
 import {
   countWallPanelBattenMetres,
@@ -59,6 +63,21 @@ assert.equal(getWallFinishDepthMeters(tile, { panelBacking: DEFAULT_WALL_PANEL_B
 assert.equal(getDrawnWallJointMm(laminate, 1), 3);
 assert.equal(getDrawnWallJointMm(laminate, 4), 4);
 assert.equal(getDrawnWallJointMm(tile, 1), 1);
+
+// The 3D panel's edges, 10 mm deep and more, show the picture's edge there, not the whole picture squeezed into the depth.
+const shell = buildWallFinishShellGeometry({ widthMeters: 1.2, heightMeters: 2.6, thicknessMeters: 0.01 });
+mapWallFinishShellUvs(shell, 0.25, 0.75);
+const shellUv = shell.getAttribute("uv");
+const shellNormal = shell.getAttribute("normal");
+type Normal = { x: number; y: number; z: number };
+const uvsFacing = (test: (normal: Normal) => boolean) =>
+  Array.from({ length: shellUv.count }, (_, index) => index)
+    .filter((index) => test({ x: shellNormal.getX(index), y: shellNormal.getY(index), z: shellNormal.getZ(index) }))
+    .map((index) => [shellUv.getX(index), shellUv.getY(index)]);
+assert.deepEqual([...new Set(uvsFacing((n) => n.z > 0.5).map(([u]) => u))].sort(), [0.25, 0.75], "the face spans its share");
+assert.ok(uvsFacing((n) => n.x < -0.5).every(([u]) => u === 0.25) && uvsFacing((n) => n.x > 0.5).every(([u]) => u === 0.75), "each end, its edge column");
+assert.ok(uvsFacing((n) => n.y > 0.5).every(([, v]) => v === 1) && uvsFacing((n) => n.y < -0.5).every(([, v]) => v === 0), "top and bottom rows");
+assert.ok(uvsFacing((n) => n.x < -0.5).length > 0 && uvsFacing((n) => n.y > 0.5).length > 0);
 
 // The settings: the room's walls set the board, a face inherits it, a panel can have its own; a patch keeps a saved board.
 const plywood = { board: "plywood", boardThicknessMm: 12, fixing: "battens" } as const;
@@ -144,6 +163,17 @@ assert.deepEqual(
   [["Wall Surface Material", "Greenlam Nordic Acacia 5394", 13], ["Wall Panel Board", "Plywood board, 12 mm", 13], ["Wall Panel Battens", "Timber battens, 25 mm", 73]]
 );
 assert.equal(buildRoomSurfaceMaterialBomRows([room({ default: { materialId: ANIMA_WALL_TILE } })])[0].backing, null, "tiles have no board");
+// A laminate saved with the old 1 mm joint reads 3 mm in the Surfaces summary too; a tile's joint is as saved.
+const summaryJoints = (materialId: string) => buildSurfaceSummaryRows(
+  buildSurfaceRoomSummaries([room({ default: { materialId, jointSizeMm: 1 } })], []),
+  () => null
+).filter((row) => row.target === "walls").map((row) => row.settings.jointSizeMm);
+assert.deepEqual([summaryJoints(NORDIC_ACACIA), summaryJoints(ANIMA_WALL_TILE)], [[3], [1]]);
+// The share PDF wraps the order line, which names the boards and battens, rather than cutting it at 110 characters.
+assert.match(
+  readFileSync("app/share/[shareToken]/export/pdf/route.ts", "utf8"),
+  /const order = `Order \$\{formatSurfaceMaterialBomOrder\(row,[^\n]*\n\s*y = drawWrappedText\(page, `Surface area \$\{[^`]*\} • \$\{order\}`/
+);
 const [shopping] = shoppingSurfacesOf([glued, { ...onBattens, id: "lam-2", name: "Study" }]);
 assert.deepEqual(
   shopping.sheetOrder?.backing.map(formatWallPanelBackingOrder),

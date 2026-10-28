@@ -199,8 +199,8 @@ assert.match(
 );
 assert.match(
   surfaceInspectorControllerSource,
-  /const selectedWallMaterialSettingsPatch = useMemo\([\s\S]*?jointColor: wallInspectorSettings\.jointColor,[\s\S]*?getRuntimeSurfaceMaterialById\(wallInspectorSettings\.materialId\)\?\.suitability\?\.laminate_sheet[\s\S]*?panelBacking: normalizeWallPanelBacking\(wallInspectorSettings\.panelBacking\)/,
-  "Apply to room and Apply to all walls carry a laminate's board with its joints (lib/laminate-wall-backing.ts)."
+  /const selectedWallMaterialSettingsPatch = useMemo\(\(\) => \{[\s\S]*?const material = getRuntimeSurfaceMaterialById\(wallInspectorSettings\.materialId\);[\s\S]*?jointSizeMm: getDrawnWallJointMm\(material, wallInspectorSettings\.jointSizeMm\),[\s\S]*?material\?\.suitability\?\.laminate_sheet \? \{ panelBacking: normalizeWallPanelBacking\(wallInspectorSettings\.panelBacking\) \}/,
+  "Apply to room and Apply to all walls carry a laminate's joint as drawn and its board (lib/laminate-wall-backing.ts)."
 );
 assert.match(
   surfaceInspectorControllerSource,
@@ -219,7 +219,7 @@ assert.match(
 );
 assert.match(
   surfaceInspectorControllerSource,
-  /selectedWallMaterialSettingsPatch[\s\S]*?jointSizeMm: wallInspectorSettings\.jointSizeMm,[\s\S]*?jointColor: wallInspectorSettings\.jointColor,[\s\S]*?applyWallMaterialToAllRooms\([\s\S]*?selectedWallMaterialSettingsPatch/,
+  /selectedWallMaterialSettingsPatch[\s\S]*?jointSizeMm: getDrawnWallJointMm\(material, wallInspectorSettings\.jointSizeMm\),[\s\S]*?jointColor: wallInspectorSettings\.jointColor,[\s\S]*?applyWallMaterialToAllRooms\([\s\S]*?selectedWallMaterialSettingsPatch/,
   "Apply to all walls should carry the selected wall tile's grout configuration."
 );
 const roomMaterialMutationSource = surfaceActionsSource.slice(

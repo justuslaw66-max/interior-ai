@@ -12,6 +12,7 @@ import {
 } from "@/lib/floor-materials";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallFinishDepthMeters } from "@/lib/laminate-wall-backing";
+import { mapWallFinishShellUvs } from "./wallFinishShellUvs";
 import { getWallPanelSurfaceSettings } from "@/lib/surface-settings";
 import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
 import { moveOpeningCenterFromWorldPoint, projectWorldPointToOpeningHost } from "@/lib/design-page-opening-interaction";
@@ -170,18 +171,7 @@ function WallSurfaceSideMesh({
   const finishDepth = getWallFinishDepthMeters(wallSurfaceMaterial, settings, WALL_SURFACE_THICKNESS_METERS);
   const surfaceGeometry = useMemo(() => {
     const geometry = buildWallFinishShellGeometry({ widthMeters: partLength, heightMeters: partHeight, thicknessMeters: finishDepth });
-    const uv = geometry.getAttribute("uv");
-    for (let index = 0; index < uv.count; index += 1) {
-      uv.setX(
-        index,
-        THREE.MathUtils.lerp(
-          textureStartU,
-          textureEndU,
-          uv.getX(index)
-        )
-      );
-    }
-    uv.needsUpdate = true;
+    mapWallFinishShellUvs(geometry, textureStartU, textureEndU);
     return geometry;
   }, [finishDepth, partHeight, partLength, textureEndU, textureStartU]);
   const wallTexture = useWallSurfaceTexture({

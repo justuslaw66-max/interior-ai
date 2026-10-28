@@ -60,7 +60,7 @@ import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { RoomFloorPattern, RoomSnapshot } from "@/lib/room-types";
 import { getWallPaintDisplayName } from "@/lib/wall-paint";
 import { buildWallBackingControls, buildWallJointControls } from "@/lib/design-page-wall-finish-controls";
-import { getWallPanelBacking, normalizeWallPanelBacking, type NormalizedWallPanelBacking } from "@/lib/laminate-wall-backing";
+import { getDrawnWallJointMm, getWallPanelBacking, normalizeWallPanelBacking, type NormalizedWallPanelBacking } from "@/lib/laminate-wall-backing";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 
 type InspectorRoom = HousePlan2D["rooms"][number];
@@ -632,30 +632,28 @@ export function useDesignPageSurfaceInspector({
     }
     surface.resetActiveFloorMaterialPattern(selectedPlanRoom.id);
   }, [selectedPlanRoom, surface, surfaceInspectorIsCeiling, surfaceInspectorIsWall, wallInspectorFaceId]);
-  const selectedWallMaterialSettingsPatch = useMemo(
-    () => ({
+  const selectedWallMaterialSettingsPatch = useMemo(() => {
+    // A laminate takes its joint as drawn (3 mm and up) and its board to the room or every wall (lib/laminate-wall-backing.ts).
+    const material = getRuntimeSurfaceMaterialById(wallInspectorSettings.materialId);
+    return {
       pattern: wallInspectorSettings.pattern,
       rotationDeg: wallInspectorSettings.rotationDeg,
       scale: wallInspectorSettings.scale,
       offset: wallInspectorSettings.offset,
-      jointSizeMm: wallInspectorSettings.jointSizeMm,
+      jointSizeMm: getDrawnWallJointMm(material, wallInspectorSettings.jointSizeMm),
       jointColor: wallInspectorSettings.jointColor,
-      // A laminate's board goes with it to the room or every wall (lib/laminate-wall-backing.ts).
-      ...(getRuntimeSurfaceMaterialById(wallInspectorSettings.materialId)?.suitability?.laminate_sheet
-        ? { panelBacking: normalizeWallPanelBacking(wallInspectorSettings.panelBacking) }
-        : {}),
-    }),
-    [
-      wallInspectorSettings.materialId,
-      wallInspectorSettings.panelBacking,
-      wallInspectorSettings.jointColor,
-      wallInspectorSettings.jointSizeMm,
-      wallInspectorSettings.offset,
-      wallInspectorSettings.pattern,
-      wallInspectorSettings.rotationDeg,
-      wallInspectorSettings.scale,
-    ]
-  );
+      ...(material?.suitability?.laminate_sheet ? { panelBacking: normalizeWallPanelBacking(wallInspectorSettings.panelBacking) } : {}),
+    };
+  }, [
+    wallInspectorSettings.materialId,
+    wallInspectorSettings.panelBacking,
+    wallInspectorSettings.jointColor,
+    wallInspectorSettings.jointSizeMm,
+    wallInspectorSettings.offset,
+    wallInspectorSettings.pattern,
+    wallInspectorSettings.rotationDeg,
+    wallInspectorSettings.scale,
+  ]);
   const onApplyAll = useCallback(() => {
     if (!selectedPlanRoom) return;
     if (surfaceInspectorIsCeiling) {

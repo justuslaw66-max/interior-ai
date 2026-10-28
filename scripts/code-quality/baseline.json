@@ -89,7 +89,7 @@
       "limit": 250
     },
     "app/share/[shareToken]/export/pdf/route.ts": {
-      "lines": 514,
+      "lines": 507,
       "limit": 400
     },
     "app/tools/glb-optimizer/page.tsx": {
@@ -241,7 +241,7 @@
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
-      "lines": 1098,
+      "lines": 1088,
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
@@ -673,7 +673,7 @@
       "limit": 400
     },
     "lib/useDesignPageSurfaceInspector.ts": {
-      "lines": 1103,
+      "lines": 1101,
       "limit": 400
     },
     "lib/useFloorPlanRoomDrawing.ts": {
@@ -1357,7 +1357,7 @@
     "app/share/[shareToken]/export/pdf/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 288
+        "maximum": 281
       },
       "complexFunctions": {
         "count": 1,
@@ -4505,7 +4505,7 @@
     "lib/useDesignPageSurfaceInspector.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 611
+        "maximum": 609
       },
       "complexFunctions": {
         "count": 2,

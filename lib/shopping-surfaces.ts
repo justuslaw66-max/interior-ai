@@ -19,7 +19,7 @@ export type ShoppingSurface = {
   orderAreaSqm: number;
   /**
    * A finish sold by the sheet: its sheet, the sheets to order (surface-material-sheets.ts) and the wall they cover, and for a
-   * laminate the boards behind them, one line per kind of board (lib/laminate-wall-backing.ts).
+   * laminate the boards behind them, one entry per kind of board (lib/laminate-wall-backing.ts).
    */
   sheetOrder: { sheet: SurfaceSheetSize; sheets: number; surfaceAreaSqm: number; backing: WallPanelBackingOrder[] } | null;
   swatchUrl: string | null;
