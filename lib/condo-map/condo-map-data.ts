@@ -68,6 +68,8 @@ export type CondoDevelopmentMap = {
   floors: CondoFeatureCollection<FloorPaintProperties>;
   balconies: CondoFeatureCollection<FloorPaintProperties>;
   clip: PolygonCoordinates[];
+  /** The land lot(s) with the footprint, where Mapbox's own labels (house numbers) are taken away. */
+  labelClip: PolygonCoordinates[];
   models: { origin: LonLat; items: CondoModelItem[] } | null;
 };
 
@@ -241,6 +243,7 @@ export function parseCondoDevelopmentMap(value: unknown, path = "map.json"): Con
     floors: collection(body.floors, `${path}.floors`, floorPaintProperties),
     balconies: collection(body.balconies, `${path}.balconies`, floorPaintProperties),
     clip: list(body.clip, `${path}.clip`).map((entry, index) => polygon(entry, `${path}.clip[${index}]`)),
+    labelClip: list(body.labelClip, `${path}.labelClip`).map((entry, index) => polygon(entry, `${path}.labelClip[${index}]`)),
     models: models(body.models, `${path}.models`),
   };
 }

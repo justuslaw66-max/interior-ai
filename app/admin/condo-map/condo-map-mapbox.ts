@@ -1,8 +1,8 @@
-import type { CondoDevelopmentMap } from "@/lib/condo-map/condo-map-data";
+import type { CondoDevelopmentMap, LonLat } from "@/lib/condo-map/condo-map-data";
 import type { Ring } from "@/lib/condo-map/condo-map-geometry";
 import { condoMapOptions, hideBasemapBuildingsOnSites } from "./condo-map-basemap";
 import { condoLayers, condoModelSlug, condoModels, condoPickLayers, condoPickTarget, condoSources, condoViewUpdates } from "./condo-map-layers";
-import type { CondoMapView, CondoMapsBySlug } from "./condo-map-view";
+import { boundsAround, liftPixels, unitOutOfView, type CondoMapView, type CondoMapsBySlug } from "./condo-map-view";
 import type { MapboxBounds, MapboxEvent, MapboxGlobal, MapboxMap } from "./mapbox-gl-types";
 
 /**
@@ -114,3 +114,32 @@ export function keepBasemapOffSites(map: MapboxMap, sites: readonly Ring[], hidd
 }
 
 export const CONDO_FOCUS_CAMERA = { padding: 64, pitch: 50, bearing: -35, maxZoom: 18.6, duration: 900 } as const;
+
+/**
+ * A chosen unit kept in view (28 Oct 2026: #03-02 of 32 Gilstead was framed at the map's right edge, partly cut off).
+ * Once the camera settles (a development's framing may still be moving), a unit whose outline at its storey isn't
+ * inside the map with a margin is brought to the middle, keeping the zoom, tilt and turn. A move the user makes is left
+ * alone. Returns the cancelling, for a newer choice or the map going.
+ */
+export function keepUnitInView(map: MapboxMap, part: { ring: LonLat[]; base: number }): () => void {
+  let live = true;
+  const check = (event?: MapboxEvent) => {
+    if (!live || event?.originalEvent) return;
+    live = false;
+    const canvas = map.getCanvas();
+    const box = boundsAround(part.ring);
+    if (!box) return;
+    const centre: LonLat = [(box[0][0] + box[1][0]) / 2, (box[0][1] + box[1][1]) / 2];
+    const lift = liftPixels(part.base, centre[1], map.getZoom(), map.getPitch());
+    const points = part.ring.map((point) => map.project(point));
+    if (!unitOutOfView(points, lift, canvas.clientWidth, canvas.clientHeight)) return;
+    // the target ends `lift` below the middle, so the unit, standing that much higher on screen, is in the middle
+    map.easeTo({ center: centre, offset: [0, lift], duration: 600 });
+  };
+  if (map.isMoving()) map.once("moveend", check);
+  else check();
+  return () => {
+    live = false;
+    map.off("moveend", check);
+  };
+}

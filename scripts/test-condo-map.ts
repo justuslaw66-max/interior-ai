@@ -11,23 +11,40 @@ import {
 import { outerRings, pointInRing, ringsMeet } from "@/lib/condo-map/condo-map-geometry";
 import { condoMapFilePath, isGitLfsPointer } from "@/lib/condo-map/condo-map-paths";
 import { mapboxPublicToken } from "@/lib/condo-map/mapbox-token";
-import { condoLayers, condoModelSlug, condoModels, condoPickTarget, condoSources, condoViewUpdates } from "@/app/admin/condo-map/condo-map-layers";
-import { loadError, mapProblem } from "@/app/admin/condo-map/condo-map-mapbox";
+import {
+  CONDO_GHOST_OPACITY,
+  CONDO_MAP_BEDROOM_COLOURS,
+  CONDO_MAP_COLOURS,
+  bedroomColour,
+  condoLayers,
+  condoModelSlug,
+  condoModels,
+  condoPickTarget,
+  condoSources,
+  condoViewUpdates,
+  floorLegend,
+} from "@/app/admin/condo-map/condo-map-layers";
+import { keepUnitInView, loadError, mapProblem } from "@/app/admin/condo-map/condo-map-mapbox";
 import {
   NO_CONDO_VIEW,
+  boundsAround,
   chooseDevelopment,
   chooseFloor,
   chooseUnit,
   condoMapCredits,
   floorName,
+  liftPixels,
+  metresPerPixel,
   unitArea,
   unitFloorName,
   unitLayout,
+  unitOutOfView,
+  unitPartOn,
   unitStoreys,
   unitsOnFloor,
   type CondoMapView,
 } from "@/app/admin/condo-map/condo-map-view";
-import type { MapboxJson } from "@/app/admin/condo-map/mapbox-gl-types";
+import type { MapboxEvent, MapboxJson, MapboxMap } from "@/app/admin/condo-map/mapbox-gl-types";
 
 /**
  * The admin condo map (catalog/condo-map, /admin/condo-map): its exported data reads and is whole, its data route
@@ -52,6 +69,16 @@ for (const summary of index) {
   assert.equal(Boolean(dev.models), summary.detailed, `${dev.slug}: the index says whether it has models`);
   assert.ok(dev.massing.features.length > 0 && dev.unitParts.features.length > 0, `${dev.slug}: something to draw`);
   assert.ok(dev.clip.length > 0, `${dev.slug}: an outline that clears Mapbox's buildings off the site`);
+  // Mapbox's labels (house numbers) go over the whole lot: it holds the building, and the clip of its buildings
+  assert.ok(dev.labelClip.length > 0, `${dev.slug}: an outline that clears Mapbox's labels off the site`);
+  const onLot = ([lon, lat]: readonly [number, number]) => dev.labelClip.some((polygon) => pointInRing([lon, lat], polygon[0]));
+  for (const polygon of dev.clip) assert.ok(polygon[0].every(onLot), `${dev.slug}: the labels' clip covers the buildings' clip`);
+  // both outlines are traced on a 2.5 cm raster: a corner may stand a few cm off the other's edge (1e-6 degrees: 11 cm)
+  const steps = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const nearLot = ([lon, lat]: readonly [number, number]) => onLot([lon, lat]) || steps.some(([dx, dy]) => onLot([lon + dx * 1e-6, lat + dy * 1e-6]));
+  for (const block of dev.massing.features.filter((feature) => feature.properties.kind !== "columns")) {
+    assert.ok(block.geometry.coordinates[0].every(nearLot), `${dev.slug}: the labels' clip covers the building (storey ${block.properties.f})`);
+  }
   assert.ok(dev.credits.length > 0, `${dev.slug}: its sources are credited`);
   const units = new Set(dev.units.map((unit) => unit.unit));
   assert.equal(units.size, dev.units.length, `${dev.slug}: unit numbers are unique`);
@@ -158,6 +185,14 @@ function evaluate(expression: MapboxJson, properties: Readonly<Record<string, un
     case ">": { const [a, b] = numbers(); return a > b; }
     case ">=": { const [a, b] = numbers(); return a >= b; }
     case "+": return args.reduce<number>((sum, arg) => sum + Number(evaluate(arg, properties)), 0);
+    case "match": {
+      const input = value(0);
+      for (let i = 1; i + 1 < args.length; i += 2) {
+        const labels = Array.isArray(args[i]) ? (args[i] as MapboxJson[]) : [args[i]];
+        if (labels.includes(input as MapboxJson)) return evaluate(args[i + 1], properties);
+      }
+      return evaluate(args[args.length - 1], properties);
+    }
     case "case": {
       for (let i = 0; i + 1 < args.length; i += 2) if (evaluate(args[i], properties) === true) return evaluate(args[i + 1], properties);
       return evaluate(args[args.length - 1], properties);
@@ -189,9 +224,86 @@ for (const dev of Object.values(maps)) {
   assert.ok(shown(dev, chosen, "floor").length > 0, `${dev.slug}: the floor's rooms are painted`);
   assert.ok(shown(dev, chosen, "unit").length > 0 && shown(dev, chosen, "unit").every((properties) => "unit" in properties && properties.unit === unit.unit));
   const rooms = condoViewUpdates(dev, chosen).paint.find(([layerId, property]) => layerId === `condo-${dev.slug}-floor` && property === "fill-extrusion-color");
-  assert.equal(evaluate(rooms?.[2] ?? null, { unit: unit.unit, kind: "room" }), "#f4c9b7", `${dev.slug}: the chosen unit's rooms stand out`);
+  assert.equal(evaluate(rooms?.[2] ?? null, { unit: unit.unit, kind: "room" }), CONDO_MAP_COLOURS.selectedUnit, `${dev.slug}: the chosen unit's rooms stand out`);
+  // the floor's other units by their bedroom count; open parts (balconies, ledges) as they were
+  for (const other of unitsOnFloor(dev, floor).filter((card) => card.unit !== unit.unit)) {
+    assert.equal(evaluate(rooms?.[2] ?? null, { unit: other.unit, kind: "room" }), bedroomColour(other.bedrooms), `${dev.slug} ${other.unit}: by its bedrooms`);
+    assert.equal(evaluate(rooms?.[2] ?? null, { unit: other.unit, kind: "balcony" }), CONDO_MAP_COLOURS.open);
+  }
+  const noUnit = condoViewUpdates(dev, { ...chosen, unit: null }).paint.find(([layerId]) => layerId === `condo-${dev.slug}-floor`);
+  assert.equal(evaluate(noUnit?.[2] ?? null, { unit: unit.unit, kind: "room" }), bedroomColour(unit.bedrooms), `${dev.slug}: no unit chosen, none orange`);
+  assert.equal(evaluate(noUnit?.[2] ?? null, { unit: "", kind: "room" }), CONDO_MAP_COLOURS.room, `${dev.slug}: a room of no unit isn't orange`);
   const elsewhere = condoViewUpdates(dev, { ...chosen, slug: "another" }).filters;
   assert.deepEqual(elsewhere, condoViewUpdates(dev, NO_CONDO_VIEW).filters, `${dev.slug}: whole while another development is chosen`);
+}
+
+// the storeys above a chosen floor: a faint ghost of the outline; the labels' clip takes labels only
+for (const dev of Object.values(maps)) {
+  const layers = condoLayers(dev);
+  assert.equal(layers.find((layer) => layer.id === `condo-${dev.slug}-ghost`)?.paint?.["fill-extrusion-opacity"], CONDO_GHOST_OPACITY);
+  const labelClip = layers.find((layer) => layer.id === `condo-${dev.slug}-label-clip`);
+  assert.deepEqual(labelClip?.layout, { "clip-layer-types": ["symbol"], "clip-layer-scope": ["basemap"] }, `${dev.slug}: labels only`);
+}
+assert.ok(CONDO_GHOST_OPACITY > 0 && CONDO_GHOST_OPACITY <= 0.06, "the ghost stays, faint");
+assert.deepEqual([0, 1, 2, 3, 4, 5, 6, null].map(bedroomColour), [
+  CONDO_MAP_COLOURS.room, CONDO_MAP_BEDROOM_COLOURS[1], CONDO_MAP_BEDROOM_COLOURS[2], CONDO_MAP_BEDROOM_COLOURS[3],
+  CONDO_MAP_BEDROOM_COLOURS[4], CONDO_MAP_BEDROOM_COLOURS[5], CONDO_MAP_BEDROOM_COLOURS[5], CONDO_MAP_COLOURS.room,
+]);
+const cardOf = (bedrooms: number | null) => ({ ...maps["1953"].units[0], bedrooms });
+assert.deepEqual(floorLegend([cardOf(3), cardOf(1), cardOf(3), cardOf(0), cardOf(null), cardOf(7)]).map((entry) => entry.label),
+  ["Studio", "1 bedroom", "3 bedrooms", "5 or more bedrooms", "Bedrooms not given"]);
+
+// ---------- a chosen unit kept in view (32 Gilstead's #03-02 sat at the map's right edge)
+const gilstead = maps["32-gilstead"];
+const part = unitPartOn(gilstead, "#03-02", 3);
+assert.ok(part && part.ring.length >= 4 && part.base > 0, "32 Gilstead #03-02: its outline on the 3rd storey, off the ground");
+assert.equal(unitPartOn(gilstead, "#99-99", 3), null);
+assert.ok(Math.abs(metresPerPixel(0, 0) - 78271.517) < 0.01, "a 512-pixel world at zoom 0");
+assert.ok(Math.abs(liftPixels(10, 0, 18, 30) - (5 / metresPerPixel(0, 18))) < 1e-9, "10 m up at a 30-degree tilt shows as 5 m");
+const inside = [{ x: 200, y: 200 }, { x: 300, y: 260 }];
+assert.equal(unitOutOfView(inside, 0, 800, 600), false, "well inside");
+assert.equal(unitOutOfView([...inside, { x: 790, y: 300 }], 0, 800, 600), true, "at the right edge");
+assert.equal(unitOutOfView(inside, 190, 800, 600), true, "lifted out of the top");
+assert.equal(unitOutOfView([{ x: 400, y: 560 }], 100, 800, 600), false, "low on the ground, but its storey stands inside");
+
+// the camera: a stand-in map whose screen puts a lon/lat at fixed pixels, on an 800 x 600 map tilted 50 degrees
+function standInMap(moving: boolean, at: (point: [number, number]) => { x: number; y: number }) {
+  const eases: Array<{ center: [number, number]; offset?: [number, number] }> = [];
+  const waiting = new Set<(event: MapboxEvent) => void>();
+  const map = {
+    isMoving: () => moving,
+    once: (_type: string, listener: (event: MapboxEvent) => void) => waiting.add(listener),
+    off: (_type: string, listener: (event: MapboxEvent) => void) => waiting.delete(listener),
+    getCanvas: () => ({ clientWidth: 800, clientHeight: 600 }),
+    getZoom: () => 18.6,
+    getPitch: () => 50,
+    project: at,
+    easeTo: (options: { center: [number, number]; offset?: [number, number] }) => eases.push(options),
+  } as unknown as MapboxMap;
+  const settle = (event: MapboxEvent = {}) => [...waiting].forEach((listener) => listener(event));
+  return { map, eases, waiting, settle };
+}
+if (part) {
+  const middle = () => ({ x: 400, y: 380 });
+  const still = standInMap(false, middle);
+  keepUnitInView(still.map, part);
+  assert.equal(still.eases.length, 0, "a unit well in view: the camera stays");
+  const edge = standInMap(true, () => ({ x: 790, y: 380 }));
+  const cancel = keepUnitInView(edge.map, part);
+  assert.equal(edge.eases.length, 0, "it waits for the development's framing to settle");
+  edge.settle();
+  assert.equal(edge.eases.length, 1, "then brings a unit at the edge to the middle");
+  assert.ok(edge.eases[0].offset && edge.eases[0].offset[1] > 0, "lower by its storey's height on screen");
+  const [[w, s], [e, n]] = boundsAround(part.ring) ?? [[0, 0], [0, 0]];
+  assert.deepEqual(edge.eases[0].center, [(w + e) / 2, (s + n) / 2], "on the unit's middle");
+  cancel();
+  const dragged = standInMap(true, () => ({ x: 790, y: 380 }));
+  keepUnitInView(dragged.map, part);
+  dragged.settle({ originalEvent: {} });
+  assert.equal(dragged.eases.length, 0, "a move the user made is left alone");
+  const replaced = standInMap(true, () => ({ x: 790, y: 380 }));
+  keepUnitInView(replaced.map, part)();
+  assert.equal(replaced.waiting.size, 0, "a newer choice cancels the wait");
 }
 
 const residences = maps["33-residences"];
