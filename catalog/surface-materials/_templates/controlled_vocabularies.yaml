@@ -48,6 +48,14 @@ color_family:
   - brown
   - white
   - black
+  # colours, for the laminates' solids (28 Oct 2026)
+  - blue
+  - green
+  - orange
+  - pink
+  - purple
+  - red
+  - yellow
   - mixed
   - unknown
 

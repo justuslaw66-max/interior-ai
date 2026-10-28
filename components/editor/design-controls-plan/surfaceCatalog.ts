@@ -245,7 +245,7 @@ export function buildSurfaceMaterialProductGroups(
       };
     })
     // A to Z, with the laminates' flat colours after everything else (J, 27 Oct 2026: "Flat colours last"), so the first
-    // page mixes tiles and designs rather than 118 plain colours.
+    // page mixes tiles and designs rather than 120 plain colours.
     .sort((a, b) =>
       Number(isLaminateFlatPicture(a.primary.texture_assets.base_color_url)) -
         Number(isLaminateFlatPicture(b.primary.texture_assets.base_color_url)) ||
