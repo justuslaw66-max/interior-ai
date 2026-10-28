@@ -17,6 +17,7 @@ import {
   parseCandidate,
   parseReviewIssues,
 } from "@/lib/floor-plan-imports/validation";
+import { packFloorPlanCandidateForStorage, unpackFloorPlanCandidate } from "@/lib/floor-plan-imports/candidate-storage";
 
 export const runtime = "nodejs";
 
@@ -91,6 +92,8 @@ export async function GET(
     },
   });
   if (!job) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  // It may be stored packed (candidate-storage.ts); the admin review reads the canonical candidate.
+  job.candidateJson = unpackFloorPlanCandidate(job.candidateJson) as Prisma.JsonValue;
   return NextResponse.json({ job }, { headers: { "Cache-Control": "no-store" } });
 }
 
@@ -212,7 +215,7 @@ export async function PATCH(
         revision: { is: null },
       },
       data: {
-        candidateJson: reviewedDocument as unknown as Prisma.InputJsonValue,
+        candidateJson: packFloorPlanCandidateForStorage(reviewedDocument) as Prisma.InputJsonValue,
         reviewIssuesJson: reviewIssues as Prisma.InputJsonValue,
         correctionLogJson: [
           ...correctionLog,

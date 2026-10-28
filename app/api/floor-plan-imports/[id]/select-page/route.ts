@@ -12,6 +12,7 @@ import {
   selectFloorPlanImportPage,
 } from "@/lib/floor-plan-imports/page-selection";
 import { FLOOR_PLAN_IMPORT_PROGRESS } from "@/lib/floor-plan-imports/status";
+import { packFloorPlanCandidateForStorage, unpackFloorPlanCandidate } from "@/lib/floor-plan-imports/candidate-storage";
 
 export const runtime = "nodejs";
 
@@ -70,7 +71,7 @@ export async function POST(
 
   try {
     const candidate = selectFloorPlanImportPage(
-      job.candidateJson,
+      unpackFloorPlanCandidate(job.candidateJson),
       Number(pageNumber)
     );
     const sourceManifest = markSelectedFloorPlanManifestPage(
@@ -86,7 +87,7 @@ export async function POST(
         candidateVersion: job.candidateVersion,
       },
       data: {
-        candidateJson: candidate as unknown as Prisma.InputJsonValue,
+        candidateJson: packFloorPlanCandidateForStorage(candidate) as Prisma.InputJsonValue,
         ...(sourceManifest
           ? {
               sourceManifestJson:

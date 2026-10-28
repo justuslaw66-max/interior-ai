@@ -54,7 +54,7 @@ export function CabinetDetailedCompactPreview({
   return (
     <div
       data-testid="cabinet-detailed-compact-preview"
-      className="relative min-h-0 flex-1 overflow-hidden bg-[#e8ece7] lg:hidden"
+      className="relative min-h-0 flex-1 overflow-hidden bg-(--scene-preview-ground) lg:hidden"
     >
       {!desktopPreviewActive ? (
         <CabinetPreview3D
@@ -127,7 +127,7 @@ export function CabinetDetailedPreviewPanel({
       data-front-axis="negative-z"
       data-render-color-space="srgb"
       data-tone-mapping="aces-filmic"
-      className="relative min-h-0 bg-[#e8ece7] [&_[data-dimension-field=depth]]:!top-28"
+      className="relative min-h-0 bg-(--scene-preview-ground) [&_[data-dimension-field=depth]]:!top-28"
     >
       <CabinetStudioPreviewInteractionController {...interaction} />
       <div className="pointer-events-none absolute inset-x-4 top-4 z-30 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">

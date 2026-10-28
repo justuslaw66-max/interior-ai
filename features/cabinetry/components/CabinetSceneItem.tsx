@@ -5,6 +5,7 @@ import { Html } from "@react-three/drei/web/Html";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 import { createCabinetThreeGroup } from "../createCabinetThreeGroup";
 import { generateCabinetParts } from "../generateCabinetParts";
 import { getCabinetVisiblePreviewParts } from "../previewParts";
@@ -64,6 +65,7 @@ export function CabinetSceneItem({
   const dragPlaneRef = useRef(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0));
   const dragPointRef = useRef(new THREE.Vector3());
   const didDragRef = useRef(false);
+  const { colour } = useCanvasPalette();
   const [dragging, setDragging] = useState(false);
   const [renderPosition, setRenderPosition] = useState(position);
   const displayedPosition = dragging ? renderPosition : position;
@@ -325,12 +327,10 @@ export function CabinetSceneItem({
                   }}
                   style={{
                     appearance: "none",
-                    background: "rgba(255,255,255,0.9)",
-                    border: selected
-                      ? "1px solid rgba(37,99,235,0.62)"
-                      : "1px solid rgba(120,120,120,0.35)",
+                    background: colour("rgba(255,255,255,0.9)"),
+                    border: colour(selected ? "1px solid rgba(37,99,235,0.62)" : "1px solid rgba(120,120,120,0.35)"),
                     borderRadius: 6,
-                    color: "#1f2937",
+                    color: colour("#1f2937"),
                     cursor: "pointer",
                     fontSize: 12,
                     padding: "2px 6px",
@@ -343,10 +343,10 @@ export function CabinetSceneItem({
               ) : (
                 <div
                   style={{
-                    background: "rgba(255,255,255,0.9)",
-                    border: "1px solid rgba(120,120,120,0.35)",
+                    background: colour("rgba(255,255,255,0.9)"),
+                    border: colour("1px solid rgba(120,120,120,0.35)"),
                     borderRadius: 6,
-                    color: "#1f2937",
+                    color: colour("#1f2937"),
                     fontSize: 12,
                     padding: "2px 6px",
                     pointerEvents: "none",

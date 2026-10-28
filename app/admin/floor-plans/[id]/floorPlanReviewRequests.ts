@@ -1,4 +1,5 @@
 import { asFloorPlanDocumentV2 } from "@/lib/floor-plan-imports/admin-review";
+import { packFloorPlanCandidateForStorage } from "@/lib/floor-plan-imports/candidate-storage";
 import { buildAddressBindingInputs, parseJson } from "./floorPlanReviewModel";
 import type {
   AdminJob,
@@ -47,7 +48,8 @@ export async function saveFloorPlanCandidate(input: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       candidateVersion: input.job.candidateVersion,
-      candidate: parsed,
+      // Sent in the stored form (floor-plan-imports/candidate-storage.ts); the server unpacks it before checking it.
+      candidate: packFloorPlanCandidateForStorage(parsed),
       reviewIssues: input.issues,
       correctionNote: input.correctionNote,
     }),

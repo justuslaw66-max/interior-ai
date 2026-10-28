@@ -82,15 +82,15 @@ export class CanvasErrorBoundary extends React.Component<CanvasErrorBoundaryProp
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div className="flex h-full flex-col items-center justify-center gap-4 bg-gray-100 p-6">
+          <div className="flex h-full flex-col items-center justify-center gap-4 bg-surface-canvas p-6">
             <div className="text-center">
-              <h2 className="mb-2 text-lg font-semibold text-gray-900">
+              <h2 className="mb-2 text-lg font-semibold text-label">
                 The design view hit a problem
               </h2>
-              <p className="mb-4 text-sm text-gray-600">
+              <p className="mb-4 text-sm text-label-secondary">
                 Your last valid design is saved. Try again, or reload the page.
               </p>
-              <p className="mb-6 text-xs text-gray-500">
+              <p className="mb-6 text-xs text-label-secondary">
                 If this keeps happening, turn off hardware acceleration in your browser settings.
               </p>
               <div className="flex gap-2">

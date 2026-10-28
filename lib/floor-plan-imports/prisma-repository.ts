@@ -11,6 +11,7 @@ import type {
   FloorPlanRenderedPage,
   FloorPlanReviewIssue,
 } from "./types";
+import { packFloorPlanCandidateForStorage, unpackFloorPlanCandidate } from "./candidate-storage";
 
 type JobRow = {
   id: string;
@@ -75,7 +76,7 @@ function mapJob(row: JobRow): FloorPlanImportJobRecord {
     adapterId: row.adapterId,
     extractionVersion: row.extractionVersion,
     renderedPages: recordArray<FloorPlanRenderedPage>(row.renderedPagesJson),
-    candidate: recordObject(row.candidateJson),
+    candidate: recordObject(unpackFloorPlanCandidate(row.candidateJson)),
     sourceManifest: recordObject(row.sourceManifestJson),
     reviewIssues: recordArray<FloorPlanReviewIssue>(row.reviewIssuesJson),
     progress: row.progress,
@@ -200,7 +201,7 @@ export class PrismaFloorPlanImportJobRepository implements FloorPlanImportJobRep
         ...(patch.renderedPages !== undefined
           ? { renderedPagesJson: patch.renderedPages }
           : {}),
-        ...(patch.candidate !== undefined ? { candidateJson: patch.candidate } : {}),
+        ...(patch.candidate !== undefined ? { candidateJson: packFloorPlanCandidateForStorage(patch.candidate) } : {}),
         ...(patch.sourceManifest !== undefined
           ? { sourceManifestJson: patch.sourceManifest }
           : {}),

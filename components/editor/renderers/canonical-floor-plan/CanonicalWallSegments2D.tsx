@@ -5,6 +5,7 @@ import type {
   CanonicalFloorPlanWallRenderModel,
 } from "@/lib/floor-plan-render-model";
 import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 import { useLatestCallback } from "../useLatestCallback";
 import { preferredRoomId, segmentTransform } from "./geometry";
 import { CanonicalVoidRooms2D } from "./CanonicalVoidRooms2D";
@@ -55,6 +56,7 @@ const CanonicalWall2D = memo(function CanonicalWall2D({ wall, floorId, geometryH
 
 export function CanonicalWallSegments2D({ floor, geometryHash, activeRoomId, theme, interactive,
   wallEditing, onSelectWall, onSelectRoom, onSelectOpening }: Props) {
+  const { colour } = useCanvasPalette();
   // One handler for every wall, stable across renders, so a click elsewhere leaves the walls alone.
   const pick = useLatestCallback((wallId: string, roomId: string | null) => {
     if (wallEditing?.enabled) wallEditing.select(floor.id, wallId);
@@ -66,8 +68,8 @@ export function CanonicalWallSegments2D({ floor, geometryHash, activeRoomId, the
       <CanonicalVoidRooms2D floor={floor} geometryHash={geometryHash} />
       {floor.walls.map((wall) => {
         const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId, floor.rooms);
-        const color = wallEditing?.enabled && wallEditing.selectedWallId === wall.id ? "#2563eb"
-          : roomId === activeRoomId ? "#16a34a" : theme === "pro" ? "#a1a1aa" : "#b8b0a1";
+        const color = wallEditing?.enabled && wallEditing.selectedWallId === wall.id ? colour("#2563eb")
+          : roomId === activeRoomId ? colour("#16a34a") : theme === "pro" ? "#a1a1aa" : "#b8b0a1";
         return <CanonicalWall2D key={`${floor.id}:wall:${wall.id}`} wall={wall} floorId={floor.id}
           geometryHash={geometryHash} roomId={roomId} color={color} interactive={interactive} onPick={pick} />;
       })}
