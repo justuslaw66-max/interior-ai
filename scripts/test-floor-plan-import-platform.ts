@@ -35,6 +35,7 @@ import {
 import {
   packFloorPlanCandidate,
   packFloorPlanCandidateForStorage,
+  sourceDrawingBudget,
   STORE_SOURCE_DRAWING_PACKED,
   unpackFloorPlanCandidate,
 } from "@/lib/floor-plan-imports/candidate-storage";
@@ -861,6 +862,26 @@ function testMalformedSourceDrawingPacks() {
   });
   assert.doesNotThrow(() => unpackFloorPlanCandidate(withFloors(2)));
   assert.throws(() => unpackFloorPlanCandidate(withFloors(3)), /expands past the unpacked limit/);
+  // One budget can cover several documents (a design's two): together they can't pass it either.
+  const shared = sourceDrawingBudget();
+  assert.doesNotThrow(() => unpackFloorPlanCandidate(withFloors(2), shared));
+  assert.throws(() => unpackFloorPlanCandidate(withFloors(1), shared), /expands past the unpacked limit/);
+  const spent = sourceDrawingBudget();
+  spent.spent = spent.limit;
+  const unpackedAgain = unpackFloorPlanCandidate(packed);
+  assert.equal(packFloorPlanCandidate(unpackedAgain, spent), unpackedAgain, "Past a shared budget, packing leaves it unpacked.");
+
+  // A text shared by many marks counts in full for each, escapes included: 1,000 marks sharing 16,000 control
+  // characters would be 96 MB of JSON, and are refused well before that.
+  const escaping = broken((pack) => {
+    pack.texts = ["\u0001".repeat(16_000)];
+    pack.marks = Array.from({ length: 1_000 }, (_, index) => [0, `mark-${index}`, 0, [0, 0, 1, 1]]);
+    pack.runs = [[0, 1_000]];
+  });
+  assert.ok(jsonBytes(escaping) < 200 * 1024);
+  const started = Date.now();
+  assert.throws(() => unpackFloorPlanCandidate(escaping), /expands past the unpacked limit/);
+  assert.ok(Date.now() - started < 2_000, "Refused without building the expansion.");
 
   // What couldn't be read back isn't packed: marks that would expand past the limit stay as they are.
   const oversized = documentWithSourceDrawing();

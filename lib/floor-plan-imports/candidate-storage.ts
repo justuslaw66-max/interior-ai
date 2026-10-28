@@ -81,9 +81,12 @@ function packedExtra(field: VariableGeometryField, value: unknown): string | num
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
+/** A text's length in JSON: a text shared by many marks is written out in full for each, escapes included. */
+const jsonLength = (text: string) => JSON.stringify(text).length;
+
 /** What a mark adds to the unpacked JSON, roughly: its template's, its id, text, points and per-mark fields. */
-function markCost(templateBytes: number, id: string, text: string, coordinates: number, extras: JsonRecord) {
-  let cost = templateBytes + id.length + text.length + coordinates * 12;
+function markCost(templateBytes: number, id: string, textBytes: number, coordinates: number, extras: JsonRecord) {
+  let cost = templateBytes + id.length + textBytes + coordinates * 12;
   for (const value of Object.values(extras)) cost += typeof value === "string" ? value.length * 4 : 24;
   return cost;
 }
@@ -116,6 +119,7 @@ function packFloor(floor: unknown): { floor: unknown; cost: number } {
   const templateIndex = new Map<string, number>();
   const templateBytes: number[] = [];
   const textIndex = new Map<string, number>();
+  const textBytes: number[] = [];
   let cost = 0;
   floor.annotations.forEach((annotation, index) => {
     const mark = splitMark(annotation);
@@ -131,11 +135,14 @@ function packFloor(floor: unknown): { floor: unknown; cost: number } {
       templateIndex.set(key, template);
     }
     let text = textIndex.get(mark.text);
-    if (text === undefined) text = pack.texts.push(mark.text) - 1;
-    textIndex.set(mark.text, text);
+    if (text === undefined) {
+      text = pack.texts.push(mark.text) - 1;
+      textBytes.push(jsonLength(mark.text));
+      textIndex.set(mark.text, text);
+    }
     const hasExtras = Object.keys(mark.extras).length > 0;
     pack.marks.push(hasExtras ? [template, mark.id, text, mark.points, mark.extras] : [template, mark.id, text, mark.points]);
-    cost += markCost(templateBytes[template], mark.id, mark.text, mark.points.length, mark.extras);
+    cost += markCost(templateBytes[template], mark.id, textBytes[text], mark.points.length, mark.extras);
     const run = pack.runs.at(-1);
     if (run && run[0] + run[1] === index) run[1]++;
     else pack.runs.push([index, 1]);
@@ -161,8 +168,18 @@ function readPack(value: unknown): SourceDrawingPack {
   return value as SourceDrawingPack;
 }
 
-/** What the candidate's marks have expanded to so far, so a pack can't expand without bound. */
-type UnpackBudget = { spent: number };
+/**
+ * What packs have expanded to so far (their JSON, roughly) and what they may: so a pack can't expand without bound, and
+ * one budget can cover several documents (a design's).
+ */
+export type SourceDrawingBudget = { spent: number; limit: number };
+
+export function sourceDrawingBudget(limit = MAX_UNPACKED_SOURCE_DRAWING_BYTES): SourceDrawingBudget {
+  return { spent: 0, limit };
+}
+
+/** The template's and the texts' JSON lengths, measured once per pack. */
+type PackSizes = { templateBytes: number[]; textBytes: number[] };
 
 /** A packed mark's parts, checked against its pack. */
 function readMark(pack: SourceDrawingPack, mark: unknown) {
@@ -172,7 +189,7 @@ function readMark(pack: SourceDrawingPack, mark: unknown) {
   const text = Number.isSafeInteger(textIndex) ? pack.texts[textIndex] : undefined;
   if (!template || !isRecord(template.geometry) || typeof id !== "string" || typeof text !== "string") malformed("mark");
   if (!Array.isArray(points) || points.length % 2 !== 0 || !isRecord(extras)) malformed("mark points");
-  return { templateIndex, template, geometry: template.geometry, id, text, points, extras };
+  return { templateIndex, textIndex, template, geometry: template.geometry, id, text, points, extras };
 }
 
 function unpackPoints(points: unknown[]) {
@@ -193,10 +210,10 @@ function unpackedExtra(field: VariableGeometryField, value: unknown): unknown {
   return packedExtra(field, value);
 }
 
-function unpackMark(pack: SourceDrawingPack, templateBytes: number[], mark: unknown, budget: UnpackBudget): JsonRecord {
-  const { templateIndex, template, geometry: templateGeometry, id, text, points, extras } = readMark(pack, mark);
-  budget.spent += markCost(templateBytes[templateIndex], id, text, points.length, extras);
-  if (budget.spent > MAX_UNPACKED_SOURCE_DRAWING_BYTES) malformed("it expands past the unpacked limit");
+function unpackMark(pack: SourceDrawingPack, sizes: PackSizes, mark: unknown, budget: SourceDrawingBudget): JsonRecord {
+  const { templateIndex, textIndex, template, geometry: templateGeometry, id, text, points, extras } = readMark(pack, mark);
+  budget.spent += markCost(sizes.templateBytes[templateIndex], id, sizes.textBytes[textIndex], points.length, extras);
+  if (budget.spent > budget.limit) malformed("it expands past the unpacked limit");
   const geometry: JsonRecord = { ...templateGeometry, points: unpackPoints(points) };
   for (const [field, packedName] of VARIABLE_GEOMETRY_FIELDS) {
     if (!(field in templateGeometry)) continue;
@@ -220,18 +237,21 @@ function readRun(run: unknown, remaining: number): [number, number] {
  * Each mark goes back where it sat, and the other annotations fill the rest in order. A mark whose place is gone (code
  * that predates the pack kept it while removing other annotations) goes after them, so nothing is lost.
  */
-function unpackFloor(floor: unknown, budget: UnpackBudget): unknown {
+function unpackFloor(floor: unknown, budget: SourceDrawingBudget): unknown {
   if (!isRecord(floor) || floor.sourceDrawingPack === undefined) return floor;
   const pack = readPack(floor.sourceDrawingPack);
   const kept = Array.isArray(floor.annotations) ? floor.annotations : malformed("annotations");
   const annotations: unknown[] = new Array(kept.length + pack.marks.length);
   const displaced: unknown[] = [];
-  const templateBytes = pack.templates.map((template) => JSON.stringify(template).length);
+  const sizes: PackSizes = {
+    templateBytes: pack.templates.map((template) => JSON.stringify(template).length),
+    textBytes: pack.texts.map(jsonLength),
+  };
   let next = 0;
   for (const run of pack.runs) {
     const [start, count] = readRun(run, pack.marks.length - next);
     for (let index = start; index < start + count; index++) {
-      const mark = unpackMark(pack, templateBytes, pack.marks[next++], budget);
+      const mark = unpackMark(pack, sizes, pack.marks[next++], budget);
       if (index < annotations.length && annotations[index] === undefined) annotations[index] = mark;
       else displaced.push(mark);
     }
@@ -247,24 +267,27 @@ function unpackFloor(floor: unknown, budget: UnpackBudget): unknown {
   return unpacked;
 }
 
-/** The candidate with every floor's source drawing unpacked; any other value, or an unpacked candidate, as it is. */
-export function unpackFloorPlanCandidate(value: unknown): unknown {
+/**
+ * The candidate with every floor's source drawing unpacked; any other value, or an unpacked candidate, as it is. Its
+ * packs spend from `budget` (the candidate's own unless one is shared), and throw past its limit.
+ */
+export function unpackFloorPlanCandidate(value: unknown, budget = sourceDrawingBudget()): unknown {
   if (!isRecord(value) || !Array.isArray(value.floors)) return value;
   if (!value.floors.some((floor) => isRecord(floor) && floor.sourceDrawingPack !== undefined)) return value;
-  const budget: UnpackBudget = { spent: 0 };
   return { ...value, floors: value.floors.map((floor) => unpackFloor(floor, budget)) };
 }
 
 /**
  * The candidate with every floor's source drawing packed. Packing a packed candidate is a no-op. What couldn't be read
- * back isn't packed: a candidate whose packs would expand past the unpacked limit is given back unpacked.
+ * back isn't packed: a candidate whose packs would spend past `budget`'s limit is given back unpacked.
  */
-export function packFloorPlanCandidate(value: unknown): unknown {
+export function packFloorPlanCandidate(value: unknown, budget = sourceDrawingBudget()): unknown {
   const candidate = unpackFloorPlanCandidate(value);
   if (!isRecord(candidate) || !Array.isArray(candidate.floors)) return candidate;
   const packed = candidate.floors.map(packFloor);
   const cost = packed.reduce((sum, entry) => sum + entry.cost, 0);
-  if (cost > MAX_UNPACKED_SOURCE_DRAWING_BYTES) return candidate;
+  if (budget.spent + cost > budget.limit) return candidate;
+  budget.spent += cost;
   return { ...candidate, floors: packed.map((entry) => entry.floor) };
 }
 

@@ -54,8 +54,10 @@ anything that isn't a candidate with `floors` (the page-selection envelope, for 
   text, points that aren't finite numbers, a per-mark field of the wrong type, runs that don't account for every mark)
   throws `Malformed source drawing pack: …`; a client that sends one gets the review route's 400.
 - One candidate's packs may expand to at most 16 MB (`MAX_UNPACKED_SOURCE_DRAWING_BYTES`, their JSON, roughly),
-  counted across all its floors, so a small pack can't unpack into far more than the cap. Packing applies the same
-  count: a candidate whose packs would pass it is stored unpacked, so whatever is stored can be read back.
+  counted across all its floors, so a small pack can't unpack into far more than the cap. A template or text shared by
+  many marks counts in full for each, at its JSON length (escapes included). A caller can pass one budget
+  (`sourceDrawingBudget`) to several documents, so they share the limit. Packing applies the same count: a candidate
+  whose packs would pass it is stored unpacked, so whatever is stored can be read back.
 
 ## Rollout
 
