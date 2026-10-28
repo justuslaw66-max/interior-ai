@@ -521,15 +521,40 @@ assert.match(
   "The renderer controller should own sRGB output, ACES tone mapping, and preset exposure."
 );
 
+// The switch (J, 22 Oct: the app follows the device). A dark device takes the dark block's values,
+// line for line, unless data-color-scheme="light" holds the page or a subtree light.
+const deviceDark = css.match(/\n@media \(prefers-color-scheme: dark\) \{\n  :root:not\(\[data-color-scheme="light"\]\) \{\n([\s\S]*?)\n  \}\n\}\n/)?.[1];
+assert.ok(deviceDark, "A dark device takes the dark values on :root, unless it is held light.");
+assert.equal(
+  deviceDark.split("\n").map((line) => line.trim()).filter(Boolean).join("\n"),
+  darkTheme.split("\n").map((line) => line.trim()).filter(Boolean).join("\n"),
+  "The dark device's values are the dark block's, line for line."
+);
+assert.equal(
+  (css.match(/@media\s*\(prefers-color-scheme:\s*dark\)/g) ?? []).length,
+  2,
+  "The device switches the tokens and the dark: variant, nothing else."
+);
 assert.match(
   css,
-  /@custom-variant dark \(&:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\)\);/,
-  "Tailwind dark: utilities must be opt-in; following the OS setting half-themes the light-first dialogs."
+  /@custom-variant dark \{\n  &:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\) \{\n    @slot;\n  \}\n  @media \(prefers-color-scheme: dark\) \{\n    &:where\(:root:not\(\[data-color-scheme="light"\]\) \*\):not\(:where\(\[data-color-scheme="light"\], \[data-color-scheme="light"\] \*\)\) \{/,
+  "dark: utilities follow the same switch as the tokens, and stay off where a subtree is held light (Admin)."
 );
-assert.doesNotMatch(
-  css,
-  /@media\s*\(prefers-color-scheme:\s*dark\)/,
-  "Until the editor is on the colour tokens, dark follows data-color-scheme only, not the device (J, 22 Oct)."
+for (const [file, holds] of [
+  ["app/admin/AdminShell.tsx", /data-color-scheme="light"/],
+  ["app/admin/AdminAccessDenied.tsx", /data-color-scheme="light"/],
+  ["app/share/[shareToken]/export/page.tsx", /data-color-scheme="light"/],
+  ["app/tools/layout.tsx", /<HeldLight>\{children\}<\/HeldLight>/],
+  ["app/lighting-reference/page.tsx", /<HeldLight>/],
+  ["app/hugg-test/page.tsx", /<HeldLight>/],
+  ["app/models-test/page.tsx", /<HeldLight>/],
+] as const) {
+  assert.match(read(file), holds, `${file} stays light on a dark device (Admin, the export page, the internal tools and QA pages).`);
+}
+assert.match(
+  read("components/HeldLight.tsx"),
+  /data-color-scheme="light" className="min-h-screen bg-background text-foreground"/,
+  "A held-light page covers the dark page behind it with the light background."
 );
 
 // The plan drawings (dark mode PR 4, J 28 Oct): light keeps what they drew with before; dark has the
