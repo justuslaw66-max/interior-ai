@@ -63,7 +63,7 @@ export function CabinetryStudioDialog({
       <div
         ref={panelRef}
         data-editor-dialog-state="mounting"
-        className="h-full overflow-hidden rounded-xl bg-white shadow-2xl"
+        className="h-full overflow-hidden rounded-xl bg-surface shadow-2xl ring-1 ring-surface-floating-edge"
       >
         {children}
       </div>

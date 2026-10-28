@@ -22,6 +22,8 @@ const chooseStep = read("components/editor/FloorPlanUploadChooseStep.tsx");
 const roomSetupStartActions = read("components/editor/RoomSetupStartActions.tsx");
 const pausedNotice = read("components/editor/FloorPlanImportPausedNotice.tsx");
 const assistant = read("components/editor/FloorPlanImportAssistant.tsx");
+const progressCard = read("components/editor/FloorPlanImportProgressCard.tsx");
+const lastUploadCard = read("components/editor/FloorPlanLastUploadCard.tsx");
 const pageSelection = read("components/editor/FloorPlanPageSelectionPanel.tsx");
 const review = read(
   "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx"
@@ -123,7 +125,18 @@ assert.match(panel, /floorPlanUploadFileProblem\(file, importCad\)/);
 assert.match(panel, /useFloorPlanUploadDialogLifecycle\(lifecycleScopeKey, choice\.forget\)/);
 assert.match(uploadLifecycle, /const close = useCallback\(\(\) => \{\s*setOpen\(false\);\s*onClosedRef\.current\?\.\(\);/);
 assert.match(workspace, /data-floor-plan-workspace-history/);
-assert.match(assistant, /data-floor-plan-workspace-state="working"/);
+assert.match(progressCard, /data-floor-plan-workspace-state="working"/);
+assert.match(assistant, /state\.kind === "working"\) return <FloorPlanImportProgressCard state=\{state\} \/>/);
+// Reopening an earlier upload says only that it is opening: no AI wording, progress or time estimate.
+assert.match(progressCard, /data-floor-plan-workspace-state="opening"[\s\S]*?Opening your upload…/);
+assert.match(assistant, /state\.kind === "opening"\) return <FloorPlanImportOpeningCard/);
+// An upload waiting on the person is offered beside Choose a file, which keeps the window's focus.
+assert.match(chooseStep, /<FloorPlanLastUploadCard upload=\{props\.lastUpload\}/);
+assert.doesNotMatch(lastUploadCard, /data-floor-plan-workspace-focus/);
+assert.match(lastUploadCard, /aria-label=\{`Continue \$\{upload\.fileName/);
+// The uploads list says Open and Continue below only for the upload the window shows, not one offered as a card.
+assert.match(workspace, /activeJobId=\{activeImportJobId\} openJobId=\{hasActiveImport \? activeImportJobId : null\}/);
+assert.match(history, /const active = job\.id === openJobId;/);
 assert.match(assistant, /data-floor-plan-workspace-state="failure"/);
 assert.match(assistant, /data-floor-plan-workspace-state="ready"/);
 assert.match(assistant, /data-floor-plan-workspace-state="review"/);

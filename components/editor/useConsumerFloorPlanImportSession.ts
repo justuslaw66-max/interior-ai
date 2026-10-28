@@ -18,6 +18,8 @@ import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error
 
 export type ConsumerFloorPlanImportState =
   | { kind: "idle" }
+  /** An earlier upload is being loaded: nothing is being read yet, so no progress is shown. */
+  | { kind: "opening" }
   | {
       kind: "working";
       message: string;
@@ -156,7 +158,7 @@ export function useConsumerFloorPlanImportSession(input: {
             onActiveJobIdChange?.(createdJob.id);
           }
         } else {
-          setState({ kind: "working", message: "Resuming your upload", progress: 5 });
+          setState({ kind: "opening" });
           next = {
             processUrl: `/api/floor-plan-imports/${encodeURIComponent(resumeJobId!)}/process`,
             statusUrl: `/api/floor-plan-imports/${encodeURIComponent(resumeJobId!)}`,
