@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
 import { prisma } from "@/lib/prisma";
 import { resolveFloorPlanProcessingMode } from "@/lib/floor-plan-imports/processing-mode";
 import { processFloorPlanImportJob } from "@/lib/floor-plan-imports/worker";
 import { readFloorPlanPageSelection } from "@/lib/floor-plan-imports/page-selection";
+import { unpackFloorPlanCandidate } from "@/lib/floor-plan-imports/candidate-storage";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -13,17 +15,8 @@ function error(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
-export async function POST(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return error("Unauthorized", 401);
-  const { id } = await params;
-  const allowance = rateLimit(`floor-plan-process:${userId}`, 12, 60_000);
-  if (!allowance.ok) return error("Too many floor-plan processing requests", 429);
-
+/** The caller's job with its candidate unpacked (it may be stored packed, candidate-storage.ts): every answer here returns it. */
+async function findOwnedJob(id: string, userId: string) {
   const owned = await prisma.floorPlanImportJob.findFirst({
     where: { id, userId },
     select: {
@@ -43,6 +36,22 @@ export async function POST(
       candidateJson: true,
     },
   });
+  if (owned) owned.candidateJson = unpackFloorPlanCandidate(owned.candidateJson) as Prisma.JsonValue;
+  return owned;
+}
+
+export async function POST(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return error("Unauthorized", 401);
+  const { id } = await params;
+  const allowance = rateLimit(`floor-plan-process:${userId}`, 12, 60_000);
+  if (!allowance.ok) return error("Too many floor-plan processing requests", 429);
+
+  const owned = await findOwnedJob(id, userId);
   if (!owned) return error("Floor-plan import not found", 404);
   if (
     owned.status === "selecting_page" &&

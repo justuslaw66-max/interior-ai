@@ -29,6 +29,7 @@ import {
   sanitizeFloorPlanFileName,
 } from "@/lib/floor-plan-imports/validation";
 import { prisma } from "@/lib/prisma";
+import { packFloorPlanCandidateForStorage } from "@/lib/floor-plan-imports/candidate-storage";
 
 export const runtime = "nodejs";
 
@@ -229,7 +230,7 @@ export async function POST(
           sourceAsset: { is: { contentDeletedAt: null } },
         },
         data: {
-          candidateJson: next as unknown as Prisma.InputJsonValue,
+          candidateJson: packFloorPlanCandidateForStorage(next) as Prisma.InputJsonValue,
           correctionLogJson: log as Prisma.InputJsonValue,
           candidateVersion: nextVersion,
           sourceRetentionExpiresAt: retentionExpiresAt,

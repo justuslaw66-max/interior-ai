@@ -142,13 +142,37 @@ for (const file of files.filter(isFloorPlanPlatformFile).sort()) {
   );
 }
 
-if (cycles.length) {
+// A stored candidate has its source drawing packed (lib/floor-plan-imports/candidate-storage.ts). So every candidateJson
+// written is packed, and every server file that reads one unpacks it or compiles it (which unpacks): no reader may see
+// the stored form. Client code reads candidates from the API, which unpacks them.
+const candidateStorage = "lib/floor-plan-imports/candidate-storage.ts";
+const storageFailures = [];
+for (const file of files) {
+  const path = projectPath(file);
+  if (path === candidateStorage) continue;
+  const source = readFileSync(file, "utf8");
+  // `candidateJson: <value>` must be a select (true), a type (unknown) or packed; a shorthand `{ candidateJson }` is
+  // refused too, so a write always says how it is stored.
+  const writes = /\bcandidateJson\s*:(?!\s*(?:true|unknown)\b|\s*packFloorPlanCandidateForStorage\()|[{,]\s*candidateJson\s*[,}]/g;
+  for (const match of source.matchAll(writes)) {
+    const line = source.slice(0, match.index).split("\n").length;
+    storageFailures.push(`${path}:${line}: candidateJson is written without packFloorPlanCandidateForStorage`);
+  }
+  const server = path.startsWith("app/api/") || path.startsWith("lib/");
+  const reads = /\.candidateJson\b|\bcandidateJson\s*:\s*true\b/.test(source);
+  if (server && reads && !/\b(?:unpackFloorPlanCandidate|compileCandidateFloorPlanDocumentV2)\(/.test(source)) {
+    storageFailures.push(`${path}: reads candidateJson without unpackFloorPlanCandidate or compileCandidateFloorPlanDocumentV2`);
+  }
+}
+
+if (cycles.length || storageFailures.length) {
   for (const cycle of cycles) {
     console.error(`FAIL circular dependency: ${cycle.map(projectPath).sort().join(" -> ")}`);
   }
+  for (const failure of storageFailures) console.error(`FAIL ${failure}`);
   process.exit(1);
 }
 
 console.log(
-  `Floor-plan architecture check passed: no circular dependencies; ${locWarnings} existing oversized-file warning${locWarnings === 1 ? "" : "s"}.`
+  `Floor-plan architecture check passed: no circular dependencies, stored candidates packed and unpacked; ${locWarnings} existing oversized-file warning${locWarnings === 1 ? "" : "s"}.`
 );

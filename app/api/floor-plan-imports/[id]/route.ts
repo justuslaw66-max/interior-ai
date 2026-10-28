@@ -16,6 +16,7 @@ import { checkedConsumerCandidateCorrection } from "@/lib/floor-plan-imports/con
 import {
   MAX_FLOOR_PLAN_CANDIDATE_BYTES,
 } from "@/lib/floor-plan-imports/validation";
+import { packFloorPlanCandidateForStorage, unpackFloorPlanCandidate } from "@/lib/floor-plan-imports/candidate-storage";
 
 export const runtime = "nodejs";
 
@@ -112,6 +113,8 @@ export async function GET(
     },
   });
   if (!job) return error("Floor-plan import not found", 404);
+  // It may be stored packed (candidate-storage.ts); the review reads the canonical candidate.
+  job.candidateJson = unpackFloorPlanCandidate(job.candidateJson) as Prisma.JsonValue;
   const progressEstimate = await buildFloorPlanProgressEstimate({
     job: {
       status: job.status,
@@ -215,7 +218,7 @@ export async function PATCH(
       ? current.correctionLogJson
       : [];
     const previousHash = current.candidateJson
-      ? hashCanonicalJson(current.candidateJson)
+      ? hashCanonicalJson(unpackFloorPlanCandidate(current.candidateJson))
       : null;
     const nextVersion = current.candidateVersion + 1;
     const updated = await prisma.floorPlanImportJob.updateMany({
@@ -227,7 +230,7 @@ export async function PATCH(
         candidateVersion: current.candidateVersion,
       },
       data: {
-        candidateJson: correction.document as unknown as Prisma.InputJsonValue,
+        candidateJson: packFloorPlanCandidateForStorage(correction.document) as Prisma.InputJsonValue,
         reviewIssuesJson: correction.issues as Prisma.InputJsonValue,
         correctionLogJson: [
           ...correctionLog,

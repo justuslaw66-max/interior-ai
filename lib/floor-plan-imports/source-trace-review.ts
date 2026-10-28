@@ -9,6 +9,7 @@ import { lockFloorPlanImportSource } from "./source-retention-lock";
 import { compileCandidateFloorPlanDocumentV2,parseRenderedPages } from "./validation";
 import { asEnvelope } from "./pdf-raster-evidence";
 import { pageCleanDrawing } from "./vectorizer-drawing";
+import { packFloorPlanCandidateForStorage } from "./candidate-storage";
 const load=(id:string,userId:string)=>prisma.floorPlanImportJob.findFirst({where:{id,userId,historyDeletedAt:null},include:{sourceAsset:true}});
 type Job=NonNullable<Awaited<ReturnType<typeof load>>>;
 type Input={jobId:string;userId:string;candidateVersion:number;pageNumber:number;signal?:AbortSignal};
@@ -92,6 +93,6 @@ async function createTraceReview(tx:Prisma.TransactionClient,store:PrismaFloorPl
     imageSha256:pack.imageSha256,pageNumber:pack.pageNumber,settings:pack.trace.settings,diagnostics:pack.trace.diagnostics,metricScaleInferred:false};
   await tx.floorPlanImportJob.update({where:{id:child.id},data:{status:"needs_review",progress:85,statusChangedAt:new Date(),adapterId:job.adapterId,
     extractionVersion:job.extractionVersion,candidateVersion:1,renderedPagesJson:copies as Prisma.InputJsonValue,
-    candidateJson:document as unknown as Prisma.InputJsonValue,sourceManifestJson:manifest as Prisma.InputJsonValue,reviewIssuesJson:job.reviewIssuesJson??[]}});
+    candidateJson:packFloorPlanCandidateForStorage(document) as Prisma.InputJsonValue,sourceManifestJson:manifest as Prisma.InputJsonValue,reviewIssuesJson:job.reviewIssuesJson??[]}});
   return {id:child.id,priorJobId:job.id};
 }
