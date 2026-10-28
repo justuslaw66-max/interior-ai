@@ -42,14 +42,14 @@ export function CabinetStudioHeader({
   };
   if (experience === "guided") {
     return (
-      <header className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 py-2 sm:px-6">
+      <header className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-separator bg-surface px-4 py-2 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-neutral-950 text-white shadow-sm">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-control-primary text-control-on-primary shadow-sm">
             <Box className="h-4 w-4" />
           </div>
           <div className="min-w-0">
             <h2 className="truncate text-sm font-semibold">Built-ins</h2>
-            <p className="truncate text-xs text-neutral-500">Simple to start, powerful when needed.</p>
+            <p className="truncate text-xs text-label-secondary">Simple to start, powerful when needed.</p>
           </div>
         </div>
 
@@ -58,7 +58,7 @@ export function CabinetStudioHeader({
             <SegmentedControl label="Editor workspace" size="compact" value="guided" onChange={chooseOther}
               options={isProWorkspace ? WORKSPACE_OPTIONS : WORKSPACE_OPTIONS.slice(0, 1)} />
           </div>
-          <div className="flex items-center rounded-xl border border-neutral-200 bg-white p-1">
+          <div className="flex items-center rounded-xl border border-separator bg-surface p-1">
             <Button
               data-testid="cabinet-undo"
               aria-label="Undo last change"
@@ -103,21 +103,21 @@ export function CabinetStudioHeader({
   }
 
   return (
-    <div className="flex min-h-14 items-center justify-between border-b border-neutral-200 bg-white px-4">
+    <div className="flex min-h-14 items-center justify-between border-b border-separator bg-surface px-4">
       <div className="flex items-center gap-2">
-        <div className="grid h-8 w-8 place-items-center rounded-lg bg-neutral-900 text-white">
+        <div className="grid h-8 w-8 place-items-center rounded-lg bg-control-primary text-control-on-primary">
           <Box className="h-4 w-4" />
         </div>
         <div>
           <h2 className="text-sm font-semibold">Built-ins</h2>
-          <p className="text-xs text-neutral-500">{mode === "edit" ? "Edit a built-in" : "Create a built-in"}</p>
+          <p className="text-xs text-label-secondary">{mode === "edit" ? "Edit a built-in" : "Create a built-in"}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">
         <div className="hidden sm:block">
           <SegmentedControl label="Editor workspace" size="compact" value="detailed" onChange={chooseOther} options={WORKSPACE_OPTIONS} />
         </div>
-        <div className="flex items-center rounded-lg border border-neutral-200 p-0.5">
+        <div className="flex items-center rounded-lg border border-separator p-0.5">
           <Button
             data-testid="cabinet-undo"
             aria-label="Undo last change"

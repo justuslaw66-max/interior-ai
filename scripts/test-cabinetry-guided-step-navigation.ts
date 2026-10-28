@@ -37,7 +37,7 @@ assert.doesNotMatch(
   markup,
   /data-testid="cabinet-guided-step-(?:type|space|layout|style|review)" aria-current="step"/
 );
-assert.equal(markup.match(/bg-emerald-100 text-emerald-700/g)?.length, 2);
+assert.equal(markup.match(/bg-success-tint text-on-success-tint/g)?.length, 2);
 assert.match(markup, />Type<\/span>/);
 assert.match(markup, />Review<\/span>/);
 

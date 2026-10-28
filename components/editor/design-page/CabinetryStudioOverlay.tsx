@@ -20,7 +20,7 @@ const CabinetryStudio = dynamic<CabinetryStudioProps>(
     ssr: false,
     loading: () => (
       <div
-        className="grid h-full place-items-center bg-white px-6 text-sm text-neutral-600"
+        className="grid h-full place-items-center bg-surface px-6 text-sm text-label-secondary"
         role="status"
         aria-live="polite"
       >
