@@ -149,7 +149,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
-      "lines": 538,
+      "lines": 537,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneStructureLayer.tsx": {
@@ -609,7 +609,7 @@
       "limit": 400
     },
     "lib/useDesignPageExport.ts": {
-      "lines": 447,
+      "lines": 445,
       "limit": 400
     },
     "lib/useDesignPageFloorPlanTracing.ts": {
@@ -1581,7 +1581,7 @@
     "components/editor/design-page/DesignSceneCanvas.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 293
+        "maximum": 292
       },
       "complexFunctions": {
         "count": 1,
@@ -4095,7 +4095,7 @@
     "lib/useDesignPageExport.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 370
+        "maximum": 367
       }
     },
     "lib/useDesignPageFloorPlanLifecycleRegistration.ts": {
