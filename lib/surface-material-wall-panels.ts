@@ -1,6 +1,7 @@
 import type { PersistedPlanOpening, RoomSnapshot, RoomSurfaceAssignments } from "./room-types";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "./floor-materials";
 import { getWallFaceLabel, getWallPanelSurfaceSettings } from "./surface-settings";
+import { getWholeWallPanelId } from "./wall-panel-ids";
 import { buildHousePlan2D, type HousePlanRoom2D } from "./design-page-house-plan";
 import { mapPlanOpeningsToRoomRenderer } from "./design-page-plan-overlays";
 import { buildOpeningWallSurfacePanels } from "@/components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
@@ -123,12 +124,16 @@ function buildRoomWallPanels(
   });
 }
 
-/** The saved panel finish a measured panel takes, by its own id or an older one; undefined when it has none. */
+/**
+ * The saved panel finish a measured panel takes, by its own id, an older one or its whole wall's (a finish saved before a
+ * door split the wall); undefined when it has none.
+ */
 function panelAssignmentId(
   panel: Pick<BomWallPanel, "panelId" | "legacyPanelIds">, surfaces: RoomSurfaceAssignments | undefined
 ): string | undefined {
   const assignments = surfaces?.walls?.panels ?? {};
-  return [panel.panelId, ...panel.legacyPanelIds].find((id) => Object.prototype.hasOwnProperty.call(assignments, id));
+  return [panel.panelId, ...panel.legacyPanelIds, getWholeWallPanelId([panel.panelId, ...panel.legacyPanelIds]) ?? ""]
+    .find((id) => Object.prototype.hasOwnProperty.call(assignments, id));
 }
 
 /** Resolve saved fragment finishes and combine quantities when a whole wall overrides them. */

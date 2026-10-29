@@ -39,6 +39,7 @@ import {
   getWallPaintDisplayName,
   normalizeWallPaintColorHex,
 } from "@/lib/wall-paint";
+import { getWholeWallPanelId } from "@/lib/wall-panel-ids";
 
 export type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
 
@@ -175,23 +176,21 @@ export type UseDesignPageSurfaceActionsResult = {
   actions: DesignPageSurfaceActions;
 };
 
+/** A panel's saved finish: its own, an older id's, or its whole wall's from before a door split it (lib/wall-panel-ids.ts). */
 function getPanelAssignment(
-  panels: Record<string, SurfaceSettings>,
-  panelId: string,
-  aliases: readonly string[]
+  panels: Record<string, SurfaceSettings>, panelId: string, aliases: readonly string[]
 ): SurfaceSettings | undefined {
-  return panels[panelId] ??
-    aliases.map((alias) => panels[alias]).find(Boolean);
+  return [panelId, ...aliases, getWholeWallPanelId([panelId]) ?? ""].map((id) => panels[id]).find(Boolean);
 }
 
 function replacePanelAssignment(
-  panels: Record<string, SurfaceSettings>,
-  panelId: string,
-  aliases: readonly string[],
-  settings?: SurfaceSettings
+  panels: Record<string, SurfaceSettings>, panelId: string, aliases: readonly string[], settings?: SurfaceSettings
 ): Record<string, SurfaceSettings> {
   const nextPanels = { ...panels };
-  [panelId, ...aliases].forEach((key) => {
+  const ownIds = [panelId, ...aliases];
+  // Resetting a piece that shows only its whole wall's finish resets that finish, on every piece of the wall.
+  const inherited = !settings && !ownIds.some((key) => Object.prototype.hasOwnProperty.call(panels, key));
+  [...ownIds, ...(inherited ? [getWholeWallPanelId([panelId]) ?? ""] : [])].forEach((key) => {
     delete nextPanels[key];
   });
   if (settings) nextPanels[panelId] = settings;

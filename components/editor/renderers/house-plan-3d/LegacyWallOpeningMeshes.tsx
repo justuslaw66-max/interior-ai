@@ -4,6 +4,7 @@ import {
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
 import type { RoomRendererOpening } from "@/lib/design-page-plan-overlays";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import { GeneratedWindowFrame3D } from "../GeneratedWindowFrame3D";
 import { OpeningThresholdMesh } from "./wallAndOpeningMeshes";
 import {
@@ -226,6 +227,7 @@ function LegacyOpeningAssembly({ assembly, selectedOpeningId, ...thresholdProps 
         threshold={assembly.threshold}
         segment={assembly.segment}
         wallThickness={assembly.wallThickness}
+        panelDepth={getRoomWallFinishDepths(assembly.room)[getWallSurfaceFaceId(assembly.room, assembly.segment)] ?? 0}
         sourceOpening={assembly.sourceOpening}
         floorWorldY={assembly.floorWorldY}
         {...thresholdProps}

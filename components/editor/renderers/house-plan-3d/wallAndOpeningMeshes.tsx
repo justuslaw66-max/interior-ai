@@ -885,14 +885,12 @@ export function OpeningThresholdMesh({
   threshold,
   segment,
   wallThickness,
+  panelDepth = 0,
   sourceOpening,
   floorWorldY,
   interactive,
-  hoveredTargetKey,
-  selectedTargetKey,
-  onHoverTarget,
-  onClearHoverTarget,
-  onSelectTarget,
+  hoveredTargetKey, selectedTargetKey,
+  onHoverTarget, onClearHoverTarget, onSelectTarget,
   onMoveOpening,
   onOpeningDragStateChange,
 }: {
@@ -900,6 +898,8 @@ export function OpeningThresholdMesh({
   threshold: OpeningThreshold3D;
   segment: WallSegment3D;
   wallThickness: number;
+  /** The host face's laminate panel depth, so the outline stands in front of the panel (lib/room-wall-finish-depths.ts). */
+  panelDepth?: number;
   sourceOpening?: RoomRendererOpening;
   floorWorldY: number;
   interactive: boolean;
@@ -926,7 +926,7 @@ export function OpeningThresholdMesh({
   const outlineStyle = getStructureOutlineStyle(targetKey, hoveredTargetKey, selectedTargetKey);
   const thresholdDepth = wallThickness * 1.35;
   const jambHalfWidth = threshold.length / 2;
-  const highlightDepth = thresholdDepth + 0.024;
+  const highlightDepth = Math.max(thresholdDepth + 0.024, wallThickness + 2 * (panelDepth + 0.003));
   const highlightThickness = 0.035;
   const jambBaseY = 0.024;
   const jambTopY = Math.max(jambBaseY + 0.2, threshold.height - 0.02);

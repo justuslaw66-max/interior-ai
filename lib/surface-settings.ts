@@ -7,6 +7,7 @@ import type {
 } from "./room-types";
 import { normalizeWallPaintColorHex, normalizeWallPaintName } from "./wall-paint";
 import { normalizeWallPanelBacking, type NormalizedWallPanelBacking } from "./laminate-wall-backing";
+import { getWholeWallPanelId } from "./wall-panel-ids";
 
 export type FloorPatternOption = { id: RoomFloorPattern; label: string };
 
@@ -297,11 +298,9 @@ export function getWallPanelSurfaceSettings(
 ): NormalizedSurfaceSettings {
   const faceSettings = getWallFaceSurfaceSettings(surfaces, faceId, normalizeRotationDeg, clampScale);
   const fallbackIds = typeof fallbackPanelIds === "string" ? [fallbackPanelIds] : fallbackPanelIds ?? [];
-  const panelSettings =
-    (panelId ? surfaces?.walls?.panels?.[panelId] : undefined) ??
-    fallbackIds
-      .map((fallbackPanelId) => surfaces?.walls?.panels?.[fallbackPanelId])
-      .find((settings) => Boolean(settings));
+  // The panel's own finish, an older id's, then the whole wall's when a door has split it into pieces since.
+  const panelIds = [panelId, ...fallbackIds, getWholeWallPanelId([panelId, ...fallbackIds])];
+  const panelSettings = panelIds.map((id) => (id ? surfaces?.walls?.panels?.[id] : undefined)).find(Boolean);
   if (!panelSettings) return faceSettings;
   return normalizeSurfaceSettings(inheritSurfaceSettings(panelSettings, faceSettings), normalizeRotationDeg, clampScale, {
     jointColor: DEFAULT_WALL_JOINT_COLOR,
