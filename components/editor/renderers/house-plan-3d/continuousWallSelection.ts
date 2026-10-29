@@ -4,7 +4,7 @@ import {
   type LegacyWallEndJoinOptions, type WallOpening3D, type WallSegment3D,
   type WallSurfacePanelDescriptor,
 } from "./geometry";
-import { isWholeWallFinishShown } from "@/lib/wall-panel-ids";
+import { isWholeWallFinishShownAbove } from "@/lib/wall-panel-ids";
 
 type Point = [number, number];
 type Rect = { left: number; right: number; bottom: number; top: number };
@@ -14,7 +14,7 @@ export type SelectableWallSurfacePanel = WallSurfacePanelDescriptor & {
   boundaryEdges?: [Point, Point][];
   /** False for a lintel or sill that keeps its face finish because no whole-wall target owns it. */
   selectable?: boolean;
-  /** For such a lintel: whether it shows the wall's whole-wall finish, which it does while a side piece still does. */
+  /** For such a lintel: whether it shows the wall's whole-wall finish, while a piece beside its door still does. */
   inheritsWholeWall?: boolean;
 };
 const EPSILON = 0.00001;
@@ -67,10 +67,11 @@ export function withContinuousWallSelection(
     // Only lintels and sills stop short of the wall height. Without a window
     // there is no whole-wall target, so a door lintel stays a face-finish
     // fragment instead of becoming a target between the pieces it bridges. It
-    // shows a whole-wall finish saved before the door while a side piece does.
+    // shows a whole-wall finish saved before the door while a piece beside it does.
     if (!selectionPanelId) {
-      const inheritsWholeWall = isWholeWallFinishShown((room.surfaces ?? room.surfaceFinishes)?.walls?.panels, siblings);
-      return siblings.map((panel) => panel.part.height === undefined ? panel : { ...panel, selectable: false, inheritsWholeWall });
+      const saved = (room.surfaces ?? room.surfaceFinishes)?.walls?.panels;
+      return siblings.map((panel) => panel.part.height === undefined ? panel
+        : { ...panel, selectable: false, inheritsWholeWall: isWholeWallFinishShownAbove(saved, siblings, panel) });
     }
     const selectionPanelAliases = [...new Set(siblings.flatMap((panel) =>
       [panel.panelId, ...panel.legacyPanelIds]))].filter((id) => id !== selectionPanelId);

@@ -64,17 +64,30 @@ export function replaceWallPanelAssignment(
   return nextPanels;
 }
 
+/** A piece of a wall side, as the 3D view lays it out: its ids, its range along the wall, and its height when short of it. */
+type WallSidePiece = {
+  panelId: string;
+  legacyPanelIds: readonly string[];
+  startOffset: number;
+  endOffset: number;
+  part: { height?: number };
+};
+
+const PIECE_TOLERANCE = 0.002;
+
 /**
- * Whether one side of a door-split wall still shows its whole-wall finish: the finish is saved, and a piece that can be
- * selected (a full-height one) has none of its own. The piece above a door can't be selected, so it takes the whole wall's
- * finish only then and follows its sides once both have their own.
+ * Whether a piece above a door, which can't be selected, shows its wall's whole-wall finish: the finish is saved, and a
+ * piece beside that door (a full-height one meeting it) has none of its own, or none stands beside it (a door as wide as
+ * the wall). Once the pieces beside the door have their own, it shows the face's finish again, as a door's lintel always did.
  */
-export function isWholeWallFinishShown(
+export function isWholeWallFinishShownAbove(
   panels: SavedPanels | undefined,
-  pieces: ReadonlyArray<{ panelId: string; legacyPanelIds: readonly string[]; part: { height?: number } }>
+  pieces: readonly WallSidePiece[],
+  above: Pick<WallSidePiece, "startOffset" | "endOffset">
 ): boolean {
   const wholeWallId = getWholeWallPanelId(pieces.map((piece) => piece.panelId));
   if (!panels || !wholeWallId || !isSaved(panels, wholeWallId)) return false;
-  return pieces.some((piece) => piece.part.height === undefined &&
-    ![piece.panelId, ...piece.legacyPanelIds].some((id) => isSaved(panels, id)));
+  const beside = pieces.filter((piece) => piece.part.height === undefined && (
+    Math.abs(piece.endOffset - above.startOffset) <= PIECE_TOLERANCE || Math.abs(piece.startOffset - above.endOffset) <= PIECE_TOLERANCE));
+  return beside.length === 0 || beside.some((piece) => ![piece.panelId, ...piece.legacyPanelIds].some((id) => isSaved(panels, id)));
 }

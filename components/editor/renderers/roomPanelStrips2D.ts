@@ -52,7 +52,9 @@ const DEFAULT_WALL_HEIGHT = 2.6;
 
 // One list per room's depths while its outline and its doorways are the same, so the plan keeps its shapes and lines
 // across re-renders, edits elsewhere, and the copy of the room it draws on every frame of a room drag (only x and z change).
-const stripsByDepths = new WeakMap<RoomWallFinishDepths, { room: PanelFaceRoom2D; doorways: string; strips: Strips }>();
+// While the plan's rooms and openings are the same lists, the doorways aren't measured again.
+type KnownStrips = { room: PanelFaceRoom2D; context: PanelStripOpenings2D; doorways: string; strips: Strips };
+const stripsByDepths = new WeakMap<RoomWallFinishDepths, KnownStrips>();
 
 function isSameRoomOutline(a: PanelFaceRoom2D, b: PanelFaceRoom2D): boolean {
   return a.id === b.id && a.shape === b.shape && a.polygon === b.polygon && a.w === b.w && a.d === b.d &&
@@ -67,15 +69,19 @@ function isSameRoomOutline(a: PanelFaceRoom2D, b: PanelFaceRoom2D): boolean {
 export function getRoomPanelStrips2D(room: PanelFaceRoom2D, openings: PanelStripOpenings2D = NO_OPENINGS): Strips {
   const depths = getRoomWallFinishDepths(room);
   if (!hasWallFinishDepths(depths)) return NO_STRIPS;
+  const known = stripsByDepths.get(depths);
+  const sameOutline = Boolean(known && isSameRoomOutline(known.room, room));
+  if (known && sameOutline && known.context.rooms === openings.rooms && known.context.openings === openings.openings) {
+    return known.strips;
+  }
   const outline = { shape: room.shape, polygon: room.polygon, w: room.w, d: room.d };
   const faceIds = getRoomWallFaceIds(outline);
   const points = getRoomPlanOutlinePoints(outline);
   const doorways = getFaceDoorways(room, openings, points, faceIds);
   const doorwaysKey = doorways.map((ranges) => ranges.map((range) => range.map((at) => at.toFixed(4)).join("~")).join(",")).join("|");
-  const known = stripsByDepths.get(depths);
-  if (known && isSameRoomOutline(known.room, room) && known.doorways === doorwaysKey) return known.strips;
-  const strips = buildRoomPanelStrips2D(room, depths, faceIds, points, doorways);
-  stripsByDepths.set(depths, { room, doorways: doorwaysKey, strips });
+  const strips = known && sameOutline && known.doorways === doorwaysKey
+    ? known.strips : buildRoomPanelStrips2D(room, depths, faceIds, points, doorways);
+  stripsByDepths.set(depths, { room, context: openings, doorways: doorwaysKey, strips });
   return strips;
 }
 

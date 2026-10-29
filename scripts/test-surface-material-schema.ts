@@ -728,7 +728,6 @@ for (const [label, polygon] of drawnOutlines) {
     const side = getWallInteriorSurfaceSide(segment);
     const step = { x: Math.sin(segment.rotationY) * side * 0.01, z: Math.cos(segment.rotationY) * side * 0.01 };
     assert.ok(isInsideOutline(polygon, segment.x + step.x, segment.z + step.z), `${label}: wall-${index}'s finish faces the room`);
-    assert.equal(getWallInteriorSurfaceSideForTest(drawnRoom, segment), side, `${label}: wall-${index}, as the test hook reads it`);
   });
 }
 

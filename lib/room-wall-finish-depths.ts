@@ -131,10 +131,11 @@ export function getDeepestWallFinish(
 ): ReturnType<typeof getWallFaceSurfaceSettings> | null {
   const surfaces = room.surfaces ?? room.surfaceFinishes;
   if (!surfaces?.walls || typeof room.floorElevationMm === "number") return null;
+  // Panels first, so one as deep as the face's finish wins: it's the finish the 3D view draws where the panel is.
   const finishes = [
-    getWallFaceSurfaceSettings(surfaces, faceId, normalizeFloorRotationDeg, clampFloorPatternScale),
     ...Object.keys(surfaces.walls.panels ?? {}).filter((panelId) => getWallPanelFaceId(panelId, room.id) === faceId).map(
       (panelId) => getWallPanelSurfaceSettings(surfaces, faceId, panelId, normalizeFloorRotationDeg, clampFloorPatternScale)),
+    getWallFaceSurfaceSettings(surfaces, faceId, normalizeFloorRotationDeg, clampFloorPatternScale),
   ];
   let deepest: { depth: number; finish: (typeof finishes)[number] | null } = { depth: 0, finish: null };
   for (const finish of finishes) {

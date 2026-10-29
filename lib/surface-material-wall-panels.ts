@@ -1,7 +1,7 @@
 import type { PersistedPlanOpening, RoomSnapshot, RoomSurfaceAssignments } from "./room-types";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "./floor-materials";
 import { getWallFaceLabel, getWallPanelSurfaceSettings } from "./surface-settings";
-import { getWholeWallPanelId, isWholeWallFinishShown } from "./wall-panel-ids";
+import { getWholeWallPanelId, isWholeWallFinishShownAbove } from "./wall-panel-ids";
 import { buildHousePlan2D, type HousePlanRoom2D } from "./design-page-house-plan";
 import { mapPlanOpeningsToRoomRenderer } from "./design-page-plan-overlays";
 import { buildOpeningWallSurfacePanels } from "@/components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
@@ -23,7 +23,7 @@ export type BomWallPanel = {
   faceId: string;
   areaSqm: number;
   legacyPanelIds: readonly string[];
-  /** False for a piece above a door that no longer shows its wall's whole-wall finish (isWholeWallFinishShown). */
+  /** False for a piece above a door that no longer shows its wall's whole-wall finish (isWholeWallFinishShownAbove). */
   inheritsWholeWall?: boolean;
   /** Where the panel is on its wall face, for counting sheets (surface-material-sheets.ts). */
   piece: WallFinishPiece;
@@ -119,13 +119,13 @@ function buildRoomWallPanels(
     ];
     // All interior: a window's wall is one target, and on a door's the piece above it follows its sides, as the 3D view draws.
     const windowWallId = getContinuousWallPanelId(topologyRoom, segment, wallOpenings, "interior");
-    const wholeWallShown = isWholeWallFinishShown((room.surfaces ?? room.surfaceFinishes)?.walls?.panels, pieces);
+    const saved = (room.surfaces ?? room.surfaceFinishes)?.walls?.panels;
     return pieces.map((panel) => ({
       panelId: windowWallId ?? panel.panelId,
       faceId: panel.faceId,
       areaSqm: panel.part.length * (panel.part.height ?? height),
       legacyPanelIds: [panel.panelId, ...panel.legacyPanelIds],
-      inheritsWholeWall: Boolean(windowWallId) || panel.part.height === undefined || wholeWallShown,
+      inheritsWholeWall: Boolean(windowWallId) || panel.part.height === undefined || isWholeWallFinishShownAbove(saved, pieces, panel),
       piece: wallFinishPiece(topologyRoom, segment, panel, height),
     }));
   });

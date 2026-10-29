@@ -193,6 +193,12 @@ const { strips } = getRoomPanelStrips2D({ ...planRoom, surfaces: tiledWithPanel.
 assert.deepEqual(strips.map((strip) => strip.faceId), ["north", "east"]);
 assert.deepEqual(strips.map((strip) => strip.finish.materialId), [NORDIC_ACACIA, NORDIC_ACACIA],
   "a strip is drawn in its deepest finish: the east wall's is its panel's laminate, not the face's tile");
+const OTHER_LAMINATE = "greenlam-woodgrains-5003";
+assert.equal(
+  getRoomPanelStrips2D({ ...planRoom, surfaces: { walls: { default: { materialId: NORDIC_ACACIA }, panels: { [V2_EAST]: { materialId: OTHER_LAMINATE } } } } })
+    .strips.find((strip) => strip.faceId === "east")?.finish.materialId,
+  OTHER_LAMINATE, "a panel as deep as the room's laminate wins: it's the one the 3D view draws there"
+);
 const eastFace = strips[1].faceLine.map(([x, , z]) => [Math.round(x * 1000), Math.round(z * 1000)]);
 assert.deepEqual(eastFace, [[1896, -1430], [1896, 1440]], "60 mm in from the centre line, then 44 mm of panel; mitred at the north panel");
 assert.deepEqual(getRoomPanelStrips2D({ ...planRoom, surfaces: { walls: { default: { paintColorHex: "#fff" } } } }).strips, []);
@@ -238,6 +244,14 @@ assert.deepEqual(
     .map((strip) => strip.faceLine.map(([x]) => Math.round(x * 1000))),
   [[1930, 900]], "wall-2 runs from (2, 0) to the notch corner; its strip stops at the door, 900 mm short of the corner"
 );
+const notchStartWall = getWallSegments(drawnL)[3];
+const notchStartDoor: RoomRendererOpening = { ...notchDoor, id: "ds", offset: -notchStartWall.length / 2 + 0.45,
+  hostSegmentKey: notchStartWall.key, hostWorldCenter: { x: 0, z: 0.45 } };
+assert.deepEqual(
+  getRoomPanelStrips2D(drawnL, { rooms: [drawnL], openings: [notchStartDoor] }).strips.filter((strip) => strip.faceId === "wall-3")
+    .map((strip) => strip.faceLine.map(([, , z]) => Math.round(z * 1000))),
+  [[900, 1930]], "wall-3 starts at the notch corner: a door there leaves no piece of the strip before it"
+);
 const stripContext = { rooms: [stripRoom], openings: mapPlanOpeningsToRoomRenderer([opening("d1", "north")], [stripRoom]) };
 assert.equal(getRoomPanelStrips2D({ ...stripRoom, x: 0.5 }, stripContext), getRoomPanelStrips2D({ ...stripRoom, x: 0.6 }, stripContext),
   "the same strips while a room with a door is dragged: its doorways are measured where the room is saved");
@@ -277,10 +291,11 @@ assert.deepEqual(laminateRows(wholeNorthWalls, [opening("w1", "north", { kind: "
 // As the 3D view draws the north wall's inside: the pieces beside the door, then the one above it, which can't be selected
 // and shows the whole wall's finish only while a side piece still does.
 const RIGHT_OF_DOOR = "wall-panel:v2:1:lam:north:opening-d1-end:segment-end:interior";
-const drawnNorth = (walls: typeof wholeNorthWalls) => {
+type Walls = NonNullable<RoomSnapshot["surfaces"]>["walls"];
+const drawnNorth = (walls: Walls, openings: PersistedPlanOpening[] = [opening("d1", "north")]) => {
   const [planRoom3D] = buildHousePlan2D([room(walls)], 0, 0).rooms;
   const segment = getWallSegments(planRoom3D).find((candidate) => candidate.wall === "north")!;
-  const wallOpenings = getWallOpenings(planRoom3D, segment, [planRoom3D], mapPlanOpeningsToRoomRenderer([opening("d1", "north")], [planRoom3D]));
+  const wallOpenings = getWallOpenings(planRoom3D, segment, [planRoom3D], mapPlanOpeningsToRoomRenderer(openings, [planRoom3D]));
   return withContinuousWallSelection(planRoom3D, segment, wallOpenings, [
     ...buildWallSurfacePanels(planRoom3D, segment, wallOpenings),
     ...buildOpeningWallSurfacePanels(planRoom3D, [planRoom3D], segment, wallOpenings, 2.6).filter((panel) => panel.role === "interior"),
@@ -296,6 +311,22 @@ assert.deepEqual(drawnNorth(paintPieces([northPieceIds[0], RIGHT_OF_DOOR])), ["p
   "both sides painted: the piece above the door follows them");
 assert.deepEqual(laminateRows(paintPieces([northPieceIds[0], RIGHT_OF_DOOR]), [opening("d1", "north")]), [],
   "and orders no laminate for it");
+// It goes by the pieces beside its own door: with two doors, painting both sides of one leaves the other's lintel laminate.
+const twoDoors = [opening("d1", "north", { offsetMm: -1000 }), opening("d2", "north", { offsetMm: 1000 })];
+const besideD1 = ["wall-panel:v2:1:lam:north:segment-start:opening-d1-start:interior",
+  "wall-panel:v2:1:lam:north:opening-d1-end:opening-d2-start:interior"];
+assert.deepEqual(drawnNorth(paintPieces(besideD1), twoDoors), ["paint", "paint", NORDIC_ACACIA, "paint", NORDIC_ACACIA],
+  "the pieces left of, between and right of the doors, then the pieces above d1 and d2");
+assert.deepEqual(laminateRows(paintPieces(besideD1), twoDoors), [["north", 1.88]], "0.55 × 2.6 m right of d2 and 0.9 × 0.5 m above it");
+assert.deepEqual(drawnNorth(wholeNorthWalls, [opening("dw", "north", { widthMm: 4000 })]), [NORDIC_ACACIA],
+  "a door as wide as the wall: the piece above it keeps the whole wall's finish");
+// Once both sides have their own, the piece above the door shows the face's finish, as a door's lintel always did: here the
+// room's laminate, under a whole wall painted in 3D before the door.
+// A paint is saved with no material, as the apply action saves it (createSurfaceSettingsPatch).
+const savedPaint = (paintColorHex: string) => ({ materialId: null, paintColorHex });
+const laminateRoomPaintedWall: Walls = { default: { materialId: NORDIC_ACACIA }, panels: { [WHOLE_NORTH]: savedPaint("#ffffff"),
+  [northPieceIds[0]]: savedPaint("#222222"), [RIGHT_OF_DOOR]: savedPaint("#222222") } };
+assert.deepEqual(drawnNorth(laminateRoomPaintedWall), ["paint", "paint", NORDIC_ACACIA]);
 // Saving and clearing a piece: its own finish over the whole wall's, which stays for the wall's other pieces.
 const savedPanels = { [WHOLE_NORTH]: { materialId: NORDIC_ACACIA }, [northPieceIds[0]]: { paintColorHex: "#d0d0d0" } };
 assert.deepEqual(getWallPanelAssignment(savedPanels, RIGHT_OF_DOOR, []), { materialId: NORDIC_ACACIA }, "a piece without its own");

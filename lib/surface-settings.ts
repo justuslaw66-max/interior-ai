@@ -300,7 +300,7 @@ export function getWallPanelSurfaceSettings(
   const faceSettings = getWallFaceSurfaceSettings(surfaces, faceId, normalizeRotationDeg, clampScale);
   const fallbackIds = typeof fallbackPanelIds === "string" ? [fallbackPanelIds] : fallbackPanelIds ?? [];
   // The panel's own finish, an older id's, then the whole wall's when a door has split it into pieces since (not for a
-  // piece above a door whose sides both have their own: lib/wall-panel-ids.ts, isWholeWallFinishShown).
+  // piece above a door whose sides both have their own: lib/wall-panel-ids.ts, isWholeWallFinishShownAbove).
   const panelIds = [panelId, ...fallbackIds, inheritWholeWall ? getWholeWallPanelId([panelId, ...fallbackIds]) : null];
   const panelSettings = panelIds.map((id) => (id ? surfaces?.walls?.panels?.[id] : undefined)).find(Boolean);
   if (!panelSettings) return faceSettings;
