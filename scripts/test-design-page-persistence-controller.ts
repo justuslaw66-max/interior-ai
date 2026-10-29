@@ -248,12 +248,14 @@ assert.match(
   "Guest persistence should keep its identity guard and current stored snapshot."
 );
 
-for (const apiGuard of [
-  /designApi\.claim\(payload\)/,
-  /designApi\.share\(id\)/,
-]) {
-  assert.match(controllerSource, apiGuard, "Persistence API client operations should remain centralized.");
-}
+assert.match(controllerSource, /designApi\.claim\(payload\)/, "Persistence API client operations should remain centralized.");
+// Saving never shares (CH-0010, 30 Oct 2026): only Share makes a link, in useDesignPageShareLink.
+assert.doesNotMatch(controllerSource, /designApi\.share\(/, "Saving, loading and copying a design don't share it.");
+assert.match(
+  fs.readFileSync(path.join(process.cwd(), "lib/useDesignPageShareLink.ts"), "utf8"),
+  /const data = await designApi\.share\(designId\);/,
+  "The share link is made where Share is pressed."
+);
 
 assert.match(
   cloudLoadControllerSource,
