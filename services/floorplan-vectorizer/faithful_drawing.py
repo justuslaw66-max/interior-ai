@@ -11,14 +11,19 @@ A picture that is merely soft without solid black (a low-resolution JPEG plan en
 which is better than the app's older pixel trace (J, 24 Oct); since r8 its lettering is copied letter by letter where
 it runs together or into the line work under it, and since r9 that holds for such a plan as the app renders a PDF page
 (its pixels repeated, not blended), whose light lines are traced as lines, and since r10 a long slanting or curved
-line in it as one line or band.
+line in it as one line or band. Since r11 every trace is tidied as a drawing: letters and figures outlined smoothly, a
+thin line at one weight along its length, square corners, door swings run into their jambs, circles fitted as
+circles, ticks and hatching kept whole and within their lines. Since r12 a fixture drawn in thin lines (a sink, a drainer, a WC) is
+redrawn clean rather than copied (J, 29 Oct: "reproduce a clean and sharp version of the original plan and not trace
+the blurry and uneven parts"): straight lines and true arcs joined into one path per shape, lines on the plan's few
+pens; lettering is left as traced (retyping it in clean type is built, off by default).
 The trace works at twice the picture's size up to --max-pixels (about 350-400 MB of memory per million pixels of the
 picture); a larger picture, up to three times --max-pixels, is traced at its own size (about 110 MB per million pixels:
 the same memory at most), and a larger one still is left. Otherwise, and on any error, the output is {"skipped": <why>}
 and the app draws no traced drawing for the page (its picture is shown as it is), with a note saying why.
 
 Output (the evidence's `drawing`, see vectorizer-evidence-schema.ts):
-  {"version": "faithful-trace-r10", "items": [{"kind", "fill", "strokeWidthPx", "tone", "commands", "points"}],
+  {"version": "faithful-trace-r12", "items": [{"kind", "fill", "strokeWidthPx", "tone", "commands", "points"}],
    "textBoxes": []}
   - fills: one item per polygon, each ring a closed sub-path; rings are wound by how deep they are nested (an outline
     one way, its holes the other, an island in a hole the first way again), so the nonzero rule the app draws with
@@ -36,7 +41,7 @@ import json, math, os, sys
 import cv2
 import numpy as np
 
-VERSION = "faithful-trace-r10"
+VERSION = "faithful-trace-r12"
 MAX_COMMANDS = 4000           # per item (vectorizer-evidence-schema.ts)
 MAX_POINTS = 12000
 MAX_ITEMS = 8000
@@ -132,6 +137,22 @@ def _arc_cubics(cx, cy, r, a0, a1):
 
 def _stroke_piece(e):
     """one stroke as (start, [(command, [points...]), ...], closed)"""
+    if e["k"] == "path":
+        # (r12) a shape drawn as one path: its lines and arcs in turn, closed - no ends, so no caps
+        segs, start = [], None
+        for p in e["parts"]:
+            if p[0] == "L":
+                if start is None:
+                    start = _p(*p[1])
+                segs.append(("L", [_p(*p[2])]))
+            else:
+                _, (cx, cy), r, a0, a1 = p
+                if start is None:
+                    start = _p(cx + r * math.cos(a0), cy + r * math.sin(a0))
+                segs += [("C", [_p(*c1), _p(*c2), _p(*p3)]) for c1, c2, p3 in _arc_cubics(cx, cy, r, a0, a1)]
+        if e.get("closed") and segs and segs[-1][0] == "L":
+            segs = segs[:-1]                                   # (its last side is the closing Z)
+        return start, segs, bool(e.get("closed"))
     if e["k"] == "line":
         a, b = np.asarray(e["a"], float), np.asarray(e["b"], float)
         L = float(np.linalg.norm(b - a))
@@ -145,6 +166,56 @@ def _stroke_piece(e):
         a0, a1 = 0.0, 2 * math.pi
     segs = [("C", [_p(*c1), _p(*c2), _p(*p3)]) for c1, c2, p3 in _arc_cubics(cx, cy, r, a0, a1)]
     return _p(cx + r * math.cos(a0), cy + r * math.sin(a0)), segs, full
+
+
+JOIN = os.environ.get("FT_JOIN", "1") == "1"   # (r12) lines of one pen meeting end to end drawn as one path
+
+
+def _joined(lines, w):
+    """(r12) straight lines of one pen that meet end to end (a door leaf's corners, a frame's) as paths that run on
+    through their corners, so a corner is drawn whole (a mitred join) instead of two ends overlapping: a line's free
+    end keeps its square cap (carried on half the width)"""
+    key = lambda p: (round(p[0], 2), round(p[1], 2))
+    at = {}
+    for i, e in enumerate(lines):
+        at.setdefault(key(e["a"]), []).append((i, 0)); at.setdefault(key(e["b"]), []).append((i, 1))
+    used = [False] * len(lines)
+    out = []
+    def other(i, end):
+        e = lines[i]
+        return e["b"] if end == 0 else e["a"]
+    for i in range(len(lines)):
+        if used[i]:
+            continue
+        used[i] = True
+        pts = [list(lines[i]["a"]), list(lines[i]["b"])]
+        # walk on from the b end, then back from the a end, through ends where exactly two lines meet
+        for direction in (1, 0):
+            while True:
+                tip = pts[-1] if direction == 1 else pts[0]
+                lst = [(j, en) for j, en in at.get(key(tip), []) if not used[j]]
+                if len(at.get(key(tip), [])) != 2 or len(lst) != 1:
+                    break
+                j, en = lst[0]
+                used[j] = True
+                nxt = list(other(j, en))
+                if direction == 1:
+                    pts.append(nxt)
+                else:
+                    pts.insert(0, nxt)
+        closed = len(pts) > 3 and key(pts[0]) == key(pts[-1])
+        P = np.asarray(pts, float)
+        if closed:
+            P = P[:-1]
+        else:
+            h = w / 2.0
+            for k, nb in ((0, 1), (-1, -2)):
+                v = P[k] - P[nb]
+                L = float(np.linalg.norm(v))
+                if L > 1e-6:
+                    P[k] = P[k] + v / L * h
+        out.append((_p(*P[0]), [("L", [_p(*q)]) for q in P[1:]], closed))
+    return out
 
 
 def _items_of(pieces, base):
@@ -174,7 +245,11 @@ def drawing(t):
         if it:
             items.append(it)
     groups = {}
+    lines_by = {}
     for e in t["strokes"]:
+        if JOIN and e["k"] == "line":
+            lines_by.setdefault((1 if e.get("light") else 0, -int(e["g"]), round(float(e["w"]), 2), "line"), []).append(e)
+            continue
         if e["k"] == "dot":
             r = max(0.5, e["w"] / 2.0)
             piece = (_p(e["c"][0] + r, e["c"][1]),
@@ -184,6 +259,8 @@ def drawing(t):
             piece = _stroke_piece(e)
             key = (1 if e.get("light") else 0, -int(e["g"]), round(float(e["w"]), 2), e["k"])
         groups.setdefault(key, []).append(piece)
+    for key, ls in lines_by.items():
+        groups.setdefault(key, []).extend(_joined(ls, key[2]))
     # dots (filled) with the fills, before the strokes; then strokes light to dark; light lines in dark fills last
     for key in sorted(groups, key=lambda k: (0 if k[0] == 2 else 1 + k[0], k[1], k[2], k[3])):
         light, tone, w, kind = key

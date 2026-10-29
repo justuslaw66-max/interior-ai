@@ -19,11 +19,32 @@ No recognition: nothing is read as a room, a door or a wall - what is drawn is c
     sized dark marks keep their own pixels) and its light lines are kept whole across their width (CORE 0.3), so a
     long slanting or curved line - a facade, a terrace's edge, a floor's diagonal stripes - is one line or one band,
     not a ladder of short pieces; a letter taken takes no pixel of the dark mark beside it.
+  - (r11) as sharp as the drawing it copies: a letter's or figure's outline is read from the picture's own pixels
+    enlarged smoothly (not its repeated pixels' steps), at half its darkest; an I or an l in a word is outlined like
+    its neighbours; a band's tint lies under its lettering (no halo, no smudge); and a joining pass (tidy) gives a thin
+    line one weight along its length (from all its ink across it), draws a line traced in pieces or twice once, runs a
+    door swing into the jamb and onto its leaf, keeps a hatch stroke's end within the wall's line, draws a slash
+    tick split by the lines it crosses as one slash, and squares corners where lines of one weight meet; whole circles
+    (a sink's waste, a hob's burner rings) are fitted as circles, two rings 2 px apart as two (fit_rings).
+  - (r12) redrawn clean, not copied: a fixture or piece of furniture in thin lines (a sink's basin and drainer, a hob,
+    a WC, a bath) is read along each line's centre from the picture's own ink and drawn as the fewest straight lines
+    and true arcs within a third of a pixel of it - corners exact, curves tangent to the lines beside them, a long
+    gentle curve one arc, a circle one circle; two hairlines blurred into one band (a basin's double rim) drawn as two;
+    a faint break carried through, a ring's faint part closed; lines meeting at a junction joined end to end by a
+    smooth bridge, so a shape is one path with no notches (clean_lines.py). Only fixture-size pieces (2.5 letters tall
+    both ways, 8 % of the picture at most) and the hairline pieces inside one (a drainer's slots), never lettering
+    (retype.letter_marks) or a figure in dashes; a ring's line needs a dip to half its darkness on one side only (the
+    other may be a close second ring: a hob's burners). Lines of one
+    pen meeting end to end are one path; widths and tones are brought to the plan's few pens (_pens). Retyping
+    lettering read with confidence in clean type (retype.py) is built and off (FT_RETYPE=1).
 Output: an SVG in the image's pixel coordinates, one element per wall polygon, segment and arc."""
 import json, math, os, sys
 import cv2, numpy as np
 from skimage.morphology import skeletonize
 from skimage import measure
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import clean_lines as CLN
+import retype as RT
 
 def cross2(a, b):
     a = np.asarray(a, float); b = np.asarray(b, float)
@@ -720,6 +741,9 @@ def align_dashes(segs, polys=None):
     return out, [p for k, p in enumerate(polys or []) if k not in drop]
 
 
+GREY_MIN_AREA = float(os.environ.get("FT_GREY_MIN", "100"))   # (r11 trial) a grey area at least this big (picture px); smaller ones traced as line work
+
+
 def grey_areas(d, solid):
     """hatching or stipple too fine to resolve (a lower-resolution copy), merged into grey: areas mostly mid-grey (not
     paper, not ink) over a 7 px window, grown into the looser grey round them; solid fills are not among them"""
@@ -737,8 +761,73 @@ def grey_areas(d, solid):
     strict &= loose
     n, lab, st, _ = cv2.connectedComponentsWithStats(loose, 8)
     hit = np.zeros(n, bool); hit[np.unique(lab[strict > 0])] = True; hit[0] = False
-    big = st[:, 4] >= 100 * PX * PX
+    big = st[:, 4] >= GREY_MIN_AREA * PX * PX
     return (hit & big)[lab].astype(np.uint8)
+
+
+FILL_DARK_HOLES = os.environ.get("FT_DARK_HOLES", "1") == "1"   # (r11) a fill's hole holding only darker ink (lettering on a tinted band) filled
+
+
+def _fill_dark_holes(polys, g):
+    """(r11) a fill (a solid or grey area) with holes where darker marks sit on it - lettering on a tinted band - lies
+    under them instead: each such hole was its letter's outline grown by the fill's edge, a white halo round every
+    letter. A hole holding paper (a white gap in a black column) stays."""
+    H, W = g.shape
+    out = []
+    for p in polys:
+        rings = p["rings"]
+        if p.get("mark") or p.get("over") or len(rings) < 2:
+            out.append(p); continue
+        areas = [abs(signed_area(np.asarray(r, float))) for r in rings]
+        k0 = int(np.argmax(areas)); outer = rings[k0]
+        keep = []
+        for k, r in enumerate(rings):
+            if k == k0 or not _ring_inside(r, outer):
+                keep.append(r); continue
+            R = np.asarray(r, float)
+            x0, y0 = max(0, int(R[:, 0].min()) - 1), max(0, int(R[:, 1].min()) - 1)
+            x1, y1 = min(W, int(R[:, 0].max()) + 2), min(H, int(R[:, 1].max()) + 2)
+            if x1 <= x0 or y1 <= y0:
+                keep.append(r); continue
+            m = np.zeros((y1 - y0, x1 - x0), np.uint8)
+            cv2.fillPoly(m, [np.round((R - [x0, y0]) * 4).astype(np.int32)], 1, cv2.LINE_8, 2)
+            inside = g[y0:y1, x0:x1][m > 0]
+            if inside.size == 0:
+                keep.append(r); continue
+            # paper inside (lighter than the fill): a real hole; only darker ink and the fill's own grey: filled
+            if float(np.percentile(inside, 90)) <= p["g"] + 30 and float(inside.min()) < p["g"] - 40:
+                continue
+            keep.append(r)
+        q = dict(p); q["rings"] = keep
+        out.append(q)
+    # a grey area lying on a lighter tinted fill (the texture of lettering on a band, averaged into a dark smudge) is
+    # not hatching: the band and its letters are drawn already
+    tints = [np.asarray(max(p["rings"], key=lambda r: abs(signed_area(np.asarray(r, float)))), np.float32).reshape(-1, 1, 2)
+             for p in out if not (p.get("mark") or p.get("over") or p.get("grey")) and p["rings"] and 60 <= p["g"] <= 235]
+    tint_g = [p["g"] for p in out if not (p.get("mark") or p.get("over") or p.get("grey")) and p["rings"] and 60 <= p["g"] <= 235]
+    kept = []
+    for p in out:
+        if p.get("grey") and tints:
+            R = np.asarray(p["rings"][0], float)
+            S = R[np.linspace(0, len(R) - 1, min(len(R), 12)).astype(int)]
+            on = False
+            for c, tg in zip(tints, tint_g):
+                if tg >= p["g"] + 20 and sum(cv2.pointPolygonTest(c, (float(x), float(y)), False) >= 0 for x, y in S) >= 0.8 * len(S):
+                    on = True; break
+            if on:
+                continue
+        kept.append(p)
+    return kept
+
+
+GREY_FILL_HOLES = float(os.environ.get("FT_GREY_HOLES", "200"))   # (r11) holes in a grey area smaller than this (picture px) filled
+
+
+def _ring_inside(r, outer):
+    """whether ring r lies inside ring outer (by its first vertex)"""
+    c = np.asarray(outer, np.float32).reshape(-1, 1, 2)
+    p = r[0]
+    return cv2.pointPolygonTest(c, (float(p[0]), float(p[1])), False) > 0
 
 
 def grey_polygons(ga, g):
@@ -758,6 +847,12 @@ def grey_polygons(ga, g):
             ring = squared(rdp(pts, EDGE_TOL))
             if len(ring) >= 3 and abs(signed_area(ring)) >= 12 * PX * PX:
                 rings.append(ring)
+        if rings and GREY_FILL_HOLES > 0:
+            # (r11) the holes the lettering on a grey band leaves are filled: the band lies under its letters, with no
+            # white halo round each
+            big_ = max(rings, key=lambda r: abs(signed_area(r)))
+            rings = [r for r in rings if r is big_ or abs(signed_area(r)) >= GREY_FILL_HOLES * PX * PX
+                     or not _ring_inside(r, big_)]
         if rings:
             polys.append({"rings": rings, "g": tone, "grey": True})
     return polys
@@ -1300,7 +1395,137 @@ def letters_over_lines(d, g):
     return taken, out
 
 
+RINGS = os.environ.get("FT_RINGS", "1") == "1"   # (r11) whole circles in a small piece of line work fitted as circles
+
+
+RING_DIP = float(os.environ.get("FT_RING_DIP", "0.85"))   # a ring's other side dips to at most this share of its darkest
+
+
+def _ring_at(df, cx, cy, r0, rmax_extra):
+    """the circles round (cx, cy) near radius r0: [(radius, weight, darkness)], each with ink nearly all the way round
+    at an even radius, from the darkness read along rays"""
+    na = int(max(64, min(360, 2 * math.pi * r0 / (0.5 * PX))))
+    A = np.linspace(0, 2 * math.pi, na, endpoint=False)
+    R = np.arange(max(0.0, r0 - rmax_extra), r0 + rmax_extra, 0.25 * PX)
+    X = (cx + np.cos(A)[:, None] * R[None] - 0.5).astype(np.float32)
+    Y = (cy + np.sin(A)[:, None] * R[None] - 0.5).astype(np.float32)
+    V = cv2.remap(df, X, Y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+    prof = np.median(V, 0)
+    top = float(prof.max())
+    out = []
+    if top < 0.15:
+        return out
+    k_ = 3                                                       # 0.75 px of the picture either side
+    for k in range(1, len(R) - 1):
+        if prof[k] < 0.3 * top or prof[k] < 0.12 or prof[k] < prof[k - 1] or prof[k] < prof[k + 1]:
+            continue
+        # a line, not a grey area: lighter by half on both sides within 3 px
+        reach_ = int(round(3 * PX / (0.25 * PX)))
+        left_, right_ = prof[max(0, k - reach_):k], prof[k + 1:k + 1 + reach_]
+        # (on one side at least: the other may be a close second ring, a dip between them - a hob's double ring)
+        if not len(left_) or not len(right_) or min(float(left_.min()), float(right_.min())) > 0.5 * prof[k] \
+                or max(float(left_.min()), float(right_.min())) > RING_DIP * prof[k]:
+            continue
+        lo, hi = max(0, k - k_), min(len(R), k + k_ + 1)
+        win = V[:, lo:hi]
+        pk_r = R[lo:hi][np.argmax(win, 1)]
+        cover = float((win.max(1) >= 0.5 * prof[k]).mean())
+        even = float((np.abs(pk_r - R[k]) <= 0.6 * PX).mean())
+        if cover < 0.9 or even < 0.85:
+            continue
+        j0 = k
+        while j0 > 0 and prof[j0 - 1] >= 0.15 * prof[k] and prof[j0 - 1] <= prof[j0] + 0.02:
+            j0 -= 1
+        j1 = k
+        while j1 < len(R) - 1 and prof[j1 + 1] >= 0.15 * prof[k] and prof[j1 + 1] <= prof[j1] + 0.02:
+            j1 += 1
+        seg = prof[j0:j1 + 1]
+        core = seg >= 0.5 * prof[k]                               # its ink above half its darkest (not a valley's tail)
+        inkw = float(seg[core].sum()) * 0.25 * PX
+        rk = float(np.sum(R[j0:j1 + 1][core] * seg[core]) / max(1e-9, seg[core].sum()))
+        dark = float(prof[k])
+        if dark >= 0.35 and inkw <= 2.5 * PX:
+            wk, dark = inkw, 1.0                                  # a thin line: black, as wide as its ink
+        else:
+            wk = max(0.75 * PX, inkw / max(0.2, dark))
+        out.append((rk, max(0.75 * PX, wk), min(1.0, dark)))
+    return out
+
+
+def _sharpest_centre(df, cx, cy, r):
+    """the centre near (cx, cy) round which the ink near radius r is sharpest (its median profile's highest peak):
+    a centre fitted to two close rings' ridge pixels lies between their best centres"""
+    A = np.linspace(0, 2 * math.pi, 96, endpoint=False)
+    R = np.arange(max(0.0, r - 3 * PX), r + 3 * PX, 0.25 * PX)
+    best = (-1.0, cx, cy)
+    for dx in np.arange(-1.0, 1.01, 0.25) * PX:
+        for dy in np.arange(-1.0, 1.01, 0.25) * PX:
+            X = (cx + dx + np.cos(A)[:, None] * R[None] - 0.5).astype(np.float32)
+            Y = (cy + dy + np.sin(A)[:, None] * R[None] - 0.5).astype(np.float32)
+            v = float(np.median(cv2.remap(df, X, Y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0), 0).max())
+            if v > best[0]:
+                best = (v, cx + dx, cy + dy)
+    return best[1], best[2]
+
+
+def fit_rings(weak, d, g0):
+    """(r11) whole circles - a drain's two rings 2 px apart, a hob's burner rings, a basin's waste - fitted as circles:
+    traced line by line or outlined, two thin rings that close merged into one lumpy ring. Candidates come from a
+    circle transform of the picture; each is centred on the ridge pixels round it, and every radius near it whose ink
+    runs all the way round at an even radius is one circle, at the weight its ink gives. Returns the circles (full
+    arcs) and the pixels they explain."""
+    taken = np.zeros_like(weak)
+    out = []
+    H, W = weak.shape
+    cand = cv2.HoughCircles(g0, cv2.HOUGH_GRADIENT_ALT, dp=1, minDist=2, param1=60, param2=0.6, minRadius=2,
+                            maxRadius=60)
+    if cand is None:
+        return out, taken
+    df = d.astype(np.float32)
+    ridge = (weak > 0) & (df >= cv2.dilate(df, np.ones((3, 3), np.uint8)) - 0.02) & (df > 0.15)
+    ry, rx = np.nonzero(ridge)
+    RP = np.stack([rx + 0.5, ry + 0.5], 1).astype(float)
+    done = []
+    for cx0, cy0, r0 in cand[0]:
+        cx0, cy0, r0 = (cx0 + 0.5) * PX, (cy0 + 0.5) * PX, r0 * PX
+        if r0 < 3 * PX:
+            continue
+        if any(math.hypot(cx0 - a, cy0 - b) < 1.5 * PX and abs(r0 - c) < 2.5 * PX for a, b, c in done):
+            continue
+        sel = (np.abs(RP[:, 0] - cx0) <= r0 + 2 * PX) & (np.abs(RP[:, 1] - cy0) <= r0 + 2 * PX)
+        Q = RP[sel]
+        Q = Q[np.abs(np.hypot(Q[:, 0] - cx0, Q[:, 1] - cy0) - r0) <= 1.5 * PX]
+        if len(Q) < max(10, 0.8 * r0 / PX):
+            continue
+        fc = fit_circle(Q)
+        if fc is None:
+            continue
+        cx, cy, r, _ = fc
+        if math.hypot(cx - cx0, cy - cy0) > 2 * PX:
+            continue
+        cx, cy = _sharpest_centre(df, cx, cy, r)
+        rings = _ring_at(df, cx, cy, r, 3.0 * PX)
+        if not rings:
+            continue
+        new = [(rk, wk, dk) for rk, wk, dk in rings
+               if not any(math.hypot(cx - e["c"][0], cy - e["c"][1]) < 1.5 * PX and abs(rk - e["r"]) < 0.75 * PX for e in out)]
+        if not new:
+            continue
+        done.append((cx, cy, r))
+        x0, x1 = max(0, int(cx - r - 5 * PX)), min(W, int(cx + r + 5 * PX) + 1)
+        y0, y1 = max(0, int(cy - r - 5 * PX)), min(H, int(cy + r + 5 * PX) + 1)
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        rr = np.hypot(xx + 0.5 - cx, yy + 0.5 - cy)
+        for rk, wk, dk in new:
+            out.append({"k": "arc", "c": np.array([cx, cy]), "r": rk, "a0": 0.0, "a1": 2 * math.pi, "w": wk, "dark": dk,
+                        "ring": True})
+            band = (np.abs(rr - rk) <= wk / 2.0 + 0.75 * PX) & (weak[y0:y1, x0:x1] > 0)
+            taken[y0:y1, x0:x1] |= band.astype(np.uint8)
+    return out, taken
+
+
 # ---------------------------------------------------------------- small marks
+LETTER_STROKES = __import__("os").environ.get("FT_LETTER_STROKES", "1") == "1"   # (r11) an I or l in a word outlined as a letter
 MARK_PX = int(__import__("os").environ.get("FT_MARK", "64"))   # a mark standing alone no larger than this (a letter, a dot, a basin) is copied by its outline
 MARK_LEVEL = float(__import__("os").environ.get("FT_MARK_LEVEL", "0.4"))   # ... traced where its ink is this share of its darkest
 
@@ -1314,6 +1539,7 @@ def small_marks(weak, stroke, d, g):
     n, lab, st, _ = cv2.connectedComponentsWithStats(weak, 8)
     taken = np.zeros_like(stroke)
     out = []
+    thin, boxes = [], []
     H, W = stroke.shape
     # a piece within a pixel of larger line work (a light circle's arc between the lines that cross it) is part of
     # that line work, not a mark standing alone
@@ -1333,7 +1559,26 @@ def small_marks(weak, stroke, d, g):
         if near_big[y0:y1, x0:x1][m].any():
             continue
         if _thin_stroke(m, stroke[y0:y1, x0:x1] > 0):
+            if LETTER_STROKES and max(w, h) <= 18 * PX:
+                thin.append((i, x, y, w, h, x0, y0, x1, y1))
             continue                                            # a lone thin line or arc is drawn as one, not outlined
+        mk = _outline_mark(m, x0, y0, x1, y1, d, g)
+        if mk:
+            out.append(mk)
+            boxes.append((x, y, w, h))
+            taken[y0:y1, x0:x1] |= m.astype(np.uint8)
+    # (r11) a thin straight piece of a letter's size in a row of letters - an I, an l, a 1 - is a letter: outlined
+    # like its neighbours, not drawn as a line (its square caps made it taller and heavier than they are)
+    for i, x, y, w, h, x0, y0, x1, y1 in thin:
+        row = False
+        for bx, by, bw, bh in boxes:
+            ov = min(y + h, by + bh) - max(y, by)
+            gap = max(bx - (x + w), x - (bx + bw))
+            if ov >= 0.5 * min(h, bh) and gap <= 0.8 * max(h, bh) and 0.5 * h <= bh <= 2.0 * h:
+                row = True; break
+        if not row:
+            continue
+        m = lab[y0:y1, x0:x1] == i
         mk = _outline_mark(m, x0, y0, x1, y1, d, g)
         if mk:
             out.append(mk)
@@ -1394,6 +1639,7 @@ def _outline_mark(m, x0, y0, x1, y1, d, g, strict=False):
     """a mark's outline rings, where its ink (and 1 px round it) is MARK_LEVEL as dark as its darkest; its tone"""
     grow = cv2.dilate(m.astype(np.uint8), np.ones((2 * PX + 1, 2 * PX + 1), np.uint8)) > 0
     field = np.where(grow, d[y0:y1, x0:x1], 0.0)
+    field0 = field
     peak = float(d[y0:y1, x0:x1][m].max()) if m.any() else 0.0     # its own darkest (not a darker line it touches)
     if peak <= 0:
         return None
@@ -1426,6 +1672,9 @@ def _outline_mark(m, x0, y0, x1, y1, d, g, strict=False):
             pa = field[ys, xs] >= field[ys + 1, xs + 1]
             field[ys[pa], xs[pa]] = level + 1e-3; field[ys[~pa] + 1, xs[~pa] + 1] = level + 1e-3
     rings = []
+    if SMOOTH_MARKS:
+        rings = _smooth_outline(field0, x0, y0, max(level, SMOOTH_LEVEL * peak) / peak)
+        return {"rings": rings, "g": tone, "mark": True} if rings else None
     for c in measure.find_contours(np.pad(field, 1), level):
         if len(c) < 4:
             continue
@@ -1435,6 +1684,47 @@ def _outline_mark(m, x0, y0, x1, y1, d, g, strict=False):
         if len(ring) >= 3 and abs(signed_area(ring)) >= 0.5 * PX * PX:
             rings.append([[round(float(a), 2), round(float(b), 2)] for a, b in ring])
     return {"rings": rings, "g": tone, "mark": True} if rings else None
+
+
+SMOOTH_MARKS = os.environ.get("FT_SMOOTH_MARKS", "1") == "1"   # (r11) a mark's outline read from the picture's own pixels, smoothly
+SMOOTH_F = int(os.environ.get("FT_SMOOTH_F", "8"))               # ... enlarged this many times (cubic)
+SMOOTH_SIGMA = float(os.environ.get("FT_SMOOTH_SIGMA", "0.35"))  # ... and smoothed this much (picture px)
+SMOOTH_TOL = float(os.environ.get("FT_SMOOTH_TOL", "0.04"))      # ... its outline kept within this (picture px)
+SMOOTH_SQUARE = os.environ.get("FT_SMOOTH_SQUARE", "1") == "1"   # ... its level and plumb edges made exact
+SMOOTH_LEVEL = float(os.environ.get("FT_SMOOTH_LEVEL", "0.5"))   # ... at this share of its darkest: half way, where a smoothed edge lies
+
+
+def _smooth_outline(field, x0, y0, share):
+    """(r11) a mark's outline rings where `field` (its darkness, in working px) reaches `share` of its darkest, read
+    from the picture's own pixels enlarged smoothly: at UP x the picture's pixels are repeated, and an outline traced
+    there follows their steps, so a letter came out lumpy where its source is a smooth stroke. The share is of the
+    smoothed mark's own darkest: smoothing lowers a thin light line's darkest, and a level set by the picture's
+    would cut a hob's light rings into dashes"""
+    ox, oy = (-x0) % PX, (-y0) % PX
+    fo = field[oy::PX, ox::PX] if PX > 1 else field
+    if fo.size == 0:
+        return []
+    fo = np.pad(fo.astype(np.float32), 2)
+    F = max(1, SMOOTH_F)
+    big = cv2.resize(fo, None, fx=F, fy=F, interpolation=cv2.INTER_CUBIC)
+    if SMOOTH_SIGMA > 0:
+        big = cv2.GaussianBlur(big, (0, 0), SMOOTH_SIGMA * F)
+    level = share * float(big.max())
+    if level <= 0:
+        return []
+    rings = []
+    for c in measure.find_contours(big, level):
+        if len(c) < 8:
+            continue
+        s = (c[:, ::-1] + 0.5) / F - 0.5 - 2                    # the picture's pixel-centre coordinates in the crop
+        pts = np.stack([x0 + ox + (s[:, 0] + 0.5) * PX, y0 + oy + (s[:, 1] + 0.5) * PX], 1)
+        ring = rdp(pts, SMOOTH_TOL * PX)
+        if SMOOTH_SQUARE:
+            ring = squared(ring)
+        ring = np.asarray(ring, float)
+        if len(ring) >= 3 and abs(signed_area(ring)) >= 0.5 * PX * PX:
+            rings.append([[round(float(a), 2), round(float(b), 2)] for a, b in ring])
+    return rings
 
 
 def _seg_points(e):
@@ -2473,6 +2763,454 @@ def join_ends(segs, solid, ink=None):
     return lines + [e for e in segs if e["k"] != "line"]
 
 
+# ---------------------------------------------------------------- (r11) tidy: weights even, pieces of one line one, ends joined
+TIDY = os.environ.get("FT_TIDY", "1") == "1"
+TIDY_WEIGH = os.environ.get("FT_TIDY_WEIGH", "1") == "1"     # a thin line's weight and tone from all its ink across it
+TIDY_MERGE = os.environ.get("FT_TIDY_MERGE", "1") == "1"     # two pieces of one line (end to end, or one over the other) one line
+TIDY_ARCS = os.environ.get("FT_TIDY_ARCS", "1") == "1"       # an arc's end run on into the line it meets, or onto it
+TIDY_TEES = os.environ.get("FT_TIDY_TEES", "1") == "1"       # a slanting line's end at another line kept within that line
+
+
+def _arc_pt(e, a):
+    c = np.asarray(e["c"], float)
+    return c + e["r"] * np.array([math.cos(a), math.sin(a)])
+
+
+def _cross_ink(d, P, N, half):
+    """for points P with normals N: the ink across each (sum of darkness over its own run, in picture px) and its
+    peak; the run is the dark stretch round the centre, up to where it fades or a darker line beside it begins"""
+    step = 0.25 * PX
+    s = np.arange(-half, half + 1e-9, step)
+    X = (P[:, None, 0] + s[None, :] * N[:, None, 0] - 0.5).astype(np.float32)
+    Y = (P[:, None, 1] + s[None, :] * N[:, None, 1] - 0.5).astype(np.float32)
+    V = cv2.remap(d if d.dtype == np.float32 else d.astype(np.float32), X, Y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+    mid = len(s) // 2
+    reach = int(round(0.75 * PX / step))
+    out = []
+    for v in V:
+        lo, hi = max(0, mid - reach), min(len(v), mid + reach + 1)
+        c = lo + int(np.argmax(v[lo:hi])); pk = float(v[c])
+        if pk <= 0.05:
+            out.append((0.0, 0.0, 0.0, 0.0, 1.0, 0.0)); continue
+        i = c
+        mn = pk
+        while i - 1 >= 0 and v[i - 1] > 0.1 * pk and v[i - 1] <= mn + 0.08:
+            i -= 1; mn = min(mn, v[i])
+        j = c
+        mn = pk
+        while j + 1 < len(v) and v[j + 1] > 0.1 * pk and v[j + 1] <= mn + 0.08:
+            j += 1; mn = min(mn, v[j])
+        # clean: the run fades out on both sides within the window (not a line along the normal, nor one touching)
+        clean = 1.0 if (i > 0 and j < len(v) - 1 and v[max(0, i - 1)] < 0.25 * pk and v[min(len(v) - 1, j + 1)] < 0.25 * pk) else 0.0
+        run_ = v[i:j + 1]
+        # the second pixel's darkness: the darkest a picture pixel or more from the darkest
+        away = int(round(1.0 * PX / step))
+        rest_ = np.concatenate([v[i:max(i, c - away + 1)], v[min(j + 1, c + away):j + 1]])
+        v2 = float(rest_.max()) if rest_.size else 0.0
+        out.append((float(run_.sum()) * step / PX, pk, clean, (j - i) * step / PX, float((run_ >= 0.85 * pk).mean()), v2 / pk))
+    return np.array(out)
+
+
+def _weigh(segs, d):
+    """a thin line drawn black but anti-aliased across two pixels reads as a wider grey line, and as a thinner black one
+    where it falls on one pixel: the same line drawn at changing weights and tones. Its ink summed across it gives
+    its weight whatever the pixels: where that is a picture pixel or more, the line is black and that wide."""
+    d = d if d.dtype == np.float32 else d.astype(np.float32)
+    for e in segs:
+        if e["k"] not in ("line", "arc") or e.get("light") or e["w"] > 4.5 * PX:
+            continue
+        if e["k"] == "line":
+            a, b = np.asarray(e["a"], float), np.asarray(e["b"], float)
+            L = float(np.linalg.norm(b - a))
+            if L < 6 * PX:
+                continue
+            u = (b - a) / L; n = np.array([-u[1], u[0]])
+            t = np.linspace(0.2, 0.8, int(min(15, max(4, L / (2 * PX)))))
+            P = a[None] + t[:, None] * (b - a)[None]; N = np.repeat(n[None], len(P), 0)
+        else:
+            span = e["a1"] - e["a0"]
+            if e["r"] * abs(span) < 6 * PX:
+                continue
+            A = e["a0"] + np.linspace(0.1, 0.9, int(min(15, max(3, e["r"] * abs(span) / (3 * PX))))) * span
+            N = np.stack([np.cos(A), np.sin(A)], 1); P = np.asarray(e["c"], float)[None] + e["r"] * N
+        prof = _cross_ink(d, P, N, e["w"] / 2.0 + 2.0 * PX)
+        ok = (prof[:, 1] > 0.05) & (prof[:, 2] > 0)
+        if ok.sum() < max(2, 0.4 * len(prof)):
+            continue
+        ink, pk, run = float(np.median(prof[ok, 0])), float(np.median(prof[ok, 1])), float(np.median(prof[ok, 3]))
+        flat, second = float(np.median(prof[ok, 4])), float(np.median(prof[ok, 5]))
+        # a black line split over two pixels, unevenly: its ink, all of it within two pixels, sums to its width. A
+        # line whose ink spreads wider (one a reduced picture blurred), lies evenly over its pixels (a grey line two
+        # pixels wide) or in one of them (a grey line with a fringe) is left as traced: summed across, a grey line
+        # reads as a black one
+        if 0.8 <= ink <= 2.0 and pk >= 0.5 and run <= 2.3 and flat <= 0.65 and second >= 0.4:
+            e["w"] = max(0.75, ink) * PX
+            e["dark"] = max(float(e["dark"]), 1.0)
+    return segs
+
+
+class _LineGrid:
+    """lines indexed by the grid cells their band (padded) passes through"""
+    def __init__(self, cell):
+        self.cell = cell; self.cells = {}
+
+    def _keys(self, e, pad):
+        a, b = np.asarray(e["a"], float), np.asarray(e["b"], float)
+        L = float(np.linalg.norm(b - a)); n = max(2, int(L / self.cell) + 2)
+        P = a[None] + np.linspace(0, 1, n)[:, None] * (b - a)[None]
+        r = pad + e["w"] / 2.0
+        ks = set()
+        for x, y in P:
+            for xx in (x - r, x, x + r):
+                for yy in (y - r, y, y + r):
+                    ks.add((int(xx // self.cell), int(yy // self.cell)))
+        return ks
+
+    def add(self, k, e, pad):
+        for key in self._keys(e, pad):
+            self.cells.setdefault(key, set()).add(k)
+
+    def near(self, p, r=0.0):
+        out = set()
+        for xx in (p[0] - r, p[0], p[0] + r):
+            for yy in (p[1] - r, p[1], p[1] + r):
+                out |= self.cells.get((int(xx // self.cell), int(yy // self.cell)), set())
+        return out
+
+
+def _merge_pair(e, f):
+    """e and f as one line, if they are two pieces of one line (see _merge_pieces); else None"""
+    u = _dir(e); n = np.array([-u[1], u[0]])
+    v = _dir(f)
+    if abs(float(np.dot(u, v))) < math.cos(math.radians(2.5)):
+        return None
+    off = max(abs(float(np.dot(f["a"] - e["a"], n))), abs(float(np.dot(f["b"] - e["a"], n))))
+    if off > max(0.6 * PX, 0.3 * (e["w"] + f["w"])) or abs(e["w"] - f["w"]) > max(0.5 * PX, 0.25 * max(e["w"], f["w"])):
+        return None
+    ta = sorted([0.0, float(np.dot(e["b"] - e["a"], u))])
+    tb = sorted([float(np.dot(f["a"] - e["a"], u)), float(np.dot(f["b"] - e["a"], u))])
+    if max(tb[0] - ta[1], ta[0] - tb[1]) > 1.0 * PX:
+        return None
+    Le, Lf = ta[1] - ta[0], tb[1] - tb[0]
+    lo, hi = min(ta[0], tb[0]), max(ta[1], tb[1])
+    o = Lf * float(np.dot((f["a"] + f["b"]) / 2.0 - e["a"], n)) / max(1e-9, Le + Lf)
+    base = e["a"] + n * o
+    e2 = dict(e if Le >= Lf else f)
+    e2["a"], e2["b"] = base + u * lo, base + u * hi
+    e2["w"] = (Le * e["w"] + Lf * f["w"]) / max(1e-9, Le + Lf)
+    e2["dark"] = max(float(e["dark"]), float(f["dark"]))
+    e2["na"] = e2["nb"] = -1
+    return e2
+
+
+def _merge_pieces(segs):
+    """two straight pieces of one line - end to end with no more than a pixel between, or one lying over the other
+    (a line traced twice: as a rectangle's side and as a stroke) - become one line, its weight their lengths' mean"""
+    lines = [e for e in segs if e["k"] == "line" and not e.get("light")]
+    rest = [e for e in segs if not (e["k"] == "line" and not e.get("light"))]
+    for e in lines:
+        e["a"] = np.asarray(e["a"], float); e["b"] = np.asarray(e["b"], float)
+    grid = _LineGrid(6 * PX)
+    for k, e in enumerate(lines):
+        grid.add(k, e, 1.0 * PX)
+    alive = [True] * len(lines)
+    for i in range(len(lines)):
+        while alive[i]:
+            e = lines[i]
+            cand = set()
+            for p in (e["a"], e["b"], (e["a"] + e["b"]) / 2.0):
+                cand |= grid.near(p, e["w"] / 2.0 + 1.5 * PX)
+            merged = False
+            for j in sorted(cand):
+                if j == i or not alive[j]:
+                    continue
+                e2 = _merge_pair(e, lines[j])
+                if e2 is None:
+                    continue
+                alive[j] = False
+                lines[i] = e2
+                grid.add(i, e2, 1.0 * PX)
+                merged = True
+                break
+            if not merged:
+                break
+    return [e for k, e in enumerate(lines) if alive[k]] + rest
+
+
+TIDY_TICKS = os.environ.get("FT_TIDY_TICKS", "1") == "1"     # a slash tick split by the lines it crosses drawn as one slash
+
+
+TIDY_CORNERS = os.environ.get("FT_TIDY_CORNERS", "1") == "1"   # lines meeting at a corner: one weight, flush outer corner
+
+
+def _corners(segs):
+    """(r11) two lines meeting at a corner (a door leaf's frame, a window's sill) came out a little apart in weight
+    and end: their outer edges didn't meet, a nub or a notch at the corner. Lines of nearly one weight joined at
+    corners take one weight (their lengths' mean) and the darker tone, and each pair meets exactly at the corner, so
+    the square caps make it a square corner"""
+    lines = [e for e in segs if e["k"] == "line" and not e.get("light")]
+    for e in lines:
+        e["a"] = np.asarray(e["a"], float); e["b"] = np.asarray(e["b"], float)
+    grid = {}
+    cell = 6 * PX
+    for k, e in enumerate(lines):
+        for end in ("a", "b"):
+            p = e[end]
+            grid.setdefault((int(p[0] // cell), int(p[1] // cell)), []).append((k, end))
+    parent = list(range(len(lines)))
+    def root(k):
+        while parent[k] != k:
+            parent[k] = parent[parent[k]]; k = parent[k]
+        return k
+    pairs = []
+    for k, e in enumerate(lines):
+        u = _dir(e)
+        for end in ("a", "b"):
+            p = e[end]
+            kx, ky = int(p[0] // cell), int(p[1] // cell)
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    for j, endj in grid.get((kx + dx, ky + dy), []):
+                        if j <= k:
+                            continue
+                        f = lines[j]
+                        if abs(float(np.dot(u, _dir(f)))) > math.cos(math.radians(60)):
+                            continue
+                        if abs(e["w"] - f["w"]) > 0.35 * max(e["w"], f["w"]):
+                            continue
+                        X = _meet(p, u, f[endj], _dir(f))
+                        if X is None:
+                            continue
+                        tol = max(e["w"], f["w"]) + 1.0 * PX
+                        if np.linalg.norm(X - p) > tol or np.linalg.norm(X - f[endj]) > tol:
+                            continue
+                        pairs.append((k, end, j, endj, X))
+                        parent[root(j)] = root(k)
+    groups = {}
+    for k, _, j, _, _ in pairs:
+        groups.setdefault(root(k), set()).update((k, j))
+    for members in groups.values():
+        ms = [lines[k] for k in members]
+        Ls = [max(1e-6, float(np.linalg.norm(m["b"] - m["a"]))) for m in ms]
+        w = sum(L * m["w"] for L, m in zip(Ls, ms)) / sum(Ls)
+        dk = max(float(m["dark"]) for m in ms)
+        for m in ms:
+            m["w"] = w; m["dark"] = dk
+    for k, end, j, endj, X in pairs:
+        lines[k][end] = X.copy(); lines[j][endj] = X.copy()
+    return segs
+
+
+def _slash_ticks(segs):
+    """(r11) a dimension's slash tick crosses the dimension line and the witness line; traced, it came apart at them
+    into a slanting half and a level (or square) half - a flag and a square at each end of a dimension. A short heavy
+    slanting piece and a short heavy piece along its line beyond it, with no more than the crossed lines between,
+    are one slash."""
+    lines = [e for e in segs if e["k"] == "line" and not e.get("light")]
+    rest = [e for e in segs if not (e["k"] == "line" and not e.get("light"))]
+    for e in lines:
+        e["a"] = np.asarray(e["a"], float); e["b"] = np.asarray(e["b"], float)
+    L = lambda e: float(np.linalg.norm(e["b"] - e["a"]))
+    heavy = [k for k, e in enumerate(lines) if e["w"] >= 1.8 * PX and L(e) <= 5 * e["w"]]
+    grid = _LineGrid(6 * PX)
+    for k in heavy:
+        grid.add(k, lines[k], 1.0 * PX)
+    alive = [True] * len(lines)
+    for k in heavy:
+        if not alive[k]:
+            continue
+        D = lines[k]; u = _dir(D)
+        ang = math.degrees(math.atan2(abs(u[1]), abs(u[0])))
+        if not 20 <= ang <= 70:
+            continue                                            # the slanting half
+        n = np.array([-u[1], u[0]])
+        for _ in range(2):
+            cand = set()
+            for q in (D["a"], D["b"]):
+                cand |= grid.near(q, D["w"] + 3 * PX)
+            done = False
+            for j in sorted(cand):
+                if j == k or not alive[j] or j not in heavy:
+                    continue
+                S = lines[j]
+                if abs(S["w"] - D["w"]) > 0.5 * max(S["w"], D["w"]):
+                    continue
+                pts = [S["a"], S["b"], (S["a"] + S["b"]) / 2.0]
+                if max(abs(float(np.dot(q - D["a"], n))) for q in pts) > D["w"] / 2.0 + 0.6 * PX + 0.25 * S["w"]:
+                    continue
+                td = sorted([0.0, float(np.dot(D["b"] - D["a"], u))])
+                ts = [float(np.dot(q - D["a"], u)) for q in (S["a"], S["b"])]
+                ts = sorted([min(ts) - S["w"] / 2.0 * abs(float(np.dot(_dir(S), n))), max(ts) + S["w"] / 2.0 * abs(float(np.dot(_dir(S), n)))])
+                gap = max(ts[0] - td[1], td[0] - ts[1])
+                if gap > D["w"] + 2.0 * PX:
+                    continue
+                lo, hi = min(td[0], ts[0]), max(td[1], ts[1])
+                if hi - lo > 8 * D["w"]:
+                    continue
+                D["a"], D["b"] = D["a"] + u * lo, D["a"] + u * hi
+                D["na"] = D["nb"] = -1
+                alive[j] = False
+                done = True
+                break
+            if not done:
+                break
+    return [e for k, e in enumerate(lines) if alive[k]] + rest
+
+
+def _join_arcs(segs):
+    """an arc's end running on into a straight line along it (a door swing's last stretch read as part of the jamb, a
+    pixel aside): the arc moved by no more than a pixel to touch that line, and the two meet where it does. An arc's
+    end at a line across it (a swing's end at its door leaf): the arc carried onto the line. The nearest such line
+    that can be met is met."""
+    lines = [e for e in segs if e["k"] == "line" and not e.get("light")]
+    for e in segs:
+        if e["k"] != "arc":
+            continue
+        for which in ("a0", "a1"):
+            ang = e[which]
+            E = _arc_pt(e, ang)
+            # the way the arc runs on past this end (it runs from a0 to a1, either way round)
+            sgn = 1.0 if (which == "a1") == (e["a1"] >= e["a0"]) else -1.0
+            t = sgn * np.array([-math.sin(ang), math.cos(ang)])
+            cands = []
+            for f in lines:
+                fa, fb = np.asarray(f["a"], float), np.asarray(f["b"], float)
+                v = _dir(f); L = float(np.linalg.norm(fb - fa))
+                tangent = False
+                for P, Q in ((fa, fb), (fb, fa)):
+                    dist = float(np.linalg.norm(P - E))
+                    if dist > max(2.5 * PX, f["w"] + e["w"]):
+                        continue
+                    w_ = (Q - P) / max(1e-9, L)
+                    if float(np.dot(w_, t)) < math.cos(math.radians(12)):
+                        continue
+                    cands.append((dist, 0, "tangent", f, P, Q)); tangent = True
+                if tangent or abs(float(np.dot(v, t))) > math.cos(math.radians(35)):
+                    continue
+                nv = np.array([-v[1], v[0]])
+                side = abs(float(np.dot(E - fa, nv)))
+                along = float(np.dot(E - fa, v))
+                reach_ = max(2.0 * PX, 0.05 * e["r"] * abs(e["a1"] - e["a0"]))
+                if side > f["w"] / 2.0 + e["w"] / 2.0 + reach_ or along < -f["w"] / 2.0 - PX or along > L + f["w"] / 2.0 + PX:
+                    continue
+                cands.append((side, 1, "across", f, None, None))
+            cands.sort(key=lambda c_: (c_[0], c_[1]))
+            for _, _, kind, f, P, Q in cands:
+                if _meet_arc(e, which, ang, kind, f, P, Q):
+                    break
+    return segs
+
+
+def _meet_arc(e, which, ang, kind, f, P, Q):
+    """the arc's end `which` met with line f (see _join_arcs); whether it could be"""
+    c = np.asarray(e["c"], float)
+    fa = np.asarray(f["a"], float); v = _dir(f); nv = np.array([-v[1], v[0]])
+    if kind == "tangent":
+        # the circle moved along the line's normal till it touches the line; they meet at the touching point
+        dc = float(np.dot(c - fa, nv))
+        shift = (abs(dc) - e["r"]) * (1.0 if dc > 0 else -1.0)
+        # (an arc is moved once: moving it again for its other end would undo the first end's join)
+        if abs(shift) > (0.15 * PX if e.get("_moved") else 1.0 * PX):
+            return False
+        c2 = c - nv * shift
+        T = fa + v * float(np.dot(c2 - fa, v))
+        a_new = math.atan2(T[1] - c2[1], T[0] - c2[0])
+        a_new = ang + ((a_new - ang + math.pi) % (2 * math.pi) - math.pi)
+        # the touching point lies on the line's piece (the arc runs on over what the line drew of it), or a little short
+        LQ = float(np.linalg.norm(Q - P))
+        w_ = (Q - P) / max(1e-9, LQ)
+        tT = float(np.dot(T - P, w_))
+        if tT < -2 * PX or tT > LQ or abs(a_new - ang) > 0.5:
+            return False
+        e["c"] = c2; e[which] = a_new
+        if abs(shift) > 0.15 * PX:
+            e["_moved"] = True
+        # the line runs from the touching point (its end there moved onto it)
+        if float(np.linalg.norm(Q - T)) >= 2 * PX:
+            if np.allclose(P, f["a"]):
+                f["a"] = T
+            else:
+                f["b"] = T
+        return True
+    # carried onto the line's centre: where the circle crosses it nearest this end
+    dc = float(np.dot(c - fa, nv))
+    if abs(dc) >= e["r"]:
+        return False
+    h = math.sqrt(e["r"] ** 2 - dc ** 2)
+    foot = c - nv * dc
+    best_a = None
+    other = e["a1"] if which == "a0" else e["a0"]
+    span = abs(e["a1"] - e["a0"])
+    for X in (foot + v * h, foot - v * h):
+        a_x = math.atan2(X[1] - c[1], X[0] - c[0])
+        a_x = ang + ((a_x - ang + math.pi) % (2 * math.pi) - math.pi)
+        # (run on: up to a twentieth of the arc - a swing stopping short of the floor line - ; cut back: 3 px)
+        longer = abs(a_x - other) > abs(ang - other)
+        reach = max(3 * PX, 0.05 * e["r"] * span) if longer else 3 * PX
+        if abs(a_x - ang) * e["r"] <= reach and (best_a is None or abs(a_x - ang) < abs(best_a - ang)):
+            best_a = a_x
+    if best_a is None:
+        return False
+    e[which] = best_a
+    return True
+
+
+def _tee_ends(segs):
+    """a slanting line's end at another line's side (a hatch stroke at a wall's outline): its square cap kept within
+    that line, so its corner doesn't show past it as a dot"""
+    lines = [e for e in segs if e["k"] == "line" and not e.get("light")]
+    grid = _LineGrid(8 * PX)
+    for k, e in enumerate(lines):
+        grid.add(k, e, 1.0 * PX)
+    for e in lines:
+        u = _dir(e)
+        for end in ("a", "b"):
+            p = np.asarray(e[end], float); ue = u * (1 if end == "b" else -1)
+            tip = p + ue * e["w"] / 2.0
+            for k in sorted(grid.near(tip)):
+                f = lines[k]
+                if f is e or f["w"] < e["w"]:
+                    continue
+                v = _dir(f); nv = np.array([-v[1], v[0]])
+                sin = abs(cross2(u, v)); cos = abs(float(np.dot(u, v)))
+                if sin < 0.3 or cos < 0.1:
+                    continue
+                fa = np.asarray(f["a"], float); L = float(np.linalg.norm(np.asarray(f["b"], float) - fa))
+                along = float(np.dot(tip - fa, v))
+                if along < 0 or along > L:
+                    continue
+                h = float(np.dot(tip - fa, nv)); hp = float(np.dot(p - fa, nv))
+                if abs(h) > f["w"] / 2.0 + 0.75 * PX or abs(hp) > f["w"] / 2.0 + e["w"] + PX:
+                    continue
+                # the far side is the one the line runs towards; the cap's centre placed so its corner reaches the
+                # far face and no further
+                side = 1.0 if float(np.dot(ue, nv)) > 0 else -1.0
+                want = max(0.0, f["w"] / 2.0 - (e["w"] / 2.0) * cos / max(0.3, sin))
+                ds = (want - side * h) / max(0.3, sin)
+                if abs(ds) <= 1.5 * PX:
+                    e[end] = p + ue * ds
+                break
+    return segs
+
+
+def tidy(segs, d):
+    """(r11) the trace tidied as a drawing: one line at one weight along its length, a line traced in pieces or twice
+    drawn once, arcs joined to the lines they run into or end on, slanting ends kept within the lines they meet"""
+    if TIDY_WEIGH:
+        segs = _weigh(segs, d)
+    if TIDY_MERGE:
+        segs = _merge_pieces(segs)
+    if TIDY_TICKS:
+        segs = _slash_ticks(segs)
+    if TIDY_CORNERS:
+        segs = _corners(segs)
+    if TIDY_ARCS:
+        segs = _join_arcs(segs)
+    if TIDY_TEES:
+        segs = _tee_ends(segs)
+    return segs
+
+
 def _inked(ink, a, b):
     """the stretch a..b lies on ink (most of it): a line's end past another line is kept only where it is drawn"""
     if ink is None:
@@ -2604,6 +3342,37 @@ def _trace(g0, g, keep_text):
             if weak_all is not None:
                 weak_all = weak_all & (1 - (ga & (d < 0.9)))
     stroke = ink & (1 - cv2.dilate(solid, K))
+    rings_ = []
+    if RINGS:
+        # (r11) circles - a drain's two rings, a hob's burners, a basin's waste - fitted as circles before anything
+        # else reads their pixels
+        weak_r = ((weak_all | ink) if weak_all is not None else ink) & (1 - cv2.dilate(solid, K)) & (1 - text)
+        rings_, rtaken = fit_rings(weak_r, d, g0)
+        if rings_:
+            keep_ = (1 - rtaken).astype(np.uint8)
+            stroke = stroke & keep_; ink = ink & keep_
+            if weak_all is not None:
+                weak_all = weak_all & keep_
+    words_ = []
+    if RT.RETYPE:
+        # (r12) the lettering read first: its letters are lettering, not line work to be redrawn
+        weak_t = ((weak_all | ink) if weak_all is not None else ink) & (1 - cv2.dilate(solid, K)) & (1 - text)
+        words_, ttaken = RT.read_words(weak_t, g0, PX, paper)
+    drawn_ = []
+    if CLN.CLEAN:
+        # (r12) thin line drawings - a sink, a hob, a bath, furniture - redrawn clean, as lines and arcs joined
+        weak_c = ((weak_all | ink) if weak_all is not None else ink) & (1 - cv2.dilate(solid, K)) & (1 - text)
+        if words_:
+            weak_c = weak_c & (1 - ttaken)
+        # (lettering is not line work to be redrawn: a word's letters run together are outlined as before)
+        weak_c = weak_c & (1 - RT.letter_marks(weak_c, PX))
+        drawn_, ctaken = CLN.clean_drawings(weak_c, d, PX, max(g0.shape), skeleton_graph, prune_spurs,
+                                            RT.letter_marks.height)
+        if drawn_:
+            keep_ = (1 - ctaken).astype(np.uint8)
+            stroke = stroke & keep_; ink = ink & keep_
+            if weak_all is not None:
+                weak_all = weak_all & keep_
     if MARK_PX:
         weak = ((weak_all | ink) if weak_all is not None else ink) & (1 - cv2.dilate(solid, K)) & (1 - text)
         marks, taken = small_marks(weak, stroke, d, g)
@@ -2676,6 +3445,10 @@ def _trace(g0, g, keep_text):
         segs = close_curves(segs, d, solid)
     if DASHES:
         segs, polys = align_dashes(segs, polys)
+    segs = segs + rings_
+    if TIDY:
+        segs = tidy(segs, d)
+    segs = segs + drawn_
     # the fills' own line work: darker edges, and lighter lines through dark fills (their tone kept as lightness)
     rim, light = solid_polygons.rim, solid_polygons.light
     over = []
@@ -2689,6 +3462,8 @@ def _trace(g0, g, keep_text):
         for e in merge_lines(fit_chains(lch)):
             e["light"] = True
             over.append(e)
+    if FILL_DARK_HOLES:
+        polys = _fill_dark_holes(polys, g)
     elems = []
     tone_dark = lambda dk: int(round(paper - min(1.0, dk) * (paper - darkest)))
     for e in segs + over:
@@ -2700,6 +3475,9 @@ def _trace(g0, g, keep_text):
         elif e["k"] == "arc":
             elems.append({"k": "arc", "c": [round(float(e["c"][0]), 2), round(float(e["c"][1]), 2)], "r": round(float(e["r"]), 2),
                           "a0": round(float(e["a0"]), 4), "a1": round(float(e["a1"]), 4), "w": round(float(e["w"]), 2), "g": tone(e["dark"])})
+        elif e["k"] == "path":
+            elems.append({"k": "path", "parts": [_part_out(p_) for p_ in e["parts"]], "closed": bool(e.get("closed")),
+                          "w": round(float(e["w"]), 2), "g": tone(e["dark"])})
         else:
             elems.append({"k": "dot", "c": [round(float(e["c"][0]), 2), round(float(e["c"][1]), 2)], "w": round(float(e["w"]), 2), "g": tone(e["dark"])})
         if e.get("light"):
@@ -2715,8 +3493,81 @@ def _trace(g0, g, keep_text):
             e["w"] = round(e["w"] * f, 2)
             if "r" in e:
                 e["r"] = round(e["r"] * f, 2)
+            if "parts" in e:
+                e["parts"] = [_part_scaled(p_, f) for p_ in e["parts"]]
+    if PENS:
+        _pens(elems)
+    words = []
+    if RT.RETYPE:
+        # (r12) lettering read with confidence set in type
+        polys, elems, words = RT.retype(polys, g0, paper, words_, elems)
     return {"size": [int(g0.shape[1]), int(g0.shape[0])], "paper": int(paper), "walls": polys, "strokes": elems,
-            "text_px": int(text.sum())}
+            "text_px": int(text.sum()), "typed": words}
+
+
+PENS = os.environ.get("FT_PENS", "1") == "1"   # (r12) every line drawn with one of the plan's few pens
+PEN_W = float(os.environ.get("FT_PEN_W", "1.3"))    # widths within this ratio of each other are one pen's
+PEN_G = float(os.environ.get("FT_PEN_G", "28"))     # tones within this of each other are one pen's
+
+
+def _elem_len(e):
+    if e["k"] == "line":
+        return math.hypot(e["b"][0] - e["a"][0], e["b"][1] - e["a"][1])
+    if e["k"] == "arc":
+        return abs(e["a1"] - e["a0"]) * e["r"]
+    if e["k"] == "path":
+        return sum(math.hypot(p[2][0] - p[1][0], p[2][1] - p[1][1]) if p[0] == "L" else abs(p[4] - p[3]) * p[2]
+                   for p in e["parts"])
+    return 0.0
+
+
+def _clusters(vals, wts, close):
+    """vals grouped where each is close (close(lo, v)) to its group's least: each value's group's weighted median"""
+    order = np.argsort(vals)
+    out = np.zeros(len(vals))
+    i = 0
+    while i < len(order):
+        j = i
+        lo = vals[order[i]]
+        while j + 1 < len(order) and close(lo, vals[order[j + 1]]):
+            j += 1
+        idx = order[i:j + 1]
+        v, w_ = np.asarray(vals)[idx], np.asarray(wts)[idx]
+        o = np.argsort(v)
+        cw = np.cumsum(w_[o])
+        med = float(v[o][np.searchsorted(cw, cw[-1] / 2.0)])
+        out[idx] = med
+        i = j + 1
+    return out
+
+
+def _pens(elems):
+    """(r12) the plan's lines drawn with a few pens: widths within PEN_W of each other drawn at their common width, and
+    tones within PEN_G of each other in their common tone, each the one most of their length is drawn with - so one
+    kind of line (a fixture's outline, a wall's face) is drawn alike wherever it is"""
+    sel = [e for e in elems if e["k"] in ("line", "arc", "path") and not e.get("light")]
+    if len(sel) < 2:
+        return
+    L = np.array([max(0.1, _elem_len(e)) for e in sel])
+    W = np.array([float(e["w"]) for e in sel]); G = np.array([float(e["g"]) for e in sel])
+    Wp = _clusters(W, L, lambda lo, v: v <= lo * PEN_W + 0.05)
+    Gp = _clusters(G, L, lambda lo, v: v <= lo + PEN_G)
+    for e, w_, g_ in zip(sel, Wp, Gp):
+        e["w"] = round(float(w_), 2); e["g"] = int(round(g_))
+
+
+def _part_out(p):
+    """(r12) one part of a path, as written: ["L", a, b] or ["A", c, r, a0, a1]"""
+    if p[0] == "L":
+        return ["L", [float(p[1][0]), float(p[1][1])], [float(p[2][0]), float(p[2][1])]]
+    return ["A", [float(p[1][0]), float(p[1][1])], float(p[2]), round(float(p[3]), 5), round(float(p[4]), 5)]
+
+
+def _part_scaled(p, f):
+    r2 = lambda v: round(v * f, 3)
+    if p[0] == "L":
+        return ["L", [r2(p[1][0]), r2(p[1][1])], [r2(p[2][0]), r2(p[2][1])]]
+    return ["A", [r2(p[1][0]), r2(p[1][1])], r2(p[2]), p[3], p[4]]
 
 
 def to_svg(t):
