@@ -2176,7 +2176,7 @@ export default function DesignControlsPlanPanel({
               {renderSurfaceMaterialBrowser("room")}
               <div
                 data-testid="mobile-selected-room-dimensions"
-                className="mt-2 grid grid-cols-2 gap-2 border-t border-separator pt-2 md:hidden"
+                className="mt-2 grid grid-cols-2 gap-2 border-t border-separator pt-2 lg:hidden"
               >
                 <MeasurementField
                   label="Width"

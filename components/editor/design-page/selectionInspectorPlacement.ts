@@ -6,7 +6,7 @@ import {
   setPhoneSheetInspectorActive,
   usePhoneSheetInspector,
 } from "@/lib/phone-step-sheet";
-import { useReportTabletRightPanel } from "@/lib/tablet-panel-policy";
+import { TABLET_MEDIA_QUERY, useReportTabletRightPanel, useStepPanelRoomCardShown } from "@/lib/tablet-panel-policy";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 
 type InspectorState = Parameters<typeof isPhoneSheetInspectorSelection>[0];
@@ -57,10 +57,14 @@ function useRevealDockedInspector(element: HTMLElement | null, docked: boolean, 
  * Where the inspector goes: from md, floating or docked in the Plan rail; on phones (UX 4d, audit
  * AX2), the step sheet for a wall, ceiling, door, window, fixed element or note, with Done to
  * deselect, and nowhere otherwise (rooms keep the Plan panel's room section). Floating for one of
- * those on a tablet, the step panel steps aside for it (AX11).
+ * those on a tablet, the step panel steps aside for it (AX11). A room on a tablet is edited in the
+ * Plan panel's room card while that's open, so its inspector doesn't float beside it (30 Oct 2026).
  */
-export function useInspectorPlacement(state: InspectorState, configuration: InspectorConfiguration, selectionKey = "") {
+export function useInspectorPlacement(state: InspectorState, configuration: InspectorConfiguration, selectionKey = "", room = false) {
   const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
+  const tablet = useMediaQuery(TABLET_MEDIA_QUERY);
+  const roomCardShown = useStepPanelRoomCardShown();
+  const roomInPanel = tablet && roomCardShown && room;
   const sheet = usePhoneSheetInspector();
   const takesOver = isPhoneSheetInspectorSelection(state);
   const inSheet = !wide && Boolean(sheet.slot) && takesOver;
@@ -74,7 +78,7 @@ export function useInspectorPlacement(state: InspectorState, configuration: Insp
   const [element, setElement] = useState<HTMLDivElement | null>(null);
   useRevealDockedInspector(element, docked && !inSheet, selectionKey);
   if (inSheet) return { shown: true, inSheet, portalTarget: sheet.slot, attach: setElement };
-  return { shown: wide, inSheet, portalTarget: docked ? configuration.portalTarget : null, attach: setElement };
+  return { shown: wide && !roomInPanel, inSheet, portalTarget: docked ? configuration.portalTarget : null, attach: setElement };
 }
 
 /**

@@ -146,5 +146,9 @@ assert.match(
   /useReportTabletRightPanel\("inspector", wide && !docked && takesOver, configuration\.floatingWidthPx \+ configuration\.floatingRightPx\);/,
   "A floating inspector for a wall, door or window; not for a room, which is selected on arrival."
 );
+// A room is edited in the Plan panel's room card on a tablet while it's open (30 Oct 2026): the card's
+// Surfaces rows report it, and the room's inspector waits; the card shows Width and Depth up to lg.
+assert.match(read("components/editor/design-controls-plan/RoomSurfaceRows.tsx"), /\}\) \{\n  useReportStepPanelRoomCard\(\);\n  if \(hidden\) return null;/);
+assert.match(read("components/editor/DesignControlsPlanPanel.tsx"), /data-testid="mobile-selected-room-dimensions"\s+className="[^"]*\blg:hidden"/);
 
 console.log("Tablet panel checks passed.");

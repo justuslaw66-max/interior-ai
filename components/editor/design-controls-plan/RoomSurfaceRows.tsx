@@ -2,6 +2,7 @@
 
 import { ChevronRight } from "lucide-react";
 import type { SurfaceSummaryRow, SurfaceTargetMode } from "./surfaceCatalog";
+import { useReportStepPanelRoomCard } from "@/lib/tablet-panel-policy";
 
 export type RoomSurfaceTarget = "floor" | "walls" | "ceiling";
 export type RoomSurfaceRow = { target: RoomSurfaceTarget; label: string; value: string };
@@ -40,7 +41,8 @@ export const surfaceBrowserHolderOf = (openingSelected: boolean, roomCardFolded:
  * The room card's Floor, Walls and Ceiling rows (UX audit ED8, phase 4f). A row opens the Surfaces
  * picker in the panel for that surface: flooring for Floor, Paint | Materials for Walls (on Paint),
  * paint for Ceiling. With the canvas's Surfaces chip and the inspector's Change…, every surface
- * change is two clicks.
+ * change is two clicks. Mounted only in the room card, they say the card is on screen, which keeps
+ * a tablet's room inspector from floating beside it (lib/tablet-panel-policy).
  */
 export function RoomSurfaceRows({ rows, openTarget, disabled, hidden = false, onOpen }: {
   rows: readonly RoomSurfaceRow[];
@@ -50,6 +52,7 @@ export function RoomSurfaceRows({ rows, openTarget, disabled, hidden = false, on
   hidden?: boolean;
   onOpen: (target: RoomSurfaceTarget) => void;
 }) {
+  useReportStepPanelRoomCard();
   if (hidden) return null;
   return (
     <ul data-testid="room-surface-rows" aria-label="Surfaces" className="mt-3 divide-y divide-separator rounded-lg border border-box-border bg-field">

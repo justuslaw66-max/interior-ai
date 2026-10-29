@@ -205,6 +205,32 @@ test("a tablet's step panel steps aside for a selected product", async ({ page }
   await expect(toggle).toHaveAttribute("aria-expanded", "true");
 });
 
+// 30 Oct 2026: on a tablet with the Plan panel open, the selected room is edited in the panel's
+// room card, Width and Depth included, instead of an inspector floating beside the panel (which
+// left ~166px of canvas). With the panel hidden, the room's inspector floats again.
+test("a tablet edits the selected room in the Plan panel, not a floating inspector", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 820, height: 1180 });
+  await clearEditorStorage(page);
+  await openTemplatePlan(page);
+  const roomToolbar = page.getByTestId("selected-room-toolbar");
+  if (!(await roomToolbar.isVisible().catch(() => false))) {
+    await page.locator('[data-testid="house-room-2d-label"]').first().click();
+  }
+  await expect(roomToolbar).toBeVisible();
+  const panel = page.getByTestId("design-controls-panel");
+  await expect(panel).toBeVisible();
+  const roomSection = page.getByTestId("plan-section-toggle-selectedRoom");
+  if ((await roomSection.getAttribute("aria-expanded")) !== "true") await roomSection.click();
+  await expect(panel.getByTestId("mobile-selected-room-dimensions")).toBeVisible();
+  await expect(panel.getByTestId("mobile-room-width-input")).toBeVisible();
+  await expect(page.getByTestId("selection-inspector")).toHaveCount(0);
+
+  await page.getByTestId("editor-design-sidebar-toggle").click();
+  await expect(panel).toHaveCount(0);
+  await expect(page.getByTestId("selection-inspector-room-dimensions")).toBeVisible();
+});
+
 test.describe("20. Mobile Plan Mode", () => {
   for (const viewport of VIEWPORTS) {
     test(`consumer plan controls stay usable on ${viewport.name}`, async ({ page }) => {

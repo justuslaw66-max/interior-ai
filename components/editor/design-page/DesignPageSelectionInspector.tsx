@@ -88,7 +88,7 @@ export function DesignPageSelectionInspector({
       !state.surfaceInspectorIsWall &&
       !state.surfaceInspectorIsCeiling
   );
-  const { attach, ...placement } = useInspectorPlacement(state, configuration, `${state.summary.kind}:${state.summary.title}`);
+  const { attach, ...placement } = useInspectorPlacement(state, configuration, `${state.summary.kind}:${state.summary.title}`, roomSelectionActive);
   const frame = inspectorFrame(configuration, placement);
   const inspector = (
     <div ref={attach} data-testid="selection-inspector" data-touch-area data-in-sheet={placement.inSheet ? "true" : undefined}

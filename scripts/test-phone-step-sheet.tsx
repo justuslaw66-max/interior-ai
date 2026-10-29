@@ -157,7 +157,9 @@ const inspectorSource = read("components/editor/design-page/DesignPageSelectionI
 const placementSource = read("components/editor/design-page/selectionInspectorPlacement.ts");
 assert.match(placementSource, /const takesOver = isPhoneSheetInspectorSelection\(state\);\s*const inSheet = !wide && Boolean\(sheet\.slot\) && takesOver;/);
 assert.match(placementSource, /if \(inSheet\) return \{ shown: true, inSheet, portalTarget: sheet\.slot, attach: setElement \};/, "In the sheet, it goes into the slot.");
-assert.match(inspectorSource, /const \{ attach, \.\.\.placement \} = useInspectorPlacement\(state, configuration, `\$\{state\.summary\.kind\}:\$\{state\.summary\.title\}`\);/);
+assert.match(inspectorSource, /const \{ attach, \.\.\.placement \} = useInspectorPlacement\(state, configuration, `\$\{state\.summary\.kind\}:\$\{state\.summary\.title\}`, roomSelectionActive\);/);
+// On a tablet, a room's inspector waits while the Plan panel's room card is open (30 Oct 2026).
+assert.match(placementSource, /const roomInPanel = tablet && roomCardShown && room;[\s\S]*?shown: wide && !roomInPanel,/);
 assert.match(inspectorSource, /<div ref=\{attach\} data-testid="selection-inspector"/);
 // Docked in the Plan rail, the inspector scrolls into view when the selection changes (30 Oct 2026).
 assert.match(placementSource, /useRevealDockedInspector\(element, docked && !inSheet, selectionKey\);/);
