@@ -62,7 +62,7 @@ import { getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
 import { moveOpeningCenterFromWorldPoint,
   projectWorldPointToOpeningHost, resizeOpeningFromWorldPoint } from "@/lib/design-page-opening-interaction";
-import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS } from "./canvasChipStyle";
+import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS, CANVAS_FIELD_TEXT_CLASS } from "./canvasChipStyle";
 import { memoizeByObject } from "./memoizeByObject";
 type RectZone = {
   id: string;
@@ -3575,7 +3575,7 @@ export default function RoomRenderer2D({
                       >
                         <span>Width</span>
                         <input
-                          data-testid="active-room-dimension-editor-width"
+                          data-testid="active-room-dimension-editor-width" className={CANVAS_FIELD_TEXT_CLASS}
                           autoFocus
                           type="number"
                           inputMode="numeric"
@@ -3599,7 +3599,7 @@ export default function RoomRenderer2D({
                             border: "none",
                             background: "transparent",
                             color: colour("#166534"),
-                            ...CANVAS_CHIP_TEXT,
+                            fontWeight: 700, lineHeight: "16px",
                             outline: "none",
                           }}
                         />
@@ -3654,7 +3654,7 @@ export default function RoomRenderer2D({
                       >
                         <span>Depth</span>
                         <input
-                          data-testid="active-room-dimension-editor-depth"
+                          data-testid="active-room-dimension-editor-depth" className={CANVAS_FIELD_TEXT_CLASS}
                           autoFocus
                           type="number"
                           inputMode="numeric"
@@ -3678,7 +3678,7 @@ export default function RoomRenderer2D({
                             border: "none",
                             background: "transparent",
                             color: colour("#166534"),
-                            ...CANVAS_CHIP_TEXT,
+                            fontWeight: 700, lineHeight: "16px",
                             outline: "none",
                           }}
                         />
@@ -4488,7 +4488,7 @@ export default function RoomRenderer2D({
                   onPointerDown={(event) => event.stopPropagation()}
                 >
                   <input
-                    data-testid="wall-draw-segment-length-editor"
+                    data-testid="wall-draw-segment-length-editor" className={CANVAS_FIELD_TEXT_CLASS}
                     autoFocus
                     type="text"
                     inputMode={measurementUnit === "ft-in" ? "text" : "decimal"}
@@ -4513,7 +4513,6 @@ export default function RoomRenderer2D({
                       border: "none",
                       background: "transparent",
                       color: colour("#1d4ed8"),
-                      fontSize: 12,
                       fontWeight: 800,
                       outline: "none",
                     }}
