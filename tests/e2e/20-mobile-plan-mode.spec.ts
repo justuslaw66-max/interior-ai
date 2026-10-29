@@ -269,6 +269,14 @@ test.describe("20. Mobile Plan Mode", () => {
       const besideQuickActions = tipsBox!.x >= quickBox!.x + quickBox!.width;
       const underQuickActions = tipsBox!.y >= quickBox!.y + quickBox!.height;
       expect(besideQuickActions || underQuickActions, "Tips doesn't cover the quick actions.").toBe(true);
+      if (viewport.name === "tablet") {
+        // The row centres on the canvas card beside the step panel, not on the window (30 Oct 2026).
+        const [rowBox, cardBox] = await Promise.all([
+          page.getByTestId("plan-canvas-tool-row").boundingBox(),
+          page.getByTestId("canvas-frame-card").boundingBox(),
+        ]);
+        expect(Math.abs(rowBox!.x + rowBox!.width / 2 - (cardBox!.x + cardBox!.width / 2))).toBeLessThanOrEqual(2);
+      }
       const minTarget = viewport.name === "phone" ? 44 : 36;
 
       for (const testId of [

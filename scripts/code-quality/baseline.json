@@ -145,7 +145,7 @@
       "limit": 250
     },
     "components/editor/design-page/DesignPageWorkspace.tsx": {
-      "lines": 500,
+      "lines": 499,
       "limit": 250
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {
@@ -1567,7 +1567,7 @@
     "components/editor/design-page/DesignPageWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 465
+        "maximum": 463
       }
     },
     "components/editor/design-page/DesignSceneCanvas.tsx": {

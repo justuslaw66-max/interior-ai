@@ -21,7 +21,7 @@ export function PlanGuidedActionsToggle({ state, actions }: PlanGuidedActionsTog
     // Compact, it sits in the quick actions' row (DesignPagePlanCanvasOverlays); on its own, top centre.
     state.compact
       ? "gap-1.5 px-2 py-1.5"
-      : "absolute z-30 left-1/2 top-bar-17 -translate-x-1/2 gap-2 px-3 py-2 md:top-bar-20",
+      : "absolute z-30 left-1/2 md:left-[var(--canvas-centre-x,50%)] top-bar-17 -translate-x-1/2 gap-2 px-3 py-2 md:top-bar-20",
     state.enabled
       ? "border-separator bg-surface-floating/95 text-label hover:border-control-edge-hover"
       : "border-separator bg-surface-floating/95 text-label-secondary hover:border-control-secondary-border",

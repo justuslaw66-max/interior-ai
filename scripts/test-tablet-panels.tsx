@@ -81,7 +81,9 @@ assert.equal(frame.match(/h-9 w-9 touch:h-11 touch:w-11 [^"]*opacity-0 touch:opa
 const barToggle = read("components/editor/command-bar/CommandBarCanvasControls.tsx");
 assert.match(barToggle, /const policy = useTabletPanelPolicy\(useMediaQuery\(TABLET_MEDIA_QUERY\), storedCollapsed\);/);
 assert.match(barToggle, /onClick=\{\(\) => toggleStepPanel\(policy, storedCollapsed, setCollapsed\)\}/);
-assert.match(read("components/editor/design-page/DesignPageEditorChrome.tsx"), /const tablet = useTabletPanelPolicy\(useMediaQuery\(TABLET_MEDIA_QUERY\), bar\.designSidebarCollapsed\);[\s\S]*?collapsed: tablet\.collapsed,/);
+// The canvas toolbar centres on the model's frame, which is the tablet policy's (below), through the
+// editor's canvas variables (30 Oct 2026); the chrome no longer works out a frame of its own.
+assert.doesNotMatch(read("components/editor/design-page/DesignPageEditorChrome.tsx"), /useTabletPanelPolicy|resolveCanvasFrameBox/);
 const model = read("lib/useDesignPagePlanPresentationModel.ts");
 assert.match(model, /const tablet = useTabletPanelPolicy\(isTabletWidth\(layout\.viewportWidth\), layout\.designPanelCollapsed\);/);
 assert.match(model, /designPanelCollapsed: tablet\.collapsed,[\s\S]*?tabletRightInsetPx: tablet\.rightInsetPx,/);

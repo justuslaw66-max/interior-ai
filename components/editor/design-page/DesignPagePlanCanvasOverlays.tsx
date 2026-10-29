@@ -106,7 +106,7 @@ function PlanCanvasTools({ state, actions }: DesignPagePlanCanvasOverlaysProps) 
   return (
     <div
       data-testid="plan-canvas-tool-row"
-      className="pointer-events-none absolute left-1/2 top-bar-17 z-30 flex w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-2 md:top-bar-20"
+      className="pointer-events-none absolute left-1/2 md:left-[var(--canvas-centre-x,50%)] top-bar-17 z-30 flex w-max max-w-[calc(100vw-2rem)] md:max-w-[var(--canvas-overlay-max-width,100%)] -translate-x-1/2 flex-wrap items-center justify-center gap-2 md:top-bar-20"
     >
       {quickActions}
       {tips}

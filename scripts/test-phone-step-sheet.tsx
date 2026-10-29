@@ -168,7 +168,7 @@ assert.match(placementSource, /if \(placement\.inSheet\) return \{ className: su
 assert.match(inspectorSource, /<Button\s+size=\{frame\.clearSize\}\s+data-testid="selection-inspector-clear"/);
 assert.match(inspectorSource, /aria-label=\{placement\.inSheet \? undefined : `Deselect \$\{state\.summary\.title\}`\}[\s\S]*?\{placement\.inSheet \? "Done" : <X className="h-4 w-4" aria-hidden="true" \/>\}/, "Done deselects, in the sheet; elsewhere × Deselect <name> (UX 4f, ED7).");
 assert.match(inspectorSource, /if \(!placement\.shown\) return null;\s*return placement\.portalTarget \? createPortal\(inspector, placement\.portalTarget\) : inspector;/);
-assert.match(read("components/editor/design-page/SelectedPlanOpeningActions.tsx"), /absolute left-1\/2 top-bar-28 z-30 hidden [^"]*md:flex"/, "The phone's door and window bar goes.");
+assert.match(read("components/editor/design-page/SelectedPlanOpeningActions.tsx"), /absolute left-1\/2 md:left-\[var\(--canvas-centre-x,50%\)\] top-bar-28 z-30 hidden [^"]*md:flex"/, "The phone's door and window bar goes.");
 
 // Wiring: the frame is the sheet below md, the column from md, and the phone header has no
 // sidebar toggle; the plan model and the Plan tip read the sheet.
