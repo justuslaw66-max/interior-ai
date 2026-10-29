@@ -93,7 +93,7 @@
       "limit": 400
     },
     "app/tools/glb-optimizer/page.tsx": {
-      "lines": 360,
+      "lines": 346,
       "limit": 250
     },
     "components/admin/StagingSmokeEvidencePanel.tsx": {
@@ -1379,7 +1379,7 @@
     "app/tools/glb-optimizer/page.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 233
+        "maximum": 218
       }
     },
     "components/admin/StagingSmokeEvidencePanel.tsx": {

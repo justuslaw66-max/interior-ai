@@ -2,6 +2,7 @@
 
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { Button, buttonClassName } from "@/components/ui/Button";
 
 type IconProps = {
   className?: string;
@@ -199,16 +200,16 @@ export default function GlbOptimizerPage() {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-950 text-neutral-50">
+    <main className="min-h-screen bg-surface-page text-label">
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-5 py-8 md:px-8">
-        <header className="flex flex-col gap-4 border-b border-white/10 pb-5 md:flex-row md:items-end md:justify-between">
+        <header className="flex flex-col gap-4 border-b border-separator pb-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-cyan-300">Asset pipeline</p>
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-on-accent-tint">Asset pipeline</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-normal md:text-4xl">GLB Optimizer</h1>
           </div>
           <Link
             href="/admin/imports"
-            className="inline-flex h-10 items-center justify-center rounded-md border border-white/15 px-3 text-sm font-medium text-neutral-100 hover:bg-white/10"
+            className={buttonClassName({ variant: "secondary", size: "regular" })}
           >
             Import jobs
           </Link>
@@ -217,7 +218,7 @@ export default function GlbOptimizerPage() {
         <section className="grid flex-1 grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">
           <div
             className={`flex min-h-[360px] flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center transition ${
-              isDragging ? "border-cyan-300 bg-cyan-300/10" : "border-white/20 bg-white/[0.04]"
+              isDragging ? "border-accent-tint-border bg-accent-tint" : "border-separator bg-surface-secondary"
             }`}
             onDragOver={(event) => {
               event.preventDefault();
@@ -230,12 +231,12 @@ export default function GlbOptimizerPage() {
               setSelectedFile(event.dataTransfer.files.item(0));
             }}
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-cyan-300/15 text-cyan-200">
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-accent-tint text-on-accent-tint">
               <FileArchive className="h-8 w-8" />
             </div>
             <div className="mt-5 max-w-md">
               <h2 className="text-xl font-semibold">Drop a model file</h2>
-              <p className="mt-2 text-sm leading-6 text-neutral-300">
+              <p className="mt-2 text-sm leading-6 text-label-secondary">
                 The tool accepts `.glb` and `.gltf` files up to 80 MB and returns a browser-ready GLB.
               </p>
             </div>
@@ -249,62 +250,47 @@ export default function GlbOptimizerPage() {
             />
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => inputRef.current?.click()}
-                className="inline-flex h-10 items-center gap-2 rounded-md bg-white px-4 text-sm font-semibold text-neutral-950 hover:bg-neutral-200"
-              >
+              <Button variant="secondary" size="regular" onClick={() => inputRef.current?.click()}>
                 <Upload className="h-4 w-4" />
                 Select file
-              </button>
-              <button
-                type="button"
-                onClick={optimize}
-                disabled={!file || isOptimizing}
-                className="inline-flex h-10 items-center gap-2 rounded-md bg-cyan-300 px-4 text-sm font-semibold text-neutral-950 hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-45"
-              >
+              </Button>
+              <Button variant="primary" size="regular" onClick={optimize} disabled={!file || isOptimizing}>
                 {isOptimizing ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-950/30 border-t-neutral-950" />
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                 ) : (
                   <RotateCcw className="h-4 w-4" />
                 )}
                 Optimize
-              </button>
+              </Button>
             </div>
           </div>
 
-          <aside className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <aside className="rounded-lg border border-box-border bg-surface-secondary p-5">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-base font-semibold">Run</h2>
               {file && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedFile(null)}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-white/15 text-neutral-200 hover:bg-white/10"
-                  aria-label="Clear file"
-                  title="Clear file"
-                >
+                <Button variant="secondary" size="icon" onClick={() => setSelectedFile(null)} aria-label="Clear file" title="Clear file">
                   <RotateCcw className="h-4 w-4" />
-                </button>
+                </Button>
               )}
             </div>
 
             <dl className="mt-5 grid grid-cols-1 gap-3 text-sm">
-              <div className="rounded-md border border-white/10 bg-neutral-950/60 p-3">
-                <dt className="text-xs text-neutral-400">Source</dt>
+              <div className="rounded-md bg-tile p-3">
+                <dt className="text-xs text-label-secondary">Source</dt>
                 <dd className="mt-1 break-words font-medium">{file ? file.name : "No file selected"}</dd>
               </div>
-              <div className="rounded-md border border-white/10 bg-neutral-950/60 p-3">
-                <dt className="text-xs text-neutral-400">Size</dt>
+              <div className="rounded-md bg-tile p-3">
+                <dt className="text-xs text-label-secondary">Size</dt>
                 <dd className="mt-1 font-medium">{file ? formatBytes(file.size) : "-"}</dd>
               </div>
               {result && (
-                <div className="rounded-md border border-white/10 bg-neutral-950/60 p-3">
-                  <dt className="text-xs text-neutral-400">Optimized</dt>
+                <div className="rounded-md bg-tile p-3">
+                  <dt className="text-xs text-label-secondary">Optimized</dt>
                   <dd className="mt-1 font-medium">
                     {formatBytes(result.optimizedSize)}
                     {sizeDelta && (
-                      <span className="ml-2 text-xs text-cyan-200">
+                      <span className="ml-2 text-xs text-on-accent-tint">
                         {sizeDelta.delta >= 0 ? "-" : "+"}
                         {Math.abs(sizeDelta.percent)}%
                       </span>
@@ -315,7 +301,7 @@ export default function GlbOptimizerPage() {
             </dl>
 
             {error && (
-              <div className="mt-4 flex gap-3 rounded-md border border-red-400/30 bg-red-500/10 p-3 text-sm text-red-100">
+              <div className="mt-4 flex gap-3 rounded-md border border-danger-tint-border bg-danger-tint p-3 text-sm text-on-danger-tint">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                 <p>{error}</p>
               </div>
@@ -325,7 +311,7 @@ export default function GlbOptimizerPage() {
               <a
                 href={result.url}
                 download={result.fileName}
-                className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-cyan-300 px-4 text-sm font-semibold text-neutral-950 hover:bg-cyan-200"
+                className={buttonClassName({ variant: "primary", size: "regular", className: "mt-4 w-full" })}
               >
                 <Download className="h-4 w-4" />
                 Download GLB
@@ -333,20 +319,20 @@ export default function GlbOptimizerPage() {
             )}
 
             <div className="mt-5 space-y-2">
-              <h3 className="text-sm font-semibold text-neutral-200">Pipeline</h3>
+              <h3 className="text-sm font-semibold">Pipeline</h3>
               <div className="space-y-2">
                 {(result?.steps.length ? result.steps : [{ step: "waiting", success: true, details: "Ready" }]).map(
                   (step) => (
-                    <div key={`${step.step}-${step.details}`} className="rounded-md border border-white/10 p-3 text-sm">
+                    <div key={`${step.step}-${step.details}`} className="rounded-md bg-tile p-3 text-sm">
                       <div className="flex items-center gap-2">
                         {step.success ? (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                          <CheckCircle2 className="h-4 w-4 text-on-success-tint" />
                         ) : (
-                          <AlertTriangle className="h-4 w-4 text-amber-300" />
+                          <AlertTriangle className="h-4 w-4 text-on-warning-tint" />
                         )}
                         <span className="font-medium capitalize">{step.step}</span>
                       </div>
-                      <p className="mt-1 text-xs leading-5 text-neutral-300">{step.details}</p>
+                      <p className="mt-1 text-xs leading-5 text-label-secondary">{step.details}</p>
                     </div>
                   )
                 )}

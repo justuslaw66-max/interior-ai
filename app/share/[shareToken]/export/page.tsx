@@ -932,7 +932,7 @@ export default async function ExportPage({
 
   if (!design) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-surface p-8 text-foreground" data-color-scheme="light">
+      <main className="min-h-screen flex items-center justify-center bg-surface p-8 text-foreground" data-color-scheme="light" data-light-page>
         <PublicShareUnavailableCard />
       </main>
     );
@@ -1036,7 +1036,7 @@ export default async function ExportPage({
         }
       `}</style>
 
-      <main className="min-h-screen bg-white text-foreground" data-color-scheme="light">
+      <main className="min-h-screen bg-white text-foreground" data-color-scheme="light" data-light-page>
         {qaFidelitySummary ? (
           <div
             data-testid="qa-export-snapshot-fingerprint"

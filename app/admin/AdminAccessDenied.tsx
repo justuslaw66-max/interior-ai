@@ -14,7 +14,7 @@ import styles from "./operations-dashboard.module.css";
 export function AdminAccessDenied({ signedIn }: { signedIn: boolean }) {
   const pathname = usePathname() ?? "/admin";
   return (
-    <div className={styles.page} data-color-scheme="light">
+    <div className={styles.page} data-color-scheme="light" data-light-page>
       <main className={styles.main}>
         <section className={styles.panel} data-testid="admin-access-denied" aria-labelledby="admin-access-title">
           <div className={styles.accessState}>
