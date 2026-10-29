@@ -8,11 +8,9 @@ import {
   findCatalogPlacementCollision,
   isCatalogPlacementLocalFootprintInsideRoom,
 } from "@/lib/catalog-placement";
-import {
-  clampToRoom,
-  getFurnitureWallInset,
-  type AABB,
-} from "@/lib/design-page-geometry";
+import { getFurnitureWallInset, type AABB } from "@/lib/design-page-geometry";
+import { clampToRoomInsideFinishes, getRoomOutlineInsideFinishes } from "@/lib/room-finished-outline";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import {
   ROOM_DIMENSION_DEFAULTS,
   type HousePlanRoom2D,
@@ -78,7 +76,7 @@ export function clampToPlacementRoom(
   itemDepth: number,
   rotationY: number = 0
 ): [number, number] {
-  return clampToRoom(
+  return clampToRoomInsideFinishes(
     x,
     z,
     itemWidth,
@@ -91,7 +89,8 @@ export function clampToPlacementRoom(
     rotationY,
     room.planShape ?? "rectangle",
     room.planPolygon,
-    room.planHoles
+    room.planHoles,
+    getRoomWallFinishDepths(room)
   );
 }
 
@@ -175,18 +174,16 @@ export function isPlacementContainedInRoom({
   canonicalModel?: CanonicalFloorPlanRenderModel;
 }): boolean {
   if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
+  // Inside the room's laminate panels (lib/room-finished-outline.ts).
+  const outline = getRoomOutlineInsideFinishes({
+    shape: room.planShape ?? houseRoom?.shape ?? "rectangle",
+    polygon: room.planPolygon ?? houseRoom?.polygon,
+    holes: room.planHoles ?? houseRoom?.holes,
+    w: room.geometry.width,
+    d: room.geometry.depth,
+  }, getRoomWallFinishDepths(room));
   return isCatalogPlacementLocalFootprintInsideRoom({
-    room: {
-      id: room.id,
-      name: room.name,
-      shape: room.planShape ?? houseRoom?.shape ?? "rectangle",
-      polygon: room.planPolygon ?? houseRoom?.polygon,
-      holes: room.planHoles ?? houseRoom?.holes,
-      x: 0,
-      z: 0,
-      w: room.geometry.width,
-      d: room.geometry.depth,
-    },
+    room: { id: room.id, name: room.name, ...outline, x: 0, z: 0 },
     position,
     rotationY,
     dimsMm: dimensions,

@@ -16,10 +16,9 @@ import {
   type RoomType,
 } from "@/lib/room-types";
 import { track, trackProductEvent } from "@/lib/analytics";
-import {
-  clampToRoom,
-  getFurnitureWallInset,
-} from "@/lib/design-page-geometry";
+import { getFurnitureWallInset } from "@/lib/design-page-geometry";
+import { clampToRoomInsideFinishes } from "@/lib/room-finished-outline";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import {
   buildHousePlan2D,
   clampRoomDimension,
@@ -101,20 +100,14 @@ export function useDesignPageHousePlanState({
       targetWallThickness: number,
       rotationY: number = 0
     ) =>
-      clampToRoom(
-        x,
-        z,
-        itemWidth,
-        itemDepth,
-        targetRoomWidth,
-        targetRoomDepth,
+      clampToRoomInsideFinishes(
+        x, z, itemWidth, itemDepth, targetRoomWidth, targetRoomDepth,
         getFurnitureWallInset(targetWallThickness),
         rotationY,
-        activeRoomPlanShape,
-        activeRoomPlanPolygon,
-        activeRoomPlanHoles
+        // Stops at each wall's laminate panel (J, 29 Oct 2026); read when called: React's compiler can't memoize it in render.
+        activeRoomPlanShape, activeRoomPlanPolygon, activeRoomPlanHoles, getRoomWallFinishDepths(activeRoom)
       ),
-    [activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape]
+    [activeRoom, activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape]
   );
 
   const formattedRoomWidth = roomWidth.toFixed(2);

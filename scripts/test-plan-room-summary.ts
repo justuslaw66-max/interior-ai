@@ -165,7 +165,6 @@ assert.equal(
 // Every copy of the L-shape outline must cut the notch the floor-area owner subtracts.
 for (const file of [
   "components/editor/renderers/house-plan-3d/geometry.ts",
-  "components/editor/renderers/RoomRenderer2D.tsx",
   "lib/room-renderer-2d-walls.ts",
   "lib/floor-plan-types.ts",
   "lib/design-page-geometry.ts",
@@ -180,14 +179,23 @@ for (const file of [
     assert.equal(ratio, L_SHAPE_NOTCH_RATIO, `${file} must cut the L-shape notch at L_SHAPE_NOTCH_RATIO.`);
   }
 }
-// The cabinetry studio builds the active room's L outline inline from the same ratio.
-const cabinetryNotchRatios = [...readFileSync(
-  join(process.cwd(), "features/cabinetry/useDesignPageCabinetry.ts"), "utf8"
-).matchAll(/geometry\.(?:width|depth) \* ([\d.]+)/g)].map((match) => Number(match[1]));
-assert.ok(cabinetryNotchRatios.length > 0, "The cabinetry studio must still draw the L-shape notch.");
-for (const ratio of cabinetryNotchRatios) {
-  assert.equal(ratio, L_SHAPE_NOTCH_RATIO, "The cabinetry studio must cut the L-shape notch at L_SHAPE_NOTCH_RATIO.");
-}
+// The 2D plan and the cabinetry studio take the L outline from lib/room-finished-outline.ts (29 Oct 2026, with the room's
+// laminate panels), which cuts the notch at the floor-area owner's ratio.
+assert.match(
+  readFileSync(join(process.cwd(), "components/editor/renderers/RoomRenderer2D.tsx"), "utf8"),
+  /const getRoomOutlinePoints = \(room: HouseRoom2D\)[^\n]*\n\s*const points = getRoomPlanOutlinePoints\(room\)/,
+  "The 2D plan must still draw the L-shape notch."
+);
+assert.match(
+  readFileSync(join(process.cwd(), "features/cabinetry/useDesignPageCabinetry.ts"), "utf8"),
+  /getRoomPlanOutlinePoints\(getRoomOutlineInsideFinishes\(\{\s*shape: planShape/,
+  "The cabinetry studio must still draw the L-shape notch."
+);
+assert.match(
+  readFileSync(join(process.cwd(), "lib/room-finished-outline.ts"), "utf8"),
+  /const notchW = w \* L_SHAPE_NOTCH_RATIO;\s*const notchD = d \* L_SHAPE_NOTCH_RATIO;/,
+  "The room outline must cut the L-shape notch at L_SHAPE_NOTCH_RATIO."
+);
 // Client-facing plan drawings label rooms with this area, so they draw the notched house-plan outline.
 for (const file of ["app/share/[shareToken]/export/page.tsx", "components/ShareFloorPlanPreview.tsx"]) {
   const drawingSource = readFileSync(join(process.cwd(), file), "utf8");

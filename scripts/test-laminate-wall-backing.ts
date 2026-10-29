@@ -154,13 +154,14 @@ assert.deepEqual(gluedRow.backing, { board: "mdf", boardThicknessMm: 9, fixing: 
 assert.equal(gluedRow.jointSizeMm, 3, "the BOM gives the joint as drawn");
 const onBattens = room({ default: { materialId: NORDIC_ACACIA, panelBacking: plywood } });
 const [battenRow] = buildRoomSurfaceMaterialBomRows([onBattens]);
-// The drawn faces are 3.88 and 2.88 m: 8 and 6 battens of 2.6 m each, 28 in all.
-assert.deepEqual([battenRow.backing?.boards, battenRow.backing?.battenMetres], [13, 73]);
-assert.equal(formatWallPanelBackingOrder(battenRow.backing!), "on 13 plywood boards, 12 mm, on 73 m of 25 mm battens");
+// The drawn faces are 3.84, 2.88, 3.84 and 2.80 m: where two meet inside, one stops at the other's 38 mm panel (29 Oct
+// 2026). That is 8, 6, 8 and 6 battens of 2.6 m each, 28 in all, and one sheet fewer than the 10 mm panels take.
+assert.deepEqual([battenRow.backing?.boards, battenRow.backing?.battenMetres], [12, 73]);
+assert.equal(formatWallPanelBackingOrder(battenRow.backing!), "on 12 plywood boards, 12 mm, on 73 m of 25 mm battens");
 const csv = buildSurfaceMaterialCsvRows([onBattens]);
 assert.deepEqual(
   csv.map((row) => [row.category, row.itemTitle, row.quantity]),
-  [["Wall Surface Material", "Greenlam Nordic Acacia 5394", 13], ["Wall Panel Board", "Plywood board, 12 mm", 13], ["Wall Panel Battens", "Timber battens, 25 mm", 73]]
+  [["Wall Surface Material", "Greenlam Nordic Acacia 5394", 12], ["Wall Panel Board", "Plywood board, 12 mm", 12], ["Wall Panel Battens", "Timber battens, 25 mm", 73]]
 );
 assert.equal(buildRoomSurfaceMaterialBomRows([room({ default: { materialId: ANIMA_WALL_TILE } })])[0].backing, null, "tiles have no board");
 // A laminate saved with the old 1 mm joint reads 3 mm in the Surfaces summary too; a tile's joint is as saved.
@@ -177,7 +178,7 @@ assert.match(
 const [shopping] = shoppingSurfacesOf([glued, { ...onBattens, id: "lam-2", name: "Study" }]);
 assert.deepEqual(
   shopping.sheetOrder?.backing.map(formatWallPanelBackingOrder),
-  ["on 13 MDF boards, 9 mm, glued", "on 13 plywood boards, 12 mm, on 73 m of 25 mm battens"],
+  ["on 13 MDF boards, 9 mm, glued", "on 12 plywood boards, 12 mm, on 73 m of 25 mm battens"],
   "one line per kind of board"
 );
 
