@@ -10,7 +10,9 @@ import {
   type FloorPatternState,
   type SurfaceGroutState,
 } from "@/components/editor/design-page/SurfacePatternControls";
+import { WallPanelBackingControls, type WallBackingState } from "@/components/editor/design-page/WallPanelBackingControls";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
+import type { NormalizedWallPanelBacking } from "@/lib/laminate-wall-backing";
 import type { RoomFloorPattern } from "@/lib/room-types";
 
 type SurfaceInspectorTarget = "floor" | "wall" | "ceiling";
@@ -59,6 +61,7 @@ export type SelectedSurfaceInspectorState = {
   };
   picker: SurfacePickerState | null;
   wallGrout: SurfaceGroutState | null;
+  wallBacking: WallBackingState | null;
   floorPattern: FloorPatternState | null;
   footer: string;
   blockers: string | null;
@@ -81,6 +84,7 @@ export type SelectedSurfaceInspectorActions = {
   onSelectGroutSize: (sizeMm: number) => void;
   onToggleGroutPalette: () => void;
   onSelectGroutColor: (color: string) => void;
+  onChangeWallBacking: (patch: Partial<NormalizedWallPanelBacking>) => void;
   onMovePattern: (deltaX: number, deltaY: number) => void;
   onResetPattern: () => void;
   onResetSurface: () => void;
@@ -213,17 +217,12 @@ export function SelectedSurfaceInspector({
         >
           {target === "ceiling" ? "Change paint…" : "Change material…"}
         </Button>
-        <Button
-          size="compact"
-          data-testid={target === "ceiling" ? "selection-inspector-ceiling-reset" : "selection-inspector-floor-reset"}
-          disabled={state.controls.resetDisabled}
-          onClick={actions.onReset}
-        >
-          Reset
-        </Button>
+        <Button size="compact" data-testid={target === "ceiling" ? "selection-inspector-ceiling-reset" : "selection-inspector-floor-reset"}
+          disabled={state.controls.resetDisabled} onClick={actions.onReset}>Reset</Button>
       </div>
       {state.sizeOptions.length ? <SizeOptions options={state.sizeOptions} onSelect={actions.onSelectSize} /> : null}
       {state.picker ? <SurfaceMaterialPicker picker={state.picker} onClose={actions.onClosePicker} onSelect={actions.onSelectPickerMaterial} /> : null}
+      <WallPanelBackingControls wallBacking={state.wallBacking} onChange={actions.onChangeWallBacking} />
 
       <div className="mt-2 grid grid-cols-2 gap-1.5">
         {wall ? (

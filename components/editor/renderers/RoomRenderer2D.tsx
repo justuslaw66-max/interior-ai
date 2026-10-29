@@ -1470,7 +1470,7 @@ export default function RoomRenderer2D({
     !drawRoomMode &&
     !traceOpeningMode;
 
-  const floorColor = isPro ? colour("#ffffff") : colour("#f4f2ed");
+  const floorColor = isPro ? colour("#ffffff") : canvasPalette.floor("#f4f2ed", true);
   const borderColor = isPro ? colour("#111111") : colour("#9a9a9a");
   const minorGridColor = isPro ? colour("#e1e1e1") : colour("#d8d8d8");
   const majorGridColor = isPro ? colour("#c4c4c4") : colour("#c8c8c8");

@@ -7,6 +7,12 @@ import {
 } from "./surface-material-areas";
 import type { SurfaceMaterial } from "./surface-material-schema";
 import { countSurfaceSheets, getSheetAreaSqm, getSurfaceSheetSize, type SurfaceSheetSize } from "./surface-material-sheets";
+import {
+  buildWallPanelBackingOrder,
+  getLaminateWallPanelJointMm,
+  isLaminateWallSheet,
+  type WallPanelBackingOrder,
+} from "./laminate-wall-backing";
 
 export { getRoomSurfaceAssignments };
 
@@ -32,6 +38,8 @@ export type SurfaceMaterialBomRow = {
   /** A finish sold by the sheet (a wall panel): its sheet and how many to order; null for one ordered by area. */
   sheetSizeMm: SurfaceSheetSize | null;
   orderSheets: number | null;
+  /** A laminate sheet's board behind each sheet, and its battens when fixed on them; null for anything else. */
+  backing: WallPanelBackingOrder | null;
   status: "published" | "draft" | "blocked" | "needs_review" | "unknown";
   purchaseMode: string;
   sampleRequestUrl: string | null;
@@ -55,18 +63,38 @@ export type SurfaceMaterialBomRow = {
   floorJointColor: string;
 };
 
+/**
+ * What to order of a finish sold by the sheet: whole sheets, and for a laminate sheet the board behind each one, which is
+ * never left out (J, 28 Oct 2026), and its joint of at least 3 mm. Sheets are bought whole, so a priced sheet finish costs
+ * its sheets' area.
+ */
+function sheetOrderOf(area: SurfaceAreaRow, material: SurfaceMaterial) {
+  const { settings } = area;
+  const sheet = getSurfaceSheetSize(material);
+  const orderSheets = sheet
+    ? countSurfaceSheets({ pieces: area.wallPieces, orderAreaSqm: area.orderAreaSqm, rotationDeg: settings.rotationDeg, sheet })
+    : null;
+  const laminate = isLaminateWallSheet(material);
+  return {
+    sheet,
+    orderSheets,
+    pricedAreaSqm: sheet && orderSheets !== null ? orderSheets * getSheetAreaSqm(sheet) : area.orderAreaSqm,
+    backing: laminate && sheet && orderSheets !== null
+      ? buildWallPanelBackingOrder({
+          backing: settings.panelBacking, sheets: orderSheets, sheet, pieces: area.wallPieces, surfaceAreaSqm: area.surfaceAreaSqm,
+        })
+      : null,
+    jointSizeMm: laminate ? getLaminateWallPanelJointMm(settings.jointSizeMm) : settings.jointSizeMm,
+  };
+}
+
 /** A measured surface with its material's catalogue record: supplier, price, status and links. */
 function toBomRow(area: SurfaceAreaRow, material: SurfaceMaterial): SurfaceMaterialBomRow {
   const pricePerSqm = material.commerce.price_per_sqm;
   const amount = typeof pricePerSqm?.amount === "number" ? pricePerSqm.amount : null;
   const blockers = material.import_governance.publish_blockers ?? [];
   const { settings } = area;
-  const sheet = getSurfaceSheetSize(material);
-  const orderSheets = sheet
-    ? countSurfaceSheets({ pieces: area.wallPieces, orderAreaSqm: area.orderAreaSqm, rotationDeg: settings.rotationDeg, sheet })
-    : null;
-  // Sheets are bought whole, so a priced sheet finish costs its sheets' area.
-  const pricedAreaSqm = sheet && orderSheets !== null ? orderSheets * getSheetAreaSqm(sheet) : area.orderAreaSqm;
+  const { sheet, orderSheets, pricedAreaSqm, backing, jointSizeMm } = sheetOrderOf(area, material);
   return {
     roomId: area.roomId,
     roomName: area.roomName,
@@ -88,6 +116,7 @@ function toBomRow(area: SurfaceAreaRow, material: SurfaceMaterial): SurfaceMater
     quantitySqm: area.orderAreaSqm,
     sheetSizeMm: sheet,
     orderSheets,
+    backing,
     status: material.import_governance.publish_status ?? "unknown",
     purchaseMode: material.commerce.purchase_mode,
     sampleRequestUrl: material.commerce.sample_request_url ?? material.source.sample_request_url ?? null,
@@ -101,13 +130,13 @@ function toBomRow(area: SurfaceAreaRow, material: SurfaceMaterial): SurfaceMater
     rotationDeg: settings.rotationDeg,
     scale: settings.scale,
     patternOffset: settings.offset,
-    jointSizeMm: settings.jointSizeMm,
+    jointSizeMm,
     jointColor: settings.jointColor,
     floorPattern: settings.pattern,
     floorRotationDeg: settings.rotationDeg,
     floorScale: settings.scale,
     floorPatternOffset: settings.offset,
-    floorJointSizeMm: settings.jointSizeMm,
+    floorJointSizeMm: jointSizeMm,
     floorJointColor: settings.jointColor,
   };
 }
