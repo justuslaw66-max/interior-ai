@@ -1,8 +1,13 @@
 import * as THREE from "three";
-import { memoizeByObject } from "./memoizeByObject";
 import type { RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 import { getRoomPlanOutlinePoints, insetPolygonEdges } from "@/lib/room-finished-outline";
-import { getRoomWallFaceIds, getRoomWallFinishDepths, type WallFinishRoom } from "@/lib/room-wall-finish-depths";
+import {
+  getRoomWallFaceIds,
+  getRoomWallFinishDepths,
+  hasWallFinishDepths,
+  type RoomWallFinishDepths,
+  type WallFinishRoom,
+} from "@/lib/room-wall-finish-depths";
 
 /** A plan room, as the 2D plan draws it: centre-line outline in room coordinates, placed at x, z. */
 export type PanelFaceRoom2D = WallFinishRoom & {
@@ -23,12 +28,32 @@ export type PanelStrip2D = {
   faceLine: Array<[number, number, number]>;
 };
 
+const NO_STRIPS: { strips: PanelStrip2D[] } = { strips: [] };
+
+// One list per room's depths while its outline is the same, so the plan keeps its shapes and lines across re-renders, and
+// across the copy of the room it draws on every frame of a room drag (only x and z change).
+const stripsByDepths = new WeakMap<RoomWallFinishDepths, { room: PanelFaceRoom2D; strips: { strips: PanelStrip2D[] } }>();
+
+function isSameRoomOutline(a: PanelFaceRoom2D, b: PanelFaceRoom2D): boolean {
+  return a.id === b.id && a.shape === b.shape && a.polygon === b.polygon && a.w === b.w && a.d === b.d &&
+    a.wallThickness === b.wallThickness;
+}
+
 /**
- * Each laminate wall's panel strip: from the bare wall face (half the wall in from the centre line) to the panel's face,
- * mitred where it meets the next wall. One list per room object, so the plan keeps its shapes and lines across re-renders.
+ * Each laminate wall's panel strip, in room coordinates: from the bare wall face (half the wall in from the centre line) to
+ * the panel's face, mitred where it meets the next wall.
  */
-export const getRoomPanelStrips2D = memoizeByObject((room: PanelFaceRoom2D): { strips: PanelStrip2D[] } => {
+export function getRoomPanelStrips2D(room: PanelFaceRoom2D): { strips: PanelStrip2D[] } {
   const depths = getRoomWallFinishDepths(room);
+  if (!hasWallFinishDepths(depths)) return NO_STRIPS;
+  const known = stripsByDepths.get(depths);
+  if (known && isSameRoomOutline(known.room, room)) return known.strips;
+  const strips = buildRoomPanelStrips2D(room, depths);
+  stripsByDepths.set(depths, { room, strips });
+  return strips;
+}
+
+function buildRoomPanelStrips2D(room: PanelFaceRoom2D, depths: RoomWallFinishDepths): { strips: PanelStrip2D[] } {
   const outline = { shape: room.shape, polygon: room.polygon, w: room.w, d: room.d };
   const faceIds = getRoomWallFaceIds(outline);
   if (!faceIds.some((faceId) => (depths[faceId] ?? 0) > 0)) return { strips: [] };
@@ -50,4 +75,4 @@ export const getRoomPanelStrips2D = memoizeByObject((room: PanelFaceRoom2D): { s
     }];
   });
   return { strips };
-});
+}

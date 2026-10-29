@@ -18,7 +18,7 @@ import {
   type ManualPlacementScore,
 } from "@/lib/manual-placement-scoring";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
-import { getRoomWallClearances } from "@/lib/room-wall-finish-depths";
+import { getRoomWallClearances } from "@/lib/room-finished-outline";
 
 export const CATALOG_PLACEMENT_MIN_SCORE_DELTA = 4;
 export const CATALOG_PLACEMENT_POSITION_EPSILON_METERS = 0.08;

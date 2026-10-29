@@ -152,8 +152,11 @@ assert.deepEqual(
   rounded(lQuantities.remainingWallPieces)?.map(([, start, end, , top]) => [start, end, top]),
   [[0, 3800, 3000], [0, 1790, 2600], [0, 1790, 2600], [0, 2010, 2600], [0, 2010, 2600], [0, 3780, 2600]],
   "the first wall is raised to 3 m, saved under its face id; with 200 mm walls a face loses 100 mm at an outside corner " +
-    "and gains 100 mm at the inside one, and where it meets a face whose key sorts earlier it stops at, or wraps, that " +
-    "face's 10 mm panel (29 Oct 2026; without panels 3800, 1800, 1800, 2000, 2000, 3800)"
+    "and gains 100 mm at the inside one, and where it meets a face whose key sorts earlier it stops at that face's 10 mm " +
+    "panel, or wraps it at the notch's corner (29 Oct 2026; without panels 3800, 1800, 1800, 2000, 2000, 3800). The 3D " +
+    "view tells a drawn wall's inside by the direction to the room's centre, which wall-3's line runs through, so it draws " +
+    "wall-3's finish on the notch's side and wall-4 runs 2010, not 1990, into it: a fault from before (reported to J, 29 Oct), " +
+    "kept here as drawn"
 );
 const pieceArea = (pieces: readonly WallFinishPiece[] | null) =>
   Math.round((pieces ?? []).reduce((sum, piece) => sum + (piece.end - piece.start) * (piece.top - piece.bottom), 0) * 100) / 100;

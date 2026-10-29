@@ -10,6 +10,8 @@ import {
   getFurnitureRoomFrameInsideFinishes,
   getRoomClearInsideMetrics,
   getRoomOutlineInsideFinishes,
+  getRoomSideFinishDepths,
+  getRoomWallClearances,
   insetPolygonEdges,
 } from "../lib/room-finished-outline";
 import type { RoomSnapshot } from "../lib/room-types";
@@ -26,7 +28,8 @@ import { clampToPlacementRoom, isPlacementContainedInRoom } from "../lib/useDesi
 const NORDIC_ACACIA = "greenlam-woodgrains-5394";
 const ANIMA_WALL_TILE = "gardenia-wall-tile-anima-beige-0006044-120x120-196214-0";
 const DEEPEST = { board: "mdf", boardThicknessMm: 18, fixing: "battens" } as const;
-const V2_EAST = "wall-panel:v2:1:lam:east:start:end:full";
+const V2_EAST = "wall-panel:v2:1:lam:east:segment-start:segment-end:interior";
+const V2_EAST_OUTSIDE = "wall-panel:v2:1:lam:east:segment-start:segment-end:exterior";
 const near = (actual: number, expected: number, message?: string) => assert.ok(Math.abs(actual - expected) < 1e-9, `${message ?? ""} ${actual} ≠ ${expected}`);
 
 function room(walls: NonNullable<RoomSnapshot["surfaces"]>["walls"], extra: Partial<RoomSnapshot> = {}): RoomSnapshot {
@@ -36,12 +39,17 @@ function room(walls: NonNullable<RoomSnapshot["surfaces"]>["walls"], extra: Part
   };
 }
 
-// Faces and panel ids: a v2 id names its face; an older one starts with the wall's key.
+// Faces and panel ids: a v2 id names its face. Only this room's panels on the inside of a wall stand into it: not one on the
+// wall's outside face, nor a duplicated room's copy of its source's panels (saved under the source's id, so never drawn
+// here), nor an older id (laminates came after v2 ids).
 assert.deepEqual(getRoomWallFaceIds({ planShape: "rectangle" }), ["north", "east", "south", "west"]);
 assert.deepEqual(getRoomWallFaceIds({ planShape: "l_shape" }), ["wall-0", "wall-1", "wall-2", "wall-3", "wall-4", "wall-5"]);
 assert.deepEqual(
-  [V2_EAST, "lam-north-selectable-face", "lam-3-side-positive", "elsewhere-north", "lam-attic"].map((id) => getWallPanelFaceId(id, "lam")),
-  ["east", "north", "wall-3", null, null]
+  [
+    V2_EAST, "wall-panel:v2:1:lam:3:segment-start:opening-d1-start:interior", V2_EAST_OUTSIDE,
+    "wall-panel:v2:1:room_17:east:segment-start:segment-end:interior", "lam-north-selectable-face", "lam-3-side-positive",
+  ].map((id) => getWallPanelFaceId(id, "lam")),
+  ["east", "wall-3", null, null, null, null]
 );
 
 // Depths: each face's deepest finish, panels included; paint and tiles count as nothing.
@@ -55,7 +63,18 @@ const tiledWithPanel = room({
   panels: { [V2_EAST]: { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } },
 });
 assert.deepEqual(getRoomWallFinishDepths(tiledWithPanel), { north: 0.01, east: 0.044 }, "part of the east wall counts for all of it");
-assert.equal(getRoomWallFinishDepths(laminate), getRoomWallFinishDepths(laminate), "kept while the room is the same object");
+const laminateMoved: RoomSnapshot = { ...laminate, planPosition: { x: 3, z: 0 } };
+assert.equal(getRoomWallFinishDepths(laminate), getRoomWallFinishDepths(laminateMoved),
+  "kept while the room's surfaces are the same object, as for the copy the 2D plan draws while a room is dragged");
+const paintedWithOutsidePanel = room({
+  default: { paintColorHex: "#ffffff" },
+  panels: { [V2_EAST_OUTSIDE]: { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } },
+});
+assert.deepEqual(getRoomWallFinishDepths(paintedWithOutsidePanel), {}, "a panel on the wall's outside face stands outside");
+assert.deepEqual(
+  getRoomWallFinishDepths({ ...laminate, floorElevationMm: 0 }), {},
+  "a room from an imported plan keeps the bare wall: its walls draw the finish flat (the next PR)"
+);
 
 // The outline inside the panels: each edge moves in by its own depth.
 assert.deepEqual(
@@ -70,6 +89,11 @@ assert.deepEqual(lInside.polygon?.map(({ x, z }) => [Math.round(x * 1000), Math.
 ], "the L's notch edges, at z = 0.24 m and x = 0.32 m, move in by 20 mm");
 const plain = { shape: "rectangle" as const, w: 4, d: 3 };
 assert.equal(getRoomOutlineInsideFinishes(plain, {}), plain, "a room without panels keeps its outline");
+const notchDepths = { "wall-2": 0.02 };
+assert.equal(
+  getRoomOutlineInsideFinishes({ shape: "l_shape", w: 4, d: 3 }, notchDepths), getRoomOutlineInsideFinishes({ shape: "l_shape", w: 4, d: 3 }, notchDepths),
+  "the same inset outline while the room's depths and outline are the same, so an item's clamp and re-clamp keep it"
+);
 
 // Furniture stops at each panel: 2 cm in front of it, as it stops 2 cm in front of a bare wall.
 const inset = getFurnitureWallInset(0.12);
@@ -114,6 +138,29 @@ const clear = getRectangleWallClearances({
 });
 near(clear.x, 2 - 0.06 - 0.044 - 0.5 - 1.3);
 near(clear.z, 1.5 - 0.06 - 0.25);
+// Each axis takes the nearer finished face: an item 3.8 m wide, 5 mm east of the centre, is 1 mm from a 44 mm west panel.
+const wide = getRectangleWallClearances({
+  width: 4, depth: 3, wallThickness: 0.12, depths: { west: 0.044 }, center: { x: 0.005, z: 0 }, footprint: { w: 3.8, d: 0.5 },
+});
+near(wide.x, 0.001);
+near(getRoomWallClearances(tiledWithPanel, { x: 1.3, z: 0 }, { w: 1, d: 0.5 }).x, clear.x, "a room snapshot's clearances");
+// An L-shape's or drawn shape's checks measure its rectangle: each side stops at the deepest panel along it.
+const lRoom = room(
+  { default: { paintColorHex: "#ffffff" }, faces: { "wall-1": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST }, "wall-2": { materialId: NORDIC_ACACIA } } },
+  { planShape: "l_shape" }
+);
+assert.deepEqual(getRoomSideFinishDepths(lRoom, { w: 4, d: 3 }), { east: 0.044 }, "the notch's walls are inside the rectangle");
+assert.deepEqual(getRoomSideFinishDepths(tiledWithPanel, { w: 4, d: 3 }), { north: 0.01, east: 0.044 }, "a rectangle's walls are its sides");
+const lLaminate = room({ default: { materialId: NORDIC_ACACIA } }, { planShape: "l_shape" });
+assert.match(
+  evaluateConstraints({
+    design: { items: [{ instanceId: "c", productId: CONSOLE, position: [0, 0, -1.5 + inset + 0.01 + consoleDepth / 2], rotationY: 0 }] },
+    movedItemId: "c",
+    room: { width: 4, depth: 3, wallThickness: 0.12, wallFinishRoom: lLaminate },
+  }).find((result) => result.id === "wall-gap")?.message ?? "",
+  /\(2cm gap\)/,
+  "an L-shaped room's checks measure from its panels as a rectangle's do"
+);
 
 // Built-ins: a cabinet run along a wall is the clear length between the walls either side, less their panels.
 const [north, east] = buildCabinetryAvailableSpaces({ activeRoom: tiledWithPanel, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
@@ -132,10 +179,17 @@ assert.deepEqual(strips.map((strip) => strip.faceId), ["north", "east"]);
 const eastFace = strips[1].faceLine.map(([x, , z]) => [Math.round(x * 1000), Math.round(z * 1000)]);
 assert.deepEqual(eastFace, [[1896, -1430], [1896, 1440]], "60 mm in from the centre line, then 44 mm of panel; mitred at the north panel");
 assert.deepEqual(getRoomPanelStrips2D({ ...planRoom, surfaces: { walls: { default: { paintColorHex: "#fff" } } } }).strips, []);
+const draggedRoom = { ...planRoom, surfaces: tiledWithPanel.surfaces };
+assert.equal(getRoomPanelStrips2D({ ...draggedRoom, x: 0.5 }), getRoomPanelStrips2D({ ...draggedRoom, x: 0.6 }), "the same strips while a room is dragged");
 
 // The wiring: the active room's clamp, the checks' callers, the 3D window outline and the inside corners.
 const read = (path: string) => readFileSync(path, "utf8");
 assert.match(read("lib/useDesignPageHousePlanState.ts"), /clampToRoomInsideFinishes\([\s\S]*?activeRoomWallFinishDepths\s*\)/);
+assert.match(
+  read("lib/useDesignPageSceneItemDrag.ts"),
+  /: clampToRoomInsideFinishes\([^\n]*\n(?:[^\n]*\n){7}\s*targetRoom\.planHoles,\s*getRoomWallFinishDepths\(targetRoom\)\s*\)/,
+  "an item dragged into another room is clamped to that room's own shape and panels"
+);
 for (const file of ["lib/useDesignPageSceneItemDrag.ts", "lib/useDesignPageSelectionTransforms.ts"]) {
   assert.match(read(file), /room: \{ width: roomWidth, depth: roomDepth, wallThickness, wallFinishRoom: activeRoom \}/, file);
 }

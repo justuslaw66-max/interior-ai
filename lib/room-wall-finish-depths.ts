@@ -18,6 +18,10 @@ import {
  *
  * Faces are named as the 3D view names them: `north` (z = -depth / 2), `east`, `south` and `west` for a rectangle, and
  * `wall-N` for edge N of an L-shape's or a drawn shape's outline (components/editor/renderers/house-plan-3d/geometry.ts).
+ *
+ * Only drawn rooms: an imported plan's walls are drawn flat (CanonicalFloorPlanStructure.tsx) and named by the plan's own
+ * wall ids, so its rooms keep the bare wall until they draw the panel's depth too (the second PR, J's "Two: drawn rooms,
+ * then imported").
  */
 
 /** A room snapshot or a plan room: what the depths are read from. */
@@ -29,6 +33,8 @@ export type WallFinishRoom = {
   polygon?: readonly RoomPlanPolygonPoint[];
   surfaces?: RoomSurfaceAssignments;
   surfaceFinishes?: RoomSurfaceAssignments;
+  /** Set only on a room made from an imported plan (lib/floor-plan-legacy-adapters.ts): its exact floor elevation. */
+  floorElevationMm?: number;
 };
 
 /** Each face's panel depth off the bare wall, in metres; a face that isn't listed has none. */
@@ -51,41 +57,50 @@ export function getRoomWallFaceIds(room: Omit<WallFinishRoom, "id">): string[] {
   return [...RECTANGULAR_WALL_FACE_IDS];
 }
 
+/** A v2 panel id's token, as the 3D view writes it (`getWallSurfacePanelId`, house-plan-3d/geometry.ts). */
+export function normalizeWallPanelIdToken(value: string): string {
+  return value
+    .trim()
+    .replace(/[^a-zA-Z0-9_.-]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "unknown";
+}
+
 /**
- * The face a saved panel finish is on: v2 panel ids name it (`wall-panel:v2:<floor>:<room>:<face>:...`), and older ids start
- * with the wall's key (`<room>-north...`, `<room>-3...`). Null when it can't be told. Every laminate panel is saved under a
- * v2 id: they exist since 31 Jul 2026, and saving a panel replaces its older ids.
+ * The face a saved panel finish stands into the room on: the face its v2 id names
+ * (`wall-panel:v2:<floor>:<room>:<face>:<start>:<end>:<role>`), when the id is this room's and the panel is on the inside.
+ * Null for a panel on a wall's outside face, one saved under another room's id (a duplicated room's copy, which the 3D view
+ * doesn't draw), and an older id: laminates came after v2 ids (31 Jul 2026), and saving a panel replaces its older ids.
  */
 export function getWallPanelFaceId(panelId: string, roomId: string): string | null {
   const parts = panelId.split(":");
-  if (parts[0] === "wall-panel" && parts[1] === "v2" && parts.length >= 6 && parts[4]) {
-    return getDeterministicWallFaceId(parts[4]);
-  }
-  if (!panelId.startsWith(`${roomId}-`)) return null;
-  const key = panelId.slice(roomId.length + 1);
-  const rectangular = RECTANGULAR_WALL_FACE_IDS.find((faceId) => key === faceId || key.startsWith(`${faceId}-`));
-  if (rectangular) return rectangular;
-  const index = /^(\d+)(?:-|$)/.exec(key);
-  return index ? `wall-${index[1]}` : null;
+  if (parts.length !== 8 || parts[0] !== "wall-panel" || parts[1] !== "v2") return null;
+  if (parts[3] !== normalizeWallPanelIdToken(roomId) || parts[7] !== "interior" || !parts[4]) return null;
+  return getDeterministicWallFaceId(parts[4]);
 }
 
 function finishDepthMeters(settings: ReturnType<typeof getWallFaceSurfaceSettings>): number {
   return getWallFinishDepthMm(getRuntimeSurfaceMaterialById(settings.materialId), settings, 0) / 1000;
 }
 
-// Rooms are replaced, not changed, when edited, so a room's depths are kept while it and its surfaces are the same objects:
-// the 3D view asks once per item.
-const depthsByRoom = new WeakMap<WallFinishRoom, { surfaces: RoomSurfaceAssignments; depths: RoomWallFinishDepths }>();
+// Surfaces are replaced, not changed, when edited, so a room's depths are kept while its surfaces are the same object and it
+// has the same faces: the 3D view asks once per item, and the 2D plan copies a room on every frame of a room drag.
+const depthsBySurfaces = new WeakMap<RoomSurfaceAssignments, { roomId: string; faces: string; depths: RoomWallFinishDepths }>();
 
-/** Each face's panel depth: the deepest of the face's own finish and the finished panels on it. */
+function faceListKey(room: WallFinishRoom): string {
+  const shape = roomShapeOf(room);
+  return shape === "custom_polygon" ? `${shape}:${(room.planPolygon ?? room.polygon)?.length ?? 0}` : shape;
+}
+
+/** Each face's panel depth in a drawn room: the deepest of the face's own finish and the finished panels on it. */
 export function getRoomWallFinishDepths(room: WallFinishRoom | null | undefined): RoomWallFinishDepths {
-  if (!room) return NO_WALL_FINISH_DEPTHS;
+  if (!room || typeof room.floorElevationMm === "number") return NO_WALL_FINISH_DEPTHS;
   const surfaces = room.surfaces ?? room.surfaceFinishes;
   if (!surfaces?.walls) return NO_WALL_FINISH_DEPTHS;
-  const known = depthsByRoom.get(room);
-  if (known && known.surfaces === surfaces) return known.depths;
+  const faces = faceListKey(room);
+  const known = depthsBySurfaces.get(surfaces);
+  if (known && known.roomId === room.id && known.faces === faces) return known.depths;
   const depths = measureRoomWallFinishDepths(room, surfaces);
-  depthsByRoom.set(room, { surfaces, depths });
+  depthsBySurfaces.set(surfaces, { roomId: room.id, faces, depths });
   return depths;
 }
 
@@ -112,8 +127,10 @@ export function hasWallFinishDepths(depths: RoomWallFinishDepths | null | undefi
 }
 
 /**
- * An item's clear gap to the nearer wall on each axis of a rectangular room, measured to the finished face: half the wall in
- * from the centre-line outline, and in front of that wall's panel (J, 29 Oct 2026: "Fix it, all from the face").
+ * An item's clear gap to the nearer wall on each axis of a room's rectangle, measured to the finished face: half the wall in
+ * from the centre-line outline, and in front of that side's panel (J, 29 Oct 2026: "Fix it, all from the face"). `depths`
+ * are the sides' panels (getRoomSideFinishDepths, lib/room-finished-outline.ts). Each axis takes the nearer of its two
+ * finished faces, which with different panels needn't be the wall on the item's side of the centre.
  */
 export function getRectangleWallClearances({
   width,
@@ -131,20 +148,10 @@ export function getRectangleWallClearances({
   footprint: { w: number; d: number };
 }): { x: number; z: number } {
   const face = wallThickness / 2;
-  const panelX = (center.x >= 0 ? depths.east : depths.west) ?? 0;
-  const panelZ = (center.z >= 0 ? depths.south : depths.north) ?? 0;
+  const gap = (half: number, offset: number, size: number, panel: number | undefined) =>
+    half - face - (panel ?? 0) - size / 2 + offset;
   return {
-    x: width / 2 - face - panelX - footprint.w / 2 - Math.abs(center.x),
-    z: depth / 2 - face - panelZ - footprint.d / 2 - Math.abs(center.z),
+    x: Math.min(gap(width / 2, center.x, footprint.w, depths.west), gap(width / 2, -center.x, footprint.w, depths.east)),
+    z: Math.min(gap(depth / 2, center.z, footprint.d, depths.north), gap(depth / 2, -center.z, footprint.d, depths.south)),
   };
-}
-
-/** `getRectangleWallClearances` for a room snapshot: its drawn size, its wall (12 cm when not set) and its panels. */
-export function getRoomWallClearances(
-  room: WallFinishRoom & { geometry: { width: number; depth: number; wallThickness?: number } },
-  center: { x: number; z: number },
-  footprint: { w: number; d: number }
-): { x: number; z: number } {
-  const { width, depth, wallThickness = 0.12 } = room.geometry;
-  return getRectangleWallClearances({ width, depth, wallThickness, depths: getRoomWallFinishDepths(room), center, footprint });
 }

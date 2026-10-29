@@ -9,7 +9,7 @@ import {
 } from "@/lib/design-page-plan-overlays";
 import { resolveCutawayWallOpacity } from "@/lib/design-page-wall-cutaway";
 import { getDeterministicWallFaceId } from "@/lib/surface-settings";
-import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
+import { getRoomWallFinishDepths, normalizeWallPanelIdToken } from "@/lib/room-wall-finish-depths";
 import {
   buildPlanarUnionPolygons,
   type PlanarRegionMm,
@@ -170,13 +170,6 @@ export function getSelectableWallSurfacePanelId(
   side: 1 | -1
 ): string {
   return `${facePanelId}-side-${side === 1 ? "positive" : "negative"}`;
-}
-
-function normalizeWallPanelIdToken(value: string): string {
-  return value
-    .trim()
-    .replace(/[^a-zA-Z0-9_.-]+/g, "_")
-    .replace(/^_+|_+$/g, "") || "unknown";
 }
 
 export function getWallSurfacePanelId({

@@ -1,7 +1,7 @@
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { ProductCategory } from "@/lib/catalog-schema";
 import { getFurnitureWallInset } from "@/lib/design-page-geometry";
-import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
+import { getRoomSideFinishDepths } from "@/lib/room-finished-outline";
 import { AGAINST_WALL_TOLERANCE_METERS } from "@/lib/template-furnishing-layout";
 import { narrowRoomIssues } from "@/lib/floor-plan-narrow-rooms";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
@@ -225,7 +225,7 @@ function boundsIntersect(a: ItemBounds, b: ItemBounds) {
 }
 
 function minGapToRoom(bounds: ItemBounds, room: HousePlanRoom2D) {
-  const panels = getRoomWallFinishDepths(room); // Less each wall's panel; the rules allow half the wall plus 2 cm (29 Oct 2026).
+  const panels = getRoomSideFinishDepths(room, room); // Less each side's panel; the rules allow half the wall plus 2 cm (29 Oct 2026).
   return Math.min(
     bounds.minX + room.w / 2 - (panels.west ?? 0), room.w / 2 - bounds.maxX - (panels.east ?? 0),
     bounds.minZ + room.d / 2 - (panels.north ?? 0), room.d / 2 - bounds.maxZ - (panels.south ?? 0)

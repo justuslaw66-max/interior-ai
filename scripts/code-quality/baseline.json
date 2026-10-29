@@ -233,7 +233,7 @@
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
-      "lines": 2576,
+      "lines": 2569,
       "limit": 400
     },
     "components/editor/renderers/house-plan-3d/surfaceMeshes.tsx": {
@@ -4417,7 +4417,7 @@
     "lib/useDesignPageSceneItemDrag.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 532
+        "maximum": 530
       },
       "complexFunctions": {
         "count": 1,

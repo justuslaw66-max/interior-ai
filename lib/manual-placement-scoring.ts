@@ -4,7 +4,7 @@ import { computeCirculationAnalysis } from "@/lib/circulation-analysis";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
-import { getRoomWallClearances } from "@/lib/room-wall-finish-depths";
+import { getRoomWallClearances } from "@/lib/room-finished-outline";
 
 export type ManualPlacementScoreKind =
   | "great"

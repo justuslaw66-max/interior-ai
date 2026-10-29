@@ -2,6 +2,7 @@ import { clampToRoom } from "@/lib/design-page-geometry";
 import { L_SHAPE_NOTCH_RATIO } from "@/lib/room-floor-area";
 import type { RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 import {
+  getRectangleWallClearances,
   getRoomWallFaceIds,
   getRoomWallFinishDepths,
   hasWallFinishDepths,
@@ -82,19 +83,57 @@ export function insetPolygonEdges(points: readonly RoomPlanPolygonPoint[], inset
   });
 }
 
+// One inset outline per room's depths while its outline is the same: an item's clamp runs on every drag frame, and the 3D view
+// hands each item the polygon, whose identity its re-clamp effect depends on.
+const insideOutlineByDepths = new WeakMap<RoomWallFinishDepths, { outline: RoomPlanOutline; inside: RoomPlanOutline }>();
+
+function isSameOutline(a: RoomPlanOutline, b: RoomPlanOutline): boolean {
+  return a.shape === b.shape && a.polygon === b.polygon && a.holes === b.holes && a.w === b.w && a.d === b.d;
+}
+
 /**
  * The outline inside the panels: the same outline when no wall has one, otherwise a drawn shape whose edges stand in by their
  * walls' panel depths. Its holes and its bounding size are unchanged.
  */
 export function getRoomOutlineInsideFinishes(outline: RoomPlanOutline, depths: RoomWallFinishDepths): RoomPlanOutline {
   if (!hasWallFinishDepths(depths)) return outline;
+  const known = insideOutlineByDepths.get(depths);
+  if (known && isSameOutline(known.outline, outline)) return known.inside;
   const faceIds = getRoomWallFaceIds({ shape: outline.shape, polygon: outline.polygon });
   const points = getRoomPlanOutlinePoints(outline);
-  return {
+  const inside: RoomPlanOutline = {
     ...outline,
     shape: "custom_polygon",
     polygon: insetPolygonEdges(points, faceIds.map((faceId) => depths[faceId] ?? 0)),
   };
+  insideOutlineByDepths.set(depths, { outline, inside });
+  return inside;
+}
+
+/**
+ * The panels on the room's bounding rectangle, as `north`, `east`, `south` and `west`: for a rectangle its walls' own, and
+ * for an L-shape or a drawn shape the deepest panel among the walls along each side. The checks that measure a room by its
+ * bounding rectangle (lib/constraints/evaluate.ts, the walkway map, placement scoring, plan review) stop at these, so every
+ * shape's checks measure from the panel on its outer walls (J, 29 Oct 2026: "Fix it, all from the face").
+ */
+export function getRoomSideFinishDepths(room: WallFinishRoom | null | undefined, size: { w: number; d: number }): RoomWallFinishDepths {
+  const depths = getRoomWallFinishDepths(room);
+  if (!room || !hasWallFinishDepths(depths)) return depths;
+  const faceIds = getRoomWallFaceIds(room);
+  if (faceIds[0] === "north") return depths; // A rectangle's walls are its sides.
+  const shape = room.planShape ?? room.shape ?? "rectangle";
+  const points = getRoomPlanOutlinePoints({ shape, polygon: [...(room.planPolygon ?? room.polygon ?? [])], w: size.w, d: size.d });
+  const xs = points.map(({ x }) => x), zs = points.map(({ z }) => z);
+  const bounds = { west: Math.min(...xs), east: Math.max(...xs), north: Math.min(...zs), south: Math.max(...zs) };
+  const sides: Record<string, number> = {};
+  faceIds.forEach((faceId, index) => {
+    const start = points[index], end = points[(index + 1) % points.length];
+    const along = (value: number, axis: "x" | "z") => Math.abs(start[axis] - value) < 1e-6 && Math.abs(end[axis] - value) < 1e-6;
+    const side = along(bounds.west, "x") ? "west" : along(bounds.east, "x") ? "east"
+      : along(bounds.north, "z") ? "north" : along(bounds.south, "z") ? "south" : null;
+    if (side && (depths[faceId] ?? 0) > (sides[side] ?? 0)) sides[side] = depths[faceId];
+  });
+  return sides;
 }
 
 /**
@@ -190,4 +229,15 @@ export function getRoomClearInsideMetrics(
   const widthMm = Math.max(0, Math.max(...xs) - Math.min(...xs)) * 1000;
   const depthMm = Math.max(0, Math.max(...zs) - Math.min(...zs)) * 1000;
   return [`Clear inside ${formatLengthMm(widthMm)} × ${formatLengthMm(depthMm)}`];
+}
+
+/** `getRectangleWallClearances` for a room snapshot: its drawn size, its wall (12 cm when not set) and its sides' panels. */
+export function getRoomWallClearances(
+  room: WallFinishRoom & { geometry: { width: number; depth: number; wallThickness?: number } },
+  center: { x: number; z: number },
+  footprint: { w: number; d: number }
+): { x: number; z: number } {
+  const { width, depth, wallThickness = 0.12 } = room.geometry;
+  const depths = getRoomSideFinishDepths(room, { w: width, d: depth });
+  return getRectangleWallClearances({ width, depth, wallThickness, depths, center, footprint });
 }

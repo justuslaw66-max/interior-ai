@@ -3,7 +3,7 @@ import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
-import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
+import { getRoomSideFinishDepths } from "@/lib/room-finished-outline";
 
 type CirculationCatalog = Record<string, CatalogItemSchema | undefined>;
 
@@ -154,11 +154,11 @@ function hasPath(cells: GridCell[][], starts: Array<{ x: number; z: number }>, d
 
 /**
  * The centres of the walkable grid's outer cells: half a cell in from the walls' finished faces, which are half the wall in
- * from the outline and in front of each laminate panel (J, 29 Oct 2026: "Fix it, all from the face").
+ * from the outline and in front of each side's laminate panel (J, 29 Oct 2026: "Fix it, all from the face").
  */
 function getWalkableCellBounds(room: RoomSnapshot, gridSizeM: number): { minX: number; maxX: number; minZ: number; maxZ: number } {
   const wallFace = (room.geometry.wallThickness ?? 0.12) / 2;
-  const panels = getRoomWallFinishDepths(room);
+  const panels = getRoomSideFinishDepths(room, { w: room.geometry.width, d: room.geometry.depth });
   return {
     minX: -room.geometry.width / 2 + wallFace + (panels.west ?? 0) + gridSizeM / 2,
     maxX: room.geometry.width / 2 - wallFace - (panels.east ?? 0) - gridSizeM / 2,
