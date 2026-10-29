@@ -80,7 +80,7 @@ assert.doesNotMatch(tips(true).match(/<button [^>]*>/)?.[0] ?? "", /\babsolute\b
 assert.match(tips(false), /\babsolute z-30 left-1\/2 top-bar-17 -translate-x-1\/2\b/);
 const card = renderToStaticMarkup(createElement(CatalogCard, {
   item: {
-    id: "winora", variantId: "sand", variantLabel: "Sand", title: "Winora Armchair", brand: "Castlery", category: "Arm Chair",
+    id: "winora", variantId: "sand", variantLabel: "Sand", title: "Winora Armchair", brand: "Castlery", category: "Armchair",
     thumbUrl: null, fallbackThumbUrl: null, priceAmount: 549, dimsLabel: "70.5 x 85 cm", dimsMm: { w: 705, d: 850, h: 850 },
     primarySwatches: [], badges: [], imageClassName: "h-full w-full object-contain",
   },
