@@ -2,6 +2,7 @@ import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
 import { buildRoomSurfaceAreaRows, roundSquareMeters, type SurfaceAreaRow } from "@/lib/surface-material-areas";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { countSurfaceSheets, getSurfaceSheetSize, type SurfaceSheetSize } from "@/lib/surface-material-sheets";
+import { buildWallPanelBackingOrder, type WallPanelBackingOrder } from "@/lib/laminate-wall-backing";
 
 /**
  * A floor or wall finish in the design, as the Shopping list shows it (the Shop mockup's
@@ -16,8 +17,11 @@ export type ShoppingSurface = {
   where: string;
   /** Whole square metres to order, with 10% extra for cuts. */
   orderAreaSqm: number;
-  /** A finish sold by the sheet: its sheet, the sheets to order (surface-material-sheets.ts) and the wall they cover. */
-  sheetOrder: { sheet: SurfaceSheetSize; sheets: number; surfaceAreaSqm: number } | null;
+  /**
+   * A finish sold by the sheet: its sheet, the sheets to order (surface-material-sheets.ts) and the wall they cover, and for a
+   * laminate the boards behind them, one entry per kind of board (lib/laminate-wall-backing.ts).
+   */
+  sheetOrder: { sheet: SurfaceSheetSize; sheets: number; surfaceAreaSqm: number; backing: WallPanelBackingOrder[] } | null;
   swatchUrl: string | null;
 };
 
@@ -29,6 +33,8 @@ export type ShoppingSurfaceMaterial = {
   swatchUrl: string | null;
   /** Set for a finish sold by the sheet. */
   sheet?: SurfaceSheetSize | null;
+  /** A laminate sheet, which goes on a board (the render data's laminate-sheet fact). */
+  laminateSheet?: boolean;
 };
 export type ShoppingSurfaceMaterialLookup = (materialId: string) => ShoppingSurfaceMaterial | null;
 
@@ -43,6 +49,7 @@ export function runtimeShoppingSurfaceMaterial(materialId: string): ShoppingSurf
     supplier: info.brand ?? info.supplier,
     swatchUrl: textures.swatch_url?.trim() || null,
     sheet: getSurfaceSheetSize(material),
+    laminateSheet: Boolean(material.suitability?.laminate_sheet),
   };
 }
 
@@ -92,19 +99,41 @@ export function buildShoppingSurfaces(
     supplier: material.supplier,
     where: surfaceWhere(group),
     orderAreaSqm: Math.max(1, Math.ceil(roundSquareMeters(group.reduce((sum, row) => sum + row.orderAreaSqm, 0)))),
-    sheetOrder: material.sheet ? sheetOrderOf(group, material.sheet) : null,
+    sheetOrder: material.sheet ? sheetOrderOf(group, material.sheet, Boolean(material.laminateSheet)) : null,
     swatchUrl: material.swatchUrl,
   }));
 }
 
+/** The boards of a laminate's rows, added up by kind of board and fixing. */
+function addUpBacking(orders: readonly WallPanelBackingOrder[]): WallPanelBackingOrder[] {
+  const byKind = new Map<string, WallPanelBackingOrder>();
+  for (const order of orders) {
+    const key = `${order.board}|${order.boardThicknessMm}|${order.fixing}`;
+    const total = byKind.get(key);
+    byKind.set(key, total ? {
+      ...total,
+      boards: total.boards + order.boards,
+      battenMetres: total.battenMetres === null || order.battenMetres === null ? null : total.battenMetres + order.battenMetres,
+    } : order);
+  }
+  return [...byKind.values()];
+}
+
 /** Each finish's sheets, added up: offcuts are shared within a room's finish, not between rooms or finishes. */
-function sheetOrderOf(rows: readonly SurfaceAreaRow[], sheet: SurfaceSheetSize): NonNullable<ShoppingSurface["sheetOrder"]> {
+function sheetOrderOf(rows: readonly SurfaceAreaRow[], sheet: SurfaceSheetSize, laminate: boolean): NonNullable<ShoppingSurface["sheetOrder"]> {
+  const sheetsByRow = rows.map((row) => countSurfaceSheets({
+    pieces: row.wallPieces, orderAreaSqm: row.orderAreaSqm, rotationDeg: row.settings.rotationDeg, sheet,
+  }));
+  const backing = laminate
+    ? addUpBacking(rows.map((row, index) => buildWallPanelBackingOrder({
+        backing: row.settings.panelBacking, sheets: sheetsByRow[index], sheet, pieces: row.wallPieces, surfaceAreaSqm: row.surfaceAreaSqm,
+      })))
+    : [];
   return {
     sheet,
-    sheets: rows.reduce((sum, row) => sum + countSurfaceSheets({
-      pieces: row.wallPieces, orderAreaSqm: row.orderAreaSqm, rotationDeg: row.settings.rotationDeg, sheet,
-    }), 0),
+    sheets: sheetsByRow.reduce((sum, sheets) => sum + sheets, 0),
     surfaceAreaSqm: roundSquareMeters(rows.reduce((sum, row) => sum + row.surfaceAreaSqm, 0)),
+    backing,
   };
 }
 

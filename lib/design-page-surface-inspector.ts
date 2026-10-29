@@ -29,10 +29,11 @@ export type SurfacePatternPreviewTile = {
 };
 
 /**
- * Laminate wall panels (25 Oct 2026) are butted closely: their joint starts at 1 mm in a dark grey from the grout palette, which
- * reads as the shadow between sheets, and the inspector calls it a joint. Tiles keep their grout.
+ * Laminate wall panels (25 Oct 2026) have a joint, not grout: a dark grey from the grout palette, which reads as the shadow
+ * between sheets. It starts at Greenlam's least joint between bonded panels, 3 mm (28 Oct 2026; it was 1 mm), which is also
+ * the least the inspector offers (lib/laminate-wall-backing.ts). Tiles keep their grout.
  */
-export const WALL_PANEL_DEFAULT_JOINT = { jointSizeMm: 1, jointColor: "#444442" } as const;
+export const WALL_PANEL_DEFAULT_JOINT = { jointSizeMm: 3, jointColor: "#444442" } as const;
 
 function isWallPanelMaterial(material: SurfaceMaterialRenderInfo | null): boolean {
   return material?.surface_material.surface_category === "wall_panel";

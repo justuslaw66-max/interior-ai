@@ -38,6 +38,7 @@ const floor: SelectedSurfaceInspectorState = {
   controls: { changeDisabled: false, rotateDisabled: false, resetDisabled: false, applyAllDisabled: false },
   picker: null,
   wallGrout: null,
+  wallBacking: null,
   floorPattern: {
     ...grout,
     value: "straight",
@@ -78,6 +79,18 @@ assert.match(wall, />North wall<\/h3>/);
 assert.match(wall, /data-testid="selection-inspector-wall-apply-room"[^>]*>Apply to room<\/button>/);
 assert.match(wall, /data-testid="selection-inspector-wall-apply-all"[^>]*>Apply to all walls<\/button>/);
 assert.match(wall.slice(wall.indexOf("Adjust pattern")), /data-testid="selection-inspector-wall-grout"[\s\S]*data-testid="wall-surface-joint-size-5"/);
+assert.doesNotMatch(wall, /selection-inspector-wall-board/, "A tile has no board.");
+// A laminate wall finish's board sits with the finish, before Adjust pattern (lib/laminate-wall-backing.ts).
+const laminateWall = render({
+  ...floor, target: "wall", wallPanelId: "north-1", header: { ...floor.header, label: "North wall" }, floorPattern: null,
+  wallBacking: { backing: { board: "mdf", boardThicknessMm: 9, fixing: "glued" }, buildUpMm: 10, disabled: false },
+}, false);
+const boardAt = laminateWall.indexOf('data-testid="selection-inspector-wall-board"');
+assert.ok(
+  boardAt > laminateWall.indexOf('data-testid="plan-change-floor-finish"') && boardAt < laminateWall.indexOf('data-testid="selection-inspector-wall-apply-room"'),
+  "The board goes with the finish, before Apply to room, which takes it to every wall."
+);
+assert.ok(boardAt < laminateWall.indexOf("Adjust pattern"), "The board shows outside Adjust pattern, so consumers see it.");
 
 const ceiling = render({ ...floor, target: "ceiling", header: { ...floor.header, label: "Ceiling" }, sizeOptions: [], floorPattern: null }, false);
 assert.match(ceiling, /data-testid="plan-change-ceiling-finish"[^>]*>Change paint…<\/button>/);

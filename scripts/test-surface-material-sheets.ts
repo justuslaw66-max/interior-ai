@@ -212,34 +212,40 @@ const [undrawnFace] = buildRoomWallFinishQuantities([room({ walls: {
 assert.deepEqual([undrawnFace.facePiecesById.get("segment-9"), undrawnFace.remainingWallPieces], [null, null]);
 
 // The share export's CSV, PDF and page.
-const [csvRow] = buildSurfaceMaterialCsvRows([panelled]);
-assert.deepEqual([csvRow.variantLabel, csvRow.quantity], ["All walls · 13 sheets of 1220 × 2440 mm", 13]);
-assert.match(csvRow.reviewNote ?? "", /^Surface All walls; measured area 36\.40 m2; suggested order 13 sheets of 1220 × 2440 mm\. Pattern /);
+// A laminate's sheets go on boards (28 Oct 2026): the order names them, and the CSV lists them on a line of their own.
+const [csvRow, csvBoardRow] = buildSurfaceMaterialCsvRows([panelled]);
+assert.deepEqual([csvRow.variantLabel, csvRow.quantity], ["All walls · 13 sheets of 1220 × 2440 mm on 13 MDF boards, 9 mm, glued", 13]);
+assert.match(csvRow.reviewNote ?? "", /^Surface All walls; measured area 36\.40 m2; suggested order 13 sheets of 1220 × 2440 mm on 13 MDF boards, 9 mm, glued\. Pattern /);
+assert.deepEqual([csvBoardRow.category, csvBoardRow.itemTitle, csvBoardRow.quantity], ["Wall Panel Board", "MDF board, 9 mm", 13]);
 const [tileCsvRow] = buildSurfaceMaterialCsvRows([room({ walls: { default: { materialId: ANIMA_WALL_TILE } } })]);
 assert.equal(tileCsvRow.variantLabel, "All walls · 40.04 m2 incl. 10% waste", "tiles keep their wording");
 assert.match(tileCsvRow.reviewNote ?? "", /suggested order 40\.04 m2 with 10% waste\./);
-assert.equal(formatSurfaceMaterialBomOrder(bomRow, String), "13 sheets of 1220 × 2440 mm");
+assert.equal(formatSurfaceMaterialBomOrder(bomRow, String), "13 sheets of 1220 × 2440 mm on 13 MDF boards, 9 mm, glued");
 assert.equal(formatSurfaceMaterialBomOrder(tiled, (area) => `${area} m2`), "40.04 m2 incl. 10% waste");
 const pdfRoute = readFileSync(path.join(process.cwd(), "app/share/[shareToken]/export/pdf/route.ts"), "utf8");
 assert.match(pdfRoute, /Order \$\{formatSurfaceMaterialBomOrder\(row, \(area\) => formatMeasurement\(area, "m2"\)\)\}/);
 const bomHtml = renderToStaticMarkup(createElement(SurfaceMaterialBomSection, { rows: [bomRow, tiled], warnings: [] }));
-assert.match(bomHtml, /<td class="p-2 text-right"><div>13 sheets<\/div><div class="text-xs text-gray-500">1220 × 2440 mm<\/div><\/td>/);
+assert.match(bomHtml, /<td class="p-2 text-right"><div>13 sheets<\/div><div class="text-xs text-gray-500">1220 × 2440 mm<span data-testid="surface-bom-backing" class="block">on 13 MDF boards, 9 mm, glued<\/span><\/div><\/td>/);
 assert.match(bomHtml, /<td class="p-2 text-right"><div>40 m2<\/div><div class="text-xs text-gray-500">incl\. 10% waste<\/div><\/td>/);
 assert.match(bomHtml, />Order<\/th>/);
 
 // The editor: the Shopping list adds each finish's sheets, and the surface summary names them.
 const [shopping] = shoppingSurfacesOf([panelled]);
-assert.deepEqual(shopping.sheetOrder, { sheet: SHEET, sheets: 13, surfaceAreaSqm: 36.4 });
+assert.deepEqual(shopping.sheetOrder, {
+  sheet: SHEET, sheets: 13, surfaceAreaSqm: 36.4,
+  backing: [{ board: "mdf", boardThicknessMm: 9, fixing: "glued", boards: 13, boardSizeMm: SHEET, battenMetres: null }],
+});
 const [twoRooms] = shoppingSurfacesOf([panelled, { ...panelled, id: "lam-2", name: "Study" }]);
 assert.deepEqual([twoRooms.where, twoRooms.sheetOrder?.sheets], ["Walls in the Living Room and Study", 26], "rooms don't share offcuts");
 assert.equal(shoppingSurfacesOf([room({ floorMaterialId: SILVER_OAK })])[0].sheetOrder, null);
 // Without its swatch, so the row renders without Next's image component.
 const shoppingHtml = renderToStaticMarkup(createElement(ShoppingSurfacesSection, { surfaces: [{ ...shopping, swatchUrl: null }] }));
 assert.match(shoppingHtml, /data-testid="shopping-surface-order"[^>]*>Order 13 sheets of 1220 × 2440 mm, for 36\.4 m²</);
+assert.match(shoppingHtml, /data-testid="shopping-surface-backing"[^>]*>On 13 MDF boards, 9 mm, glued</);
 const summaryRows = buildSurfaceSummaryRows(buildSurfaceRoomSummaries([mixed], [door("north")]), () => null);
 assert.deepEqual(
   summaryRows.map((row) => [row.surfaceLabel, row.sheetsLabel]),
-  [["Floor", null], ["Ceiling", null], ["Remaining walls", "9 sheets"], ["East wall", "4 sheets"], ["North wall panel", null]],
+  [["Floor", null], ["Ceiling", null], ["Remaining walls", "9 sheets on MDF, 9 mm"], ["East wall", "4 sheets on MDF, 9 mm"], ["North wall panel", null]],
   "the same counts as the bill of materials"
 );
 assert.match(

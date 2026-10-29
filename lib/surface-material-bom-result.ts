@@ -6,6 +6,7 @@ import {
 } from "@/lib/surface-material-bom";
 import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
 import { formatSheetCount, formatSheetSize } from "@/lib/surface-material-sheets";
+import { formatWallPanelBackingOrder } from "@/lib/laminate-wall-backing";
 
 export type SurfaceMaterialBomWarning = {
   code: "UNRESOLVED_OPENING_HOST";
@@ -28,15 +29,16 @@ export function formatSurfaceMaterialBomWarning(
 }
 
 /**
- * What to order of a row: "12 sheets of 1220 × 2440 mm" for a finish sold by the sheet, or its order area, as the
- * export formats areas, "incl. 10% waste".
+ * What to order of a row: "12 sheets of 1220 × 2440 mm" for a finish sold by the sheet, with a laminate's board ("on 12 MDF
+ * boards, 9 mm, glued"), or its order area, as the export formats areas, "incl. 10% waste".
  */
 export function formatSurfaceMaterialBomOrder(
-  row: Pick<SurfaceMaterialBomRow, "orderSheets" | "sheetSizeMm" | "orderAreaSqm">,
+  row: Pick<SurfaceMaterialBomRow, "orderSheets" | "sheetSizeMm" | "orderAreaSqm"> & Partial<Pick<SurfaceMaterialBomRow, "backing">>,
   formatArea: (areaSqm: number) => string
 ): string {
   if (row.orderSheets !== null && row.sheetSizeMm) {
-    return `${formatSheetCount(row.orderSheets)} of ${formatSheetSize(row.sheetSizeMm)}`;
+    const sheets = `${formatSheetCount(row.orderSheets)} of ${formatSheetSize(row.sheetSizeMm)}`;
+    return row.backing ? `${sheets} ${formatWallPanelBackingOrder(row.backing)}` : sheets;
   }
   return `${formatArea(row.orderAreaSqm)} incl. 10% waste`;
 }
