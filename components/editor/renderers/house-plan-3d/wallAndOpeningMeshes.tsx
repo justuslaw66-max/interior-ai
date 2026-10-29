@@ -757,14 +757,8 @@ export function WallSurfacePanelMesh({
     wallThickness,
     { squareStart, squareEnd }
   );
-  const settings = getWallPanelSurfaceSettings(
-    surfaces,
-    panel.faceId,
-    selectionPanelId,
-    normalizeFloorRotationDeg,
-    clampFloorPatternScale,
-    [panel.panelId, ...panel.legacyPanelIds]
-  );
+  const settings = getWallPanelSurfaceSettings(surfaces, panel.faceId, selectionPanelId, normalizeFloorRotationDeg,
+    clampFloorPatternScale, [panel.panelId, ...panel.legacyPanelIds], panel.inheritsWholeWall !== false);
   const hasSharedSupport =
     getSharedWallRoomIds(room, rooms, segment, panel.part).length > 0;
   const pickEnabledRef = useRef(baseOpacity > 0.01);
@@ -889,8 +883,11 @@ export function OpeningThresholdMesh({
   sourceOpening,
   floorWorldY,
   interactive,
-  hoveredTargetKey, selectedTargetKey,
-  onHoverTarget, onClearHoverTarget, onSelectTarget,
+  hoveredTargetKey,
+  selectedTargetKey,
+  onHoverTarget,
+  onClearHoverTarget,
+  onSelectTarget,
   onMoveOpening,
   onOpeningDragStateChange,
 }: {

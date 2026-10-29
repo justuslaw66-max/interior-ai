@@ -19,7 +19,17 @@ import { clampFloorPatternScale, normalizeFloorRotationDeg } from "../lib/floor-
 import type { PersistedPlanOpening, RoomSnapshot } from "../lib/room-types";
 import { buildRoomWallFinishQuantities } from "../lib/surface-material-wall-panels";
 import { getWallPanelSurfaceSettings } from "../lib/surface-settings";
-import { getWholeWallPanelId } from "../lib/wall-panel-ids";
+import { getWallPanelAssignment, getWholeWallPanelId, replaceWallPanelAssignment } from "../lib/wall-panel-ids";
+import { buildHousePlan2D } from "../lib/design-page-house-plan";
+import type { RoomRendererOpening } from "../lib/design-page-plan-overlays";
+import {
+  buildWallSurfacePanels,
+  getWallOpenings,
+  getWallSegments,
+} from "../components/editor/renderers/house-plan-3d/geometry";
+import { buildOpeningWallSurfacePanels } from "../components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
+import { withContinuousWallSelection } from "../components/editor/renderers/house-plan-3d/continuousWallSelection";
+import { buildLegacyPhysicalOpeningAssemblies } from "../components/editor/renderers/house-plan-3d/LegacyWallOpeningMeshes";
 import {
   getRectangleWallClearances,
   getRoomWallFaceIds,
@@ -181,6 +191,8 @@ assert.deepEqual(getRoomClearInsideMetrics({ ...planRoom, surfaces: { walls: { d
 // The 2D plan draws each panel inside its wall band, its face as a line.
 const { strips } = getRoomPanelStrips2D({ ...planRoom, surfaces: tiledWithPanel.surfaces });
 assert.deepEqual(strips.map((strip) => strip.faceId), ["north", "east"]);
+assert.deepEqual(strips.map((strip) => strip.finish.materialId), [NORDIC_ACACIA, NORDIC_ACACIA],
+  "a strip is drawn in its deepest finish: the east wall's is its panel's laminate, not the face's tile");
 const eastFace = strips[1].faceLine.map(([x, , z]) => [Math.round(x * 1000), Math.round(z * 1000)]);
 assert.deepEqual(eastFace, [[1896, -1430], [1896, 1440]], "60 mm in from the centre line, then 44 mm of panel; mitred at the north panel");
 assert.deepEqual(getRoomPanelStrips2D({ ...planRoom, surfaces: { walls: { default: { paintColorHex: "#fff" } } } }).strips, []);
@@ -195,7 +207,7 @@ const neighbour = { ...stripRoom, id: "next", name: "Study", roomType: "bedroom"
 const facesWith = (openings: PersistedPlanOpening[], faceId: string) => {
   const context = { rooms: [stripRoom, neighbour], openings: mapPlanOpeningsToRoomRenderer(openings, [stripRoom, neighbour]) };
   return getRoomPanelStrips2D(stripRoom, context).strips.filter((strip) => strip.faceId === faceId)
-    .map((strip) => strip.faceLine.map(([x, , z]) => Math.round((faceId === "north" ? x : z) * 1000)));
+    .map((strip) => strip.faceLine.map(([x, , z]) => Math.round((faceId === "north" || faceId === "south" ? x : z) * 1000)));
 };
 assert.deepEqual(facesWith([], "north"), [[-1930, 1930]], "a 10 mm panel: 70 mm in from the centre line at each end");
 assert.deepEqual(facesWith([opening("d1", "north")], "north"), [[-1930, -450], [450, 1930]], "a 900 mm door, centred");
@@ -207,9 +219,33 @@ assert.deepEqual(facesWith([opening("d2", "north", { offsetMm: -1520 })], "north
   "a door 30 mm from the corner leaves nothing of the strip beside it");
 assert.deepEqual(facesWith([opening("d3", "west", { roomId: "next", offsetMm: 0 })], "east"), [[-1430, -450], [450, 1430]],
   "a door the room next door hosts in a shared wall stops this side's strip too");
+assert.deepEqual(facesWith([opening("d4", "south")], "south"), [[1930, 450], [-450, -1930]], "the south face runs east to west");
+assert.deepEqual(facesWith([opening("d5", "west")], "west"), [[1430, 450], [-450, -1430]], "the west face runs south to north");
+for (const [label, bottomMm] of [["down to the floor", 0], ["on a 50 mm sill, under which the 3D view draws no panel", 50]] as const) {
+  assert.deepEqual(
+    facesWith([opening("w2", "north", { kind: "window", widthMm: 1200, heightMm: 2000, bottomMm })], "north"),
+    [[-1930, -600], [600, 1930]], `a window ${label} stops the strip`
+  );
+}
+// A drawn L: a door on the notch's wall that ends at the notch corner leaves no piece of the strip past it.
+const drawnL = { ...stripRoom, id: "ell", shape: "custom_polygon" as const, w: 4, d: 4,
+  polygon: [{ x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 0 }, { x: 0, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 2 }] };
+const notchWall = getWallSegments(drawnL)[2];
+const notchDoor: RoomRendererOpening = { id: "dn", roomId: "ell", wall: "north", kind: "door", offset: notchWall.length / 2 - 0.45,
+  width: 0.9, height: 2.1, bottom: 0, hostSegmentKey: notchWall.key, hostWorldCenter: { x: 0.45, z: 0 } };
+assert.deepEqual(
+  getRoomPanelStrips2D(drawnL, { rooms: [drawnL], openings: [notchDoor] }).strips.filter((strip) => strip.faceId === "wall-2")
+    .map((strip) => strip.faceLine.map(([x]) => Math.round(x * 1000))),
+  [[1930, 900]], "wall-2 runs from (2, 0) to the notch corner; its strip stops at the door, 900 mm short of the corner"
+);
 const stripContext = { rooms: [stripRoom], openings: mapPlanOpeningsToRoomRenderer([opening("d1", "north")], [stripRoom]) };
 assert.equal(getRoomPanelStrips2D({ ...stripRoom, x: 0.5 }, stripContext), getRoomPanelStrips2D({ ...stripRoom, x: 0.6 }, stripContext),
   "the same strips while a room with a door is dragged: its doorways are measured where the room is saved");
+assert.equal(
+  getRoomPanelStrips2D(stripRoom, stripContext),
+  getRoomPanelStrips2D(stripRoom, { rooms: [stripRoom], openings: mapPlanOpeningsToRoomRenderer([opening("d1", "north")], [stripRoom]) }),
+  "and while the plan's openings are rebuilt with the same doorways, as on an edit elsewhere"
+);
 
 // A whole wall's finish stays on its pieces once a door splits the wall, until a piece is given its own (J, 29 Oct 2026:
 // "Keep it on the pieces"): the 3D view, the inspector and the apply action read it under each piece, and the bill of
@@ -229,12 +265,54 @@ const pieceFinish = (walls: typeof wholeNorthWalls, id: string) => getWallPanelS
 assert.deepEqual(northPieceIds.map((id) => pieceFinish(wholeNorthWalls, id)), [NORDIC_ACACIA, NORDIC_ACACIA]);
 const onePiecePainted = { ...wholeNorthWalls, panels: { ...wholeNorthWalls.panels, [northPieceIds[0]]: { paintColorHex: "#d0d0d0" } } };
 assert.deepEqual(northPieceIds.map((id) => pieceFinish(onePiecePainted, id)), ["paint", NORDIC_ACACIA], "a piece's own finish wins");
-const [wholeNorthWithDoor] = buildRoomWallFinishQuantities([room(wholeNorthWalls)], [opening("d1", "north")]);
-assert.deepEqual(
-  wholeNorthWithDoor.assignedPanels.map((panel) => [panel.faceId, panel.settings.materialId, Math.round(panel.areaSqm * 100) / 100]),
-  [["north", NORDIC_ACACIA, 8.51]],
-  "the wall less its 900 × 2100 mm doorway: the pieces beside it and the one above"
-);
+assert.equal(pieceFinish(wholeNorthWalls, northPieceIds[0].replace(":interior", ":exterior")), "paint",
+  "a wall's outside takes only its own whole-wall finish");
+const laminateRows = (walls: typeof wholeNorthWalls, openings: PersistedPlanOpening[]) =>
+  buildRoomWallFinishQuantities([room(walls)], openings)[0].assignedPanels.filter((panel) => panel.settings.materialId === NORDIC_ACACIA)
+    .map((panel) => [panel.faceId, Math.round(panel.areaSqm * 100) / 100]);
+assert.deepEqual(laminateRows(wholeNorthWalls, [opening("d1", "north")]), [["north", 8.51]],
+  "the wall less its 900 × 2100 mm doorway: the pieces beside it and the one above");
+assert.deepEqual(laminateRows(wholeNorthWalls, [opening("w1", "north", { kind: "window", widthMm: 1200, heightMm: 1200, bottomMm: 900 })]),
+  [["north", 8.96]], "a window's wall is one target, as before");
+// As the 3D view draws the north wall's inside: the pieces beside the door, then the one above it, which can't be selected
+// and shows the whole wall's finish only while a side piece still does.
+const RIGHT_OF_DOOR = "wall-panel:v2:1:lam:north:opening-d1-end:segment-end:interior";
+const drawnNorth = (walls: typeof wholeNorthWalls) => {
+  const [planRoom3D] = buildHousePlan2D([room(walls)], 0, 0).rooms;
+  const segment = getWallSegments(planRoom3D).find((candidate) => candidate.wall === "north")!;
+  const wallOpenings = getWallOpenings(planRoom3D, segment, [planRoom3D], mapPlanOpeningsToRoomRenderer([opening("d1", "north")], [planRoom3D]));
+  return withContinuousWallSelection(planRoom3D, segment, wallOpenings, [
+    ...buildWallSurfacePanels(planRoom3D, segment, wallOpenings),
+    ...buildOpeningWallSurfacePanels(planRoom3D, [planRoom3D], segment, wallOpenings, 2.6).filter((panel) => panel.role === "interior"),
+  ], 2.6, 0.12).map((panel) => getWallPanelSurfaceSettings(planRoom3D.surfaces, panel.faceId, panel.selectionPanelId ?? panel.panelId,
+    normalizeFloorRotationDeg, clampFloorPatternScale, [panel.panelId, ...panel.legacyPanelIds], panel.inheritsWholeWall !== false)
+    .materialId ?? "paint");
+};
+const paintPieces = (ids: string[]) => ({ ...wholeNorthWalls, panels: { ...wholeNorthWalls.panels,
+  ...Object.fromEntries(ids.map((id) => [id, { paintColorHex: "#d0d0d0" }])) } });
+assert.deepEqual(drawnNorth(wholeNorthWalls), [NORDIC_ACACIA, NORDIC_ACACIA, NORDIC_ACACIA]);
+assert.deepEqual(drawnNorth(paintPieces([northPieceIds[0]])), ["paint", NORDIC_ACACIA, NORDIC_ACACIA], "one side painted");
+assert.deepEqual(drawnNorth(paintPieces([northPieceIds[0], RIGHT_OF_DOOR])), ["paint", "paint", "paint"],
+  "both sides painted: the piece above the door follows them");
+assert.deepEqual(laminateRows(paintPieces([northPieceIds[0], RIGHT_OF_DOOR]), [opening("d1", "north")]), [],
+  "and orders no laminate for it");
+// Saving and clearing a piece: its own finish over the whole wall's, which stays for the wall's other pieces.
+const savedPanels = { [WHOLE_NORTH]: { materialId: NORDIC_ACACIA }, [northPieceIds[0]]: { paintColorHex: "#d0d0d0" } };
+assert.deepEqual(getWallPanelAssignment(savedPanels, RIGHT_OF_DOOR, []), { materialId: NORDIC_ACACIA }, "a piece without its own");
+assert.deepEqual(getWallPanelAssignment(savedPanels, northPieceIds[0], []), { paintColorHex: "#d0d0d0" });
+assert.deepEqual(replaceWallPanelAssignment(savedPanels, northPieceIds[0], ["lam-north-part-0"]), { [WHOLE_NORTH]: { materialId: NORDIC_ACACIA } },
+  "a cleared piece shows the whole wall's finish again");
+assert.deepEqual(Object.keys(replaceWallPanelAssignment(savedPanels, RIGHT_OF_DOOR, [], { paintColorHex: "#000000" })).sort(),
+  [northPieceIds[0], RIGHT_OF_DOOR, WHOLE_NORTH].sort(), "saving a piece keeps the whole wall's finish for the others");
+// A door's outline stands in front of the deeper of its wall's two faces: here the room next door's 44 mm panel.
+const sharedDoorRooms = buildHousePlan2D([
+  room({ default: { paintColorHex: "#ffffff" } }, { id: "a" }),
+  room({ default: { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } }, { id: "b", planPosition: { x: 3.5, z: 0 },
+    geometry: { width: 3, depth: 3, height: 2.6, wallThickness: 0.12 } }),
+], 0, 0).rooms;
+const [sharedDoor] = buildLegacyPhysicalOpeningAssemblies({ visibleRooms: sharedDoorRooms, topologyRooms: sharedDoorRooms, defaultWallHeight: 2.6,
+  openings: mapPlanOpeningsToRoomRenderer([opening("d6", "east", { roomId: "a" })], sharedDoorRooms) });
+assert.deepEqual([sharedDoor.room.id, sharedDoor.panelDepth], ["a", 0.044]);
 
 // The wiring: the active room's clamp, the checks' callers, the 3D window outline and the inside corners.
 const read = (path: string) => readFileSync(path, "utf8");
@@ -258,21 +336,19 @@ assert.match(
   read("components/editor/renderers/RoomRenderer2D.tsx"),
   /<RoomPanelFaces2D rooms=\{wallBandRooms\} planRooms=\{rooms\} openings=\{openings\} shown=\{wallBandLayout\.parts\.length > 0\} isPro=\{isPro\} \/>/
 );
-assert.match(read("lib/useDesignPageSurfaceActions.ts"),
-  /return \[panelId, \.\.\.aliases, getWholeWallPanelId\(\[panelId\]\) \?\? ""\]\.map\(\(id\) => panels\[id\]\)\.find\(Boolean\);/,
-  "a piece's finish is applied over its whole wall's");
-assert.match(read("lib/useDesignPageSurfaceActions.ts"),
-  /const inherited = !settings && !ownIds\.some[^\n]*\n\s*\[\.\.\.ownIds, \.\.\.\(inherited \? \[getWholeWallPanelId\(\[panelId\]\) \?\? ""\] : \[\]\)\]/,
-  "resetting a piece that shows only its whole wall's finish resets that finish");
+assert.equal((read("lib/useDesignPageSurfaceActions.ts").match(/\b(get|replace)WallPanelAssignment\(/g) ?? []).length, 7,
+  "the apply, adjust and reset actions read and save a piece's finish with lib/wall-panel-ids.ts");
 assert.match(read("lib/useDesignPageCommerceOnboardingRegistration.ts"), /wallFinishRoom: activeRoom \?\? null/,
   "onboarding's first-sofa check measures to the active room's panels");
 assert.match(read("lib/useDesignPageOnboarding.ts"), /room: \{ width: roomWidth, depth: roomDepth, wallThickness, wallFinishRoom \}/);
 assert.match(read("components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx"),
   /const highlightDepth = Math\.max\(thresholdDepth \+ 0\.024, wallThickness \+ 2 \* \(panelDepth \+ 0\.003\)\);/,
   "a door's outline stands in front of a deep panel");
-assert.match(read("components/editor/renderers/house-plan-3d/LegacyWallOpeningMeshes.tsx"),
-  /panelDepth=\{getRoomWallFinishDepths\(assembly\.room\)\[getWallSurfaceFaceId\(assembly\.room, assembly\.segment\)\] \?\? 0\}/);
-assert.match(read("components/editor/renderers/RoomPanelFaces2D.tsx"), /color=\{getHouseRoomWallPlanColor\(room, strip\.faceId, isPro, palette\)\}/, "A panel strip takes its wall's plan colour.");
+assert.match(read("components/editor/renderers/house-plan-3d/LegacyWallOpeningMeshes.tsx"), /panelDepth=\{assembly\.panelDepth\}/);
+assert.match(read("components/editor/renderers/RoomPanelFaces2D.tsx"), /color=\{getWallFinishPlanColor\(strip\.finish, isPro, palette\)\}/,
+  "A panel strip takes its deepest finish's plan colour.");
+assert.match(read("components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx"),
+  /\[panel\.panelId, \.\.\.panel\.legacyPanelIds\], panel\.inheritsWholeWall !== false\);/, "the 3D panel reads the piece-above-a-door rule");
 assert.match(read("lib/useDesignPageSelectionInspectorModel.ts"), /metrics: getRoomClearInsideMetrics\(selectedPlanRoom,/);
 
 console.log("Room measured to the panel face checks passed.");

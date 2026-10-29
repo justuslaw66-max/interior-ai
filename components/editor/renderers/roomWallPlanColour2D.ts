@@ -33,14 +33,14 @@ function getSurfaceMaterialPlanColor(materialId: string | null | undefined, fall
  * finish draws as it is in dark too; only Pro's plain grey follows the palette.
  */
 export function getHouseRoomWallPlanColor(room: WallPlanColourRoom2D, wall: string, isPro: boolean, palette: CanvasPalette): string {
-  const fallback = isPro ? palette.colour("#d4d4d8") : "#c9c2b4";
   const surfaces = room.surfaces ?? room.surfaceFinishes;
-  const settings = getWallFaceSurfaceSettings(
-    surfaces,
-    wall,
-    normalizeFloorRotationDeg,
-    clampFloorPatternScale
-  );
-  if (settings.paintColorHex) return settings.paintColorHex;
-  return getSurfaceMaterialPlanColor(settings.materialId, fallback);
+  return getWallFinishPlanColor(getWallFaceSurfaceSettings(surfaces, wall, normalizeFloorRotationDeg, clampFloorPatternScale), isPro, palette);
+}
+
+/** A finish's colour on the 2D plan, as getHouseRoomWallPlanColor gives a face's: its paint, else its material's tone. */
+export function getWallFinishPlanColor(
+  finish: { paintColorHex?: string | null; materialId?: string | null } | null, isPro: boolean, palette: CanvasPalette
+): string {
+  if (finish?.paintColorHex) return finish.paintColorHex;
+  return getSurfaceMaterialPlanColor(finish?.materialId, isPro ? palette.colour("#d4d4d8") : "#c9c2b4");
 }

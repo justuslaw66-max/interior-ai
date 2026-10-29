@@ -8,6 +8,7 @@ import {
   getWallPanelSurfaceSettings,
   RECTANGULAR_WALL_FACE_IDS,
 } from "@/lib/surface-settings";
+import { parseWallPanelId } from "@/lib/wall-panel-ids";
 
 /**
  * How far each wall's laminate panel stands into a drawn room, so the room is measured to the panel's face (J, 29 Oct 2026).
@@ -72,10 +73,9 @@ export function normalizeWallPanelIdToken(value: string): string {
  * doesn't draw), and an older id: laminates came after v2 ids (31 Jul 2026), and saving a panel replaces its older ids.
  */
 export function getWallPanelFaceId(panelId: string, roomId: string): string | null {
-  const parts = panelId.split(":");
-  if (parts.length !== 8 || parts[0] !== "wall-panel" || parts[1] !== "v2") return null;
-  if (parts[3] !== normalizeWallPanelIdToken(roomId) || parts[7] !== "interior" || !parts[4]) return null;
-  return getDeterministicWallFaceId(parts[4]);
+  const parts = parseWallPanelId(panelId);
+  if (!parts || parts.roomToken !== normalizeWallPanelIdToken(roomId) || parts.role !== "interior" || !parts.faceToken) return null;
+  return getDeterministicWallFaceId(parts.faceToken);
 }
 
 function finishDepthMeters(settings: ReturnType<typeof getWallFaceSurfaceSettings>): number {
@@ -120,6 +120,28 @@ function measureRoomWallFinishDepths(room: WallFinishRoom, surfaces: RoomSurface
     ));
   }
   return Object.keys(depths).length > 0 ? depths : NO_WALL_FINISH_DEPTHS;
+}
+
+/**
+ * The finish that sets a face's depth: the deepest of its own and its panels' (the laminate a 2D strip is drawn in, since a
+ * laminate set from the 3D view is saved on a panel, not the face). Null when nothing on the face stands off the wall.
+ */
+export function getDeepestWallFinish(
+  room: WallFinishRoom, faceId: string
+): ReturnType<typeof getWallFaceSurfaceSettings> | null {
+  const surfaces = room.surfaces ?? room.surfaceFinishes;
+  if (!surfaces?.walls || typeof room.floorElevationMm === "number") return null;
+  const finishes = [
+    getWallFaceSurfaceSettings(surfaces, faceId, normalizeFloorRotationDeg, clampFloorPatternScale),
+    ...Object.keys(surfaces.walls.panels ?? {}).filter((panelId) => getWallPanelFaceId(panelId, room.id) === faceId).map(
+      (panelId) => getWallPanelSurfaceSettings(surfaces, faceId, panelId, normalizeFloorRotationDeg, clampFloorPatternScale)),
+  ];
+  let deepest: { depth: number; finish: (typeof finishes)[number] | null } = { depth: 0, finish: null };
+  for (const finish of finishes) {
+    const depth = finishDepthMeters(finish);
+    if (depth > deepest.depth) deepest = { depth, finish };
+  }
+  return deepest.finish;
 }
 
 export function hasWallFinishDepths(depths: RoomWallFinishDepths | null | undefined): boolean {

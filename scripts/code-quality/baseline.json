@@ -241,7 +241,7 @@
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
-      "lines": 1088,
+      "lines": 1085,
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
@@ -669,7 +669,7 @@
       "limit": 400
     },
     "lib/useDesignPageSurfaceActions.ts": {
-      "lines": 1621,
+      "lines": 1600,
       "limit": 400
     },
     "lib/useDesignPageSurfaceInspector.ts": {

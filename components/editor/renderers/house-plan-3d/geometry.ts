@@ -492,11 +492,11 @@ export function getWallInteriorSurfaceSide(segment: WallSegment3D): 1 | -1 {
 }
 
 export function getWallInteriorSurfaceSideForTest(
-  room: HousePlanRoom2D,
-  segment: { wall?: "north" | "east" | "south" | "west"; x: number; z: number; rotationY: number }
+  room: HousePlanRoom2D, segment: { wall?: "north" | "east" | "south" | "west"; x: number; z: number; rotationY: number }
 ): 1 | -1 {
+  // The room's own winding, not a segment's saved side, so a test can check getWallSegments against it.
   return getWallInteriorSurfaceSide({
-    key: "test-wall-segment", length: 1, axis: "x", interiorSide: getOutlineInteriorSide(getRoomOutlinePoints(room)), ...segment,
+    key: "test-wall-segment", length: 1, axis: "x", ...segment, interiorSide: getOutlineInteriorSide(getRoomOutlinePoints(room)),
   });
 }
 
