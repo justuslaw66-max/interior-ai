@@ -8,6 +8,7 @@ import {
 } from "../lib/design-page-editor-shell-metrics";
 import { buildHousePlan2D } from "../lib/design-page-house-plan";
 import { resolveLoneRoomPlanFrame2D } from "../lib/room-renderer-2d-lone-room";
+import { OVERALL_GUIDE_GAP_PX, overallPlanGuideOffsetsM } from "../lib/room-renderer-2d-overall-dimensions";
 import { createRoom } from "../lib/room-types";
 
 const root = process.cwd();
@@ -987,5 +988,30 @@ assert.match(
   /quality === "low" \|\| transparent[\s\S]*NON_SHADOW_CATEGORY_PATTERN[\s\S]*castShadow: true[\s\S]*receiveShadow: false/,
   "The central policy should skip low-tier and transparent/decorative shadows while retaining cast-only furniture shadows."
 );
+
+// The 2D plan's overall guides (30 Oct 2026): 48px out at any zoom, past the selected room's
+// Width or Depth chip when it's on that edge, and the label on the guide running up the screen is
+// written up it.
+{
+  const plan = { left: -4, top: -3 };
+  const inside = { left: -1, top: 0 };
+  const at80 = overallPlanGuideOffsetsM({ planBounds: plan, selectedRoomBounds: inside, zoomPxPerM: 80, rotated: false });
+  assert.equal(at80.widthGuideOffsetM, OVERALL_GUIDE_GAP_PX / 80, "48px out, not 0.78 m.");
+  assert.equal(at80.depthGuideOffsetM, OVERALL_GUIDE_GAP_PX / 80);
+  assert.equal(at80.verticalLabel, "depth");
+  const zoomedOut = overallPlanGuideOffsetsM({ planBounds: plan, selectedRoomBounds: inside, zoomPxPerM: 30, rotated: false });
+  assert.equal(Math.round(zoomedOut.widthGuideOffsetM * 30), 48, "Still 48px when zoomed out (0.78 m was 23px).");
+  const corner = overallPlanGuideOffsetsM({ planBounds: plan, selectedRoomBounds: plan, zoomPxPerM: 80, rotated: false });
+  assert.equal(Math.round(corner.widthGuideOffsetM * 80), 52, "Past the Width chip: 24 + 12 + 16px.");
+  assert.equal(Math.round(corner.depthGuideOffsetM * 80), Math.round(0.46 * 80 + 55 + 16), "Past the Depth chip, across its width.");
+  const turned = overallPlanGuideOffsetsM({ planBounds: plan, selectedRoomBounds: plan, zoomPxPerM: 80, rotated: true });
+  assert.equal(Math.round(turned.widthGuideOffsetM * 80), Math.round(0.3 * 80 + 55 + 16), "Turned, the Width chip sits across the guide.");
+  assert.equal(turned.verticalLabel, "width");
+  assert.equal(overallPlanGuideOffsetsM({ planBounds: null, selectedRoomBounds: null, zoomPxPerM: 0, rotated: false }).widthGuideOffsetM, 48);
+}
+const overallSource = readFileSync(join(process.cwd(), "components/editor/renderers/RoomRenderer2D.tsx"), "utf8");
+assert.match(overallSource, /widthGuideZ: overallPlanBounds\.top - overallGuides\.widthGuideOffsetM,\s*depthGuideX: overallPlanBounds\.left - overallGuides\.depthGuideOffsetM,/);
+assert.match(overallSource, /data-testid="overall-plan-dimension-depth"\s*style=\{overallLabelStyle\(overallGuides\.verticalLabel === "depth"\)\}/);
+assert.match(overallSource, /\.\.\.\(vertical \? \{ writingMode: "vertical-rl", transform: "rotate\(180deg\)" \} : null\)/);
 
 console.log("Design-page scene layer ownership checks passed.");

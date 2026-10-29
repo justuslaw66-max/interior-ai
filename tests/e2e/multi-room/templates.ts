@@ -3,6 +3,7 @@ import { confirmPlanTemplateReplacementIfNeeded } from "../plan-template-test-ut
 import { chooseStartTemplate } from "../variant-test-utils";
 import {
   addOneRoom,
+  boxesOverlap,
   chooseTemplateStart,
   clearBrowserStorageBeforeNextLoad,
   clickWithFallback,
@@ -288,6 +289,14 @@ export function registerTemplateTests() {
       "data-plan-2d-orientation",
       planOrientationBeforeFit ?? "normal"
     );
+    // The overall guides keep clear of the selected room's Width and Depth chips (30 Oct 2026).
+    for (const axis of ["width", "depth"] as const) {
+      const overall = page.getByTestId(`overall-plan-dimension-${axis}`);
+      const chip = page.getByTestId(`active-room-dimension-${axis}`);
+      if (!(await overall.isVisible().catch(() => false)) || !(await chip.isVisible().catch(() => false))) continue;
+      const [overallBox, chipBox] = await Promise.all([overall.boundingBox(), chip.boundingBox()]);
+      expect(boxesOverlap(overallBox!, chipBox!), `Overall ${axis} is clear of the room's ${axis} chip`).toBe(false);
+    }
     await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByTestId("room-pan-navigator")).toBeVisible();
     await page.getByTestId("room-pan-navigator").scrollIntoViewIfNeeded();
