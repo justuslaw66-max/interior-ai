@@ -4121,7 +4121,7 @@
     "lib/useDesignPageHousePlanState.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 273
+        "maximum": 272
       }
     },
     "lib/useDesignPageImportedModels.ts": {

@@ -184,7 +184,7 @@ assert.equal(getRoomPanelStrips2D({ ...draggedRoom, x: 0.5 }), getRoomPanelStrip
 
 // The wiring: the active room's clamp, the checks' callers, the 3D window outline and the inside corners.
 const read = (path: string) => readFileSync(path, "utf8");
-assert.match(read("lib/useDesignPageHousePlanState.ts"), /clampToRoomInsideFinishes\([\s\S]*?activeRoomWallFinishDepths\s*\)/);
+assert.match(read("lib/useDesignPageHousePlanState.ts"), /clampToRoomInsideFinishes\([\s\S]*?getRoomWallFinishDepths\(activeRoom\)\s*\)/);
 assert.match(
   read("lib/useDesignPageSceneItemDrag.ts"),
   /: clampToRoomInsideFinishes\([^\n]*\n(?:[^\n]*\n){7}\s*targetRoom\.planHoles,\s*getRoomWallFinishDepths\(targetRoom\)\s*\)/,

@@ -89,8 +89,6 @@ export function useDesignPageHousePlanState({
       ? activeRoom.floorLevel
       : 1;
 
-  // Furniture stops at each wall's laminate panel, not the bare wall (J, 29 Oct 2026; lib/room-finished-outline.ts).
-  const activeRoomWallFinishDepths = useMemo(() => getRoomWallFinishDepths(activeRoom), [activeRoom]);
   const clampToActiveRoom = useCallback(
     (
       x: number,
@@ -106,9 +104,10 @@ export function useDesignPageHousePlanState({
         x, z, itemWidth, itemDepth, targetRoomWidth, targetRoomDepth,
         getFurnitureWallInset(targetWallThickness),
         rotationY,
-        activeRoomPlanShape, activeRoomPlanPolygon, activeRoomPlanHoles, activeRoomWallFinishDepths
+        // Stops at each wall's laminate panel (J, 29 Oct 2026); read when called: React's compiler can't memoize it in render.
+        activeRoomPlanShape, activeRoomPlanPolygon, activeRoomPlanHoles, getRoomWallFinishDepths(activeRoom)
       ),
-    [activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape, activeRoomWallFinishDepths]
+    [activeRoom, activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape]
   );
 
   const formattedRoomWidth = roomWidth.toFixed(2);
