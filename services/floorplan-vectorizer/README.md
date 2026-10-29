@@ -90,10 +90,10 @@ and its notes say `Local vectorizer unavailable: …` (a missing interpreter rea
 
 ## The faithful trace
 
-`faithful_trace.py` (version r10) copies a clean plan as it is drawn, as clean vectors: solid fills as polygons, every
+`faithful_trace.py` (version r11) copies a clean plan as it is drawn, as clean vectors: solid fills as polygons, every
 line, arc and dot at its own width and grey, lettering and small marks by their outline. It reads nothing as a room, a
 door or a wall. `faithful_drawing.py` runs it on the page and writes it in the evidence's `drawing` form
-(`version: "faithful-trace-r10"`, items with a `tone`, no `textBoxes`); the provider puts it in place of stage 1's
+(`version: "faithful-trace-r11"`, items with a `tone`, no `textBoxes`); the provider puts it in place of stage 1's
 drawing, and the app draws it as the page's traced drawing as it is (`faithful-trace-v1`: nothing is moved against the
 picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and the rest of the evidence are unchanged.
 
@@ -107,7 +107,14 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   there (r9) its light lines are traced as lines, not grey areas, and a row of hangers is not taken for a word; in
   such a picture of 1.5 MP or more (r10) its line work is read smoothed and kept whole across its width, so a long
   slanting or curved line is one line or band, not a ladder of short pieces. A letter touching a line as dark as
-  itself can still blob or lose a stroke. Crisp plans trace as with r7.
+  itself can still blob or lose a stroke. Since r11 every trace is also tidied as a drawing (`tidy` in
+  `faithful_trace.py`): a letter's or figure's outline is read from the picture enlarged smoothly, at half its darkest
+  (not the steps of its pixels at 2x); an I or l in a word is outlined like its neighbours; a band's tint lies under
+  its lettering; a thin line has one weight along its length, from all its ink across it; a line traced in pieces or
+  twice is drawn once; a door swing runs into its jamb and onto its leaf; a hatch stroke ends within the wall's line;
+  and a slash tick split by the lines it crosses is one slash. Lines meeting at a corner take one weight and meet
+  exactly, so the corner is square. Whole circles (a sink's waste, a hob's burners) are fitted as circles, each ring of
+  a close double ring as its own circle (`fit_rings`).
 - Up to `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS` pixels (default 4,000,000) the trace works at twice the picture's size:
   about 350–400 MB of memory per million pixels of the picture (700–760 MB for a 1,400 px brochure page) and 30–50 s
   per page on one core. A larger page, up to three times that limit, is traced at its own size: about 110 MB per

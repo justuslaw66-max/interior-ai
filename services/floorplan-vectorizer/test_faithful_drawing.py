@@ -264,5 +264,230 @@ class FaithfulDrawing(unittest.TestCase):
         self.assertGreaterEqual(span, 0.9, "one band along the whole line")
 
 
+def _switched(name, value, run):
+    """run() with faithful_trace.<name> set to value, put back afterwards"""
+    import faithful_trace
+    keep = getattr(faithful_trace, name)
+    try:
+        setattr(faithful_trace, name, value)
+        return run()
+    finally:
+        setattr(faithful_trace, name, keep)
+
+
+def _reduced(draw, w, h, s=4):
+    """a picture drawn at s x by draw(img, s) and reduced, so its lines are anti-aliased as a page's are"""
+    big = np.full((h * s, w * s), 255, np.uint8)
+    draw(big, s)
+    return cv2.resize(big, (w, h), interpolation=cv2.INTER_AREA)
+
+
+class Sharp(unittest.TestCase):
+    """(r11) the trace as sharp and joined as the drawing it copies"""
+
+    def test_figures_outlined_smoothly(self):
+        # d12's "900": a figure's outline followed the steps of the picture's pixels as traced at 2x, so it came out
+        # lumpy; read from the picture enlarged smoothly it has no sharp turns but the figure's own
+        import faithful_trace
+        img = np.full((120, 260), 255, np.uint8)
+        cv2.putText(img, "900", (40, 80), cv2.FONT_HERSHEY_SIMPLEX, 1.2, 0, 2, cv2.LINE_AA)
+        def sharp_turns():
+            n = 0
+            for p in faithful_trace.trace_gray(img)["walls"]:
+                for r in (p["rings"] if p.get("mark") else []):
+                    P = np.asarray(r, float)
+                    u = P - np.roll(P, 1, 0); v = np.roll(P, -1, 0) - P
+                    cos = (u * v).sum(1) / np.maximum(1e-9, np.hypot(*u.T) * np.hypot(*v.T))
+                    n += int((cos < math.cos(math.radians(40))).sum())
+            return n
+        self.assertGreater(_switched("SMOOTH_MARKS", False, sharp_turns), 100)
+        self.assertLessEqual(sharp_turns(), 4)
+
+    def test_thin_line_one_weight_wherever_its_pixels(self):
+        # a 1 px black line on the pixel grid is one black column; 3/8 of a pixel off it, a dark grey and a light grey
+        # one: traced as a wider grey line (d12's door leaf: 1.1 px black against 1.8 px grey). Weighed by its ink
+        # across it, it is the same 1 px black line
+        import faithful_trace
+        o = 3
+        def draw(big, s):
+            cv2.rectangle(big, (50 * s, 50 * s), (51 * s - 1, 150 * s), 0, -1)                   # on the grid
+            cv2.rectangle(big, (150 * s + o, 50 * s), (151 * s + o - 1, 150 * s), 0, -1)          # 3/8 off
+            cv2.rectangle(big, (50 * s, 50 * s), (151 * s, 51 * s - 1), 0, -1)
+            cv2.rectangle(big, (50 * s, 149 * s + o), (151 * s, 150 * s + o - 1), 0, -1)
+        img = _reduced(draw, 200, 200, 8)
+        def sides():
+            t = faithful_trace.trace_gray(img)
+            return [(e["w"], e["g"]) for e in t["strokes"] if e["k"] == "line" and math.dist(e["a"], e["b"]) > 50]
+        before = _switched("TIDY_WEIGH", False, sides)
+        self.assertEqual(len(before), 4)
+        self.assertGreaterEqual(max(w for w, _ in before) - min(w for w, _ in before), 0.6, "r10: 1 px and wider")
+        self.assertGreaterEqual(max(g for _, g in before), 60, "r10: the off-grid sides grey")
+        after = sides()
+        self.assertEqual(len(after), 4)
+        for w, g in after:
+            self.assertAlmostEqual(w, 1.0, delta=0.15)
+            self.assertLessEqual(g, 10)
+
+    def test_door_swing_runs_into_the_jamb(self):
+        # a swing whose last stretch along the jamb was read as part of the jamb's side, a pixel aside: the arc
+        # stopped short of the jamb with a kink. Joined, it runs on to where it touches the jamb's side
+        import faithful_trace
+        def draw(big, s):
+            ln = lambda a, b: cv2.line(big, (int(a[0] * s), int(a[1] * s)), (int(b[0] * s), int(b[1] * s)), 0, s, cv2.LINE_AA)
+            cv2.rectangle(big, (20 * s, 200 * s), (60 * s, 212 * s), 0, 3 * s)
+            for a, b in (((60, 200), (70, 200)), ((70, 200), (70, 206)), ((70, 206), (68, 206)), ((68, 206), (68, 212)),
+                         ((68, 212), (60, 212)), ((70, 80), (70, 200)), ((77, 80), (77, 200)), ((70, 80), (77, 80)),
+                         ((190, 200), (190, 212)), ((190, 212), (200, 212)), ((190, 200), (200, 200))):
+                ln(a, b)
+            cv2.ellipse(big, (70 * s, 200 * s), (120 * s, 120 * s), 0, -90, 0, 0, s, cv2.LINE_AA)
+        img = _reduced(draw, 300, 260)
+        def gap():
+            t = faithful_trace.trace_gray(img)
+            arc = max((e for e in t["strokes"] if e["k"] == "arc"), key=lambda e: e["r"])
+            ends = [(arc["c"][0] + arc["r"] * math.cos(a), arc["c"][1] + arc["r"] * math.sin(a)) for a in (arc["a0"], arc["a1"])]
+            low = max(ends, key=lambda p: p[1])
+            side = [e for e in t["strokes"] if e["k"] == "line" and abs(e["a"][0] - e["b"][0]) < 0.5 and 185 < e["a"][0] < 195]
+            return low, min(min(math.dist(low, e["a"]), math.dist(low, e["b"])) for e in side)
+        (_, y0), g0 = _switched("TIDY_ARCS", False, gap)
+        self.assertGreater(g0, 1.0, "r10: the arc stops short of the jamb's side")
+        self.assertLess(y0, 190)
+        (_, y1), g1 = gap()
+        self.assertLess(g1, 0.1, "the arc's end is the jamb side's end")
+        self.assertGreater(y1, 199, "it runs on to the floor line")
+
+    def test_swing_stopping_short_runs_on_to_the_floor_line(self):
+        # d12's double door: the large swing stopped 6 px above the floor line where it meets the small one, which
+        # reached it; a swing runs on to a line across its end by up to a twentieth of its length, and is cut back
+        # by no more than 3 px
+        import faithful_trace
+        floor = {"k": "line", "a": np.array([0.0, 200.0]), "b": np.array([300.0, 200.0]), "w": 3.0, "dark": 1.0, "na": -1, "nb": -1}
+        def arc_end(stop_y):
+            a1 = math.asin((stop_y - 200.0) / 130.0)
+            arc = {"k": "arc", "c": np.array([40.0, 200.0]), "r": 130.0, "a0": -math.pi / 2, "a1": a1, "w": 1.0, "dark": 1.0}
+            faithful_trace._join_arcs([arc, dict(floor)])
+            return 200.0 + 130.0 * math.sin(arc["a1"])
+        self.assertAlmostEqual(arc_end(194.0), 200.0, delta=0.05, msg="6 px short: run on to the floor line")
+        self.assertAlmostEqual(arc_end(184.0), 184.0, delta=0.05, msg="16 px short: left as drawn")
+
+    def test_corner_square_and_one_weight(self):
+        # the top of d12's door leaf: its top line 1.26 px, its sides 1.08 and 1.5, ends a hair apart - a nub at one
+        # corner and a notch at the other. Joined at corners, they take one weight and meet exactly
+        import faithful_trace
+        mk = lambda a, b, w: {"k": "line", "a": np.array(a, float), "b": np.array(b, float), "w": w, "dark": 1.0,
+                              "na": -1, "nb": -1}
+        top, left, right = mk((302.29, 83.25), (294.51, 83.25), 1.26), mk((294.5, 83.24), (294.5, 212.4), 1.08), \
+            mk((301.94, 83.59), (301.94, 205.1), 1.5)
+        far = mk((400, 50), (400, 90), 4.0)                            # a heavier line nearby: not one of them
+        out = faithful_trace._corners([top, left, right, far])
+        self.assertEqual(len({round(e["w"], 6) for e in (top, left, right)}), 1, "one weight")
+        self.assertEqual(far["w"], 4.0)
+        self.assertLess(np.linalg.norm(top["b"] - left["a"]), 1e-9, "the left corner: one point")
+        self.assertLess(np.linalg.norm(top["a"] - right["a"]), 1e-9, "the right corner: one point")
+        self.assertAlmostEqual(float(top["a"][1]), 83.25, delta=0.01)
+        self.assertEqual(len(out), 4)
+
+    def test_close_double_ring_fitted_as_two_circles(self):
+        # d12's sink waste and hob burners: two thin rings 2 px apart came out as one lumpy ring. Fitted as circles,
+        # they are two clean circles at their own radii
+        import faithful_trace
+        def draw(big, s):
+            for r in (11.5, 13.5):
+                cv2.circle(big, (80 * s, 60 * s), int(r * s), 0, s, cv2.LINE_AA)
+            cv2.circle(big, (80 * s, 60 * s), 3 * s, 0, s, cv2.LINE_AA)
+            cv2.rectangle(big, (20 * s, 20 * s), (140 * s, 100 * s), 0, s)
+        img = _reduced(draw, 160, 120)
+        def circles():
+            t = faithful_trace.trace_gray(img)
+            return sorted(round(e["r"], 1) for e in t["strokes"] if e["k"] == "arc" and abs(e["a1"] - e["a0"]) > 6.2
+                          and math.dist(e["c"], (80, 60)) < 1.0)
+        self.assertEqual(len([r for r in _switched("RINGS", False, circles) if r > 10]), 0, "r10: no such circles")
+        found = [r for r in circles() if r > 10]
+        self.assertEqual(len(found), 2, found)
+        for want, got in zip((11.5, 13.5), found):
+            self.assertAlmostEqual(got, want, delta=0.4)
+
+    def test_line_traced_twice_drawn_once(self):
+        # d12's door leaf: its inner lines traced as a rectangle's side and as a stroke, 0.2 px apart, and a line
+        # traced in two pieces end to end: drawn once each
+        import faithful_trace
+        mk = lambda a, b, w=2.0: {"k": "line", "a": np.array(a, float), "b": np.array(b, float), "w": w, "dark": 1.0,
+                                  "na": -1, "nb": -1}
+        segs = [mk((10, 20), (10, 120)), mk((10.4, 20), (10.4, 120), 2.4), mk((30, 20), (30, 60)), mk((30, 61), (30, 120)),
+                mk((50, 20), (50, 120)), mk((53, 20), (53, 120)), mk((70, 20), (70, 120), 2.0), mk((70.3, 125), (70.3, 160), 6.0)]
+        out = [e for e in faithful_trace._merge_pieces(segs) if e["k"] == "line"]
+        self.assertEqual(len(out), 6, "the doubled line and the two pieces each one; a double line 3 px apart and a "
+                                      "heavier line beyond a thin one stay")
+        whole = [e for e in out if abs(e["a"][0] - 30) < 0.5]
+        self.assertEqual(len(whole), 1)
+        self.assertAlmostEqual(abs(whole[0]["b"][1] - whole[0]["a"][1]), 100.0, delta=0.01)
+
+    def test_hatch_ends_within_the_wall_line(self):
+        # a hatch stroke ending at a wall's outline: its square cap's corner showed past the outline, a row of dots
+        # along every hatched wall
+        import faithful_trace
+        def draw(big, s):
+            cv2.rectangle(big, (40 * s, 60 * s), (260 * s, 100 * s), 0, 3 * s)
+            for x in range(0, 320, 8):
+                cv2.line(big, ((40 + x) * s, 100 * s), ((80 + x) * s, 60 * s), 90, s, cv2.LINE_AA)
+            big[:int(58.5 * s)] = 255; big[int(101.5 * s):] = 255; big[:, :int(38.5 * s)] = 255; big[:, int(261.5 * s):] = 255
+        img = _reduced(draw, 300, 200)
+        def poke():
+            worst = 0.0
+            for e in faithful_trace.trace_gray(img)["strokes"]:
+                if e["k"] != "line" or e["w"] > 2:
+                    continue
+                a, b = np.array(e["a"]), np.array(e["b"]); u = (b - a) / max(1e-9, float(np.linalg.norm(b - a)))
+                if abs(u[0]) < 0.3 or abs(u[1]) < 0.3:
+                    continue
+                n = np.array([-u[1], u[0]]); h = e["w"] / 2.0
+                for p, sg in ((a, -1), (b, 1)):
+                    for c in (p + sg * u * h + n * h, p + sg * u * h - n * h):
+                        worst = max(worst, 58.5 - c[1], c[1] - 101.5)
+            return worst
+        self.assertGreater(_switched("TIDY_TEES", False, poke), 0.1)
+        self.assertLessEqual(poke(), 0.01)
+
+    def test_slash_tick_one_slash(self):
+        # a dimension's slash tick across the dimension line and the witness line came apart at them: a flag and a
+        # square at each end of d12's dimensions
+        import faithful_trace
+        def draw(big, s):
+            cv2.line(big, (20 * s, 60 * s), (180 * s, 60 * s), 0, s, cv2.LINE_AA)
+            cv2.line(big, (100 * s, 35 * s), (100 * s, 85 * s), 0, s, cv2.LINE_AA)
+            cv2.line(big, (95 * s, 65 * s), (105 * s, 55 * s), 0, 3 * s, cv2.LINE_AA)
+        img = _reduced(draw, 200, 120)
+        heavy = lambda: [e for e in faithful_trace.trace_gray(img)["strokes"] if e["k"] == "line" and e["w"] >= 2]
+        self.assertEqual(len(_switched("TIDY_TICKS", False, heavy)), 2)
+        one = heavy()
+        self.assertEqual(len(one), 1)
+        self.assertGreater(math.dist(one[0]["a"], one[0]["b"]), 12, "across both lines")
+
+    def test_tinted_band_lies_under_its_lettering(self):
+        # a web plan's footer: dark lettering on a grey band. The band had a hole round each line of text (a white
+        # halo) and the lettering's texture became grey smudges
+        import faithful_trace
+        img = np.full((120, 420), 255, np.uint8)
+        cv2.rectangle(img, (10, 30), (410, 90), 192, -1)
+        cv2.putText(img, "Found in: Clementi", (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.8, 20, 2, cv2.LINE_AA)
+        def band():
+            t = faithful_trace.trace_gray(img)
+            bands = [p for p in t["walls"] if not (p.get("mark") or p.get("over") or p.get("grey")) and 150 <= p["g"] <= 230]
+            return [len(p["rings"]) for p in bands], len([p for p in t["walls"] if p.get("grey")])
+        rings, grey = _switched("FILL_DARK_HOLES", False, band)
+        self.assertGreater(max(rings), 1)
+        self.assertGreater(grey, 0)
+        self.assertEqual(band(), ([1], 0))
+
+    def test_l_in_a_word_outlined_as_a_letter(self):
+        # an l in a word was drawn as a line with square caps: taller and heavier than the letters beside it
+        import faithful_trace
+        img = np.full((80, 220), 255, np.uint8)
+        cv2.putText(img, "Clementi", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.9, 0, 2, cv2.LINE_AA)
+        upright = lambda: len([e for e in faithful_trace.trace_gray(img)["strokes"]
+                               if e["k"] == "line" and abs(e["a"][0] - e["b"][0]) < 0.5 and abs(e["a"][1] - e["b"][1]) > 10])
+        self.assertEqual(_switched("LETTER_STROKES", False, upright), 1)
+        self.assertEqual(upright(), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
