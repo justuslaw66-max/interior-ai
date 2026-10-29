@@ -173,7 +173,7 @@
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
-      "lines": 617,
+      "lines": 616,
       "limit": 250
     },
     "components/editor/design-page/SelectedSurfaceInspector.tsx": {
@@ -321,7 +321,7 @@
       "limit": 250
     },
     "features/cabinetry/components/CabinetProductionOutputs.tsx": {
-      "lines": 587,
+      "lines": 581,
       "limit": 250
     },
     "features/cabinetry/components/CabinetryStudio.tsx": {
@@ -365,7 +365,7 @@
       "limit": 400
     },
     "features/cabinetry/generateCabinetDocumentation.ts": {
-      "lines": 8372,
+      "lines": 8352,
       "limit": 400
     },
     "features/cabinetry/generateCabinetParts.ts": {
@@ -1661,7 +1661,7 @@
     "components/editor/design-page/PlacedCabinetAssetMarkers.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 176
+        "maximum": 171
       },
       "complexFunctions": {
         "count": 1,
@@ -2329,7 +2329,7 @@
     "features/cabinetry/components/CabinetProductionOutputs.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 485
+        "maximum": 478
       }
     },
     "features/cabinetry/components/CabinetryStudio.calculations.ts": {
@@ -2501,7 +2501,7 @@
     "features/cabinetry/generateCabinetDocumentation.ts": {
       "overlongFunctions": {
         "count": 39,
-        "maximum": 453
+        "maximum": 443
       },
       "complexFunctions": {
         "count": 19,
