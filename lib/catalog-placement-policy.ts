@@ -18,6 +18,7 @@ import {
   type ManualPlacementScore,
 } from "@/lib/manual-placement-scoring";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
+import { getRoomWallClearances } from "@/lib/room-wall-finish-depths";
 
 export const CATALOG_PLACEMENT_MIN_SCORE_DELTA = 4;
 export const CATALOG_PLACEMENT_POSITION_EPSILON_METERS = 0.08;
@@ -664,19 +665,13 @@ export function resolveCatalogPlacementQuality({
     resolved.dimsMm.d / 1000,
     pendingPlacement.rotationY
   );
-  const targetWallThickness =
-    targetRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness;
-  const clearX =
-    targetRoom.geometry.width / 2 -
-    targetWallThickness -
-    effectiveWidth / 2 -
-    Math.abs(pendingPlacement.position[0]);
-  const clearZ =
-    targetRoom.geometry.depth / 2 -
-    targetWallThickness -
-    effectiveDepth / 2 -
-    Math.abs(pendingPlacement.position[2]);
-  const nearestClearance = Math.min(clearX, clearZ);
+  // To the nearer wall's finished face, in front of any laminate panel (lib/room-wall-finish-depths.ts).
+  const clearance = getRoomWallClearances(
+    targetRoom,
+    { x: pendingPlacement.position[0], z: pendingPlacement.position[2] },
+    { w: effectiveWidth, d: effectiveDepth }
+  );
+  const nearestClearance = Math.min(clearance.x, clearance.z);
   const topCategory = mapToTopCategory(product.category, product);
   const zoneFit =
     targetRoom.zones.length === 0 ||

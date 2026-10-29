@@ -98,10 +98,9 @@ export function useDesignPageAiWorkspaceRegistration({
       style: base.state.brief.style,
       budget: base.state.brief.budget,
       room: {
-        width: roomWidth,
-        depth: roomDepth,
-        wallThickness,
+        width: roomWidth, depth: roomDepth, wallThickness,
         type: activeRoom?.roomType,
+        wallFinishRoom: activeRoom ?? null,
       },
       floorPlanQualityContext:
         planWorkspace.state.quality.report.aiPlanningContext,

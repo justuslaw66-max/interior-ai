@@ -1,5 +1,6 @@
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema, ProductCategory } from "@/lib/catalog-schema";
+import { getRoomWallFinishDepths, type WallFinishRoom } from "@/lib/room-wall-finish-depths";
 
 export type ConstraintLevel = "ok" | "warn" | "error";
 
@@ -28,6 +29,8 @@ type RoomSpec = {
   width: number;
   depth: number;
   wallThickness?: number;
+  /** The room whose laminate panels the gaps are measured in front of (lib/room-wall-finish-depths.ts), as a rectangle. */
+  wallFinishRoom?: WallFinishRoom | null;
 };
 
 type DesignLike = {
@@ -79,12 +82,19 @@ function aabbGap(a: AABB, b: AABB) {
   return { gapX, gapZ, minGap: Math.min(gapX, gapZ) };
 }
 
+/**
+ * The item's gap to the nearest finished wall face: half the wall in from the room's centre-line outline, and in front of
+ * the wall's laminate panel (J, 29 Oct 2026: "Fix it, all from the face"). It took off a whole wall before, so an item
+ * snapped against a wall read as 4 cm into it.
+ */
 function nearestWallGap(aabb: AABB, room: RoomSpec) {
-  const wall = room.wallThickness ?? 0;
-  const minX = -room.width / 2 + wall;
-  const maxX = room.width / 2 - wall;
-  const minZ = -room.depth / 2 + wall;
-  const maxZ = room.depth / 2 - wall;
+  const face = (room.wallThickness ?? 0) / 2;
+  const depths = getRoomWallFinishDepths(room.wallFinishRoom);
+  const panel = (faceId: string) => depths[faceId] ?? 0;
+  const minX = -room.width / 2 + face + panel("west");
+  const maxX = room.width / 2 - face - panel("east");
+  const minZ = -room.depth / 2 + face + panel("north");
+  const maxZ = room.depth / 2 - face - panel("south");
 
   const gaps = [
     aabb.minX - minX,

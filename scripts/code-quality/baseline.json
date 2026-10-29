@@ -169,7 +169,7 @@
       "limit": 250
     },
     "components/editor/design-page/SceneItemsLayer.tsx": {
-      "lines": 477,
+      "lines": 473,
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
@@ -257,7 +257,7 @@
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5466,
+      "lines": 5415,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -393,7 +393,7 @@
       "limit": 400
     },
     "features/cabinetry/useDesignPageCabinetry.ts": {
-      "lines": 1379,
+      "lines": 1351,
       "limit": 400
     },
     "features/cabinetry/validation.ts": {
@@ -417,7 +417,7 @@
       "limit": 400
     },
     "lib/catalog-placement-policy.ts": {
-      "lines": 892,
+      "lines": 887,
       "limit": 400
     },
     "lib/catalog-placement.ts": {
@@ -593,7 +593,7 @@
       "limit": 400
     },
     "lib/useDesignPageAiLayout.ts": {
-      "lines": 454,
+      "lines": 453,
       "limit": 400
     },
     "lib/useDesignPageCameraNavigation.ts": {
@@ -1733,7 +1733,7 @@
     "components/editor/design-page/SceneItemsLayer.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 344
+        "maximum": 339
       },
       "complexFunctions": {
         "count": 1,
@@ -2084,7 +2084,7 @@
         "maximum": 4109
       },
       "complexFunctions": {
-        "count": 8,
+        "count": 7,
         "maximum": 181
       }
     },
@@ -2758,7 +2758,7 @@
     },
     "lib/catalog-placement-policy.ts": {
       "overlongFunctions": {
-        "count": 2,
+        "count": 1,
         "maximum": 200
       },
       "complexFunctions": {
@@ -2879,11 +2879,11 @@
     "lib/circulation-analysis.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 78
+        "maximum": 74
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 20
+        "maximum": 19
       }
     },
     "lib/constraints/evaluate.ts": {
@@ -3753,11 +3753,11 @@
     "lib/manual-placement-scoring.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 213
+        "maximum": 211
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 47
+        "maximum": 46
       }
     },
     "lib/measurements.ts": {
@@ -3907,7 +3907,7 @@
     "lib/useDesignPageAiLayout.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 382
+        "maximum": 379
       },
       "complexFunctions": {
         "count": 1,
@@ -3923,7 +3923,7 @@
     "lib/useDesignPageAiWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 109
+        "maximum": 108
       }
     },
     "lib/useDesignPageBetaStartController.ts": {
@@ -4121,7 +4121,7 @@
     "lib/useDesignPageHousePlanState.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 278
+        "maximum": 273
       }
     },
     "lib/useDesignPageImportedModels.ts": {

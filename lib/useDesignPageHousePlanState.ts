@@ -16,10 +16,9 @@ import {
   type RoomType,
 } from "@/lib/room-types";
 import { track, trackProductEvent } from "@/lib/analytics";
-import {
-  clampToRoom,
-  getFurnitureWallInset,
-} from "@/lib/design-page-geometry";
+import { getFurnitureWallInset } from "@/lib/design-page-geometry";
+import { clampToRoomInsideFinishes } from "@/lib/room-finished-outline";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import {
   buildHousePlan2D,
   clampRoomDimension,
@@ -90,6 +89,8 @@ export function useDesignPageHousePlanState({
       ? activeRoom.floorLevel
       : 1;
 
+  // Furniture stops at each wall's laminate panel, not the bare wall (J, 29 Oct 2026; lib/room-finished-outline.ts).
+  const activeRoomWallFinishDepths = useMemo(() => getRoomWallFinishDepths(activeRoom), [activeRoom]);
   const clampToActiveRoom = useCallback(
     (
       x: number,
@@ -101,20 +102,13 @@ export function useDesignPageHousePlanState({
       targetWallThickness: number,
       rotationY: number = 0
     ) =>
-      clampToRoom(
-        x,
-        z,
-        itemWidth,
-        itemDepth,
-        targetRoomWidth,
-        targetRoomDepth,
+      clampToRoomInsideFinishes(
+        x, z, itemWidth, itemDepth, targetRoomWidth, targetRoomDepth,
         getFurnitureWallInset(targetWallThickness),
         rotationY,
-        activeRoomPlanShape,
-        activeRoomPlanPolygon,
-        activeRoomPlanHoles
+        activeRoomPlanShape, activeRoomPlanPolygon, activeRoomPlanHoles, activeRoomWallFinishDepths
       ),
-    [activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape]
+    [activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape, activeRoomWallFinishDepths]
   );
 
   const formattedRoomWidth = roomWidth.toFixed(2);

@@ -3,6 +3,7 @@ import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 
 type CirculationCatalog = Record<string, CatalogItemSchema | undefined>;
 
@@ -151,6 +152,21 @@ function hasPath(cells: GridCell[][], starts: Array<{ x: number; z: number }>, d
   return false;
 }
 
+/**
+ * The centres of the walkable grid's outer cells: half a cell in from the walls' finished faces, which are half the wall in
+ * from the outline and in front of each laminate panel (J, 29 Oct 2026: "Fix it, all from the face").
+ */
+function getWalkableCellBounds(room: RoomSnapshot, gridSizeM: number): { minX: number; maxX: number; minZ: number; maxZ: number } {
+  const wallFace = (room.geometry.wallThickness ?? 0.12) / 2;
+  const panels = getRoomWallFinishDepths(room);
+  return {
+    minX: -room.geometry.width / 2 + wallFace + (panels.west ?? 0) + gridSizeM / 2,
+    maxX: room.geometry.width / 2 - wallFace - (panels.east ?? 0) - gridSizeM / 2,
+    minZ: -room.geometry.depth / 2 + wallFace + (panels.north ?? 0) + gridSizeM / 2,
+    maxZ: room.geometry.depth / 2 - wallFace - (panels.south ?? 0) - gridSizeM / 2,
+  };
+}
+
 export function computeCirculationAnalysis({
   room,
   items,
@@ -160,11 +176,7 @@ export function computeCirculationAnalysis({
   gridSizeM = 0.45,
   walkwayRadiusM = 0.34,
 }: ComputeCirculationParams): CirculationAnalysis {
-  const wallThickness = room.geometry.wallThickness ?? 0.12;
-  const minX = -room.geometry.width / 2 + wallThickness + gridSizeM / 2;
-  const maxX = room.geometry.width / 2 - wallThickness - gridSizeM / 2;
-  const minZ = -room.geometry.depth / 2 + wallThickness + gridSizeM / 2;
-  const maxZ = room.geometry.depth / 2 - wallThickness - gridSizeM / 2;
+  const { minX, maxX, minZ, maxZ } = getWalkableCellBounds(room, gridSizeM);
   const obstacles = items
     .map((item) => getItemObstacle(item, catalogItems, walkwayRadiusM))
     .filter((entry): entry is Obstacle => Boolean(entry));
@@ -202,7 +214,7 @@ export function computeCirculationAnalysis({
   const starts =
     roomOpenings.length > 0
       ? roomOpenings.map((opening) => getOpeningPoint(opening, room))
-      : [{ x: 0, z: room.geometry.depth / 2 - wallThickness - 0.3 }];
+      : [{ x: 0, z: maxZ + gridSizeM / 2 - 0.3 }];
   const destinations = [
     { x: 0, z: 0 },
     ...zones

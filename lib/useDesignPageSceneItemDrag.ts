@@ -636,7 +636,7 @@ export function useDesignPageSceneItemDrag({
       const results = evaluateConstraints({
         design: { items: nextItems },
         movedItemId: id,
-        room: { width: roomWidth, depth: roomDepth, wallThickness },
+        room: { width: roomWidth, depth: roomDepth, wallThickness, wallFinishRoom: activeRoom },
       });
       showConstraints(results);
       showConfidence(results);

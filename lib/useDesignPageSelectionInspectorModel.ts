@@ -14,6 +14,7 @@ import { getWallFaceLabel } from "@/lib/surface-settings";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import { radiansToDeg, type EditorAnnotation2D, type FixedElement2D, type RoomOpening2D } from "@/lib/editorScene";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
+import { getRoomClearInsideMetrics } from "@/lib/room-finished-outline";
 import type { DesignItem } from "@/lib/room-types";
 import { resolveFixturePhotometrics } from "@/lib/resolve-lighting-scene";
 
@@ -205,10 +206,9 @@ export function buildDesignPageSelectionInspectorSummary({
   }
 
   if (selectedPlanRoom) return {
-      kind: "Room",
-      title: selectedPlanRoom.name,
+      kind: "Room", title: selectedPlanRoom.name,
       detail: `${selectedPlanRoom.roomType} room · ${formatDisplayArea(getPlanRoomFloorAreaSqm(selectedPlanRoom), planMeasurementUnit)}`,
-      metrics: [],
+      metrics: getRoomClearInsideMetrics(selectedPlanRoom, (valueMm) => formatCabinetMeasurement(valueMm, planMeasurementUnit)),
     };
 
   return null;

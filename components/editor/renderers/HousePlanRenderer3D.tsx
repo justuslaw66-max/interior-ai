@@ -664,7 +664,7 @@ export default function HousePlanRenderer3D({
                   <WindowOpeningMesh key={`window-hit:${segment.key}:${opening.id}`}
                     roomId={openings.find((source) => source.id === opening.sourceId)?.roomId ?? room.id}
                     sourceOpening={openings.find((source) => source.id === opening.sourceId)}
-                    opening={opening} segment={segment} wallHeight={segmentWallHeight}
+                    opening={opening} segment={segment} wallHeight={segmentWallHeight} room={room}
                     wallThickness={roomWallThickness} floorWorldY={floorYOffset} interactive={interactive}
                     hidden={legacyCutawaySegmentKeys.has(segment.key)}
                     hoveredTargetKey={visibleHoveredTargetKey} selectedTargetKey={selectedTargetKey}
