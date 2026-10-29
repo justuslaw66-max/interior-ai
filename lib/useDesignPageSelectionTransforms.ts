@@ -422,7 +422,7 @@ export function useDesignPageSelectionTransforms({
           const results = evaluateConstraints({
             design: { items: getItems() },
             movedItemId: id,
-            room: { width: roomWidth, depth: roomDepth, wallThickness },
+            room: { width: roomWidth, depth: roomDepth, wallThickness, wallFinishRoom: activeRoom },
           });
           showConstraintsForMoment(results);
           showConfidenceSummary(results);
@@ -519,7 +519,7 @@ export function useDesignPageSelectionTransforms({
         const results = evaluateConstraints({
           design: { items: getItems() },
           movedItemId: id,
-          room: { width: roomWidth, depth: roomDepth, wallThickness },
+          room: { width: roomWidth, depth: roomDepth, wallThickness, wallFinishRoom: activeRoom },
         });
         showConstraintsForMoment(results);
         showConfidenceSummary(results);

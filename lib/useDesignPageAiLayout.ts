@@ -25,7 +25,7 @@ import { pickBestRugForSofa } from "@/lib/design-page-rug-sizing";
 import type { LayoutPlan } from "@/lib/design-page-types";
 import type { FloorPlanAiPlanningContext } from "@/lib/floor-plan-quality";
 import type { GuestPromptReason } from "@/lib/guest-save-prompt";
-import type { DesignItem, RoomType } from "@/lib/room-types";
+import type { DesignItem, RoomSnapshot, RoomType } from "@/lib/room-types";
 
 type AiLayoutItemsUpdater =
   | DesignItem[]
@@ -56,6 +56,8 @@ export type UseDesignPageAiLayoutParams = {
       depth: number;
       wallThickness: number;
       type?: RoomType | null;
+      /** The room whose laminate panels the checks measure in front of. */
+      wallFinishRoom?: RoomSnapshot | null;
     };
     floorPlanQualityContext: FloorPlanAiPlanningContext;
   };
@@ -121,11 +123,7 @@ export function useDesignPageAiLayout({
         evaluateConstraints({
           design: { items: proposedItems },
           movedItemId: item.instanceId,
-          room: {
-            width: room.width,
-            depth: room.depth,
-            wallThickness: room.wallThickness,
-          },
+          room: { width: room.width, depth: room.depth, wallThickness: room.wallThickness, wallFinishRoom: room.wallFinishRoom },
         })
       );
       const { warnings: validationWarnings, validationRisk } =
@@ -159,6 +157,7 @@ export function useDesignPageAiLayout({
       budget,
       buildItemsFromPlan,
       room.depth,
+      room.wallFinishRoom,
       room.wallThickness,
       room.width,
       setDesignPanelOpen,

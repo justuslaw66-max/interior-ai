@@ -99,13 +99,16 @@ const rounded = (pieces: readonly WallFinishPiece[] | null) =>
   pieces?.map((piece) => [piece.faceKey, ...[piece.start, piece.end, piece.bottom, piece.top].map((value) => Math.round(value * 1000) || 0)]);
 const [northDoor] = buildRoomWallFinishQuantities([panelled], [door("north")]);
 assert.deepEqual(rounded(northDoor.remainingWallPieces), [
-  ["lam-north", 0, 490, 0, 2600], ["lam-north", 1390, 3880, 0, 2600], ["lam-north", 490, 1390, 2100, 2600],
-  ["lam-east", 0, 2880, 0, 2600], ["lam-south", 0, 3880, 0, 2600], ["lam-west", 0, 2880, 0, 2600],
-], "120 mm walls: each drawn face starts 60 mm in from the wall line's corner, so a 4 m wall's face is 3.88 m");
+  ["lam-north", 0, 490, 0, 2600], ["lam-north", 1390, 3870, 0, 2600], ["lam-north", 490, 1390, 2100, 2600],
+  ["lam-east", 0, 2880, 0, 2600], ["lam-south", 0, 3870, 0, 2600], ["lam-west", 0, 2860, 0, 2600],
+], "120 mm walls: each drawn face starts 60 mm in from the wall line's corner, so a 4 m wall's face is 3.88 m; at each " +
+  "inside corner the face whose key sorts later stops at the other's 10 mm panel (29 Oct 2026), so north and south lose " +
+  "10 mm at their east ends and west 10 mm at each end");
 const [southDoor] = buildRoomWallFinishQuantities([panelled], [door("south")]);
 assert.deepEqual(rounded(southDoor.remainingWallPieces)?.filter(([faceKey]) => faceKey === "lam-south"), [
-  ["lam-south", 3390, 3880, 0, 2600], ["lam-south", 0, 2490, 0, 2600], ["lam-south", 2490, 3390, 2100, 2600],
-], "the same door on the south wall is near its far end: that face runs the other way (side -1), as it is drawn");
+  ["lam-south", 3380, 3870, 0, 2600], ["lam-south", 0, 2480, 0, 2600], ["lam-south", 2480, 3380, 2100, 2600],
+], "the same door on the south wall is near its far end: that face runs the other way (side -1), as it is drawn, from its " +
+  "east end, 10 mm in from the corner at the east wall's panel");
 // Every piece is where the 3D view draws that part (HousePlanRenderer3D.tsx, wallAndOpeningMeshes.tsx): the wall's height
 // under its face id, the start its mesh is given and the joined length it paints, on both sides, beside, above and below a
 // door and a window, in a rectangle and in a drawn polygon with a raised wall.
@@ -147,14 +150,20 @@ const [lQuantities] = buildRoomWallFinishQuantities([lShaped]);
 assert.deepEqual(byPosition(lQuantities.remainingWallPieces), byPosition(drawnL));
 assert.deepEqual(
   rounded(lQuantities.remainingWallPieces)?.map(([, start, end, , top]) => [start, end, top]),
-  [[0, 3800, 3000], [0, 1800, 2600], [0, 1800, 2600], [0, 2000, 2600], [0, 2000, 2600], [0, 3800, 2600]],
-  "the first wall is raised to 3 m, saved under its face id; with 200 mm walls a face loses 100 mm at an outside corner and gains 100 mm at the inside one"
+  [[0, 3800, 3000], [0, 1790, 2600], [0, 1790, 2600], [0, 2010, 2600], [0, 2010, 2600], [0, 3780, 2600]],
+  "the first wall is raised to 3 m, saved under its face id; with 200 mm walls a face loses 100 mm at an outside corner " +
+    "and gains 100 mm at the inside one, and where it meets a face whose key sorts earlier it stops at that face's 10 mm " +
+    "panel, or wraps it at the notch's corner (29 Oct 2026; without panels 3800, 1800, 1800, 2000, 2000, 3800). The 3D " +
+    "view tells a drawn wall's inside by the direction to the room's centre, which wall-3's line runs through, so it draws " +
+    "wall-3's finish on the notch's side and wall-4 runs 2010, not 1990, into it: a fault from before (reported to J, 29 Oct), " +
+    "kept here as drawn"
 );
 const pieceArea = (pieces: readonly WallFinishPiece[] | null) =>
   Math.round((pieces ?? []).reduce((sum, piece) => sum + (piece.end - piece.start) * (piece.top - piece.bottom), 0) * 100) / 100;
 const [plainRoom] = buildRoomWallFinishQuantities([panelled]);
-assert.deepEqual([Math.round(plainRoom.remainingWallAreaSqm * 100) / 100, pieceArea(plainRoom.remainingWallPieces)], [36.4, 35.15],
-  "the area is measured on the wall line; the drawn faces are 120 mm shorter at the room's corners");
+assert.deepEqual([Math.round(plainRoom.remainingWallAreaSqm * 100) / 100, pieceArea(plainRoom.remainingWallPieces)], [36.4, 35.05],
+  "the area is measured on the wall line; the drawn faces are 120 mm shorter at the room's corners, and 10 mm more where a " +
+    "panel stops at its neighbour's (35.15 m² without)");
 
 // The bill of materials: whole sheets for the panels, with the area alongside; tiles as before.
 const [bomRow] = buildRoomSurfaceMaterialBomRows([panelled]);

@@ -5,10 +5,12 @@ import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useRef } from "react";
 import * as THREE from "three";
 import {
-  getWallInteriorSurfaceSide, type WallOpening3D, type WallSegment3D,
+  getWallInteriorSurfaceSide, getWallSurfaceFaceId, type WallOpening3D, type WallSegment3D,
 } from "./geometry";
 import { getWindowOpeningHitVolume } from "./windowOpeningGeometry";
 import type { RoomRendererOpening } from "@/lib/design-page-plan-overlays";
+import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import { useWindowOpeningDrag, type WindowOpeningDragActions } from "./useWindowOpeningDrag";
 import { noRaycast } from "@/components/scene/stableSceneProps";
 import { StableLine as Line } from "../StableLine";
@@ -20,6 +22,8 @@ type Props = WindowOpeningDragActions & {
   sourceOpening?: RoomRendererOpening;
   opening: WallOpening3D;
   segment: WallSegment3D;
+  /** The room the outline is drawn in, whose laminate panel on this wall it stands in front of. */
+  room?: HousePlanRoom2D;
   wallHeight: number;
   wallThickness: number;
   floorWorldY: number;
@@ -55,7 +59,9 @@ export function WindowOpeningMesh(props: Props) {
   const selected = props.selectedTargetKey === targetKey;
   const outlined = selected || props.hoveredTargetKey === targetKey;
   const halfWidth = width / 2;
-  const z = getWallInteriorSurfaceSide(segment) * (wallThickness / 2 + 0.003);
+  // In front of the wall's laminate panel, if it has one (lib/room-wall-finish-depths.ts).
+  const panelDepth = props.room ? getRoomWallFinishDepths(props.room)[getWallSurfaceFaceId(props.room, segment)] ?? 0 : 0;
+  const z = getWallInteriorSurfaceSide(segment) * (wallThickness / 2 + panelDepth + 0.003);
   // Stable handlers: a page re-render that changes nothing here doesn't make R3F redraw.
   const raycast = useLatestCallback((raycaster: THREE.Raycaster, hits: THREE.Intersection[]) => {
     if (props.interactive && pickEnabledRef.current && meshRef.current) {

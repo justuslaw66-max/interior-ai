@@ -25,7 +25,7 @@ import {
 } from "@/lib/design-page-house-plan";
 import { neededDoorwaySuggestions } from "@/lib/room-connection-checklist";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
-import { getWallFaceSurfaceSettings, normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
+import { normalizeFloorSurfaceSettings } from "@/lib/surface-settings";
 import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
 import {
   buildInnerFloorGeometry2D,
@@ -56,6 +56,9 @@ import { formatWallDrawLengthInput, MAX_WALL_DRAW_SEGMENT_LENGTH_METERS,
   parseWallDrawLengthMm, wallDrawLengthUnitIndicator,
   wallDrawSegmentEditorIsStale } from "./room-renderer-2d-wall-length-editor";
 import { UnresolvedOpeningMarkers2D } from "./UnresolvedOpeningMarkers2D";
+import { RoomPanelFaces2D } from "./RoomPanelFaces2D";
+import { getHouseRoomWallPlanColor } from "./roomWallPlanColour2D";
+import { getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
 import { moveOpeningCenterFromWorldPoint,
   projectWorldPointToOpeningHost, resizeOpeningFromWorldPoint } from "@/lib/design-page-opening-interaction";
@@ -242,32 +245,6 @@ function getHouseRoomFloorPlanColor(
   const surfaces = room.surfaces ?? room.surfaceFinishes;
   const material = getFloorMaterialById(surfaces?.floorMaterialId);
   return palette.floor(isActiveRoom ? material.planColor : material.planMutedColor, isActiveRoom);
-}
-
-function getSurfaceMaterialPlanColor(materialId: string | null | undefined, fallback: string): string {
-  const material = getRuntimeSurfaceMaterialById(materialId);
-  if (!material) return fallback;
-  const colorFamily = material.classification?.color_family ?? "";
-  if (colorFamily.includes("grey") || colorFamily.includes("gray")) return "#b9b8b3";
-  if (colorFamily.includes("walnut") || colorFamily.includes("brown")) return "#9b7659";
-  if (colorFamily.includes("oak") || colorFamily.includes("maple") || colorFamily.includes("wood")) return "#c6a77b";
-  if (colorFamily.includes("white") || colorFamily.includes("ivory")) return "#eeeae0";
-  if (colorFamily.includes("beige") || colorFamily.includes("cream")) return "#d8ccb8";
-  if (colorFamily.includes("black") || colorFamily.includes("anthracite")) return "#6f6f70";
-  return "#c5beb0";
-}
-
-function getHouseRoomWallPlanColor(room: HouseRoom2D, wall: Opening2D["wall"], isPro: boolean, palette: CanvasPalette): string {
-  const fallback = isPro ? palette.colour("#d4d4d8") : "#c9c2b4";
-  const surfaces = room.surfaces ?? room.surfaceFinishes;
-  const settings = getWallFaceSurfaceSettings(
-    surfaces,
-    wall,
-    normalizeFloorRotationDeg,
-    clampFloorPatternScale
-  );
-  if (settings.paintColorHex) return settings.paintColorHex;
-  return getSurfaceMaterialPlanColor(settings.materialId, fallback);
 }
 
 const HouseRoomFloorFill2D = memo(function HouseRoomFloorFill2D({
@@ -525,38 +502,10 @@ function findResizableOpening(openings: readonly Opening2D[], id: string) {
   return opening && openingWidthIsEditable(opening) ? opening : undefined;
 }
 
+/** The room's centre-line outline, closed, from the shared one (lib/room-finished-outline.ts, with its L-shape notch). */
 const getRoomOutlinePoints = (room: HouseRoom2D): Array<[number, number]> => {
-  if (room.shape === "custom_polygon" && room.polygon && room.polygon.length >= 3) {
-    const points = room.polygon.map((point): [number, number] => [point.x, point.z]);
-    return [...points, points[0]];
-  }
-
-  const left = -room.w / 2;
-  const right = room.w / 2;
-  const top = -room.d / 2;
-  const bottom = room.d / 2;
-
-  if (room.shape === "l_shape") {
-    const notchW = room.w * 0.42;
-    const notchD = room.d * 0.42;
-    return [
-      [left, top],
-      [right, top],
-      [right, bottom - notchD],
-      [right - notchW, bottom - notchD],
-      [right - notchW, bottom],
-      [left, bottom],
-      [left, top],
-    ];
-  }
-
-  return [
-    [left, top],
-    [right, top],
-    [right, bottom],
-    [left, bottom],
-    [left, top],
-  ];
+  const points = getRoomPlanOutlinePoints(room).map(({ x, z }): [number, number] => [x, z]);
+  return [...points, points[0]];
 };
 
 const getRoomHoleOutlinePoints = (room: HouseRoom2D): Array<Array<[number, number]>> =>
@@ -4005,8 +3954,8 @@ export default function RoomRenderer2D({
           );
         })}
 
-      {hasHouseRooms &&
-        wallBandLayout.cornerCaps.map((cap) => (
+      <RoomPanelFaces2D rooms={wallBandRooms} shown={wallBandLayout.parts.length > 0} isPro={isPro} />
+      {hasHouseRooms && wallBandLayout.cornerCaps.map((cap) => (
           <mesh
             key={cap.key}
             position={[cap.x, 0.0016, cap.z]}

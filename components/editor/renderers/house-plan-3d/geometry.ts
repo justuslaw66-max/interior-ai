@@ -9,6 +9,7 @@ import {
 } from "@/lib/design-page-plan-overlays";
 import { resolveCutawayWallOpacity } from "@/lib/design-page-wall-cutaway";
 import { getDeterministicWallFaceId } from "@/lib/surface-settings";
+import { getRoomWallFinishDepths, normalizeWallPanelIdToken } from "@/lib/room-wall-finish-depths";
 import {
   buildPlanarUnionPolygons,
   type PlanarRegionMm,
@@ -169,13 +170,6 @@ export function getSelectableWallSurfacePanelId(
   side: 1 | -1
 ): string {
   return `${facePanelId}-side-${side === 1 ? "positive" : "negative"}`;
-}
-
-function normalizeWallPanelIdToken(value: string): string {
-  return value
-    .trim()
-    .replace(/[^a-zA-Z0-9_.-]+/g, "_")
-    .replace(/^_+|_+$/g, "") || "unknown";
 }
 
 export function getWallSurfacePanelId({
@@ -657,18 +651,17 @@ function legacyWallSurfaceMiterOffset(
     ? adjacentInteriorSide
     : (-adjacentInteriorSide as LegacyWallJoinSide);
   const halfThickness = wallThicknessMeters / 2;
+  // Inside, the face whose key sorts later stops at the other's laminate panel, which runs on into the corner (29 Oct 2026).
+  const adjacentFace = halfThickness + (isInteriorSurface && segment.key > adjacentSegment.key
+    ? getRoomWallFinishDepths(room)[getWallSurfaceFaceId(room, adjacentSegment)] ?? 0 : 0);
   const intersection = intersectOffsetLines(
     [
       segment.x + currentNormal[0] * side * halfThickness,
       segment.z + currentNormal[1] * side * halfThickness,
     ],
     [directionX, directionZ],
-    [
-      adjacentSegment.x +
-        adjacentNormal[0] * adjacentSide * halfThickness,
-      adjacentSegment.z +
-        adjacentNormal[1] * adjacentSide * halfThickness,
-    ],
+    [adjacentSegment.x + adjacentNormal[0] * adjacentSide * adjacentFace,
+      adjacentSegment.z + adjacentNormal[1] * adjacentSide * adjacentFace],
     [adjacentDirectionX, adjacentDirectionZ]
   );
   if (!intersection) return endpointOffset;

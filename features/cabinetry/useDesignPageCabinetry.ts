@@ -21,6 +21,8 @@ import {
   PLAN_OPENING_DEFAULT_HEIGHT_METERS,
 } from "@/lib/design-page-plan-overlays";
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
+import { getRoomOutlineInsideFinishes, getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { getActiveRoom } from "@/lib/room-types";
 import type {
@@ -247,13 +249,16 @@ export function buildCabinetryAvailableSpaces({
   const wallInsetMm = Math.round(
     (activeRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness) * 1000
   );
+  // Built-ins stand in front of each wall's laminate panel too (lib/room-wall-finish-depths.ts).
+  const wallFinishDepths = getRoomWallFinishDepths(activeRoom);
+  const panelMm = (faceId: string) => Math.round((wallFinishDepths[faceId] ?? 0) * 1000);
   const widthMm = Math.max(
     1,
-    Math.round((activePlanRoom?.w ?? activeRoom.geometry.width) * 1000) - wallInsetMm * 2
+    Math.round((activePlanRoom?.w ?? activeRoom.geometry.width) * 1000) - wallInsetMm * 2 - panelMm("west") - panelMm("east")
   );
   const depthMm = Math.max(
     1,
-    Math.round((activePlanRoom?.d ?? activeRoom.geometry.depth) * 1000) - wallInsetMm * 2
+    Math.round((activePlanRoom?.d ?? activeRoom.geometry.depth) * 1000) - wallInsetMm * 2 - panelMm("north") - panelMm("south")
   );
   const heightMm = Math.round(
     (activeRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight) * 1000
@@ -289,43 +294,10 @@ export function buildCabinetryAvailableSpaces({
 
   const planShape = activeRoom.planShape ?? "rectangle";
   if (planShape !== "rectangle") {
-    const polygon =
-      planShape === "custom_polygon" && activeRoom.planPolygon?.length
-        ? activeRoom.planPolygon
-        : [
-            {
-              x: -activeRoom.geometry.width / 2,
-              z: -activeRoom.geometry.depth / 2,
-            },
-            {
-              x: activeRoom.geometry.width / 2,
-              z: -activeRoom.geometry.depth / 2,
-            },
-            {
-              x: activeRoom.geometry.width / 2,
-              z:
-                activeRoom.geometry.depth / 2 -
-                activeRoom.geometry.depth * 0.42,
-            },
-            {
-              x:
-                activeRoom.geometry.width / 2 -
-                activeRoom.geometry.width * 0.42,
-              z:
-                activeRoom.geometry.depth / 2 -
-                activeRoom.geometry.depth * 0.42,
-            },
-            {
-              x:
-                activeRoom.geometry.width / 2 -
-                activeRoom.geometry.width * 0.42,
-              z: activeRoom.geometry.depth / 2,
-            },
-            {
-              x: -activeRoom.geometry.width / 2,
-              z: activeRoom.geometry.depth / 2,
-            },
-          ];
+    // The L-shape's or drawn shape's outline, its edges moved in by their laminate panels (lib/room-finished-outline.ts).
+    const polygon = getRoomPlanOutlinePoints(getRoomOutlineInsideFinishes({
+      shape: planShape, polygon: activeRoom.planPolygon, w: activeRoom.geometry.width, d: activeRoom.geometry.depth,
+    }, wallFinishDepths));
 
     return createCabinetPolygonWallSpaces({
       ...sharedSpaceInput,
