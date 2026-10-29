@@ -9,10 +9,19 @@
 @source "../lib";
 @source inline("border-sky-200 gap-5 gap-6 max-h-40 min-w-[760px] sm:col-span-2 text-3xl text-neutral-100 text-neutral-300 xl:grid-cols-2");
 
-/* Dark mode is opt-in. The UI is designed light-first; left on Tailwind's
-   default, dark: utilities follow the OS setting and half-theme dialogs
-   (UX audit 2026-09-23, SX3). The colour tokens below use the same switch. */
-@custom-variant dark (&:where([data-color-scheme="dark"], [data-color-scheme="dark"] *));
+/* dark: utilities follow the same switch as the colour tokens below: a dark device, unless
+   data-color-scheme="light" holds the subtree light (Admin), and data-color-scheme="dark". Left on
+   Tailwind's default they would follow the device inside Admin too (UX audit 2026-09-23, SX3). */
+@custom-variant dark {
+  &:where([data-color-scheme="dark"], [data-color-scheme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-color-scheme="light"]) *):not(:where([data-color-scheme="light"], [data-color-scheme="light"] *)) {
+      @slot;
+    }
+  }
+}
 
 /* Touch (UX 4d, audit AX1): phones, and screens whose main pointer is a finger. touch:min-h-11
    makes a control a 44px target there and leaves the desktop's dense sizes alone. */
@@ -23,9 +32,9 @@
 }
 
 /* The colours, by role (dark mode step 3, after Apple: claude/dark-mode-plan-2026-10-13.md). Each
-   has a light value, today's, and a dark one. Dark applies only under data-color-scheme="dark" until
-   the editor is on these tokens; then the app follows the device (J, 22 Oct). data-color-scheme="light"
-   holds a subtree light: Admin stays light (plan decision 7). */
+   has a light value, today's, and a dark one. The app follows the device (J, 22 Oct; the switch is
+   below the dark block); data-color-scheme="dark" forces dark (previews, tests), and
+   data-color-scheme="light" holds a subtree light: Admin stays light (plan decision 7). */
 :root,
 [data-color-scheme="light"] {
   color-scheme: light;
@@ -109,6 +118,26 @@
   /* The pages outside the editor (dark mode PR 2, 26 Oct): the grey page behind white cards (the shared
      design, the status pages), black in dark like the other pages. */
   --surface-grouped: var(--color-neutral-100);
+  /* The plan drawings (dark mode PR 4, 28 Oct): My designs' thumbnails, Start's template pictures,
+     the Levels map, the shared design's plan preview and Built-ins' preview. In dark they take the
+     plan's dark paper (#1C1C1E), rooms a dim tint of their colour, walls light (J, 28 Oct). */
+  --plan-paper: #f6f5f1;
+  --plan-line: #78716c;
+  --plan-room: #e7e5e4;
+  --plan-room-toilet: #dbeafe;
+  --plan-room-kitchen: #dcfce7;
+  --plan-room-bedroom: #ede9fe;
+  --plan-room-dining: #fef3c7;
+  --plan-marker: #1c1917;
+  --plan-marker-seat: #2563eb;
+  --plan-marker-table: #d97706;
+  --plan-marker-rug: #14b8a6;
+  --plan-sheet: #ffffff;
+  --plan-sheet-room: #f5f5f4;
+  --plan-wall: #262626;
+  --plan-door: #d97706;
+  --plan-window: #0284c7;
+  --scene-preview-ground: #e5e7e1;
   /* The shared controls (components/ui): Button, SegmentedControl, Chip and ChoiceTile; a step's
      number and the avatar's hover (control-badge), and the phone sheet's handle. */
   --control-primary: var(--color-neutral-900);
@@ -200,6 +229,23 @@
   --surface-page: #000000;
   --surface-well: transparent;
   --surface-grouped: #000000;
+  --plan-paper: #1c1c1e;
+  --plan-line: #98989d;
+  --plan-room: #3a3a3c;
+  --plan-room-toilet: #22303f;
+  --plan-room-kitchen: #24372a;
+  --plan-room-bedroom: #30293d;
+  --plan-room-dining: #3a3222;
+  --plan-marker: #e5e5ea;
+  --plan-marker-seat: #409cff;
+  --plan-marker-table: #ff9f0a;
+  --plan-marker-rug: #40c8e0;
+  --plan-sheet: #1c1c1e;
+  --plan-sheet-room: #2c2c2e;
+  --plan-wall: #e5e5ea;
+  --plan-door: #ff9f0a;
+  --plan-window: #409cff;
+  --scene-preview-ground: #232325;
   --control-primary: #f5f5f7;
   --control-primary-hover: #e5e5ea;
   --control-on-primary: #1c1c1e;
@@ -218,6 +264,113 @@
   --control-danger-hover: rgba(255, 69, 58, 0.26);
   --control-danger-border: transparent;
   --control-on-danger: #ff6961;
+}
+
+/* The switch (J, 22 Oct: the app follows the device, with no switch of its own). On a dark device the
+   page takes the dark values above, unless data-color-scheme="light" holds it light (Admin, the
+   internal tools, the export page). These declarations are the dark block's, line for line;
+   scripts/test-designer-theme-contrast.ts checks they stay the same. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme="light"]) {
+    color-scheme: dark;
+    --bg-canvas: #000000;
+    --bg-panel: #000000;
+    --bg-panel-hover: #1c1c1e;
+    --border-subtle: rgba(84, 84, 88, 0.65);
+    --border-strong: rgba(235, 235, 245, 0.3);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(235, 235, 245, 0.6);
+    --text-muted: rgba(235, 235, 245, 0.6);
+    --accent: #0a84ff;
+    --focus: #0a84ff;
+    --success: #30d158;
+    --danger: #ff6961;
+    --background: var(--bg-canvas);
+    --foreground: var(--text-primary);
+    --surface: #000000;
+    --surface-secondary: #1c1c1e;
+    --surface-elevated: #1c1c1e;
+    --surface-elevated-secondary: #2c2c2e;
+    --surface-floating: #2c2c2e;
+    --label: #ffffff;
+    --label-secondary: rgba(235, 235, 245, 0.6);
+    --separator: rgba(84, 84, 88, 0.65);
+    --link: #409cff;
+    --surface-toast: #3a3a3c;
+    --on-surface-toast: #ffffff;
+    --toast-control: rgba(255, 255, 255, 0.14);
+    --toast-control-hover: rgba(255, 255, 255, 0.22);
+    --accent-tint: rgba(10, 132, 255, 0.18);
+    --accent-tint-border: transparent;
+    --on-accent-tint: #409cff;
+    --surface-tab-bar: #1c1c1e;
+    --box-border: transparent;
+    --separator-subtle: rgba(84, 84, 88, 0.65);
+    --field: #2c2c2e;
+    --tile: #2c2c2e;
+    --surface-band: transparent;
+    --surface-floating-secondary: #3a3a3c;
+    --swatch-edge: rgba(255, 255, 255, 0.16);
+    --label-tertiary: rgba(235, 235, 245, 0.3);
+    --success-tint: rgba(48, 209, 88, 0.16);
+    --success-tint-border: transparent;
+    --on-success-tint: #30d158;
+    --warning-tint: rgba(255, 159, 10, 0.16);
+    --warning-tint-border: transparent;
+    --on-warning-tint: #ff9f0a;
+    --danger-tint: rgba(255, 69, 58, 0.16);
+    --danger-tint-border: transparent;
+    --on-danger-tint: #ff6961;
+    --surface-floating-edge: rgba(84, 84, 88, 0.65);
+    --floating-card: #3a3a3c;
+    --floating-field: #3a3a3c;
+    --floating-tile: #3a3a3c;
+    --floating-elevated: #3a3a3c;
+    --floating-on-danger: #ff8a84;
+    --floating-on-danger-tint: #ff8a84;
+    --floating-on-accent-tint: #64b0ff;
+    --surface-canvas: #1c1c1e;
+    --control-switch-off: rgba(120, 120, 128, 0.36);
+    --control-switch-knob: #f5f5f7;
+    --surface-page: #000000;
+    --surface-well: transparent;
+    --surface-grouped: #000000;
+    --plan-paper: #1c1c1e;
+    --plan-line: #98989d;
+    --plan-room: #3a3a3c;
+    --plan-room-toilet: #22303f;
+    --plan-room-kitchen: #24372a;
+    --plan-room-bedroom: #30293d;
+    --plan-room-dining: #3a3222;
+    --plan-marker: #e5e5ea;
+    --plan-marker-seat: #409cff;
+    --plan-marker-table: #ff9f0a;
+    --plan-marker-rug: #40c8e0;
+    --plan-sheet: #1c1c1e;
+    --plan-sheet-room: #2c2c2e;
+    --plan-wall: #e5e5ea;
+    --plan-door: #ff9f0a;
+    --plan-window: #409cff;
+    --scene-preview-ground: #232325;
+    --control-primary: #f5f5f7;
+    --control-primary-hover: #e5e5ea;
+    --control-on-primary: #1c1c1e;
+    --control-secondary: rgba(118, 118, 128, 0.24);
+    --control-secondary-hover: rgba(118, 118, 128, 0.32);
+    --control-secondary-border: transparent;
+    --control-quiet-hover: rgba(118, 118, 128, 0.24);
+    --control-label: #ffffff;
+    --control-label-idle: rgba(235, 235, 245, 0.8);
+    --control-track: rgba(118, 118, 128, 0.24);
+    --control-track-hover: rgba(118, 118, 128, 0.24);
+    --control-edge-hover: rgba(235, 235, 245, 0.3);
+    --control-badge: rgba(118, 118, 128, 0.32);
+    --control-handle: #48484a;
+    --control-danger: rgba(255, 69, 58, 0.18);
+    --control-danger-hover: rgba(255, 69, 58, 0.26);
+    --control-danger-border: transparent;
+    --control-on-danger: #ff6961;
+  }
 }
 
 /* A floating surface: the right rail's cards, the item panel and the bars over the canvas
@@ -314,6 +467,14 @@
   --color-surface-page: var(--surface-page);
   --color-surface-well: var(--surface-well);
   --color-surface-grouped: var(--surface-grouped);
+  --color-plan-paper: var(--plan-paper);
+  --color-plan-line: var(--plan-line);
+  --color-plan-room: var(--plan-room);
+  --color-plan-sheet: var(--plan-sheet);
+  --color-plan-sheet-room: var(--plan-sheet-room);
+  --color-plan-wall: var(--plan-wall);
+  --color-plan-door: var(--plan-door);
+  --color-plan-window: var(--plan-window);
   --color-control-danger: var(--control-danger);
   --color-control-danger-hover: var(--control-danger-hover);
   --color-control-danger-border: var(--control-danger-border);

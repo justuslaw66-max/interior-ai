@@ -380,6 +380,23 @@
       ]
     },
     {
+      "id": "greenlam-solids-115",
+      "code": "115",
+      "name": "Alabaster",
+      "category": "solids",
+      "colour": "#e9e0d2",
+      "colour_source": "RAL 9001 Cream, CIELab 89.616 0.594 8.06, which is sRGB 233 224 210 (#e9e0d2) under D65 (Wikipedia's List of RAL colours, its sRGB column; hextoral.com's RAL 9001 page)",
+      "render": "flat_colour",
+      "grain": "none",
+      "finishes": [
+        "Suede"
+      ],
+      "notes": [
+        "Greenlam lists 115 Alabaster as a plain colour, RAL 9001, under Colours (greenlamsa.com/alabaster)",
+        "its picture is a stone design, so it is drawn flat in RAL 9001 (J, 28 Oct 2026)"
+      ]
+    },
+    {
       "id": "greenlam-solids-116",
       "code": "116",
       "name": "Pearly White",
@@ -486,6 +503,23 @@
       },
       "finishes": [
         "Suede"
+      ]
+    },
+    {
+      "id": "greenlam-solids-471",
+      "code": "471",
+      "name": "Arctic Grey",
+      "category": "solids",
+      "colour": "#cecdc1",
+      "colour_source": "Pantone 13-4403 TPG Silver Birch, sRGB 206 204 193 (#cecdc1) (Columbia Omni Studio's Pantone FHI HEX and RGB chart; Pantone's own page gives values only in Pantone Connect)",
+      "render": "flat_colour",
+      "grain": "none",
+      "finishes": [
+        "Suede"
+      ],
+      "notes": [
+        "Greenlam lists 471 Arctic Grey as a plain colour, Pantone 13-4403 TPG, under Solids (greenlamsa.com/arctic-grey-new)",
+        "its picture is a woodgrain, so it is drawn flat in Pantone 13-4403 TPG (J, 28 Oct 2026)"
       ]
     },
     {

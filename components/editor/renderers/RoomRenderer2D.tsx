@@ -4,11 +4,7 @@ import { Html } from "@react-three/drei/web/Html";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
-import {
-  clampFloorPatternScale,
-  getFloorMaterialById,
-  normalizeFloorRotationDeg,
-} from "@/lib/floor-materials";
+import { clampFloorPatternScale, getFloorMaterialById, normalizeFloorRotationDeg } from "@/lib/floor-materials";
 import type { FloorPlanDrawRoomMode, FloorPlanPoint } from "@/lib/floor-plan-types";
 import type { RoomSurfaceFinishes, RoomType } from "@/lib/room-types";
 import {
@@ -41,10 +37,10 @@ import {
 } from "@/lib/room-renderer-2d-walls";
 import { resolveLoneRoomPlanFrame2D } from "@/lib/room-renderer-2d-lone-room";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
+import { useCanvasPalette, type CanvasPalette } from "@/lib/canvas-colours";
+import { drawPlanColoursAsChosen } from "@/lib/canvas-tone-mapping";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
-import {
-  CanonicalFloorPlanWalls2D,
-} from "./CanonicalFloorPlanStructure";
+import { CanonicalFloorPlanWalls2D } from "./CanonicalFloorPlanStructure";
 import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildRoomPlanShape, shouldRenderRoomPlanGeometry } from "@/lib/room-plan-shape";
@@ -240,12 +236,12 @@ type CameraNavigation2D = {
 function getHouseRoomFloorPlanColor(
   room: HouseRoom2D,
   isActiveRoom: boolean,
-  isPro: boolean
+  isPro: boolean, palette: CanvasPalette
 ): string {
-  if (isPro) return isActiveRoom ? "#ffffff" : "#fafafa";
+  if (isPro) return palette.colour(isActiveRoom ? "#ffffff" : "#fafafa");
   const surfaces = room.surfaces ?? room.surfaceFinishes;
   const material = getFloorMaterialById(surfaces?.floorMaterialId);
-  return isActiveRoom ? material.planColor : material.planMutedColor;
+  return palette.floor(isActiveRoom ? material.planColor : material.planMutedColor, isActiveRoom);
 }
 
 function getSurfaceMaterialPlanColor(materialId: string | null | undefined, fallback: string): string {
@@ -261,8 +257,8 @@ function getSurfaceMaterialPlanColor(materialId: string | null | undefined, fall
   return "#c5beb0";
 }
 
-function getHouseRoomWallPlanColor(room: HouseRoom2D, wall: Opening2D["wall"], isPro: boolean): string {
-  const fallback = isPro ? "#d4d4d8" : "#c9c2b4";
+function getHouseRoomWallPlanColor(room: HouseRoom2D, wall: Opening2D["wall"], isPro: boolean, palette: CanvasPalette): string {
+  const fallback = isPro ? palette.colour("#d4d4d8") : "#c9c2b4";
   const surfaces = room.surfaces ?? room.surfaceFinishes;
   const settings = getWallFaceSurfaceSettings(
     surfaces,
@@ -297,6 +293,7 @@ const HouseRoomFloorFill2D = memo(function HouseRoomFloorFill2D({
   onSelectSurfaceTarget?: (target: { kind: "floor" | "wall"; roomId: string; id: string }) => void;
 }) {
   const { gl } = useThree();
+  const { colour } = useCanvasPalette();
   const surfaces = room.surfaces ?? room.surfaceFinishes;
   const surfaceMaterial = getRuntimeSurfaceMaterialById(surfaces?.floorMaterialId);
   const floorSettings = normalizeFloorSurfaceSettings(
@@ -341,7 +338,7 @@ const HouseRoomFloorFill2D = memo(function HouseRoomFloorFill2D({
     >
       <shapeGeometry args={[buildInnerFloorShapeGeometry(room)]} />
       <meshBasicMaterial
-        color={canShowTexture ? "#ffffff" : dragStatus === "blocked" ? "#fed7aa" : fillColor}
+        color={canShowTexture ? "#ffffff" : dragStatus === "blocked" ? colour("#fed7aa") : fillColor}
         map={canShowTexture ? surfaceTexture ?? undefined : undefined}
         transparent={isDraggingRoom}
         opacity={fillOpacity}
@@ -357,6 +354,7 @@ function HouseRoomComparisonOverlay2D({
   room: HouseRoom2D;
   active: boolean;
 }) {
+  const { colour } = useCanvasPalette();
   return (
     <>
       <mesh
@@ -367,7 +365,7 @@ function HouseRoomComparisonOverlay2D({
       >
         <shapeGeometry args={[buildRoomShapeGeometry(room)]} />
         <meshBasicMaterial
-          color="#10b981"
+          color={colour("#10b981")}
           transparent
           opacity={active ? 0.13 : 0.17}
           depthTest={false}
@@ -376,7 +374,7 @@ function HouseRoomComparisonOverlay2D({
       </mesh>
       <Line
         points={getRoomOutlinePoints(room).map(([x, z]) => [x, 0.021, z])}
-        color={active ? "#047857" : "#10b981"}
+        color={active ? colour("#047857") : colour("#10b981")}
         lineWidth={active ? 4.8 : 4.2}
         depthTest={false}
         renderOrder={18}
@@ -1431,6 +1429,9 @@ export default function RoomRenderer2D({
   const halfW = width / 2;
   const halfD = depth / 2;
   const isPro = theme === "pro";
+  const canvasPalette = useCanvasPalette();
+  const { colour } = canvasPalette;
+  useEffect(() => drawPlanColoursAsChosen(gl, canvasPalette.dark), [canvasPalette.dark, gl]);
   const hasHouseRooms = shouldRenderRoomPlanGeometry(rooms);
   // A lone non-rectangular room draws its own plan geometry instead of the plain frame.
   const loneRoomFrame = useMemo(() => (hasHouseRooms ? null : resolveLoneRoomPlanFrame2D(rooms)), [hasHouseRooms, rooms]);
@@ -1469,16 +1470,16 @@ export default function RoomRenderer2D({
     !drawRoomMode &&
     !traceOpeningMode;
 
-  const floorColor = isPro ? "#ffffff" : "#f4f2ed";
-  const borderColor = isPro ? "#111111" : "#9a9a9a";
-  const minorGridColor = isPro ? "#e1e1e1" : "#d8d8d8";
-  const majorGridColor = isPro ? "#c4c4c4" : "#c8c8c8";
-  const zoneFillColor = isPro ? "#0f766e" : "#0ea5a0";
-  const zoneLabelColor = isPro ? "#115e59" : "#0f766e";
-  const activeRoomBorderColor = "#22c55e";
-  const activeRoomHandleColor = "#16a34a";
-  const openingDoorColor = isPro ? "#9a3412" : "#c2410c";
-  const openingWindowColor = isPro ? "#0369a1" : "#0284c7";
+  const floorColor = isPro ? colour("#ffffff") : canvasPalette.floor("#f4f2ed", true);
+  const borderColor = isPro ? colour("#111111") : colour("#9a9a9a");
+  const minorGridColor = isPro ? colour("#e1e1e1") : colour("#d8d8d8");
+  const majorGridColor = isPro ? colour("#c4c4c4") : colour("#c8c8c8");
+  const zoneFillColor = isPro ? colour("#0f766e") : colour("#0ea5a0");
+  const zoneLabelColor = isPro ? colour("#115e59") : colour("#0f766e");
+  const activeRoomBorderColor = colour("#22c55e");
+  const activeRoomHandleColor = colour("#16a34a");
+  const openingDoorColor = isPro ? colour("#9a3412") : colour("#c2410c");
+  const openingWindowColor = isPro ? colour("#0369a1") : colour("#0284c7");
   const snapThreshold = 0.12;
   const openingMinWidth = 0.4;
   const openingEdgePadding = 0.03;
@@ -2997,7 +2998,7 @@ export default function RoomRenderer2D({
             <Line
               key={`camera-navigation-dash-${index}`}
               points={segment}
-              color={isPro ? "#111827" : "#3f3f46"}
+              color={isPro ? colour("#111827") : colour("#3f3f46")}
               lineWidth={1.4}
               transparent
               opacity={0.9}
@@ -3014,11 +3015,11 @@ export default function RoomRenderer2D({
           >
             <mesh>
               <boxGeometry args={[0.52, 0.08, 0.34]} />
-              <meshBasicMaterial color={isPro ? "#1f2937" : "#4b5563"} />
+              <meshBasicMaterial color={isPro ? colour("#1f2937") : colour("#4b5563")} />
             </mesh>
             <mesh position={[0, 0, -0.25]}>
               <boxGeometry args={[0.3, 0.08, 0.16]} />
-              <meshBasicMaterial color={isPro ? "#1f2937" : "#4b5563"} />
+              <meshBasicMaterial color={isPro ? colour("#1f2937") : colour("#4b5563")} />
             </mesh>
             <mesh position={[0, 0.055, 0]} rotation-x={-Math.PI / 2}>
               <planeGeometry args={[0.78, 0.62]} />
@@ -3035,23 +3036,23 @@ export default function RoomRenderer2D({
           >
             <mesh rotation-x={-Math.PI / 2}>
               <circleGeometry args={[0.16, 32]} />
-              <meshBasicMaterial color={isPro ? "#4b5563" : "#71717a"} />
+              <meshBasicMaterial color={isPro ? colour("#4b5563") : colour("#71717a")} />
             </mesh>
             <mesh position={[0, 0, -0.33]} rotation-x={-Math.PI / 2}>
               <coneGeometry args={[0.11, 0.18, 3]} />
-              <meshBasicMaterial color={isPro ? "#4b5563" : "#71717a"} />
+              <meshBasicMaterial color={isPro ? colour("#4b5563") : colour("#71717a")} />
             </mesh>
             <mesh position={[0, 0, 0.33]} rotation-x={Math.PI / 2}>
               <coneGeometry args={[0.11, 0.18, 3]} />
-              <meshBasicMaterial color={isPro ? "#4b5563" : "#71717a"} />
+              <meshBasicMaterial color={isPro ? colour("#4b5563") : colour("#71717a")} />
             </mesh>
             <mesh position={[-0.33, 0, 0]} rotation-z={Math.PI / 2} rotation-x={-Math.PI / 2}>
               <coneGeometry args={[0.11, 0.18, 3]} />
-              <meshBasicMaterial color={isPro ? "#4b5563" : "#71717a"} />
+              <meshBasicMaterial color={isPro ? colour("#4b5563") : colour("#71717a")} />
             </mesh>
             <mesh position={[0.33, 0, 0]} rotation-z={-Math.PI / 2} rotation-x={-Math.PI / 2}>
               <coneGeometry args={[0.11, 0.18, 3]} />
-              <meshBasicMaterial color={isPro ? "#4b5563" : "#71717a"} />
+              <meshBasicMaterial color={isPro ? colour("#4b5563") : colour("#71717a")} />
             </mesh>
             <mesh position={[0, 0.055, 0]} rotation-x={-Math.PI / 2}>
               <planeGeometry args={[0.9, 0.9]} />
@@ -3080,18 +3081,15 @@ export default function RoomRenderer2D({
           const isActiveRoom = room.id === activeRoomId;
           const isSelectedRoom = selectedRoomIds.includes(room.id);
           const isHoveredRoom = hoveredRoomId === room.id && canEditRoomGeometry;
-          const roomFillColor =
-            isHoveredRoom && !isActiveRoom
-              ? isPro
-                ? "#fafafa"
-                : "#ebe8df"
-              : getHouseRoomFloorPlanColor(room, isActiveRoom, isPro);
+          const roomFillColor = isHoveredRoom && !isActiveRoom
+            ? colour(isPro ? "#fafafa" : "#ebe8df")
+            : getHouseRoomFloorPlanColor(room, isActiveRoom, isPro, canvasPalette);
           const roomOutlineColor = isActiveRoom
             ? activeRoomBorderColor
             : isSelectedRoom
-              ? "#10b981"
+              ? colour("#10b981")
             : isHoveredRoom
-              ? "#0f766e"
+              ? colour("#0f766e")
               : borderColor;
           const previewPosition = roomDragPreview?.id === room.id ? roomDragPreview : null;
           const renderX = previewPosition?.x ?? room.x;
@@ -3100,9 +3098,9 @@ export default function RoomRenderer2D({
           const dragStatus = previewPosition?.status ?? null;
           const dragOutlineColor =
             dragStatus === "blocked"
-              ? "#f97316"
+              ? colour("#f97316")
               : dragStatus === "snapped"
-                ? "#2563eb"
+                ? colour("#2563eb")
                 : activeRoomBorderColor;
           const effectiveRoomOutlineColor = isDraggingRoom ? dragOutlineColor : roomOutlineColor;
           const effectiveRoomLineWidth = isDraggingRoom
@@ -3114,18 +3112,14 @@ export default function RoomRenderer2D({
                 : isHoveredRoom
                   ? 2.4
                   : 1.5;
-          const effectiveFillOpacity = isDraggingRoom
-            ? dragStatus === "blocked"
-              ? 0.54
-              : 0.72
-            : 1;
+          const effectiveFillOpacity = isDraggingRoom ? (dragStatus === "blocked" ? 0.54 : 0.72) : 1;
           const dragHudStatusLabel =
             dragStatus === "blocked"
               ? "Overlap blocked"
               : dragStatus === "snapped"
                 ? "Snapped to wall"
                 : "Free move";
-          const dimensionGuideColor = "#16a34a";
+          const dimensionGuideColor = colour("#16a34a");
           const dimensionGuideY = 0.018;
           const widthDimensionGuideOffset = 0.3;
           const depthDimensionGuideOffset = 0.46;
@@ -3305,24 +3299,24 @@ export default function RoomRenderer2D({
                       minWidth: 154,
                       border:
                         dragStatus === "blocked"
-                          ? "1px solid rgba(249,115,22,0.42)"
+                          ? colour("1px solid rgba(249,115,22,0.42)")
                           : dragStatus === "snapped"
-                            ? "1px solid rgba(37,99,235,0.42)"
-                            : "1px solid rgba(34,197,94,0.36)",
+                            ? colour("1px solid rgba(37,99,235,0.42)")
+                            : colour("1px solid rgba(34,197,94,0.36)"),
                       borderRadius: 7,
                       background:
                         dragStatus === "blocked"
-                          ? "rgba(255,247,237,0.96)"
+                          ? colour("rgba(255,247,237,0.96)")
                           : dragStatus === "snapped"
-                            ? "rgba(239,246,255,0.96)"
-                            : "rgba(240,253,244,0.96)",
+                            ? colour("rgba(239,246,255,0.96)")
+                            : colour("rgba(240,253,244,0.96)"),
                       boxShadow: "0 7px 18px rgba(15,23,42,0.14)",
                       color:
                         dragStatus === "blocked"
-                          ? "#c2410c"
+                          ? colour("#c2410c")
                           : dragStatus === "snapped"
-                            ? "#1d4ed8"
-                            : "#166534",
+                            ? colour("#1d4ed8")
+                            : colour("#166534"),
                       display: "grid",
                       gap: 2,
                       fontSize: 12,
@@ -3336,7 +3330,7 @@ export default function RoomRenderer2D({
                       <span>{room.name}</span>
                       <span>{dragHudStatusLabel}</span>
                     </div>
-                    <div style={{ color: "#4b5563", display: "flex", gap: 8, fontWeight: 650 }}>
+                    <div style={{ color: colour("#4b5563"), display: "flex", gap: 8, fontWeight: 650 }}>
                       <span>X {formatDimension(renderX)}</span>
                       <span>Z {formatDimension(renderZ)}</span>
                       <span>Shift: no snap</span>
@@ -3357,20 +3351,20 @@ export default function RoomRenderer2D({
                     style={{
                       alignItems: "center",
                       background: isSelectedRoom
-                        ? "rgba(209,250,229,0.97)"
-                        : "rgba(255,255,255,0.78)",
+                        ? colour("rgba(209,250,229,0.97)")
+                        : colour("rgba(255,255,255,0.78)"),
                       ...CANVAS_CHIP_TEXT,
                       minHeight: 24,
-                      color: isActiveRoom || isSelectedRoom ? "#166534" : "#525252",
+                      color: isActiveRoom || isSelectedRoom ? colour("#166534") : colour("#525252"),
                       border:
                         isSelectedRoom
-                          ? "2px solid rgba(16,185,129,0.78)"
+                          ? colour("2px solid rgba(16,185,129,0.78)")
                           : isActiveRoom
-                            ? "1px solid rgba(34,197,94,0.35)"
-                          : "1px solid rgba(82,82,82,0.18)",
+                            ? colour("1px solid rgba(34,197,94,0.35)")
+                          : colour("1px solid rgba(82,82,82,0.18)"),
                       borderRadius: 4,
                       boxShadow: isSelectedRoom
-                        ? "0 2px 8px rgba(5,150,105,0.24)"
+                        ? colour("0 2px 8px rgba(5,150,105,0.24)")
                         : "none",
                       display: "flex",
                       gap: 4,
@@ -3427,9 +3421,9 @@ export default function RoomRenderer2D({
                       alignItems: "center",
                       gap: 4,
                       padding: 3,
-                      border: "1px solid rgba(34,197,94,0.22)",
+                      border: colour("1px solid rgba(34,197,94,0.22)"),
                       borderRadius: 999,
-                      background: "rgba(255,255,255,0.9)",
+                      background: colour("rgba(255,255,255,0.9)"),
                       boxShadow: "0 5px 14px rgba(15,23,42,0.12)",
                       pointerEvents: "auto",
                       whiteSpace: "nowrap",
@@ -3450,8 +3444,8 @@ export default function RoomRenderer2D({
                         ...CANVAS_CHIP_BUTTON,
                         border: "none",
                         borderRadius: 999,
-                        background: "rgba(220,252,231,0.95)",
-                        color: "#166534",
+                        background: colour("rgba(220,252,231,0.95)"),
+                        color: colour("#166534"),
                         cursor: onMoveRoom ? "grab" : "not-allowed",
                         opacity: onMoveRoom ? 1 : 0.45,
                         minWidth: 32,
@@ -3484,8 +3478,8 @@ export default function RoomRenderer2D({
                           ...CANVAS_CHIP_BUTTON,
                           border: "none",
                           borderRadius: 999,
-                          background: tool.id === "delete" ? "#fee2e2" : "rgba(243,244,246,0.9)",
-                          color: tool.id === "delete" ? "#991b1b" : "#111827",
+                          background: tool.id === "delete" ? colour("#fee2e2") : colour("rgba(243,244,246,0.9)"),
+                          color: tool.id === "delete" ? colour("#991b1b") : colour("#111827"),
                           cursor: tool.action ? "pointer" : "not-allowed",
                           opacity: tool.action ? 1 : 0.45,
                           minWidth: 32,
@@ -3509,11 +3503,11 @@ export default function RoomRenderer2D({
                     data-testid="active-room-measurement-hud"
                     style={{
                       minWidth: 0,
-                      border: "1px solid rgba(34,197,94,0.22)",
+                      border: colour("1px solid rgba(34,197,94,0.22)"),
                       borderRadius: 8,
-                      background: "rgba(255,255,255,0.9)",
+                      background: colour("rgba(255,255,255,0.9)"),
                       boxShadow: "0 5px 14px rgba(15,23,42,0.12)",
-                      color: "#14532d",
+                      color: colour("#14532d"),
                       ...CANVAS_CHIP_TEXT,
                       padding: "4px 8px",
                       pointerEvents: "none",
@@ -3521,17 +3515,17 @@ export default function RoomRenderer2D({
                       whiteSpace: "nowrap",
                     }}
                   >
-                    <div style={{ color: "#166534" }}>
+                    <div style={{ color: colour("#166534") }}>
                       {formatDimension(room.w)} x {formatDimension(room.d)}
-                      <span style={{ color: "#4b5563", fontWeight: 600, marginLeft: 6 }}>
+                      <span style={{ color: colour("#4b5563"), fontWeight: 600, marginLeft: 6 }}>
                         {formatDisplayArea(getPlanRoomFloorAreaSqm(room), measurementUnit)}
                       </span>
                     </div>
-                    <div style={{ color: "#4b5563", fontWeight: 600, marginTop: 2 }}>
+                    <div style={{ color: colour("#4b5563"), fontWeight: 600, marginTop: 2 }}>
                       Wall {formatDimension(room.wallThickness ?? 0.12)}
                     </div>
                     {canEditPlan && onCommitRoomDimensionEdit ? (
-                      <div style={{ color: "#4b5563", fontWeight: 600, marginTop: 2 }}>
+                      <div style={{ color: colour("#4b5563"), fontWeight: 600, marginTop: 2 }}>
                         Click Width or Depth to edit
                       </div>
                     ) : null}
@@ -3620,9 +3614,9 @@ export default function RoomRenderer2D({
                       <div
                         style={{
                           ...CANVAS_CHIP,
-                          color: "#166534",
-                          background: "rgba(255,255,255,0.98)",
-                          border: "1px solid rgba(34,197,94,0.32)",
+                          color: colour("#166534"),
+                          background: colour("rgba(255,255,255,0.98)"),
+                          border: colour("1px solid rgba(34,197,94,0.32)"),
                           padding: "3px 8px",
                           pointerEvents: "auto",
                           whiteSpace: "nowrap",
@@ -3655,12 +3649,12 @@ export default function RoomRenderer2D({
                             width: 68,
                             border: "none",
                             background: "transparent",
-                            color: "#166534",
+                            color: colour("#166534"),
                             ...CANVAS_CHIP_TEXT,
                             outline: "none",
                           }}
                         />
-                        <span style={{ color: "#4b5563", fontWeight: 600 }}>mm</span>
+                        <span style={{ color: colour("#4b5563"), fontWeight: 600 }}>mm</span>
                       </div>
                     ) : (
                     <button
@@ -3675,9 +3669,9 @@ export default function RoomRenderer2D({
                       className={CANVAS_CHIP_TOUCH_CLASS}
                       style={{
                         ...CANVAS_CHIP,
-                        color: "#166534",
-                        background: "rgba(240,253,244,0.88)",
-                        border: "1px solid rgba(34,197,94,0.26)",
+                        color: colour("#166534"),
+                        background: colour("rgba(240,253,244,0.88)"),
+                        border: colour("1px solid rgba(34,197,94,0.26)"),
                         pointerEvents: canEditPlan && onCommitRoomDimensionEdit ? "auto" : "none",
                         whiteSpace: "nowrap",
                         boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
@@ -3699,9 +3693,9 @@ export default function RoomRenderer2D({
                       <div
                         style={{
                           ...CANVAS_CHIP,
-                          color: "#166534",
-                          background: "rgba(255,255,255,0.98)",
-                          border: "1px solid rgba(34,197,94,0.32)",
+                          color: colour("#166534"),
+                          background: colour("rgba(255,255,255,0.98)"),
+                          border: colour("1px solid rgba(34,197,94,0.32)"),
                           padding: "3px 8px",
                           pointerEvents: "auto",
                           whiteSpace: "nowrap",
@@ -3734,12 +3728,12 @@ export default function RoomRenderer2D({
                             width: 68,
                             border: "none",
                             background: "transparent",
-                            color: "#166534",
+                            color: colour("#166534"),
                             ...CANVAS_CHIP_TEXT,
                             outline: "none",
                           }}
                         />
-                        <span style={{ color: "#4b5563", fontWeight: 600 }}>mm</span>
+                        <span style={{ color: colour("#4b5563"), fontWeight: 600 }}>mm</span>
                       </div>
                     ) : (
                     <button
@@ -3754,9 +3748,9 @@ export default function RoomRenderer2D({
                       className={CANVAS_CHIP_TOUCH_CLASS}
                       style={{
                         ...CANVAS_CHIP,
-                        color: "#166534",
-                        background: "rgba(240,253,244,0.88)",
-                        border: "1px solid rgba(34,197,94,0.26)",
+                        color: colour("#166534"),
+                        background: colour("rgba(240,253,244,0.88)"),
+                        border: colour("1px solid rgba(34,197,94,0.26)"),
                         pointerEvents: canEditPlan && onCommitRoomDimensionEdit ? "auto" : "none",
                         whiteSpace: "nowrap",
                         boxShadow: "0 1px 3px rgba(15,23,42,0.1)",
@@ -3801,10 +3795,10 @@ export default function RoomRenderer2D({
                             width: handle.shape === "edge-z" ? 12 : handle.shape === "edge-x" ? 36 : 20,
                             height: handle.shape === "edge-z" ? 36 : handle.shape === "edge-x" ? 12 : 20,
                             borderRadius: handle.shape === "corner" ? 5 : 999,
-                            background: "rgba(255,255,255,0.88)",
+                            background: colour("rgba(255,255,255,0.88)"),
                             border: `1.5px solid ${activeRoomHandleColor}`,
                             boxShadow: "0 1px 4px rgba(15,23,42,0.14)",
-                            outline: "1px solid rgba(255,255,255,0.58)",
+                            outline: colour("1px solid rgba(255,255,255,0.58)"),
                           }}
                         />
                       </div>
@@ -3822,7 +3816,7 @@ export default function RoomRenderer2D({
               [overallPlanBounds.left, overallPlanDimension.y, overallPlanDimension.widthGuideZ],
               [overallPlanBounds.right, overallPlanDimension.y, overallPlanDimension.widthGuideZ],
             ]}
-            color="#52525b"
+            color={colour("#52525b")}
             lineWidth={1.6}
             transparent
             opacity={0.72}
@@ -3834,7 +3828,7 @@ export default function RoomRenderer2D({
               [overallPlanBounds.left, overallPlanDimension.y, overallPlanDimension.widthGuideZ - overallPlanDimension.tick],
               [overallPlanBounds.left, overallPlanDimension.y, overallPlanDimension.widthGuideZ + overallPlanDimension.tick],
             ]}
-            color="#52525b"
+            color={colour("#52525b")}
             lineWidth={1.6}
             transparent
             opacity={0.72}
@@ -3845,7 +3839,7 @@ export default function RoomRenderer2D({
               [overallPlanBounds.right, overallPlanDimension.y, overallPlanDimension.widthGuideZ - overallPlanDimension.tick],
               [overallPlanBounds.right, overallPlanDimension.y, overallPlanDimension.widthGuideZ + overallPlanDimension.tick],
             ]}
-            color="#52525b"
+            color={colour("#52525b")}
             lineWidth={1.6}
             transparent
             opacity={0.72}
@@ -3860,11 +3854,11 @@ export default function RoomRenderer2D({
             <div
               data-testid="overall-plan-dimension-width"
               style={{
-                background: "rgba(255,255,255,0.92)",
-                border: "1px solid rgba(82,82,91,0.28)",
+                background: colour("rgba(255,255,255,0.92)"),
+                border: colour("1px solid rgba(82,82,91,0.28)"),
                 borderRadius: 6,
                 boxShadow: "0 1px 4px rgba(15,23,42,0.1)",
-                color: "#3f3f46",
+                color: colour("#3f3f46"),
                 fontSize: 12,
                 fontWeight: 750,
                 padding: "2px 6px",
@@ -3880,7 +3874,7 @@ export default function RoomRenderer2D({
               [overallPlanDimension.depthGuideX, overallPlanDimension.y, overallPlanBounds.top],
               [overallPlanDimension.depthGuideX, overallPlanDimension.y, overallPlanBounds.bottom],
             ]}
-            color="#52525b"
+            color={colour("#52525b")}
             lineWidth={1.6}
             transparent
             opacity={0.72}
@@ -3892,7 +3886,7 @@ export default function RoomRenderer2D({
               [overallPlanDimension.depthGuideX - overallPlanDimension.tick, overallPlanDimension.y, overallPlanBounds.top],
               [overallPlanDimension.depthGuideX + overallPlanDimension.tick, overallPlanDimension.y, overallPlanBounds.top],
             ]}
-            color="#52525b"
+            color={colour("#52525b")}
             lineWidth={1.6}
             transparent
             opacity={0.72}
@@ -3903,7 +3897,7 @@ export default function RoomRenderer2D({
               [overallPlanDimension.depthGuideX - overallPlanDimension.tick, overallPlanDimension.y, overallPlanBounds.bottom],
               [overallPlanDimension.depthGuideX + overallPlanDimension.tick, overallPlanDimension.y, overallPlanBounds.bottom],
             ]}
-            color="#52525b"
+            color={colour("#52525b")}
             lineWidth={1.6}
             transparent
             opacity={0.72}
@@ -3918,11 +3912,11 @@ export default function RoomRenderer2D({
             <div
               data-testid="overall-plan-dimension-depth"
               style={{
-                background: "rgba(255,255,255,0.92)",
-                border: "1px solid rgba(82,82,91,0.28)",
+                background: colour("rgba(255,255,255,0.92)"),
+                border: colour("1px solid rgba(82,82,91,0.28)"),
                 borderRadius: 6,
                 boxShadow: "0 1px 4px rgba(15,23,42,0.1)",
-                color: "#3f3f46",
+                color: colour("#3f3f46"),
                 fontSize: 12,
                 fontWeight: 750,
                 padding: "2px 6px",
@@ -3977,9 +3971,9 @@ export default function RoomRenderer2D({
           const geometry = buildWallBandGeometry2D(part);
           const bandRoom = wallBandRooms.find((room) => part.roomIds.includes(room.id)) ?? null;
           const bandColor = bandRoom
-            ? getHouseRoomWallPlanColor(bandRoom, part.wall, isPro)
+            ? getHouseRoomWallPlanColor(bandRoom, part.wall, isPro, canvasPalette)
             : isPro
-              ? "#d4d4d8"
+              ? colour("#d4d4d8")
               : "#c9c2b4";
           return (
             <group
@@ -4022,7 +4016,7 @@ export default function RoomRenderer2D({
           >
             <planeGeometry args={[cap.size, cap.size]} />
             <meshBasicMaterial
-              color={isPro ? "#d4d4d8" : "#c9c2b4"}
+              color={isPro ? colour("#d4d4d8") : "#c9c2b4"}
               transparent
               opacity={0.96}
               depthWrite={false}
@@ -4046,7 +4040,7 @@ export default function RoomRenderer2D({
               >
                 <planeGeometry args={[geometry.size[0], Math.max(0.025, geometry.size[1] * 0.34)]} />
                 <meshBasicMaterial
-                  color={isPro ? "#60a5fa" : "#38bdf8"}
+                  color={isPro ? colour("#60a5fa") : colour("#38bdf8")}
                   transparent
                   opacity={0.92}
                   depthWrite={false}
@@ -4068,9 +4062,9 @@ export default function RoomRenderer2D({
                 style={{
                   fontSize: 12,
                   color: zoneLabelColor,
-                  background: "rgba(255,255,255,0.82)",
+                  background: colour("rgba(255,255,255,0.82)"),
                   borderRadius: 6,
-                  border: "1px solid rgba(15,118,110,0.22)",
+                  border: colour("1px solid rgba(15,118,110,0.22)"),
                   padding: "2px 6px",
                   pointerEvents: "none",
                 }}
@@ -4095,7 +4089,7 @@ export default function RoomRenderer2D({
         <group>
           <Line
             points={roomSnapPreview.points.map(([x, z]) => [x, 0.008, z])}
-            color="#2563eb"
+            color={colour("#2563eb")}
             lineWidth={4}
           />
           <Html
@@ -4111,10 +4105,10 @@ export default function RoomRenderer2D({
             <div
               data-testid="room-snap-preview"
               style={{
-                border: "1px solid rgba(37,99,235,0.35)",
+                border: colour("1px solid rgba(37,99,235,0.35)"),
                 borderRadius: 6,
-                background: "rgba(239,246,255,0.96)",
-                color: "#1d4ed8",
+                background: colour("rgba(239,246,255,0.96)"),
+                color: colour("#1d4ed8"),
                 fontSize: 12,
                 fontWeight: 700,
                 padding: "2px 6px",
@@ -4133,7 +4127,7 @@ export default function RoomRenderer2D({
         <group key={guide.id}>
           <Line
             points={guide.points.map(([x, z]) => [x, 0.0065, z])}
-            color="#22c55e"
+            color={colour("#22c55e")}
             lineWidth={3}
           />
           {showAdjacencyLabels && (
@@ -4147,9 +4141,9 @@ export default function RoomRenderer2D({
                 data-testid="room-adjacency-guide"
                 style={{
                   ...compactContextLabelStyle,
-                  border: "1px solid rgba(34,197,94,0.22)",
-                  background: "rgba(240,253,244,0.78)",
-                  color: "#166534",
+                  border: colour("1px solid rgba(34,197,94,0.22)"),
+                  background: colour("rgba(240,253,244,0.78)"),
+                  color: colour("#166534"),
                   pointerEvents: "none",
                   boxShadow: "0 1px 3px rgba(15,23,42,0.08)",
                   transform: guide.orientation === "vertical" ? "translate(28px, -12px)" : "translateY(16px)",
@@ -4193,9 +4187,9 @@ export default function RoomRenderer2D({
             style={{
               ...CANVAS_CHIP_BUTTON,
               borderRadius: 999,
-              border: "1px solid rgba(37,99,235,0.28)",
-              background: "rgba(255,255,255,0.9)",
-              color: "#1d4ed8",
+              border: colour("1px solid rgba(37,99,235,0.28)"),
+              background: colour("rgba(255,255,255,0.9)"),
+              color: colour("#1d4ed8"),
               cursor: "pointer",
               pointerEvents: "auto",
               boxShadow: "0 1px 4px rgba(15,23,42,0.12)",
@@ -4211,7 +4205,7 @@ export default function RoomRenderer2D({
           <Line
             key={guide.id}
             points={guide.points}
-            color="#14b8a6"
+            color={colour("#14b8a6")}
             lineWidth={1.4}
             dashed
             dashSize={0.28}
@@ -4232,10 +4226,10 @@ export default function RoomRenderer2D({
           <div
             data-testid="wall-draw-alignment-cue"
             style={{
-              border: "1px solid rgba(20,184,166,0.32)",
+              border: colour("1px solid rgba(20,184,166,0.32)"),
               borderRadius: 999,
-              background: "rgba(240,253,250,0.96)",
-              color: "#0f766e",
+              background: colour("rgba(240,253,250,0.96)"),
+              color: colour("#0f766e"),
               fontSize: 12,
               fontWeight: 800,
               padding: "2px 8px",
@@ -4260,10 +4254,10 @@ export default function RoomRenderer2D({
           <div
             data-testid="wall-draw-continuation-cue"
             style={{
-              border: "1px solid rgba(37,99,235,0.26)",
+              border: colour("1px solid rgba(37,99,235,0.26)"),
               borderRadius: 999,
-              background: "rgba(239,246,255,0.96)",
-              color: "#1d4ed8",
+              background: colour("rgba(239,246,255,0.96)"),
+              color: colour("#1d4ed8"),
               fontSize: 12,
               fontWeight: 800,
               padding: "2px 8px",
@@ -4288,10 +4282,10 @@ export default function RoomRenderer2D({
           <div
             data-testid="wall-draw-close-cue"
             style={{
-              border: "1px solid rgba(34,197,94,0.3)",
+              border: colour("1px solid rgba(34,197,94,0.3)"),
               borderRadius: 999,
-              background: "rgba(240,253,244,0.96)",
-              color: "#166534",
+              background: colour("rgba(240,253,244,0.96)"),
+              color: colour("#166534"),
               fontSize: 12,
               fontWeight: 800,
               padding: "2px 8px",
@@ -4309,7 +4303,7 @@ export default function RoomRenderer2D({
         <Line
           key={guide.id}
           points={guide.points}
-          color="#14b8a6"
+          color={colour("#14b8a6")}
           lineWidth={guide.emphasis === "strong" ? 2.1 : 1.35}
           dashed
           dashSize={guide.emphasis === "strong" ? 0.36 : 0.28}
@@ -4323,7 +4317,7 @@ export default function RoomRenderer2D({
         <Line
           key={guide.id}
           points={guide.points}
-          color="#22c55e"
+          color={colour("#22c55e")}
           lineWidth={2.6}
           dashed
           dashSize={0.2}
@@ -4337,14 +4331,14 @@ export default function RoomRenderer2D({
         <>
           <Line
             points={sharedWallPreviewSegment.points}
-            color="#22c55e"
+            color={colour("#22c55e")}
             lineWidth={6}
             transparent
             opacity={0.95}
           />
           <Line
             points={sharedWallPreviewSegment.points}
-            color="#ffffff"
+            color={colour("#ffffff")}
             lineWidth={2}
             transparent
             opacity={0.88}
@@ -4363,10 +4357,10 @@ export default function RoomRenderer2D({
             <div
               data-testid="rectangle-wall-shared-wall-preview"
               style={{
-                border: "1px solid rgba(34,197,94,0.38)",
+                border: colour("1px solid rgba(34,197,94,0.38)"),
                 borderRadius: 999,
-                background: "rgba(240,253,244,0.96)",
-                color: "#166534",
+                background: colour("rgba(240,253,244,0.96)"),
+                color: colour("#166534"),
                 fontSize: 12,
                 fontWeight: 800,
                 padding: "2px 8px",
@@ -4392,10 +4386,10 @@ export default function RoomRenderer2D({
           <div
             data-testid="rectangle-wall-anchor-cue"
             style={{
-              border: "1px solid rgba(20,184,166,0.3)",
+              border: colour("1px solid rgba(20,184,166,0.3)"),
               borderRadius: 999,
-              background: "rgba(240,253,250,0.96)",
-              color: "#0f766e",
+              background: colour("rgba(240,253,250,0.96)"),
+              color: colour("#0f766e"),
               fontSize: 12,
               fontWeight: 800,
               padding: "2px 8px",
@@ -4454,8 +4448,8 @@ export default function RoomRenderer2D({
               <meshBasicMaterial
                 color={
                   marker.label === "Shared wall" || marker.label === "Close room"
-                    ? "#22c55e"
-                    : "#14b8a6"
+                    ? colour("#22c55e")
+                    : colour("#14b8a6")
                 }
                 transparent={marker.subtle}
                 opacity={marker.subtle ? 0.42 : 1}
@@ -4472,16 +4466,16 @@ export default function RoomRenderer2D({
                 <div
                   data-testid="floor-plan-draw-snap-label"
                   style={{
-                    border: "1px solid rgba(20,184,166,0.32)",
+                    border: colour("1px solid rgba(20,184,166,0.32)"),
                     borderRadius: 999,
                     background:
                       marker.label === "Shared wall" || marker.label === "Close room"
-                        ? "rgba(240,253,244,0.96)"
-                        : "rgba(240,253,250,0.96)",
+                        ? colour("rgba(240,253,244,0.96)")
+                        : colour("rgba(240,253,250,0.96)"),
                     color:
                       marker.label === "Shared wall" || marker.label === "Close room"
-                        ? "#166534"
-                        : "#0f766e",
+                        ? colour("#166534")
+                        : colour("#0f766e"),
                     fontSize: 12,
                     fontWeight: 800,
                     padding: "2px 7px",
@@ -4500,7 +4494,7 @@ export default function RoomRenderer2D({
       {canRenderWallDrawTrace && wallDrawLinePoints.length >= 2 && (
         <Line
           points={wallDrawLinePoints}
-          color="#2563eb"
+          color={colour("#2563eb")}
           lineWidth={3}
         />
       )}
@@ -4533,9 +4527,9 @@ export default function RoomRenderer2D({
                     gap: 6,
                     fontSize: 12,
                     fontWeight: 800,
-                    color: "#1d4ed8",
-                    background: "rgba(255,255,255,0.98)",
-                    border: "1px solid rgba(37,99,235,0.38)",
+                    color: colour("#1d4ed8"),
+                    background: colour("rgba(255,255,255,0.98)"),
+                    border: colour("1px solid rgba(37,99,235,0.38)"),
                     borderRadius: 8,
                     padding: "4px 8px",
                     pointerEvents: "auto",
@@ -4569,13 +4563,13 @@ export default function RoomRenderer2D({
                       width: 76,
                       border: "none",
                       background: "transparent",
-                      color: "#1d4ed8",
+                      color: colour("#1d4ed8"),
                       fontSize: 12,
                       fontWeight: 800,
                       outline: "none",
                     }}
                   />
-                  <span style={{ color: "#4b5563", fontWeight: 700 }}>
+                  <span style={{ color: colour("#4b5563"), fontWeight: 700 }}>
                     {wallDrawLengthUnitIndicator(measurementUnit)}
                   </span>
                 </div>
@@ -4590,10 +4584,10 @@ export default function RoomRenderer2D({
                     startWallDrawSegmentLengthEdit(segmentIndex, previousPoint, point);
                   }}
                   style={{
-                    border: "1px solid rgba(37,99,235,0.32)",
+                    border: colour("1px solid rgba(37,99,235,0.32)"),
                     borderRadius: 5,
-                    background: "rgba(255,255,255,0.94)",
-                    color: "#1d4ed8",
+                    background: colour("rgba(255,255,255,0.94)"),
+                    color: colour("#1d4ed8"),
                     cursor: "text",
                     fontSize: 12,
                     fontWeight: 800,
@@ -4618,7 +4612,7 @@ export default function RoomRenderer2D({
             rotation-x={-Math.PI / 2}
           >
             <circleGeometry args={[index === 0 ? 0.075 : 0.055, 24]} />
-            <meshBasicMaterial color={index === 0 ? "#0f766e" : "#2563eb"} />
+            <meshBasicMaterial color={index === 0 ? colour("#0f766e") : colour("#2563eb")} />
           </mesh>
         ))}
 
@@ -4636,10 +4630,10 @@ export default function RoomRenderer2D({
           <div
             data-testid="wall-draw-preview"
             style={{
-              border: "1px solid rgba(20,184,166,0.4)",
+              border: colour("1px solid rgba(20,184,166,0.4)"),
               borderRadius: 5,
-              background: "rgba(255,255,255,0.94)",
-              color: "#0f766e",
+              background: colour("rgba(255,255,255,0.94)"),
+              color: colour("#0f766e"),
               fontSize: 12,
               fontWeight: 800,
               padding: "2px 7px",
@@ -4656,7 +4650,7 @@ export default function RoomRenderer2D({
       {canDrawRoomOnGrid && isRectangleWallDrawMode && drawRoomLinePoints.length === 2 && (
         <Line
           points={buildRectangleLinePoints(drawRoomLinePoints)}
-          color={roomDrawPreview?.rectangle === null ? "#f97316" : "#2563eb"}
+          color={roomDrawPreview?.rectangle === null ? colour("#f97316") : colour("#2563eb")}
           lineWidth={2}
         />
       )}
@@ -4676,11 +4670,11 @@ export default function RoomRenderer2D({
             data-testid="blank-room-draw-preview"
             style={{
               border: roomDrawPreview.rectangle
-                ? "1px solid rgba(37,99,235,0.3)"
-                : "1px solid rgba(249,115,22,0.38)",
+                ? colour("1px solid rgba(37,99,235,0.3)")
+                : colour("1px solid rgba(249,115,22,0.38)"),
               borderRadius: 6,
-              background: "rgba(255,255,255,0.9)",
-              color: roomDrawPreview.rectangle ? "#1d4ed8" : "#c2410c",
+              background: colour("rgba(255,255,255,0.9)"),
+              color: roomDrawPreview.rectangle ? colour("#1d4ed8") : colour("#c2410c"),
               fontSize: 12,
               fontWeight: 700,
               padding: "3px 7px",
@@ -4709,10 +4703,10 @@ export default function RoomRenderer2D({
             <div
               data-testid="rectangle-wall-draw-width"
               style={{
-                border: "1px solid rgba(37,99,235,0.32)",
+                border: colour("1px solid rgba(37,99,235,0.32)"),
                 borderRadius: 5,
-                background: "rgba(255,255,255,0.94)",
-                color: "#1d4ed8",
+                background: colour("rgba(255,255,255,0.94)"),
+                color: colour("#1d4ed8"),
                 fontSize: 12,
                 fontWeight: 800,
                 padding: "2px 7px",
@@ -4737,10 +4731,10 @@ export default function RoomRenderer2D({
             <div
               data-testid="rectangle-wall-draw-depth"
               style={{
-                border: "1px solid rgba(37,99,235,0.32)",
+                border: colour("1px solid rgba(37,99,235,0.32)"),
                 borderRadius: 5,
-                background: "rgba(255,255,255,0.94)",
-                color: "#1d4ed8",
+                background: colour("rgba(255,255,255,0.94)"),
+                color: colour("#1d4ed8"),
                 fontSize: 12,
                 fontWeight: 800,
                 padding: "2px 7px",
@@ -4760,7 +4754,7 @@ export default function RoomRenderer2D({
         <>
           <Line
             points={buildArcWallLinePoints(arcWallDrawPreview)}
-            color={arcWallDrawPreview.resolvedRoom ? "#2563eb" : "#f97316"}
+            color={arcWallDrawPreview.resolvedRoom ? colour("#2563eb") : colour("#f97316")}
             lineWidth={3}
           />
           <Html
@@ -4776,10 +4770,10 @@ export default function RoomRenderer2D({
             <div
               data-testid="arc-wall-draw-length"
               style={{
-                border: "1px solid rgba(37,99,235,0.32)",
+                border: colour("1px solid rgba(37,99,235,0.32)"),
                 borderRadius: 5,
-                background: "rgba(255,255,255,0.94)",
-                color: "#1d4ed8",
+                background: colour("rgba(255,255,255,0.94)"),
+                color: colour("#1d4ed8"),
                 fontSize: 12,
                 fontWeight: 800,
                 padding: "2px 7px",
@@ -4804,12 +4798,12 @@ export default function RoomRenderer2D({
             <div
               data-testid="arc-wall-draw-angle"
               style={{
-                color: "#171717",
+                color: colour("#171717"),
                 fontSize: 12,
                 fontWeight: 800,
                 pointerEvents: "none",
                 whiteSpace: "nowrap",
-                textShadow: "0 1px 2px rgba(255,255,255,0.9)",
+                textShadow: colour("0 1px 2px rgba(255,255,255,0.9)"),
               }}
             >
               {arcWallDrawPreview.angleDeg.toFixed(1)}°
@@ -4868,10 +4862,10 @@ export default function RoomRenderer2D({
                   }}
                   style={{
                     border: `1px solid ${
-                      seg.kind === "door" ? "rgba(194,65,12,0.32)" : "rgba(2,132,199,0.32)"
+                      seg.kind === "door" ? colour("rgba(194,65,12,0.32)") : colour("rgba(2,132,199,0.32)")
                     }`,
                     borderRadius: 5,
-                    background: "rgba(255,255,255,0.92)",
+                    background: colour("rgba(255,255,255,0.92)"),
                     color: seg.kind === "door" ? openingDoorColor : openingWindowColor,
                     ...CANVAS_CHIP,
                     pointerEvents: "auto",
@@ -4888,7 +4882,7 @@ export default function RoomRenderer2D({
               <>
                 <Line
                   points={seg.points.map(([x, y, z]) => [x, y + 0.001, z])}
-                  color="#f97316"
+                  color={colour("#f97316")}
                   lineWidth={9}
                   transparent
                   opacity={0.55}
@@ -4965,11 +4959,11 @@ export default function RoomRenderer2D({
                       }}
                     >
                       <circleGeometry args={[0.105, 24]} />
-                      <meshBasicMaterial color="#f97316" />
+                      <meshBasicMaterial color={colour("#f97316")} />
                     </mesh>
                     <mesh position={[0, 0, 0.001]}>
                       <circleGeometry args={[0.064, 24]} />
-                      <meshBasicMaterial color="#ffffff" />
+                      <meshBasicMaterial color={colour("#ffffff")} />
                     </mesh>
                   </group>
                 ))}
@@ -4987,10 +4981,10 @@ export default function RoomRenderer2D({
                   data-testid="plan-opening-live-label"
                   style={{
                     alignItems: "center",
-                    border: "1px solid rgba(249,115,22,0.36)",
+                    border: colour("1px solid rgba(249,115,22,0.36)"),
                     borderRadius: 6,
-                    background: "rgba(255,255,255,0.94)",
-                    color: "#c2410c",
+                    background: colour("rgba(255,255,255,0.94)"),
+                    color: colour("#c2410c"),
                     display: "flex",
                     gap: 6,
                     fontSize: 12,
@@ -5121,7 +5115,7 @@ export default function RoomRenderer2D({
                     }
                   />
                   <meshBasicMaterial
-                    color={selectedOverlayId === seg.id ? "#2563eb" : "#3b82f6"}
+                    color={selectedOverlayId === seg.id ? colour("#2563eb") : colour("#3b82f6")}
                     transparent
                     opacity={selectedOverlayId === seg.id ? 0.96 : 0.82}
                   />
@@ -5137,7 +5131,7 @@ export default function RoomRenderer2D({
             <>
               <Line
                 points={openingPreviewWallGuide.points}
-                color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
+                color={openingPreview.status === "valid" ? colour("#0f766e") : colour("#f97316")}
                 lineWidth={2}
                 transparent
                 opacity={openingPreview.status === "valid" ? 0.55 : 0.72}
@@ -5158,11 +5152,11 @@ export default function RoomRenderer2D({
                   style={{
                     border:
                       openingPreview.status === "valid"
-                        ? "1px solid rgba(15,118,110,0.28)"
-                        : "1px solid rgba(249,115,22,0.34)",
+                        ? colour("1px solid rgba(15,118,110,0.28)")
+                        : colour("1px solid rgba(249,115,22,0.34)"),
                     borderRadius: 999,
-                    background: "rgba(255,255,255,0.94)",
-                    color: openingPreview.status === "valid" ? "#0f766e" : "#c2410c",
+                    background: colour("rgba(255,255,255,0.94)"),
+                    color: openingPreview.status === "valid" ? colour("#0f766e") : colour("#c2410c"),
                     fontSize: 12,
                     fontWeight: 800,
                     padding: "2px 8px",
@@ -5178,14 +5172,14 @@ export default function RoomRenderer2D({
           )}
           <Line
             points={openingPreview.segment.map((point) => [point.x, 0.0062, point.z])}
-            color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
+            color={openingPreview.status === "valid" ? colour("#0f766e") : colour("#f97316")}
             lineWidth={7}
             transparent
             opacity={openingPreview.status === "valid" ? 0.92 : 0.82}
           />
           <Line
             points={openingPreview.segment.map((point) => [point.x, 0.0067, point.z])}
-            color="#ffffff"
+            color={colour("#ffffff")}
             lineWidth={2.1}
             transparent
             opacity={openingPreview.status === "valid" ? 0.9 : 0.7}
@@ -5198,7 +5192,7 @@ export default function RoomRenderer2D({
             >
               <circleGeometry args={[0.065, 20]} />
               <meshBasicMaterial
-                color={openingPreview.status === "valid" ? "#0f766e" : "#f97316"}
+                color={openingPreview.status === "valid" ? colour("#0f766e") : colour("#f97316")}
                 transparent
                 opacity={0.95}
               />
@@ -5220,11 +5214,11 @@ export default function RoomRenderer2D({
               style={{
                 border:
                   openingPreview.status === "valid"
-                    ? "1px solid rgba(15,118,110,0.32)"
-                    : "1px solid rgba(249,115,22,0.38)",
+                    ? colour("1px solid rgba(15,118,110,0.32)")
+                    : colour("1px solid rgba(249,115,22,0.38)"),
                 borderRadius: 6,
-                background: "rgba(255,255,255,0.94)",
-                color: openingPreview.status === "valid" ? "#0f766e" : "#c2410c",
+                background: colour("rgba(255,255,255,0.94)"),
+                color: openingPreview.status === "valid" ? colour("#0f766e") : colour("#c2410c"),
                 fontSize: 12,
                 fontWeight: 800,
                 padding: openingPreviewHelpText ? "5px 8px" : "3px 7px",
@@ -5239,7 +5233,7 @@ export default function RoomRenderer2D({
                 <div
                   data-testid="blank-plan-opening-snap-detail"
                   style={{
-                    color: openingPreview.status === "valid" ? "#047857" : "#9a3412",
+                    color: openingPreview.status === "valid" ? colour("#047857") : colour("#9a3412"),
                     fontSize: 12,
                     fontWeight: 700,
                     marginTop: 2,
@@ -5252,7 +5246,7 @@ export default function RoomRenderer2D({
                 <div
                   data-testid="blank-plan-opening-error-detail"
                   style={{
-                    color: "#9a3412",
+                    color: colour("#9a3412"),
                     fontSize: 12,
                     fontWeight: 700,
                     marginTop: 2,
@@ -5282,7 +5276,7 @@ export default function RoomRenderer2D({
             <mesh rotation-x={-Math.PI / 2} position={[0, 0.0016, 0]}>
               <planeGeometry args={[fixed.w, fixed.d]} />
               <meshBasicMaterial
-                color={isReferenceZone ? "#e5e7eb" : isPro ? "#d7d7d7" : "#e2ddd3"}
+                color={isReferenceZone ? colour("#e5e7eb") : isPro ? colour("#d7d7d7") : colour("#e2ddd3")}
                 transparent
                 opacity={isReferenceZone ? 0.5 : 0.85}
               />
@@ -5296,7 +5290,7 @@ export default function RoomRenderer2D({
                   [-fixed.w / 2, 0.004, fixed.d / 2],
                   [-fixed.w / 2, 0.004, -fixed.d / 2],
                 ]}
-                color={selectedOverlayId === fixed.id ? "#f97316" : "#9ca3af"}
+                color={selectedOverlayId === fixed.id ? colour("#f97316") : colour("#9ca3af")}
                 lineWidth={selectedOverlayId === fixed.id ? 3 : 1.5}
               />
             )}
@@ -5347,7 +5341,7 @@ export default function RoomRenderer2D({
             {interactive && (showLabels || selectedOverlayId === fixed.id) && (
               <mesh rotation-x={-Math.PI / 2} position={[0, 0.0032, 0]}>
                 <circleGeometry args={[selectedOverlayId === fixed.id ? 0.065 : 0.05, 20]} />
-                <meshBasicMaterial color={selectedOverlayId === fixed.id ? "#f97316" : "#9ca3af"} />
+                <meshBasicMaterial color={selectedOverlayId === fixed.id ? colour("#f97316") : colour("#9ca3af")} />
               </mesh>
             )}
             {fixed.label && (isReferenceZone || showLabels || selectedOverlayId === fixed.id) && (
@@ -5355,8 +5349,8 @@ export default function RoomRenderer2D({
                 <div
                   style={{
                     fontSize: 12,
-                    background: "rgba(255,255,255,0.88)",
-                    border: "1px solid rgba(100,100,100,0.25)",
+                    background: colour("rgba(255,255,255,0.88)"),
+                    border: colour("1px solid rgba(100,100,100,0.25)"),
                     borderRadius: 5,
                     padding: "1px 5px",
                     pointerEvents: "none",
@@ -5388,12 +5382,12 @@ export default function RoomRenderer2D({
                       [note.anchorX, 0.0025, note.anchorZ],
                       [note.x, 0.0025, note.z],
                     ]}
-                    color="#374151"
+                    color={colour("#374151")}
                     lineWidth={1.2}
                   />
                   <mesh rotation-x={-Math.PI / 2} position={[note.anchorX, 0.0028, note.anchorZ]}>
                     <circleGeometry args={[0.018, 16]} />
-                    <meshBasicMaterial color="#374151" />
+                    <meshBasicMaterial color={colour("#374151")} />
                   </mesh>
                 </>
               )}
@@ -5435,7 +5429,7 @@ export default function RoomRenderer2D({
               >
                 <circleGeometry args={[selectedOverlayId === note.id ? 0.07 : 0.05, 20]} />
                 <meshBasicMaterial
-                  color="#f97316"
+                  color={colour("#f97316")}
                   transparent
                   opacity={selectedOverlayId === note.id ? 0.28 : 0}
                   depthWrite={false}
@@ -5449,14 +5443,14 @@ export default function RoomRenderer2D({
                   fontSize: 12,
                   fontWeight: note.kind === "room_tag" ? 700 : 500,
                   letterSpacing: note.kind === "room_tag" ? 0.2 : 0,
-                  color: note.kind === "room_tag" ? "#0f172a" : "#1f2937",
-                  background: "rgba(255,255,255,0.92)",
+                  color: note.kind === "room_tag" ? colour("#0f172a") : colour("#1f2937"),
+                  background: colour("rgba(255,255,255,0.92)"),
                   border:
                     note.kind === "callout"
-                      ? "1px solid rgba(55,65,81,0.45)"
+                      ? colour("1px solid rgba(55,65,81,0.45)")
                       : note.kind === "room_tag"
                         ? "1px solid rgba(15,23,42,0.35)"
-                        : "1px dashed rgba(31,41,55,0.45)",
+                        : colour("1px dashed rgba(31,41,55,0.45)"),
                   borderRadius: note.kind === "room_tag" ? 4 : 6,
                   padding: note.kind === "room_tag" ? "2px 8px" : "2px 6px",
                   pointerEvents: "none",

@@ -1,6 +1,4 @@
-import type {
-  FloorPlanDocumentV2,
-} from "@/lib/floor-plan-document-v2";
+import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanAddressTransform } from "@/lib/floor-plan-imports/types";
 import type { SurfacePatternLayout } from "@/lib/surface-material-schema";
 import { keepUnchangedRooms } from "@/lib/room-snapshot-sharing";
@@ -20,13 +18,8 @@ import type {
   CabinetSupplierReadinessSnapshot,
   CabinetSupplierSkuMappingItem,
 } from "@/features/cabinetry/types";
-import type {
-  MillworkAssemblyType,
-  MillworkAssetManifest,
-  MillworkDefinition,
-  MillworkHardwareRef,
-  MillworkMaterialRef,
-} from "@/features/millwork/types";
+import type { MillworkAssemblyType, MillworkAssetManifest, MillworkDefinition } from "@/features/millwork/types";
+import type { MillworkHardwareRef, MillworkMaterialRef } from "@/features/millwork/types";
 import type { DesignLightingSettings } from "@/lib/lightingPresets";
 import type { FixturePhotometricMetadata } from "@/lib/catalog-schema";
 
@@ -73,6 +66,9 @@ export interface SurfacePatternOffset {
   y: number;
 }
 
+/** A laminate wall finish's board and fixing (lib/laminate-wall-backing.ts); what's unset is the default, MDF 9 mm glued. */
+export type WallPanelBacking = { board?: "mdf" | "hdf" | "particle_board" | "plywood"; boardThicknessMm?: number; fixing?: "glued" | "battens" };
+
 export interface SurfaceSettings {
   materialId?: string | null;
   paintColorHex?: string | null;
@@ -83,6 +79,7 @@ export interface SurfaceSettings {
   offset?: SurfacePatternOffset;
   jointSizeMm?: number;
   jointColor?: string;
+  panelBacking?: WallPanelBacking;
 }
 
 export interface RoomSurfaceZone {

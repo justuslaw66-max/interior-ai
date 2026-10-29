@@ -310,7 +310,7 @@ for (const material of physicalMaterials.filter((entry) => !isLaminateWallPanel(
 // covers it too. A 4.25'x10' picture covers 2600 of the 3050 mm sheet (Tuscany Oak 2816, Albin Oak Black's 1299 mm tile), so
 // it is undersized and drawn from the sheet's foot at its own scale (wallPanelSheetPainter.ts; J, 27 Oct 2026).
 const laminateWallPanels = physicalMaterials.filter(isLaminateWallPanel);
-assert.equal(laminateWallPanels.length, 372, "Greenlam's designs as wall panels");
+assert.equal(laminateWallPanels.length, 374, "Greenlam's designs as wall panels");
 const laminatePanelModes = new Map<string, number>();
 for (const panel of laminateWallPanels) {
   const id = panel.surface_material.material_id;
@@ -341,7 +341,7 @@ assert.equal(resolveSurfacePhysicalTileSample({ sourceWidthPx: 900, sourceHeight
 assert.deepEqual(Object.fromEntries(laminatePanelModes), {
   "1220x2440:whole_face": 336,
   "1220x2440:window": 5,
-  "1300x3050:whole_face": 10,
+  "1300x3050:whole_face": 12,
   "1300x3050:undersized": 21,
 });
 

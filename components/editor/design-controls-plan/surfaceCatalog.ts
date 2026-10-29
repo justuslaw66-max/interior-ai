@@ -245,7 +245,7 @@ export function buildSurfaceMaterialProductGroups(
       };
     })
     // A to Z, with the laminates' flat colours after everything else (J, 27 Oct 2026: "Flat colours last"), so the first
-    // page mixes tiles and designs rather than 118 plain colours.
+    // page mixes tiles and designs rather than 120 plain colours.
     .sort((a, b) =>
       Number(isLaminateFlatPicture(a.primary.texture_assets.base_color_url)) -
         Number(isLaminateFlatPicture(b.primary.texture_assets.base_color_url)) ||
@@ -273,8 +273,24 @@ export function getSurfaceMaterialGroupMetaLabel(group: SurfaceMaterialProductGr
     .join(" · ");
 }
 
+/**
+ * The wood colour families are tones, not species (J, 28 Oct 2026): "Walnut" in the colour filter would also hold mahogany and
+ * wenge, so the filter says Dark Wood. The stored values stay light_oak, natural_oak, warm_oak and walnut.
+ */
+const SURFACE_COLOUR_LABEL: Readonly<Record<string, string>> = {
+  light_oak: "Light Wood",
+  natural_oak: "Natural Wood",
+  warm_oak: "Warm Wood",
+  walnut: "Dark Wood",
+};
+
+/** What the colour filter calls a colour family: "Grey", "Light Wood". */
+export function getSurfaceColourFamilyLabel(family: string) {
+  return SURFACE_COLOUR_LABEL[family] ?? formatSurfaceMaterialValue(family);
+}
+
 export function getSurfaceMaterialColorLabel(material: SurfaceMaterialCatalogRecord) {
-  return formatSurfaceMaterialValue(material.classification?.color_family ?? "unknown");
+  return getSurfaceColourFamilyLabel(material.classification?.color_family ?? "unknown");
 }
 
 export function buildFacetOptions(

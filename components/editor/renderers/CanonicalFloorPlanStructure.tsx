@@ -46,11 +46,8 @@ import {
   type CanonicalOpeningDragMode,
   type CanonicalOpeningEditHandler,
 } from "./canonical-floor-plan/openingDrag";
-import {
-  WALL_SURFACE_TEXTURE_RESOLUTION,
-  resolveRoomSurfaceAssignments,
-  surfaceMaterialFallbackColor,
-} from "./canonical-floor-plan/surfaceMaterials";
+import { WALL_SURFACE_TEXTURE_RESOLUTION, resolveRoomSurfaceAssignments, surfaceMaterialFallbackColor } from "./canonical-floor-plan/surfaceMaterials";
+import { getDrawnWallJointMm } from "@/lib/laminate-wall-backing";
 import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
 import { useCanonicalWallBands } from "./canonical-floor-plan/useCanonicalWallBands";
 import { usePrebuiltCanonicalWallBands } from "./canonical-floor-plan/usePrebuiltCanonicalWallBands";
@@ -58,6 +55,7 @@ import type { CanonicalWallGestureControls } from "@/lib/floor-plan-wall-gesture
 import { CanonicalWallGestureOverlay } from "./canonical-floor-plan/CanonicalWallGestureOverlay";
 import { CanonicalWallSegments2D } from "./canonical-floor-plan/CanonicalWallSegments2D";
 import { openingColor, symbolLineStyle } from "./canonical-floor-plan/openingStyle";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 import { OpeningDragPreview } from "./canonical-floor-plan/OpeningDragPreview";
 import { openingGestureBindings } from "./canonical-floor-plan/openingGestureBindings";
 import { type CanonicalPlan2DHandlers, useStableCanonicalPlan2DHandlers, useStableWallGestureControls } from "./canonical-floor-plan/useStablePlanHandlers";
@@ -88,13 +86,11 @@ function CanonicalStructure2D({
   geometryHash: string;
   theme: "consumer" | "pro";
 }) {
+  const { colour } = useCanvasPalette();
   const shape = useMemo(() => structureShape(structure.points), [structure.points]);
-  const outline = useMemo(
-    () => structureOutlinePoints(structure.points, 0.012),
-    [structure.points]
-  );
+  const outline = useMemo(() => structureOutlinePoints(structure.points, 0.012), [structure.points]);
   if (structure.points.length < 3) return null;
-  const color = structureColor(structure.kind);
+  const color = colour(structureColor(structure.kind));
   return (
     <group
       userData={{
@@ -118,7 +114,7 @@ function CanonicalStructure2D({
       )}
       <Line
         points={outline}
-        color={structure.kind === "void" ? "#64748b" : "#6b7280"}
+        color={colour(structure.kind === "void" ? "#64748b" : "#6b7280")}
         lineWidth={structure.locked ? 1.6 : 1.2}
         dashed={structure.kind === "void"}
         dashSize={0.12}
@@ -228,7 +224,8 @@ const CanonicalOpening2DSymbol = memo(function CanonicalOpening2DSymbol({
   const identity = getCanonicalOpeningRenderIdentityV2(opening);
   // Once per opening, not per render, so a selection or a click keeps each Line's geometry.
   const symbols = useMemo(() => canonicalOpening2DSymbolLines(opening, hostSegments), [hostSegments, opening]);
-  const color = openingColor(opening, selected);
+  const { colour } = useCanvasPalette();
+  const color = colour(openingColor(opening, selected));
   const { previewRef, beginMove, beginResize, move, finish, cancel } = useCanonicalOpeningDrag({
     opening, revisionId,
     wallStart,
@@ -335,7 +332,7 @@ const CanonicalOpening2DSymbol = memo(function CanonicalOpening2DSymbol({
                 onPointerCancel={cancel}
               >
                 <circleGeometry args={[0.085, 20]} />
-                <meshBasicMaterial color="#ffffff" />
+                <meshBasicMaterial color={colour("#ffffff")} />
               </mesh>
             );
           })}
@@ -572,7 +569,7 @@ const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh({
     rotationRad: (settings.rotationDeg * Math.PI) / 180,
     floorPattern: settings.pattern,
     patternOffset: settings.offset,
-    jointSizeMm: settings.jointSizeMm,
+    jointSizeMm: getDrawnWallJointMm(material, settings.jointSizeMm),
     jointColor: settings.jointColor,
     maxAnisotropy: gl.capabilities.getMaxAnisotropy(),
     uvMode: "normalized",

@@ -137,7 +137,7 @@ const roomBodyPointerDownSource =
 
 assert.match(
   source,
-  /const activeRoomHandleColor = "#16a34a";/,
+  /const activeRoomHandleColor = colour\("#16a34a"\);/,
   "Active room resize handles should use a calmer green than the selected room outline."
 );
 
@@ -155,7 +155,7 @@ assert.match(
 
 assert.match(
   source,
-  /background: "rgba\(255,255,255,0\.88\)",[\s\S]*?border: `1\.5px solid \$\{activeRoomHandleColor\}`/,
+  /background: colour\("rgba\(255,255,255,0\.88\)"\),[\s\S]*?border: `1\.5px solid \$\{activeRoomHandleColor\}`/,
   "Resize handles should render as clean outlined controls rather than solid green blocks."
 );
 

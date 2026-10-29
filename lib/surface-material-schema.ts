@@ -44,6 +44,14 @@ export type SurfaceColorFamily =
   | "brown"
   | "white"
   | "black"
+  // Colours, for the laminates' solids (28 Oct 2026; lib/laminate-colour-family.ts).
+  | "blue"
+  | "green"
+  | "orange"
+  | "pink"
+  | "purple"
+  | "red"
+  | "yellow"
   | "mixed"
   | "unknown";
 
@@ -234,6 +242,13 @@ export const SURFACE_MATERIAL_VOCABULARY = {
     "brown",
     "white",
     "black",
+    "blue",
+    "green",
+    "orange",
+    "pink",
+    "purple",
+    "red",
+    "yellow",
     "mixed",
     "unknown",
   ],

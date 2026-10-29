@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LonLat } from "@/lib/condo-map/condo-map-data";
 import {
   CONDO_FOCUS_CAMERA,
@@ -8,10 +8,11 @@ import {
   condoSiteRings,
   createCondoMap,
   keepBasemapOffSites,
+  keepUnitInView,
   mapProblem,
   type CondoPick,
 } from "./condo-map-mapbox";
-import type { CondoMapView, CondoMapsBySlug } from "./condo-map-view";
+import { unitPartOn, type CondoMapView, type CondoMapsBySlug } from "./condo-map-view";
 import type { MapboxBounds, MapboxMap } from "./mapbox-gl-types";
 import { useMapboxGl } from "./useMapboxGl";
 
@@ -87,11 +88,18 @@ function useMapBehaviour(map: MapboxMap | null, maps: CondoMapsBySlug, onPick: (
   }, [map, maps]);
 }
 
-/** A chosen development is brought into view (once it has loaded); choosing none leaves the camera where it is. */
-function useFocus(map: MapboxMap | null, bounds: [LonLat, LonLat] | undefined) {
+/**
+ * A chosen development is brought into view (once it has loaded), and then a chosen unit if the framing leaves it at
+ * the map's edge; choosing none leaves the camera where it is.
+ */
+function useFocus(map: MapboxMap | null, maps: CondoMapsBySlug, view: CondoMapView) {
+  const dev = view.slug ? maps[view.slug] : undefined;
+  const bounds: [LonLat, LonLat] | undefined = dev?.bounds;
   useEffect(() => {
     if (map && bounds) map.fitBounds(bounds, CONDO_FOCUS_CAMERA);
   }, [map, bounds]);
+  const part = useMemo(() => (dev && view.unit && view.floor !== null ? unitPartOn(dev, view.unit, view.floor) : null), [dev, view.unit, view.floor]);
+  useEffect(() => (map && part ? keepUnitInView(map, part) : undefined), [map, part]);
 }
 
 export function useCondoMap(options: {
@@ -106,6 +114,6 @@ export function useCondoMap(options: {
   const { map, problem, modelsFailed } = useMapboxMap(token, container, overview ?? undefined);
   useDevelopmentLayers(map, maps, view, modelsFailed);
   useMapBehaviour(map, maps, onPick);
-  useFocus(map, view.slug ? maps[view.slug]?.bounds : undefined);
+  useFocus(map, maps, view);
   return { ready: map !== null, problem, modelsFailed };
 }

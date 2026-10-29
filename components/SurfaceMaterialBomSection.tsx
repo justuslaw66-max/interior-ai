@@ -1,6 +1,7 @@
 import type { SurfaceMaterialBomRow } from "@/lib/surface-material-bom";
 import type { SurfaceMaterialBomWarning } from "@/lib/surface-material-bom-result";
 import { formatSheetCount, formatSheetSize } from "@/lib/surface-material-sheets";
+import { formatWallPanelBackingOrder } from "@/lib/laminate-wall-backing";
 import { SurfaceMaterialBomWarnings } from "@/components/SurfaceMaterialBomWarnings";
 
 function money(currency: string | null, value: number | null) {
@@ -24,7 +25,10 @@ function OrderCell({ row }: { row: SurfaceMaterialBomRow }) {
   return (
     <td className="p-2 text-right">
       <div>{amount}</div>
-      <div className="text-xs text-gray-500">{note}</div>
+      <div className="text-xs text-gray-500">
+        {note}
+        {row.backing ? <span data-testid="surface-bom-backing" className="block">{formatWallPanelBackingOrder(row.backing)}</span> : null}
+      </div>
     </td>
   );
 }

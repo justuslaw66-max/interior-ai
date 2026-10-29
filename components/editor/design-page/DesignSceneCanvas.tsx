@@ -26,6 +26,7 @@ import {
   Plan2DCameraInvariantGuard,
   type Plan2DCameraDiagnostics,
 } from "@/components/editor/camera/Plan2DCameraInvariantGuard";
+import { CanvasBackground } from "@/components/scene/CanvasBackground";
 import { CameraCapture } from "@/components/scene/FurnitureItem";
 import { LoadingOverlay } from "@/components/scene/LoadingOverlay";
 import { RoomSkeleton } from "@/components/scene/RoomSkeleton";
@@ -39,6 +40,8 @@ import {
   selectWindowLightBudget,
   type LightingMode,
 } from "@/components/editor/design-page/lighting";
+import { captureLightUserData } from "@/lib/canvas-capture";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { SceneRoomItemEntry } from "@/lib/design-page-scene-domain";
 import type { CameraView } from "@/lib/design-page-types";
@@ -153,6 +156,7 @@ function WorkspacePlanningGrid({
   ceilingY,
   size,
 }: WorkspacePlanningGridProps) {
+  const { colour } = useCanvasPalette();
   const floorGridRef = useRef<THREE.Group>(null);
   const ceilingGridRef = useRef<THREE.Group>(null);
 
@@ -175,19 +179,21 @@ function WorkspacePlanningGrid({
           position={[centerX, WORKSPACE_GRID_FLOOR_Y_METERS, centerZ]}
           rotation-x={-Math.PI / 2}
           raycast={noRaycast}
+          userData={captureLightUserData({ color: "#f3f5f5" })}
         >
           <planeGeometry args={[size, size]} />
-          <meshBasicMaterial color="#f3f5f5" toneMapped={false} />
+          <meshBasicMaterial color={colour("#f3f5f5")} toneMapped={false} />
         </mesh>
         <Grid
           args={[size, size]}
           position={[centerX, WORKSPACE_GRID_FLOOR_Y_METERS + 0.01, centerZ]}
           cellSize={WORKSPACE_GRID_CELL_SIZE_METERS}
           cellThickness={0.45}
-          cellColor="#ffffff"
+          cellColor={colour("#ffffff")}
           sectionSize={WORKSPACE_GRID_SECTION_SIZE_METERS}
           sectionThickness={0.8}
-          sectionColor="#ffffff"
+          sectionColor={colour("#ffffff")}
+          userData={captureLightUserData({ cellColor: "#ffffff", sectionColor: "#ffffff" })}
           fadeDistance={WORKSPACE_GRID_FADE_DISTANCE_METERS}
           fadeStrength={1.35}
           fadeFrom={1}
@@ -201,32 +207,26 @@ function WorkspacePlanningGrid({
         />
       </group>
 
-      <group
-        ref={ceilingGridRef}
-        name="workspace-ceiling-grid"
-        visible={false}
-      >
+      <group ref={ceilingGridRef} name="workspace-ceiling-grid" visible={false}>
         <mesh
           position={[centerX, ceilingY + 0.005, centerZ]}
           rotation-x={-Math.PI / 2}
           raycast={noRaycast}
+          userData={captureLightUserData({ color: "#f3f5f5" })}
         >
           <planeGeometry args={[size, size]} />
-          <meshBasicMaterial
-            color="#f3f5f5"
-            side={THREE.DoubleSide}
-            toneMapped={false}
-          />
+          <meshBasicMaterial color={colour("#f3f5f5")} side={THREE.DoubleSide} toneMapped={false} />
         </mesh>
         <Grid
           args={[size, size]}
           position={[centerX, ceilingY, centerZ]}
           cellSize={WORKSPACE_GRID_CELL_SIZE_METERS}
           cellThickness={0.45}
-          cellColor="#ffffff"
+          cellColor={colour("#ffffff")}
           sectionSize={WORKSPACE_GRID_SECTION_SIZE_METERS}
           sectionThickness={0.8}
-          sectionColor="#ffffff"
+          sectionColor={colour("#ffffff")}
+          userData={captureLightUserData({ cellColor: "#ffffff", sectionColor: "#ffffff" })}
           fadeDistance={WORKSPACE_GRID_FADE_DISTANCE_METERS}
           fadeStrength={1.35}
           fadeFrom={1}
@@ -282,6 +282,7 @@ export function DesignSceneCanvas({
   const workspaceGridCeilingY =
     planBounds.roomHeight + WORKSPACE_GRID_CEILING_CLEARANCE_METERS;
   const { planDiagnostics, viewMode } = state;
+  const { colour } = useCanvasPalette();
   const controlsRef = sceneRefs.controls;
   const physicalLightingScene = useMemo(
     () =>
@@ -378,9 +379,7 @@ export function DesignSceneCanvas({
         data-lighting-preset={configuration.lightingSettings.preset}
         data-lighting-quality={lighting.quality}
         data-lighting-exposure={lighting.renderer.exposure.toFixed(3)}
-        data-lighting-environment-intensity={lighting.environment.intensity.toFixed(
-          3
-        )}
+        data-lighting-environment-intensity={lighting.environment.intensity.toFixed(3)}
         data-active-light-count={activeLightCount}
         data-active-window-light-count={activeWindowLights.length}
         data-active-fixture-light-count={activeFixtureLights.length}
@@ -417,7 +416,7 @@ export function DesignSceneCanvas({
         }
         style={{
           cursor: configuration.cursor,
-          backgroundColor: configuration.backgroundColor,
+          backgroundColor: colour(configuration.backgroundColor),
           opacity: state.showSceneLoadingVeil ? 0 : 1,
           transition: "opacity 160ms ease",
         }}
@@ -458,7 +457,7 @@ export function DesignSceneCanvas({
           rooms={configuration.planRooms}
           updateProjection={actions.updateProjection}
         />
-        <color attach="background" args={[configuration.backgroundColor]} /><CanvasLensShift shiftPx={configuration.planSafeArea.lensShiftPx} />
+        <CanvasBackground light={configuration.backgroundColor} /><CanvasLensShift shiftPx={configuration.planSafeArea.lensShiftPx} />
         {viewMode === "3d" ? (
           <WorkspacePlanningGrid
             centerX={presentationBounds.centerX}

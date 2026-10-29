@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { readEditorCommandBarSource } from "./editor-command-bar-test-utils";
+import { darkCanvasColour, darkFloorTint, hasDarkCanvasColour } from "../lib/canvas-colours";
 
 // The editor's colour contract. Its name is older than its job: the Pro "designer theme" it
 // once checked was never switched on and went in UX 5l (13 Oct 2026). It checks the colour
@@ -520,15 +521,171 @@ assert.match(
   "The renderer controller should own sRGB output, ACES tone mapping, and preset exposure."
 );
 
+// The switch (J, 22 Oct: the app follows the device). A dark device takes the dark block's values,
+// line for line, unless data-color-scheme="light" holds the page or a subtree light.
+const deviceDark = css.match(/\n@media \(prefers-color-scheme: dark\) \{\n  :root:not\(\[data-color-scheme="light"\]\) \{\n([\s\S]*?)\n  \}\n\}\n/)?.[1];
+assert.ok(deviceDark, "A dark device takes the dark values on :root, unless it is held light.");
+assert.equal(
+  deviceDark.split("\n").map((line) => line.trim()).filter(Boolean).join("\n"),
+  darkTheme.split("\n").map((line) => line.trim()).filter(Boolean).join("\n"),
+  "The dark device's values are the dark block's, line for line."
+);
+assert.equal(
+  (css.match(/@media\s*\(prefers-color-scheme:\s*dark\)/g) ?? []).length,
+  2,
+  "The device switches the tokens and the dark: variant, nothing else."
+);
 assert.match(
   css,
-  /@custom-variant dark \(&:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\)\);/,
-  "Tailwind dark: utilities must be opt-in; following the OS setting half-themes the light-first dialogs."
+  /@custom-variant dark \{\n  &:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\) \{\n    @slot;\n  \}\n  @media \(prefers-color-scheme: dark\) \{\n    &:where\(:root:not\(\[data-color-scheme="light"\]\) \*\):not\(:where\(\[data-color-scheme="light"\], \[data-color-scheme="light"\] \*\)\) \{/,
+  "dark: utilities follow the same switch as the tokens, and stay off where a subtree is held light (Admin)."
 );
-assert.doesNotMatch(
-  css,
-  /@media\s*\(prefers-color-scheme:\s*dark\)/,
-  "Until the editor is on the colour tokens, dark follows data-color-scheme only, not the device (J, 22 Oct)."
+for (const [file, holds] of [
+  ["app/admin/AdminShell.tsx", /data-color-scheme="light"/],
+  ["app/admin/AdminAccessDenied.tsx", /data-color-scheme="light"/],
+  ["app/share/[shareToken]/export/page.tsx", /data-color-scheme="light"/],
+  ["app/tools/layout.tsx", /<HeldLight>\{children\}<\/HeldLight>/],
+  ["app/lighting-reference/page.tsx", /<HeldLight>/],
+  ["app/hugg-test/page.tsx", /<HeldLight>/],
+  ["app/models-test/page.tsx", /<HeldLight>/],
+] as const) {
+  assert.match(read(file), holds, `${file} stays light on a dark device (Admin, the export page, the internal tools and QA pages).`);
+}
+// Text colour is inherited as the body's (white on a dark device), so each held-light root sets its own.
+const exportHolds = read("app/share/[shareToken]/export/page.tsx").match(/<main className="[^"]*" data-color-scheme="light">/g) ?? [];
+assert.equal(exportHolds.length, 2, "The export page holds both of its pages light.");
+for (const hold of exportHolds) {
+  assert.match(hold, /\btext-foreground\b/, "The export page's words and default borders stay dark on a dark device.");
+}
+assert.match(
+  read("app/admin/operations-dashboard.module.css"),
+  /^\.page \{[^}]*\n  color: var\(--ops-ink\);\n\}/m,
+  "Admin's words stay dark on a dark device."
+);
+assert.match(
+  read("components/HeldLight.tsx"),
+  /data-color-scheme="light" className="min-h-screen bg-background text-foreground"/,
+  "A held-light page covers the dark page behind it with the light background."
+);
+
+// The plan drawings (dark mode PR 4, J 28 Oct): light keeps what they drew with before; dark has the
+// plan's dark paper, rooms a dim tint of their colour, walls light.
+const PLAN_TOKENS: Record<string, readonly [string, string]> = {
+  "plan-paper": ["#f6f5f1", "#1c1c1e"],
+  "plan-line": ["#78716c", "#98989d"],
+  "plan-room": ["#e7e5e4", "#3a3a3c"],
+  "plan-room-toilet": ["#dbeafe", "#22303f"],
+  "plan-room-kitchen": ["#dcfce7", "#24372a"],
+  "plan-room-bedroom": ["#ede9fe", "#30293d"],
+  "plan-room-dining": ["#fef3c7", "#3a3222"],
+  "plan-marker": ["#1c1917", "#e5e5ea"],
+  "plan-marker-seat": ["#2563eb", "#409cff"],
+  "plan-marker-table": ["#d97706", "#ff9f0a"],
+  "plan-marker-rug": ["#14b8a6", "#40c8e0"],
+  "plan-sheet": ["#ffffff", "#1c1c1e"],
+  "plan-sheet-room": ["#f5f5f4", "#2c2c2e"],
+  "plan-wall": ["#262626", "#e5e5ea"],
+  "plan-door": ["#d97706", "#ff9f0a"],
+  "plan-window": ["#0284c7", "#409cff"],
+  "scene-preview-ground": ["#e5e7e1", "#232325"],
+};
+for (const [name, [light, dark]] of Object.entries(PLAN_TOKENS)) {
+  assert.equal(lightTokens.get(name), light, `Light --${name} is the colour the drawing drew with before.`);
+  assert.equal(darkTokens.get(name), dark, `Dark --${name} is the plan's dark look (J, 28 Oct).`);
+}
+
+// The canvases (dark mode PR 4): WebGL can't read the tokens, so lib/canvas-colours swaps each light
+// colour the 2D plan and the 3D view's surroundings draw with for its dark one. J's look (28 Oct):
+// the canvas card's #1C1C1E paper, Apple's dark green, blue and orange, labels floating at #2C2C2E.
+for (const [light, dark] of [
+  ["#f4f2ed", "#1c1c1e"],
+  ["#f3f5f5", "#232325"],
+  ["#22c55e", "#30d158"],
+  ["#0284c7", "#409cff"],
+  ["#c2410c", "#ff9f0a"],
+  ["#2a66ff", "#0a84ff"],
+  ["#9a9a9a", "#aeaeb2"],
+  ["rgba(255,255,255,0.94)", "rgba(44,44,46,0.94)"],
+  ["1px solid rgba(34,197,94,0.36)", "1px solid rgba(48,209,88,0.36)"],
+] as const) {
+  assert.equal(darkCanvasColour(light), dark, `In dark the canvas draws ${light} as ${dark}.`);
+}
+assert.equal(darkFloorTint("#ded3be", true), "#454240", "The room you're in mixes 21% of its floor's tint into the paper (J, 28 Oct).");
+assert.equal(darkFloorTint("#e7dfd2", false), "#383737", "The other rooms mix 14% of their muted tint.");
+for (const material of ["#c9c2b4", "#c6a77b", "#9b7659", "#eeeae0", "#b8b0a1"]) {
+  assert.equal(hasDarkCanvasColour(material), false, `${material} is the room's finish, so it draws as it is in dark too.`);
+}
+
+const CANVAS_SOURCES = [
+  "components/editor/renderers/RoomRenderer2D.tsx",
+  "components/editor/renderers/ItemRenderer2D.tsx",
+  "components/editor/renderers/PlanUnderlayRenderer2D.tsx",
+  "components/editor/renderers/CanonicalFloorPlanStructure.tsx",
+  "components/editor/renderers/canonical-floor-plan/CanonicalWallSegments2D.tsx",
+  "components/editor/renderers/canonical-floor-plan/CanonicalVoidRooms2D.tsx",
+  "components/editor/renderers/canonical-floor-plan/CanonicalWallGestureOverlay.tsx",
+  "components/editor/renderers/UnresolvedOpeningMarkers2D.tsx",
+  "components/editor/design-page/DesignSceneCanvas.tsx",
+  "components/editor/design-page/DesignSceneStructureLayer.tsx",
+  "components/scene/FurnitureItem.tsx",
+  "features/cabinetry/components/CabinetPreviewScene3D.tsx",
+  "features/cabinetry/components/CabinetSceneItem.tsx",
+];
+const COLOUR_IN_STRING = /#[0-9a-fA-F]{6}\b|rgba?\([^)]*\)/g;
+function colourCallArguments(text: string): string[] {
+  const calls: string[] = [];
+  for (const match of text.matchAll(/\bcolour\(/g)) {
+    let depth = 1;
+    let index = (match.index ?? 0) + match[0].length;
+    const start = index;
+    while (depth > 0 && index < text.length) {
+      if (text[index] === "(") depth += 1;
+      if (text[index] === ")") depth -= 1;
+      index += 1;
+    }
+    calls.push(text.slice(start, index - 1));
+  }
+  return calls;
+}
+let canvasColourCount = 0;
+for (const file of CANVAS_SOURCES) {
+  const calls = colourCallArguments(read(file));
+  assert.ok(calls.length > 0, `${file} draws its canvas colours through the palette.`);
+  for (const call of calls) {
+    for (const literal of call.match(/"[^"]*"/g) ?? []) {
+      for (const colour of literal.match(COLOUR_IN_STRING) ?? []) {
+        canvasColourCount += 1;
+        assert.ok(hasDarkCanvasColour(colour), `${file}: ${colour} needs a dark value in lib/canvas-colours.`);
+      }
+    }
+  }
+}
+assert.ok(canvasColourCount > 200, "The 2D plan's colours are drawn through the palette.");
+assert.match(
+  read("lib/canvas-colour-scheme.ts"),
+  /getComputedStyle\(document\.documentElement\)\.getPropertyValue\("color-scheme"\)[\s\S]*new MutationObserver[\s\S]*matchMedia\(DARK_QUERY\)/,
+  "The canvases follow the page's scheme: <html>'s color-scheme, the attribute and the device."
+);
+assert.match(
+  read("components/editor/renderers/RoomRenderer2D.tsx"),
+  /useEffect\(\(\) => drawPlanColoursAsChosen\(gl, canvasPalette\.dark\), \[canvasPalette\.dark, gl\]\);/,
+  "On a dark page the 2D plan turns off tone mapping, which crushed its dark colours (a #2C2C2E room drew near black)."
+);
+assert.match(
+  read("lib/canvas-tone-mapping.ts"),
+  /if \(!dark\) return undefined;[\s\S]*renderer\.toneMapping = THREE\.NoToneMapping;[\s\S]*renderer\.toneMapping = previous;/,
+  "Light keeps the plan's tone mapping, and dark puts it back when the plan goes."
+);
+const exportSource = read("lib/useDesignPageExport.ts");
+assert.equal(
+  (exportSource.match(/return renderLightCapture\(rendererRef\.current, sceneRef\.current, cameraRef\.current,/g) ?? []).length,
+  2,
+  "The image and PDF exports capture the 3D view in its light colours (exports stay light)."
+);
+assert.match(
+  designSceneCanvasSource,
+  /userData=\{captureLightUserData\(\{ color: "#f3f5f5" \}\)\}[\s\S]*userData=\{captureLightUserData\(\{ cellColor: "#ffffff", sectionColor: "#ffffff" \}\)\}[\s\S]*<CanvasBackground light=\{configuration\.backgroundColor\} \/>/,
+  "The workspace ground, its grid and the background keep their light colours for exports."
 );
 
 console.log("Light and dark colour checks passed.");

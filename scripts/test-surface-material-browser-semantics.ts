@@ -53,8 +53,8 @@ async function main(): Promise<void> {
   const loader = createSurfaceMaterialCatalogLoader(async () => moduleFixture);
   const records = await loader.load();
 
-// 1,405 YAML records and the laminate wall panels from catalog/laminates: 233 since 25 Oct 2026, 372 since 27 Oct.
-assert.equal(records.length, 1777, "the browser must join all 1777 render and catalog identities");
+// 1,405 YAML records and the laminate wall panels from catalog/laminates: 233 since 25 Oct 2026, 372 since 27 Oct, 374 since 28 Oct.
+assert.equal(records.length, 1779, "the browser must join all 1779 render and catalog identities");
 const loadedSnapshot = loader.getSnapshot();
 assert.equal(loadedSnapshot.status, "success");
 assert.ok(loadedSnapshot.wallPaintSwatches);
@@ -146,7 +146,7 @@ assert.deepEqual(
 const wallGroupNames = buildSurfaceMaterialProductGroups(
   records.filter((record) => ["wall_tile", "wall_panel"].includes(record.surface_material.surface_category))
 ).map((group) => getSurfaceMaterialProductDisplayName(group.primary));
-// The first page is the browser's first 16 cards (SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT). The laminates' 118 flat colours
+// The first page is the browser's first 16 cards (SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT). The laminates' 120 flat colours
 // come after every other card, A to Z (J, 27 Oct 2026: "Flat colours last"); before that, Absolute White and twelve AFX
 // colours had pushed Anima Beige to the second page, and two wall panel browser tests couldn't find it.
 const wallGroups = buildSurfaceMaterialProductGroups(
@@ -157,8 +157,8 @@ assert.ok(wallGroupNames.indexOf("Akita Grey 5644") < wallGroupNames.indexOf("An
 const firstFlat = wallGroups.findIndex((group) => isLaminateFlatPicture(group.primary.texture_assets.base_color_url));
 assert.deepEqual(
   [firstFlat, wallGroups.slice(firstFlat).every((group) => isLaminateFlatPicture(group.primary.texture_assets.base_color_url))],
-  [wallGroups.length - 118, true],
-  "the 118 flat colours close the wall browser"
+  [wallGroups.length - 120, true],
+  "the 120 flat colours close the wall browser"
 );
 assert.deepEqual(
   wallGroups.slice(firstFlat, firstFlat + 3).map((group) => getSurfaceMaterialProductDisplayName(group.primary)),
@@ -252,9 +252,11 @@ assert.match(
   /const filteredSurfaceMaterialGroups = filterSurfaceMaterialGroups\(surfaceMaterialProductGroups, \{\n    search: flooringSearch,\n    filters: surfaceFilters,\n    favoriteIds: favoriteSurfaceMaterialIdSet,\n    roomType: activeRoomType,\n  \}\);/,
   "the Surfaces browser must filter with the shared predicate"
 );
+// The search, quick filters and filter drawer are SurfaceBrowserFilterBar (28 Oct 2026).
+assert.match(panelSource, /<SurfaceBrowserFilterBar\n[\s\S]{0,400}filterOptions=\{surfaceFilterOptions\}/);
 assert.match(
-  panelSource,
-  /renderSurfaceFilterSelect\("brand", "Brand", surfaceFilterOptions\.brand\)\}\n\s*\{renderSurfaceFilterSelect\("collection", "Collection", surfaceFilterOptions\.collection\)/,
+  readFileSync("components/editor/design-controls-plan/SurfaceBrowserFilterBar.tsx", "utf8"),
+  /\["brand", "Brand"\],\n\s*\["collection", "Collection"\],/,
   "Brand comes first, then its collections"
 );
 assert.match(panelSource, /\{getSurfaceMaterialCollectionLabel\(material\)\}<\/span>[\s\S]{0,240}\{getSurfaceMaterialModelName\(material\)\}/);

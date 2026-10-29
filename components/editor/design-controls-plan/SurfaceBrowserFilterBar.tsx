@@ -1,0 +1,176 @@
+"use client";
+
+import { useRef } from "react";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { track } from "@/lib/analytics";
+import type { SurfaceBrowserViewMode, SurfaceFilterKey, SurfaceFilterState } from "./surfaceCatalog";
+import { getSurfaceSearchColour } from "./surfaceMaterialFilters";
+
+export type SurfaceBrowserFilterBarProps = {
+  search: string;
+  searchPlaceholder: string;
+  filters: SurfaceFilterState;
+  filterOptions: Record<SurfaceFilterKey, string[]>;
+  filterDrawerOpen: boolean;
+  viewMode: SurfaceBrowserViewMode;
+  hasFilters: boolean;
+  onSearchChange: (search: string) => void;
+  onFilterChange: (key: SurfaceFilterKey, value: string) => void;
+  onToggleFilterDrawer: () => void;
+  onToggleRecommended: () => void;
+  onToggleFavorites: () => void;
+  onToggleViewMode: () => void;
+  onClear: () => void;
+};
+
+const FILTER_SELECTS: ReadonlyArray<[SurfaceFilterKey, string]> = [
+  ["brand", "Brand"],
+  ["collection", "Collection"],
+  ["effect", "Effect"],
+  ["size", "Size"],
+  ["color", "Colour"],
+];
+
+/** One of the drawer's filters. `fromSearch` is a colour the search has set: the select shows it and waits for the chip. */
+function SurfaceFilterSelect({
+  filterKey,
+  label,
+  value,
+  options,
+  fromSearch,
+  onChange,
+}: {
+  filterKey: SurfaceFilterKey;
+  label: string;
+  value: string;
+  options: string[];
+  fromSearch: string | null;
+  onChange: (key: SurfaceFilterKey, value: string) => void;
+}) {
+  const shown = fromSearch && !options.includes(fromSearch) ? [fromSearch, ...options] : options;
+  return (
+    <label className="block text-xs font-semibold text-control-label-idle">
+      {fromSearch ? `${label}, from your search` : label}
+      <select
+        data-testid={`surfaces-filter-${filterKey}`}
+        value={fromSearch ?? value}
+        disabled={Boolean(fromSearch)}
+        className="mt-1 h-9 w-full rounded-lg border border-box-border bg-field px-2 text-xs text-control-label"
+        onChange={(event) => onChange(filterKey, event.currentTarget.value)}
+      >
+        <option value="">All</option>
+        {shown.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+/**
+ * A search that is just a colour ("blue", "light wood") is the colour filter (surfaceMaterialFilters.ts), so the chip says so
+ * and takes it off (J, 28 Oct 2026). It is a remove action, not a toggle, so it has the primary look without `pressed`.
+ */
+function SearchColourChip({ colour, onRemove }: { colour: string; onRemove: () => void }) {
+  return (
+    <Button
+      data-testid="surfaces-search-colour"
+      size="compact"
+      variant="primary"
+      aria-label={`Colour: ${colour}. Remove`}
+      title="Your search is a colour, so it shows that colour. Remove to search all again."
+      onClick={onRemove}
+    >
+      Colour: {colour}
+      <X className="ml-1 h-3 w-3" aria-hidden="true" />
+    </Button>
+  );
+}
+
+/** The quick filters under the search: a search's colour, Recommended, Favourites, the view, and Clear. */
+function SurfaceQuickFilters(props: SurfaceBrowserFilterBarProps & { onRemoveSearchColour: () => void }) {
+  const searchColour = getSurfaceSearchColour(props.search);
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+      {searchColour ? <SearchColourChip colour={searchColour} onRemove={props.onRemoveSearchColour} /> : null}
+      <Button
+        data-testid="surfaces-recommended-filter"
+        size="compact"
+        pressed={props.filters.recommendedOnly}
+        onClick={props.onToggleRecommended}
+      >
+        Recommended
+      </Button>
+      <Button
+        data-testid="surfaces-favorites-filter"
+        size="compact"
+        pressed={props.filters.favoritesOnly}
+        onClick={props.onToggleFavorites}
+      >
+        Favourites
+      </Button>
+      <Button data-testid="surfaces-view-toggle" variant="secondary" size="compact" onClick={props.onToggleViewMode}>
+        {props.viewMode === "grid" ? "List" : "Grid"}
+      </Button>
+      {props.hasFilters ? (
+        <Button data-testid="surfaces-clear-filters" variant="secondary" size="compact" onClick={props.onClear}>
+          Clear
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * The surface browser's search, quick filters and filter drawer. The bar holds the search box's ref itself: a ref passed in
+ * with the other props makes React's lint rule (react-hooks/refs) treat every prop read during render as a ref read.
+ */
+export function SurfaceBrowserFilterBar(props: SurfaceBrowserFilterBarProps) {
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  // Clears a colour search and returns to the search box, which the chip's removal would otherwise leave without focus.
+  const removeSearchColour = () => {
+    props.onSearchChange("");
+    searchInputRef.current?.focus();
+    track("floor_surface_filter_changed", { key: "search_colour", value: null });
+  };
+  return (
+    <>
+      <div className="mt-2 grid grid-cols-[1fr_auto] gap-2">
+        <label className="block">
+          <span className="sr-only">Search surface materials</span>
+          <input
+            ref={searchInputRef}
+            type="search"
+            data-testid="surfaces-search"
+            value={props.search}
+            onChange={(event) => props.onSearchChange(event.currentTarget.value)}
+            placeholder={props.searchPlaceholder}
+            className="h-9 w-full rounded-lg border border-box-border bg-field px-2.5 text-sm text-label placeholder:text-label-tertiary"
+          />
+        </label>
+        <Button size="regular" data-testid="surfaces-filter-toggle" onClick={props.onToggleFilterDrawer}>
+          Filter
+        </Button>
+      </div>
+      <SurfaceQuickFilters {...props} onRemoveSearchColour={removeSearchColour} />
+      {props.filterDrawerOpen ? (
+        <div data-testid="surfaces-filter-drawer" className="mt-2 grid gap-2 rounded-lg border border-box-border bg-field p-2">
+          {FILTER_SELECTS.map(([key, label]) => (
+            <SurfaceFilterSelect
+              key={key}
+              filterKey={key}
+              label={label}
+              value={props.filters[key] ?? ""}
+              options={props.filterOptions[key]}
+              fromSearch={key === "color" ? getSurfaceSearchColour(props.search) : null}
+              onChange={props.onFilterChange}
+            />
+          ))}
+        </div>
+      ) : null}
+    </>
+  );
+}

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { isAdminEmail } from "@/lib/admin";
 import { auth } from "@/lib/auth";
+import { HeldLight } from "@/components/HeldLight";
 import { LightingReferenceClient } from "./LightingReferenceClient";
 
 export const metadata = {
@@ -12,5 +13,9 @@ export const metadata = {
 export default async function LightingReferencePage() {
   const session = await auth();
   if (!isAdminEmail(session?.user?.email)) notFound();
-  return <LightingReferenceClient />;
+  return (
+    <HeldLight>
+      <LightingReferenceClient />
+    </HeldLight>
+  );
 }

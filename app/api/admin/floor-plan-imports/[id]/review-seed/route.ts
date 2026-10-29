@@ -16,6 +16,7 @@ import {
   preparePingYiCourtReviewSeedApplication,
 } from "@/lib/floor-plan-seeds/ping-yi-court-review-intake";
 import { prisma } from "@/lib/prisma";
+import { packFloorPlanCandidateForStorage } from "@/lib/floor-plan-imports/candidate-storage";
 
 export const runtime = "nodejs";
 
@@ -206,7 +207,7 @@ export async function POST(
         },
       },
       data: {
-        candidateJson: prepared.candidate as unknown as Prisma.InputJsonValue,
+        candidateJson: packFloorPlanCandidateForStorage(prepared.candidate) as Prisma.InputJsonValue,
         reviewIssuesJson: prepared.reviewIssues as Prisma.InputJsonValue,
         sourceManifestJson: prepared.sourceManifest as Prisma.InputJsonValue,
         correctionLogJson: prepared.correctionLog as Prisma.InputJsonValue,

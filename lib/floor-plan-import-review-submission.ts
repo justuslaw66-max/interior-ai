@@ -1,4 +1,5 @@
 import type { FloorPlanDocumentV2 } from "./floor-plan-document-v2";
+import { packFloorPlanCandidateForStorage } from "./floor-plan-imports/candidate-storage";
 
 /** Prepare a private review submission without mutating the displayed candidate. */
 export function prepareFloorPlanReviewSubmission(candidate: FloorPlanDocumentV2, entranceOpeningId: string) {
@@ -13,4 +14,12 @@ export function prepareFloorPlanReviewSubmission(candidate: FloorPlanDocumentV2,
     provenance: structuredClone(entrance.provenance),
   });
   return next;
+}
+
+/**
+ * The review submission as it is sent: in the form candidates are stored in (floor-plan-imports/candidate-storage.ts),
+ * so once they are stored packed a traced plan's save sends about a sixth of its JSON. The server unpacks it first.
+ */
+export function floorPlanReviewSubmissionForSending(candidate: FloorPlanDocumentV2, entranceOpeningId: string) {
+  return packFloorPlanCandidateForStorage(prepareFloorPlanReviewSubmission(candidate, entranceOpeningId));
 }

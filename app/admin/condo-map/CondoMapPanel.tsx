@@ -1,6 +1,7 @@
 import { Chip } from "@/components/ui/Chip";
 import { ChoiceTile } from "@/components/ui/ChoiceTile";
-import type { CondoDevelopmentMap, CondoDevelopmentSummary } from "@/lib/condo-map/condo-map-data";
+import type { CondoDevelopmentMap, CondoDevelopmentSummary, CondoUnitCard } from "@/lib/condo-map/condo-map-data";
+import { CONDO_MAP_COLOURS, floorLegend } from "./condo-map-layers";
 import {
   chooseDevelopment,
   chooseFloor,
@@ -60,6 +61,21 @@ function DevelopmentList({
   );
 }
 
+/** The key to the chosen floor's colours on the map: its units by bedroom count, and the chosen unit. */
+function FloorKey({ units }: { units: readonly CondoUnitCard[] }) {
+  const entries = [...floorLegend(units), { label: "Chosen unit", colour: CONDO_MAP_COLOURS.selectedUnit }];
+  return (
+    <ul aria-label="Colours on the map" className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-label-secondary">
+      {entries.map((entry) => (
+        <li key={entry.label} className="flex items-center gap-1.5">
+          <span aria-hidden="true" className="inline-block h-3 w-3 rounded-sm border border-separator" style={{ backgroundColor: entry.colour }} />
+          {entry.label}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function FloorPicker({ dev, maps, view, onView }: { dev: CondoDevelopmentMap; maps: CondoMapsBySlug; view: CondoMapView; onView: CondoViewChange }) {
   const units = view.floor === null ? [] : unitsOnFloor(dev, view.floor);
   return (
@@ -89,17 +105,20 @@ function FloorPicker({ dev, maps, view, onView }: { dev: CondoDevelopmentMap; ma
       {view.floor === null ? (
         <p className="text-xs text-label-secondary">Choose a floor, or click a unit on the map.</p>
       ) : (
-        <div role="group" aria-label={`Units on ${floorName(view.floor)}`} className="flex flex-wrap gap-2">
-          {units.map((unit) => (
-            <Chip
-              key={unit.unit}
-              pressed={view.unit === unit.unit}
-              onClick={() => onView((current) => chooseUnit(current, maps, { slug: dev.slug, unit: unit.unit }))}
-            >
-              {unit.unit}
-            </Chip>
-          ))}
-        </div>
+        <>
+          <div role="group" aria-label={`Units on ${floorName(view.floor)}`} className="flex flex-wrap gap-2">
+            {units.map((unit) => (
+              <Chip
+                key={unit.unit}
+                pressed={view.unit === unit.unit}
+                onClick={() => onView((current) => chooseUnit(current, maps, { slug: dev.slug, unit: unit.unit }))}
+              >
+                {unit.unit}
+              </Chip>
+            ))}
+          </div>
+          <FloorKey units={units} />
+        </>
       )}
     </section>
   );

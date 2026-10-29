@@ -1,8 +1,8 @@
 # Admin condo map
 
 `/admin/condo-map` shows the developments from the floor-plan masters on a Mapbox map, each on its own site: the
-whole building as its detailed 3D models (grey massing where they don't load), a chosen floor cut open with its units' rooms
-painted on it, and a chosen unit's card with its plan. It is admin-only and unlisted (not in the admin menu) while J
+whole building as its detailed 3D models (grey massing where they don't load), a chosen floor cut open with its units
+painted on it by bedroom count, and a chosen unit's card with its plan. It is admin-only and unlisted (not in the admin menu) while J
 decides what it becomes. J's choices, 24 Oct 2026: admins only; all nine developments. 25 Oct 2026: 32 Gilstead
 added, and 12 On Shan taken off (it is a single-owner serviced-apartment building now, Weave Suites – Novena, so its
 units aren't sold one by one; its package is kept in the masters), so nine. Each new development in the masters joins
@@ -43,7 +43,17 @@ the map with a re-export. 28 Oct 2026: every development has detailed 3D models,
   (`constructor`, `__proto__`).
 - **Mapbox's old buildings are kept off the sites** by a clip layer on each footprint 2.5 m in, and, where a browser
   draws one anyway (Safari did in the prototype), by marking it "selected", which the map's config draws clear
-  (`condo-map-basemap.ts`).
+  (`condo-map-basemap.ts`). **Its labels go over the whole land lot** (28 Oct 2026): a second clip layer, labels only,
+  on the development's lot with its footprint (`labelClip`), since a house number's anchor stands off the footprint
+  ("21" stood on 21 Richards' model, "241" on 24 One Residences'). Labels only, so nothing next door is touched.
+- **A chosen floor reads at a glance** (J, 28 Oct 2026). Its units are painted by bedroom count in the masters'
+  viewers' unit-chart hues (their dark theme's, which hold up in the map's daylight; a studio or an unknown count
+  stays cream), the chosen unit orange, with a key under the floor's units in the panel. The storeys above stay as a
+  5 % white ghost, enough to see the building's outline (it was 16 %, which hid the rooms).
+- **A chosen unit is kept in view.** A development's framing (tilted 50 degrees, turned 35) could leave a unit at the
+  map's edge (32 Gilstead's #03-02, cut off). Once the camera settles, a unit whose outline at its storey isn't inside
+  the map with a margin is brought to the middle, the zoom, tilt and turn kept (`keepUnitInView`); a move the user
+  makes is left alone.
 - **Credits.** Each development's credits (the brochures; SLA's land lots under the Singapore Open Data Licence;
   OneMap) are shown under the map, as the licences ask. No tiles or satellite pictures are stored.
 

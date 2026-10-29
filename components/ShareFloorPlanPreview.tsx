@@ -131,8 +131,8 @@ export default function ShareFloorPlanPreview({ snapshot }: { snapshot: DesignSn
             </p>
           </div>
           <div className="flex gap-3 text-xs text-label-secondary">
-            <span><span className="mr-1 inline-block h-2 w-4 rounded bg-amber-500" />Door</span>
-            <span><span className="mr-1 inline-block h-2 w-4 rounded bg-sky-500" />Window</span>
+            <span><span className="mr-1 inline-block h-2 w-4 rounded bg-plan-door" />Door</span>
+            <span><span className="mr-1 inline-block h-2 w-4 rounded bg-plan-window" />Window</span>
           </div>
         </div>
         <div className={floors.length > 1 ? "mt-4 grid gap-4 lg:grid-cols-2" : "mt-4 grid gap-4"}>
@@ -160,21 +160,20 @@ export default function ShareFloorPlanPreview({ snapshot }: { snapshot: DesignSn
                   viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
                   role="img"
                   aria-label={`${floor.label} shared floor plan`}
-                  className="block h-auto w-full bg-white"
+                  className="block h-auto w-full bg-plan-sheet"
                 >
                   {floor.rooms.map((room) => (
                     <g key={room.id}>
                       <polygon
                         points={room.points.map((point) => `${toX(point.x)},${toY(point.z)}`).join(" ")}
-                        fill="#f5f5f4"
-                        stroke="#262626"
+                        className="fill-plan-sheet-room stroke-plan-wall"
                         strokeWidth="3"
                       />
                       <text
                         x={toX(room.center.x)}
                         y={toY(room.center.z) - 5}
                         textAnchor="middle"
-                        className="fill-neutral-900 text-[14px] font-semibold"
+                        className="fill-label text-[14px] font-semibold"
                       >
                         {room.name}
                       </text>
@@ -182,7 +181,7 @@ export default function ShareFloorPlanPreview({ snapshot }: { snapshot: DesignSn
                         x={toX(room.center.x)}
                         y={toY(room.center.z) + 14}
                         textAnchor="middle"
-                        className="fill-neutral-500 text-xs"
+                        className="fill-label-secondary text-xs"
                       >
                         {room.dimensions}
                       </text>
@@ -195,7 +194,7 @@ export default function ShareFloorPlanPreview({ snapshot }: { snapshot: DesignSn
                             y1={toY(line.start.z)}
                             x2={toX(line.end.x)}
                             y2={toY(line.end.z)}
-                            stroke={opening.kind === "door" ? "#d97706" : "#0284c7"}
+                            className={opening.kind === "door" ? "stroke-plan-door" : "stroke-plan-window"}
                             strokeWidth="7"
                             strokeLinecap="round"
                           />

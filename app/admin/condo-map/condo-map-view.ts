@@ -55,6 +55,32 @@ export function boundsAround(points: readonly LonLat[]): [LonLat, LonLat] | null
   ];
 }
 
+/** A unit's part on a storey (or, when it has none there, its first): its outline and the height it stands at. */
+export function unitPartOn(dev: CondoDevelopmentMap, unit: string, floor: number): { ring: LonLat[]; base: number } | null {
+  const parts = dev.unitParts.features.filter((part) => part.properties.unit === unit);
+  const part = parts.find((candidate) => candidate.properties.f === floor) ?? parts[0];
+  return part ? { ring: part.geometry.coordinates[0], base: part.properties.base } : null;
+}
+
+/** The metres one screen pixel covers on the ground at a latitude and zoom (Mapbox's 512-pixel tiles). */
+export function metresPerPixel(lat: number, zoom: number): number {
+  return (40075016.686 * Math.cos((lat * Math.PI) / 180)) / (512 * 2 ** zoom);
+}
+
+/** How far up the screen a point stands `heightM` above the ground, at the view's tilt (pixels; about the middle). */
+export function liftPixels(heightM: number, lat: number, zoom: number, pitchDeg: number): number {
+  return (heightM * Math.sin((pitchDeg * Math.PI) / 180)) / metresPerPixel(lat, zoom);
+}
+
+/**
+ * Whether a chosen unit is outside the map, or too near its edge to see whole: its outline's screen points (on the
+ * ground), lifted to its storey, must all stand inside the map less a margin (32 px, or 8% of the shorter side).
+ */
+export function unitOutOfView(points: ReadonlyArray<{ x: number; y: number }>, liftPx: number, width: number, height: number): boolean {
+  const margin = Math.max(32, 0.08 * Math.min(width, height));
+  return points.some(({ x, y }) => x < margin || x > width - margin || y - liftPx < margin || y - liftPx > height - margin);
+}
+
 const ACCESSED = / accessed on (\d{1,2} [A-Z][a-z]{2} \d{4}) /;
 
 /**
