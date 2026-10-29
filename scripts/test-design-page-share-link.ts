@@ -167,6 +167,31 @@ async function main() {
     "Share links should only be created in useDesignPageShareLink.",
   );
 
+  // Nothing shares a design by itself: not designer mode, a load, a save or a conflict copy
+  // (CH-0010, 30 Oct 2026). Only Share (and My designs' Share) creates a link.
+  for (const path of [
+    "lib/useDesignPagePersistence.ts",
+    "lib/useDesignPageCloudLoadController.ts",
+    "lib/useDesignPageExplicitCloudSaveController.ts",
+    "lib/useDesignPageCloudConflictCopyController.ts",
+  ]) {
+    const source = readFileSync(join(process.cwd(), path), "utf8");
+    assert.doesNotMatch(source, /enableShare|designApi\.share\(/, `${path} must not share a design by itself.`);
+  }
+  const shareLinkSource = readFileSync(join(process.cwd(), "lib/useDesignPageShareLink.ts"), "utf8");
+  assert.match(
+    shareLinkSource,
+    /setShareEnabled\(true\);\s*trackProductEvent\("design_shared"/,
+    "Share records design_shared once the link exists.",
+  );
+
+  // A link turned off stays off: turning sharing off clears the token, and sharing again writes a
+  // new one rather than bringing the old link back.
+  const shareRoute = readFileSync(join(process.cwd(), "app/api/designs/[id]/share/route.ts"), "utf8");
+  assert.match(shareRoute, /data: \{ shareEnabled: false, shareToken: null \}/);
+  assert.match(shareRoute, /let token = makeToken\(\);/);
+  assert.doesNotMatch(shareRoute, /design\.shareToken \?\? makeToken\(\)/);
+
   console.log("Design-page share link checks passed.");
 }
 

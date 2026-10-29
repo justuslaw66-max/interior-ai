@@ -82,7 +82,7 @@ const instrumentation: Array<[string, string[]]> = [
   ["lib/useDesignPageDocumentHistoryController.ts", ["undo_used"]],
   ["components/editor/EditorViewToggle.tsx", ["view_switched_to_3d"]],
   ["lib/useDesignPageExplicitCloudSaveController.ts", ["project_saved", "project_save_failed"]],
-  ["lib/useDesignPagePersistence.ts", ["design_shared"]],
+  ["lib/useDesignPageShareLink.ts", ["design_shared"]],
   ["lib/useDesignPageLocalBackupHydration.ts", ["project_recovered"]],
   ["lib/useShoppingListBuy.ts", ["shopping_list_opened"]],
   ["lib/shopping-list-buy.ts", ["product_purchase_clicked"]],

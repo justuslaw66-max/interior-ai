@@ -625,7 +625,7 @@
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
-      "lines": 844,
+      "lines": 807,
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
@@ -1171,7 +1171,7 @@
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 22
+        "maximum": 20
       }
     },
     "app/api/designs/import/route.ts": {
@@ -4215,7 +4215,7 @@
     "lib/useDesignPagePersistence.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 722
+        "maximum": 687
       }
     },
     "lib/useDesignPagePersistenceRegistration.ts": {
@@ -4227,7 +4227,7 @@
     "lib/useDesignPagePersistenceWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 81
+        "maximum": 80
       }
     },
     "lib/useDesignPagePlacementSelectionWorkspaceFacade.ts": {
