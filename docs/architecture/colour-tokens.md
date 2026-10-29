@@ -48,6 +48,13 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 - **`color-scheme`** is `light` or `dark` with the tokens, so the browser's own controls and scrollbars match.
 - **The canvases** read the scheme of `<html>` (`lib/canvas-colour-scheme.ts`), so a canvas inside a held-light subtree would still draw its palette colours dark; none of those canvases is in one today.
 
+## Increase Contrast
+
+- **The device's Increase Contrast setting** (Mac: Accessibility > Display > Increase contrast) reaches the page as `prefers-contrast: more` (J, 29 Oct: the finish, as drawn on the design canvas). After the switch, `@media (prefers-contrast: more)` overrides a set of tokens for `:root, [data-color-scheme="light"]` and for `[data-color-scheme="dark"]`, and `@media (prefers-contrast: more) and (prefers-color-scheme: dark)` repeats the dark set for a dark device. With the setting off nothing changes.
+- **What changes:** grey text (`label-secondary`, `text-secondary`, `text-muted`, `control-label-idle`) reaches 7:1; lines and edges (`separator`, `separator-subtle`, `box-border`, `control-secondary-border`, `surface-floating-edge`) 3:1, so cards, fields and secondary buttons show an edge in dark too; links 7:1 on panels, cards, dialogs and pages; the coloured words take Apple's increased-contrast colours (HIG, Color; in dark blue `#5CB8FF`, green `#4AD968`, orange `#FFA056`, Delete `#FF8A84`), and in light deeper inks, 7:1 on their tints. The status tints keep their strength: a stronger tint lowered orange's contrast on the floating rail.
+- **Both modes set the same tokens.** `[data-color-scheme="dark"]` ties with `:root` on specificity, so a token set only in light would leak into forced dark. The contrast test checks the sets match, that the dark device's block repeats the dark one, every pair at 4.5:1 and 3:1 as without the setting, the 7:1 and 3:1 targets above, and that nothing under 7:1 reads lower than without the setting.
+- **Not changed:** Admin's own colours, the 2D plan's and the 3D view's palettes, exports; and Reduce Transparency (`prefers-reduced-transparency`), which keeps the translucent fills.
+
 ## Adding or changing a token
 
 - Give it both values, in both blocks, and a `--color-*` line in `@theme inline` if it's used as a utility.

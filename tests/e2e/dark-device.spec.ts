@@ -116,3 +116,40 @@ test.describe("a dark device", () => {
     }
   });
 });
+
+// Increase Contrast (J, 29 Oct: the finish): the device's setting reaches the page as
+// prefers-contrast: more, and the colour tokens take their higher-contrast values in either mode.
+async function rootTokens(page: Page, names: readonly string[]) {
+  return page.evaluate((list) => {
+    const style = getComputedStyle(document.documentElement);
+    return Object.fromEntries(list.map((name) => [name, style.getPropertyValue(`--${name}`).trim()]));
+  }, names);
+}
+const CONTRAST_TOKENS = ["label-secondary", "separator", "link"] as const;
+
+test.describe("a device with Increase Contrast", () => {
+  test.use({ contrast: "more" });
+
+  test("takes the higher-contrast colours in dark", async ({ page }) => {
+    await openEditor(page);
+    expect(await rootTokens(page, CONTRAST_TOKENS)).toEqual({
+      "label-secondary": "rgba(235, 235, 245, 0.8)",
+      separator: "#7c7c80",
+      link: "#5cb8ff",
+    });
+  });
+
+  test.describe("in light", () => {
+    test.use({ colorScheme: "light" });
+
+    test("takes the higher-contrast colours in light", async ({ page }) => {
+      await openEditor(page);
+      expect(await documentScheme(page)).toMatchObject({ attribute: null, colorScheme: "light" });
+      expect(await rootTokens(page, CONTRAST_TOKENS)).toEqual({
+        "label-secondary": "#404040",
+        separator: "#8e8e93",
+        link: "#1d4aa6",
+      });
+    });
+  });
+});
