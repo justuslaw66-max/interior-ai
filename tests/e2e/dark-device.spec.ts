@@ -119,23 +119,32 @@ test.describe("a dark device", () => {
 
 // Increase Contrast (J, 29 Oct: the finish): the device's setting reaches the page as
 // prefers-contrast: more, and the colour tokens take their higher-contrast values in either mode.
-async function rootTokens(page: Page, names: readonly string[]) {
+// Each token's colour as the page resolves it: a production build writes the values its own way
+// (#ebebf5cc for rgba(235, 235, 245, 0.8)), so the tokens are read through an element's colour.
+async function tokenColours(page: Page, names: readonly string[]) {
   return page.evaluate((list) => {
-    const style = getComputedStyle(document.documentElement);
-    return Object.fromEntries(list.map((name) => [name, style.getPropertyValue(`--${name}`).trim()]));
+    const probe = document.createElement("span");
+    document.body.append(probe);
+    const colours = Object.fromEntries(list.map((name) => {
+      probe.style.color = `var(--${name})`;
+      return [name, getComputedStyle(probe).color];
+    }));
+    probe.remove();
+    return colours;
   }, names);
 }
 const CONTRAST_TOKENS = ["label-secondary", "separator", "link"] as const;
 
 test.describe("a device with Increase Contrast", () => {
-  test.use({ contrast: "more" });
+  // Playwright Test has no contrast option of its own, so it goes in with the context's options.
+  test.use({ contextOptions: { contrast: "more" } });
 
   test("takes the higher-contrast colours in dark", async ({ page }) => {
     await openEditor(page);
-    expect(await rootTokens(page, CONTRAST_TOKENS)).toEqual({
+    expect(await tokenColours(page, CONTRAST_TOKENS)).toEqual({
       "label-secondary": "rgba(235, 235, 245, 0.8)",
-      separator: "#7c7c80",
-      link: "#5cb8ff",
+      separator: "rgb(124, 124, 128)",
+      link: "rgb(92, 184, 255)",
     });
   });
 
@@ -145,10 +154,10 @@ test.describe("a device with Increase Contrast", () => {
     test("takes the higher-contrast colours in light", async ({ page }) => {
       await openEditor(page);
       expect(await documentScheme(page)).toMatchObject({ attribute: null, colorScheme: "light" });
-      expect(await rootTokens(page, CONTRAST_TOKENS)).toEqual({
-        "label-secondary": "#404040",
-        separator: "#8e8e93",
-        link: "#1d4aa6",
+      expect(await tokenColours(page, CONTRAST_TOKENS)).toEqual({
+        "label-secondary": "rgb(64, 64, 64)",
+        separator: "rgb(142, 142, 147)",
+        link: "rgb(29, 74, 166)",
       });
     });
   });
