@@ -10,7 +10,8 @@ import type { MapboxJson, MapboxLayer } from "./mapbox-gl-types";
  * floor chosen: the storeys below stay, the chosen one is cut to its slab with its units painted on it by bedroom count
  * (the chosen unit orange), and the storeys above are a faint ghost of their outline. Invisible blocks on every unit
  * (opacity 0, still clickable) pick a unit. Two clip layers take Mapbox's own map off each site: its buildings and
- * models off the footprint, its labels (house numbers) off the whole land lot.
+ * models off the footprint, its point-of-interest labels off the whole land lot. Its house numbers are drawn after
+ * every layer the page adds, out of a clip's reach; condo-map-basemap turns them off close in.
  */
 export const CONDO_MAP_COLOURS = {
   block: "#e4e1da",
@@ -137,8 +138,8 @@ export function condoLayers(dev: CondoDevelopmentMap): MapboxLayer[] {
       source: sourceId(slug, "clip"),
       layout: { "clip-layer-types": ["model", "symbol"], "clip-layer-scope": ["basemap"] },
     },
-    // Mapbox's labels anchor off the footprint (house numbers by the door), so they go over the whole lot; its
-    // buildings and models only over the footprint above, so nothing next door is touched
+    // Mapbox's point-of-interest labels anchor anywhere on the site, so they go over the whole lot; its buildings and
+    // models only over the footprint above, so nothing next door is touched
     {
       id: condoLayerId(slug, "label-clip"),
       type: "clip",
