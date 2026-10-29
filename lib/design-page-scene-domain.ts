@@ -1,5 +1,6 @@
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import { resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
+import { getRoomWallFinishDepths, type RoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type {
   DesignItem,
   DesignSnapshot,
@@ -35,6 +36,8 @@ export type SceneRoomItemEntry = {
   roomPlanPolygon?: RoomPlanPolygonPoint[];
   roomPlanHoles?: RoomPlanPolygonPoint[][];
   roomWallThickness: number;
+  /** Each wall's laminate panel depth, so items stop at the panel (lib/room-wall-finish-depths.ts). */
+  roomWallFinishDepths?: RoomWallFinishDepths;
   isActiveRoom: boolean;
 };
 
@@ -69,6 +72,7 @@ function buildSceneRoomItemEntry(
     roomPlanHoles: room.planHoles,
     roomWallThickness:
       room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
+    roomWallFinishDepths: getRoomWallFinishDepths(room),
     isActiveRoom,
   };
 }

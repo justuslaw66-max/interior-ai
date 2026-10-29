@@ -43,9 +43,13 @@ the map with a re-export. 28 Oct 2026: every development has detailed 3D models,
   (`constructor`, `__proto__`).
 - **Mapbox's old buildings are kept off the sites** by a clip layer on each footprint 2.5 m in, and, where a browser
   draws one anyway (Safari did in the prototype), by marking it "selected", which the map's config draws clear
-  (`condo-map-basemap.ts`). **Its labels go over the whole land lot** (28 Oct 2026): a second clip layer, labels only,
-  on the development's lot with its footprint (`labelClip`), since a house number's anchor stands off the footprint
-  ("21" stood on 21 Richards' model, "241" on 24 One Residences'). Labels only, so nothing next door is touched.
+  (`condo-map-basemap.ts`). A second clip layer, labels only, on the development's whole lot with its footprint
+  (`labelClip`, 28 Oct 2026), takes away Mapbox's point-of-interest labels on the site; it touches nothing next door.
+- **House numbers go when you're close in** (29 Oct 2026). Mapbox's house numbers stood on the models ("21" on
+  21 Richards, "32" on 32 Gilstead). The Standard style draws them with its place labels, after every layer a page
+  adds, so no clip layer can take them away (the label clip above was meant to, and didn't). They show from zoom 17,
+  so the map turns Standard's place labels off from zoom 16.5 in (`hidePlaceLabelsWhenClose`) and on again further
+  out, where area names help. Street and point-of-interest names stay at every zoom.
 - **A chosen floor reads at a glance** (J, 28 Oct 2026). Its units are painted by bedroom count in the masters'
   viewers' unit-chart hues (their dark theme's, which hold up in the map's daylight; a studio or an unknown count
   stays cream), the chosen unit orange, with a key under the floor's units in the panel. The storeys above stay as a

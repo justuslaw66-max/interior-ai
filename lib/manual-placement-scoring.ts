@@ -4,6 +4,7 @@ import { computeCirculationAnalysis } from "@/lib/circulation-analysis";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
+import { getRoomWallClearances } from "@/lib/room-finished-outline";
 
 export type ManualPlacementScoreKind =
   | "great"
@@ -160,10 +161,8 @@ export function scoreManualPlacement({
     dimsMm.d / 1000,
     item.rotationY ?? 0
   );
-  const wallThickness = room.geometry.wallThickness ?? 0.12;
-  const clearanceX = room.geometry.width / 2 - wallThickness - effectiveWidth / 2 - Math.abs(center.x);
-  const clearanceZ = room.geometry.depth / 2 - wallThickness - effectiveDepth / 2 - Math.abs(center.z);
-  const nearestWallClearance = Math.min(clearanceX, clearanceZ);
+  const clearance = getRoomWallClearances(room, center, { w: effectiveWidth, d: effectiveDepth }); // To the finished faces.
+  const nearestWallClearance = Math.min(clearance.x, clearance.z);
   const warnings: string[] = [];
   const suggestions: string[] = [];
   const actions: ManualPlacementAction[] = [];

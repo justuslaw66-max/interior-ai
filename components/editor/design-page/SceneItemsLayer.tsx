@@ -20,6 +20,7 @@ import type {
   WallDescriptor,
 } from "@/lib/design-page-types";
 import { getFurnitureWallInset } from "@/lib/design-page-geometry";
+import { getFurnitureRoomFrameInsideFinishes } from "@/lib/room-finished-outline";
 import type { DesignPageEditorMode } from "@/lib/useDesignPagePanelMode";
 import type { DesignItem } from "@/lib/room-types";
 import { CabinetDesignItemPlan2D } from "@/features/cabinetry/components/CabinetDesignItemPlan2D";
@@ -380,13 +381,8 @@ export function SceneItemsLayer({
               nodeTransforms={configuredNodeTransforms ?? undefined}
               initialPosition={sceneProjection.position}
               initialRotationY={continuity.rotationY}
-              roomWidth={sceneEntry.roomWidth}
-              roomDepth={sceneEntry.roomDepth}
-              roomOriginX={roomOffset.x}
-              roomOriginZ={roomOffset.z}
-              roomPlanShape={sceneEntry.roomPlanShape}
-              roomPlanPolygon={sceneEntry.roomPlanPolygon}
-              roomPlanHoles={sceneEntry.roomPlanHoles}
+              // The room inside its laminate panels, so the item stops and snaps at each panel (lib/room-finished-outline.ts).
+              {...getFurnitureRoomFrameInsideFinishes(sceneEntry, roomOffset)}
               wallThickness={sceneEntry.roomWallThickness}
               wallContactInset={getFurnitureWallInset(
                 sceneEntry.roomWallThickness

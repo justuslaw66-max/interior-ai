@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { LonLat } from "@/lib/condo-map/condo-map-data";
+import { hidePlaceLabelsWhenClose } from "./condo-map-basemap";
 import {
   CONDO_FOCUS_CAMERA,
   addCondoDevelopment,
@@ -80,6 +81,7 @@ function useMapBehaviour(map: MapboxMap | null, maps: CondoMapsBySlug, onPick: (
     if (!map) return;
     return bindCondoPicking(map, slugKey.split(",").filter(Boolean), onPick);
   }, [map, slugKey, onPick]);
+  useEffect(() => (map ? hidePlaceLabelsWhenClose(map) : undefined), [map]);
   useEffect(() => {
     if (!map) return;
     const hidden = HIDDEN.get(map) ?? new Set<string | number>();

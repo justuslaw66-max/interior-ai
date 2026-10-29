@@ -24,6 +24,7 @@ import {
   condoViewUpdates,
   floorLegend,
 } from "@/app/admin/condo-map/condo-map-layers";
+import { CONDO_PLACE_LABELS_BELOW_ZOOM, hidePlaceLabelsWhenClose, placeLabelsShown } from "@/app/admin/condo-map/condo-map-basemap";
 import { keepUnitInView, loadError, mapProblem } from "@/app/admin/condo-map/condo-map-mapbox";
 import {
   NO_CONDO_VIEW,
@@ -69,7 +70,7 @@ for (const summary of index) {
   assert.equal(Boolean(dev.models), summary.detailed, `${dev.slug}: the index says whether it has models`);
   assert.ok(dev.massing.features.length > 0 && dev.unitParts.features.length > 0, `${dev.slug}: something to draw`);
   assert.ok(dev.clip.length > 0, `${dev.slug}: an outline that clears Mapbox's buildings off the site`);
-  // Mapbox's labels (house numbers) go over the whole lot: it holds the building, and the clip of its buildings
+  // Mapbox's point-of-interest labels go over the whole lot: it holds the building, and the clip of its buildings
   assert.ok(dev.labelClip.length > 0, `${dev.slug}: an outline that clears Mapbox's labels off the site`);
   const onLot = ([lon, lat]: readonly [number, number]) => dev.labelClip.some((polygon) => pointInRing([lon, lat], polygon[0]));
   for (const polygon of dev.clip) assert.ok(polygon[0].every(onLot), `${dev.slug}: the labels' clip covers the buildings' clip`);
@@ -304,6 +305,37 @@ if (part) {
   const replaced = standInMap(true, () => ({ x: 790, y: 380 }));
   keepUnitInView(replaced.map, part)();
   assert.equal(replaced.waiting.size, 0, "a newer choice cancels the wait");
+}
+
+// ---------- house numbers: Standard's place labels go from zoom 16.5 in (house numbers show from 17), back further out
+assert.equal(CONDO_PLACE_LABELS_BELOW_ZOOM, 16.5);
+assert.ok(placeLabelsShown(12) && placeLabelsShown(16.49), "the overview keeps the area names");
+assert.ok(!placeLabelsShown(16.5) && !placeLabelsShown(17) && !placeLabelsShown(18.6), "a site's view has no house numbers");
+{
+  let zoom = 12;
+  const sets: Array<[string, string, MapboxJson]> = [];
+  const listeners = new Set<(event: MapboxEvent) => void>();
+  const map = {
+    getZoom: () => zoom,
+    setConfigProperty: (importId: string, name: string, value: MapboxJson) => sets.push([importId, name, value]),
+    on: (_type: string, listener: (event: MapboxEvent) => void) => listeners.add(listener),
+    off: (_type: string, listener: (event: MapboxEvent) => void) => listeners.delete(listener),
+  } as unknown as MapboxMap;
+  const zoomTo = (to: number) => {
+    zoom = to;
+    listeners.forEach((listener) => listener({}));
+  };
+  const unbind = hidePlaceLabelsWhenClose(map);
+  assert.deepEqual(sets, [["basemap", "showPlaceLabels", true]], "set once at the start");
+  for (const step of [13, 14.5, 16, 16.4]) zoomTo(step);
+  assert.equal(sets.length, 1, "no change while it stays out");
+  zoomTo(17.2);
+  zoomTo(18.6);
+  assert.deepEqual(sets.slice(1), [["basemap", "showPlaceLabels", false]], "off once on crossing in");
+  zoomTo(15);
+  assert.deepEqual(sets.slice(2), [["basemap", "showPlaceLabels", true]], "on again on crossing out");
+  unbind();
+  assert.equal(listeners.size, 0, "unbinding removes the listener");
 }
 
 const residences = maps["33-residences"];

@@ -373,6 +373,132 @@
   }
 }
 
+/* Increase Contrast (J, 29 Oct: the finish, as drawn on the design canvas). The device's Increase Contrast
+   setting reaches the page as prefers-contrast: more. Grey text reaches 7:1, lines and control edges 3:1,
+   and the accents step to Apple's increased-contrast values (HIG, Color: dark blue #5CB8FF, green
+   #4AD968, orange #FFA056); Delete keeps #FF8A84, brighter than Apple's red. With the setting off nothing
+   changes. Both modes set the same tokens, so forced dark never takes a light one; the device's dark
+   block repeats the dark one, line for line (scripts/test-designer-theme-contrast.ts checks both). Admin
+   keeps its own colours, and the 2D plan and the 3D view their palettes. */
+@media (prefers-contrast: more) {
+  :root,
+  [data-color-scheme="light"] {
+    --border-subtle: #8e8e93;
+    --border-strong: #6c6c70;
+    --text-secondary: #404040;
+    --text-muted: #404040;
+    --accent: #1d4aa6;
+    --focus: #1d4aa6;
+    --danger: #991b1b;
+    --label-secondary: #404040;
+    --separator: #8e8e93;
+    --link: #1d4aa6;
+    --accent-tint-border: #275fcb;
+    --on-accent-tint: #193cb8;
+    --box-border: #8e8e93;
+    --separator-subtle: #8e8e93;
+    --swatch-edge: rgba(0, 0, 0, 0.45);
+    --label-tertiary: var(--color-neutral-500);
+    --success-tint-border: var(--color-emerald-700);
+    --on-success-tint: #065f46;
+    --warning-tint-border: #b45309;
+    --on-warning-tint: #863b0c;
+    --danger-tint-border: #b91c1c;
+    --on-danger-tint: #991b1b;
+    --surface-floating-edge: #8e8e93;
+    --floating-on-danger: var(--color-white);
+    --floating-on-danger-tint: #991b1b;
+    --floating-on-accent-tint: #193cb8;
+    --control-switch-off: var(--color-neutral-700);
+    --control-secondary: var(--color-white);
+    --control-secondary-hover: var(--color-neutral-50);
+    --control-secondary-border: #6c6c70;
+    --control-label-idle: var(--color-neutral-800);
+    --control-edge-hover: #48484a;
+    --control-handle: #8e8e93;
+    --control-danger-border: var(--color-red-600);
+    --control-on-danger: var(--color-white);
+  }
+
+  [data-color-scheme="dark"] {
+    --border-subtle: #7c7c80;
+    --border-strong: rgba(235, 235, 245, 0.6);
+    --text-secondary: rgba(235, 235, 245, 0.8);
+    --text-muted: rgba(235, 235, 245, 0.8);
+    --accent: #5cb8ff;
+    --focus: #5cb8ff;
+    --danger: #ff8a84;
+    --label-secondary: rgba(235, 235, 245, 0.8);
+    --separator: #7c7c80;
+    --link: #5cb8ff;
+    --accent-tint-border: rgba(92, 184, 255, 0.6);
+    --on-accent-tint: #5cb8ff;
+    --box-border: #7c7c80;
+    --separator-subtle: #7c7c80;
+    --swatch-edge: rgba(255, 255, 255, 0.45);
+    --label-tertiary: rgba(235, 235, 245, 0.55);
+    --success-tint-border: rgba(74, 217, 104, 0.6);
+    --on-success-tint: #4ad968;
+    --warning-tint-border: rgba(255, 160, 86, 0.6);
+    --on-warning-tint: #ffa056;
+    --danger-tint-border: rgba(255, 138, 132, 0.6);
+    --on-danger-tint: #ff8a84;
+    --surface-floating-edge: #7c7c80;
+    --floating-on-danger: #ff8a84;
+    --floating-on-danger-tint: #ff8a84;
+    --floating-on-accent-tint: #7cc4ff;
+    --control-switch-off: rgba(120, 120, 128, 0.6);
+    --control-secondary: rgba(118, 118, 128, 0.32);
+    --control-secondary-hover: rgba(118, 118, 128, 0.4);
+    --control-secondary-border: #7c7c80;
+    --control-label-idle: rgba(235, 235, 245, 0.92);
+    --control-edge-hover: rgba(235, 235, 245, 0.6);
+    --control-handle: #7c7c80;
+    --control-danger-border: rgba(255, 138, 132, 0.6);
+    --control-on-danger: #ff8a84;
+  }
+}
+
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root:not([data-color-scheme="light"]) {
+    --border-subtle: #7c7c80;
+    --border-strong: rgba(235, 235, 245, 0.6);
+    --text-secondary: rgba(235, 235, 245, 0.8);
+    --text-muted: rgba(235, 235, 245, 0.8);
+    --accent: #5cb8ff;
+    --focus: #5cb8ff;
+    --danger: #ff8a84;
+    --label-secondary: rgba(235, 235, 245, 0.8);
+    --separator: #7c7c80;
+    --link: #5cb8ff;
+    --accent-tint-border: rgba(92, 184, 255, 0.6);
+    --on-accent-tint: #5cb8ff;
+    --box-border: #7c7c80;
+    --separator-subtle: #7c7c80;
+    --swatch-edge: rgba(255, 255, 255, 0.45);
+    --label-tertiary: rgba(235, 235, 245, 0.55);
+    --success-tint-border: rgba(74, 217, 104, 0.6);
+    --on-success-tint: #4ad968;
+    --warning-tint-border: rgba(255, 160, 86, 0.6);
+    --on-warning-tint: #ffa056;
+    --danger-tint-border: rgba(255, 138, 132, 0.6);
+    --on-danger-tint: #ff8a84;
+    --surface-floating-edge: #7c7c80;
+    --floating-on-danger: #ff8a84;
+    --floating-on-danger-tint: #ff8a84;
+    --floating-on-accent-tint: #7cc4ff;
+    --control-switch-off: rgba(120, 120, 128, 0.6);
+    --control-secondary: rgba(118, 118, 128, 0.32);
+    --control-secondary-hover: rgba(118, 118, 128, 0.4);
+    --control-secondary-border: #7c7c80;
+    --control-label-idle: rgba(235, 235, 245, 0.92);
+    --control-edge-hover: rgba(235, 235, 245, 0.6);
+    --control-handle: #7c7c80;
+    --control-danger-border: rgba(255, 138, 132, 0.6);
+    --control-on-danger: #ff8a84;
+  }
+}
+
 /* A floating surface: the right rail's cards, the item panel and the bars over the canvas
    (data-surface="floating", on a surface-floating background). In dark it is #2C2C2E, so what sits on
    it goes a step up: cards (a ChoiceTile's surface-secondary), fields, tiles and popovers are #3A3A3C

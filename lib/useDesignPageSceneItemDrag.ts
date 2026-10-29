@@ -11,7 +11,7 @@ import {
   isSurfaceOnlyCatalogItem,
 } from "@/lib/catalog-placement";
 import { evaluateConstraints, type ConstraintResult } from "@/lib/constraints/evaluate";
-import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
+import { aabbIntersects, getFurnitureWallInset, type AABB } from "@/lib/design-page-geometry";
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import {
   applyDesignItemTransformPatches,
@@ -20,6 +20,8 @@ import {
   type DesignItemTransformPatch,
 } from "@/lib/design-page-item-commands";
 import type { HistoryCommand, HistoryStatus } from "@/lib/historyManager";
+import { clampToRoomInsideFinishes } from "@/lib/room-finished-outline";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type {
   SceneItemDragEndContext,
   SceneItemMoveContext,
@@ -383,18 +385,16 @@ export function useDesignPageSceneItemDrag({
             : null;
           const [safeX, safeZ] = surfacePlacement
             ? [surfacePlacement.position[0], surfacePlacement.position[2]]
-            : clampToRoom(
-                targetLocalPosition[0],
-                targetLocalPosition[2],
-                configuredPlanningDims.w / 1000,
-                configuredPlanningDims.d / 1000,
-                targetRoom.geometry.width,
-                targetRoom.geometry.depth,
-                targetRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
+            : clampToRoomInsideFinishes( // The target room's own shape and panels; clampToRoom is the active room's.
+                targetLocalPosition[0], targetLocalPosition[2],
+                configuredPlanningDims.w / 1000, configuredPlanningDims.d / 1000,
+                targetRoom.geometry.width, targetRoom.geometry.depth,
+                getFurnitureWallInset(targetRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness),
                 mover.rotationY ?? 0,
                 targetRoom.planShape,
                 targetRoom.planPolygon,
-                targetRoom.planHoles
+                targetRoom.planHoles,
+                getRoomWallFinishDepths(targetRoom)
               );
           const targetPosition: [number, number, number] = surfacePlacement
             ? surfacePlacement.position
@@ -636,7 +636,7 @@ export function useDesignPageSceneItemDrag({
       const results = evaluateConstraints({
         design: { items: nextItems },
         movedItemId: id,
-        room: { width: roomWidth, depth: roomDepth, wallThickness },
+        room: { width: roomWidth, depth: roomDepth, wallThickness, wallFinishRoom: activeRoom },
       });
       showConstraints(results);
       showConfidence(results);
