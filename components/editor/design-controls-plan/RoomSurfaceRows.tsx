@@ -30,6 +30,13 @@ export function openRoomSurfaceTarget(pickerOpen: boolean, target: SurfaceTarget
 }
 
 /**
+ * Which card holds Pro's one Surfaces browser (30 Oct 2026; the Plan panel showed two): the selected
+ * room's, or Floor finish while that card can't show it (a door or window is selected, or it's folded).
+ */
+export const surfaceBrowserHolderOf = (openingSelected: boolean, roomCardFolded: boolean) =>
+  openingSelected || roomCardFolded ? "floorFinish" : "room";
+
+/**
  * The room card's Floor, Walls and Ceiling rows (UX audit ED8, phase 4f). A row opens the Surfaces
  * picker in the panel for that surface: flooring for Floor, Paint | Materials for Walls (on Paint),
  * paint for Ceiling. With the canvas's Surfaces chip and the inspector's Change…, every surface
