@@ -43,7 +43,8 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 
 - **The app follows the device** (J, 22 Oct; the switch PR, 28 Oct), with no switch of its own. After the dark block, `@media (prefers-color-scheme: dark)` gives `:root:not([data-color-scheme="light"])` the same dark values, line for line (the contrast test checks they stay the same: change both together).
 - **`data-color-scheme="dark"` forces dark** for previews and tests, whatever the device.
-- **`data-color-scheme="light"` holds a subtree light.** Admin's frame (`AdminShell`) and access page (`AdminAccessDenied`), the export page, and the admin-only tools and QA pages (`components/HeldLight.tsx`: `/tools`, `/lighting-reference`, `/hugg-test`, `/models-test`) carry it: they stay light (plan decision 7). A held-light root also sets its text colour (`text-foreground`, or Admin's own): `color` is inherited as the body's, white on a dark device, so without it the words and default borders inside would turn white.
+- **`data-color-scheme="light"` holds a subtree light.** Only Admin's frame (`AdminShell`) and access page (`AdminAccessDenied`) and the export page carry it: they stay light (plan decisions 6 and 7), and the contrast test checks nothing else does. A held-light root also sets its text colour (`text-foreground`, or Admin's own): `color` is inherited as the body's, white on a dark device, so without it the words and default borders inside would turn white.
+- **The internal tools and QA pages follow the device** (J, 29 Oct): the GLB optimiser (`/tools`, its own dark look before), `/lighting-reference`, `/models-test` and `/hugg-test` draw with the tokens, and the GLB optimiser's actions are the shared `Button`. The lighting reference's 3D scene keeps its own colours.
 - **The `dark:` variant** follows the same switch: a dark device outside a held-light subtree, or `data-color-scheme="dark"`.
 - **`color-scheme`** is `light` or `dark` with the tokens, so the browser's own controls and scrollbars match.
 - **The canvases** read the scheme of `<html>` (`lib/canvas-colour-scheme.ts`), so a canvas inside a held-light subtree would still draw its palette colours dark; none of those canvases is in one today.
@@ -92,7 +93,7 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 ## Moving screens
 
 - **Screens move folder by folder** (plan step 5). Replace hard-coded `bg-white`, `bg-neutral-*`, `text-neutral-*`, `border-neutral-*`, `text-white` and `bg-black` with roles.
-- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3, 2,848 after the inset frame, 2,738 after the laminate picker and the editor's shell, 2,399 after the step panel, 2,137 after the right rail, 2,024 after the overlays on the canvas, 1,475 after the rest of the editor, 1,267 after the pages outside it, 796 after Built-ins, 783 after the canvases, 782 after the finish), and the count can only go down.
+- **`scripts/test-ui-foundations.tsx` counts those classes** (`neutralColours`, 2,851 after step 3, 2,848 after the inset frame, 2,738 after the laminate picker and the editor's shell, 2,399 after the step panel, 2,137 after the right rail, 2,024 after the overlays on the canvas, 1,475 after the rest of the editor, 1,267 after the pages outside it, 796 after Built-ins, 783 after the canvases, 782 after the finish, 725 after the internal pages), and the count can only go down.
 - **The `.text-neutral-400`, `-500` and `-600` overrides** at the end of `globals.css` are a light-only fix. They go once their users have moved.
 
 The edge between the panels and the canvas, the rounded inset frame, is in `editor-canvas-frame.md`.

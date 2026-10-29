@@ -46,7 +46,7 @@ function HuggScene({ url, variantName, colorHex }: { url: string; variantName: s
 
 export default function HuggTestClient() {
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#f5f5f5", display: "flex" }}>
+    <div style={{ width: "100vw", height: "100vh", background: "var(--surface-grouped)", color: "var(--label)", display: "flex" }}>
       <div
         data-testid="hugg-test-ready"
         style={{
@@ -54,7 +54,7 @@ export default function HuggTestClient() {
           top: 8,
           left: 8,
           zIndex: 10,
-          background: "white",
+          background: "var(--surface-floating)",
           padding: "4px 8px",
           fontSize: 12,
           fontFamily: "monospace",
@@ -70,7 +70,7 @@ export default function HuggTestClient() {
             top: 8,
             left: 8,
             zIndex: 10,
-            background: "white",
+            background: "var(--surface-floating)",
             padding: "2px 6px",
             fontSize: 12,
             fontFamily: "monospace",
@@ -102,7 +102,7 @@ export default function HuggTestClient() {
             top: 8,
             left: 8,
             zIndex: 10,
-            background: "white",
+            background: "var(--surface-floating)",
             padding: "2px 6px",
             fontSize: 12,
             fontFamily: "monospace",

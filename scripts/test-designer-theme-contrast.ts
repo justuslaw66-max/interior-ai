@@ -615,18 +615,18 @@ assert.match(
   /@custom-variant dark \{\n  &:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\) \{\n    @slot;\n  \}\n  @media \(prefers-color-scheme: dark\) \{\n    &:where\(:root:not\(\[data-color-scheme="light"\]\) \*\):not\(:where\(\[data-color-scheme="light"\], \[data-color-scheme="light"\] \*\)\) \{/,
   "dark: utilities follow the same switch as the tokens, and stay off where a subtree is held light (Admin)."
 );
-for (const [file, holds] of [
-  ["app/admin/AdminShell.tsx", /data-color-scheme="light"/],
-  ["app/admin/AdminAccessDenied.tsx", /data-color-scheme="light"/],
-  ["app/share/[shareToken]/export/page.tsx", /data-color-scheme="light"/],
-  ["app/tools/layout.tsx", /<HeldLight>\{children\}<\/HeldLight>/],
-  ["app/lighting-reference/page.tsx", /<HeldLight>/],
-  ["app/hugg-test/page.tsx", /<HeldLight>/],
-  ["app/models-test/page.tsx", /<HeldLight>/],
-] as const) {
-  assert.match(read(file), holds, `${file} stays light on a dark device (Admin, the export page, the internal tools and QA pages).`);
+// Held light whatever the device (plan decisions 6 and 7): Admin, and the export page and its PDF. Nothing
+// else is held light: the internal tools and QA pages follow the device like the app (J, 29 Oct).
+const LIGHT_PAGES = ["app/admin/AdminAccessDenied.tsx", "app/admin/AdminShell.tsx", "app/share/[shareToken]/export/page.tsx"];
+for (const file of LIGHT_PAGES) {
+  assert.match(read(file), /data-color-scheme="light">/, `${file} stays light on a dark device.`);
 }
-// Text colour is inherited as the body's (white on a dark device), so each held-light root sets its own.
+assert.deepEqual(
+  sourceFiles.filter((file) => file.endsWith(".tsx") && /data-color-scheme="light"/.test(read(file))).sort(),
+  LIGHT_PAGES,
+  "Only Admin and the export page hold anything light."
+);
+// Text colour is inherited as the body's, so each held-light root sets its own.
 const exportHolds = read("app/share/[shareToken]/export/page.tsx").match(/<main className="[^"]*" data-color-scheme="light">/g) ?? [];
 assert.equal(exportHolds.length, 2, "The export page holds both of its pages light.");
 for (const hold of exportHolds) {
@@ -636,11 +636,6 @@ assert.match(
   read("app/admin/operations-dashboard.module.css"),
   /^\.page \{[^}]*\n  color: var\(--ops-ink\);\n\}/m,
   "Admin's words stay dark on a dark device."
-);
-assert.match(
-  read("components/HeldLight.tsx"),
-  /data-color-scheme="light" className="min-h-screen bg-background text-foreground"/,
-  "A held-light page covers the dark page behind it with the light background."
 );
 
 // The plan drawings (dark mode PR 4, J 28 Oct): light keeps what they drew with before; dark has the

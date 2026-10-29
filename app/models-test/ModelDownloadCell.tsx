@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { buttonClassName } from "@/components/ui/Button";
 
 export default function ModelDownloadCell({ modelUrl }: { modelUrl: string }) {
   const [status, setStatus] = useState<"idle" | "ok" | "missing" | "error">("idle");
@@ -12,18 +13,18 @@ export default function ModelDownloadCell({ modelUrl }: { modelUrl: string }) {
   }, [modelUrl]);
 
   if (status === "ok")
-    return <span className="text-green-600 text-xs font-bold">✓ Available</span>;
+    return <span className="text-on-success-tint text-xs font-bold">✓ Available</span>;
   if (status === "missing")
-    return <span className="text-red-600 text-xs font-bold">✗ Missing</span>;
+    return <span className="text-on-danger-tint text-xs font-bold">✗ Missing</span>;
   if (status === "error")
-    return <span className="text-red-600 text-xs font-bold">✗ Error</span>;
+    return <span className="text-on-danger-tint text-xs font-bold">✗ Error</span>;
 
   return (
     <a
       href={modelUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-block px-3 py-1 bg-neutral-900 text-white text-xs rounded hover:bg-neutral-800"
+      className={buttonClassName({ variant: "primary", size: "compact" })}
     >
       Download
     </a>
