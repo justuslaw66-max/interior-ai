@@ -156,8 +156,12 @@ assert.match(half, /<div data-testid="phone-sheet-inspector" hidden=""><\/div><d
 const inspectorSource = read("components/editor/design-page/DesignPageSelectionInspector.tsx");
 const placementSource = read("components/editor/design-page/selectionInspectorPlacement.ts");
 assert.match(placementSource, /const takesOver = isPhoneSheetInspectorSelection\(state\);\s*const inSheet = !wide && Boolean\(sheet\.slot\) && takesOver;/);
-assert.match(placementSource, /if \(inSheet\) return \{ shown: true, inSheet, portalTarget: sheet\.slot \};/, "In the sheet, it goes into the slot.");
-assert.match(inspectorSource, /const placement = useInspectorPlacement\(state, configuration\);/);
+assert.match(placementSource, /if \(inSheet\) return \{ shown: true, inSheet, portalTarget: sheet\.slot, attach: setElement \};/, "In the sheet, it goes into the slot.");
+assert.match(inspectorSource, /const \{ attach, \.\.\.placement \} = useInspectorPlacement\(state, configuration, `\$\{state\.summary\.kind\}:\$\{state\.summary\.title\}`\);/);
+assert.match(inspectorSource, /<div ref=\{attach\} data-testid="selection-inspector"/);
+// Docked in the Plan rail, the inspector scrolls into view when the selection changes (30 Oct 2026).
+assert.match(placementSource, /useRevealDockedInspector\(element, docked && !inSheet, selectionKey\);/);
+assert.match(placementSource, /if \(above < 0\) rail\.scrollTop \+= above;\s*else if \(below > 0\) rail\.scrollTop \+= Math\.min\(below, above\);/);
 assert.match(placementSource, /if \(placement\.inSheet\) return \{ className: surface, clearSize: "touch" as const,[\s\S]*?clearSize: "icon" as const, style \};/, "Done is a 44px target; × Deselect 36px, 44px on touch (UX 5n).");
 assert.match(inspectorSource, /<Button\s+size=\{frame\.clearSize\}\s+data-testid="selection-inspector-clear"/);
 assert.match(inspectorSource, /aria-label=\{placement\.inSheet \? undefined : `Deselect \$\{state\.summary\.title\}`\}[\s\S]*?\{placement\.inSheet \? "Done" : <X className="h-4 w-4" aria-hidden="true" \/>\}/, "Done deselects, in the sheet; elsewhere × Deselect <name> (UX 4f, ED7).");

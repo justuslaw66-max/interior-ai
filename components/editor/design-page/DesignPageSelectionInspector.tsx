@@ -88,10 +88,10 @@ export function DesignPageSelectionInspector({
       !state.surfaceInspectorIsWall &&
       !state.surfaceInspectorIsCeiling
   );
-  const placement = useInspectorPlacement(state, configuration);
+  const { attach, ...placement } = useInspectorPlacement(state, configuration, `${state.summary.kind}:${state.summary.title}`);
   const frame = inspectorFrame(configuration, placement);
   const inspector = (
-    <div data-testid="selection-inspector" data-touch-area data-in-sheet={placement.inSheet ? "true" : undefined}
+    <div ref={attach} data-testid="selection-inspector" data-touch-area data-in-sheet={placement.inSheet ? "true" : undefined}
       data-surface={frame.dataSurface} className={frame.className} style={frame.style}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
