@@ -502,6 +502,45 @@
   }
 }
 
+/* Reduce Transparency (J, 29 Oct). The device's Reduce Transparency setting reaches the page as
+   prefers-reduced-transparency: reduce (Chrome and Edge; Safari doesn't report it yet). What floats frosted
+   over the canvas and the page turns solid: every blur goes, and a frosted surface's translucent token fill
+   (bg-surface-floating/95 and the like) takes its full colour. Scrims behind dialogs and the buttons over
+   photos keep their tint. Keyed on the class names, so every frosted surface follows, Built-ins' too, and
+   unlayered, so these win over the utilities; the contrast test checks every frosted fill is covered. */
+@media (prefers-reduced-transparency: reduce) {
+  [class*="backdrop-blur"],
+  :root .panel {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /* The loading card's .panel, defined further down, so one step more specific. */
+  :root .panel {
+    background: var(--bg-panel);
+  }
+
+  [class*="backdrop-blur"][class*="bg-surface/"] {
+    background-color: var(--surface);
+  }
+
+  [class*="backdrop-blur"][class*="bg-surface-secondary/"] {
+    background-color: var(--surface-secondary);
+  }
+
+  [class*="backdrop-blur"][class*="bg-surface-elevated/"] {
+    background-color: var(--surface-elevated);
+  }
+
+  [class*="backdrop-blur"][class*="bg-surface-floating/"] {
+    background-color: var(--surface-floating);
+  }
+
+  [class*="backdrop-blur"][class*="bg-surface-toast/"] {
+    background-color: var(--surface-toast);
+  }
+}
+
 /* A floating surface: the right rail's cards, the item panel and the bars over the canvas
    (data-surface="floating", on a surface-floating background). In dark it is #2C2C2E, so what sits on
    it goes a step up: cards (a ChoiceTile's surface-secondary), fields, tiles and popovers are #3A3A3C

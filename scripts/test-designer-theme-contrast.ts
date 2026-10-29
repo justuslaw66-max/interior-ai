@@ -640,6 +640,31 @@ assert.match(
   "Admin's words stay dark on a dark device."
 );
 
+// Reduce Transparency (J, 29 Oct): with prefers-reduced-transparency: reduce, every blur goes and a frosted
+// surface's translucent token fill takes its full colour. The rules are keyed on class names, so every token
+// a frosted surface fills with must have one.
+const reduceTransparency = css.match(/\n@media \(prefers-reduced-transparency: reduce\) \{\n([\s\S]*?)\n\}\n/)?.[1];
+assert.ok(reduceTransparency, "Reduce Transparency has its own block.");
+assert.match(
+  reduceTransparency,
+  /\[class\*="backdrop-blur"\],\n  :root \.panel \{\n    -webkit-backdrop-filter: none;\n    backdrop-filter: none;\n  \}/,
+  "Reduce Transparency takes out every blur."
+);
+const solidFills = new Set(
+  Array.from(reduceTransparency.matchAll(/\[class\*="backdrop-blur"\]\[class\*="bg-([a-z-]+)\/"\] \{\n    background-color: var\(--([a-z-]+)\);/g), ([, fill, token]) => {
+    assert.equal(fill, token, `The frosted bg-${fill}/ fill turns solid in its own colour.`);
+    return fill;
+  })
+);
+for (const file of sourceFiles.filter((name) => !name.startsWith("app/admin"))) {
+  for (const line of read(file).split("\n").filter((text) => text.includes("backdrop-blur"))) {
+    for (const [, token] of line.matchAll(/(?:^|[\s"'`:])bg-([a-z][a-z-]*)\/[\d.]+/g)) {
+      if (!lightTokens.has(token)) continue;
+      assert.ok(solidFills.has(token), `${file}: a frosted bg-${token}/ fill needs a Reduce Transparency rule.`);
+    }
+  }
+}
+
 // The plan drawings (dark mode PR 4, J 28 Oct): light keeps what they drew with before; dark has the
 // plan's dark paper, rooms a dim tint of their colour, walls light.
 const PLAN_TOKENS: Record<string, readonly [string, string]> = {
