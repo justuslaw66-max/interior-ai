@@ -4,7 +4,7 @@ import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { buildHousePlan2D, getHouseRoomPlanPolygon } from "@/lib/design-page-house-plan";
 import { storedToSnapshot } from "@/lib/room-persistence";
-import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
+import { projectSharedDesignForPublicPage } from "@/lib/public-share-projection";
 import { summarizeShoppingRooms, summarizeWholeHomeShopping } from "@/lib/room-shopping";
 import { storeyDisplayLabel, storeyLevelLabel } from "@/lib/storey-labels";
 import {
@@ -938,7 +938,7 @@ export default async function ExportPage({
     );
   }
 
-  const publicDesign = projectSharedDesignTransport(design);
+  const publicDesign = projectSharedDesignForPublicPage(design);
   const designSnapshot: DesignSnapshot = storedToSnapshot(publicDesign.snapshot);
   const handoffFidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
   const qaFidelitySummary = handoffFidelitySummary;
