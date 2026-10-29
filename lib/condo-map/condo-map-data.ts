@@ -68,7 +68,7 @@ export type CondoDevelopmentMap = {
   floors: CondoFeatureCollection<FloorPaintProperties>;
   balconies: CondoFeatureCollection<FloorPaintProperties>;
   clip: PolygonCoordinates[];
-  /** The land lot(s) with the footprint, where Mapbox's own labels (house numbers) are taken away. */
+  /** The land lot(s) with the footprint, where Mapbox's own point-of-interest labels are taken away. */
   labelClip: PolygonCoordinates[];
   models: { origin: LonLat; items: CondoModelItem[] } | null;
 };

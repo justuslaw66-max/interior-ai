@@ -58,6 +58,7 @@ export interface MapboxMap {
   getCanvas(): HTMLCanvasElement;
   getZoom(): number;
   getPitch(): number;
+  setConfigProperty(importId: string, name: string, value: MapboxJson): void;
   isMoving(): boolean;
   project(lngLat: [number, number]): MapboxPoint;
   easeTo(options: { center: [number, number]; offset?: [number, number]; duration?: number }): void;
