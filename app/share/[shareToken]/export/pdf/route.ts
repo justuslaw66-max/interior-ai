@@ -411,7 +411,7 @@ export async function GET(
         y = drawWrappedText(page, formatSurfaceMaterialBomWarning(surfaceMaterialBomWarnings), MARGIN, y, 500, fonts.bold, 8, 10, rgb(0.66, 0.38, 0.02));
       });
       for (const row of surfaceMaterialBomRows) {
-        ({ page, y } = ensureSpace(pdfDoc, page, y, 58, watermarked, "Surface material BOM", fonts));
+        ({ page, y } = ensureSpace(pdfDoc, page, y, 70, watermarked, "Surface material BOM", fonts));
         y = drawWrappedText(page, `${row.roomName} ${row.surfaceLabel}: ${row.materialName}`, MARGIN, y, 340, fonts.bold, 9, 11);
         drawTextLine(
           page,
@@ -423,16 +423,9 @@ export async function GET(
           rgb(0.36, 0.36, 0.36)
         );
         y -= 12;
-        drawTextLine(
-          page,
-          `Surface area ${formatMeasurement(row.surfaceAreaSqm, "m2")} • Order ${formatSurfaceMaterialBomOrder(row, (area) => formatMeasurement(area, "m2"))} • ${row.purchaseMode.replace(/_/g, " ")}`,
-          MARGIN + 12,
-          y,
-          fonts.regular,
-          8,
-          rgb(0.36, 0.36, 0.36)
-        );
-        y -= 12;
+        // A laminate's order names its boards and battens too, so it wraps rather than being cut at 110 characters.
+        const order = `Order ${formatSurfaceMaterialBomOrder(row, (area) => formatMeasurement(area, "m2"))} • ${row.purchaseMode.replace(/_/g, " ")}`;
+        y = drawWrappedText(page, `Surface area ${formatMeasurement(row.surfaceAreaSqm, "m2")} • ${order}`, MARGIN + 12, y, 480, fonts.regular, 8, 12, rgb(0.36, 0.36, 0.36));
         drawTextLine(
           page,
           `Pattern ${row.pattern.replace(/_/g, " ")} • Rotation ${row.rotationDeg} deg • Scale ${row.scale.toFixed(2)}x • Joint ${row.jointSizeMm} mm ${row.jointColor}`,

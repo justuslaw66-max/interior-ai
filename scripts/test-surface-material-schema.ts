@@ -1040,13 +1040,13 @@ const wallTileColumns = getSurfaceTileColumns({
 });
 assert.deepEqual([wallTileColumns.first, wallTileColumns.end, wallTileColumns.left(0, 0)], [0, 5, -600], "wall tiles keep their columns");
 
-// A wall panel's joints: 1 mm and dark, called joints; tiles keep their grout.
+// A wall panel's joints: 3 mm (Greenlam's least, 28 Oct 2026) and dark, called joints; tiles keep their grout.
 assert.equal(surfaceMaterialHasJoints(nordicAcaciaPanel), true);
 assert.equal(surfaceMaterialHasJoints(someWallTile), true);
 assert.equal(surfaceMaterialHasJoints(null), false);
 assert.equal(getSurfaceJointLabel(nordicAcaciaPanel), "Joints");
 assert.equal(getSurfaceJointLabel(someWallTile), "Grout");
-assert.deepEqual(getDefaultWallJoint(nordicAcaciaPanel), { jointSizeMm: 1, jointColor: "#444442" });
+assert.deepEqual(getDefaultWallJoint(nordicAcaciaPanel), { jointSizeMm: 3, jointColor: "#444442" }, "Greenlam's least joint (28 Oct 2026)");
 assert.deepEqual(getDefaultWallJoint(someWallTile), { jointSizeMm: 2, jointColor: "#dad7cf" });
 
 const grandMarble = findRuntimeMaterialFixture("goodrich-geff-novaclick-gnv-018-grand-marble");

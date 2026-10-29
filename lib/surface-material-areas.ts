@@ -11,7 +11,9 @@ import {
   getWallFaceLabel,
   getWallFaceSurfaceSettings,
   normalizeFloorSurfaceSettings,
+  type NormalizedSurfaceSettings,
 } from "./surface-settings";
+import { DEFAULT_WALL_PANEL_BACKING, getWallPanelBacking, type NormalizedWallPanelBacking } from "./laminate-wall-backing";
 import type { WallFinishPiece } from "./surface-material-sheets";
 import { buildRoomWallFinishQuantities, type RoomWallFinishQuantities } from "./surface-material-wall-panels";
 
@@ -23,6 +25,8 @@ export type SurfaceAreaSettings = {
   offset: { x: number; y: number };
   jointSizeMm: number;
   jointColor: string;
+  /** A laminate wall finish's board (lib/laminate-wall-backing.ts); the floor and other finishes carry the default. */
+  panelBacking: NormalizedWallPanelBacking;
 };
 
 /**
@@ -97,9 +101,9 @@ function pushAreaRow(target: RoomAreaRows, input: AreaRowInput) {
   });
 }
 
-function wallSettings(settings: SurfaceAreaSettings): SurfaceAreaSettings {
+function wallSettings(settings: NormalizedSurfaceSettings): SurfaceAreaSettings {
   const { pattern, rotationDeg, scale, offset, jointSizeMm, jointColor } = settings;
-  return { pattern, rotationDeg, scale, offset, jointSizeMm, jointColor };
+  return { pattern, rotationDeg, scale, offset, jointSizeMm, jointColor, panelBacking: getWallPanelBacking(settings) };
 }
 
 function pushFloorRow(target: RoomAreaRows, surfaces: RoomSurfaceAssignments | undefined) {
@@ -116,6 +120,7 @@ function pushFloorRow(target: RoomAreaRows, surfaces: RoomSurfaceAssignments | u
       offset: floor.floorPatternOffset,
       jointSizeMm: floor.floorJointSizeMm,
       jointColor: floor.floorJointColor,
+      panelBacking: DEFAULT_WALL_PANEL_BACKING,
     },
   });
 }

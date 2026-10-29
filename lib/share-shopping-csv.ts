@@ -5,6 +5,8 @@ import {
 import { buildRoomSurfaceMaterialBomResult, formatSurfaceMaterialBomOrder } from "@/lib/surface-material-bom-result";
 import type { SurfaceMaterialBomRow } from "@/lib/surface-material-bom";
 import type { PersistedPlanOpening, RoomSnapshot } from "@/lib/room-types";
+import { formatSheetSize } from "@/lib/surface-material-sheets";
+import { formatWallPanelBoard, WALL_PANEL_BATTEN_DEPTH_MM, WALL_PANEL_BATTEN_SPACING_MM } from "@/lib/laminate-wall-backing";
 
 export type CheckoutReadinessRow = ActiveRoomShoppingItem & {
   roomId: string;
@@ -144,12 +146,44 @@ function surfaceUnitPrice(row: SurfaceMaterialBomRow) {
   return row.pricePerSqmAmount ?? 0;
 }
 
+/**
+ * A laminate finish's backing as lines of its own, so a fitter can order them: the boards behind its sheets, and the battens
+ * when it is fixed on them (lib/laminate-wall-backing.ts). Priced by the supplier, like the finish.
+ */
+function backingCsvRows(row: SurfaceMaterialBomRow): ShoppingCsvRow[] {
+  const backing = row.backing;
+  if (!backing) return [];
+  const line = (category: string, itemTitle: string, productId: string, variantLabel: string, quantity: number): ShoppingCsvRow => ({
+    roomName: row.roomName,
+    category,
+    itemTitle,
+    productId,
+    variantId: row.surface,
+    variantLabel,
+    purchaseOptionLabel: null,
+    quantity,
+    status: "Quote/sample",
+    source: "Board and timber supplier",
+    retailerUrl: null,
+    includeInCheckout: false,
+    unitPriceSgd: 0,
+    lineTotalSgd: 0,
+    reviewNote: `Behind ${row.materialName}, ${row.surfaceLabel}. Greenlam bonds its laminates to a board, not to plaster or concrete.`,
+  });
+  const board = formatWallPanelBoard(backing);
+  const boards = line("Wall Panel Board", board, `board-${backing.board}-${backing.boardThicknessMm}`,
+    `${row.surfaceLabel} · ${backing.boards} of ${formatSheetSize(backing.boardSizeMm)}`, backing.boards);
+  if (backing.battenMetres === null) return [boards];
+  return [boards, line("Wall Panel Battens", `Timber battens, ${WALL_PANEL_BATTEN_DEPTH_MM} mm`, `battens-${WALL_PANEL_BATTEN_DEPTH_MM}`,
+    `${row.surfaceLabel} · ${backing.battenMetres} m, ${WALL_PANEL_BATTEN_SPACING_MM} mm apart`, backing.battenMetres)];
+}
+
 export function buildSurfaceMaterialCsvRows(
   rooms: RoomSnapshot[],
   planOpenings: readonly PersistedPlanOpening[] = []
 ): ShoppingCsvRow[] {
   const result = buildRoomSurfaceMaterialBomResult(rooms, planOpenings);
-  const rows = result.rows.map((row) => {
+  const rows = result.rows.flatMap((row) => {
     const brandLabel = row.brand ?? row.supplier;
     const status =
       row.status === "published"
@@ -158,7 +192,7 @@ export function buildSurfaceMaterialCsvRows(
           ? "Draft material"
           : "Needs review";
 
-    return {
+    const surface: ShoppingCsvRow = {
       roomName: row.roomName,
       category: row.surface === "floor" ? "Flooring Material" : "Wall Surface Material",
       itemTitle: row.materialName,
@@ -179,6 +213,7 @@ export function buildSurfaceMaterialCsvRows(
         row.reviewNote,
       ].filter(Boolean).join(" "),
     };
+    return [surface, ...backingCsvRows(row)];
   });
   return [
     ...result.warnings.map((warning): ShoppingCsvRow => ({

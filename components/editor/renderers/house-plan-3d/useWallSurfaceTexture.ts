@@ -1,5 +1,6 @@
 "use client";
 
+import { getDrawnWallJointMm } from "@/lib/laminate-wall-backing";
 import * as THREE from "three";
 import type { SurfaceMaterialRenderInfo } from "@/lib/surface-material-runtime";
 import type { getWallPanelSurfaceSettings } from "@/lib/surface-settings";
@@ -40,7 +41,7 @@ export function useWallSurfaceTexture({
     rotationRad: THREE.MathUtils.degToRad(settings.rotationDeg),
     floorPattern: settings.pattern,
     patternOffset: settings.offset,
-    jointSizeMm: settings.jointSizeMm,
+    jointSizeMm: getDrawnWallJointMm(material, settings.jointSizeMm),
     jointColor: settings.jointColor,
     maxAnisotropy,
     uvMode: "normalized",

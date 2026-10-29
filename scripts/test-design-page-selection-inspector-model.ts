@@ -194,8 +194,13 @@ assert.match(
 );
 assert.match(
   surfaceInspectorControllerSource,
-  /wallInspectorSupportsGrout = Boolean\([\s\S]*?surfaceInspectorIsWall && surfaceMaterialHasJoints\(wallInspectorSurfaceMaterial\)[\s\S]*?const wallGrout =[\s\S]*?wallInspectorSupportsGrout[\s\S]*?label: getSurfaceJointLabel\(getRuntimeSurfaceMaterialById\(surfaceInspectorMaterialId\)\)[\s\S]*?wallInspectorSettings\.jointSizeMm[\s\S]*?wallInspectorSettings\.jointColor/,
-  "Wall grout controls should appear only for tiled wall materials (and laminate wall panels' joints) and reflect the selected panel settings."
+  /wallInspectorSupportsGrout = Boolean\([\s\S]*?surfaceInspectorIsWall && surfaceMaterialHasJoints\(wallInspectorSurfaceMaterial\)[\s\S]*?const wallMaterial = getRuntimeSurfaceMaterialById\(surfaceInspectorMaterialId\)[\s\S]*?settings: wallInspectorSettings[\s\S]*?const wallGrout =[\s\S]*?wallInspectorSupportsGrout[\s\S]*?buildWallJointControls\(/,
+  "Wall grout controls should appear only for tiled wall materials (and laminate wall panels' joints) and reflect the selected panel settings; the builder (design-page-wall-finish-controls.ts) is checked by test-laminate-wall-backing.ts."
+);
+assert.match(
+  surfaceInspectorControllerSource,
+  /const selectedWallMaterialSettingsPatch = useMemo\(\(\) => \{[\s\S]*?const material = getRuntimeSurfaceMaterialById\(wallInspectorSettings\.materialId\);[\s\S]*?jointSizeMm: getDrawnWallJointMm\(material, wallInspectorSettings\.jointSizeMm\),[\s\S]*?material\?\.suitability\?\.laminate_sheet \? \{ panelBacking: normalizeWallPanelBacking\(wallInspectorSettings\.panelBacking\) \}/,
+  "Apply to room and Apply to all walls carry a laminate's joint as drawn and its board (lib/laminate-wall-backing.ts)."
 );
 assert.match(
   surfaceInspectorControllerSource,
@@ -209,12 +214,12 @@ assert.match(
 );
 assert.match(
   wallRendererSource,
-  /useSurfaceMaterialTexture\(\{[\s\S]*?jointSizeMm: settings\.jointSizeMm,[\s\S]*?jointColor: settings\.jointColor,/,
-  "Canonical wall textures should render the selected panel's grout size and colour."
+  /useSurfaceMaterialTexture\(\{[\s\S]*?jointSizeMm: getDrawnWallJointMm\(material, settings\.jointSizeMm\),[\s\S]*?jointColor: settings\.jointColor,/,
+  "Canonical wall textures should render the selected panel's grout size and colour (a laminate's at least 3 mm, lib/laminate-wall-backing.ts)."
 );
 assert.match(
   surfaceInspectorControllerSource,
-  /selectedWallMaterialSettingsPatch[\s\S]*?jointSizeMm: wallInspectorSettings\.jointSizeMm,[\s\S]*?jointColor: wallInspectorSettings\.jointColor,[\s\S]*?applyWallMaterialToAllRooms\([\s\S]*?selectedWallMaterialSettingsPatch/,
+  /selectedWallMaterialSettingsPatch[\s\S]*?jointSizeMm: getDrawnWallJointMm\(material, wallInspectorSettings\.jointSizeMm\),[\s\S]*?jointColor: wallInspectorSettings\.jointColor,[\s\S]*?applyWallMaterialToAllRooms\([\s\S]*?selectedWallMaterialSettingsPatch/,
   "Apply to all walls should carry the selected wall tile's grout configuration."
 );
 const roomMaterialMutationSource = surfaceActionsSource.slice(

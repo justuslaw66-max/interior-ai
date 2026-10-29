@@ -960,10 +960,11 @@ test.describe("Studio canonical wall panels", () => {
     ).toHaveCSS("background-color", "rgb(204, 138, 16)");
   });
 
-  test("a Greenlam laminate wall panel starts with 1 mm dark joints, called joints, and is ordered in sheets", async ({
+  test("a Greenlam laminate wall panel goes on a board, starts with 3 mm dark joints, and is ordered in sheets and boards", async ({
     page,
   }) => {
-    // Laminate wall panels (25 Oct 2026): sheets are butted, so the joint is a 1 mm shadow line, not tile grout.
+    // Laminate wall panels (25 Oct 2026): the joint is a dark shadow line, not tile grout, at least Greenlam's 3 mm, and the
+    // laminate is always on a board, MDF 9 mm by default (28 Oct 2026).
     test.setTimeout(240_000);
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.addInitScript(() => {
@@ -1010,12 +1011,20 @@ test.describe("Studio canonical wall panels", () => {
     await expect(searchColour).toBeHidden();
     await page.locator('[data-material-name="Nordic Acacia 5394"] button').first().click();
     await expect(selectedInspector).toContainText("Nordic Acacia 5394");
+    const board = page.getByTestId("selection-inspector-wall-board");
+    await expect(board.getByTestId("wall-panel-board")).toHaveValue("mdf");
+    await expect(board.getByTestId("wall-panel-board-thickness-9")).toHaveAttribute("aria-pressed", "true");
+    await expect(board.getByTestId("wall-panel-build-up")).toHaveText("Stands 10 mm off the wall.");
+    await board.getByTestId("wall-panel-board").selectOption("plywood");
+    await board.getByTestId("wall-panel-board-thickness-12").click();
+    await expect(board.getByTestId("wall-panel-build-up")).toHaveText("Stands 13 mm off the wall.");
     await openAdjustPattern(page);
     const wallJoints = page.getByTestId("selection-inspector-wall-grout");
     await expect(wallJoints).toBeVisible();
     await expect(wallJoints).toContainText("Joint size");
     await expect(wallJoints).not.toContainText("Grout");
-    await expect(wallJoints.getByTestId("wall-surface-joint-size")).toContainText("1 mm");
+    await expect(wallJoints.getByTestId("wall-surface-joint-size")).toContainText("3 mm");
+    await expect(wallJoints.getByTestId("wall-surface-joint-size-1")).toHaveCount(0);
     await expect(
       wallJoints.getByTestId("wall-surface-joint-color").locator("span"),
     ).toHaveCSS("background-color", "rgb(68, 68, 66)");
@@ -1025,6 +1034,9 @@ test.describe("Studio canonical wall panels", () => {
     const panelOrder = page.locator('[data-testid="shopping-surface-row"][data-material-id="greenlam-woodgrains-5394"]')
       .getByTestId("shopping-surface-order");
     await expect(panelOrder).toHaveText(/^Order \d+ sheets? of 1220 × 2440 mm, for \d+(?:\.\d)? m²$/, { timeout: 30_000 });
+    await expect(
+      page.locator('[data-testid="shopping-surface-row"][data-material-id="greenlam-woodgrains-5394"]').getByTestId("shopping-surface-backing")
+    ).toHaveText(/^On \d+ plywood boards?, 12 mm, glued$/);
   });
 
   test("rapid orbit never reveals the workspace grid through returning walls", async ({
