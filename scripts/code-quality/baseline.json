@@ -629,11 +629,11 @@
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
-      "lines": 420,
+      "lines": 419,
       "limit": 400
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
-      "lines": 453,
+      "lines": 452,
       "limit": 400
     },
     "lib/useDesignPageProductConfiguration.ts": {
@@ -2146,12 +2146,6 @@
         "maximum": 21
       }
     },
-    "components/FPSMeter.tsx": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 64
-      }
-    },
     "components/GoogleAddressAutocomplete.tsx": {
       "overlongFunctions": {
         "count": 1,
@@ -3035,11 +3029,11 @@
     "lib/design-page-plan-canvas-overlays.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 132
+        "maximum": 121
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 45
+        "maximum": 38
       }
     },
     "lib/design-page-product-data.ts": {
@@ -4263,7 +4257,7 @@
     "lib/useDesignPagePlanCanvasActionsController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 88
+        "maximum": 80
       }
     },
     "lib/useDesignPagePlanEditingFacade.ts": {
@@ -4281,7 +4275,7 @@
     "lib/useDesignPagePlanPresentationModel.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 209
+        "maximum": 208
       },
       "complexFunctions": {
         "count": 1,
@@ -4331,7 +4325,7 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 261
+        "maximum": 260
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {

@@ -106,7 +106,6 @@ for (const componentName of [
   "PlanGuidedActionsToggle",
   "PlanCanvasFocusControl",
   "PlanCanvasGuidance",
-  "EmptyPlanCanvasPrompt",
   "DesignToolsRestoreButton",
 ] as const) {
   assert.ok(
@@ -147,7 +146,6 @@ for (const expected of [
   "actions.setGuidedActionsEnabled((enabled) => !enabled)",
   "actions.setDesignPanelOpen(true); actions.setPlanFocusPanelRevealed((revealed) => !revealed);",
   "actions.selectFloorPlanTool(); actions.setPlanFocusPanelRevealed(false);",
-  'actions.setDesignPanelOpen(true); actions.goPlan(); actions.setGuidedPlanStartMode("start");',
   "actions.setDesignPanelOpen(true); actions.setPlanFocusPanelRevealed(false);",
 ] as const) {
   assert.ok(
@@ -161,7 +159,6 @@ for (const expected of [
   "toggle: toggleGuidedActions",
   "togglePanel: togglePlanFocusPanel",
   "finish: finishPlanFocus",
-  "startRoom: startEmptyPlanRoom",
   "restore: restoreDesignTools",
 ] as const) {
   assert.ok(
@@ -169,6 +166,12 @@ for (const expected of [
     `The plan-canvas actions controller should expose ${expected}.`
   );
 }
+
+// "Create your first room" over an empty canvas is gone (30 Oct 2026): it showed only with the
+// Plan panel closed, which only Shop does, and Shop covers the canvas. The Plan panel's own start
+// card covers an empty plan.
+assert.ok(!overlaysSource.includes("EmptyPlanCanvasPrompt"));
+assert.ok(!normalizedModel.includes("emptyPromptVisible"));
 
 for (const contractName of [
   "DesignPagePlanCanvasOverlaysState",
@@ -186,7 +189,6 @@ const overlayOrder = [
   "<PlanGuidedActionsToggle",
   "<PlanCanvasFocusControl",
   "<PlanCanvasGuidance",
-  "<EmptyPlanCanvasPrompt",
   "<DesignToolsRestoreButton",
 ];
 let previousIndex = -1;
@@ -219,8 +221,6 @@ for (const expected of [
 
 for (const expected of [
   "showGuidedActionsToggle && !guidedActionsEnabled && !activeInteraction",
-  '!isClientPreview && viewMode === "2d" && roomCount === 0 && !floorPlanTraceRoomMode',
-  "!showBetaStart && !manualQuickActionsVisible && !designControlsPanelVisible",
   "!isClientPreview && !isDesigner && !designControlsPanelVisible && !planCanvasFocusActive",
   "guidanceDismissed ? null : planCanvasGuidance",
   'floorPlanDrawRoomMode === "straight_wall" && floorPlanTraceRoomPointCount > 0',
@@ -238,7 +238,6 @@ const baseInput: DesignPagePlanCanvasOverlaysInput = {
   showBetaStart: false,
   isClientPreview: false,
   isDesigner: false,
-  viewMode: "2d",
   editorMode: "design",
   designControlsPanelVisible: false,
   designControlsPanelMode: "plan",
@@ -279,7 +278,6 @@ assert.deepEqual(
     guidedActionsToggle: { enabled: false, compact: true },
     focusControl: null,
     guidance: null,
-    emptyPromptVisible: false,
     restoreTools: { label: "Plan tools" },
   },
   "Manual, switch, and restore overlays should remain independently visible."
@@ -300,7 +298,6 @@ assert.deepEqual(
       dismissible: true,
       aboveStepSheet: false,
     },
-    emptyPromptVisible: false,
     restoreTools: { label: "Plan tools" },
   },
   "With Tips on, the guidance should show on a first visit, with nothing in front of it."
@@ -378,7 +375,6 @@ assert.deepEqual(
       dismissible: false,
       aboveStepSheet: false,
     },
-    emptyPromptVisible: false,
     restoreTools: null,
   },
   "Active focus should suppress manual actions without hiding the toggle or guidance."
@@ -417,7 +413,6 @@ assert.deepEqual(
     guidedActionsToggle: null,
     focusControl: null,
     guidance: null,
-    emptyPromptVisible: false,
     restoreTools: null,
   },
   "Client preview should remain free of plan-canvas editing overlays."

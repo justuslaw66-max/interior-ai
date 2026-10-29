@@ -355,7 +355,6 @@ export function useDesignPagePlanPresentationModel({
       showBetaStart: presentation.showBetaStart,
       isClientPreview: layout.isClientPreview,
       isDesigner: layout.isDesigner,
-      viewMode: layout.viewMode,
       editorMode: presentation.editorMode,
       designControlsPanelVisible: layout.designControlsPanelVisible,
       designControlsPanelMode: layout.designControlsPanelMode,

@@ -2,7 +2,6 @@
 
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { DesignToolsRestoreButton } from "@/components/editor/design-page/DesignToolsRestoreButton";
-import { EmptyPlanCanvasPrompt } from "@/components/editor/design-page/EmptyPlanCanvasPrompt";
 import { PlanCanvasFocusControl } from "@/components/editor/design-page/PlanCanvasFocusControl";
 import {
   PlanCanvasGuidance,
@@ -39,9 +38,6 @@ export type DesignPagePlanCanvasOverlaysActions = {
     addOpening: (kind: RoomOpening2D["kind"]) => void;
     furnish: () => void;
     dismiss: (guidanceKey: string) => void;
-  };
-  emptyPrompt: {
-    startRoom: () => void;
   };
   restoreTools: {
     restore: () => void;
@@ -148,12 +144,6 @@ export function DesignPagePlanCanvasOverlays({
           actions={{
             dismiss: () => actions.guidance.dismiss(guidance.key),
           }}
-        />
-      )}
-
-      {state.emptyPromptVisible && (
-        <EmptyPlanCanvasPrompt
-          actions={actions.emptyPrompt}
         />
       )}
 
