@@ -56,6 +56,10 @@ export function CanvasBehindPage({ covered, children }: { covered: boolean; chil
   );
 }
 
+// Client Preview's labels sit on the 3D view, light or dark: a dark translucent pill with white words
+// (J, 29 Oct: "beta preview" was white at 40%, which the light ground hid).
+const CLIENT_PREVIEW_PILL = "absolute right-6 z-30 rounded-full border border-white/10 bg-black/40 text-xs text-white";
+
 function ClientPreviewExitAction({
   visible,
   onExit,
@@ -116,10 +120,10 @@ export function DesignPagePanelRegion({
 
       {isClientPreview ? (
         <>
-          <div className="absolute right-6 top-6 z-30 rounded-full border border-white/10 bg-black/40 px-4 py-2 text-xs text-white">
+          <div className={`${CLIENT_PREVIEW_PILL} top-6 px-4 py-2`}>
             Client-safe view - nothing editable
           </div>
-          <div className="absolute bottom-5 right-6 z-30 text-xs text-white/40">
+          <div className={`${CLIENT_PREVIEW_PILL} bottom-5 px-3 py-1.5`}>
             beta preview
           </div>
         </>

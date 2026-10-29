@@ -361,20 +361,27 @@ const SWITCH_PAIRS: ReadonlyArray<readonly [knob: string, track: string]> = [
   ["control-on-primary", "control-primary"],
   ["control-switch-knob", "control-switch-off"],
 ];
-for (const [mode, tokens, focus] of [
-  ["light", lightTokens, readConsumerHexToken("focus")],
-  ["dark", darkTokens, darkTokens.get("focus") ?? ""],
-] as const) {
-  const colour = (name: string) => {
-    const value = tokens.get(name);
-    assert.ok(value, `${mode} --${name} should be defined.`);
-    return parseColour(value);
-  };
+type Tokens = ReadonlyMap<string, string>;
+const tokenColour = (mode: string, tokens: Tokens) => (name: string) => {
+  const value = tokens.get(name);
+  assert.ok(value, `${mode} --${name} should be defined.`);
+  return parseColour(value);
+};
+// The contrast of a text token on a fill (or none) over a ground, a translucent fill read over the ground.
+function textRatio(tokens: Tokens, mode: string, text: string, fill: string | null, ground: string): number {
+  const colour = tokenColour(mode, tokens);
+  const background = fill ? over(colour(fill), colour(ground)) : colour(ground);
+  return contrastRatio(hexOf(over(colour(text), background)), hexOf(background));
+}
+function edgeRatio(tokens: Tokens, mode: string, edge: string, ground: string): number {
+  const colour = tokenColour(mode, tokens);
+  return contrastRatio(hexOf(over(colour(edge), colour(ground))), hexOf(colour(ground)));
+}
+function checkContrast(mode: string, tokens: Tokens, focus: string) {
+  const colour = tokenColour(mode, tokens);
   for (const [text, fill, grounds] of TEXT_PAIRS) {
     for (const ground of grounds) {
-      const background = fill ? over(colour(fill), colour(ground)) : colour(ground);
-      const foreground = over(colour(text), background);
-      const ratio = contrastRatio(hexOf(foreground), hexOf(background));
+      const ratio = textRatio(tokens, mode, text, fill, ground);
       assert.ok(
         ratio >= 4.5,
         `${mode}: --${text} on ${fill ? `--${fill} over ` : ""}--${ground} is ${ratio.toFixed(2)}:1; expected at least 4.5:1.`
@@ -388,12 +395,16 @@ for (const [mode, tokens, focus] of [
   }
   for (const [edge, grounds] of [...EDGE_PAIRS, ["focus", CONTROL_GROUNDS] as const]) {
     for (const ground of grounds) {
-      const edgeColour = edge === "focus" ? parseColour(focus) : colour(edge);
-      const ratio = contrastRatio(hexOf(over(edgeColour, colour(ground))), hexOf(colour(ground)));
+      const ratio = edge === "focus"
+        ? contrastRatio(hexOf(over(parseColour(focus), colour(ground))), hexOf(colour(ground)))
+        : edgeRatio(tokens, mode, edge, ground);
       assert.ok(ratio >= 3, `${mode}: --${edge} against --${ground} is ${ratio.toFixed(2)}:1; expected at least 3:1.`);
     }
   }
 }
+
+checkContrast("light", lightTokens, readConsumerHexToken("focus"));
+checkContrast("dark", darkTokens, darkTokens.get("focus") ?? "");
 
 // The shared controls draw only with the tokens, so their colours change in one place.
 for (const file of ["Button", "SegmentedControl", "Chip", "ChoiceTile"]) {
@@ -533,8 +544,72 @@ assert.equal(
 assert.equal(
   (css.match(/@media\s*\(prefers-color-scheme:\s*dark\)/g) ?? []).length,
   2,
-  "The device switches the tokens and the dark: variant, nothing else."
+  "The device switches the tokens and the dark: variant, nothing else (Increase Contrast has its own block)."
 );
+
+// Increase Contrast (J, 29 Oct: the finish, as drawn): prefers-contrast: more. Light and dark set the
+// same tokens, so forced dark (whose block ties with :root) never takes a light value, and the dark
+// device's block repeats the dark one, line for line.
+const contrastLight = css.match(/\n@media \(prefers-contrast: more\) \{\n  :root,\n  \[data-color-scheme="light"\] \{\n([\s\S]*?)\n  \}\n\n  \[data-color-scheme="dark"\] \{\n([\s\S]*?)\n  \}\n\}\n/);
+assert.ok(contrastLight, "Increase Contrast sets light and dark values under prefers-contrast: more.");
+const [, contrastLightBlock, contrastDarkBlock] = contrastLight;
+const contrastDevice = css.match(/\n@media \(prefers-contrast: more\) and \(prefers-color-scheme: dark\) \{\n  :root:not\(\[data-color-scheme="light"\]\) \{\n([\s\S]*?)\n  \}\n\}\n/)?.[1];
+assert.ok(contrastDevice, "A dark device with Increase Contrast takes the dark values, unless it is held light.");
+assert.equal(
+  contrastDevice.split("\n").map((line) => line.trim()).filter(Boolean).join("\n"),
+  contrastDarkBlock.split("\n").map((line) => line.trim()).filter(Boolean).join("\n"),
+  "The dark device's Increase Contrast values are the dark ones, line for line."
+);
+assert.ok(
+  css.indexOf("@media (prefers-contrast: more)") > css.indexOf("@media (prefers-color-scheme: dark) {\n  :root:not"),
+  "Increase Contrast comes after the switch, so it overrides the device's dark values."
+);
+const contrastLightTokens = tokenValues(contrastLightBlock);
+const contrastDarkTokens = tokenValues(contrastDarkBlock);
+assert.deepEqual([...contrastDarkTokens.keys()], [...contrastLightTokens.keys()], "Increase Contrast sets the same tokens in light and dark.");
+for (const name of contrastLightTokens.keys()) {
+  assert.ok(lightTokens.has(name), `Increase Contrast's --${name} is one of the colour tokens.`);
+}
+const moreLight: Tokens = new Map([...lightTokens, ...contrastLightTokens]);
+const moreDark: Tokens = new Map([...darkTokens, ...contrastDarkTokens]);
+checkContrast("light, more contrast", moreLight, moreLight.get("focus") ?? "");
+checkContrast("dark, more contrast", moreDark, moreDark.get("focus") ?? "");
+// Grey text reaches 7:1 (Apple's advice for custom colours) wherever it sits, and links on the panels,
+// cards, dialogs and pages; lines and control edges reach 3:1 against what they sit on. The coloured words
+// take Apple's increased-contrast colours (in dark #5CB8FF, #4AD968, #FFA056; Delete #FF8A84), which
+// raise every pair without reaching 7:1 on their tints and on the #2C2C2E floating grey (5.1 to 6.8:1):
+// nothing under 7:1 reads lower than it does without the setting.
+const CONTRAST_TEXT: ReadonlyArray<readonly [text: string, fill: string | null, grounds: readonly string[]]> = [
+  ["label-secondary", null, [...GROUNDS, "field", "tile", "surface-page", "surface-grouped"]],
+  ["control-label-idle", null, ["surface-secondary"]],
+  ["link", null, ["surface", "surface-secondary", "surface-elevated", "surface-page", "surface-grouped"]],
+];
+const CONTRAST_EDGES = ["separator", "separator-subtle", "box-border", "control-secondary-border", "surface-floating-edge"];
+for (const [mode, standard, more] of [["light", lightTokens, moreLight], ["dark", darkTokens, moreDark]] as const) {
+  for (const [text, fill, grounds] of CONTRAST_TEXT) {
+    for (const ground of grounds) {
+      const ratio = textRatio(more, mode, text, fill, ground);
+      assert.ok(ratio >= 7, `${mode}, more contrast: --${text} on ${fill ? `--${fill} over ` : ""}--${ground} is ${ratio.toFixed(2)}:1; expected at least 7:1.`);
+    }
+  }
+  for (const edge of CONTRAST_EDGES) {
+    for (const ground of CONTROL_GROUNDS) {
+      const ratio = edgeRatio(more, mode, edge, ground);
+      assert.ok(ratio >= 3, `${mode}, more contrast: --${edge} against --${ground} is ${ratio.toFixed(2)}:1; expected at least 3:1.`);
+    }
+  }
+  for (const [text, fill, grounds] of TEXT_PAIRS) {
+    for (const ground of grounds) {
+      // A pair already past 7:1 may move (a secondary button's fill is stronger) but stays past it.
+      const before = textRatio(standard, mode, text, fill, ground);
+      const after = textRatio(more, mode, text, fill, ground);
+      assert.ok(
+        after >= Math.min(before - 0.01, 7),
+        `${mode}: Increase Contrast lowers --${text} on ${fill ? `--${fill} over ` : ""}--${ground} from ${before.toFixed(2)}:1 to ${after.toFixed(2)}:1.`
+      );
+    }
+  }
+}
 assert.match(
   css,
   /@custom-variant dark \{\n  &:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\) \{\n    @slot;\n  \}\n  @media \(prefers-color-scheme: dark\) \{\n    &:where\(:root:not\(\[data-color-scheme="light"\]\) \*\):not\(:where\(\[data-color-scheme="light"\], \[data-color-scheme="light"\] \*\)\) \{/,
