@@ -46,7 +46,7 @@ export default function CatalogFilterDrawer({
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-xs">
-        <label className="flex items-center gap-2 rounded border p-2">
+        <label className="flex items-center gap-2 rounded border border-separator p-2">
           <input
             type="checkbox"
             checked={Boolean(filters.smallRoomFriendly)}
@@ -54,7 +54,7 @@ export default function CatalogFilterDrawer({
           />
           Small-room friendly
         </label>
-        <label className="flex items-center gap-2 rounded border p-2">
+        <label className="flex items-center gap-2 rounded border border-separator p-2">
           <input
             type="checkbox"
             checked={Boolean(filters.starterEligible)}
@@ -123,7 +123,7 @@ export default function CatalogFilterDrawer({
           <div className="text-label-secondary">Price min (SGD)</div>
           <input
             type="number"
-            className="w-full rounded border p-1"
+            className="w-full rounded border border-box-border bg-field p-1 text-label"
             value={filters.priceMin ?? ""}
             onChange={(event) => {
               const value = event.target.value;
@@ -136,7 +136,7 @@ export default function CatalogFilterDrawer({
           <div className="text-label-secondary">Price max (SGD)</div>
           <input
             type="number"
-            className="w-full rounded border p-1"
+            className="w-full rounded border border-box-border bg-field p-1 text-label"
             value={filters.priceMax ?? ""}
             onChange={(event) => {
               const value = event.target.value;
@@ -148,7 +148,7 @@ export default function CatalogFilterDrawer({
         <label className="space-y-1">
           <div className="text-label-secondary">Finish colour</div>
           <select
-            className="w-full rounded border p-1"
+            className="w-full rounded border border-box-border bg-field p-1 text-label"
             value={filters.colorFamilies?.[0] ?? ""}
             onChange={(event) =>
               onPatch({ colorFamilies: event.target.value ? [event.target.value] : undefined })
@@ -170,7 +170,7 @@ export default function CatalogFilterDrawer({
         <label className="space-y-1">
           <div className="text-label-secondary">Brand</div>
           <select
-            className="w-full rounded border p-1"
+            className="w-full rounded border border-box-border bg-field p-1 text-label"
             value={filters.brandIds?.[0] ?? ""}
             onChange={(event) =>
               onPatch({ brandIds: event.target.value ? [event.target.value] : undefined })
@@ -186,7 +186,7 @@ export default function CatalogFilterDrawer({
         <label className="space-y-1">
           <div className="text-label-secondary">Style</div>
           <select
-            className="w-full rounded border p-1"
+            className="w-full rounded border border-box-border bg-field p-1 text-label"
             value={filters.styleTags?.[0] ?? ""}
             onChange={(event) =>
               onPatch({ styleTags: event.target.value ? [event.target.value] : undefined })
@@ -202,7 +202,7 @@ export default function CatalogFilterDrawer({
         <label className="space-y-1">
           <div className="text-label-secondary">Material</div>
           <select
-            className="w-full rounded border p-1"
+            className="w-full rounded border border-box-border bg-field p-1 text-label"
             value={filters.materialFamilies?.[0] ?? ""}
             onChange={(event) =>
               onPatch({ materialFamilies: event.target.value ? [event.target.value] : undefined })
@@ -223,7 +223,7 @@ export default function CatalogFilterDrawer({
             step="1"
             inputMode="decimal"
             placeholder="Any"
-            className="w-full rounded border p-1"
+            className="w-full rounded border border-box-border bg-field p-1 text-label"
             value={filters.widthMinCm ?? ""}
             onChange={(event) => {
               const value = event.target.value;
@@ -240,7 +240,7 @@ export default function CatalogFilterDrawer({
             step="1"
             inputMode="decimal"
             placeholder="Any"
-            className="w-full rounded border p-1"
+            className="w-full rounded border border-box-border bg-field p-1 text-label"
             value={filters.widthMaxCm ?? ""}
             onChange={(event) => {
               const value = event.target.value;
