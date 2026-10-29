@@ -41,10 +41,12 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 
 ## The switch
 
-- **Dark applies only under `data-color-scheme="dark"`** (J, 22 Oct), the attribute the `dark:` variant also uses. Nothing in the app sets it yet: it's for previews and tests.
-- **Once the editor and the pages it opens are on tokens,** one change makes the app follow the device. It adds an `@media (prefers-color-scheme: dark)` block with the dark values.
-- **`data-color-scheme="light"` holds a subtree light.** Admin's frame (`AdminShell`) and access page (`AdminAccessDenied`) carry it: Admin stays light (plan decision 7).
+- **The app follows the device** (J, 22 Oct; the switch PR, 28 Oct), with no switch of its own. After the dark block, `@media (prefers-color-scheme: dark)` gives `:root:not([data-color-scheme="light"])` the same dark values, line for line (the contrast test checks they stay the same: change both together).
+- **`data-color-scheme="dark"` forces dark** for previews and tests, whatever the device.
+- **`data-color-scheme="light"` holds a subtree light.** Admin's frame (`AdminShell`) and access page (`AdminAccessDenied`), the export page, and the admin-only tools and QA pages (`components/HeldLight.tsx`: `/tools`, `/lighting-reference`, `/hugg-test`, `/models-test`) carry it: they stay light (plan decision 7). A held-light root also sets its text colour (`text-foreground`, or Admin's own): `color` is inherited as the body's, white on a dark device, so without it the words and default borders inside would turn white.
+- **The `dark:` variant** follows the same switch: a dark device outside a held-light subtree, or `data-color-scheme="dark"`.
 - **`color-scheme`** is `light` or `dark` with the tokens, so the browser's own controls and scrollbars match.
+- **The canvases** read the scheme of `<html>` (`lib/canvas-colour-scheme.ts`), so a canvas inside a held-light subtree would still draw its palette colours dark; none of those canvases is in one today.
 
 ## Adding or changing a token
 
