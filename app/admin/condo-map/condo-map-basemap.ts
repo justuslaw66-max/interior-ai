@@ -26,6 +26,33 @@ export function condoMapOptions(container: HTMLElement, accessToken: string, bou
 }
 
 /**
+ * Mapbox's house numbers stood on the developments' models ("21" on 21 Richards, "32" on 32 Gilstead). The Standard
+ * style draws them with its place labels, after every layer a page adds, so a clip layer can't take them away (it
+ * removes only what is drawn before it); they show from zoom 17. So the condo map turns the place labels off from
+ * zoom 16.5 in, where a site fills the view, and keeps them further out, where area names (Kovan, Novena) help
+ * (29 Oct 2026, J). Street and point-of-interest names stay at every zoom.
+ */
+export const CONDO_PLACE_LABELS_BELOW_ZOOM = 16.5;
+
+export function placeLabelsShown(zoom: number): boolean {
+  return zoom < CONDO_PLACE_LABELS_BELOW_ZOOM;
+}
+
+/** Keeps the place labels as placeLabelsShown says while the map zooms, changing them only on crossing; returns the unbinding. */
+export function hidePlaceLabelsWhenClose(map: MapboxMap): () => void {
+  let shown: boolean | null = null;
+  const apply = () => {
+    const wanted = placeLabelsShown(map.getZoom());
+    if (wanted === shown) return;
+    shown = wanted;
+    map.setConfigProperty("basemap", "showPlaceLabels", wanted);
+  };
+  map.on("zoom", apply);
+  apply();
+  return () => map.off("zoom", apply);
+}
+
+/**
  * The clip layer takes away Mapbox's buildings inside each site, but a browser can still draw one (Safari did, 24 Oct
  * 2026: a 3 m box standing out of 33 Residences' south-west corner). Any map building the sites' clip outlines touch
  * is made "selected", which the config above draws clear. Runs whenever the map settles; returns how many it hid.
