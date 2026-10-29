@@ -41,13 +41,14 @@ Dark mode is modelled on Apple's: colours are named for their role, each with a 
 
 ## The switch
 
-- **The app follows the device** (J, 22 Oct; the switch PR, 28 Oct), with no switch of its own. After the dark block, `@media (prefers-color-scheme: dark)` gives `:root:not([data-color-scheme="light"])` the same dark values, line for line (the contrast test checks they stay the same: change both together).
+- **The app follows the device** (J, 22 Oct; the switch PR, 28 Oct), with no switch of its own. After the dark block, `@media (prefers-color-scheme: dark)` gives `:root:not([data-color-scheme="light"]):not(:has([data-light-page]))` the same dark values, line for line (the contrast test checks they stay the same: change both together).
 - **`data-color-scheme="dark"` forces dark** for previews and tests, whatever the device.
-- **`data-color-scheme="light"` holds a subtree light.** Only Admin's frame (`AdminShell`) and access page (`AdminAccessDenied`) and the export page carry it: they stay light (plan decisions 6 and 7), and the contrast test checks nothing else does. A held-light root also sets its text colour (`text-foreground`, or Admin's own): `color` is inherited as the body's, white on a dark device, so without it the words and default borders inside would turn white.
+- **`data-color-scheme="light"` holds a subtree light.** Only Admin's frame (`AdminShell`) and access page (`AdminAccessDenied`) and the export page carry it: they stay light (plan decisions 6 and 7), and the contrast test checks nothing else does. A held-light root also sets its text colour (`text-foreground`, or Admin's own): `color` is inherited as the body's, so without it the words and default borders inside would take the dark page's.
+- **`data-light-page` holds the whole window light** (J, 29 Oct). Those three roots carry it too, and while one shows, `:root` skips the device's dark values (`:not(:has([data-light-page]))`): the body behind the page, the scrollbars and what shows past its ends when you scroll too far are light, not the dark page.
 - **The internal tools and QA pages follow the device** (J, 29 Oct): the GLB optimiser (`/tools`, its own dark look before), `/lighting-reference`, `/models-test` and `/hugg-test` draw with the tokens, and the GLB optimiser's actions are the shared `Button`. The lighting reference's 3D scene keeps its own colours.
-- **The `dark:` variant** follows the same switch: a dark device outside a held-light subtree, or `data-color-scheme="dark"`.
+- **The `dark:` variant** follows the same switch: a dark device outside a held-light subtree and page, or `data-color-scheme="dark"`.
 - **`color-scheme`** is `light` or `dark` with the tokens, so the browser's own controls and scrollbars match.
-- **The canvases** read the scheme of `<html>` (`lib/canvas-colour-scheme.ts`), so a canvas inside a held-light subtree would still draw its palette colours dark; none of those canvases is in one today.
+- **The canvases** read the scheme of `<html>` (`lib/canvas-colour-scheme.ts`), which a page held light keeps light, so a canvas on one draws light.
 
 ## Increase Contrast
 

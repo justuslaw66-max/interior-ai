@@ -10,14 +10,15 @@
 @source inline("border-sky-200 gap-5 gap-6 max-h-40 min-w-[760px] sm:col-span-2 text-3xl xl:grid-cols-2");
 
 /* dark: utilities follow the same switch as the colour tokens below: a dark device, unless
-   data-color-scheme="light" holds the subtree light (Admin), and data-color-scheme="dark". Left on
-   Tailwind's default they would follow the device inside Admin too (UX audit 2026-09-23, SX3). */
+   data-color-scheme="light" holds the subtree light (Admin) or a page held light holds the window
+   (data-light-page), and data-color-scheme="dark". Left on Tailwind's default they would follow the
+   device inside Admin too (UX audit 2026-09-23, SX3). */
 @custom-variant dark {
   &:where([data-color-scheme="dark"], [data-color-scheme="dark"] *) {
     @slot;
   }
   @media (prefers-color-scheme: dark) {
-    &:where(:root:not([data-color-scheme="light"]) *):not(:where([data-color-scheme="light"], [data-color-scheme="light"] *)) {
+    &:where(:root:not([data-color-scheme="light"]):not(:has([data-light-page])) *):not(:where([data-color-scheme="light"], [data-color-scheme="light"] *)) {
       @slot;
     }
   }
@@ -267,11 +268,13 @@
 }
 
 /* The switch (J, 22 Oct: the app follows the device, with no switch of its own). On a dark device the
-   page takes the dark values above, unless data-color-scheme="light" holds it light (Admin, the
-   export page). These declarations are the dark block's, line for line;
+   page takes the dark values above, unless data-color-scheme="light" holds it light. A page held light
+   (Admin, the export page) also marks itself data-light-page, and holds the whole window light while it
+   shows (J, 29 Oct): the body behind it, the scrollbars and what shows past its ends when you scroll
+   too far are light, not the dark page. These declarations are the dark block's, line for line;
    scripts/test-designer-theme-contrast.ts checks they stay the same. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-color-scheme="light"]) {
+  :root:not([data-color-scheme="light"]):not(:has([data-light-page])) {
     color-scheme: dark;
     --bg-canvas: #000000;
     --bg-panel: #000000;
@@ -460,7 +463,7 @@
 }
 
 @media (prefers-contrast: more) and (prefers-color-scheme: dark) {
-  :root:not([data-color-scheme="light"]) {
+  :root:not([data-color-scheme="light"]):not(:has([data-light-page])) {
     --border-subtle: #7c7c80;
     --border-strong: rgba(235, 235, 245, 0.6);
     --text-secondary: rgba(235, 235, 245, 0.8);
