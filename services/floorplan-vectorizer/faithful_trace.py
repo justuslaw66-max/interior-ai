@@ -26,11 +26,23 @@ No recognition: nothing is read as a room, a door or a wall - what is drawn is c
     door swing into the jamb and onto its leaf, keeps a hatch stroke's end within the wall's line, draws a slash
     tick split by the lines it crosses as one slash, and squares corners where lines of one weight meet; whole circles
     (a sink's waste, a hob's burner rings) are fitted as circles, two rings 2 px apart as two (fit_rings).
+  - (r12) redrawn clean, not copied: a fixture or piece of furniture in thin lines (a sink's basin and drainer, a hob,
+    a WC, a bath) is read along each line's centre from the picture's own ink and drawn as the fewest straight lines
+    and true arcs within a third of a pixel of it - corners exact, curves tangent to the lines beside them, a long
+    gentle curve one arc, a circle one circle; two hairlines blurred into one band (a basin's double rim) drawn as two;
+    a faint break carried through, a ring's faint part closed; lines meeting at a junction joined end to end by a
+    smooth bridge, so a shape is one path with no notches (clean_lines.py). Only fixture-size pieces (2.5 letters tall
+    both ways, 8 % of the picture at most), never lettering (retype.letter_marks) or a figure in dashes. Lines of one
+    pen meeting end to end are one path; widths and tones are brought to the plan's few pens (_pens). Retyping
+    lettering read with confidence in clean type (retype.py) is built and off (FT_RETYPE=1).
 Output: an SVG in the image's pixel coordinates, one element per wall polygon, segment and arc."""
 import json, math, os, sys
 import cv2, numpy as np
 from skimage.morphology import skeletonize
 from skimage import measure
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import clean_lines as CLN
+import retype as RT
 
 def cross2(a, b):
     a = np.asarray(a, float); b = np.asarray(b, float)
@@ -1401,6 +1413,11 @@ def _ring_at(df, cx, cy, r0, rmax_extra):
     k_ = 3                                                       # 0.75 px of the picture either side
     for k in range(1, len(R) - 1):
         if prof[k] < 0.3 * top or prof[k] < 0.12 or prof[k] < prof[k - 1] or prof[k] < prof[k + 1]:
+            continue
+        # a line, not a grey area: lighter by half on both sides within 3 px
+        reach_ = int(round(3 * PX / (0.25 * PX)))
+        left_, right_ = prof[max(0, k - reach_):k], prof[k + 1:k + 1 + reach_]
+        if not len(left_) or not len(right_) or float(left_.min()) > 0.5 * prof[k] or float(right_.min()) > 0.5 * prof[k]:
             continue
         lo, hi = max(0, k - k_), min(len(R), k + k_ + 1)
         win = V[:, lo:hi]
@@ -3329,6 +3346,26 @@ def _trace(g0, g, keep_text):
             stroke = stroke & keep_; ink = ink & keep_
             if weak_all is not None:
                 weak_all = weak_all & keep_
+    words_ = []
+    if RT.RETYPE:
+        # (r12) the lettering read first: its letters are lettering, not line work to be redrawn
+        weak_t = ((weak_all | ink) if weak_all is not None else ink) & (1 - cv2.dilate(solid, K)) & (1 - text)
+        words_, ttaken = RT.read_words(weak_t, g0, PX, paper)
+    drawn_ = []
+    if CLN.CLEAN:
+        # (r12) thin line drawings - a sink, a hob, a bath, furniture - redrawn clean, as lines and arcs joined
+        weak_c = ((weak_all | ink) if weak_all is not None else ink) & (1 - cv2.dilate(solid, K)) & (1 - text)
+        if words_:
+            weak_c = weak_c & (1 - ttaken)
+        # (lettering is not line work to be redrawn: a word's letters run together are outlined as before)
+        weak_c = weak_c & (1 - RT.letter_marks(weak_c, PX))
+        drawn_, ctaken = CLN.clean_drawings(weak_c, d, PX, max(g0.shape), skeleton_graph, prune_spurs,
+                                            RT.letter_marks.height)
+        if drawn_:
+            keep_ = (1 - ctaken).astype(np.uint8)
+            stroke = stroke & keep_; ink = ink & keep_
+            if weak_all is not None:
+                weak_all = weak_all & keep_
     if MARK_PX:
         weak = ((weak_all | ink) if weak_all is not None else ink) & (1 - cv2.dilate(solid, K)) & (1 - text)
         marks, taken = small_marks(weak, stroke, d, g)
@@ -3404,6 +3441,7 @@ def _trace(g0, g, keep_text):
     segs = segs + rings_
     if TIDY:
         segs = tidy(segs, d)
+    segs = segs + drawn_
     # the fills' own line work: darker edges, and lighter lines through dark fills (their tone kept as lightness)
     rim, light = solid_polygons.rim, solid_polygons.light
     over = []
@@ -3430,6 +3468,9 @@ def _trace(g0, g, keep_text):
         elif e["k"] == "arc":
             elems.append({"k": "arc", "c": [round(float(e["c"][0]), 2), round(float(e["c"][1]), 2)], "r": round(float(e["r"]), 2),
                           "a0": round(float(e["a0"]), 4), "a1": round(float(e["a1"]), 4), "w": round(float(e["w"]), 2), "g": tone(e["dark"])})
+        elif e["k"] == "path":
+            elems.append({"k": "path", "parts": [_part_out(p_) for p_ in e["parts"]], "closed": bool(e.get("closed")),
+                          "w": round(float(e["w"]), 2), "g": tone(e["dark"])})
         else:
             elems.append({"k": "dot", "c": [round(float(e["c"][0]), 2), round(float(e["c"][1]), 2)], "w": round(float(e["w"]), 2), "g": tone(e["dark"])})
         if e.get("light"):
@@ -3445,8 +3486,81 @@ def _trace(g0, g, keep_text):
             e["w"] = round(e["w"] * f, 2)
             if "r" in e:
                 e["r"] = round(e["r"] * f, 2)
+            if "parts" in e:
+                e["parts"] = [_part_scaled(p_, f) for p_ in e["parts"]]
+    if PENS:
+        _pens(elems)
+    words = []
+    if RT.RETYPE:
+        # (r12) lettering read with confidence set in type
+        polys, elems, words = RT.retype(polys, g0, paper, words_, elems)
     return {"size": [int(g0.shape[1]), int(g0.shape[0])], "paper": int(paper), "walls": polys, "strokes": elems,
-            "text_px": int(text.sum())}
+            "text_px": int(text.sum()), "typed": words}
+
+
+PENS = os.environ.get("FT_PENS", "1") == "1"   # (r12) every line drawn with one of the plan's few pens
+PEN_W = float(os.environ.get("FT_PEN_W", "1.3"))    # widths within this ratio of each other are one pen's
+PEN_G = float(os.environ.get("FT_PEN_G", "28"))     # tones within this of each other are one pen's
+
+
+def _elem_len(e):
+    if e["k"] == "line":
+        return math.hypot(e["b"][0] - e["a"][0], e["b"][1] - e["a"][1])
+    if e["k"] == "arc":
+        return abs(e["a1"] - e["a0"]) * e["r"]
+    if e["k"] == "path":
+        return sum(math.hypot(p[2][0] - p[1][0], p[2][1] - p[1][1]) if p[0] == "L" else abs(p[4] - p[3]) * p[2]
+                   for p in e["parts"])
+    return 0.0
+
+
+def _clusters(vals, wts, close):
+    """vals grouped where each is close (close(lo, v)) to its group's least: each value's group's weighted median"""
+    order = np.argsort(vals)
+    out = np.zeros(len(vals))
+    i = 0
+    while i < len(order):
+        j = i
+        lo = vals[order[i]]
+        while j + 1 < len(order) and close(lo, vals[order[j + 1]]):
+            j += 1
+        idx = order[i:j + 1]
+        v, w_ = np.asarray(vals)[idx], np.asarray(wts)[idx]
+        o = np.argsort(v)
+        cw = np.cumsum(w_[o])
+        med = float(v[o][np.searchsorted(cw, cw[-1] / 2.0)])
+        out[idx] = med
+        i = j + 1
+    return out
+
+
+def _pens(elems):
+    """(r12) the plan's lines drawn with a few pens: widths within PEN_W of each other drawn at their common width, and
+    tones within PEN_G of each other in their common tone, each the one most of their length is drawn with - so one
+    kind of line (a fixture's outline, a wall's face) is drawn alike wherever it is"""
+    sel = [e for e in elems if e["k"] in ("line", "arc", "path") and not e.get("light")]
+    if len(sel) < 2:
+        return
+    L = np.array([max(0.1, _elem_len(e)) for e in sel])
+    W = np.array([float(e["w"]) for e in sel]); G = np.array([float(e["g"]) for e in sel])
+    Wp = _clusters(W, L, lambda lo, v: v <= lo * PEN_W + 0.05)
+    Gp = _clusters(G, L, lambda lo, v: v <= lo + PEN_G)
+    for e, w_, g_ in zip(sel, Wp, Gp):
+        e["w"] = round(float(w_), 2); e["g"] = int(round(g_))
+
+
+def _part_out(p):
+    """(r12) one part of a path, as written: ["L", a, b] or ["A", c, r, a0, a1]"""
+    if p[0] == "L":
+        return ["L", [float(p[1][0]), float(p[1][1])], [float(p[2][0]), float(p[2][1])]]
+    return ["A", [float(p[1][0]), float(p[1][1])], float(p[2]), round(float(p[3]), 5), round(float(p[4]), 5)]
+
+
+def _part_scaled(p, f):
+    r2 = lambda v: round(v * f, 3)
+    if p[0] == "L":
+        return ["L", [r2(p[1][0]), r2(p[1][1])], [r2(p[2][0]), r2(p[2][1])]]
+    return ["A", [r2(p[1][0]), r2(p[1][1])], r2(p[2]), p[3], p[4]]
 
 
 def to_svg(t):

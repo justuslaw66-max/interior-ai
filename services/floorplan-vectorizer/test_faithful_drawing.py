@@ -2,7 +2,7 @@
 
     services/floorplan-vectorizer/.venv/bin/python3 -m unittest services/floorplan-vectorizer/test_faithful_drawing.py
 """
-import json, math, os, sys, tempfile, unittest
+import json, math, os, shutil, sys, tempfile, unittest
 
 import cv2
 import numpy as np
@@ -275,6 +275,17 @@ def _switched(name, value, run):
         setattr(faithful_trace, name, keep)
 
 
+def _untyped(run):
+    """run() with retyping off (r12): lettering the reader is unsure of is still traced, as these tests trace it"""
+    import faithful_trace
+    keep = faithful_trace.RT.RETYPE
+    try:
+        faithful_trace.RT.RETYPE = False
+        return run()
+    finally:
+        faithful_trace.RT.RETYPE = keep
+
+
 def _reduced(draw, w, h, s=4):
     """a picture drawn at s x by draw(img, s) and reduced, so its lines are anti-aliased as a page's are"""
     big = np.full((h * s, w * s), 255, np.uint8)
@@ -300,8 +311,8 @@ class Sharp(unittest.TestCase):
                     cos = (u * v).sum(1) / np.maximum(1e-9, np.hypot(*u.T) * np.hypot(*v.T))
                     n += int((cos < math.cos(math.radians(40))).sum())
             return n
-        self.assertGreater(_switched("SMOOTH_MARKS", False, sharp_turns), 100)
-        self.assertLessEqual(sharp_turns(), 4)
+        self.assertGreater(_untyped(lambda: _switched("SMOOTH_MARKS", False, sharp_turns)), 100)
+        self.assertLessEqual(_untyped(sharp_turns), 4)
 
     def test_thin_line_one_weight_wherever_its_pixels(self):
         # a 1 px black line on the pixel grid is one black column; 3/8 of a pixel off it, a dark grey and a light grey
@@ -485,8 +496,241 @@ class Sharp(unittest.TestCase):
         cv2.putText(img, "Clementi", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.9, 0, 2, cv2.LINE_AA)
         upright = lambda: len([e for e in faithful_trace.trace_gray(img)["strokes"]
                                if e["k"] == "line" and abs(e["a"][0] - e["b"][0]) < 0.5 and abs(e["a"][1] - e["b"][1]) > 10])
-        self.assertEqual(_switched("LETTER_STROKES", False, upright), 1)
-        self.assertEqual(upright(), 0)
+        self.assertEqual(_untyped(lambda: _switched("LETTER_STROKES", False, upright)), 1)
+        self.assertEqual(_untyped(upright), 0)
+
+
+# ------------------------------------------------------------------------------------------------ (r12)
+def _letter(big, s, text, x, y, cap, weight):
+    """text drawn into `big` (s times the picture) from the bundled type's outlines: its baseline's start at (x, y)
+    picture px, its capitals `cap` picture px tall"""
+    import retype
+    polys, _ = retype.layout(text, weight)
+    hb = retype.layout("H", weight)[1]
+    k = cap * s / (hb[3] - hb[1])
+    pts = [np.round(np.stack([x * s + P[:, 0] * k, y * s - P[:, 1] * k], 1) * 16).astype(np.int32) for P in polys]
+    cv2.fillPoly(big, pts, 0, cv2.LINE_AA, shift=4)
+
+
+def _switched_in(module, name, value, run):
+    keep = getattr(module, name)
+    try:
+        setattr(module, name, value)
+        return run()
+    finally:
+        setattr(module, name, keep)
+
+
+def _trace_small(img):
+    """the trace of a small test picture (a drawing in it may take more of it than one in a plan does)"""
+    import faithful_trace
+    return _switched_in(faithful_trace.CLN, "DRAW_REL", 1.0, lambda: _switched_in(
+        faithful_trace.CLN, "DRAW_LETTERS", 0.0, lambda: faithful_trace.trace_gray(img)))
+
+
+def _path_pts(e, step=0.25):
+    out = []
+    for p in e["parts"]:
+        if p[0] == "L":
+            a, b = np.asarray(p[1], float), np.asarray(p[2], float)
+            n = max(2, int(np.hypot(*(b - a)) / step) + 1)
+            out.append(a + (b - a) * np.linspace(0, 1, n)[:, None])
+        else:
+            _, c, r, a0, a1 = p
+            n = max(3, int(abs(a1 - a0) * r / step) + 1)
+            A = np.linspace(a0, a1, n)
+            out.append(np.stack([c[0] + r * np.cos(A), c[1] + r * np.sin(A)], 1))
+    return np.vstack(out)
+
+
+def _slot_outline(c1, r1, c2, r2, n=2000):
+    """points round the hull of two circles"""
+    A = np.linspace(0, 2 * math.pi, n, endpoint=False)
+    P = np.vstack([np.stack([c1[0] + r1 * np.cos(A), c1[1] + r1 * np.sin(A)], 1),
+                   np.stack([c2[0] + r2 * np.cos(A), c2[1] + r2 * np.sin(A)], 1)]).astype(np.float32)
+    return cv2.convexHull(P)[:, 0, :].astype(float)
+
+
+class Clean(unittest.TestCase):
+    """(r12) J, 29 Oct: "trace and reproduce a clean and sharp version of the original plan and not trace the blurry
+    and uneven parts out" """
+
+    def test_slot_drawn_as_one_path_with_round_ends(self):
+        # a drainer's tapered slot in a thin grey line: outlined, it was a wobbly band with breaks at its narrow end;
+        # redrawn, it is one closed path of two straight sides and two round ends, on the line's own centre
+        import faithful_trace
+        c1, r1, c2, r2 = (40, 30), 7.0, (150, 30), 3.0
+        hull = _slot_outline(c1, r1, c2, r2)
+        def draw(big, s):
+            cv2.polylines(big, [np.round(hull * s * 16).astype(np.int32)], True, 90, int(1.2 * s), cv2.LINE_AA, shift=4)
+        img = _reduced(draw, 200, 60, 8)
+        t = _trace_small(img)
+        paths = [e for e in t["strokes"] if e["k"] == "path"]
+        self.assertEqual(len(paths), 1)
+        p = paths[0]
+        self.assertTrue(p["closed"])
+        arcs = [q for q in p["parts"] if q[0] == "A"]
+        lines = [q for q in p["parts"] if q[0] == "L"]
+        self.assertGreaterEqual(len(arcs), 2)
+        self.assertLessEqual(len(p["parts"]), 6)
+        self.assertGreaterEqual(max(math.dist(q[1], q[2]) for q in lines), 100, "a side is one straight line")
+        # within half a pixel of the slot's true outline all round
+        P = _path_pts(p)
+        H = hull.astype(np.float32).reshape(-1, 1, 2)
+        d = np.array([abs(cv2.pointPolygonTest(H, (float(x), float(y)), True)) for x, y in P])
+        self.assertLessEqual(float(d.max()), 0.5)
+        # as before (CLEAN off) it was not one path
+        self.assertEqual(_switched_in(faithful_trace.CLN, "CLEAN", False,
+                                   lambda: sum(1 for e in _trace_small(img)["strokes"] if e["k"] == "path")), 0)
+
+    def test_rounded_box_round_corners_straight_sides(self):
+        import faithful_trace
+        def draw(big, s):
+            x0, y0, x1, y1, r = 30 * s, 20 * s, 150 * s, 100 * s, 9 * s
+            th = int(1.0 * s)
+            for a, b in (((x0 + r, y0), (x1 - r, y0)), ((x0 + r, y1), (x1 - r, y1)), ((x0, y0 + r), (x0, y1 - r)), ((x1, y0 + r), (x1, y1 - r))):
+                cv2.line(big, a, b, 40, th, cv2.LINE_AA)
+            for (cx, cy), ang in (((x0 + r, y0 + r), 180), ((x1 - r, y0 + r), 270), ((x1 - r, y1 - r), 0), ((x0 + r, y1 - r), 90)):
+                cv2.ellipse(big, (cx, cy), (r, r), 0, ang, ang + 90, 40, th, cv2.LINE_AA)
+        img = _reduced(draw, 180, 120, 8)
+        paths = [e for e in _trace_small(img)["strokes"] if e["k"] == "path"]
+        self.assertEqual(len(paths), 1)
+        kinds = sorted(q[0] for q in paths[0]["parts"])
+        self.assertEqual(kinds, ["A"] * 4 + ["L"] * 4)
+        for q in paths[0]["parts"]:
+            if q[0] == "A":
+                self.assertAlmostEqual(q[2], 9.0, delta=1.0)
+
+    def test_double_hairline_drawn_as_two_lines(self):
+        # a basin's rim: two hairlines a pixel and a half apart, blurred into a band where they run straight
+        import faithful_trace
+        def draw(big, s):
+            for off in (0.0, 1.8):
+                x0, y0, x1, y1, r = (30 + off) * s, (20 + off) * s, (150 - off) * s, (100 - off) * s, (10 - off) * s
+                pts = []
+                for (cx, cy), a0 in (((x1 - r, y0 + r), -90), ((x1 - r, y1 - r), 0), ((x0 + r, y1 - r), 90), ((x0 + r, y0 + r), 180)):
+                    A = np.radians(np.linspace(a0, a0 + 90, 30))
+                    pts += list(zip(cx + r * np.cos(A), cy + r * np.sin(A)))
+                cv2.polylines(big, [np.round(np.array(pts) * 16).astype(np.int32)], True, 60, int(0.8 * s), cv2.LINE_AA, shift=4)
+        img = _reduced(draw, 180, 120, 8)
+        paths = [e for e in _trace_small(img)["strokes"] if e["k"] == "path" and e["closed"]]
+        self.assertEqual(len(paths), 2, "two closed lines, not one band")
+
+    def test_faint_end_carried_through_but_not_a_dashed_lines_gaps(self):
+        import faithful_trace
+        hull = _slot_outline((40, 30), 6.0, (150, 30), 3.0)
+        def draw_with(tone_end):
+            def draw(big, s):
+                cv2.polylines(big, [np.round(hull * s * 16).astype(np.int32)], True, 70, int(1.2 * s), cv2.LINE_AA, shift=4)
+                # the slot's narrow end drawn fainter, as a blurred plan shows it
+                faint = np.full_like(big, 255)
+                cv2.polylines(faint, [np.round(hull * s * 16).astype(np.int32)], True, tone_end, int(1.2 * s), cv2.LINE_AA, shift=4)
+                big[:, 150 * s:] = faint[:, 150 * s:]
+                for x in range(20, 180, 8):                      # a dashed line below it
+                    cv2.line(big, (x * s, 80 * s), ((x + 5) * s, 80 * s), 70, int(1.2 * s), cv2.LINE_AA)
+            return draw
+        img = _reduced(draw_with(185), 200, 100, 8)
+        t = _trace_small(img)
+        slot = [e for e in t["strokes"] if e["k"] == "path" and _path_pts(e)[:, 1].max() < 50]
+        self.assertEqual(len(slot), 1)
+        self.assertTrue(slot[0]["closed"], "its faint end drawn")
+        self.assertGreaterEqual(_path_pts(slot[0])[:, 0].max(), 152.5)
+        low = lambda e: (_path_pts(e)[:, 1].min() if e["k"] == "path" else min(e["a"][1], e["b"][1]) if e["k"] == "line" else 0)
+        dashes = [e for e in t["strokes"] if e["k"] in ("line", "path") and low(e) > 70] + \
+                 [p for p in t["walls"] if min(y for r in p["rings"] for _, y in r) > 70]
+        self.assertGreaterEqual(len(dashes), 15, "the dashes stay dashes")
+        self.assertFalse(any(e["k"] == "path" and low(e) > 70 for e in t["strokes"]), "not redrawn as one line")
+
+    def test_ring_with_a_faint_part_drawn_as_one_circle(self):
+        # a tap hole: a small ring whose top is drawn fainter - it was an open arc with a dash beside its gap
+        def draw(big, s):
+            cv2.circle(big, (60 * s, 40 * s), 7 * s, 70, int(1.1 * s), cv2.LINE_AA)
+            faint = np.full_like(big, 255)
+            cv2.circle(faint, (60 * s, 40 * s), 7 * s, 175, int(1.1 * s), cv2.LINE_AA)
+            big[:36 * s, 55 * s:65 * s] = faint[:36 * s, 55 * s:65 * s]
+            cv2.rectangle(big, (20 * s, 20 * s), (100 * s, 60 * s), 60, int(1.0 * s), cv2.LINE_AA)
+        img = _reduced(draw, 120, 80, 8)
+        t = _trace_small(img)
+        # (drawn whole by the clean drawing, or by the circle fitting before it)
+        rings = [e["parts"][0] for e in t["strokes"] if e["k"] == "path" and len(e["parts"]) == 1 and e["parts"][0][0] == "A"
+                 and abs(abs(e["parts"][0][4] - e["parts"][0][3]) - 2 * math.pi) < 1e-3] + \
+                [("A", e["c"], e["r"], e["a0"], e["a1"]) for e in t["strokes"] if e["k"] == "arc"
+                 and abs(abs(e["a1"] - e["a0"]) - 2 * math.pi) < 1e-3]
+        self.assertEqual(len(rings), 1, "one whole circle")
+        _, c, r, _, _ = rings[0]
+        self.assertAlmostEqual(c[0], 60.0, delta=0.5); self.assertAlmostEqual(c[1], 40.0, delta=0.5)
+        self.assertAlmostEqual(r, 7.0, delta=0.5)
+        near = [e for e in t["strokes"] if e["k"] in ("line", "arc") and
+                np.hypot(*(np.mean([e.get("a", e.get("c")), e.get("b", e.get("c"))], 0) - [60, 33])) < 4]
+        self.assertEqual(near, [], "no dash left beside it")
+
+    def test_gentle_curve_drawn_as_one_arc(self):
+        # a basin's long curved side: read as many short lines, it is one arc
+        def draw(big, s):
+            cv2.ellipse(big, (100 * s, 150 * s), (120 * s, 120 * s), 0, 240, 300, 60, int(1.0 * s), cv2.LINE_AA)
+            cv2.ellipse(big, (100 * s, 150 * s), (90 * s, 90 * s), 0, 230, 310, 60, int(1.0 * s), cv2.LINE_AA)
+            cv2.line(big, (40 * s, 46 * s), (40 * s, 70 * s), 60, int(1.0 * s), cv2.LINE_AA)
+        img = _reduced(draw, 200, 90, 8)
+        paths = [e for e in _trace_small(img)["strokes"] if e["k"] == "path"]
+        arcs = [q for e in paths for q in e["parts"] if q[0] == "A" and q[2] > 60]
+        self.assertGreaterEqual(len(arcs), 1)
+        big = max(arcs, key=lambda q: abs(q[4] - q[3]) * q[2])
+        self.assertTrue(abs(big[2] - 120) < 3 or abs(big[2] - 90) < 3, big[2])
+        self.assertGreater(abs(big[4] - big[3]), math.radians(50), "the whole curve, not pieces of it")
+
+    def test_lines_drawn_with_the_plans_pens(self):
+        import faithful_trace
+        elems = [{"k": "line", "a": [0, 0], "b": [100, 0], "w": 1.0, "g": 0},
+                 {"k": "line", "a": [0, 10], "b": [100, 10], "w": 1.12, "g": 14},
+                 {"k": "line", "a": [0, 20], "b": [30, 20], "w": 0.95, "g": 9},
+                 {"k": "line", "a": [0, 30], "b": [100, 30], "w": 3.0, "g": 0},
+                 {"k": "line", "a": [0, 40], "b": [100, 40], "w": 1.0, "g": 120}]
+        faithful_trace._pens(elems)
+        self.assertEqual({e["w"] for e in elems[:3]}, {1.0})
+        self.assertEqual({e["g"] for e in elems[:4]}, {0})
+        self.assertEqual(elems[3]["w"], 3.0)
+        self.assertEqual(elems[4]["g"], 120)
+
+    def test_corner_of_one_pen_drawn_as_one_path(self):
+        # a door leaf's corner: two lines of one pen ending at one point were two square-capped ends overlapping
+        # (a notch where they are not square to each other); joined, the corner is drawn whole
+        line = lambda a, b: {"k": "line", "a": a, "b": b, "w": 2.0, "g": 0}
+        d = fd.drawing({"walls": [], "strokes": [line([10, 10], [50, 10]), line([50, 10], [60, 50]), line([60, 50], [10, 10])]})
+        it = [i for i in d["items"] if i["kind"] == "line"]
+        self.assertEqual(len(it), 1)
+        self.assertEqual(it[0]["commands"], ["L", "L", "Z"], "one closed path")
+        d = fd.drawing({"walls": [], "strokes": [line([10, 10], [50, 10]), line([50, 10], [50, 50])]})
+        it = [i for i in d["items"] if i["kind"] == "line"][0]
+        self.assertEqual(it["commands"], ["L", "L"])
+        self.assertEqual(it["points"], [[9.0, 10.0], [50.0, 10.0], [50.0, 51.0]], "free ends keep their square caps")
+
+
+@unittest.skipUnless(shutil.which("tesseract"), "tesseract is not installed")
+class Retype(unittest.TestCase):
+    def test_word_read_with_confidence_set_in_type(self):
+        import faithful_trace
+        # (lettering drawn from the bundled outlines: cv2.putText draws a different face in OpenCV 4 and 5)
+        def draw(big, s):
+            _letter(big, s, "KITCHEN", 30, 50, 10, "regular")
+            _letter(big, s, "3050", 40, 90, 10, "bold")
+        img = _reduced(draw, 200, 110, 8)
+        t = _switched_in(faithful_trace.RT, "RETYPE", True, lambda: _trace_small(img))      # (retyping is off by default)
+        typed = sorted(w[0] for w in t["typed"])
+        self.assertEqual(typed, ["3050", "KITCHEN"])
+        self.assertEqual(sorted(p["type"] for p in t["walls"] if p.get("type")), ["3050", "KITCHEN"])
+        # and none of the traced letters left under the type
+        self.assertEqual(sum(1 for p in t["walls"] if p.get("mark")), 0)
+
+    def test_readings_put_right_by_the_plans_words_and_checked(self):
+        import retype
+        self.assertEqual(retype.corrected("BrDROOM"), "BEDROOM")
+        self.assertEqual(retype.corrected("SHELIER"), "SHELTER")
+        self.assertEqual(retype.corrected("HIVING/DINING"), "LIVING/DINING")
+        self.assertEqual(retype.corrected("QWERTY"), "QWERTY")
+        for ok in ("BEDROOM", "3050", "4.2m", "1200x600", "D1", "2A", "M.BATH"):
+            self.assertTrue(retype.plausible(ok), ok)
+        for bad in ("8ED7", "|", "Qe_", ""):
+            self.assertFalse(retype.plausible(bad), bad)
 
 
 if __name__ == "__main__":
