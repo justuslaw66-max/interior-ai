@@ -1,6 +1,7 @@
 "use client";
 import { StableLine as Line } from "./StableLine";
 import { Html } from "@react-three/drei/web/Html";
+import { Check } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
@@ -3323,14 +3324,11 @@ export default function RoomRenderer2D({
                     }}
                   >
                     {isSelectedRoom ? (
-                      <span
+                      <Check
                         data-testid="house-room-2d-selection-badge"
                         data-room-id={room.id}
-                        aria-hidden="true"
-                        style={{ fontSize: 12, fontWeight: 900 }}
-                      >
-                        ✓
-                      </span>
+                        aria-hidden="true" size={12} strokeWidth={3}
+                      />
                     ) : null}
                     {room.name}
                   </div>

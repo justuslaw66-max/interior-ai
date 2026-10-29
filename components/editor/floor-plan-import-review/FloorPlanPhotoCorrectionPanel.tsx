@@ -3,6 +3,10 @@ import { usePhotoCorrectionReview,type PhotoReviewProps } from "./usePhotoCorrec
 import FloorPlanPhotoComparison from "./FloorPlanPhotoComparison";
 import { useContext } from "react";
 import { PhotoReviewAction } from "./photo-review-action";
+import { Check } from "lucide-react";
+
+// An edge that's been picked shows a check icon; readers hear "(set)" (30 Oct 2026; it was a ✓).
+const EdgeSetMark = () => <><Check className="h-4 w-4" aria-hidden="true"/><span className="sr-only"> (set)</span></>;
 
 type Model=ReturnType<typeof usePhotoCorrectionReview>;
 
@@ -55,8 +59,8 @@ function PhotoReviewContents(props:PhotoReviewProps) {
       </div>
       <Measurements model={m}/>
       <p className="mt-3">For one known square corner, select two points along each straight edge. The edges do not have to meet in the photo.</p>
-      <div className="mt-2 flex gap-2"><Button size="compact" onClick={()=>m.setEdge("first")}>Set corner edge A{m.first?" ✓":""}</Button>
-        <Button size="compact" onClick={()=>m.setEdge("second")}>Set corner edge B{m.second?" ✓":""}</Button></div>
+      <div className="mt-2 flex gap-2"><Button size="compact" onClick={()=>m.setEdge("first")}>Set corner edge A{m.first?<EdgeSetMark/>:null}</Button>
+        <Button size="compact" onClick={()=>m.setEdge("second")}>Set corner edge B{m.second?<EdgeSetMark/>:null}</Button></div>
       <label className="mt-2 flex gap-2"><input type="checkbox" checked={m.confirmed} onChange={(e)=>m.confirm(e.target.checked)}/>I confirm this corner is 90°. This does not assume every room is rectangular.</label>
       <Button size="compact" className="mt-3" onClick={m.propose}>Preview photo correction</Button>
       <Result model={m} url={url}/>{m.error?<p role="alert" className="mt-2 text-on-danger-tint">{m.error}</p>:null}
