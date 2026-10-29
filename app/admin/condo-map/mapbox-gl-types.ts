@@ -25,8 +25,11 @@ export type MapboxRenderedFeature = {
 
 export type MapboxPoint = { x: number; y: number };
 
-/** What the map hands its listeners: a pointer event's point, or an error event's error. */
-export type MapboxEvent = { point?: MapboxPoint; error?: { message?: string; status?: number; url?: string } };
+/**
+ * What the map hands its listeners: a pointer event's point, or an error event's error; a move the user made (a drag, a
+ * scroll) carries the browser's own event.
+ */
+export type MapboxEvent = { point?: MapboxPoint; error?: { message?: string; status?: number; url?: string }; originalEvent?: unknown };
 
 export type MapboxBounds = [[number, number], [number, number]];
 
@@ -40,6 +43,7 @@ export type MapboxCamera = {
 
 export interface MapboxMap {
   on(type: string, listener: (event: MapboxEvent) => void): void;
+  once(type: string, listener: (event: MapboxEvent) => void): void;
   off(type: string, listener: (event: MapboxEvent) => void): void;
   addSource(id: string, source: Record<string, MapboxJson>): void;
   addLayer(layer: MapboxLayer): void;
@@ -53,6 +57,10 @@ export interface MapboxMap {
   setFeatureState(feature: MapboxRenderedFeature, state: Record<string, boolean>): void;
   getCanvas(): HTMLCanvasElement;
   getZoom(): number;
+  getPitch(): number;
+  isMoving(): boolean;
+  project(lngLat: [number, number]): MapboxPoint;
+  easeTo(options: { center: [number, number]; offset?: [number, number]; duration?: number }): void;
   isStyleLoaded(): boolean;
   fitBounds(bounds: MapboxBounds, options?: MapboxCamera): void;
   remove(): void;

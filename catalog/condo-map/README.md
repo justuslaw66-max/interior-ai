@@ -6,8 +6,9 @@ from the floor-plan masters (`~/Developer/floor-plan-masters`); don't edit it by
 - `index.json`: the developments (schema `interior-ai.condo-map.index.v1`).
 - `<slug>/map.json`: one development's building in lon/lat for Mapbox (schema
   `interior-ai.condo-map.development.v1`): its storeys' massing, its units' outlines (for picking) and cards, its
-  floors' rooms, its balconies, the outline that clears Mapbox's own building off the site, its credits and how it is
-  placed.
+  floors' rooms, its balconies, the outline that clears Mapbox's own building off the site (`clip`), the outline that
+  clears Mapbox's labels off it (`labelClip`: the development's land lot with its footprint, from 28 Oct 2026), its
+  credits and how it is placed.
 - `<slug>/plans/`: the pictures on the units' cards.
 - `<slug>/models/`: each development's detailed 3D models (GLB, kept in Git LFS): every development has them since
   28 Oct 2026 (until then 33 Residences only, the others grey massing).
