@@ -7,6 +7,7 @@ end, where its two sides blur together) is carried through; each line is drawn a
 one path with no ends where it turns."""
 import math, os
 import cv2, numpy as np
+from skimage.morphology import skeletonize
 
 CLEAN = os.environ.get("FT_CLEAN", "1") == "1"
 LINE_TOL = float(os.environ.get("FT_LINE_TOL", "0.35"))     # picture px: a fitted line or arc within this of the centres
@@ -28,6 +29,7 @@ DOUBLE = os.environ.get("FT_DOUBLE", "1") == "1"
 BAND = os.environ.get("FT_BAND", "1") == "1"
 TAKE_UNDER = os.environ.get("FT_TAKE_UNDER", "1") == "1"   # the ink under a redrawn line taken with it
 DRAW_LETTERS = float(os.environ.get("FT_DRAW_LETTERS", "2.5"))  # a drawing at least this many letters' height across
+INSIDE_W = float(os.environ.get("FT_INSIDE_W", "0.1"))     # a piece inside a drawing in lines at most this share of a letter's height
 EXTRA_MAX = int(os.environ.get("FT_EXTRA_MAX", "4"))         # a drawing with more small pieces beside it is in dashes
 LETTER_H = 10.0                                              # picture px: the lettering's height, where none is found                # a flat grey band read across its ripples            # two hairlines run together drawn as two
 DEBUG = os.environ.get("FT_CLEAN_DEBUG") == "1"
@@ -1283,9 +1285,15 @@ def stitch(paths, d0, px, dark):
         for b in range(a + 1, len(ends)):
             ka, sa, Pa, ua = ends[a]; kb, sb, Pb, ub = ends[b]
             L = float(np.hypot(*(Pb - Pa)))
-            if L > STITCH * px or L < 1e-6:
+            if L > STITCH * px:
                 continue
             if ka == kb and _plen_all(paths[ka]["parts"]) < 6 * L:
+                continue
+            if L < 0.05 * px or (L < 1.0 * px and float(ua @ (-ub)) > 0.8):
+                # ends that meet, or nearly, running on into each other (a loop the skeleton opened at a point of its
+                # own, its ends overlapping a little): joined by the short step between them
+                if float(ua @ (-ub)) > 0.5 or ka == kb:
+                    cand[(a, b)] = (0.0, [] if L < 0.05 * px else [("L", tuple(Pa), tuple(Pb))], np.zeros((0, 2)))
                 continue
             br = biarc(Pa, ua, Pb, -ub)
             if DEBUG:
@@ -1459,6 +1467,26 @@ def drawings(weak, px, img_side, letter_h=None):
                 continue
             extra.setdefault(owner[g_], []).append(j)
         out = [i for i in out if owner[gid[i]] == i]
+        # and the hairline pieces lying inside a drawing (a drainer's slots inside its sink's outline, each smaller than
+        # a drawing itself), so long as their lines are finer than the plan's lettering's strokes
+        lh_ = (letter_h if letter_h else LETTER_H) * px
+        taken_ = set(out) | {j for v in extra.values() for j in v}
+        for i in out:
+            x0, y0, x1, y1 = st[i, 0] - px, st[i, 1] - px, st[i, 0] + st[i, 2] + px, st[i, 1] + st[i, 3] + px
+            for j in range(1, n):
+                if j in taken_ or max(st[j, 2], st[j, 3]) <= 8 * px:
+                    continue                                      # (small pieces go by the chaining above)
+                if max(st[j, 2], st[j, 3]) < 1.5 * min(st[j, 2], st[j, 3]):
+                    continue                                      # (long pieces: slots, not a hob's crossed burners)
+                if st[j, 0] < x0 or st[j, 1] < y0 or st[j, 0] + st[j, 2] > x1 or st[j, 1] + st[j, 3] > y1:
+                    continue
+                mj = lab[st[j, 1]:st[j, 1] + st[j, 3], st[j, 0]:st[j, 0] + st[j, 2]] == j
+                dtj = cv2.distanceTransform(np.pad(mj, 1).astype(np.uint8), cv2.DIST_L2, 3)
+                skj = skeletonize(np.pad(mj, 1))
+                if not skj.any() or 2.0 * float(np.median(dtj[skj])) > INSIDE_W * lh_:
+                    continue
+                extra.setdefault(i, []).append(j)
+                taken_.add(j)
     return lab, st, out, extra
 
 

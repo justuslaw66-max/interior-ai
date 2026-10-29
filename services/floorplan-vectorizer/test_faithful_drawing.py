@@ -678,6 +678,25 @@ class Clean(unittest.TestCase):
         self.assertTrue(abs(big[2] - 120) < 3 or abs(big[2] - 90) < 3, big[2])
         self.assertGreater(abs(big[4] - big[3]), math.radians(50), "the whole curve, not pieces of it")
 
+    def test_slots_inside_a_sink_redrawn_with_it(self):
+        # d12's drainer: each slot is smaller than a drawing on its own (2.5 letters tall), but lies inside the sink's
+        # outline in finer lines than the plan's lettering - drawn clean with the sink, not traced
+        import faithful_trace
+        def draw(big, s):
+            cv2.rectangle(big, (20 * s, 20 * s), (220 * s, 140 * s), 50, int(1.2 * s), cv2.LINE_AA)
+            for k in range(4):
+                y = 32 + 26 * k
+                cv2.ellipse(big, (90 * s, (y + 6) * s), (6 * s, 6 * s), 0, 90, 270, 70, int(1.0 * s), cv2.LINE_AA)
+                cv2.ellipse(big, (190 * s, (y + 6) * s), (6 * s, 6 * s), 0, -90, 90, 70, int(1.0 * s), cv2.LINE_AA)
+                cv2.line(big, (90 * s, y * s), (190 * s, y * s), 70, int(1.0 * s), cv2.LINE_AA)
+                cv2.line(big, (90 * s, (y + 12) * s), (190 * s, (y + 12) * s), 70, int(1.0 * s), cv2.LINE_AA)
+            _letter(big, s, "KITCHEN", 30, 200, 24, "regular")
+        img = _reduced(draw, 260, 220, 4)
+        t = _switched_in(faithful_trace.CLN, "DRAW_REL", 1.0, lambda: faithful_trace.trace_gray(img))
+        slots = [e for e in t["strokes"] if e["k"] == "path" and e["closed"] and 70 < _path_pts(e)[:, 0].mean() < 210
+                 and _path_pts(e)[:, 1].max() < 135]
+        self.assertEqual(len(slots), 4, "each slot one closed path")
+
     def test_lines_drawn_with_the_plans_pens(self):
         import faithful_trace
         elems = [{"k": "line", "a": [0, 0], "b": [100, 0], "w": 1.0, "g": 0},

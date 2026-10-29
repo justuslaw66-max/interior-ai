@@ -120,8 +120,8 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   and curves tangent, a gentle curve as one arc and a ring as one circle; two hairlines blurred into one band (a basin's
   double rim) as two; a faint break or a ring's faint part carried through; lines that meet at a junction joined end
   to end by a smooth bridge, so each shape is one path with no notches (`clean_lines.py`). Only fixture-size pieces
-  are redrawn (at least 2.5 letters tall both ways, at most 8 % of the picture), never lettering (marks in a row with
-  a letter's stroke weight) and never a figure in dashes. Line widths and greys are brought to the plan's few pens.
+  are redrawn (at least 2.5 letters tall both ways, at most 8 % of the picture, with the hairline pieces inside one: a
+  drainer's slots), never lettering (marks in a row with a letter's stroke weight) and never a figure in dashes. Line widths and greys are brought to the plan's few pens.
   Retyping confidently read lettering in clean type (`retype.py`, Liberation Sans outlines in `faithful_glyphs.json`,
   SIL Open Font License, `OFL.txt`, rebuilt by `make_glyphs.py`, which needs fontTools) is built but off
   (`FT_RETYPE=1` turns it on): in a blind check it set two fonts on one plan and misread a few figures.

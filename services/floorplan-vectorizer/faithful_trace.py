@@ -32,7 +32,9 @@ No recognition: nothing is read as a room, a door or a wall - what is drawn is c
     gentle curve one arc, a circle one circle; two hairlines blurred into one band (a basin's double rim) drawn as two;
     a faint break carried through, a ring's faint part closed; lines meeting at a junction joined end to end by a
     smooth bridge, so a shape is one path with no notches (clean_lines.py). Only fixture-size pieces (2.5 letters tall
-    both ways, 8 % of the picture at most), never lettering (retype.letter_marks) or a figure in dashes. Lines of one
+    both ways, 8 % of the picture at most) and the hairline pieces inside one (a drainer's slots), never lettering
+    (retype.letter_marks) or a figure in dashes; a ring's line needs a dip to half its darkness on one side only (the
+    other may be a close second ring: a hob's burners). Lines of one
     pen meeting end to end are one path; widths and tones are brought to the plan's few pens (_pens). Retyping
     lettering read with confidence in clean type (retype.py) is built and off (FT_RETYPE=1).
 Output: an SVG in the image's pixel coordinates, one element per wall polygon, segment and arc."""
@@ -1396,6 +1398,9 @@ def letters_over_lines(d, g):
 RINGS = os.environ.get("FT_RINGS", "1") == "1"   # (r11) whole circles in a small piece of line work fitted as circles
 
 
+RING_DIP = float(os.environ.get("FT_RING_DIP", "0.85"))   # a ring's other side dips to at most this share of its darkest
+
+
 def _ring_at(df, cx, cy, r0, rmax_extra):
     """the circles round (cx, cy) near radius r0: [(radius, weight, darkness)], each with ink nearly all the way round
     at an even radius, from the darkness read along rays"""
@@ -1417,7 +1422,9 @@ def _ring_at(df, cx, cy, r0, rmax_extra):
         # a line, not a grey area: lighter by half on both sides within 3 px
         reach_ = int(round(3 * PX / (0.25 * PX)))
         left_, right_ = prof[max(0, k - reach_):k], prof[k + 1:k + 1 + reach_]
-        if not len(left_) or not len(right_) or float(left_.min()) > 0.5 * prof[k] or float(right_.min()) > 0.5 * prof[k]:
+        # (on one side at least: the other may be a close second ring, a dip between them - a hob's double ring)
+        if not len(left_) or not len(right_) or min(float(left_.min()), float(right_.min())) > 0.5 * prof[k] \
+                or max(float(left_.min()), float(right_.min())) > RING_DIP * prof[k]:
             continue
         lo, hi = max(0, k - k_), min(len(R), k + k_ + 1)
         win = V[:, lo:hi]
