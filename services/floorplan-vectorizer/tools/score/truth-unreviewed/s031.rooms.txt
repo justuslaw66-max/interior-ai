@@ -1,0 +1,66 @@
+# s031 - 5-ROOM STANDARD (POINT BLOCK), HDB 1974-1980. Typed from the plan image only (title, "SCALE 1:100", dimension figures, the grey HDB
+# caption bar and the teoalida.com banner ignored). Source image 640x800; coordinates in notes are source pixels.
+# Glazing reading used throughout: a window band is a double line with a grey / dotted fill (casement arcs drawn outside), a plain
+# white double line is a wall, thick black blocks are structural wall / columns. A continuous band between solid pieces = ONE window
+# (posts and mullions inside a band do not split it).
+# Two spaces are both labelled BEDROOM: the left one (x 100-263, y 80-220) and the middle one (x 277-425, y 85-220).
+# LIVING ROOM and DINING / FAMILY AREA: nothing separates them (the vertical line at x 393-407, y 225-390 labelled 3861 is a dimension
+# line, not a wall) -> one space. The small passage x 385-418, y 345-390 in front of the kitchen door and the right bath is part of it.
+# The L-shaped wrap of the living room around the kitchen (x 535-588, y 345-397) is part of it too (the entrance opens there).
+# KITCHEN/ UTILITY and BALCONY: the kitchen (x 420-533, y 345-497) continues straight down into the area x 412-530, y 497-585 with NO
+# wall, railing or door at y 497; the narrow strip x 378-412, y 497-568 (glazed on its west side) joins it along a single thin line at
+# x 412 (y 497-568, 1.6 m long, no jambs) which is read as a floor-drop edge, not a wall; the label BALCONY (x 385-433, y 520-535)
+# straddles that line. -> open plan, one space (UNCERTAIN, see below).
+# BATH/ WC (two of them): each is one room. The double line across it at y 457-460 (x 270-415) carries no door or gap and the labelled
+# lower band (y 460-492) holds the window, while the doors open into the upper part; read as an internal line, not a wall -> one room each.
+space: BEDROOM
+space: BEDROOM
+space: LIVING ROOM + DINING / FAMILY AREA
+space: MAIN BEDROOM
+# left bath (x 272-348, y 395-492), reached from MAIN BEDROOM
+space: BATH/ WC
+# right bath (x 352-413, y 395-492), reached from the dining passage
+space: BATH/ WC
+space: KITCHEN/ UTILITY + BALCONY
+# Not typed: the crossed box x 385-430, y 568-612 with black walls (riser / duct), the small fixture x 390-412, y 553-568, the sink and
+# drainer x 420-440, y 462-503, the shower / WC fixtures. The box x 80-108, y 222-340 west of the dining (thin outer line x 80, caps at
+# y 222 and y 340) is the swing zone of the casement windows on the dining's west wall, read as part of the window, not as a space.
+
+# main entrance, in the south wall of the living-room wrap, opening x 535-588 at y 397 (dimension 1244): unequal double leaf (large leaf
+# hinged at x 535, arcs inward y 362-397; small leaf hinged at x 583) with the gate arcs outward (y 397-432) in the same opening -> one line
+door: LIVING ROOM | OUTSIDE
+# left BEDROOM: opening x 228-262 in its bottom wall (y 220), leaf hinged at (262,222), arc from (228,220) up to (262,187), swings into the bedroom
+door: BEDROOM | LIVING ROOM
+# middle BEDROOM: opening x 277-310 in its bottom wall, hinge (277,222), arc up to (310,183), swings into the bedroom
+door: BEDROOM | LIVING ROOM
+# MAIN BEDROOM: opening x 226-260 in its top wall (y 347), hinge (260,347), arc from (226,347) down to (260,382), swings into the bedroom
+door: MAIN BEDROOM | LIVING ROOM
+# left bath: opening y 424-457 in the west wall x 270 (between MAIN BEDROOM and the bath), hinge (273,457), arc (273,427)-(305,457), swings into the bath
+door: BATH/ WC | MAIN BEDROOM
+# right bath: opening x 380-410 in its top wall (y 391) onto the dining passage, hinge (410,391), arc (380,391)-(410,421), swings into the bath
+door: BATH/ WC | LIVING ROOM
+# KITCHEN: opening y 354-389 in its west wall x 418, leaf hinged at (418,354), arc from (453,354) down to (418,389), swings into the kitchen
+door: KITCHEN/ UTILITY | LIVING ROOM
+
+# left BEDROOM: top-wall band x 100-263, y 76-86 (casement units x 100-228 plus a fixed light x 229-263, posts at x 140, 183, 228) = 1.
+# The white slot inside the thick black west wall (x 91-97, y 128-215) is a void inside solid wall (black on both sides), NOT a window.
+windows: BEDROOM = 1
+# middle BEDROOM: top-wall band x 280-422 (fixed light x 280-320, casements x 321-422) = 1
+windows: BEDROOM = 1
+# LIVING ROOM + DINING / FAMILY AREA: top-wall band x 436-583 (casement units with posts at x 481, 531) = 1; DINING west wall: grey glazing band
+# x 108-112, y 222-340 with four casement leaves swinging west into the box x 80-108 (cross mullion at y 280) = 1 (UNCERTAIN: could be 2 frames).
+# The living-room east wall (x 584-590, y 130-257 and y 352-397) is two plain lines = wall, no window.
+windows: LIVING ROOM = 2
+# MAIN BEDROOM: small casement in the west wall, box x 78-90, y 352-400 (grey glazing x 86-90, leaf hinged at (88,400), arc to (65,400)) = 1;
+# south wall x 138-262, y 487-496: three-line band with a grey line, identical to the left bath's glazing across the column at x 262-270 = 1
+# (UNCERTAIN: a bedroom wall without sash symbols). The thick west wall below y 400 has two slots (x 78-90, y 410-490) = voids, not windows.
+windows: MAIN BEDROOM = 2
+# left bath: south wall x 272-347, y 487-495: glazed band x 272-318, post at x 320, louvre sash x 321-347 = 1
+windows: BATH/ WC = 1
+# right bath: louvre sash x 353-372, y 488-495 in the south wall = 1 (x 376-413 beside it is a plain two-line wall)
+windows: BATH/ WC = 1
+# KITCHEN/ UTILITY + BALCONY: glazing band x 372-380, y 495-568 on the west side of the strip, three casement leaves (arcs x 352-375,
+# mullions at y 518 and y 540) = 1. Kitchen top wall (x 455-533, y 343-350) and east wall (x 530-535) are plain walls.
+windows: KITCHEN/ UTILITY = 1
+
+entrance: LIVING ROOM

@@ -1,6 +1,7 @@
 import type { PersistedPlanOpening, RoomSnapshot, RoomSurfaceAssignments } from "./room-types";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "./floor-materials";
 import { getWallFaceLabel, getWallPanelSurfaceSettings } from "./surface-settings";
+import { getWholeWallPanelId, isWholeWallFinishShownAbove } from "./wall-panel-ids";
 import { buildHousePlan2D, type HousePlanRoom2D } from "./design-page-house-plan";
 import { mapPlanOpeningsToRoomRenderer } from "./design-page-plan-overlays";
 import { buildOpeningWallSurfacePanels } from "@/components/editor/renderers/house-plan-3d/openingWallSurfacePanels";
@@ -22,6 +23,8 @@ export type BomWallPanel = {
   faceId: string;
   areaSqm: number;
   legacyPanelIds: readonly string[];
+  /** False for a piece above a door that no longer shows its wall's whole-wall finish (isWholeWallFinishShownAbove). */
+  inheritsWholeWall?: boolean;
   /** Where the panel is on its wall face, for counting sheets (surface-material-sheets.ts). */
   piece: WallFinishPiece;
 };
@@ -110,25 +113,35 @@ function buildRoomWallPanels(
     const faceId = getWallSurfaceFaceId(topologyRoom, segment);
     const height = Math.max(0.2, topologyRoom.wallHeights?.[faceId] ?? topologyRoom.height ?? getRoomWallHeight(room));
     const wallOpenings = getWallOpenings(topologyRoom, segment, topologyRooms, openings);
-    return [
+    const pieces = [
       ...buildWallSurfacePanels(topologyRoom, segment, wallOpenings),
       ...buildOpeningWallSurfacePanels(topologyRoom, topologyRooms, segment, wallOpenings, height).filter((panel) => panel.role === "interior"),
-    ].map((panel) => ({
-      panelId: getContinuousWallPanelId(topologyRoom, segment, wallOpenings, panel.role) ?? panel.panelId,
+    ];
+    // All interior: a window's wall is one target, and on a door's the piece above it follows its sides, as the 3D view draws.
+    const windowWallId = getContinuousWallPanelId(topologyRoom, segment, wallOpenings, "interior");
+    const saved = (room.surfaces ?? room.surfaceFinishes)?.walls?.panels;
+    return pieces.map((panel) => ({
+      panelId: windowWallId ?? panel.panelId,
       faceId: panel.faceId,
       areaSqm: panel.part.length * (panel.part.height ?? height),
       legacyPanelIds: [panel.panelId, ...panel.legacyPanelIds],
+      inheritsWholeWall: Boolean(windowWallId) || panel.part.height === undefined || isWholeWallFinishShownAbove(saved, pieces, panel),
       piece: wallFinishPiece(topologyRoom, segment, panel, height),
     }));
   });
 }
 
-/** The saved panel finish a measured panel takes, by its own id or an older one; undefined when it has none. */
+/**
+ * The saved panel finish a measured panel takes, by its own id, an older one or its whole wall's (a finish saved before a
+ * door split the wall); undefined when it has none.
+ */
 function panelAssignmentId(
-  panel: Pick<BomWallPanel, "panelId" | "legacyPanelIds">, surfaces: RoomSurfaceAssignments | undefined
+  panel: Pick<BomWallPanel, "panelId" | "legacyPanelIds" | "inheritsWholeWall">, surfaces: RoomSurfaceAssignments | undefined
 ): string | undefined {
   const assignments = surfaces?.walls?.panels ?? {};
-  return [panel.panelId, ...panel.legacyPanelIds].find((id) => Object.prototype.hasOwnProperty.call(assignments, id));
+  const wholeWallId = panel.inheritsWholeWall === false ? null : getWholeWallPanelId([panel.panelId, ...panel.legacyPanelIds]);
+  return [panel.panelId, ...panel.legacyPanelIds, ...(wholeWallId ? [wholeWallId] : [])]
+    .find((id) => Object.prototype.hasOwnProperty.call(assignments, id));
 }
 
 /** Resolve saved fragment finishes and combine quantities when a whole wall overrides them. */
@@ -140,7 +153,7 @@ export function resolveAssignedWallPanels(
     const assignmentId = panelAssignmentId(panel, surfaces);
     if (!assignmentId) continue;
     const settings = getWallPanelSurfaceSettings(surfaces, panel.faceId, panel.panelId,
-      normalizeFloorRotationDeg, clampFloorPatternScale, panel.legacyPanelIds);
+      normalizeFloorRotationDeg, clampFloorPatternScale, panel.legacyPanelIds, panel.inheritsWholeWall !== false);
     const key = `${panel.faceId}:${assignmentId}`;
     const previous = grouped.get(key);
     grouped.set(key, { ...panel, panelId: assignmentId, settings,

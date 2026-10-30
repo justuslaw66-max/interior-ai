@@ -1,0 +1,40 @@
+# s012 - "2 Room Flexi (Type 2)" HDB flat (caption "Type-1 / Floor Area: 47 m2 ..." and dimension text ignored). Typed from the plan image only.
+# Labels: "LIVING/DINING" is printed on one line; "AIR-" "CON" "LEDGE" is three lines (-> "AIR- CON LEDGE"); "HOUSEHOLD" "SHELTER".
+# The entrance foyer (x 428-520, y 560-640) and the area east of the bath (x 430-600, y 340-500) are open to LIVING/DINING at
+# full width -> part of LIVING/DINING.
+# consistency pass (decided readings): the kitchen side towards the living is ONE thin line along its whole open side (no jambs) = floor edge -> open plan
+space: LIVING/DINING + KITCHEN
+space: BEDROOM
+space: BATH/WC
+space: AIR- CON LEDGE
+space: HOUSEHOLD SHELTER
+# Not typed: the unlabelled drying rack outside the kitchen window (x 232-258, y 505-625: slat lines) and the two unlabelled
+# open outlines above the top-wall windows (x 285-410 and x 450-575, y 157-193) - same reading as the rack of s001 (uncertain).
+# Not typed: WC pan, basin, dimension marks.
+
+# main entrance: unequal double leaf (arcs inward, x 428-505, y 578-632) + gate (arcs outward, y 648-697) in the same opening
+# x 428-505, y 630-648 -> one line
+door: LIVING/DINING | OUTSIDE
+# shelter door drawn closed in its frame (white rectangle x 510-525, y 515-555 in the thick wall), swing arc into the foyer
+door: HOUSEHOLD SHELTER | LIVING/DINING
+# folding (triangle) door in the right wall of the bath, x 405-424, y 398-435, from LIVING/DINING
+door: BATH/WC | LIVING/DINING
+# sliding panels in the partition x 417-430 between BEDROOM and LIVING/DINING: double-line panel y 200-330 and a darker
+# second panel y 265-340; opening about 2.4 m (y 200-340). Uncertain whether to call it a door or a doorway; panels are
+# drawn so it is typed as a door.
+door: BEDROOM | LIVING/DINING
+# KITCHEN right side (x 426, y 497-628): ONE thin line drawn across the whole side, no leaf and no other access to the
+# kitchen -> sliding door (rule of 4 Oct 2026). Uncertain: it could also be a thin partition with no door drawn.
+
+# top outer wall (y 192-200): two glazed bands, x 285-405 (BEDROOM) and x 450-570 (LIVING/DINING). Each band has two thin
+# mullion lines (three panes) and no solid wall piece -> one window each (uncertain: could be three small windows each).
+windows: BEDROOM = 1
+windows: LIVING/DINING = 2
+# KITCHEN: tall window in the left wall x 252-262, y 517-617 (two sash lines at y 549 and y 583), onto the drying rack
+# BATH/WC: window in the left wall facing the AIR- CON LEDGE, x 310-318, y 395-440 (wall below y 440 is plain)
+windows: BATH/WC = 1
+# LIVING/DINING right wall between the thick wall pieces (x 601-608, y 335-455) is two thin lines with white between, no
+# pane line -> read as a plain thin wall, not a window (uncertain). The ledge's outer slot (x 258-264, y 397-487) is the
+# ledge screen, not a window. The BEDROOM left wall (x 252-266, y 200-385) is solid black.
+
+entrance: LIVING/DINING

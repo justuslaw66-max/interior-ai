@@ -1,0 +1,76 @@
+# s043 - HDB Executive Apartment (corridor end / corner unit), 146 sqm. Typed from the plan image only (title, scale, dimensions,
+# teoalida banner ignored).
+# DINING ROOM and LIVING ROOM: no wall or door between them. Between the kitchen's right wall (x 332) and the bedroom left
+# walls (x 386) a 1.2 m wide passage (x 332-386, y 395-540, "1200") runs from the dining room down to the living room,
+# open at both ends -> one L-shaped open space. The entrance foyer below the kitchen (x 205-330, y 650-715) is open to
+# the living room at its full width -> part of it. Uncertain: the 1.2 m passage could be read as a separate corridor.
+space: DINING ROOM + LIVING ROOM
+# KITCHEN: includes the 1200 wide service strip on its west side (x 122-205, y 455-507, small basin at x 127-137): no wall
+# or door between it and the kitchen (open at its full width) -> part of KITCHEN.
+space: KITCHEN
+space: UTILITY
+space: BATH/ WC 1
+space: BATH/ WC 2
+# MAIN BEDROOM: the lobby under bath 1 (x 388-460, y 205-252) is open to the bedroom (no wall at x 455-460 below y 205)
+# -> part of MAIN BEDROOM; its door to the dining room is the one at x 386, y 215-250.
+space: MAIN BEDROOM
+space: BEDROOM 2
+space: BEDROOM 3
+space: BALCONY
+# Not spaces: the black duct box with a cross (x 82-120, y 452-505), the open-to-sky areas west of the dining room /
+# kitchen (x 82-205, y 297-450) and between UTILITY and BATH/ WC 1 (x 320-380, y 98-190), the recess east of the
+# bedrooms (x 592-675, y 255-530), the common corridor / stair on the left (outside, x 0-97).
+
+# main entrance: opening in the wall line x 203 (y 648-690); big arc swings in (x 203-245), two small gate arcs swing out
+# (x 180-203): door + gate counted once. The corridor (1400 wide, x 90-200, y 645-715) is OUTSIDE.
+door: DINING ROOM | OUTSIDE
+# UTILITY: leaf hinged at x 308 (y 166-205), arc x 270-308, opening in its bottom wall x 270-308, swings into the utility
+door: UTILITY | DINING ROOM
+# MAIN BEDROOM: leaf hinged at (386, 250), arc x 386-421 / y 215-250, opening in the vertical line x 386 (y 215-250)
+door: MAIN BEDROOM | DINING ROOM
+# BATH/ WC 1: hinged leaf, arc x 417-452 / y 168-203, opening in its bottom wall (x 417-449), "100 DROP", opens into the
+# main bedroom lobby
+door: BATH/ WC 1 | MAIN BEDROOM
+# BEDROOM 2 and BEDROOM 3: hinged leaves in their left walls (x 386; y 357-392 and y 402-437), arcs swing into the bedrooms
+door: BEDROOM 2 | DINING ROOM
+door: BEDROOM 3 | DINING ROOM
+# KITCHEN top wall: ONE line (the wall's inner line) is drawn across the 0.9 m opening between two jambs
+# (x 254-292, y 395-397, labelled "100 DROP") -> sliding door (rule of 4 Oct 2026). Uncertain: the line may only be the
+# 100 mm step (threshold) line.
+door: KITCHEN | DINING ROOM
+# KITCHEN bottom wall: same drawing (x 252-300, y 641-648, "100 DROP"), opens onto the entrance foyer, which is part of
+# the living room space
+door: KITCHEN | DINING ROOM
+# BATH/ WC 2: hinged leaf in the plain segment of its top wall (x 148-180, y 512), arc inside the bath, opens to the
+# kitchen's west strip
+door: BATH/ WC 2 | KITCHEN
+# BALCONY: sliding door of stacked panels in the wall x 580-586 (y 545-655), "100 DROP"
+door: BALCONY | DINING ROOM
+
+# Glazing in this drawing is drawn as a wall strip with dashes, an inner line, or 3-4 parallel lines; plain double thin
+# lines with a white strip are walls.
+# DINING ROOM + LIVING ROOM: dining west wall dashed glazing (x 205-210, y 233-358) + top wall glazing (x 318-383, y 202-206,
+# 1500, faces the ledge strip y 188-202). The living room's bottom wall (x 380-575, y 713-717, 5850) is only two thin
+# lines with a white strip, like the partitions -> read as a wall, no window counted (uncertain).
+windows: DINING ROOM = 2
+# KITCHEN: (1) west wall glazing x 205-210, y 400-455 with a double casement leaf (arcs x 183-205, y 402-452); (2) the
+# glazed top wall of the west strip, x 122-205, y 447-458, with casement leaves (arcs x 122-173, y 428-452 and x 183-205),
+# separated from (1) by the corner post at (205-210, 450-457).
+windows: KITCHEN = 2
+# UTILITY: dashed glazing in its east wall (x 313-318, y 127-178) onto the open area between UTILITY and BATH/ WC 1
+windows: UTILITY = 1
+# BATH/ WC 1: dashed glazing in its west wall (x 383-388, y 127-180) onto the same open area
+windows: BATH/ WC 1 = 1
+# BATH/ WC 2: top wall has dashed glazing x 120-146 and x 183-205, separated by the door (x 148-180) and its hatched
+# jambs; faces the kitchen's west strip (a yard-like strip) -> 2 (uncertain)
+windows: BATH/ WC 2 = 2
+# MAIN BEDROOM: long glazed band in the top wall (x 475-625, y 98-105) + full-height 3-line glazing in the east wall
+# (x 658-664, y 100-255, 3600) facing a 300 mm ledge
+windows: MAIN BEDROOM = 2
+# BEDROOM 2 / BEDROOM 3: 4-line glazing in the east walls (x 579-585; y 262-380 and y 419-535), separated by a solid wall
+# piece (white box, y 381-418) where the partition meets the outer wall
+windows: BEDROOM 2 = 1
+windows: BEDROOM 3 = 1
+# BALCONY: its east edge is a bay with a railing (x 683-690, y 565-680) and plain stubs: not windows.
+
+entrance: DINING ROOM

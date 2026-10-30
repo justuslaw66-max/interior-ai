@@ -1,0 +1,64 @@
+# s005 - 5 Room Type-2(H) (HDB), a different drawing from s004. Typed from the plan image only (caption "5 Room / Type-2(H)",
+# dimension figures and the note at the top ignored).
+# Labels: a printed line break is one blank; the baths are printed "BATH /" + "WC n" (a blank before the slash).
+# The lobby in front of the bedroom / shelter / bath 2 doors (x 318-500, y 283-330) and the foyer around the entrance are open
+# to LIVING/ DINING at their full width -> part of LIVING/ DINING.
+# The vestibule east of the main-bedroom door (x 500-603, y 283-352, closed on the south by the black bar y 352-360) has no
+# wall to MAIN BEDROOM (opening x 553-603 at y 281) -> part of MAIN BEDROOM. Same arrangement as s001 / s004.
+# consistency pass (decided readings): SUGGESTED STUDY and KITCHEN are bounded only by dashed lines towards LIVING/ DINING -> one space
+space: LIVING/ DINING + SUGGESTED STUDY + KITCHEN
+# SUGGESTED STUDY (x 105-185, y 190-340): bounded by a DASHED partition on its right (x 185) and bottom (y 340), the black
+# left wall and the window wall on top. Dashed = optional partition -> separate labelled space, whole dashed side open floor
+# -> gap (uncertain; could be read as open plan with LIVING/ DINING).
+space: BEDROOM 3
+space: BEDROOM 2
+space: MAIN BEDROOM
+# KITCHEN (x 318-462, y 420-518): left side is a DASHED line (x 313, y 420-486), no wall, no leaf -> separate labelled space
+# opening to LIVING/ DINING (uncertain, as for the study).
+space: SERVICE YARD
+space: BATH / WC 2
+space: BATH / WC 1
+space: AIR-CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Not typed: the unlabelled drying-rack strip with vertical bars east of the SERVICE YARD (x 527-548, y 420-518): no label, no
+# door into it, outer side a thin line (same as s004 and the drying-rack recess left out in s001). Fixture boxes (shoe cabinet
+# x 100-110, y 438-475; sanitary fittings) are not spaces.
+
+# main entrance: unequal double leaf (inner arc into the living, gate arc outward) in the wall band y 478-490, x 113-165 -> one line
+door: LIVING/ DINING | OUTSIDE
+# household-shelter door: hinged leaf in the shelter's top wall (x 343-373, y 295-338), arc swings north into the lobby
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# bedroom doors: arcs swing into the bedrooms, leaves in the bottom walls (x 388-432 and x 445-483, y 240-282)
+door: BEDROOM 3 | LIVING/ DINING
+door: BEDROOM 2 | LIVING/ DINING
+# main-bedroom door: hinge at the notch (500, 288) under BEDROOM 2's bottom wall; leaf drawn open along y 288 (x 500-541),
+# swing arc to the stub (500, 329) on bath 2's top wall, i.e. it closes across the passage; east of it is the main-bedroom
+# vestibule (same drawing as s001's main-bedroom door)
+door: MAIN BEDROOM | LIVING/ DINING
+# folding (V) door in the top wall of bath 2 (x 452-492, y 330-345), from the lobby
+door: BATH / WC 2 | LIVING/ DINING
+# folding (V) door in the top wall of bath 1 (x 640-680, y 283-298), from the main-bedroom floor
+door: BATH / WC 1 | MAIN BEDROOM
+# folding (V) door in the wall between kitchen and service yard (x 468-480, y 460-487)
+door: LIVING/ DINING | SERVICE YARD
+# dashed sides, nothing drawn across them (see notes at the two spaces)
+
+# Top outer wall: glazing is the THREE-line band between plain white boxes / black walls.
+# SUGGESTED STUDY: glazing x 112-170 (y 184-190); LIVING/ DINING: glazing x 186-275, boxes x 171-186 and x 275-282
+windows: LIVING/ DINING = 4
+# BEDROOM 3: glazing x 322-400 (y 131-139); the black wall x 403-470 follows
+windows: BEDROOM 3 = 1
+# BEDROOM 2: glazing x 475-550, then the black column x 551-575
+windows: BEDROOM 2 = 1
+# MAIN BEDROOM: top glazing x 585-660 + glazed panel (white box with grey inner slit) in the right wall x 681-688, y 168-282
+windows: MAIN BEDROOM = 2
+# bath 2: glazing (double line with ticks) in its right wall x 523-527, y 362-400, faces the AIR-CON LEDGE
+windows: BATH / WC 2 = 1
+# bath 1: right wall x 681-688 is a white wall box y 320-358 (round end at y 358) continued by a pale glazed band with a dashed
+# middle line y 358-380 -> counted as ONE window (uncertain: it could be read as no window / the whole strip).
+windows: BATH / WC 1 = 1
+# KITCHEN: two glazed (4-line) bands in the wall to the SERVICE YARD, x 463-469, y 430-447 and y 487-503, either side of the
+# folding door -> 2 windows onto the yard (uncertain: they could be read as louvred wall panels). The kitchen's bottom wall is
+# solid black. SERVICE YARD: right wall x 521-526 is a plain double line, bottom black -> no window.
+
+entrance: LIVING/ DINING

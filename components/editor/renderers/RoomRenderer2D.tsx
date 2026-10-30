@@ -3943,7 +3943,7 @@ export default function RoomRenderer2D({
           );
         })}
 
-      <RoomPanelFaces2D rooms={wallBandRooms} shown={wallBandLayout.parts.length > 0} isPro={isPro} />
+      <RoomPanelFaces2D rooms={wallBandRooms} planRooms={rooms} openings={openings} shown={wallBandLayout.parts.length > 0} isPro={isPro} />
       {hasHouseRooms && wallBandLayout.cornerCaps.map((cap) => (
           <mesh
             key={cap.key}

@@ -55,6 +55,7 @@ export function floorPlanVectorizerRuntimeConfiguration(
   const exportFloor = Number.parseInt(environment.FLOOR_PLAN_VECTORIZER_EXPORT_FLOOR_MS ?? "", 10);
   const faithfulTimeout = Number.parseInt(environment.FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS ?? "", 10);
   const faithfulPixels = Number.parseInt(environment.FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS ?? "", 10);
+  const faithfulMin = Number.parseInt(environment.FLOOR_PLAN_FAITHFUL_TRACE_MIN_MS ?? "", 10);
   return Object.freeze({
     enabled: environment.FLOOR_PLAN_VECTORIZER_ENABLED === "1",
     pythonPath: environment.FLOOR_PLAN_VECTORIZER_PYTHON || "python3",
@@ -69,6 +70,11 @@ export function floorPlanVectorizerRuntimeConfiguration(
     faithfulTrace: environment.FLOOR_PLAN_FAITHFUL_TRACE === "1",
     faithfulTimeoutMs: Number.isFinite(faithfulTimeout) ? Math.max(10_000, Math.min(faithfulTimeout, 600_000)) : 240_000,
     faithfulMaxPixels: Number.isFinite(faithfulPixels) ? Math.max(100_000, Math.min(faithfulPixels, 16_000_000)) : 4_000_000,
+    // No upload gives nothing (beta step 2.1, 30 Oct 2026): with the page budget on, the faithful trace runs inside the
+    // page's own time limit (FLOOR_PLAN_VECTORIZER_TIMEOUT_MS) rather than after it. A page that reaches the trace with
+    // less than this left comes back with stage 1's reading, noted, instead of waiting longer.
+    pageBudget: environment.FLOOR_PLAN_VECTORIZER_PAGE_BUDGET === "1",
+    faithfulMinMs: Number.isFinite(faithfulMin) ? Math.max(5_000, Math.min(faithfulMin, 300_000)) : 30_000,
   });
 }
 
@@ -147,7 +153,13 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
       const evidence = parseFloorPlanVectorizerEvidence(
         JSON.parse(await readFile(`${base}.evidence.json`, "utf8"))
       );
-      return this.config.faithfulTrace ? await this.withFaithfulDrawing(evidence, input, base, options.signal) : evidence;
+      if (!this.config.faithfulTrace) return evidence;
+      if (!this.config.pageBudget) return await this.withFaithfulDrawing(evidence, input, base, options.signal);
+      const leftMs = options.timeoutMs - (Date.now() - started);
+      if (leftMs < this.config.faithfulMinMs) {
+        return withNote(evidence, `Faithful trace not used: the page's time limit was nearly spent (${Math.round((Date.now() - started) / 1000)} s)`);
+      }
+      return await this.withFaithfulDrawing(evidence, input, base, options.signal, Math.min(this.config.faithfulTimeoutMs, leftMs));
     } finally {
       await rm(workDirectory, { recursive: true, force: true });
     }
@@ -168,19 +180,21 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
 
   /** The faithful trace of a clean page as its drawing (J, 22 Oct: "clean sharp vectors"). It fails soft: a picture
    * that is not crisp or is too large, a failure or a timeout leaves stage 1's drawing, and the notes say why. */
-  private async withFaithfulDrawing(evidence: FloorPlanVectorizerEvidence, input: string, base: string, signal?: AbortSignal) {
-    const result = await this.faithfulDrawing(input, base, signal);
+  private async withFaithfulDrawing(evidence: FloorPlanVectorizerEvidence, input: string, base: string, signal?: AbortSignal,
+    timeoutMs = this.config.faithfulTimeoutMs) {
+    const result = await this.faithfulDrawing(input, base, signal, timeoutMs);
     return "drawing" in result ? { ...evidence, drawing: result.drawing } : withNote(evidence, result.note);
   }
 
   /** Runs faithful_drawing.py on the page; a page it leaves, a failure or a timeout comes back as a note. Cancelling the
    * import still cancels it. */
-  private async faithfulDrawing(input: string, base: string, signal?: AbortSignal): Promise<FaithfulDrawingResult> {
+  private async faithfulDrawing(input: string, base: string, signal?: AbortSignal,
+    timeoutMs = this.config.faithfulTimeoutMs): Promise<FaithfulDrawingResult> {
     try {
       await runProcess(
         this.config.pythonPath,
         [`${this.config.directory}/faithful_drawing.py`, input, `${base}.faithful.json`, `--max-pixels=${this.config.faithfulMaxPixels}`],
-        { timeoutMs: this.config.faithfulTimeoutMs, signal }
+        { timeoutMs, signal }
       );
       const result: unknown = JSON.parse(await readFile(`${base}.faithful.json`, "utf8"));
       if (result && typeof result === "object" && "skipped" in result) {

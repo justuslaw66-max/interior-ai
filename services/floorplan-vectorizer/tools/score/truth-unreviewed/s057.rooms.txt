@@ -1,0 +1,66 @@
+# s057 - 5-Room Apartment Type 8, HDB 5-Room Improved corridor-end unit. Typed from the plan image only
+# (the "5-Room Apartment / Type 8 / Floor Area: 122m2" caption, the grey banner and "teoalida.com" are ignored).
+# Labels: a printed line break is one blank ("BATH/" + "W.C. 1" -> "BATH/ W.C. 1"; "SERVICE/" + "BALCONY" -> "SERVICE/ BALCONY";
+# "STORE/" "PANTRY" "(APT." "SHELTER)" -> one label).
+# The 1200-wide lobby between the BEDROOM 3 and BEDROOM 2 doors (x 350-402, y 157-250) is open to the living area at its full
+# width and carries on into it (no door, no narrowing) -> part of LIVING/DINING.
+space: LIVING/DINING
+space: BEDROOM 3
+space: BEDROOM 2
+space: MAIN BEDROOM
+space: BATH/ W.C. 1
+space: BATH/ W.C. 2
+space: KITCHEN
+space: SERVICE/ BALCONY
+space: STORE/ PANTRY (APT. SHELTER)
+# Small enclosed ledge south-east of MAIN BEDROOM (x 517-612, y 345-398), no printed label: thin double-line walls on the right
+# (x 617-622) and below (y 395-398), BATH/ W.C. 1 wall on the left, MAIN BEDROOM wall above with a hinged door
+# (hinge at about (610,344), leaf swings into the ledge) -> typed as an unlabelled ledge.
+space: (unlabelled ledge off MAIN BEDROOM)
+# Not typed: the narrow duct strip x 520-538, y 400-470 and the open exterior notch east of it (x 540-620, y 400-468, no wall
+# on its east side) - the line at x 538 / y 397 is only an edge, no enclosure.
+
+# main entrance, south wall (x 195-245, y 555-625): unequal double leaf with arcs inwards and outwards (door + gate), one line
+door: LIVING/DINING | OUTSIDE
+# BEDROOM 3: leaf hinged at (348,195), closed along x 348 (y 158-195) in the room's right wall, swings west into the room
+door: BEDROOM 3 | LIVING/DINING
+# BEDROOM 2: leaf hinged at (402,195), closed along x 402 (y 160-195) in the room's left wall, swings east into the room
+door: BEDROOM 2 | LIVING/DINING
+# MAIN BEDROOM: leaf hinged at (402,213), closed along x 402 (y 213-250) in the room's left wall, swings east into the room
+door: MAIN BEDROOM | LIVING/DINING
+# folding (triangle) door in the top wall of bath 1 (x 450-470, y 345-365), from MAIN BEDROOM
+door: BATH/ W.C. 1 | MAIN BEDROOM
+# folding (triangle) door in the bottom wall of bath 2 (x 420-445, y 468-480), from the KITCHEN
+door: BATH/ W.C. 2 | KITCHEN
+# shelter door drawn closed in its frame in the right wall (x 360-368, y 510-545), leaf arc swings into the KITCHEN
+door: STORE/ PANTRY (APT. SHELTER) | KITCHEN
+# hinged leaf in the wall between KITCHEN and SERVICE/ BALCONY (hinge at (548,487), closed along x 548, y 487-523), swings into the kitchen
+door: KITCHEN | SERVICE/ BALCONY
+# hinged glazed door in the top wall of the ledge (x 580-610, y 344), arc inside the ledge
+door: MAIN BEDROOM | (unlabelled ledge off MAIN BEDROOM)
+# KITCHEN north-west corner: 900 wide opening between the shelter wall (x 362) and the left wall of bath 2 (x 400-405) at
+# y 483-507, nothing drawn across it ("900" is a dimension) -> doorway
+gap: KITCHEN | LIVING/DINING
+
+# BEDROOM 3: long sliding window (dashed lines) in the left wall, x 145-160, y 100-190
+windows: BEDROOM 3 = 1
+# BEDROOM 2: long sliding window in the right wall, x 614-630, y 100-190
+windows: BEDROOM 2 = 1
+# MAIN BEDROOM: long sliding window in the right wall, x 614-630, y 217-335
+windows: MAIN BEDROOM = 1
+# LIVING/DINING left wall: sliding windows y 217-335 and y 362-465 (dashed), separated by solid wall pieces, plus a third
+# plain band (solid lines, no dashes) x 142-152, y 490-572 - counted as a window (uncertain: could be a thin wall).
+# The small box beside the entrance (x 245-266, y 591-598, 0.4 m) is read as door frame / sill, not a window (uncertain).
+windows: LIVING/DINING = 3
+# bath windows: one hatched (louvre) cell in the thin right wall of each bath (BATH/ W.C. 1 y 375-397, BATH/ W.C. 2 y 428-455,
+# x 510-516), facing the ledge and the duct strip
+windows: BATH/ W.C. 1 = 1
+windows: BATH/ W.C. 2 = 1
+# KITCHEN: window in the wall shared with SERVICE/ BALCONY, below the door: hatched cell y 523-560 then a post and a plain
+# cell y 563-592 (x 546-550). Counted as 1 (uncertain: the plain cell could be a second window).
+windows: KITCHEN = 1
+# SERVICE/ BALCONY: window (box between two posts) in the top wall, x 558-605, y 472-480, facing the open notch. The right
+# edge (x 625-632, y 492-585) is a plain double-line band = parapet, not counted (uncertain).
+windows: SERVICE/ BALCONY = 1
+
+entrance: LIVING/DINING

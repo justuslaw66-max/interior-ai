@@ -1,0 +1,37 @@
+# room4.jpg - 4-ROOM MODEL 'A' (CORRIDOR). Typed from the plan image only.
+space: LIVING
+space: KITCHEN/DINING
+space: MAIN BEDROOM
+space: BEDROOM 2
+space: BEDROOM 3
+space: STORE
+space: BATH/W.C. 1
+space: BATH/W.C. 2
+space: SERVICE BALCONY
+# The short passage between STORE, BEDROOM 2, BEDROOM 3 and MAIN BEDROOM is open to LIVING (no wall/door), so it is part of LIVING.
+door: MAIN BEDROOM | LIVING
+door: BEDROOM 3 | LIVING
+door: BEDROOM 2 | LIVING
+door: STORE | LIVING
+# folding (triangle) door in the wall between bath 1 and the main bedroom
+door: BATH/W.C. 1 | MAIN BEDROOM
+# folding (triangle) door in the bottom wall of bath 2
+door: BATH/W.C. 2 | KITCHEN/DINING
+door: SERVICE BALCONY | KITCHEN/DINING
+# main entrance: door + gate drawn in the same opening, counted once. ACCESS BALCONY is the shared corridor = OUTSIDE
+door: LIVING | OUTSIDE
+gap: KITCHEN/DINING | LIVING
+# MAIN BEDROOM: 1 large window in the top outer wall + 1 small window in its right wall that faces the SERVICE BALCONY
+windows: MAIN BEDROOM = 2
+windows: BEDROOM 3 = 1
+windows: BATH/W.C. 1 = 1
+# bath 2 louvre window is in the wall shared with the SERVICE BALCONY (not an outer wall of the flat)
+windows: BATH/W.C. 2 = 1
+# kitchen window is in the wall shared with the SERVICE BALCONY, next to the balcony door
+windows: KITCHEN/DINING = 1
+# windows onto the access balcony (thin grey band in the bottom wall)
+windows: BEDROOM 2 = 1
+# one band left of the entrance door, one band right of it
+windows: LIVING = 2
+# SERVICE BALCONY top edge reads as a plain parapet (two thin lines, no sash band): no window counted.
+entrance: LIVING

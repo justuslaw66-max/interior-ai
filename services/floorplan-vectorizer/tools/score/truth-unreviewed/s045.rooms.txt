@@ -1,0 +1,50 @@
+# s045 - HDB 3-Room Simplified (corridor unit, 64 sqm). Typed from the plan image only (title "3-ROOM SIMPLIFIED (CORRIDOR)",
+# "SCALE 1:100", dimension figures and the grey banner at the bottom are ignored).
+# Labels: a printed line break is one blank ("KITCHEN/" + "DINING" -> "KITCHEN/ DINING", "BATH/" + "WC 2" -> "BATH/ WC 2").
+# ACCESS BALCONY (x 183-440, y 577-650, dashed outline, outside the flat's own wall line) is the shared access corridor = OUTSIDE,
+# not a space (same reading as room4).
+# The short lobby in front of the MAIN BEDROOM and BEDROOM doors (x 320-358, y 358-417) is open at its full width to LIVING ROOM
+# (wall x 312 stops at y 360 and starts again at y 412) -> part of LIVING ROOM.
+# Not typed: REFUSE CHUTE (dark shaft box x 153-205, y 75-123), the sink/drainer counter (x 178-205, y 140-210), the small box by
+# the chute (x 200-210, y 92-118), the D-shaped fixture on the left of the bath block (x 270-292, y 130-153).
+# The side walls of the flat (x 175 and x 440, between the dark columns) are plain double lines = party walls to the next units.
+space: KITCHEN/ DINING
+space: STORE
+space: BATH/ WC 2
+space: BATH/ WC 1
+space: MAIN BEDROOM
+space: LIVING ROOM
+space: BEDROOM
+
+# main entrance: door (one inward leaf, arc above the line) + gate (two leaves, arcs below) in the same opening x 272-308, y 549
+door: LIVING ROOM | OUTSIDE
+# MAIN BEDROOM door: leaf hinged at (321,358), swings up into the bedroom, closed position across x 321-357 at y 358
+door: MAIN BEDROOM | LIVING ROOM
+# BEDROOM door: leaf hinged at (321,417), swings down into the bedroom, closed position across x 322-356 at y 417
+door: BEDROOM | LIVING ROOM
+# BATH/ WC 1 door: leaf hinged at (323,190) in the bottom wall of the bath, swings into the bath; opens onto the MAIN BEDROOM
+door: BATH/ WC 1 | MAIN BEDROOM
+# BATH/ WC 2 door: leaf hinged at (294,88) in the left wall of the bath (drawn closed along x 294, y 88-123, arc inside); opens onto the kitchen
+door: BATH/ WC 2 | KITCHEN/ DINING
+# STORE door: hinged leaf drawn open to the west (arc x 215-247, y 277-307), in the left wall of the store
+door: STORE | KITCHEN/ DINING
+# KITCHEN/ DINING to LIVING ROOM: opening x 206-245 at y 328 (about 900 mm) between the wall end (x 206) and the store wall (x 245),
+# ONE thin line drawn across it, jamb to jamb -> sliding door (rule of 4 Oct 2026)
+door: KITCHEN/ DINING | LIVING ROOM
+
+# KITCHEN/ DINING: glazed band in the top wall x 197-290, y 75-85, three casement leaves with arcs drawn outside (x 211-238, 242-262,
+# 262-287) and a post at x 240; no solid wall piece in it -> counted as ONE window (uncertain: could be read as 2 or 3).
+windows: KITCHEN/ DINING = 1
+# BATH/ WC 2: glazed piece (dashed inner line) in its right wall x 381-385, y 76-110; the plain double line y 111-133 below it is wall.
+windows: BATH/ WC 2 = 1
+# BATH/ WC 1: glazed right wall x 381-385, y 139-188 (dashed inner line), with a small mullion bar at y 159; counted as ONE window
+# (1200 dimension covers the whole piece) - uncertain, could be 2.
+windows: BATH/ WC 1 = 1
+# MAIN BEDROOM: double casement (two leaves, arcs into the open recess) in its top wall x 386-433, y 163-190
+windows: MAIN BEDROOM = 1
+# LIVING ROOM: glazed band in the bottom wall x 182-268, y 543-549 (frame with grey inner panes), next to the entrance door
+windows: LIVING ROOM = 1
+# BEDROOM: glazed band in the bottom wall x 326-403, y 573-578
+windows: BEDROOM = 1
+
+entrance: LIVING ROOM

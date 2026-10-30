@@ -20,6 +20,7 @@ import {
 } from "@/lib/onboarding";
 import type { Plan } from "@/lib/plan";
 import type { DesignItem, ZoneMin } from "@/lib/room-types";
+import type { WallFinishRoom } from "@/lib/room-wall-finish-depths";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
 
 type DesignMode = "homeowner" | "designer";
@@ -70,6 +71,7 @@ export type DesignPageOnboardingConfiguration = {
   roomWidth: number;
   roomDepth: number;
   wallThickness: number;
+  wallFinishRoom?: WallFinishRoom | null; // the active room: the first sofa's check measures to its laminate panels
 };
 
 export type UseDesignPageOnboardingOptions = {
@@ -212,7 +214,7 @@ export function useDesignPageOnboarding({
     showConfidenceSummary,
     logFunnelEvent,
   } = actions;
-  const { roomWidth, roomDepth, wallThickness } = configuration;
+  const { roomWidth, roomDepth, wallThickness, wallFinishRoom } = configuration;
   const [onboardingState, setOnboardingState] = useState<OnboardingState>(() => ({
     enabled: false,
     step: "idle",
@@ -384,7 +386,7 @@ export function useDesignPageOnboarding({
     const results = evaluateConstraints({
       design: { items: state.items },
       movedItemId: sofaItem.instanceId,
-      room: { width: roomWidth, depth: roomDepth, wallThickness },
+      room: { width: roomWidth, depth: roomDepth, wallThickness, wallFinishRoom },
     });
     showConstraintsForMoment(results);
     showConfidenceSummary(results);
@@ -434,17 +436,8 @@ export function useDesignPageOnboarding({
       }
     }, 600);
   }, [
-    clampToRoom,
-    roomDepth,
-    roomWidth,
-    showConfidenceSummary,
-    showConstraintsForMoment,
-    wallThickness,
-    onboardingState.enabled,
-    onboardingState.step,
-    state.designId,
-    state.isGuest,
-    state.items,
+    clampToRoom, roomDepth, roomWidth, showConfidenceSummary, showConstraintsForMoment, wallFinishRoom, wallThickness,
+    onboardingState.enabled, onboardingState.step, state.designId, state.isGuest, state.items,
   ]);
 
   useEffect(() => {

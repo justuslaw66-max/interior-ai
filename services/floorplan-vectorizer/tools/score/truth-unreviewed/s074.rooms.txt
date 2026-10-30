@@ -1,0 +1,55 @@
+# s074 - 3-room-type HDB plan (LIVING/DINING, BEDROOM, MAIN BEDROOM). Typed from the plan image only (dimension strings ignored).
+# Labels: a printed line break is one blank ("LIVING/" + "DINING", "HOUSE-" "HOLD" "SHELTER", "AIR-" "CON" "LEDGE").
+# The foyer / corridor in front of the BEDROOM door, the shelter door and the BATH/ WC 2 door (x 90-360, y 188-298) is open to
+# LIVING/ DINING at its full width -> part of LIVING/ DINING.
+# The lobby east of the main-bedroom door leaf (x 362-480, y 190-233) has no wall to MAIN BEDROOM (the door leaf is drawn
+# dashed in the vertical line x=360, hinged at about (360,226), closing against the BEDROOM partition end at (360,190)) -> part
+# of MAIN BEDROOM.
+# Not typed: the unlabelled drying-rack recess (bars, x 343-370, y 312-400) east of the SERVICE YARD; dimension strings.
+space: LIVING/ DINING
+space: BEDROOM
+space: MAIN BEDROOM
+space: HOUSE- HOLD SHELTER
+space: BATH/ WC 2
+space: BATH/ WC 1
+space: AIR- CON LEDGE
+space: KITCHEN
+space: SERVICE YARD
+
+# main entrance in the bottom wall of LIVING/ DINING (x 103-155, y 297-310): door (arc into the living room, plus small second
+# leaf) and gate (arc outward) in the same opening -> one line
+door: LIVING/ DINING | OUTSIDE
+# shelter door drawn closed in its frame (top wall, x 230-265, y 232), swing arc drawn into the foyer
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# BEDROOM door: dashed leaf and dashed arc hinged at about (232,185), in the bottom wall opening x 232-270 (dashed leaf in a
+# solid wall = door)
+door: BEDROOM | LIVING/ DINING
+# main-bedroom door: dashed leaf / arc (x 360-400, y 190-226), see the note on the lobby above
+door: MAIN BEDROOM | LIVING/ DINING
+# folding (triangle) door in the top wall of bath 2 (x 330-358, y 233-252), from the foyer
+door: BATH/ WC 2 | LIVING/ DINING
+# folding (triangle, dashed) door in the top wall of bath 1 (x 384-418, y 237-252), from the main-bedroom lobby
+door: BATH/ WC 1 | MAIN BEDROOM
+# folding (triangle) door in the partition between KITCHEN and SERVICE YARD (x 284-300, y 335-358)
+door: KITCHEN | SERVICE YARD
+# KITCHEN top-left: opening about 1.0 m wide (x 163-203, y 297) between the kitchen wall end (x 161) and the shelter's black
+# wall (x 203), ONE thin line drawn across it (the same line runs on from the entrance wall) -> sliding door
+# (rule of 4 Oct 2026). Uncertain: it could equally be a plain floor-edge line (open kitchen) or a doorway.
+door: KITCHEN | LIVING/ DINING
+
+# LIVING/ DINING: one glazed band in the top wall (x 110-209, four sashes, no solid piece between)
+windows: LIVING/ DINING = 1
+# BEDROOM: glazed band in the top wall (x 282-357, three sashes)
+windows: BEDROOM = 1
+# MAIN BEDROOM: glazed band in the top wall (x 382-456, three sashes) + a narrow louvred window (three vertical lines) in the
+# east wall at the north-east corner (x 483-492, y 77-103) -> 2 (the louvre is uncertain: it has a small box outside it)
+windows: MAIN BEDROOM = 2
+# BATH/ WC 1: narrow louvred window in the east wall facing the AIR- CON LEDGE (x 460-468, y 237-275)
+windows: BATH/ WC 1 = 1
+# BATH/ WC 2: small opening with a dashed line in its bottom wall (x 346-369, y 306-312), facing the drying-rack recess
+windows: BATH/ WC 2 = 1
+# Not counted (uncertain): two plain double-thin-line gaps between black wall pieces, with no sash / mid line:
+#  - bottom outer wall x 231-313, y 400-410 (KITCHEN x 231-283 and SERVICE YARD x 285-313): read as infill wall;
+#  - LIVING/ DINING west wall x 80-88, y 122-232: read as infill wall (as in s001's left wall).
+# The partition lines of BEDROOM are drawn the same way (double thin lines), which is why these are read as walls.
+entrance: LIVING/ DINING

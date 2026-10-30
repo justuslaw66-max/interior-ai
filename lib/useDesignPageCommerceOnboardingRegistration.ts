@@ -29,7 +29,7 @@ export function useDesignPageCommerceOnboardingRegistration({
   const viewportShell = coreShell.boundaries.viewportShell;
   const documentRoom = documentSelection.boundaries.documentRoom;
   const importedModels = base.boundaries.importedModels;
-  const { items, zones, roomWidth, roomDepth, wallThickness } =
+  const { activeRoom, items, zones, roomWidth, roomDepth, wallThickness } =
     documentRoom.derived.room;
 
   const commerce = useDesignPageCommerceActions({
@@ -77,7 +77,7 @@ export function useDesignPageCommerceOnboardingRegistration({
         coreShell.actions.feedback.showConfidenceSummary,
       logFunnelEvent: coreShell.actions.paywall.logFunnelEvent,
     },
-    configuration: { roomWidth, roomDepth, wallThickness },
+    configuration: { roomWidth, roomDepth, wallThickness, wallFinishRoom: activeRoom ?? null },
   });
 
   return {

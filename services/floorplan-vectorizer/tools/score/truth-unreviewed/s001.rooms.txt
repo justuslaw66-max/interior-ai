@@ -1,0 +1,52 @@
+# s001 - 4 Room Type-1A (HDB). Typed from the plan image only ("4 Room / Type-1A / Floor Area ..." caption ignored).
+# Labels: a printed line break is one blank ("LIVING/" + "DINING" -> "LIVING/ DINING", "HOUSE-" "HOLD" "SHELTER").
+# The corridor in front of BEDROOM 3 / BEDROOM 2 / BATH/ WC 2 (x 385-645, y 325-390) is open to LIVING/ DINING at its full
+# width -> part of LIVING/ DINING. The entrance foyer between the shelter and the kitchen (x 275-370, y 440-580) is open
+# to LIVING/ DINING at its full width -> part of it too.
+# The lobby east of the main-bedroom door (x 645-790, y 325-392) has no wall to MAIN BEDROOM -> part of MAIN BEDROOM.
+# consistency pass (decided readings): the kitchen corner towards LIVING/ DINING is only dashed (not a wall) -> open plan
+space: LIVING/ DINING + KITCHEN
+space: BEDROOM 3
+space: BEDROOM 2
+space: MAIN BEDROOM
+# KITCHEN: its top-left corner is drawn as a DASHED wall outline (x 370-420 at y 377, x 370-377 from y 375 to 450),
+# read as the kitchen wall (an optional partition drawn dashed, like the dashed bedroom door leaves) -> separate space.
+space: BATH/ WC 2
+space: BATH/ WC 1
+space: AIR-CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Not typed: the narrow drying-rack recess outside the kitchen window (x 505-552, y 520-645): no label, its outer side is
+# a single line (x 552) open to the exterior below the ledge. The strip below the shelter (y 600-660) is the corridor.
+
+# main entrance: door (unequal double leaf, arcs inward) + gate (arcs outward) in the same opening x 285-355, y 580-600
+door: LIVING/ DINING | OUTSIDE
+# shelter door in its right wall, swings into the foyer
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# bedroom doors are drawn with dashed arcs/leaves (still door leaves)
+door: BEDROOM 3 | LIVING/ DINING
+door: BEDROOM 2 | LIVING/ DINING
+# main-bedroom door: dashed leaf hinged at about (645,322), drawn open along BEDROOM 2's bottom wall; it closes across the
+# corridor onto a stub at (643, 372-392) on BATH/ WC 2's top wall
+door: MAIN BEDROOM | LIVING/ DINING
+# folding (dashed V) door in the top wall of bath 2, from the corridor
+door: BATH/ WC 2 | LIVING/ DINING
+# folding (dashed V) door in the top wall of bath 1, from the main-bedroom lobby
+door: BATH/ WC 1 | MAIN BEDROOM
+# kitchen top wall: ONE line drawn across the opening between two jambs (x 420-485, y 377) -> sliding door
+# (rule of 4 Oct 2026)
+
+# top outer wall: one sash window per room
+windows: LIVING/ DINING = 2
+windows: BEDROOM 3 = 1
+windows: BEDROOM 2 = 1
+# MAIN BEDROOM: sash window in the top wall + a glazed panel (frame with grey inner slit) in the right wall x 858-870, y 203-375
+windows: MAIN BEDROOM = 2
+# bath windows are in their bottom walls, facing the AIR-CON LEDGE (x 624-658 and x 686-730, y 495-505)
+windows: BATH/ WC 2 = 1
+windows: BATH/ WC 1 = 1
+# KITCHEN: glazing wraps the drying-rack recess - long sash window x 495-505 (y 512-645) turning the corner into a short
+# glazed piece x 505-535 at y 512-520; joined by a corner frame, no solid wall piece between -> counted as 1 (uncertain).
+# LIVING/ DINING left wall (x 183-192, y 200-440) is two thin lines like the bedroom partitions, no sash/glazing line ->
+# read as a wall, not a window (uncertain).
+
+entrance: LIVING/ DINING

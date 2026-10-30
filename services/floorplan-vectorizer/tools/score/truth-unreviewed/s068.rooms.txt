@@ -1,0 +1,44 @@
+# s068 - 2-bedroom flat, type "B1-R" (low-resolution BuyCondo-watermarked plan). Typed from the plan image only
+# (watermark "BUYCONDO.sg", the "SLIDING SCREEN" / "FACADE FIN ABOVE & BELOW" call-outs, the "**AREA IS INCLUSIVE OF STRATA VOID..."
+# note, the scale bar and the compass are ignored; the large thin rectangle x 450-740, y 57-80 above the balcony is the outline
+# of a facade fin / screen above, not a room).
+# The dotted (dashed) line round the living/dining/kitchen (x 480 y 283-322, x 612 y 281-410, y 410 x 480-612, y 170 x 565-612) is the
+# outline of the strata void above, NOT a wall: LIVING, DINING and OPEN KITCHEN are one space. The entrance foyer (x 530-612,
+# y 412-487) and the small lobby in front of BEDROOM 2 / BATH 2 (x 620-662, y 281-322) are open to it at their full width -> part of it.
+space: LIVING + DINING + OPEN KITCHEN
+space: BALCONY
+space: A/C LEDGE
+space: MASTER BEDROOM
+space: MASTER BATH
+space: BEDROOM 2
+space: BATH 2
+# Not typed: SC and DB cupboards by the entrance, F / WM fixture letters, the narrow crossed shaft (x 645-660, y 322-400),
+# the shower cubicles behind glass-screen lines (MASTER BATH x 360-399, y 328-385; BATH 2 x 672-715, y 357-398), the crossed
+# post box in the balcony wall (x 480-490, y 150-170).
+
+# main entrance: leaf hinged (557,485) drawn open northwards with its arc to (598,485); opening x 555-598 in the bottom wall,
+# a thin gate line across the same opening - one line
+door: LIVING | OUTSIDE
+# balcony: stacked sliding glazing panels x 485-612, y 165-172
+door: BALCONY | LIVING
+# MASTER BATH: one thin line drawn across a door-sized opening x 432-468 (about 0.8 m) in the wall y 323-328, between two jambs
+# -> sliding door (rule of 4 Oct 2026)
+door: MASTER BATH | MASTER BEDROOM
+# BATH 2: one thin line (x 665, y 282-320) across a door-sized opening between a wall piece at y 281 and a jamb at y 322
+# -> sliding door (rule of 4 Oct 2026); it faces the lobby in front of BEDROOM 2, which is part of the open living area
+door: BATH 2 | LIVING
+# MASTER BEDROOM: east wall (x 480) is solid for y 150-281 and again from y 322; between them (y 283-322, about 0.9 m) only the
+# dashed void line is drawn, no leaf
+gap: MASTER BEDROOM | LIVING
+# BEDROOM 2: its bottom-left corner is open between the end of its west wall (x 620, y 281) and the start of its bottom wall
+# (x 657, y 278), about 0.8 m, nothing drawn across
+gap: BEDROOM 2 | LIVING
+
+# MASTER BEDROOM: the whole top wall (x 360-472, y 164) is a thin single line (no thick wall) behind the facade fins at x 420-428
+# and x 462-470; read as ONE full-width window (the fins stick out of the facade, they are not wall pieces) - uncertain
+windows: MASTER BEDROOM = 1
+# BEDROOM 2: glazing band x 640-735, y 127-137 onto the A/C LEDGE, one mullion at x ~675 -> counted as 1 window (uncertain)
+windows: BEDROOM 2 = 1
+# BALCONY: sliding screen / railing only. LIVING + DINING + OPEN KITCHEN, MASTER BATH, BATH 2: no window drawn (solid walls).
+
+entrance: LIVING

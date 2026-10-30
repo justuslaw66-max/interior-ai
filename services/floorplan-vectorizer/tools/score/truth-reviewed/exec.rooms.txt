@@ -1,0 +1,55 @@
+# exec.jpg - EXECUTIVE APARTMENT (POINT BLOCK). Typed from the plan image only.
+space: LIVING/DINING
+space: BALCONY
+space: STUDY
+space: BEDROOM 3
+space: BEDROOM 2
+space: MAIN BEDROOM
+space: BATH/W.C. 1
+space: BATH/W.C. 2
+space: KITCHEN
+space: SERVICE BALCONY
+space: STORE/PANTRY (APT. SHELTER)
+# Small unlabelled outdoor area below the right end of MAIN BEDROOM (the "1700" strip right of the baths), bounded by a grey
+# L-shaped parapet; a narrow door leaf swings into it from MAIN BEDROOM. Read as an air-con ledge. Unclear because it has no label
+# and its lower edge mixes with dimension lines.
+space: (unlabelled air-con ledge)
+# The passage serving the three bedroom doors runs open into LIVING/DINING (no door), so it is part of LIVING/DINING.
+door: BEDROOM 3 | LIVING/DINING
+door: BEDROOM 2 | LIVING/DINING
+door: MAIN BEDROOM | LIVING/DINING
+# folding (triangle) door in the top wall of bath 1
+door: BATH/W.C. 1 | MAIN BEDROOM
+# folding (triangle) door in the bottom wall of bath 2
+door: BATH/W.C. 2 | KITCHEN
+door: KITCHEN | SERVICE BALCONY
+door: STORE/PANTRY (APT. SHELTER) | LIVING/DINING
+# sliding door (panels with arrows, "50 DROP") along the bottom edge of the balcony
+door: BALCONY | LIVING/DINING
+# narrow hinged leaf in the bottom wall of MAIN BEDROOM, right end
+door: MAIN BEDROOM | (unlabelled air-con ledge)
+# main entrance: door + gate, counted once. ACCESS BALCONY = OUTSIDE
+door: LIVING/DINING | OUTSIDE
+# STUDY: opening in its right wall between two wall stubs, no leaf drawn. About 1.8 m wide, i.e. wider than a normal doorway.
+gap: STUDY | LIVING/DINING
+# KITCHEN: about 0.9 m opening at the top of its left wall (only a single thin threshold line drawn), no leaf.
+gap: KITCHEN | LIVING/DINING
+windows: BEDROOM 3 = 1
+# BEDROOM 2: casement in the top wall + a short window in the right wall
+windows: BEDROOM 2 = 2
+windows: STUDY = 1
+# MAIN BEDROOM: L-shaped corner bay window, casement pair in the top wall and casement pair in the right wall; counted as 2
+windows: MAIN BEDROOM = 2
+# window band facing the access balcony, right of the entrance
+windows: LIVING/DINING = 1
+# louvre windows of both baths are in their right walls, facing the unlabelled ledge / duct strip
+windows: BATH/W.C. 1 = 1
+windows: BATH/W.C. 2 = 1
+# kitchen window (grey band) is in the diagonal wall shared with the SERVICE BALCONY. The other diagonal wall of the kitchen
+# (facing the access balcony, "2900") is a plain double line and is read as wall, not window - uncertain.
+windows: KITCHEN = 1
+# opening with sill between the two pillars in the top wall of the service balcony
+windows: SERVICE BALCONY = 1
+# BALCONY outer edge is a railing/parapet band, not counted as a window.
+# The two small compartments below the shelter (facing the access balcony) are service ducts, not spaces.
+entrance: LIVING/DINING

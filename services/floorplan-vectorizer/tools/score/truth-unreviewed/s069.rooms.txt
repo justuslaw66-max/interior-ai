@@ -1,0 +1,38 @@
+# s069 - 1-bedroom flat (labels in mixed case on the plan, typed upper case). Typed from the plan image only
+# (scale bar "0 2 4 6m" and the partial drawing at the bottom edge are ignored).
+# LIVING and KITCHEN/ DINING have no wall between them (counter, island and stools only). The entrance lobby (x 290-345, y 215-420)
+# and the small lobby in front of the bedroom / bathroom doors (x 235-285, y 215-300) are open to it at their full width ->
+# part of this one space. The dashed lines round the hob (x 418 y 300-365, y 365 x 345-418) are a ceiling/bulkhead outline, not walls.
+space: LIVING + KITCHEN/ DINING
+space: MASTER BEDROOM
+space: BATHROOM
+space: BALCONY
+space: A/C LEDGE
+# Not typed: DB cupboard (x 240-285, y 300-335), the crossed shaft box beside it (x 225-240, y 305-335), the shower enclosure
+# inside BATHROOM (x 122-180, y 243-303, with its own swing door), the narrow cavity strips between the double outer walls
+# (x 112-118 along the left side, y 305-315 below the bathroom, x 440-447 along the right side), wardrobe (x 122-235, y 185-212).
+
+# main entrance: unequal double leaf (large leaf along the left jamb x 290 with arc to x 338, small leaf x 335-343) in the opening
+# x 288-343, y 420, with a thin gate line across it - one line
+door: LIVING | OUTSIDE
+# MASTER BEDROOM door in its bottom wall: opening x 236-275, y 215; leaf hinged at the right end (277,215), drawn open northwards
+# along x 272-277, arc to the left jamb
+door: MASTER BEDROOM | LIVING
+# MASTER BEDROOM to the balcony: opening x 283-286, y 47-83 in the east wall, leaf hinged at (285,47) drawn open along y 47 onto
+# the balcony, arc down to the jamb at (286,83)
+door: MASTER BEDROOM | BALCONY
+# BATHROOM door in its east wall x 228 (opening y 232-275), leaf hinged at (228,232) drawn open into the bathroom along y 230,
+# arc down to (228,273)
+door: BATHROOM | LIVING
+# BALCONY to living: overlapping sliding glazing panels x 287-383, y 100-108 (a step at x ~343 between panels), as wide as the balcony
+door: BALCONY | LIVING
+
+# MASTER BEDROOM: (1) glazing x 232-275, y 38-47 in the top wall, just left of the hollow column x 275-285; (2) three vertical lines
+# x 110-119, y 46-75 in the left wall, onto the A/C LEDGE
+windows: MASTER BEDROOM = 2
+# LIVING: glazing x 390-437, y 100-108 beyond the balcony's side screen (double line x 383-390); the part x 287-383 is the balcony
+# sliding door. Counted as 1 window - uncertain: it may be a continuation of the sliding panels.
+windows: LIVING = 1
+# BALCONY: thin double-line screen/railing only. BATHROOM: solid thick walls, no window drawn.
+
+entrance: LIVING
