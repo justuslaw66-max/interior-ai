@@ -8,7 +8,7 @@ import {
   getCanonicalRoomWallFinish,
   type CanonicalFinishRoom,
 } from "@/components/editor/renderers/canonical-floor-plan/canonicalWallPanels";
-import { trimFaceEdge, wallSurfaceEdge } from "@/components/editor/renderers/canonical-floor-plan/geometry";
+import { faceTrimsAt, trimFaceEdge, wallSurfaceEdge } from "@/components/editor/renderers/canonical-floor-plan/geometry";
 
 export type CanonicalPlacementDimensions = Pick<DimensionsMm, "w" | "d"> & Partial<Pick<DimensionsMm, "h">>;
 
@@ -57,8 +57,12 @@ export function buildCanonicalPlacementPanels(
     return wall.solids.flatMap((solid) => {
       const trims = getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side);
       if (trims.hidden) return [];
-      const ends = { startMm: trims.startMm + PANEL_CONTACT_TOLERANCE_MM, endMm: trims.endMm + PANEL_CONTACT_TOLERANCE_MM };
-      const bare = trimFaceEdge(wallSurfaceEdge(solid, side, 0), ends), face = trimFaceEdge(wallSurfaceEdge(solid, side, panelMm), ends);
+      const ends = (offsetMm: number) => {
+        const { startMm, endMm } = faceTrimsAt(trims, offsetMm);
+        return { startMm: startMm + PANEL_CONTACT_TOLERANCE_MM, endMm: endMm + PANEL_CONTACT_TOLERANCE_MM };
+      };
+      const bare = trimFaceEdge(wallSurfaceEdge(solid, side, 0), ends(0));
+      const face = trimFaceEdge(wallSurfaceEdge(solid, side, panelMm), ends(panelMm));
       return [{ floorId: floor.id, wallId: wall.id, bottomMm: solid.bottomMm, topMm: solid.topMm, outline: [bare.start, bare.end, face.end, face.start] }];
     });
   })));

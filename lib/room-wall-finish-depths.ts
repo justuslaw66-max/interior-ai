@@ -94,8 +94,12 @@ export function sanitizePlanEdgeWallIds(value: unknown): string[] | undefined {
 }
 
 /** A saved list of edge wall thicknesses, when it is one: positive millimetres, one per edge. */
+/** The most a plan wall can be thick: anything thicker isn't a wall (a damaged save). */
+export const MAX_PLAN_WALL_THICKNESS_MM = 2000;
+
 export function sanitizePlanEdgeWallThicknesses(value: unknown, edges: number): number[] | undefined {
-  return Array.isArray(value) && value.length === edges && value.every((entry) => Number.isFinite(entry) && entry > 0) ? value : undefined;
+  return Array.isArray(value) && value.length === edges &&
+    value.every((entry) => Number.isFinite(entry) && entry > 0 && entry <= MAX_PLAN_WALL_THICKNESS_MM) ? value : undefined;
 }
 
 const validEdgeWallIds = new WeakSet<readonly string[]>();

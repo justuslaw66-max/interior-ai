@@ -10,7 +10,7 @@ import { getWallFinishDepthMm } from "@/lib/laminate-wall-backing";
 import { getRoomMeasuredWallIds, type WallFinishRoom } from "@/lib/room-wall-finish-depths";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
-import { trimFaceEdge, wallSurfaceEdge, type FaceTrimsMm } from "./geometry";
+import { trimmedFaceEdge, type FaceTrimsMm } from "./geometry";
 import { getCanonicalFaceTrimsMm } from "./roomFaceLimits";
 
 export { getCanonicalFaceTrimsMm } from "./roomFaceLimits";
@@ -76,8 +76,8 @@ function buildStrip(
   key: string, wallId: string, roomId: string, solid: CanonicalFloorPlanWallSolid, side: 1 | -1, depthMm: number,
   trims: FaceTrimsMm, finish: CanonicalPanelStrip2D["finish"]
 ): CanonicalPanelStrip2D {
-  const bare = trimFaceEdge(wallSurfaceEdge(solid, side, 0), trims);
-  const face = trimFaceEdge(wallSurfaceEdge(solid, side, depthMm), trims);
+  const bare = trimmedFaceEdge(solid, side, 0, trims);
+  const face = trimmedFaceEdge(solid, side, depthMm, trims);
   const corners: CanonicalPanelStrip2D["corners"] = [bare.start, bare.end, face.end, face.start];
   return {
     key, wallId, roomId, corners, finish,
@@ -109,7 +109,8 @@ export function getCanonicalPanelStrips2D(
       const trims = getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side);
       if (trims.hidden) return [];
       const key = `${floor.id}:${solid.id}:${roomId}:panel`;
-      const value = `${side}|${depthMm}|${trims.startMm}|${trims.endMm}|${finish.paintColorHex}|${finish.materialId}`;
+      const front = trims.front ? `${trims.front.offsetMm}|${trims.front.startMm}|${trims.front.endMm}` : "";
+      const value = `${side}|${depthMm}|${trims.startMm}|${trims.endMm}|${front}|${finish.paintColorHex}|${finish.materialId}`;
       const known = stripsBySolid.get(solid) ?? new Map<string, { value: string; strip: CanonicalPanelStrip2D }>();
       stripsBySolid.set(solid, known);
       const kept = known.get(roomId);

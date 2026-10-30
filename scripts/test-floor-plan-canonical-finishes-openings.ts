@@ -33,10 +33,13 @@ import {
   findCanonicalPlacementWall,
 } from "@/lib/floor-plan-placement-boundaries";
 import { isPointInsideRoomPolygon } from "@/lib/design-page-geometry";
-import { getRoomWallFinishDepths, getRoomWallPanelDepths } from "@/lib/room-wall-finish-depths";
-import { clampToRoomInsideFinishes, getRoomClearInsideMetrics } from "@/lib/room-finished-outline";
+import { getRoomWallFinishDepths, getRoomWallPanelDepths, sanitizePlanEdgeWallThicknesses } from "@/lib/room-wall-finish-depths";
+import { clampToRoomInsideFinishes, getRoomClearInsideMetrics, getRoomSideFinishDepths } from "@/lib/room-finished-outline";
+import { evaluateConstraints } from "@/lib/constraints/evaluate";
+import { CATALOG_ITEMS } from "@/lib/catalog";
 import { getFurnitureWallInset } from "@/lib/design-page-geometry";
 import { curvedApartment } from "./fixtures/scan-to-editable-plan/curved-apartment";
+import { OPEN_CORNER_CASES, runImportedPanelCornerProperties } from "./fixtures/imported-panel-corners";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
 
 const wall = (
@@ -580,7 +583,9 @@ const skinLengthMm = (floor: ReturnType<typeof importedPlan>["floor"], room: Hou
 for (const bendMm of [70, 140]) { // 1 and 2 degrees over 4 m
   const bent = importedPlan(planOf(`bend-${bendMm}`, [["a", 0, 0], ["b", 4000, 0], ["c", 8000, bendMm], ["d", 8000, 3000], ["e", 0, 3000]],
     [["w1", "a", "b"], ["w2", "b", "c", 300], ["w3", "c", "d"], ["w4", "d", "e"], ["w5", "e", "a"]], [["R", ["w1", "w2", "w3", "w4", "w5"]]]), painted);
-  assert.ok(Math.abs(skinLengthMm(bent.floor, bent.planRooms[0], "w1") - 3900) < 2, `a ${bendMm} mm bend: w1's paint runs to the vertex`);
+  // To the vertex, less where it runs into the 300 mm wall's square end there (100 mm off its line, a few millimetres).
+  const bentMm = skinLengthMm(bent.floor, bent.planRooms[0], "w1");
+  assert.ok(bentMm <= 3900.5 && bentMm > 3900 - 100 * Math.tan(Math.atan2(bendMm, 4000)) - 0.5, `a ${bendMm} mm bend: w1's paint runs to the vertex (${bentMm.toFixed(1)} mm)`);
 }
 const curved = importedPlan(curvedApartment() as FloorPlanDocumentV2, (room) => room);
 const bedroom = curved.planRooms.find(({ id }) => id === "bedroom")!;
@@ -590,8 +595,19 @@ const northEastFaceMm = northEast.solids.filter((solid) => solid.bottomMm <= 0.5
   const edge = wallSurfaceEdge(solid, bedroomSide, 0);
   return sum + Math.hypot(edge.end.x - edge.start.x, edge.end.z - edge.start.z) * 1000;
 }, 0);
-assert.ok(northEastFaceMm - skinLengthMm(curved.floor, bedroom, "north-east") < 250,
-  "the curved apartment's bedroom keeps its north-east wall's paint (it was cut to 1.14 of 5.31 m)");
+// It ends where it meets the arc's paint, which turns back along it to a cusp at c = (9260, 0): the arc's face (its slices'
+// fronts, about 3100 mm from (9260, 3000)) meets the north-east face (z = 100 mm) 1.1 m short of c. It ran on to c before,
+// through the arc's wall and out past it; the shared wall's paint stops at the north-east's (x = 4050 mm).
+const arcWall = curved.floor.walls.find(({ id }) => id === "east")!;
+const arcSide = arcWall.roomSides.find(({ roomId }) => roomId === "bedroom")!.side;
+const cuspEndMm = Math.max(...arcWall.solids.map((solid) => {
+  const { start, end } = wallSurfaceEdge(solid, arcSide, 1.5);
+  return (start.z - 0.1) * (end.z - 0.1) <= 0 ? (start.x + ((0.1 - start.z) / (end.z - start.z)) * (end.x - start.x)) * 1000 : -Infinity;
+})) - 4050;
+assert.ok(Math.abs(cuspEndMm - (9260 - Math.sqrt((3100 + 1.5) ** 2 - 2900 ** 2) - 4050)) < 10, "the slices follow the arc");
+assert.ok(northEastFaceMm > cuspEndMm + 1000, "the north-east face's footprint runs on to the cusp");
+assert.ok(Math.abs(skinLengthMm(curved.floor, bedroom, "north-east") - cuspEndMm) < 3,
+  `the curved apartment's bedroom's north-east paint ends at the arc's: ${skinLengthMm(curved.floor, bedroom, "north-east").toFixed(0)} of ${cuspEndMm.toFixed(0)} mm`);
 
 // Furniture stops 2 cm in front of each wall's own panel, though an imported room has one average wall thickness: here 300
 // and 100 mm walls, averaging 200 mm, each with a 44 mm laminate. Plan review finds the clamp's own result clear.
@@ -607,6 +623,23 @@ assert.equal(findCanonicalPlacementPanel(buildCanonicalPlacementPanels(thick.mod
 assert.deepEqual(getRoomClearInsideMetrics(thick.planRooms[0], (mm) => `${Math.round(mm)}`), [`Clear inside ${4000 - 100 - 88} × ${3000 - 300 - 88}`]);
 assert.deepEqual(getRoomClearInsideMetrics(importedPlan(planOf("thick-paint", rectangle, ring([300, 100, 300, 100]), [["R", ["w1", "w2", "w3", "w4"]]]),
   painted).planRooms[0], (mm) => `${mm}`), [], "no clear size without a laminate (J: shown when a wall has one)");
+
+// The checks measure each side from its own walls' faces too: a TV console the clamp stops 2 cm off a 100 mm wall, in a room
+// whose walls average 200 mm, is placed nicely against it, painted or laminated. It read "Too tight to wall (-3cm)" and
+// "Walkway blocked" when the thinner walls' negative depths were dropped from the sides.
+const tvConsole = Object.values(CATALOG_ITEMS).find(({ category }) => category === "tv_console")!;
+for (const [finish, eastMm] of [[painted, -50], [laminated, -6]] as const) {
+  const room = importedPlan(planOf(`thin-checks-${eastMm}`, rectangle, ring([300, 100, 300, 100]), [["R", ["w1", "w2", "w3", "w4"]]]), finish).rooms[0];
+  const { width, depth, wallThickness } = room.geometry;
+  assert.equal(Math.round(getRoomSideFinishDepths(room, { w: width, d: depth }).east! * 1000), eastMm, "the 100 mm side stands out");
+  const [w, d] = tvConsole.bounds?.type === "aabb" ? [tvConsole.bounds.size.w, tvConsole.bounds.size.d] : [tvConsole.dimsMm.w / 1000, tvConsole.dimsMm.d / 1000];
+  const [x, z] = clampToRoomInsideFinishes(9, 0, w, d, width, depth, getFurnitureWallInset(wallThickness!), -Math.PI / 2, "custom_polygon",
+    room.planPolygon, undefined, getRoomWallFinishDepths(room));
+  const checks = evaluateConstraints({ design: { items: [{ instanceId: "tv", productId: tvConsole.id, position: [x, 0, z], rotationY: -Math.PI / 2 }] },
+    movedItemId: "tv", room: { width, depth, wallThickness, wallFinishRoom: room } });
+  assert.equal(checks.find(({ id }) => id === "wall-gap")?.message, "Placed nicely against wall (2cm gap)", `${eastMm}: ${JSON.stringify(checks)}`);
+  assert.ok(!checks.some(({ message }) => message.includes("-")), "no negative gap");
+}
 
 // A slice wholly inside a corner's cut is dropped, not drawn as a sliver: a door 120 mm along w2 from its corner with w1,
 // whose panel w2 stops at (100 mm to w1's face, 44 mm of panel). Where w1 is cut away for the camera, w2 runs to the corner.
@@ -673,6 +706,14 @@ const thickImport = canonicalFloorPlanToDesignSnapshot({ ...planOf("joint-plan",
 const staleHash = { ...unnamed(thickImport.rooms), floorPlan: { ...thickImport.floorPlan!, canonicalGeometryHash: jointImport.floorPlan!.canonicalGeometryHash } };
 assert.deepEqual(storedToSnapshot(snapshotToStored(staleHash)).rooms[0].planEdgeWallIds, ["w1", "w2", "w3", "w4"]);
 assert.deepEqual(loadedIds(unnamed(jointImport.rooms)), jointIds, "the plan the hash belongs to still names its own walls");
+// With its plan at hand, a room's saved thicknesses are the plan's own (a stale save, or a plan edited since), and a thickness
+// that isn't over 0 and up to 2 m is dropped.
+const loadedThicknesses = (thicknesses: unknown) => storedToSnapshot(snapshotToStored({ ...thickImport,
+  rooms: thickImport.rooms.map((room) => ({ ...room, planEdgeWallThicknessesMm: thicknesses as number[] })) })).rooms[0].planEdgeWallThicknessesMm;
+assert.deepEqual(loadedThicknesses([300, 100, 300, 250]), [300, 100, 300, 100], "a stale thickness is the plan's");
+assert.deepEqual(loadedThicknesses([300, 100, 300, 2500]), [300, 100, 300, 100], "a thickness over 2 m is dropped and named again");
+assert.equal(sanitizePlanEdgeWallThicknesses([300, 2000.5], 2), undefined);
+assert.deepEqual(sanitizePlanEdgeWallThicknesses([300, 2000], 2), [300, 2000]);
 
 // Naming never stops a damaged design loading (a design without it loads): a plan that isn't an object, or one that doesn't
 // compile, names nothing, and nor does an outline with a damaged point.
@@ -691,5 +732,25 @@ assert.deepEqual(storedToSnapshot(damagedOutline).rooms.map(({ planEdgeWallIds }
 // Wiring the 2D renderer can't be drawn to check here (no browser): it hands the imported plan its rooms, which the strips need.
 assert.match(read("components/editor/renderers/RoomRenderer2D.tsx"), /<CanonicalFloorPlanWalls2D\s+model=\{canonicalPlan\} rooms=\{rooms\}/,
   "The 2D plan hands its rooms to the imported plan's walls, which draw their panels.");
+
+// Seeded random imported plans, compiled for real (scripts/fixtures/imported-panel-corners.ts): rooms shaped as L, T, cross, Y,
+// wedges of 5 to 60 degrees, bends of up to 20 degrees either way, spikes (outside cusps) and arcs (meeting a straight wall in
+// and out, at a cusp, and meeting each other), with walls 100 to 300 mm thick, each laminated on a random board or painted,
+// turned, mirrored and moved, and some with a door near a corner. Each room's drawn panels are checked: no two overlap, none
+// pokes out past the walls or into another wall, each face is covered up to its corners, and furniture placed by the clamp
+// stands 2 cm in front of every laminate (each within the stated tolerances). The cases still open are counted, so the count
+// can only come down.
+const cornerPlans = Number(process.env.IMPORTED_CORNER_PLANS ?? 2000);
+const corners = runImportedPanelCornerProperties(cornerPlans);
+console.log(`Imported panel corners: ${corners.plans} plans (${corners.skipped} invalid, skipped), ${corners.rooms} rooms, ${corners.panels} panels; worst ${JSON.stringify(
+  Object.fromEntries(Object.entries(corners.worst).map(([key, value]) => [key, Math.round(value * 100) / 100])))}; failing ${JSON.stringify(corners.failing)}`);
+if (cornerPlans === 2000) {
+  assert.ok(corners.plans >= 1990, "the plans compile");
+  assert.ok(corners.panels > 20000, "the plans have panels");
+  for (const [key, open] of Object.entries(OPEN_CORNER_CASES)) {
+    assert.ok((corners.failing[key] ?? 0) <= open, `${key}: ${corners.failing[key]} rooms (${open} known open)\n${corners.failures.join("\n")}`);
+  }
+  assert.deepEqual(Object.keys(corners.failing).filter((key) => !(key in OPEN_CORNER_CASES)), [], corners.failures.join("\n"));
+}
 
 console.log("Canonical wall finishes and opening semantics checks passed.");

@@ -976,7 +976,7 @@ export function CanonicalFloorPlanWalls3D({
           />
         );
         const walls = visibleWalls.flatMap((wall) => {
-          // A cut-away wall stays mounted, hidden and unpickable, so a cutaway change creates no meshes or shaders.
+          // A cut-away wall stays mounted, hidden and unpickable; a cutaway change rebuilds only the panels stopping at its own.
           const cutAway = cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id));
           const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId, floor.rooms);
           const selected = wall.id === selectedWallId;
@@ -1002,7 +1002,7 @@ export function CanonicalFloorPlanWalls3D({
               return [
                 <CanonicalWallSurfaceMesh
                   key={`${floor.id}:${solid.id}:surface:${surfaceRoomId}`}
-                  solid={solid} wallSolids={wall.solids} trimStartMm={trims.startMm} trimEndMm={trims.endMm}
+                  solid={solid} wallSolids={wall.solids} trims={trims}
                   wallId={wall.id}
                   floorId={floor.id}
                   floorElevationMm={floor.elevationMm}

@@ -65,24 +65,34 @@ function offsetEdge(points: readonly RoomPlanPolygonPoint[], index: number, inse
   return { x: start.x + nx * inset, z: start.z + nz * inset, dx, dz, nx, nz };
 }
 
+const STRAIGHT_ON_RADIANS = (10 * Math.PI) / 180;
+
+/** Where a moved edge meets the line through `point` along (dx, dz). */
+function meetLine(line: OffsetLine, point: RoomPlanPolygonPoint, dx: number, dz: number): RoomPlanPolygonPoint {
+  const t = ((point.x - line.x) * dz - (point.z - line.z) * dx) / (line.dx * dz - line.dz * dx);
+  return { x: line.x + line.dx * t, z: line.z + line.dz * t };
+}
+
 /**
  * The polygon with each edge moved in by its own distance (`insets[i]` for the edge from point i to point i + 1). Each corner
- * is where its two moved edges meet; where they run straight on, the corner moves in by the deeper of the two.
+ * is where its two moved edges meet. Where they run on within 10 degrees of straight (their signed turn), each stops on the
+ * mitre through the corner instead, a step where they stand in by different distances, as an imported plan's panels end
+ * there (canonical-floor-plan/roomFaceLimits.ts): their crossing would be metres off.
  */
 export function insetPolygonEdges(points: readonly RoomPlanPolygonPoint[], insets: readonly number[]): RoomPlanPolygonPoint[] {
   const inwardSign = signedArea(points) >= 0 ? 1 : -1;
   // An inset may be negative: an imported room's edge on a wall thinner than its average stands that much nearer its centre line.
   const lines = points.map((_, index) => offsetEdge(points, index, insets[index] ?? 0, inwardSign));
-  return points.map((point, index) => {
+  return points.flatMap((point, index) => {
     const before = lines[(index - 1 + points.length) % points.length];
     const after = lines[index];
     const cross = before.dx * after.dz - before.dz * after.dx;
-    if (Math.abs(cross) < 1e-9) {
-      const inset = Math.max(insets[(index - 1 + points.length) % points.length] ?? 0, insets[index] ?? 0);
-      return { x: point.x + after.nx * inset, z: point.z + after.nz * inset };
+    if (Math.abs(Math.atan2(cross, before.dx * after.dx + before.dz * after.dz)) < STRAIGHT_ON_RADIANS) {
+      const [mitreX, mitreZ] = [-(before.dz + after.dz), before.dx + after.dx];
+      const [end, start] = [meetLine(before, point, mitreX, mitreZ), meetLine(after, point, mitreX, mitreZ)];
+      return Math.hypot(end.x - start.x, end.z - start.z) < 1e-9 ? [end] : [end, start];
     }
-    const t = ((after.x - before.x) * after.dz - (after.z - before.z) * after.dx) / cross;
-    return { x: before.x + before.dx * t, z: before.z + before.dz * t };
+    return [meetLine(before, { x: after.x, z: after.z }, after.dx, after.dz)];
   });
 }
 
@@ -117,7 +127,9 @@ export function getRoomOutlineInsideFinishes(outline: RoomPlanOutline, depths: R
  * The panels on the room's bounding rectangle, as `north`, `east`, `south` and `west`: for a rectangle its walls' own, and
  * for an L-shape or a drawn shape the deepest panel among the walls along each side. The checks that measure a room by its
  * bounding rectangle (lib/constraints/evaluate.ts, the walkway map, placement scoring, plan review) stop at these, so every
- * shape's checks measure from the panel on its outer walls (J, 29 Oct 2026: "Fix it, all from the face").
+ * shape's checks measure from the panel on its outer walls (J, 29 Oct 2026: "Fix it, all from the face"). An imported room's
+ * depths are signed (getRoomWallFinishDepths): a side whose walls are all thinner than the room's one thickness stands out
+ * from it, as its clamp does, so a side is the greatest of its edges' depths, which may be negative.
  */
 export function getRoomSideFinishDepths(room: WallFinishRoom | null | undefined, size: { w: number; d: number }): RoomWallFinishDepths {
   const depths = getRoomWallFinishDepths(room);
@@ -134,9 +146,9 @@ export function getRoomSideFinishDepths(room: WallFinishRoom | null | undefined,
     const along = (value: number, axis: "x" | "z") => Math.abs(start[axis] - value) < 1e-6 && Math.abs(end[axis] - value) < 1e-6;
     const side = along(bounds.west, "x") ? "west" : along(bounds.east, "x") ? "east"
       : along(bounds.north, "z") ? "north" : along(bounds.south, "z") ? "south" : null;
-    if (side && (depths[faceId] ?? 0) > (sides[side] ?? 0)) sides[side] = depths[faceId];
+    if (side) sides[side] = Math.max(sides[side] ?? -Infinity, depths[faceId] ?? 0);
   });
-  return sides;
+  return Object.fromEntries(Object.entries(sides).filter(([, value]) => Math.abs(value) > 1e-9));
 }
 
 /**

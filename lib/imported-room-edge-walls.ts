@@ -9,8 +9,9 @@ import { sanitizePlanEdgeWallIds, sanitizePlanEdgeWallThicknesses } from "@/lib/
  * design carries when it is loaded, so the rooms are measured to their panels' faces with no migration
  * (lib/room-wall-finish-depths.ts). A room's edges are named only when its outline is the one its plan gives it, point for
  * point; one that doesn't match keeps the bare wall, and its plan draws its finishes flat, until the plan is rebuilt.
- * Their walls' thicknesses (`planEdgeWallThicknessesMm`) are named with them. Saved values that aren't a list of strings (or of
- * positive millimetres, one per edge) are dropped first.
+ * Their walls' thicknesses (`planEdgeWallThicknessesMm`) are named with them, and taken from the plan again when it is at hand
+ * (a plan edited since they were saved). Saved values that aren't a list of strings (or of millimetres over 0 and up to 2 m,
+ * one per edge) are dropped first.
  */
 
 const POINT_TOLERANCE_M = 0.002;
@@ -135,15 +136,30 @@ export function withImportedRoomEdgeWallIds(
   }
 }
 
+/** The room's saved wall thicknesses as its plan gives them now (a plan edited since they were saved): the plan's. */
+function withPlanThicknesses(room: RoomSnapshot, scene: CompiledFloorPlanSceneV2): RoomSnapshot {
+  const [ids, saved] = [room.planEdgeWallIds ?? [], room.planEdgeWallThicknessesMm ?? []];
+  const thicknessById = new Map(scene.floors.flatMap((floor) => floor.walls.map((wall) => [wall.id, wall.thicknessMm] as const)));
+  const fresh = ids.map((wallId, index) => thicknessById.get(wallId) ?? saved[index]);
+  const same = fresh.every((thicknessMm, index) => thicknessMm === saved[index]);
+  return same || !sanitizePlanEdgeWallThicknesses(fresh, ids.length) ? room : { ...room, planEdgeWallThicknessesMm: fresh };
+}
+
 function nameImportedRoomEdges(rooms: RoomSnapshot[], floorPlan: PersistedFloorPlanState | undefined): RoomSnapshot[] {
-  if (!rooms.some(isPending)) return rooms;
+  // With its plan at hand, every imported room is checked against it; otherwise only rooms to name or drop.
+  const planAtHand = Boolean(floorPlan?.canonicalDocument) && rooms.some((room) => typeof room?.floorElevationMm === "number");
+  if (!planAtHand && !rooms.some(isPending)) return rooms;
   let scene: CompiledFloorPlanSceneV2 | null | undefined;
+  const sceneOf = () => (scene === undefined && floorPlan ? (scene = compiledPlan(floorPlan)) : scene ?? null);
   return rooms.map((room) => {
-    if (!isPending(room)) return room;
+    if (!isPending(room)) {
+      const plan = hasEdgeWalls(room) ? sceneOf() : null;
+      return plan ? withPlanThicknesses(room, plan) : room;
+    }
     const unnamed = withoutEdgeWalls(room);
     if (!needsEdgeWallIds(unnamed) || !floorPlan) return unnamed;
-    scene ??= compiledPlan(floorPlan);
-    const edgeWalls = scene ? matchImportedRoomEdgeWalls(unnamed, scene) : undefined;
+    const plan = sceneOf();
+    const edgeWalls = plan ? matchImportedRoomEdgeWalls(unnamed, plan) : undefined;
     return edgeWalls ? { ...unnamed, ...edgeWalls } : unnamed;
   });
 }

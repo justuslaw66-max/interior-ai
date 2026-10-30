@@ -11,7 +11,14 @@ import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
 import { meshRaycast, noRaycast, type CanonicalPointerEvent } from "./canonicalPointer";
 import { getCanonicalRoomWallFinish } from "./canonicalWallPanels";
-import { trimFaceEdge, wallFinishShellGeometry, wallSurfaceEdge, wallSurfaceLayout } from "./geometry";
+import {
+  NO_FACE_TRIMS,
+  WALL_FINISH_SKIN_MM,
+  trimmedFaceEdge,
+  wallFinishShellGeometry,
+  wallSurfaceLayout,
+  type FaceTrimsMm,
+} from "./geometry";
 import {
   CANONICAL_ACTIVE_WALL_COLOR,
   CANONICAL_WALL_INDIRECT_FILL_INTENSITY,
@@ -19,8 +26,6 @@ import {
   surfaceMaterialFallbackColor,
 } from "./surfaceMaterials";
 
-/** A finish that isn't a laminate is drawn as a 1.5 mm skin, as in drawn rooms (house-plan-3d/wallAndOpeningMeshes.tsx). */
-const WALL_FINISH_SKIN_MM = 1.5;
 /** The selection outline stands this far in front of the finish, as a drawn room's window outline does (#233). */
 const SELECTION_OUTLINE_CLEARANCE_MM = 3;
 
@@ -38,9 +43,8 @@ type WallSurfaceProps = {
   /** False while cut away, so a hidden surface takes no pointer events. */
   interactive: boolean;
   cutAway: boolean;
-  /** How far the finish stops short of its face's corners: where it meets another laminate at an inside corner. */
-  trimStartMm?: number;
-  trimEndMm?: number;
+  /** Where the finish stops at its face's ends: at the room's corners (roomFaceLimits.ts). */
+  trims?: FaceTrimsMm;
   onSelectWall?: (wallId: string, roomId: string | null, event: CanonicalPointerEvent) => void;
 };
 
@@ -90,11 +94,11 @@ function useCanonicalWallFinish({ solid, wallSolids, wallId, room, side }: WallS
  */
 export const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh(props: WallSurfaceProps) {
   const { solid, wallId, floorId, floorElevationMm, room, side, selected, opacity, geometryHash, interactive, cutAway } = props;
-  const { trimStartMm = 0, trimEndMm = 0 } = props;
+  const { trims = NO_FACE_TRIMS } = props;
   const { settings, material, texture, displayedColor, displayedColorFillIntensity, finishDepthMm } = useCanonicalWallFinish(props);
   const geometry = useMemo(
-    () => wallFinishShellGeometry(solid, side, finishDepthMm, { startMm: trimStartMm, endMm: trimEndMm }),
-    [finishDepthMm, side, solid, trimEndMm, trimStartMm]
+    () => wallFinishShellGeometry(solid, side, finishDepthMm, trims),
+    [finishDepthMm, side, solid, trims]
   );
   useEffect(() => () => geometry.dispose(), [geometry]);
   const roomOpacity = Math.max(0.05, Math.min(1, Number.isFinite(room.surfaceOpacity?.wall) ? room.surfaceOpacity!.wall! : 1));
@@ -136,24 +140,23 @@ export const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh(p
         depthWrite={shownOpacity > 0.34}
       />
       {selected && (
-        <CanonicalWallSelectionOutline solid={solid} side={side} finishDepthMm={finishDepthMm} trimStartMm={trimStartMm} trimEndMm={trimEndMm} />
+        <CanonicalWallSelectionOutline solid={solid} side={side} finishDepthMm={finishDepthMm} trims={trims} />
       )}
     </mesh>
   );
 });
 
 /** The selected wall's outline, in front of its finish. */
-function CanonicalWallSelectionOutline({ solid, side, finishDepthMm, trimStartMm, trimEndMm }: {
+function CanonicalWallSelectionOutline({ solid, side, finishDepthMm, trims }: {
   solid: CanonicalFloorPlanWallSolid;
   side: 1 | -1;
   finishDepthMm: number;
-  trimStartMm: number;
-  trimEndMm: number;
+  trims: FaceTrimsMm;
 }) {
+  // Cut on the line in front of the finish as the finish is cut, so it follows a slanting end.
   const edge = useMemo(
-    () => trimFaceEdge(wallSurfaceEdge(solid, side, finishDepthMm + SELECTION_OUTLINE_CLEARANCE_MM),
-      { startMm: trimStartMm, endMm: trimEndMm }),
-    [finishDepthMm, side, solid, trimEndMm, trimStartMm]
+    () => trimmedFaceEdge(solid, side, finishDepthMm + SELECTION_OUTLINE_CLEARANCE_MM, trims),
+    [finishDepthMm, side, solid, trims]
   );
   const bottom = solid.bottomMm / 1000 + 0.02;
   const top = solid.topMm / 1000 - 0.02;
