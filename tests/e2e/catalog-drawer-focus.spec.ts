@@ -9,7 +9,7 @@ type RestorationIdentity = {
 
 const semanticTargetSelector = "[data-catalog-drawer-focus-product-id]";
 
-async function openCatalog(page: Page, mode: "consumer" | "pro" = "consumer") {
+async function openCatalog(page: Page, mode: "consumer" | "pro" = "consumer", { waitForProductLists = true } = {}) {
   if (mode === "pro") {
     await page.route("**/api/me", async (route) => {
       await route.fulfill({
@@ -41,6 +41,11 @@ async function openCatalog(page: Page, mode: "consumer" | "pro" = "consumer") {
   }
   await expect(searchInput).toBeVisible({ timeout: 30_000 });
   await expect(page.getByTestId("catalog-focused-category-pill")).toBeVisible({ timeout: 30_000 });
+  // Wait for both product lists, as waitForCatalogReady does: the full list re-orders the cards, and
+  // an opener picked before it arrives can be gone after (30 Oct 2026).
+  if (waitForProductLists) {
+    await expect(page.getByTestId("catalog-results-focus-target")).toHaveAttribute("aria-busy", "false", { timeout: 30_000 });
+  }
 }
 
 function firstPreview(page: Page) {
@@ -241,7 +246,8 @@ test.describe("ARCH-RC52 catalog drawer focus restoration", () => {
       await route.fulfill({ status: 200, contentType: "application/json", body: '{"models":[]}' });
     });
 
-    await openCatalog(page);
+    // The lists are held back on purpose here, so this one opens the catalogue without waiting for them.
+    await openCatalog(page, "consumer", { waitForProductLists: false });
     const initialOpener = firstPreview(page);
     const identity = await readRestorationIdentity(initialOpener);
     unavailableProductId = identity.productId;
