@@ -27,12 +27,9 @@ export function getBuiltInWallInset(wallThickness = 0.12): number {
   return Number.isFinite(wallThickness) ? Math.max(0, wallThickness) / 2 : 0;
 }
 
-/** The inset to keep an item inside its room with: a built-in cabinet's (above); none for furniture, which keeps its own. */
-export function getItemWallInsetOverride(
-  item: { assetType?: string },
-  room: { geometry: { wallThickness?: number } }
-): number | undefined {
-  return item.assetType === "parametric_cabinet" ? getBuiltInWallInset(room.geometry.wallThickness) : undefined;
+/** True for a built-in cabinet, which stands against the finished face (lib/room-built-in-faces.ts); furniture keeps 2 cm. */
+export function isBuiltInItem(item: { assetType?: string }): boolean {
+  return item.assetType === "parametric_cabinet";
 }
 
 /** The outline fields placement reads, in a room snapshot's or a plan room's terms. */

@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { getRoomPanelStrips2D } from "../components/editor/renderers/roomPanelStrips2D";
 import { evaluateConstraints } from "../lib/constraints/evaluate";
 import { clampToRoom, getFurnitureWallInset } from "../lib/design-page-geometry";
-import { buildCabinetryAvailableSpaces } from "../features/cabinetry/useDesignPageCabinetry";
+import { buildCabinetryAvailableSpaces } from "../features/cabinetry/roomCabinetHosts";
 import {
   clampToRoomInsideFinishes,
   getFurnitureRoomFrameInsideFinishes,
@@ -13,8 +13,7 @@ import {
   getRoomSideFinishDepths,
   getRoomWallClearances,
   insetPolygonEdges,
-  getBuiltInWallInset,
-  getItemWallInsetOverride,
+  isBuiltInItem,
 } from "../lib/room-finished-outline";
 import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "../lib/floor-materials";
@@ -187,13 +186,12 @@ near(north.wallSegment!.startZmm, -1500 + 60 + 10, "the north host stands on its
 near(north.wallSegment!.endXmm, 2000 - 60 - 44, "and stops at the east wall's panel");
 near(east.wallSegment!.startXmm, 2000 - 60 - 44, "the east host is its panel's face");
 const builtIn = (x: number) => isPlacementContainedInRoom({
-  room: tiledWithPanel, position: [x, 0, 0], rotationY: 0, dimensions: { w: 1000, d: 500, h: 800 }, wallInset: getBuiltInWallInset(0.12),
+  room: tiledWithPanel, position: [x, 0, 0], rotationY: 0, dimensions: { w: 1000, d: 500, h: 800 }, builtIn: true,
 });
 assert.equal(builtIn(2 - 0.06 - 0.044 - 0.5), true, "a built-in may stand against the panel's face");
 assert.equal(contained(2 - 0.06 - 0.044 - 0.5), false, "furniture keeps 2 cm off it");
 assert.equal(builtIn(2 - 0.06 - 0.044 - 0.5 + 0.001), false, "but not into the panel");
-assert.equal(getItemWallInsetOverride({ assetType: "parametric_cabinet" }, tiledWithPanel), 0.06);
-assert.equal(getItemWallInsetOverride({ assetType: "catalog" }, tiledWithPanel), undefined);
+assert.deepEqual([isBuiltInItem({ assetType: "parametric_cabinet" }), isBuiltInItem({ assetType: "catalog" })], [true, false]);
 
 // The clear size inside the panels, for the room inspector; nothing without panels.
 const metres = (valueMm: number) => `${(valueMm / 1000).toFixed(2)} m`;

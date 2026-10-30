@@ -20,7 +20,7 @@ import {
   type DesignItemTransformPatch,
 } from "@/lib/design-page-item-commands";
 import type { HistoryCommand, HistoryStatus } from "@/lib/historyManager";
-import { clampToRoomInsideFinishes, getItemWallInsetOverride } from "@/lib/room-finished-outline";
+import { clampToRoomInsideFinishes, isBuiltInItem } from "@/lib/room-finished-outline";
 import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type {
   SceneItemDragEndContext,
@@ -88,7 +88,7 @@ type SceneItemDragOptions = {
       room: RoomSnapshot,
       position: [number, number, number],
       rotationY: number,
-      dimensions: PlanningDimensions, wallInset?: number
+      dimensions: PlanningDimensions, builtIn?: boolean
     ) => boolean;
     clampToRoom: (
       x: number,
@@ -458,7 +458,7 @@ export function useDesignPageSceneItemDrag({
             moverRoom,
             localPosition,
             mover.rotationY ?? 0,
-            configuredPlanningDims, getItemWallInsetOverride(mover, moverRoom) // A built-in may stand against the face.
+            configuredPlanningDims, isBuiltInItem(mover) // A built-in may stand against the finished face.
           )
         ) {
           showDragRejection(

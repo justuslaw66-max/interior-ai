@@ -1,13 +1,16 @@
 import { PLAN_OPENING_DEFAULT_HEIGHT_METERS } from "@/lib/design-page-plan-overlays";
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import {
-  clampToRoomInsideFinishes,
-  getBuiltInWallInset,
-  getRoomPlanOutlinePoints,
-  insetPolygonEdges,
-} from "@/lib/room-finished-outline";
-import { getRoomWallFaceIds, getRoomWallFinishDepths, type RoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
+  builtInFootprintFits,
+  getCanonicalPlanModel,
+  getRoomBuiltInFaces,
+  isBuiltInFaceInRoom,
+  type BuiltInRoomFaces,
+} from "@/lib/room-built-in-faces";
+import { clampToRoomInsideFinishes, getBuiltInWallInset } from "@/lib/room-finished-outline";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { RoomPlanPolygonPoint, RoomSnapshot } from "@/lib/room-types";
 
 import {
@@ -20,12 +23,13 @@ import type { CabinetHostSpace } from "./types";
 
 /**
  * A room's walls as Fit to Space hosts (J, 29 Oct 2026: "Face, back flush"). Each host is its wall's finished face: the bare
- * wall half its thickness in from the outline, or the face of its laminate panel (lib/room-wall-finish-depths.ts). It runs
+ * wall half its own thickness in from the outline, or the face of its laminate panel (lib/room-built-in-faces.ts). It runs
  * between the finished faces of the walls either side, and a fitted run stops the default 10 mm installation allowance short
- * of each. Its back stands against the face: the host's segment is the face, which getCabinetFitPlacement puts the back on.
+ * of each, more by a recorded baseboard. Its back stands against the face, or the baseboard: the host's segment is the face,
+ * which getCabinetFitPlacement puts the back on.
  */
 
-/** Fit to Space's allowance at each end of a run, from the finished face of the wall there. */
+/** Fit to Space's allowance at each end of a run, from the finished face of the wall there (or its baseboard). */
 export const CABINET_RUN_END_ALLOWANCE_MM = 10;
 
 type Point = RoomPlanPolygonPoint;
@@ -35,6 +39,8 @@ export type CabinetryAvailableSpacesInput = {
   activePlanRoom: { w: number; d: number } | null;
   planRoomCount: number;
   planOpenings: RoomOpening2D[];
+  /** The design's imported plan, whose walls give an imported room's faces. */
+  canonicalDocument?: FloorPlanDocumentV2 | null;
 };
 
 export function buildCabinetryAvailableSpaces({
@@ -42,17 +48,18 @@ export function buildCabinetryAvailableSpaces({
   activePlanRoom,
   planRoomCount,
   planOpenings,
+  canonicalDocument,
 }: CabinetryAvailableSpacesInput): CabinetHostSpace[] {
   if (!activeRoom) return [];
-  const halfWall = getBuiltInWallInset(activeRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness);
-  const depths = getRoomWallFinishDepths(activeRoom);
+  const baseboardOffsetMm = Math.max(0, Math.round((activeRoom.geometry.baseboardDepth ?? 0) * 1000));
   const sharedSpaceInput = {
     roomId: activeRoom.id,
     roomName: activeRoom.name,
     roomType: activeRoom.roomType === "balcony" ? "custom" : activeRoom.roomType,
     heightMm: Math.round((activeRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight) * 1000),
-    baseboardOffsetMm: Math.max(0, Math.round((activeRoom.geometry.baseboardDepth ?? 0) * 1000)),
-    installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM,
+    baseboardOffsetMm,
+    // The back stands off the face by the baseboard; the ends keep the allowance from the end walls' baseboards too.
+    installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM + baseboardOffsetMm,
   };
   const includeRoomlessOpenings = planRoomCount <= 1;
   const openings = planOpenings
@@ -68,9 +75,8 @@ export function buildCabinetryAvailableSpaces({
       label: opening.kind === "door" ? "Door" : "Window",
     }));
 
-  const planShape = activeRoom.planShape ?? "rectangle";
-  if (planShape === "rectangle") {
-    const faces = getRectangleFinishedFaces(activePlanRoom?.w ?? activeRoom.geometry.width, activePlanRoom?.d ?? activeRoom.geometry.depth, halfWall, depths);
+  if ((activeRoom.planShape ?? "rectangle") === "rectangle") {
+    const faces = getRectangleFinishedFaces(activeRoom, activePlanRoom?.w ?? activeRoom.geometry.width, activePlanRoom?.d ?? activeRoom.geometry.depth);
     return createCabinetRoomWallSpaces({
       ...sharedSpaceInput,
       widthMm: Math.max(1, Math.round((faces.east - faces.west) * 1000)),
@@ -79,25 +85,23 @@ export function buildCabinetryAvailableSpaces({
     }).map((space) => withRectangleFaceSegment(space, faces));
   }
 
-  // The L-shape's or drawn shape's outline (the wall centre line), each edge moved in by half its wall and its panel.
-  const outline = getRoomPlanOutlinePoints({
-    shape: planShape, polygon: activeRoom.planPolygon, w: activeRoom.geometry.width, d: activeRoom.geometry.depth,
-  });
-  const faceIds = getRoomWallFaceIds({ shape: planShape, polygon: activeRoom.planPolygon });
-  const faces = insetPolygonEdges(outline, faceIds.map((faceId) => halfWall + (depths[faceId] ?? 0)));
+  // The L-shape's or drawn shape's outline (the wall centre line), each edge moved in to its finished face.
+  const faces = getRoomBuiltInFaces(activeRoom, getCanonicalPlanModel(canonicalDocument));
   // Openings are drawn on the centre line, so they are found on it, then measured along the face.
-  const centreLineOpenings = mapCabinetCardinalOpeningsToPolygonWalls({ polygon: outline, openings });
+  const centreLineOpenings = mapCabinetCardinalOpeningsToPolygonWalls({ polygon: faces.outline, openings });
   return createCabinetPolygonWallSpaces({
     ...sharedSpaceInput,
-    polygon: faces,
-    openings: centreLineOpenings.map((opening) => measureAlongFace(opening, outline, faces)),
-  }).filter((space) => !isTurnedOver(space, outline));
+    polygon: faces.faces,
+    openings: centreLineOpenings.map((opening) => measureAlongFace(opening, faces)),
+  }).filter((space) => isBuiltInFaceInRoom(faces, wallIndex(space.wallId ?? "")));
 }
 
 type RectangleFaces = { west: number; east: number; north: number; south: number };
 
 /** Where a rectangle's four finished faces stand, in metres from its centre (north is -z). */
-function getRectangleFinishedFaces(width: number, depth: number, halfWall: number, depths: RoomWallFinishDepths): RectangleFaces {
+function getRectangleFinishedFaces(room: RoomSnapshot, width: number, depth: number): RectangleFaces {
+  const halfWall = getBuiltInWallInset(room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness);
+  const depths = getRoomWallFinishDepths(room);
   return {
     west: -width / 2 + halfWall + (depths.west ?? 0),
     east: width / 2 - halfWall - (depths.east ?? 0),
@@ -136,24 +140,24 @@ function edgeOf(points: readonly Point[], index: number) {
 }
 
 /** An opening measured from its centre-line edge's middle, re-measured from the middle of that edge's face. */
-function measureAlongFace(opening: CabinetPolygonWallOpeningInput, outline: readonly Point[], faces: readonly Point[]): CabinetPolygonWallOpeningInput {
+function measureAlongFace(opening: CabinetPolygonWallOpeningInput, faces: BuiltInRoomFaces): CabinetPolygonWallOpeningInput {
   const index = wallIndex(opening.wallId);
-  const centre = edgeOf(outline, index), face = edgeOf(faces, index);
+  const centre = edgeOf(faces.outline, index), face = edgeOf(faces.faces, index);
   const shiftMm = ((centre.mid.x - face.mid.x) * centre.dx + (centre.mid.z - face.mid.z) * centre.dz) * 1000;
   return { ...opening, offsetMm: Number((opening.offsetMm + shiftMm).toFixed(3)) };
 }
 
-/** A wall shorter than the walls either side are thick has no face of its own: its moved edge runs backwards. */
-function isTurnedOver(space: CabinetHostSpace, outline: readonly Point[]): boolean {
-  const segment = space.wallSegment;
-  if (!segment || !space.wallId) return false;
-  const centre = edgeOf(outline, wallIndex(space.wallId));
-  return (segment.endXmm - segment.startXmm) * centre.dx + (segment.endZmm - segment.startZmm) * centre.dz <= 0;
-}
+export type BuiltInClampOptions = {
+  /** Where the built-in stands now: a move that would leave the faces goes from here as far as it can. */
+  from?: readonly [number, number];
+  /** The design's imported plan, whose walls give an imported room's faces. */
+  canonicalDocument?: FloorPlanDocumentV2 | null;
+};
 
 /**
- * A built-in cabinet clamped into its room: as furniture is (clampToRoomInsideFinishes, inside each wall's panel), but with
- * its back allowed against the finished face, with no 2 cm gap (getBuiltInWallInset).
+ * A built-in cabinet kept inside its room's finished faces (lib/room-built-in-faces.ts), with its back allowed against a face
+ * and no 2 cm gap. Where its real (turned) footprint already fits, it stays put, as Fit to Space places it. A move that would
+ * leave the faces stops where it still fits, going from `from`. Otherwise it is clamped as furniture is, with half the wall.
  */
 export function clampBuiltInToRoom(
   room: RoomSnapshot,
@@ -161,8 +165,22 @@ export function clampBuiltInToRoom(
   z: number,
   itemWidth: number,
   itemDepth: number,
-  rotationY = 0
+  rotationY = 0,
+  options: BuiltInClampOptions = {}
 ): [number, number] {
+  const faces = getRoomBuiltInFaces(room, getCanonicalPlanModel(options.canonicalDocument));
+  const fits = (atX: number, atZ: number) => builtInFootprintFits(faces, atX, atZ, itemWidth, itemDepth, rotationY);
+  if (fits(x, z)) return [x, z];
+  const from = options.from;
+  if (from && fits(from[0], from[1])) {
+    let reach = 0, beyond = 1;
+    for (let step = 0; step < 24; step += 1) {
+      const middle = (reach + beyond) / 2;
+      if (fits(from[0] + (x - from[0]) * middle, from[1] + (z - from[1]) * middle)) reach = middle;
+      else beyond = middle;
+    }
+    return [from[0] + (x - from[0]) * reach, from[1] + (z - from[1]) * reach];
+  }
   return clampToRoomInsideFinishes(
     x, z, itemWidth, itemDepth, room.geometry.width, room.geometry.depth,
     getBuiltInWallInset(room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness),

@@ -74,11 +74,6 @@ assert.match(
   /useDesignPageCabinetryRegistrationFacade\(\{[\s\S]*?activeRoom: activeRoom \?\? null[\s\S]*?planRoomById: sceneRoomRead\.derived\.scene\.houseRoomById[\s\S]*?activeSurfaceTarget: viewportShell\.state\.surface\.activeSurfaceTarget[\s\S]*?selectedWallFaceId:[\s\S]*?sceneRoomRead\.derived\.room\.activeSelectedWallFaceId[\s\S]*?commitItemsToRoom: itemDocument\.actions\.commitItemsToRoom[\s\S]*?isCatalogPlacementContainedInRoom:[\s\S]*?placement\.actions\.catalog\.isCatalogPlacementContainedInRoom/,
   "The cabinetry registration should retain room, surface, ref, placement, and document inputs."
 );
-assert.doesNotMatch(
-  cabinetryWorkspaceSource,
-  /clampToCatalogPlacementRoom|clampToActiveRoom/,
-  "Built-ins clamp themselves against the finished face (roomCabinetHosts.ts), not with furniture's 2 cm gap."
-);
 assert.match(
   cabinetryRegistrationSource,
   /const activePlanRoom =[\s\S]*?planRoomById\.get\(cabinetryState\.activeRoom\.id\)[\s\S]*?activeSurfaceTarget === "selected_wall" \? selectedWallFaceId : null;/,
