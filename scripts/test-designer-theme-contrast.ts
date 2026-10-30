@@ -416,7 +416,7 @@ for (const file of ["Button", "SegmentedControl", "Chip", "ChoiceTile"]) {
 }
 // Admin stays light whatever the device (plan decision 7).
 for (const file of ["app/admin/AdminShell.tsx", "app/admin/AdminAccessDenied.tsx"]) {
-  assert.match(read(file), /<div className=\{styles\.page\} data-color-scheme="light">/, `${file} holds Admin light.`);
+  assert.match(read(file), /<div className=\{styles\.page\} data-color-scheme="light" data-light-page>/, `${file} holds Admin light.`);
 }
 
 // The retired designer theme stays gone (UX 5l): no theme attribute, no designer palette, and
@@ -534,8 +534,8 @@ assert.match(
 
 // The switch (J, 22 Oct: the app follows the device). A dark device takes the dark block's values,
 // line for line, unless data-color-scheme="light" holds the page or a subtree light.
-const deviceDark = css.match(/\n@media \(prefers-color-scheme: dark\) \{\n  :root:not\(\[data-color-scheme="light"\]\) \{\n([\s\S]*?)\n  \}\n\}\n/)?.[1];
-assert.ok(deviceDark, "A dark device takes the dark values on :root, unless it is held light.");
+const deviceDark = css.match(/\n@media \(prefers-color-scheme: dark\) \{\n  :root:not\(\[data-color-scheme="light"\]\):not\(:has\(\[data-light-page\]\)\) \{\n([\s\S]*?)\n  \}\n\}\n/)?.[1];
+assert.ok(deviceDark, "A dark device takes the dark values on :root, unless it is held light or shows a page held light.");
 assert.equal(
   deviceDark.split("\n").map((line) => line.trim()).filter(Boolean).join("\n"),
   darkTheme.split("\n").map((line) => line.trim()).filter(Boolean).join("\n"),
@@ -553,7 +553,7 @@ assert.equal(
 const contrastLight = css.match(/\n@media \(prefers-contrast: more\) \{\n  :root,\n  \[data-color-scheme="light"\] \{\n([\s\S]*?)\n  \}\n\n  \[data-color-scheme="dark"\] \{\n([\s\S]*?)\n  \}\n\}\n/);
 assert.ok(contrastLight, "Increase Contrast sets light and dark values under prefers-contrast: more.");
 const [, contrastLightBlock, contrastDarkBlock] = contrastLight;
-const contrastDevice = css.match(/\n@media \(prefers-contrast: more\) and \(prefers-color-scheme: dark\) \{\n  :root:not\(\[data-color-scheme="light"\]\) \{\n([\s\S]*?)\n  \}\n\}\n/)?.[1];
+const contrastDevice = css.match(/\n@media \(prefers-contrast: more\) and \(prefers-color-scheme: dark\) \{\n  :root:not\(\[data-color-scheme="light"\]\):not\(:has\(\[data-light-page\]\)\) \{\n([\s\S]*?)\n  \}\n\}\n/)?.[1];
 assert.ok(contrastDevice, "A dark device with Increase Contrast takes the dark values, unless it is held light.");
 assert.equal(
   contrastDevice.split("\n").map((line) => line.trim()).filter(Boolean).join("\n"),
@@ -612,22 +612,24 @@ for (const [mode, standard, more] of [["light", lightTokens, moreLight], ["dark"
 }
 assert.match(
   css,
-  /@custom-variant dark \{\n  &:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\) \{\n    @slot;\n  \}\n  @media \(prefers-color-scheme: dark\) \{\n    &:where\(:root:not\(\[data-color-scheme="light"\]\) \*\):not\(:where\(\[data-color-scheme="light"\], \[data-color-scheme="light"\] \*\)\) \{/,
+  /@custom-variant dark \{\n  &:where\(\[data-color-scheme="dark"\], \[data-color-scheme="dark"\] \*\) \{\n    @slot;\n  \}\n  @media \(prefers-color-scheme: dark\) \{\n    &:where\(:root:not\(\[data-color-scheme="light"\]\):not\(:has\(\[data-light-page\]\)\) \*\):not\(:where\(\[data-color-scheme="light"\], \[data-color-scheme="light"\] \*\)\) \{/,
   "dark: utilities follow the same switch as the tokens, and stay off where a subtree is held light (Admin)."
 );
-for (const [file, holds] of [
-  ["app/admin/AdminShell.tsx", /data-color-scheme="light"/],
-  ["app/admin/AdminAccessDenied.tsx", /data-color-scheme="light"/],
-  ["app/share/[shareToken]/export/page.tsx", /data-color-scheme="light"/],
-  ["app/tools/layout.tsx", /<HeldLight>\{children\}<\/HeldLight>/],
-  ["app/lighting-reference/page.tsx", /<HeldLight>/],
-  ["app/hugg-test/page.tsx", /<HeldLight>/],
-  ["app/models-test/page.tsx", /<HeldLight>/],
-] as const) {
-  assert.match(read(file), holds, `${file} stays light on a dark device (Admin, the export page, the internal tools and QA pages).`);
+// Held light whatever the device (plan decisions 6 and 7): Admin, and the export page and its PDF. Each
+// holds its subtree's tokens light and, with data-light-page, the whole window while it shows (J, 29 Oct):
+// the body behind it, the scrollbars and what shows past its ends are light too. Nothing else is held light:
+// the internal tools and QA pages follow the device like the app (J, 29 Oct).
+const LIGHT_PAGES = ["app/admin/AdminAccessDenied.tsx", "app/admin/AdminShell.tsx", "app/share/[shareToken]/export/page.tsx"];
+for (const file of LIGHT_PAGES) {
+  assert.match(read(file), /data-color-scheme="light" data-light-page>/, `${file} stays light on a dark device, the window too.`);
 }
-// Text colour is inherited as the body's (white on a dark device), so each held-light root sets its own.
-const exportHolds = read("app/share/[shareToken]/export/page.tsx").match(/<main className="[^"]*" data-color-scheme="light">/g) ?? [];
+assert.deepEqual(
+  sourceFiles.filter((file) => file.endsWith(".tsx") && /data-color-scheme="light"/.test(read(file))).sort(),
+  LIGHT_PAGES,
+  "Only Admin and the export page hold anything light."
+);
+// Text colour is inherited as the body's, so each held-light root sets its own.
+const exportHolds = read("app/share/[shareToken]/export/page.tsx").match(/<main className="[^"]*" data-color-scheme="light" data-light-page>/g) ?? [];
 assert.equal(exportHolds.length, 2, "The export page holds both of its pages light.");
 for (const hold of exportHolds) {
   assert.match(hold, /\btext-foreground\b/, "The export page's words and default borders stay dark on a dark device.");
@@ -637,11 +639,31 @@ assert.match(
   /^\.page \{[^}]*\n  color: var\(--ops-ink\);\n\}/m,
   "Admin's words stay dark on a dark device."
 );
+
+// Reduce Transparency (J, 29 Oct): with prefers-reduced-transparency: reduce, every blur goes and a frosted
+// surface's translucent token fill takes its full colour. The rules are keyed on class names, so every token
+// a frosted surface fills with must have one.
+const reduceTransparency = css.match(/\n@media \(prefers-reduced-transparency: reduce\) \{\n([\s\S]*?)\n\}\n/)?.[1];
+assert.ok(reduceTransparency, "Reduce Transparency has its own block.");
 assert.match(
-  read("components/HeldLight.tsx"),
-  /data-color-scheme="light" className="min-h-screen bg-background text-foreground"/,
-  "A held-light page covers the dark page behind it with the light background."
+  reduceTransparency,
+  /\[class\*="backdrop-blur"\],\n  :root \.panel \{\n    -webkit-backdrop-filter: none;\n    backdrop-filter: none;\n  \}/,
+  "Reduce Transparency takes out every blur."
 );
+const solidFills = new Set(
+  Array.from(reduceTransparency.matchAll(/\[class\*="backdrop-blur"\]\[class\*="bg-([a-z-]+)\/"\] \{\n    background-color: var\(--([a-z-]+)\);/g), ([, fill, token]) => {
+    assert.equal(fill, token, `The frosted bg-${fill}/ fill turns solid in its own colour.`);
+    return fill;
+  })
+);
+for (const file of sourceFiles.filter((name) => !name.startsWith("app/admin"))) {
+  for (const line of read(file).split("\n").filter((text) => text.includes("backdrop-blur"))) {
+    for (const [, token] of line.matchAll(/(?:^|[\s"'`:])bg-([a-z][a-z-]*)\/[\d.]+/g)) {
+      if (!lightTokens.has(token)) continue;
+      assert.ok(solidFills.has(token), `${file}: a frosted bg-${token}/ fill needs a Reduce Transparency rule.`);
+    }
+  }
+}
 
 // The plan drawings (dark mode PR 4, J 28 Oct): light keeps what they drew with before; dark has the
 // plan's dark paper, rooms a dim tint of their colour, walls light.

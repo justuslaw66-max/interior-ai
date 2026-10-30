@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { isAdminEmail } from "@/lib/admin";
-import { HeldLight } from "@/components/HeldLight";
 import "./tools-tailwind.css";
 
 /**
@@ -15,5 +14,5 @@ export default async function ToolsLayout({
 }>) {
   const session = await auth();
   if (!isAdminEmail(session?.user?.email)) notFound();
-  return <HeldLight>{children}</HeldLight>;
+  return children;
 }

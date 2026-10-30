@@ -338,11 +338,11 @@ export function LightingReferenceClient() {
     activeFixtureLights.filter((fixture) => fixture.castShadow).length;
 
   return (
-    <main className="flex h-screen min-h-[640px] flex-col bg-neutral-100 text-neutral-950">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 bg-white px-6 py-4">
+    <main className="flex h-screen min-h-[640px] flex-col bg-surface-grouped text-label">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-separator bg-surface px-6 py-4">
         <div>
           <h1 className="text-lg font-bold">Residential lighting reference</h1>
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-label-secondary">
             Stable gray, white, wood, laminate, fabric, metal, and glass targets.
           </p>
         </div>
@@ -356,8 +356,8 @@ export function LightingReferenceClient() {
               data-testid={`reference-preset-${value}`}
               className={`rounded-full px-4 py-2 text-sm font-semibold ${
                 preset === value && !modeOverride
-                  ? "bg-neutral-950 text-white"
-                  : "bg-neutral-200 text-neutral-700"
+                  ? "bg-control-primary text-control-on-primary"
+                  : "bg-control-track text-control-label-idle"
               }`}
               onClick={() => {
                 setPreset(value);
@@ -374,8 +374,8 @@ export function LightingReferenceClient() {
             data-testid="reference-preset-presentation"
             className={`rounded-full px-4 py-2 text-sm font-semibold ${
               modeOverride === "presentation"
-                ? "bg-neutral-950 text-white"
-                : "bg-neutral-200 text-neutral-700"
+                ? "bg-control-primary text-control-on-primary"
+                : "bg-control-track text-control-label-idle"
             }`}
             onClick={() => setModeOverride("presentation")}
           >
@@ -434,7 +434,7 @@ export function LightingReferenceClient() {
           <ReferenceMaterials />
         </Canvas>
         {process.env.NODE_ENV !== "production" ? (
-          <dl className="pointer-events-none absolute left-4 top-4 grid grid-cols-[auto_auto] gap-x-3 gap-y-1 rounded-xl bg-black/75 px-3 py-2 text-xs text-white shadow-lg">
+          <dl className="pointer-events-none absolute left-4 top-4 grid grid-cols-[auto_auto] gap-x-3 gap-y-1 rounded-xl bg-surface-toast/90 px-3 py-2 text-xs text-on-surface-toast shadow-lg">
             <dt>Mode</dt>
             <dd className="font-mono">{lighting.id}</dd>
             <dt>Exposure</dt>
@@ -458,7 +458,7 @@ export function LightingReferenceClient() {
           </dl>
         ) : null}
       </div>
-      <footer className="border-t border-neutral-200 bg-white px-6 py-3 text-xs text-neutral-600">
+      <footer className="border-t border-separator bg-surface px-6 py-3 text-xs text-label-secondary">
         Interactive visualization only; not certified photometric analysis.
       </footer>
     </main>
