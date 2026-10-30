@@ -6,7 +6,7 @@ import { computeCirculationAnalysis } from "../lib/circulation-analysis";
 import { scoreManualPlacement } from "../lib/manual-placement-scoring";
 import { getShapedRoomDoorPoints } from "../lib/room-door-points";
 import { getBoxGapToFinishedOutline, getRoomFinishedOutline, getRoomWallClearance } from "../lib/room-finished-faces";
-import type { RoomSnapshot } from "../lib/room-types";
+import type { DesignItem, RoomSnapshot } from "../lib/room-types";
 
 const makeCatalogItem = (
   id: string,
@@ -302,7 +302,7 @@ for (let step = 0; step < 10; step += 1) {
   assert.equal(hRoomPath(0.4, -1 + step * 0.045), false, `a 40 cm passage at ${step}`);
 }
 // An opening in a thin wall between two parts of a room: never through one 40 cm clear, always through one 60 cm clear.
-const splitRoomPath = (clear: number, start: number) => {
+const splitRoomPath = (clear: number, start: number, items: DesignItem[] = []) => {
   const open = clear + 0.12, wall = { west: -1.66, east: -1.54 };
   const split: RoomSnapshot = {
     ...room, id: "split", items: [], geometry: { width: 6, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
@@ -314,12 +314,63 @@ const splitRoomPath = (clear: number, start: number) => {
     ],
   };
   return computeCirculationAnalysis({
-    room: split, items: [], catalogItems, openings: [{ id: "w", roomId: "split", wall: "west", offsetMm: 1500, widthMm: 800, kind: "door" }],
+    room: split, items, catalogItems,
+    openings: [{ id: "w", roomId: "split", wall: "west", offsetMm: 1500, widthMm: 800, kind: "door" }],
   }).pathValid;
 };
 for (let step = 0; step < 9; step += 1) {
   assert.equal(splitRoomPath(0.6, -0.5 + step * 0.05), true, `a 60 cm opening at ${step}`);
   assert.equal(splitRoomPath(0.4, -0.5 + step * 0.05), false, `a 40 cm opening at ${step}`);
+}
+// A walk between two cells is kept out of items' walk zones too, as a rectangle's cells always are: a side table 1 cm off
+// the thin wall, over the top of an 80 cm opening, leaves 35 to 55 cm to the far jamb and no way through (a walk needs 56.5
+// cm between an item and a wall).
+const besideOpening = (gap: number, start: number) => splitRoomPath(0.8, start, [{
+  instanceId: "side", productId: sideTable.id, variantId: sideTable.defaultVariantId,
+  position: [-1.48 + 0.01 + 0.225, 0, start + 0.06 + gap + 0.225],
+}]);
+for (let step = 0; step < 18; step += 1) {
+  for (const gap of [0.35, 0.4, 0.45, 0.55]) {
+    assert.equal(besideOpening(gap, -0.8 + step * 0.025), false, `${Math.round(gap * 100)} cm at ${step}`);
+  }
+  assert.equal(besideOpening(1.2, -0.8 + step * 0.025), true, `the table far off at ${step}`);
+}
+// Nor is a 5 cm deep piece (a floor mirror) standing across a 70 cm opening in a 32 cm partition stepped over, though the
+// walk spots either side of the partition are up to 90 cm apart, wherever the partition falls against the grid.
+const mirror = { ...sofa, id: "mirror", dimsMm: { w: 800, d: 50, h: 1500 } } as typeof sofa;
+for (let step = 0; step < 18; step += 1) {
+  const west = -1.6 + step * 0.025, east = west + 0.2, start = -0.4, end = start + 0.82;
+  const thick: RoomSnapshot = {
+    ...room, id: "thick", items: [], geometry: { width: 6, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
+    zones: [{ id: "east", type: "seating", itemIds: [], anchor: [2, 0, 1.5], source: "manual" }],
+    planPolygon: [
+      { x: -3, z: -2 }, { x: west, z: -2 }, { x: west, z: start }, { x: east, z: start }, { x: east, z: -2 }, { x: 3, z: -2 },
+      { x: 3, z: 2 }, { x: east, z: 2 }, { x: east, z: end }, { x: west, z: end }, { x: west, z: 2 }, { x: -3, z: 2 },
+    ],
+  };
+  const walk = (items: DesignItem[]) => computeCirculationAnalysis({
+    room: thick, items, catalogItems: { ...catalogItems, mirror },
+    openings: [{ id: "w", roomId: "thick", wall: "west", offsetMm: 1500, widthMm: 800, kind: "door" }],
+  }).pathValid;
+  assert.equal(walk([]), true, `the open doorway at ${step}`);
+  assert.equal(walk([{
+    instanceId: "mirror", productId: "mirror", variantId: mirror.defaultVariantId, position: [west + 0.1, 0, start + 0.41], rotationY: Math.PI / 2,
+  }]), false, `a mirror in the doorway at ${step}`);
+}
+// Each cell's walk spot is its own, inside it: none shared by two cells across a passage, wherever the passage falls.
+for (let step = 0; step < 18; step += 1) {
+  for (const clear of [0.5, 0.56, 0.6]) {
+    const top = -1 + step * 0.025, bottom = top + clear + 0.12;
+    const hRoom: RoomSnapshot = {
+      ...room, id: "hspots", items: [], zones: [], geometry: { width: 4, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
+      planPolygon: [
+        { x: -2, z: -2 }, { x: -1.2, z: -2 }, { x: -1.2, z: top }, { x: -0.4, z: top }, { x: -0.4, z: -2 }, { x: 2, z: -2 },
+        { x: 2, z: 2 }, { x: -0.4, z: 2 }, { x: -0.4, z: bottom }, { x: -1.2, z: bottom }, { x: -1.2, z: 2 }, { x: -2, z: 2 },
+      ],
+    };
+    const spots = computeCirculationAnalysis({ room: hRoom, items: [], catalogItems, openings: [] }).heatmap.map((cell) => `${cell.x.toFixed(4)}:${cell.z.toFixed(4)}`);
+    assert.equal(new Set(spots).size, spots.length, `a passage ${Math.round(clear * 100)} cm clear at ${step}`);
+  }
 }
 // An item near a shaped room's wall blocks the walk past it as near as it does in a rectangle: a bed whose foot is 45 cm from
 // an L's notch wall leaves no way from the east door, and one 70 cm from it does. Walk spots stand half a cell off the wall.
@@ -346,14 +397,20 @@ const angledMap = computeCirculationAnalysis({
 });
 const wedgeFaces = getRoomFinishedOutline({ ...room, id: "wedge", planShape: "custom_polygon",
   planPolygon: [{ x: 0, z: -2 }, { x: 2, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 0 }] }, { w: 4, d: 4 }, 0.06);
-assert.ok(wedgeFaces && angledMap.heatmap.some((cell) => cell.size !== undefined));
-for (const cell of angledMap.heatmap) {
-  const half = (cell.size ?? 0.42) / 2 - 1e-9;
-  for (const [dx, dz] of [[-half, -half], [half, -half], [half, half], [-half, half]]) {
-    assert.ok(getBoxGapToFinishedOutline(wedgeFaces, { minX: cell.x + dx, maxX: cell.x + dx, minZ: cell.z + dz, maxZ: cell.z + dz }) >= 0,
-      `a painted square's corner at ${cell.x + dx}, ${cell.z + dz}`);
+assert.ok(wedgeFaces && angledMap.heatmap.some((cell) => cell.paint !== undefined));
+const painted = angledMap.heatmap.map((cell) => {
+  const paint = cell.paint ?? { x: cell.x, z: cell.z, w: 0.42, d: 0.42 };
+  return { minX: paint.x - paint.w / 2, maxX: paint.x + paint.w / 2, minZ: paint.z - paint.d / 2, maxZ: paint.z + paint.d / 2 };
+});
+painted.forEach((square, index) => {
+  for (const [x, z] of [[square.minX, square.minZ], [square.maxX, square.minZ], [square.maxX, square.maxZ], [square.minX, square.maxZ]]) {
+    assert.ok(getBoxGapToFinishedOutline(wedgeFaces, { minX: x, maxX: x, minZ: z, maxZ: z }) >= -1e-9, `a painted corner at ${x}, ${z}`);
   }
-}
+  // Each cell paints within its own square, so no two overlap.
+  painted.slice(index + 1).forEach((other) => assert.ok(
+    Math.min(square.maxX, other.maxX) - Math.max(square.minX, other.minX) <= 1e-9 ||
+    Math.min(square.maxZ, other.maxZ) - Math.max(square.minZ, other.minZ) <= 1e-9, "two painted squares overlap"));
+});
 // An item past an angled wall stands past it by its overlap along the wall's way in: 10 cm past a 45° corner wall.
 const angled: RoomSnapshot = { ...room, geometry: { width: 4, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
   planPolygon: [{ x: -2, z: -2 }, { x: 1, z: -2 }, { x: 2, z: -1 }, { x: 2, z: 2 }, { x: -2, z: 2 }] };

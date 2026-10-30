@@ -49,6 +49,8 @@ function nearestOnOutline(room: HousePlanRoom2D, point: RoomPlanPolygonPoint): R
 // Kept per drawn outline (or room, for a built-in L) and the doors' own values: placement scores dozens of candidate spots
 // against the same doors, and a room snapshot is copied whenever an item in it moves.
 const doorPointsByOutline = new WeakMap<object, Map<string, RoomDoorPoint[]>>();
+// A built-in L has no outline of its own: its doors are kept by their values and the room's size and place.
+const BUILT_IN_OUTLINE = {};
 
 function doorsKey(planRoom: HousePlanRoom2D, doors: readonly RoomOpening2D[]): string {
   return JSON.stringify([
@@ -63,7 +65,7 @@ export function getShapedRoomDoorPoints(room: RoomSnapshot, openings: readonly R
   if (getRoomWallFaceIds(room)[0] === "north") return null;
   const planRoom = toPlanRoom(room);
   const doors = openings.filter((opening) => opening.kind === "door" && (!opening.roomId || opening.roomId === room.id));
-  const outlineKey: object = room.planPolygon ?? room;
+  const outlineKey: object = room.planPolygon ?? BUILT_IN_OUTLINE;
   const key = doorsKey(planRoom, doors);
   const known = doorPointsByOutline.get(outlineKey)?.get(key);
   if (known) return known;
@@ -74,7 +76,7 @@ export function getShapedRoomDoorPoints(room: RoomSnapshot, openings: readonly R
     return at ? [nearestOnOutline(planRoom, { x: at.x - planRoom.x, z: at.z - planRoom.z })] : [];
   });
   const byKey = doorPointsByOutline.get(outlineKey) ?? new Map<string, RoomDoorPoint[]>();
-  if (byKey.size > 16) byKey.clear();
+  if (byKey.size > 64) byKey.clear();
   doorPointsByOutline.set(outlineKey, byKey.set(key, points));
   return points;
 }

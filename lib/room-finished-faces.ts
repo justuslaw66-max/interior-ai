@@ -84,7 +84,7 @@ function measureRoomFinishedOutline(
 
 // The faces are measured once per outline while its size, offset and depths are the same: placement scores dozens of candidate
 // spots in one room, each through several checks, and a room snapshot is copied whenever an item in it moves, keeping its
-// drawn outline (kept by that outline, or by the room for a built-in L, which has none).
+// drawn outline and its surfaces.
 type KnownOutline = {
   w: number; d: number; faceOffset: number; depths: RoomWallFinishDepths; shape: unknown; polygon: unknown; holes: unknown;
   outline: RoomFinishedOutline;
@@ -101,7 +101,9 @@ export function getRoomFinishedOutline(
   const depths = getRoomWallFinishDepths(room);
   const shape = room.planShape ?? room.shape ?? "rectangle";
   const polygon = room.planPolygon ?? room.polygon, holes = room.planHoles ?? room.holes;
-  const key: object = polygon ?? room;
+  // A built-in L has no outline of its own to keep its faces by: its finishes' depths stand in (the same object while its
+  // surfaces are), with its size, so a copied room finds them too.
+  const key: object = polygon ?? depths;
   const known = outlinesByRoom.get(key) ?? [];
   const match = known.find((entry) => entry.w === size.w && entry.d === size.d && entry.faceOffset === faceOffset &&
     entry.depths === depths && entry.shape === shape && entry.polygon === polygon && entry.holes === holes);
@@ -109,7 +111,7 @@ export function getRoomFinishedOutline(
   const points = getRoomPlanOutlinePoints({ shape, polygon: [...(polygon ?? [])], w: size.w, d: size.d });
   const insets = faceIds.map((faceId) => faceOffset + (depths[faceId] ?? 0));
   const outline = measureRoomFinishedOutline(points, insets, holes ?? [], faceOffset);
-  outlinesByRoom.set(key, [{ w: size.w, d: size.d, faceOffset, depths, shape, polygon, holes, outline }, ...known].slice(0, 4));
+  outlinesByRoom.set(key, [{ w: size.w, d: size.d, faceOffset, depths, shape, polygon, holes, outline }, ...known].slice(0, 8));
   return outline;
 }
 
@@ -144,12 +146,18 @@ function distanceToSegment(point: RoomPlanPolygonPoint, a: RoomPlanPolygonPoint,
 
 function nearestFace(outline: RoomFinishedOutline, point: RoomPlanPolygonPoint, measure: typeof distanceToSegment): number {
   let nearest = Infinity;
-  forEachFace(outline, (a, b) => { nearest = Math.min(nearest, measure(point, a, b)); });
+  forEachFace(outline, (a, b) => {
+    // A face whose box is already further off than the nearest found can't be nearer (neither measure is less than the
+    // larger of the x and z gaps to its box).
+    const gapX = Math.max(Math.min(a.x, b.x) - point.x, 0, point.x - Math.max(a.x, b.x));
+    const gapZ = Math.max(Math.min(a.z, b.z) - point.z, 0, point.z - Math.max(a.z, b.z));
+    if (Math.max(gapX, gapZ) < nearest) nearest = Math.min(nearest, measure(point, a, b));
+  });
   return nearest;
 }
 
 /** Whether the segment touches the box (Liang–Barsky clipping). */
-function segmentTouchesBox(a: RoomPlanPolygonPoint, b: RoomPlanPolygonPoint, box: Box): boolean {
+export function segmentTouchesBox(a: RoomPlanPolygonPoint, b: RoomPlanPolygonPoint, box: Box): boolean {
   let enter = 0, leave = 1;
   const dx = b.x - a.x, dz = b.z - a.z;
   const sides: Array<[number, number]> = [[-dx, a.x - box.minX], [dx, box.maxX - a.x], [-dz, a.z - box.minZ], [dz, box.maxZ - a.z]];
@@ -272,8 +280,13 @@ export function getSegmentClearanceInFinishedOutline(
   outline: RoomFinishedOutline, from: RoomPlanPolygonPoint, to: RoomPlanPolygonPoint
 ): number {
   let nearest = Infinity;
+  const walk = { minX: Math.min(from.x, to.x), maxX: Math.max(from.x, to.x), minZ: Math.min(from.z, to.z), maxZ: Math.max(from.z, to.z) };
   forEachFace(outline, (a, b) => {
     if (nearest === 0) return;
+    // A face whose box is already further from the walk's box than the nearest found can't be nearer.
+    const gapX = Math.max(Math.min(a.x, b.x) - walk.maxX, 0, walk.minX - Math.max(a.x, b.x));
+    const gapZ = Math.max(Math.min(a.z, b.z) - walk.maxZ, 0, walk.minZ - Math.max(a.z, b.z));
+    if (Math.max(gapX, gapZ) >= nearest) return;
     nearest = segmentsTouch(from, to, a, b) ? 0 : Math.min(nearest,
       distanceToSegment(from, a, b), distanceToSegment(to, a, b), distanceToSegment(a, from, to), distanceToSegment(b, from, to));
   });

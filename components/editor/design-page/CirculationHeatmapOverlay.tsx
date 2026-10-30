@@ -22,11 +22,12 @@ export function CirculationHeatmapOverlay({
           cell.level === "blocked" ? 0.24 : cell.level === "tight" ? 0.18 : 0.12;
         return (
           <mesh
-            key={`${cell.x.toFixed(2)}:${cell.z.toFixed(2)}:${cell.level}`}
-            position={[cell.x, 0, cell.z]}
+            // A cell's walk spot is its own (inside the cell), so it keys the cell; a shaped room's cell paints within it.
+            key={`${cell.x.toFixed(4)}:${cell.z.toFixed(4)}:${cell.level}`}
+            position={[cell.paint?.x ?? cell.x, 0, cell.paint?.z ?? cell.z]}
             rotation={[-Math.PI / 2, 0, 0]}
           >
-            <planeGeometry args={[cell.size ?? 0.42, cell.size ?? 0.42]} />
+            <planeGeometry args={[cell.paint?.w ?? 0.42, cell.paint?.d ?? 0.42]} />
             <meshBasicMaterial color={color} transparent opacity={opacity} depthWrite={false} />
           </mesh>
         );

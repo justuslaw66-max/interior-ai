@@ -4,13 +4,8 @@ import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
 import { getShapedRoomDoorPoints } from "@/lib/room-door-points";
-import {
-  getPointClearanceInFinishedOutline,
-  getPointSquareClearanceInFinishedOutline,
-  getRoomFinishedOutline,
-  getSegmentClearanceInFinishedOutline,
-  type RoomFinishedOutline,
-} from "@/lib/room-finished-faces";
+import { forEachCell, getShapedFloor, routeEntersBoxes, type PlanPoint, type WalkPaint, type WalkSpot } from "@/lib/circulation-shaped-floor";
+import { getRoomFinishedOutline } from "@/lib/room-finished-faces";
 import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 
 type CirculationCatalog = Record<string, CatalogItemSchema | undefined>;
@@ -20,8 +15,8 @@ export type CirculationHeatCell = {
   z: number;
   clearanceM: number;
   level: "blocked" | "tight" | "warn" | "clear";
-  /** The painted square's side where a whole cell's square would reach past a wall (a shaped room's angled wall); 0.42 m otherwise. */
-  size?: number;
+  /** Where a shaped room's cell is painted when it isn't the 0.42 m square at x, z: on the floor, within the cell's own square. */
+  paint?: WalkPaint;
 };
 
 export type CirculationAnalysis = {
@@ -178,9 +173,6 @@ function hasPath(
   return false;
 }
 
-/** Where a floor cell is walked from, its clearance to the walls' faces, and its painted square's side when it's smaller. */
-type WalkSpot = { x: number; z: number; clearance: number; paintSize?: number };
-
 type WalkableArea = {
   minX: number;
   maxX: number;
@@ -188,107 +180,23 @@ type WalkableArea = {
   maxZ: number;
   /** A cell's walk spot, or null where the cell isn't on the room's floor. */
   spotAt: (x: number, z: number, xIndex: number, zIndex: number) => WalkSpot | null;
-  /** Whether a walk between two neighbouring floor cells stays half a cell clear of the walls; any two do in a rectangle. */
-  linked?: CellLink;
+  /** In a shaped room, whether a walk between two neighbouring cells can go clear of the walls; any walk goes in a rectangle. */
+  canWalk?: (xIndex: number, zIndex: number, nextX: number, nextZ: number, blocked: (route: readonly PlanPoint[]) => boolean) => boolean;
 };
-
-/** Each grid cell's walk over the area, in the order the grid is built, so a table and the grid agree cell for cell. */
-function forEachCell(area: Omit<WalkableArea, "spotAt">, gridSizeM: number, visit: (x: number, z: number, xIndex: number, zIndex: number) => void) {
-  for (let z = area.minZ, zIndex = 0; z <= area.maxZ + 0.001; z += gridSizeM, zIndex += 1) {
-    for (let x = area.minX, xIndex = 0; x <= area.maxX + 0.001; x += gridSizeM, xIndex += 1) visit(x, z, xIndex, zIndex);
-  }
-}
-
-// An outline's cells are measured once per grid size: the room's faces are kept per room (lib/room-finished-faces.ts), and
-// placement builds a map for each of dozens of candidate spots in one room.
-const areasByOutline = new WeakMap<RoomFinishedOutline, Map<number, WalkableArea>>();
-
-// The spots in a cell tried for its walk spot, a quarter cell apart, nearest the centre first.
-const SPOT_STEPS = [-2, -1, 0, 1, 2].flatMap((dx) => [-2, -1, 0, 1, 2].map((dz) => [dx, dz] as const))
-  .sort(([ax, az], [bx, bz]) => ax * ax + az * az - (bx * bx + bz * bz));
-
-/**
- * A shaped room's cell's walk spot: its centre when that is half a cell clear of every face, as every rectangle's cell is,
- * or else the nearest spot in the cell (a quarter cell apart) that is, so long as the centre is inside the faces.
- */
-function findWalkSpot(outline: RoomFinishedOutline, x: number, z: number, gridSizeM: number): WalkSpot | null {
-  const clear = gridSizeM / 2 - 0.001;
-  const centre = getPointClearanceInFinishedOutline(outline, { x, z });
-  if (centre === null) return null;
-  for (const [dx, dz] of SPOT_STEPS) {
-    const spot = { x: x + (dx * gridSizeM) / 4, z: z + (dz * gridSizeM) / 4 };
-    const clearance = dx === 0 && dz === 0 ? centre : getPointClearanceInFinishedOutline(outline, spot);
-    if (clearance === null || clearance < clear) continue;
-    // A square as big as the cell, centred on the spot, reaches past an angled wall: it is painted smaller.
-    const half = clearance < (gridSizeM / 2) * Math.SQRT2 ? getPointSquareClearanceInFinishedOutline(outline, spot) : Infinity;
-    return { ...spot, clearance, ...(2 * half < 0.42 ? { paintSize: 2 * half } : {}) };
-  }
-  return null;
-}
-
-type PlanPoint = { x: number; z: number };
-
-/**
- * The ways a walk from one cell's spot to its neighbour's may go: straight; along the plan's axes by either corner (round a
- * passage's mouth); or out sideways by a quarter or half a cell and back (through an opening in a thin wall that the two
- * cells' spots don't line up with).
- */
-function getWalkRoutes(from: PlanPoint, to: PlanPoint, alongX: boolean, gridSizeM: number): PlanPoint[][] {
-  const routes: PlanPoint[][] = [[from, to], [from, { x: to.x, z: from.z }, to], [from, { x: from.x, z: to.z }, to]];
-  for (const shift of [-2, -1, 1, 2].map((step) => (step * gridSizeM) / 4)) {
-    routes.push(alongX
-      ? [from, { x: from.x, z: from.z + shift }, { x: to.x, z: from.z + shift }, to]
-      : [from, { x: from.x + shift, z: from.z }, { x: from.x + shift, z: to.z }, to]);
-  }
-  return routes;
-}
-
-/**
- * An outline's floor cells and the walks between them. A cell is walked from its walk spot (findWalkSpot), at least half a
- * cell from every face, as a rectangle's cells are, and items are measured from there. A walk between two neighbouring cells
- * counts where it stays half a cell clear of every face, by one of getWalkRoutes' ways. So a gap under 45 cm clear is never
- * walked through, and an item stops a walk past it as near a wall as it does in a rectangle. The grid isn't lined up with a
- * shaped room's faces, so a gap 45 to 56.5 cm clear is walked through at some offsets; one along the plan's axes 56.5 cm or
- * more (a passage, or an opening in a thin wall) always is, wherever it falls against the grid, and a 45° corridor 64 cm or more.
- */
-function getOutlineWalkableArea(outline: RoomFinishedOutline, gridSizeM: number): WalkableArea {
-  const known = areasByOutline.get(outline)?.get(gridSizeM);
-  if (known) return known;
-  const { bounds } = outline;
-  const extent = {
-    minX: bounds.minX + gridSizeM / 2, maxX: bounds.maxX - gridSizeM / 2,
-    minZ: bounds.minZ + gridSizeM / 2, maxZ: bounds.maxZ - gridSizeM / 2,
-  };
-  const spots: (WalkSpot | null)[][] = [];
-  forEachCell(extent, gridSizeM, (x, z, xIndex, zIndex) => { (spots[zIndex] ??= [])[xIndex] = findWalkSpot(outline, x, z, gridSizeM); });
-  const links = new Map<string, boolean>();
-  const linked: CellLink = (xIndex, zIndex, nextX, nextZ) => {
-    const key = `${Math.min(xIndex, nextX)}:${Math.min(zIndex, nextZ)}:${nextX !== xIndex ? "x" : "z"}`;
-    const from = spots[zIndex]?.[xIndex], to = spots[nextZ]?.[nextX];
-    if (!from || !to) return false;
-    let link = links.get(key);
-    if (link === undefined) {
-      link = getWalkRoutes(from, to, nextX !== xIndex, gridSizeM).some((route) => route.every((point, index) =>
-        index === 0 || getSegmentClearanceInFinishedOutline(outline, route[index - 1], point) >= gridSizeM / 2 - 0.001));
-      links.set(key, link);
-    }
-    return link;
-  };
-  const area: WalkableArea = { ...extent, spotAt: (_x, _z, xIndex, zIndex) => spots[zIndex]?.[xIndex] ?? null, linked };
-  areasByOutline.set(outline, (areasByOutline.get(outline) ?? new Map()).set(gridSizeM, area));
-  return area;
-}
 
 /**
  * The walkable grid's extent: its outer cells' centres half a cell in from the walls' finished faces, which are half the wall
  * in from the outline and in front of each wall's laminate panel (J, 29 Oct 2026: "Fix it, all from the face"). An L-shape's
- * or a drawn shape's grid covers its bounding rectangle (getOutlineWalkableArea): the map no longer paints a notch as
- * walkable, and a cell's clearance is to the nearest face, the notch's walls included.
+ * or a drawn shape's grid covers its bounding rectangle (getShapedFloor, lib/circulation-shaped-floor.ts): the map no longer
+ * paints a notch as walkable, and a cell's clearance is to the nearest face, the notch's walls included.
  */
 function getWalkableArea(room: RoomSnapshot, gridSizeM: number): WalkableArea {
   const wallFace = (room.geometry.wallThickness ?? 0.12) / 2;
   const outline = getRoomFinishedOutline(room, { w: room.geometry.width, d: room.geometry.depth }, wallFace);
-  if (outline) return getOutlineWalkableArea(outline, gridSizeM);
+  if (outline) {
+    const floor = getShapedFloor(outline, gridSizeM);
+    return { ...floor, spotAt: (_x, _z, xIndex, zIndex) => floor.spotAt(xIndex, zIndex) };
+  }
   const panels = getRoomWallFinishDepths(room);
   const minX = -room.geometry.width / 2 + wallFace + (panels.west ?? 0) + gridSizeM / 2;
   const maxX = room.geometry.width / 2 - wallFace - (panels.east ?? 0) - gridSizeM / 2;
@@ -327,7 +235,7 @@ function buildWalkableGrid(area: WalkableArea, obstacles: Obstacle[], gridSizeM:
     const clearanceM = blocked ? 0 : Math.min(spot.clearance, obstacleClearance);
     if (!blocked) minClearanceM = Math.min(minClearanceM, clearanceM);
     const level = getClearanceLevel(blocked, clearanceM);
-    if (level !== "clear") heatmap.push({ ...point, clearanceM, level, ...(spot.paintSize ? { size: spot.paintSize } : {}) });
+    if (level !== "clear") heatmap.push({ ...point, clearanceM, level, ...(spot.paint ? { paint: spot.paint } : {}) });
     row.push({ xIndex, zIndex, ...point, blocked, clearanceM });
   });
   return { cells, heatmap, minClearanceM };
@@ -356,7 +264,11 @@ export function computeCirculationAnalysis({
       .filter((anchor): anchor is [number, number, number] => Boolean(anchor))
       .map((anchor) => ({ x: anchor[0], z: anchor[2] })),
   ];
-  const pathValid = hasPath(cells, starts, destinations, area.linked);
+  // In a shaped room a walk between two cells can run up to a cell aside: it must miss every item's walk zone too.
+  const { canWalk } = area;
+  const linked: CellLink | undefined = canWalk && ((xIndex, zIndex, nextX, nextZ) =>
+    canWalk(xIndex, zIndex, nextX, nextZ, (route) => routeEntersBoxes(route, obstacles)));
+  const pathValid = hasPath(cells, starts, destinations, linked);
   const warnings: string[] = [];
   const hasObstacles = obstacles.length > 0;
   if (!pathValid) warnings.push("No clear walking path from the door to the room zones.");
