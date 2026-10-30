@@ -1,0 +1,35 @@
+# c23 - typed from the plan image only (key plan, scale bar, north arrow and the "RC LEDGE / RC TRELLIS /
+# EXTERNAL ARCHITECTURAL FIN" notes below the unit are ignored)
+# KITCHEN, DINING and LIVING: only a counter peninsula between them, no wall or door -> one space.
+# The passage in front of BATH 2 / BEDROOM 2 / MASTER BEDROOM doors is open to LIVING at its full width
+# (no door, no narrowing) -> read as part of the same space, not a separate corridor.
+space: KITCHEN + DINING + LIVING
+space: HS
+space: BEDROOM 3
+space: AC LEDGE
+space: BALCONY
+space: BATH 2
+space: BEDROOM 2
+space: MASTER BEDROOM
+space: MASTER BATH
+# Not counted: "DB/ST" cupboard by the entrance (fixture letters), shower cubicles inside the baths (no label).
+# AC LEDGE and BALCONY are separated by a thin screen line -> two spaces, no door between them.
+
+# all hinged doors in this plan are drawn with dashed swing arcs
+door: OUTSIDE | KITCHEN
+door: HS | KITCHEN
+door: BEDROOM 3 | KITCHEN
+door: BATH 2 | KITCHEN
+door: BEDROOM 2 | KITCHEN
+door: MASTER BEDROOM | KITCHEN
+door: MASTER BATH | MASTER BEDROOM
+# sliding glazing band between LIVING and BALCONY, read as the balcony door
+door: BALCONY | KITCHEN
+
+# BEDROOM 3 glazing band faces the AC LEDGE; it is drawn the same way as the living/balcony band, so it could
+# also be a sliding door onto the ledge - read as a window (bedroom onto an AC ledge).
+windows: BEDROOM 3 = 1
+windows: BEDROOM 2 = 1
+windows: MASTER BEDROOM = 1
+
+entrance: KITCHEN

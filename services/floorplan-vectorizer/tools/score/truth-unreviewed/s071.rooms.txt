@@ -1,0 +1,63 @@
+# s071 - HDB "3Gen Flat Type-2" (caption "3Gen Flat / Type - 2 / Floor Area 120 m2 ..." and the dimension figures ignored). Typed from the plan image only.
+# Labels: a printed line break is one blank ("LIVING/" + "DINING" -> "LIVING/ DINING", "HOUSE-" "HOLD" "SHELTER", "BATH" + "/WC 3" -> "BATH /WC 3").
+# LIVING/ DINING, the entrance foyer (x 283-372, y 345-472), the passage in front of bedrooms 4 and 3 (y 303-420) and the KITCHEN form one space:
+# - the KITCHEN's whole top side (x 462-620, y 420, 3.7 m) is only ONE thin line (x 462-515) and a DASHED double line (x 515-610): no wall, no jambs
+#   -> open plan (decided readings: dashed lines are not walls; long single line = floor edge).
+# - the foyer and the passage have no wall or door against the living area.
+space: LIVING/ DINING + KITCHEN
+space: MAIN BEDROOM 2
+space: BEDROOM 4
+space: BEDROOM 3
+space: MAIN BEDROOM 1
+space: BATH /WC 3
+space: BATH /WC 2
+space: BATH /WC 1
+space: HOUSE- HOLD SHELTER
+space: SERVICE YARD
+# two spaces printed AIR-CON LEDGE: this one is the left one, beside BATH /WC 3 (x 150-185, y 398-475) ...
+space: AIR-CON LEDGE
+# ... and this one is under BATH /WC 2 and BATH /WC 1 (x 692-835, y 428-470)
+space: AIR-CON LEDGE
+# Not typed: the drying-rack recess (bars) at x 690-712, y 450-535 beside the service yard; the plain double line x 278-283 (y 165-345) IS a wall
+# between MAIN BEDROOM 2 and the living area; the vertical single lines x 478-480 (y 125-300 and below), x 195 / x 290 (below y 490) are dimension lines.
+
+# MAIN BEDROOM 2 east side: opening x 283, y 345-388, leaf (dashed) hinged at (283, 388), open along y 388 (x 245-283), arc to (285, 345); swings into the bedroom
+door: MAIN BEDROOM 2 | LIVING/ DINING
+# en-suite: opening x 232-273 in the bath's top wall (y 395-398), dashed leaf hinged at (273, 398), arc down to (270, 435); opens into MAIN BEDROOM 2
+door: BATH /WC 3 | MAIN BEDROOM 2
+# BEDROOM 4: opening x 513-553 in its bottom wall (y 298), dashed leaf hinged at (553, 298), swings in
+door: BEDROOM 4 | LIVING/ DINING
+# BEDROOM 3: opening x 573-612 in its bottom wall, dashed leaf hinged at (573, 298), swings in
+door: BEDROOM 3 | LIVING/ DINING
+# MAIN BEDROOM 1: opening x 688, y 303-347 at its bottom-left corner (between BEDROOM 3's wall corner and the bath tops), dashed leaf hinged at (688, 347) lying along y 345-347, arc up to (688, 305); swings into the bedroom
+door: MAIN BEDROOM 1 | LIVING/ DINING
+# en-suite: opening x 735-776 in the bath's top wall (y 352), dashed leaf hinged at (735, 352), arc to (735, 394); opens north into MAIN BEDROOM 1
+door: BATH /WC 1 | MAIN BEDROOM 1
+# BATH /WC 2: opening x 630-672 in its top wall (y 353), dashed leaf hinged at (630, 355), arc to (640, 395); opens north into the passage (part of LIVING/ DINING)
+door: BATH /WC 2 | LIVING/ DINING
+# household shelter door drawn closed in its frame (x 450-462, y 452-488) with the swing arc (2400) into the kitchen
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# kitchen / service yard wall (x 620-625): folding (triangle) door, apex (642, 480), opening y 462-498
+door: LIVING/ DINING | SERVICE YARD
+# main entrance: opening x 298-352 in the wall y 472-483; door (arc in, hinge (299, 475)) + gate (arc out, hinge (299, 483)) in the same opening -> one line
+door: LIVING/ DINING | OUTSIDE
+
+# top outer wall: one multi-pane sash band per room
+# MAIN BEDROOM 2: top band x 178-273 (y 162-172) + glazed strip in its left wall x 151-160, y 240-343 -> 2
+windows: MAIN BEDROOM 2 = 2
+# LIVING/ DINING + KITCHEN: top band x 292-408 (4 panes, y 163-170) = 1; KITCHEN east wall (x 620-625) has grey glazing strips on both sides of the folding door,
+# x 620-625, y 432-462 and y 505-538, facing the service yard -> 2 more (UNCERTAIN: could be counted as the door frame only).
+windows: LIVING/ DINING = 3
+windows: BEDROOM 4 = 1
+windows: BEDROOM 3 = 1
+# MAIN BEDROOM 1: top band x 718-808 + glazed band in its right wall x 828-838, y 200-345
+windows: MAIN BEDROOM 1 = 2
+# BATH /WC 3: three-line band in its bottom wall x 192-272, y 476-487 (no posts, UNCERTAIN: could be a plain wall) + grey glazing in its left wall x 185-190, y 435-473 facing the left AIR-CON LEDGE
+windows: BATH /WC 3 = 2
+# BATH /WC 2: three-line window in its bottom wall x 690-720, y 420-426, facing the right AIR-CON LEDGE (the rest of the bottom wall, x 628-688, is a plain double line)
+windows: BATH /WC 2 = 1
+# BATH /WC 1: three-line window in its bottom wall x 760-790, y 420-426 (x 790-825 plain double line)
+windows: BATH /WC 1 = 1
+# SERVICE YARD, HOUSE- HOLD SHELTER: no windows.
+
+entrance: LIVING/ DINING

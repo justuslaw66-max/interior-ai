@@ -1,0 +1,49 @@
+# s073 - HDB flat, 3 bedrooms, no caption. Typed from the plan image only.
+# The BLUE CIRCLE around the household-shelter door (x 480-540, y 255-330) is an annotation added to the picture, not drawing: ignored.
+# Labels: printed line break = one blank ("LIVING/" + "DINING" -> "LIVING/ DINING", "HOUSE-" "HOLD" "SHELTER", "BATH/" + "WC 1" -> "BATH/ WC 1").
+# LIVING/ DINING + KITCHEN + entrance foyer (x 453-505, y 305-340) + the open passage between the bedrooms and the baths: one space.
+# The KITCHEN's whole top side (x 325-433, y 305-310, 3.3 m) is a DASHED double line (x 325-395) and one thin line (x 395-433): no wall, no jambs -> open plan
+# (decided readings: dashed lines are not walls; long single line = floor edge).
+space: LIVING/ DINING + KITCHEN
+# MAIN BEDROOM includes the small lobby east of its main part (x 240-266, y 210-243), which has no wall against it.
+space: MAIN BEDROOM
+space: BEDROOM 2
+space: BEDROOM 3
+space: BATH/ WC 1
+space: BATH/ WC 2
+space: AIR-CON LEDGE
+space: SERVICE YARD
+space: HOUSE- HOLD SHELTER
+# Not typed: the drying-rack recess (louvre bars) at x 252-275, y 315-360 beside the service yard; dimension lines and figures.
+
+# BEDROOM 2: opening x 305-335 in its bottom wall (y 207), dashed leaf hinged at the partition end (335, 207), swings in
+door: BEDROOM 2 | LIVING/ DINING
+# BEDROOM 3: opening x 348-377 in its bottom wall, dashed leaf hinged at (348, 207), swings in
+door: BEDROOM 3 | LIVING/ DINING
+# MAIN BEDROOM: opening x 266, y 211-243 (between BEDROOM 2's bottom wall stub and the bath top wall), dashed leaf hinged at (266, 243) lying along y 243 (x 232-266), arc up to (266, 211); swings into the main bedroom
+door: MAIN BEDROOM | LIVING/ DINING
+# BATH/ WC 1: folding (V) door in an opening x 200-232 of its top wall (y 245), opens north into the MAIN BEDROOM
+door: BATH/ WC 1 | MAIN BEDROOM
+# BATH/ WC 2: folding (V) door in an opening x 276-312 of its top wall, opens north into the living area
+door: BATH/ WC 2 | LIVING/ DINING
+# kitchen / service yard wall (x 322): folding (triangle) door, apex (313, 340), opening y 333-355
+door: LIVING/ DINING | SERVICE YARD
+# household shelter door drawn closed in its frame (x 507-511, y 283-308) with the swing arc (x 481-505) into the foyer
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# main entrance: opening x 453-505 in the wall y 340-350; door (arc in) + gate (arc out) in the same opening -> one line
+door: LIVING/ DINING | OUTSIDE
+
+# one sash band per room in the top outer wall: MAIN BEDROOM x 155-232 (y 93-100), BEDROOM 2 x 260-330 (y 82-88), BEDROOM 3 x 350-423, LIVING x 452-556 (y 133-140)
+windows: MAIN BEDROOM = 1
+windows: BEDROOM 2 = 1
+windows: BEDROOM 3 = 1
+# LIVING/ DINING + KITCHEN: top band (1) + grey glazing strips on both sides of the kitchen folding door, x 322, y 318-333 and y 367-388, facing the service yard (2).
+# UNCERTAIN: the two strips could be read as the door frame only.
+windows: LIVING/ DINING = 3
+# BATH/ WC 1: three-line window in its bottom wall x 200-225, y 308-313, facing the AIR-CON LEDGE
+windows: BATH/ WC 1 = 1
+# BATH/ WC 2: small multi-line band in its bottom wall x 252-270, y 308-318 above the louvred rack recess. UNCERTAIN: could be a vent / shaft, not a window.
+windows: BATH/ WC 2 = 1
+# SERVICE YARD, HOUSE- HOLD SHELTER, AIR-CON LEDGE: no windows.
+
+entrance: LIVING/ DINING

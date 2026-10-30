@@ -1,0 +1,90 @@
+# two floors
+# s080 - Executive Maisonette (EM), Jurong East St 31: LOWER floor plan (right half of the picture, x 495-680) and UPPER floor
+# plan (left half, x 295-480), both typed in this one file. Typed from the plan image only.
+# Ignored: dimension strings, the titles ("Executive Maisonette (EM) Floor Plan", "Upper / Lower Floor Plan", "Jurong East St 31
+# Executive Maisonette"), the black boxes with a cross (service shafts / risers at x 292-312, y 157-182 upper and x 493-513,
+# y 157-182 lower), and the open-to-below areas marked "VOID" with crosses (upper floor: x 352-457 y 35-90, x 400-452 y 168-188,
+# x 400-432 y 212-245, x 305-455 y 320-340): voids are not spaces.
+# ACCESS BALCONY (lower floor, y 322-360) is the shared corridor outside the unit = OUTSIDE.
+# Labels: "W.C.1" and "W.C.2" are printed without a blank; LIVING ROOM and DINING ROOM are printed far apart with nothing between.
+
+# ---- LOWER FLOOR ----
+space: BALCONY
+# LIVING ROOM and DINING ROOM are one open floor (no wall or door between, x 556-657, y 92-320); the staircase going up
+# ("UP 16R", x 620-657, y 185-248) opens into it and is part of it.
+space: LIVING ROOM + DINING ROOM
+# WASH AREA: small room x 553-576, y 160-203, own door in its top wall
+space: WASH AREA
+space: KITCHEN
+space: UTILITY
+
+# ---- UPPER FLOOR ----
+space: MAIN BEDROOM
+space: BATH/ W.C.1
+space: BATH/ W.C.2
+space: BEDROOM 2
+space: BEDROOM 3
+# Landing / passage of the upper floor: hub of the main bedroom, bath 2, bedroom 2 and bedroom 3 doors (x 334-397, y 168-247).
+# The staircase well beside it (x 397-457, y 166-247: treads, "3460" voids) is read as part of it (staircase landing, no wall
+# or door drawn between them... the well's own left wall x 397-400 is continuous, so how the stair meets the landing is not
+# drawn: UNCERTAIN).
+space: (unlabelled upper landing with the staircase)
+
+# lower floor doors
+# BALCONY / LIVING ROOM: ONE long sliding set drawn across x 560-655, y 91-93 (about 4.4 m, panel overlaps at both ends, label
+# "100 DROP") between two black columns -> sliding door (rule of 4 Oct 2026)
+door: BALCONY | LIVING ROOM
+# WASH AREA door in its top wall, arc x 553-573, y 160-177 swinging into the wash area, opens to the living floor
+door: WASH AREA | LIVING ROOM
+# kitchen door in the right wall x 575-578, y 227-241 (about 0.65 m, label "100 DROP"): ONE thin line drawn across it between
+# two ticks, no leaf -> sliding door (rule of 4 Oct 2026) (UNCERTAIN: could be a plain doorway)
+door: KITCHEN | LIVING ROOM
+# utility door in the kitchen's bottom wall, arc x 528-546, y 260-277 swinging into the utility
+door: UTILITY | KITCHEN
+# main entrance: door (arc x 555-576, y 272-293) + gate (twin V arcs x 554-575, y 290-301) in the entry passage between the
+# utility wall (x 548) and the black column (x 573-578); the porch below it (x 549-573, y 301-320) opens to the access balcony
+door: LIVING ROOM | OUTSIDE
+
+# upper floor doors
+# main bedroom door in its bottom wall, arc hinged at (374,168), opening x 377-396 at y 168, swinging into the bedroom
+door: MAIN BEDROOM | (unlabelled upper landing with the staircase)
+# bath 1 door in its top wall, arc x 353-373, y 160-178, swinging into the bath: it is the ensuite of the main bedroom
+door: BATH/ W.C.1 | MAIN BEDROOM
+# bath 2 door: arc hinged at (331,227), x 314-331, y 209-227, opening in the bath's east wall x 331 onto the landing lobby
+# (label "100 DROP" east of it)
+door: BATH/ W.C.2 | (unlabelled upper landing with the staircase)
+# bedroom doors, both in the top wall of the bedrooms (y 246): BEDROOM 2 arc x 357-374, BEDROOM 3 arc x 377-397
+door: BEDROOM 2 | (unlabelled upper landing with the staircase)
+door: BEDROOM 3 | (unlabelled upper landing with the staircase)
+
+# lower floor windows
+# KITCHEN: one window with three casement arcs (1800 wide) in its top wall, x 513-552, y 143-160, facing the open area outside
+windows: KITCHEN = 1
+# LIVING ROOM + DINING ROOM: the glazed band in the bottom wall x 578-657, y 315-320 (dark sash line) facing the access balcony.
+# The balcony side is a sliding door (above). The left and right walls are plain double bands -> no windows.
+windows: LIVING ROOM = 1
+# UTILITY: bottom wall x 503-548, y 313-320 is three light grey lines, no dark sash line like the dining window -> read as
+# wall (UNCERTAIN)
+# BALCONY: the double band along its far edge (x 562-650, y 55-60) between the black columns is a glazed railing -> not a window
+
+# upper floor windows
+# MAIN BEDROOM: glazed band with a dark sash line in its top wall, x 352-457, y 88-96, facing the void over the lower balcony
+windows: MAIN BEDROOM = 1
+# bath windows: hatched bands in the top wall y 158-161: BATH/ W.C.1 x 335-352, BATH/ W.C.2 x 311-330 (they face the open
+# strip outside the building line north of the baths)
+windows: BATH/ W.C.1 = 1
+windows: BATH/ W.C.2 = 1
+# bedroom windows: glazed bands in the bottom wall y 315-320: BEDROOM 2 x 305-372, BEDROOM 3 x 378-455, split by the black
+# column x 372-377
+windows: BEDROOM 2 = 1
+windows: BEDROOM 3 = 1
+
+entrance: LIVING ROOM
+
+# UNCERTAIN (source px):
+# - kitchen door line x 575-578, y 227-241 (door vs gap)
+# - how the upper stair well (x 397-457, y 166-247) connects to the landing; treated as part of the landing
+# - UTILITY bottom wall x 503-548, y 313-320 (window vs wall)
+# - BALCONY / LIVING ROOM sliding line x 560-655, y 91-93 (door; very wide)
+# - upper MAIN BEDROOM top band x 352-457, y 88-96 counted as one window facing the void
+# - bath 2 door: closed position read as the vertical opening x 331, y 209-227 (leads to the landing, not to BEDROOM 2)

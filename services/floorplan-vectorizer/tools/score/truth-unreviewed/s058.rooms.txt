@@ -1,0 +1,79 @@
+# s058 - Executive Apartment Type 1A(H), HDB Executive corner unit. Typed from the plan image only
+# (the "Executive Apartment / Type 1A(H) / Floor Area: 142m2" caption, the grey banner, "teoalida.com" and the two black
+# blobs at (843,416) and (840,751) are ignored).
+# Labels: a printed line break is one blank ("BATH/" + "W.C. 1" -> "BATH/ W.C. 1"; "SERVICE" + "BALCONY" -> "SERVICE BALCONY";
+# "STORE/PANTRY" + "(APT. SHELTER)" -> "STORE/PANTRY (APT. SHELTER)").
+# The 1200-wide lobby between the BEDROOM 3, BEDROOM 2 and MAIN BEDROOM doors (x 468-520, y 250-325) carries on south as a
+# 1200-wide passage (x 467-520, y 325-560) with no door or narrowing -> part of LIVING/DINING.
+# KITCHEN (x 470-628, y 562-668): its whole north side is ONE thin line (x 468-520, y 560, about 1.2 m, the same width as the
+# passage; the west side is a short wall stub x 462-468 and the east side the left wall of bath 2, no jamb returns) ->
+# "one line along the whole open side of a kitchen, about 1.2 m" = floor edge: open plan, one space (rule of the Decided
+# readings). UNCERTAIN: alternative reading is a separate KITCHEN with `door: KITCHEN | LIVING/DINING` (sliding).
+space: LIVING/DINING + KITCHEN
+space: BALCONY
+space: STUDY
+space: BEDROOM 3
+space: BEDROOM 2
+space: MAIN BEDROOM
+space: BATH/ W.C. 1
+space: BATH/ W.C. 2
+space: SERVICE BALCONY
+space: STORE/PANTRY (APT. SHELTER)
+# Small enclosed ledge south of MAIN BEDROOM's east end (x 632-745, y 425-465), no printed label: BATH/ W.C. 1 wall on the left,
+# thin double-line walls on the right (x 738-745) and below (y 463-466), MAIN BEDROOM wall above with a hinged door
+# (hinge at about (742,427), leaf swings into the ledge) -> typed as an unlabelled ledge.
+space: (unlabelled ledge off MAIN BEDROOM)
+# Not typed: the narrow duct strip x 633-657, y 466-550 and the open exterior area east of it (x 658-745, y 466-550, no wall
+# on its east side).
+
+# main entrance in the diagonal south-west wall (x 70-150, y 580-660): unequal double leaf drawn with arcs on both sides
+# (door + gate), "100 DROP" - one line
+door: LIVING/DINING | OUTSIDE
+# BALCONY: one long double-line band across its whole south side (x 158-312, y 343-348, "50 DROP"), between the solid left wall
+# and the black column -> sliding glass door to the balcony (UNCERTAIN: 3.6 m wide, no jambs inside it)
+door: BALCONY | LIVING/DINING
+# BEDROOM 3: leaf hinged at (468,283), closed along x 468 (y 248-283), swings west into the room's lower part
+door: BEDROOM 3 | LIVING/DINING
+# BEDROOM 2: leaf hinged at (520,283), closed along x 520 (y 247-283), swings east into the room's lower part
+door: BEDROOM 2 | LIVING/DINING
+# MAIN BEDROOM: leaf hinged at (520,290), closed along x 520 (y 290-325), swings east into the room
+door: MAIN BEDROOM | LIVING/DINING
+# folding (triangle) door in the top wall of bath 1 (x 555-590, y 422-437), from MAIN BEDROOM
+door: BATH/ W.C. 1 | MAIN BEDROOM
+# folding (triangle) door in the bottom wall of bath 2 (x 530-550, y 548-558), from the kitchen part of LIVING/DINING + KITCHEN
+door: BATH/ W.C. 2 | LIVING/DINING
+# hinged leaf in the wall between the kitchen and SERVICE BALCONY (x 665-670, y 562-598), swings into the kitchen
+door: SERVICE BALCONY | LIVING/DINING
+# shelter door drawn closed in its frame in the top wall (x 405-440, y 598-610), leaf arc swings north into the living area
+door: STORE/PANTRY (APT. SHELTER) | LIVING/DINING
+# hinged glazed door in the bottom wall of MAIN BEDROOM (x 700-742, y 420-425), arc inside the ledge
+door: MAIN BEDROOM | (unlabelled ledge off MAIN BEDROOM)
+# STUDY: about 2.0 m wide opening in its east side between two wall stubs (x 463-470, y 283-315 and y 395-430), nothing drawn
+# across it (the arrowhead at (467,378) belongs to a dimension line) -> doorway
+gap: STUDY | LIVING/DINING
+
+# BEDROOM 3: casement window in the top wall (x 424-486, y 92-108, V swing marks) + a plain white opening with continuous
+# thin outer line in the left wall (x 380-388, y 160-237) read as a window (uncertain)
+windows: BEDROOM 3 = 2
+# BEDROOM 2: casement window in the top wall (x 568-632, y 92-108) + window in the right wall (x 662-673, y 160-237; plain band
+# with a hatched cell at y 201-226, one frame)
+windows: BEDROOM 2 = 2
+# MAIN BEDROOM: casement window in its north wall at the east end (x 675-740, y 255-287, V swing marks) + long window in the
+# right wall (x 743-752, y 315-392, band with slot)
+windows: MAIN BEDROOM = 2
+# STUDY: one casement window in the top wall (x 325-375, y 262-287)
+windows: STUDY = 1
+# bath windows: one hatched (dotted) cell in the thin right wall of each bath (BATH/ W.C. 1 y 445-475, BATH/ W.C. 2 y 505-540,
+# x 628-634), facing the ledge and the duct strip
+windows: BATH/ W.C. 1 = 1
+windows: BATH/ W.C. 2 = 1
+# the only window of LIVING/DINING + KITCHEN is the kitchen window in the wall shared with SERVICE BALCONY: hatched cell
+# x 665-670, y 600-635 below the door, then a plain cell y 637-660 (counted as 1; uncertain)
+windows: LIVING/DINING = 1
+# SERVICE BALCONY: window (box between posts) in the top wall, x 672-735, y 549-558, facing the open exterior. The right edge
+# (x 748-753, y 562-660) is a plain double-line band = parapet, not counted (uncertain).
+windows: SERVICE BALCONY = 1
+# BALCONY: the band along its north edge (x 155-310, y 272-282, two lines with a slim slot between) is read as the balcony
+# railing, not a window (uncertain).
+
+entrance: LIVING/DINING

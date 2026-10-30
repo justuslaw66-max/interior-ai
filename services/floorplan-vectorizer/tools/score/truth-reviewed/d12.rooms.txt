@@ -1,0 +1,40 @@
+# fresh/d12.png - 4-room flat. Typed from the plan image only.
+# Two rooms are printed "BEDROOM" and two are printed "BATH/WC". The printed label is kept and a position in brackets is
+# added only to tell them apart (left / right as seen on the plan).
+# KITCHEN is fully open to LIVING/DINING (no wall or door between them) -> one space.
+space: LIVING/DINING + KITCHEN
+space: MAIN BEDROOM
+space: BEDROOM (left)
+space: BEDROOM (right)
+space: BATH/WC (left)
+space: BATH/WC (right)
+space: SERVICE YARD
+space: AIR-CON LEDGE
+# printed over three lines as "HOUSE" / "HOLD" / "SHELTER" (no hyphen)
+space: HOUSE HOLD SHELTER
+# The passage in front of the bedroom doors and the entrance hall are open to LIVING/DINING, so they are part of it.
+door: MAIN BEDROOM | LIVING/DINING
+door: BEDROOM (left) | LIVING/DINING
+door: BEDROOM (right) | LIVING/DINING
+# dashed folding (triangle) door in the top wall of the left bath, under the main bedroom
+door: BATH/WC (left) | MAIN BEDROOM
+# dashed folding (triangle) door at the top right of the right bath, onto the passage
+door: BATH/WC (right) | LIVING/DINING
+# dashed folding (triangle) door in the wall between kitchen and service yard
+door: SERVICE YARD | LIVING/DINING
+door: HOUSE HOLD SHELTER | LIVING/DINING
+# main entrance: unequal double-leaf door (inside) + matching gate (outside) in the same opening, counted once
+door: LIVING/DINING | OUTSIDE
+windows: MAIN BEDROOM = 1
+windows: BEDROOM (left) = 1
+windows: BEDROOM (right) = 1
+windows: LIVING/DINING = 1
+# left bath window is in its bottom wall, facing the AIR-CON LEDGE
+windows: BATH/WC (left) = 1
+# right bath window is a short one in its bottom wall, facing the open drying-rack recess
+windows: BATH/WC (right) = 1
+# The thin double-line segments above and below the service-yard folding door (wall between KITCHEN and SERVICE YARD) have no
+# sash rectangle like the real windows on this plan; read as thin partition, not window - uncertain.
+# SERVICE YARD left edge (towards the drying rack) is a plain double line = parapet, no window counted.
+# The drying-rack recess left of the service yard and the crossed box by the entrance are not spaces.
+entrance: LIVING/DINING

@@ -1,0 +1,51 @@
+# s013 - "3-ROOM (CORRIDOR)" HDB flat, scale 1:100 (caption, "ACCESS BALCONY" text and dimension figures ignored). Typed from the plan image only.
+# ACCESS BALCONY is the shared corridor along the bottom (y 1015-1035), outside the dwelling = OUTSIDE, not a space.
+# Not typed as spaces: the crossed riser/shaft box (x 138-190, y 305-362), the small fixture box beside it (x 190-205, y 320-352),
+# kitchen counter/sink (x 308-340, y 440-592), WC pan, and the three unlabelled outline boxes outside the UTILITY, KITCHEN and
+# BEDROOM top windows and the box outside the UTILITY left window (casement swing / planter outlines, same reading as the
+# drying rack of s001).
+space: LIVING
+space: KITCHEN
+space: UTILITY
+space: W.C
+space: BATH
+space: BEDROOM
+# The room at the lower right (x 350-535, y 712-935) carries no printed label (the label BEDROOM belongs to the upper right room,
+# x 350-535, y 455-692). It is clearly a bedroom (door to LIVING, window, 3-room flat) but is typed as unlabelled.
+space: (unlabelled bedroom)
+
+# main entrance: door (arc inward, x 292-342, y 892-940) + gate/second leaf (arcs outward, y 945-975) in the same opening
+# x 292-343 in the bottom wall of LIVING -> one line
+door: LIVING | OUTSIDE
+# KITCHEN bottom wall: the wall line y 592 runs unbroken across an opening between two jambs (x 245 and x 302; the second
+# wall line y 598 stops at the jambs) - ONE line across the opening -> sliding door (rule of 4 Oct 2026). A "DROP" note with
+# arrow (x 258-280, y 593-632) is drawn in the opening: it is a floor-level annotation, not a leaf. Uncertain: could be a doorway.
+door: KITCHEN | LIVING
+# hinged door in the wall x 345-350 between LIVING and the upper right room, opening y 632-680, hinge at y 680, arc swings into BEDROOM
+door: BEDROOM | LIVING
+# same kind of door, opening y 712-760, arc swings into the unlabelled lower right room
+door: (unlabelled bedroom) | LIVING
+# UTILITY door in its bottom wall, x 298-347, y 253-305, leaf with arc inside UTILITY, "DROP" note; opens to KITCHEN
+door: UTILITY | KITCHEN
+# folding (triangle) doors in the left walls of W.C (x 352-368, y 318-352) and BATH (x 352-368, y 390-428), from KITCHEN
+door: W.C | KITCHEN
+door: BATH | KITCHEN
+
+# UTILITY: top wall window with four casement leaves in two pairs (x 316-420, y 172-180, post at x 368, one continuous opening
+# with no wall piece) = 1; plus a small glazed window in the left wall (x 277-287, y 200-240) = 1
+windows: UTILITY = 2
+# KITCHEN: casement pair in the top wall x 193-282, y 296-303
+windows: KITCHEN = 1
+# W.C and BATH: narrow glazed strips in their right walls (x 441-449, y 315-360 and y 375-418), onto the open area east of them
+windows: W.C = 1
+windows: BATH = 1
+# BEDROOM: casement pair in its top wall x 450-528, y 440-452 (arcs and small box drawn outside above it)
+windows: BEDROOM = 1
+# LIVING: window band in the bottom wall x 207-290, y 937-945, left of the entrance
+windows: LIVING = 1
+# unlabelled bedroom: window band in the bottom wall x 405-483, y 934-945
+windows: (unlabelled bedroom) = 1
+# The long left outer wall (x 157-168, y 470-900) and right outer wall (x 533-545, y 455-905) between the black column
+# blocks are two thin lines with no pane line or glazing band -> read as plain walls, not windows (uncertain).
+
+entrance: LIVING

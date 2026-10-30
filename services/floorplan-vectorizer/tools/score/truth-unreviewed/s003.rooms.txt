@@ -1,0 +1,29 @@
+# s003 - 2-room flat (HDB). Typed from the plan image only (no caption).
+# Labels: a printed line break is one blank ("AIR CON" + "LEDGE", "HOUSEHOLD" + "SHELTER").
+# KITCHEN has no wall, line or door towards LIVING/DINING -> open plan, one space.
+space: LIVING/DINING + KITCHEN
+space: BEDROOM
+space: BATHROOM
+space: AIR CON LEDGE
+space: HOUSEHOLD SHELTER
+# Not typed: the drying-rack box outside the kitchen window (x 565-600, y 465-605), the two boxes outside the top windows
+# (x 240-372 and x 405-540, y 128-163), and the recess in front of the shelter beside the entrance (x 205-312, y 540-620:
+# thin planter/kerb lines and a narrow meter box x 295-313, y 540-580) - unlabelled, outside the dwelling.
+
+# main entrance: door (unequal double leaf, dashed) + gate in the same opening x 322-392, y 600-615
+door: LIVING/DINING | OUTSIDE
+# shelter door drawn dashed (closed leaf + arc) in its right wall, swings into LIVING/DINING
+door: HOUSEHOLD SHELTER | LIVING/DINING
+# sliding door: grey panel with arrow (x 397-400, y 245-310) drawn pushed open along the partition; opening below it
+# down to the bathroom wall (y ~292-352)
+door: BEDROOM | LIVING/DINING
+# folding (triangle) door in the left wall of the bathroom
+door: BATHROOM | LIVING/DINING
+
+windows: BEDROOM = 1
+# sash window in the top wall + the kitchen sash window in the right wall (x 555-563, y 478-582, faces the drying rack)
+windows: LIVING/DINING = 2
+# bathroom window (three lines) in its right wall x 505-510, y 360-405, facing the AIR CON LEDGE
+windows: BATHROOM = 1
+
+entrance: LIVING/DINING

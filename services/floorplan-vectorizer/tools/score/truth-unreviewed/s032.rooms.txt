@@ -1,0 +1,56 @@
+# s032 - 4-ROOM NEW FLAT (STAIRS), HDB New Generation 1976-1988. Typed from the plan image only (title, "SCALE 1:100", dimension figures,
+# the grey HDB caption bar and the teoalida.com banner ignored). Source image 640x800; coordinates in notes are source pixels.
+# Glazing reading used throughout: a window band is a double line with grey / dotted fill and casement arcs; a plain white double line is
+# a wall; thick black blocks are structural wall / columns. A continuous band between solid pieces = ONE window (posts do not split it).
+# Two spaces are both labelled BEDROOM (upper right x 388-508, y 215-395; lower right x 392-508, y 450-640) and two are labelled
+# BATH/ W.C. (upper x 252-325, y 86-152; lower x 252-325, y 153-215).
+# LIVING ROOM and KITCHEN/ DINING: the kitchen/dining strip (x 125-250, y 95-386) meets the living room through a gap x 195-246 in the
+# wall line at y 386 (the thick black wall ends at x 195, the main bedroom's corner is at x 246). The only thing across it is ONE thin
+# hairline at y 386, level with the top face of the thick wall (it is its continuation), 51 px = about 1.17 m wide (scale 7400 mm = 322 px),
+# no jamb ticks, no leaf, no swing -> read as a floor edge: open plan, one space (UNCERTAIN: could be a sliding door or a plain doorway).
+# The part of the living room that wraps beside the store and the lower bedroom door (x 388-425, y 392-450) belongs to it.
+# BATH/ W.C. (both): the single thin line inside each (x 287, y 87-152 in the upper one) is a partition / screen with no door or gap on
+# its line -> one room each.
+space: LIVING ROOM + KITCHEN/ DINING
+space: MAIN BEDROOM
+space: BEDROOM
+space: BEDROOM
+space: STORE
+space: BATH/ W.C.
+space: BATH/ W.C.
+# Not typed: the crossed box x 100-155, y 82-150 with thick black walls (refuse chute / duct), the small fixture x 147-155, y 97-122, the
+# sink and drainer x 225-247, y 163-232, the WC / basin / bath fixtures, and the thin grey double line x 70-103, y 85-92 left of the
+# duct box (outside the flat).
+
+# main entrance in the west wall of the living room, opening y 573-607 at x 186-195: large leaf hinged at (188,606), arc inward to (220,606);
+# gate arcs outward (two small leaves, x 168-186) in the same opening -> one line
+door: LIVING ROOM | OUTSIDE
+# MAIN BEDROOM: opening x 341-374 in its bottom wall (y 392), hinge (374,392), arc (341,392)-(374,357), swings into the bedroom
+door: MAIN BEDROOM | LIVING ROOM
+# upper BEDROOM: opening x 388-424 in its bottom wall (y 392), hinge (388,392), arc (424,392)-(388,357), swings into the bedroom
+door: BEDROOM | LIVING ROOM
+# STORE: opening y 415-447 in its west wall (x 426), hinge (426,415), arc (392,415)-(426,447), leaf swings out into the living room
+door: STORE | LIVING ROOM
+# lower BEDROOM: opening x 392-424 in its top wall (y 452), hinge (392,452), arc (424,453)-(392,484), swings into the bedroom
+door: BEDROOM | LIVING ROOM
+# upper bath: opening y 97-127 in its west wall (x 246-252), hinge about (252,97), arc from (282,97) toward (252,127), swings into the bath, opens on the kitchen
+door: BATH/ W.C. | LIVING ROOM
+# lower bath: opening x 257-288 in its bottom wall (y 213), hinge (257,213), arc (257,182)-(288,213), swings into the bath, opens on MAIN BEDROOM
+door: BATH/ W.C. | MAIN BEDROOM
+
+# LIVING ROOM + KITCHEN/ DINING: living-room south band x 272-375, y 626-634 (casement pairs x 272-325 and x 327-375, post at x 325; the
+# plain two-line wall x 197-272 left of it is not glazing) = 1; kitchen top-wall band x 148-247, y 78-92 (casement units x 150-196 and
+# x 197-245, post at x 196) = 1. Kitchen west wall (x 118-124, y 150-386) is a plain double line.
+windows: LIVING ROOM = 2
+# MAIN BEDROOM: top-wall band x 328-376, y 205-217, casement pair = 1
+windows: MAIN BEDROOM = 1
+# upper BEDROOM: top-wall band x 388-462 (casements x 388-436 and x 437-462, post at x 436) = 1; x 465-505 beside it is a plain wall piece
+windows: BEDROOM = 1
+# lower BEDROOM: south-wall band x 388-462, y 628-634 (same pattern) = 1
+windows: BEDROOM = 1
+# bath windows are the dotted grey louvre bands in their east walls (x 322-327), facing the open exterior: upper y 88-138, lower y 155-180
+windows: BATH/ W.C. = 1
+windows: BATH/ W.C. = 1
+# STORE: no window (right wall x 508-516 is a plain double line).
+
+entrance: LIVING ROOM

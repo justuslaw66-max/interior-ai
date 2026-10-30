@@ -1,0 +1,33 @@
+# p05 - 2-bedroom unit, solid dark walls
+# "VOID" boxes (two next to MASTER BATH, one below BATH 1) are service shafts inside the wall mass, not spaces.
+space: LIVING + DINING + KITCHEN
+space: BEDROOM 1
+space: MASTER BEDROOM
+space: MASTER BATH
+space: BATH 1
+space: HS
+space: AC LEDGE
+space: BALCONY
+# shower cubicles: unlabelled, but each is closed off by walls/glass screen and has its own hinged door with a swing arc
+space: (shower in MASTER BATH)
+space: (shower in BATH 1)
+# main entrance: unequal double leaf (one large + one small leaf, two arcs) = one door
+door: OUTSIDE | LIVING
+door: BEDROOM 1 | LIVING
+door: MASTER BEDROOM | LIVING
+door: MASTER BATH | MASTER BEDROOM
+door: BATH 1 | LIVING
+# multi-panel sliding glass door (stepped thin panels) along the balcony side of the living room
+door: LIVING | BALCONY
+# HS door drawn as a closed slab in the opening towards the kitchen (no swing arc)
+door: HS | LIVING
+# shower doors (quarter-circle swings inside the bathrooms)
+door: MASTER BATH | (shower in MASTER BATH)
+door: BATH 1 | (shower in BATH 1)
+# LIVING space: 1 in the top wall above DINING, 2 in the left wall below the balcony (one above and one below the dark wall pier, kitchen side)
+windows: LIVING = 3
+windows: BEDROOM 1 = 1
+windows: MASTER BEDROOM = 1
+windows: MASTER BATH = 1
+windows: BATH 1 = 1
+entrance: LIVING

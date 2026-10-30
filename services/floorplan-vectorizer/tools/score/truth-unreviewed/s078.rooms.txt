@@ -1,0 +1,62 @@
+# s078 - HDB 4 Room Type-4 (H), Hougang N1 C15 (BLK 178C / 179C). Typed from the plan image only.
+# Ignored: dimension strings, the legend, "4 ROOM / Type-4 (H) / Floor Area ..." caption, the red "HOW TO DOWNLOAD YOUR BTO FLOORPLAN"
+# banner, the disclaimer text and the watermark at the bottom left.
+# Labels: a printed line break is one blank ("LIVING/" + "DINING" -> "LIVING/ DINING", "HOUSE-" "HOLD" "SHELTER", "BATH/" "WC 2").
+# LIVING/ DINING includes: the entrance foyer between the shelter and the kitchen (x 155-198, y 205-258), open to the living
+# floor at its full width, and the lobby in front of BEDROOM 3 / BEDROOM 2 / MAIN BEDROOM and the two bath doors
+# (x 188-345, y 157-178), also open at its full width.
+# KITCHEN: its whole top side (x 198-255, y 219-222, about 2.9 m) is closed only by ONE thin line between the black column at
+# the left and the black wall of BATH/ WC 2 at the right - far wider than a door, no jambs of its own -> floor edge, the kitchen
+# is open plan with LIVING/ DINING (decided reading). Its left side (x 195-198, y 228-261) is a thin wall, which does not matter
+# because the kitchen is already open to the living floor along the top.
+space: LIVING/ DINING + KITCHEN
+space: BEDROOM 3
+space: BEDROOM 2
+space: MAIN BEDROOM
+space: BATH/ WC 2
+space: BATH/ WC 1
+space: SERVICE YARD
+space: AIR-CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Not typed: the drying-rack recess east of the service yard (bars, x 304-316, y 231-276) and the black box column pieces.
+# AIR-CON LEDGE (x 304-363, y 221-241) is bounded by the bath-1 wall above, a double-line railing on its right (x 362-366) and
+# a single line below (y 240-242); no door leads to it.
+
+# main entrance: door (arc inward) + gate (arc outward) drawn in the same opening x 158-190, y 256-262 -> one line
+door: LIVING/ DINING | OUTSIDE
+# shelter door in the right wall of the shelter, y 220-237, leaf drawn open towards the foyer
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# BEDROOM 3: leaf hinged at (243,155), arc x 225-243, y 137-155
+door: BEDROOM 3 | LIVING/ DINING
+# BEDROOM 2: leaf hinged at (247,155), arc x 247-265, y 137-155
+door: BEDROOM 2 | LIVING/ DINING
+# MAIN BEDROOM: arc hinged at (288,158), sweeping x 288-307, y 158-177 (UNCERTAIN, see notes at the end)
+door: MAIN BEDROOM | LIVING/ DINING
+# folding (V) doors in the top walls of the two baths, from the lobby
+door: BATH/ WC 2 | LIVING/ DINING
+door: BATH/ WC 1 | LIVING/ DINING
+# service-yard door: stacked / staggered sliding panels with a zig-zag (x 266-270, y 226-272) -> door
+door: LIVING/ DINING | SERVICE YARD
+
+# top outer wall: one casement window per bedroom, each a continuous band with sash posts between the black wall pieces:
+# BEDROOM 3 x 190-227, BEDROOM 2 x 262-302, MAIN BEDROOM x 307-362 (all at y 74-79)
+windows: BEDROOM 3 = 1
+windows: BEDROOM 2 = 1
+windows: MAIN BEDROOM = 1
+# bath windows are the hatched bands in the bottom walls: BATH/ WC 2 x 281-297 (faces the service yard),
+# BATH/ WC 1 x 325-342 (faces the air-con ledge), both at y 217-221
+windows: BATH/ WC 2 = 1
+windows: BATH/ WC 1 = 1
+# LIVING/ DINING: the band with sash posts in the top-left wall (x 128-182, y 120-125) between two black columns.
+# The left wall (x 117-122, y 137-205) is three thin lines with no sash or posts -> read as wall, no window (uncertain).
+windows: LIVING/ DINING = 1
+# SERVICE YARD: its right wall (x 299-304, y 222-275, beside the drying rack) is a plain double line -> wall, no window (uncertain).
+
+entrance: LIVING/ DINING
+
+# UNCERTAIN (source px):
+# - kitchen open plan vs sliding door: line y 219-222, x 198-255
+# - MAIN BEDROOM door: arc centre (288,158) lies under the BEDROOM 2 / MAIN BEDROOM wall junction; no wall is drawn along
+#   the bottom of the main bedroom between x 306 and x 345 at y 157
+# - left wall of the living room x 117-122, y 137-205 (wall vs window)
+# - service yard right wall x 299-304, y 222-275 (wall vs window onto the rack)

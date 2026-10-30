@@ -1,0 +1,50 @@
+# h1_5room_balcony.jpg - 5-room flat with balcony. Typed from the plan image only.
+space: LIVING/DINING
+space: BALCONY
+space: STUDY
+space: BEDROOM 2
+space: BEDROOM 3
+space: MAIN BEDROOM
+space: BATH/W.C. 1
+space: BATH/W.C. 2
+space: KITCHEN
+space: SERVICE BALCONY
+space: AIR-CON LEDGE
+space: STORE/PANTRY (APT. SHELTER)
+# The 1200-wide passage to the bedrooms is open to LIVING/DINING (no door), so it is part of LIVING/DINING.
+# "RAISED CEILING AT TOPMOST STOREY ONLY" is a note, not a room label.
+door: BEDROOM 2 | LIVING/DINING
+door: BEDROOM 3 | LIVING/DINING
+# door at the far left end of the passage, in its bottom wall
+door: MAIN BEDROOM | LIVING/DINING
+# folding (triangle) door in the left wall of bath 1
+door: BATH/W.C. 1 | MAIN BEDROOM
+# folding (triangle) door in the top wall of bath 2
+door: BATH/W.C. 2 | LIVING/DINING
+door: KITCHEN | SERVICE BALCONY
+# narrow hinged leaf in the right wall of MAIN BEDROOM, drawn across the AIR-CON LEDGE label
+door: MAIN BEDROOM | AIR-CON LEDGE
+door: STORE/PANTRY (APT. SHELTER) | LIVING/DINING
+# sliding door (panels with arrows, "50 DROP") between balcony and living
+door: BALCONY | LIVING/DINING
+# main entrance: door + gate, counted once
+door: LIVING/DINING | OUTSIDE
+# STUDY: opening about 1.4 m wide between two wall stubs in its bottom wall, no leaf drawn
+gap: STUDY | LIVING/DINING
+# KITCHEN: opening at the left end of its top wall, no leaf drawn
+gap: KITCHEN | LIVING/DINING
+windows: BEDROOM 2 = 1
+windows: BEDROOM 3 = 1
+windows: STUDY = 1
+# MAIN BEDROOM: only the casement pair in the small top-left return is a window. The thin double lines running outside the
+# solid black left and bottom walls (also outside BEDROOM 2's left wall) are read as wall cladding, not windows - uncertain.
+windows: MAIN BEDROOM = 1
+# bath windows are in their bottom walls, facing the air-con ledge / open recess
+windows: BATH/W.C. 1 = 1
+windows: BATH/W.C. 2 = 1
+# kitchen window is the dark band next to the door in the wall shared with the SERVICE BALCONY
+windows: KITCHEN = 1
+# louvred opening in the left (outer) wall of the service balcony
+windows: SERVICE BALCONY = 1
+# BALCONY outer edge is a curved railing, not counted as a window.
+entrance: LIVING/DINING
