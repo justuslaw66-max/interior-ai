@@ -17,18 +17,21 @@ import {
   migrateLegacyWallSurfaceFacesToCanonical,
 } from "@/lib/floor-plan-legacy-adapters";
 import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
-import { buildHousePlan2D } from "@/lib/design-page-house-plan";
+import { buildHousePlan2D, type HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { assertSharedDesignInput, assertSharedDesignSnapshotPublic } from "@/lib/shared-design-projection-schema";
-import { wallFinishShellGeometry } from "@/components/editor/renderers/canonical-floor-plan/geometry";
+import { trimFaceEdge, wallFinishShellGeometry, wallSurfaceEdge } from "@/components/editor/renderers/canonical-floor-plan/geometry";
 import {
   getCanonicalFaceTrimsMm,
   getCanonicalPanelStrips2D,
   getCanonicalRoomWallFinish,
   getCanonicalWallPanelDepthMm,
 } from "@/components/editor/renderers/canonical-floor-plan/canonicalWallPanels";
-import { Vector3 } from "three";
 import type { FloorPlanDocumentV2, FloorPlanFloorV2 } from "@/lib/floor-plan-document-v2";
-import { findCanonicalPlacementPanel, findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
+import {
+  buildCanonicalPlacementPanels,
+  findCanonicalPlacementPanel,
+  findCanonicalPlacementWall,
+} from "@/lib/floor-plan-placement-boundaries";
 import { isPointInsideRoomPolygon } from "@/lib/design-page-geometry";
 import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
@@ -376,6 +379,41 @@ function jointPlan(turnDeg: number): FloorPlanDocumentV2 {
 }
 const laminated = (room: RoomSnapshot): RoomSnapshot =>
   ({ ...room, surfaces: { walls: { default: { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } } }, surfaceFinishes: undefined });
+/** The floor-standing panel outlines of a room's laminates as drawn (bare face, then the panel's face), in plan metres. */
+function roomPanelOutlines(floor: ReturnType<typeof buildCanonicalFloorPlanRenderModel>["floors"][number], room: HousePlanRoom2D) {
+  return floor.walls.flatMap((wall) => wall.roomSides.filter(({ roomId }) => roomId === room.id).flatMap(({ side }) => {
+    const { depthMm } = getCanonicalRoomWallFinish(room, wall.id);
+    if (depthMm <= 0) return [];
+    return wall.solids.filter((solid) => solid.bottomMm <= wall.baseOffsetMm + 0.5).map((solid, index) => {
+      const trims = getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side);
+      const bare = trimFaceEdge(wallSurfaceEdge(solid, side, 0), trims), face = trimFaceEdge(wallSurfaceEdge(solid, side, depthMm), trims);
+      return { key: `${wall.id}:${index}`, wallId: wall.id, outline: [bare.start, bare.end, face.end, face.start] };
+    });
+  }));
+}
+/** The area two convex outlines share, in mm² (Sutherland-Hodgman). */
+function overlapMm2(subject: Array<{ x: number; z: number }>, clipper: Array<{ x: number; z: number }>): number {
+  const area = (points: Array<{ x: number; z: number }>) =>
+    points.reduce((sum, point, index) => sum + point.x * points[(index + 1) % points.length].z - points[(index + 1) % points.length].x * point.z, 0) / 2;
+  const edges = area(clipper) > 0 ? clipper : [...clipper].reverse();
+  let kept = subject;
+  edges.forEach((from, index) => {
+    const to = edges[(index + 1) % edges.length];
+    const inside = (point: { x: number; z: number }) => (to.x - from.x) * (point.z - from.z) - (to.z - from.z) * (point.x - from.x);
+    const input = kept;
+    kept = [];
+    input.forEach((point, pointIndex) => {
+      const next = input[(pointIndex + 1) % input.length];
+      const [here, there] = [inside(point), inside(next)];
+      if (here >= 0) kept.push(point);
+      if ((here >= 0) !== (there >= 0)) {
+        const t = here / (here - there);
+        kept.push({ x: point.x + (next.x - point.x) * t, z: point.z + (next.z - point.z) * t });
+      }
+    });
+  });
+  return Math.abs(area(kept)) * 1e6;
+}
 for (const [addressTransform, turnDeg] of [["normal", 0], ["rotate_90", 0], ["mirror_x", 0], ["mirror_x_rotate_270", 0], ["normal", 30]] as const) {
   const label = `${addressTransform} at ${turnDeg} degrees`;
   const { snapshot: imported, scene: importedScene } = canonicalFloorPlanToDesignSnapshot(jointPlan(turnDeg), { addressTransform });
@@ -403,23 +441,39 @@ for (const [addressTransform, turnDeg] of [["normal", 0], ["rotate_90", 0], ["mi
   assert.deepEqual(getRoomWallFinishDepths(left), { "wall-0": 0.044, "wall-1": 0.044, "wall-2": 0.044, "wall-3": 0.044 }, label);
   assert.equal(getCanonicalRoomWallFinish(left, "h-01").depthMm, 0,
     `${label}: the column's laminate is drawn flat, since the room isn't measured to its walls`);
-  // Every panel the room is measured to stands into the room; at each inside corner one of the two stops at the other's panel.
-  let cornerCuts: number[] = [];
-  for (const wall of floor.walls) {
-    for (const { roomId, side } of wall.roomSides) {
-      const room = planRooms.find(({ id }) => id === roomId)!;
-      if (getCanonicalRoomWallFinish(room, wall.id).depthMm !== 44) continue;
-      for (const solid of wall.solids) {
-        const geometry = wallFinishShellGeometry(solid, side, 44);
-        geometry.computeBoundingBox();
-        const middle = geometry.boundingBox!.getCenter(new Vector3());
-        assert.ok(isPointInsideRoomPolygon({ x: middle.x - room.x, z: middle.z - room.z }, room.polygon!), `${label}: ${wall.id} stands into ${roomId}`);
-        const trims = getCanonicalFaceTrimsMm(room, wall, solid, side);
-        if (roomId === "L") cornerCuts = [...cornerCuts, trims.startMm, trims.endMm].filter((cut) => cut > 0);
+  // Every panel the room is measured to stands into the room, and ends at the room's corners: none runs into another, none
+  // reaches past the room (at b and e the shared wall is the stem of a T, whose footprint runs to the through wall's far side).
+  for (const room of planRooms) {
+    const panels = roomPanelOutlines(floor, room);
+    assert.ok(panels.length > 0, label);
+    for (const { wallId, outline } of panels) {
+      const middle = outline.reduce((sum, point) => ({ x: sum.x + point.x / 4, z: sum.z + point.z / 4 }), { x: 0, z: 0 });
+      assert.ok(isPointInsideRoomPolygon({ x: middle.x - room.x, z: middle.z - room.z }, room.polygon!), `${label}: ${wallId} stands into ${room.id}`);
+      for (const point of outline) {
+        assert.ok(isPointInsideRoomPolygon({ x: point.x - room.x, z: point.z - room.z }, room.polygon!), `${label}: ${room.id}'s ${wallId} panel stays in the room`);
       }
     }
+    panels.forEach((first, index) => panels.slice(index + 1).forEach((second) => {
+      // An arc's slices, and its ends where it runs on along a straight wall, meet in mitred slivers, as in drawn rooms. Two
+      // straight panels share nothing but the plan's rounding to the millimetre (a corner at 30 degrees is off square by it):
+      // they used to overlap by the 44 mm square (1936 mm²) where a face ran past the room's corner.
+      const allowed = first.wallId === "w-cd" || second.wallId === "w-cd" ? 150 : 5;
+      const shared = overlapMm2(first.outline, second.outline);
+      assert.ok(shared < allowed, `${label}: ${room.id}'s ${first.wallId} and ${second.wallId} panels share ${shared.toFixed(1)} mm²`);
+    }));
   }
-  assert.deepEqual(cornerCuts.map(Math.round), [44, 44, 44, 44], `${label}: one panel stops at each of the left room's four corners`);
+  if (addressTransform === "normal" && !turnDeg) {
+    // Each corner of the left room: the earlier id runs to the room's corner, the later one stops at its panel (44 mm deep).
+    // a = (0, 0) between w-fa (300 mm) and w-ab, b = (4000, 0) and e = (4000, 3000) on the 100 mm stem w-be, f = (0, 3000).
+    const ends = Object.fromEntries(roomPanelOutlines(floor, left).map(({ key, outline: [start, end] }) =>
+      [key, [start, end].map(({ x, z }) => `${Math.round(x * 1000)},${Math.round(z * 1000)}`).join(" ")]));
+    assert.deepEqual(ends, {
+      "w-ab:0": "150,100 1500,100", "w-ab:1": "1500,100 2500,100", "w-ab:2": "2500,100 3950,100", // a, the window's sill, b
+      "w-be:0": "3950,144 3950,1000", "w-be:1": "3950,1900 3950,2900", // b, the door, e
+      "w-ef:0": "3906,2900 150,2900", // e, f
+      "w-fa:0": "150,2856 150,144", // f, a
+    });
+  }
   // The 2D strips: on the walls the rooms are measured to, stopped at the door, none on the column.
   const strips = getCanonicalPanelStrips2D(floor, planRooms);
   assert.equal(strips.filter(({ wallId, roomId }) => wallId === "w-be" && roomId === "L").length, 2, label);
@@ -435,10 +489,51 @@ for (const [addressTransform, turnDeg] of [["normal", 0], ["rotate_90", 0], ["mi
     [2 - sofaRoom.planPosition!.x, 0, (backMm + 300) / 1000 - sofaRoom.planPosition!.z];
   const sofa = { w: 1000, d: 600, h: 800 };
   const model = buildCanonicalFloorPlanRenderModel(importedScene);
-  assert.equal(findCanonicalPlacementPanel(model, rooms, sofaRoom, sofaAt(144), 0, sofa), null);
-  assert.equal(findCanonicalPlacementPanel(model, rooms, sofaRoom, sofaAt(134), 0, sofa), "w-ab");
+  const panels = buildCanonicalPlacementPanels(model, rooms);
+  assert.equal(findCanonicalPlacementPanel(panels, model, sofaRoom, sofaAt(144), 0, sofa), null);
+  assert.equal(findCanonicalPlacementPanel(panels, model, sofaRoom, sofaAt(134), 0, sofa), "w-ab");
   assert.equal(findCanonicalPlacementWall(model, sofaRoom, sofaAt(134), 0, sofa), null);
-  assert.equal(findCanonicalPlacementPanel(model, imported.rooms, sofaRoom, sofaAt(134), 0, sofa), null, "a painted wall has no panel to hit");
+  assert.equal(findCanonicalPlacementPanel(buildCanonicalPlacementPanels(model, imported.rooms), model, sofaRoom, sofaAt(134), 0, sofa), null,
+    "a painted wall has no panel to hit");
+}
+
+// A T-junction with a room on each side of the stem and one along the through wall, which runs straight on past the stem.
+// Each face ends at its room's corner: the stem's at the through wall's face (z = 100 mm on the stem's side, not its far
+// side at -100), and the through wall's two faces on the long room's side meet at the stem's line (x = 4000) instead of
+// overlapping by the stem's thickness with their fronts in one plane. With the stem's id sorting first or last.
+for (const stem of ["w-be", "w-aa"]) {
+  const vertices: Array<[string, number, number]> = [["a", 0, 0], ["b", 4000, 0], ["c", 8000, 0], ["d", 8000, 3000], ["e", 4000, 3000],
+    ["f", 0, 3000], ["g", 8000, -3000], ["h", 0, -3000]];
+  const wall = (id: string, from: string, to: string, rooms: string[], thicknessMm = 200) => ({ id, thicknessMm, adjacentRoomIds: rooms,
+    path: { kind: "line" as const, startVertexId: from, endVertexId: to }, classification: rooms.length > 1 ? "interior" as const : "exterior" as const, provenance: prov() });
+  const outer = (walls: Array<[string, "forward" | "reverse"]>) => [{ kind: "outer" as const, walls: walls.map(([wallId, direction]) => ({ wallId, direction })) }];
+  const document = { ...jointPlan(0), id: `t-${stem}`, floors: [{ ...jointPlan(0).floors[0],
+    vertices: vertices.map(([id, xMm, zMm]) => ({ id, xMm, zMm, provenance: prov() })),
+    walls: [wall("w-ab", "a", "b", ["A", "C"]), wall("w-bc", "b", "c", ["B", "C"]), wall(stem, "b", "e", ["A", "B"], 120),
+      wall("w-cd", "c", "d", ["B"]), wall("w-de", "d", "e", ["B"]), wall("w-ef", "e", "f", ["A"]), wall("w-fa", "f", "a", ["A"]),
+      wall("w-cg", "c", "g", ["C"]), wall("w-gh", "g", "h", ["C"]), wall("w-ha", "h", "a", ["C"])],
+    rooms: [
+      { id: "A", name: "A", roomType: "living", provenance: prov(), wallLoops: outer([["w-ab", "forward"], [stem, "forward"], ["w-ef", "forward"], ["w-fa", "forward"]]) },
+      { id: "B", name: "B", roomType: "bedroom", provenance: prov(), wallLoops: outer([["w-bc", "forward"], ["w-cd", "forward"], ["w-de", "forward"], [stem, "reverse"]]) },
+      { id: "C", name: "C", roomType: "living", provenance: prov(), wallLoops: outer([["w-ha", "forward"], ["w-ab", "forward"], ["w-bc", "forward"], ["w-cg", "forward"], ["w-gh", "forward"]]) },
+    ],
+    openings: [] }] } as unknown as FloorPlanDocumentV2;
+  const projected = canonicalFloorPlanToDesignSnapshot(document, {});
+  const floor = buildCanonicalFloorPlanRenderModel(projected.scene).floors[0];
+  const planRooms = buildHousePlan2D(projected.snapshot.rooms.map(laminated), 8, 6).rooms;
+  const extents = (roomId: string, wallId: string) => roomPanelOutlines(floor, planRooms.find(({ id }) => id === roomId)!)
+    .filter((panel) => panel.wallId === wallId).map(({ outline: [start, end] }) =>
+      [start, end].map(({ x, z }) => `${Math.round(x * 1000)},${Math.round(z * 1000)}`).join(" "));
+  const stemFirst = stem < "w-ab";
+  assert.deepEqual(extents("A", stem), [stemFirst ? "3940,100 3940,2900" : "3940,144 3940,2900"], `${stem}: room A's stem panel`);
+  assert.deepEqual(extents("A", "w-ab"), [stemFirst ? "100,100 3896,100" : "100,100 3940,100"], `${stem}: room A's through-wall panel`);
+  assert.deepEqual(extents("C", "w-ab"), ["4000,-100 100,-100"], `${stem}: the long room's faces meet at the stem's line`);
+  assert.deepEqual(extents("C", "w-bc"), ["7900,-100 4000,-100"]);
+  for (const room of planRooms) {
+    const panels = roomPanelOutlines(floor, room);
+    panels.forEach((first, index) => panels.slice(index + 1).forEach((second) =>
+      assert.ok(overlapMm2(first.outline, second.outline) < 1, `${stem}: ${room.id}'s ${first.wallId} and ${second.wallId} panels overlap`)));
+  }
 }
 
 // Saved with the room, carried to the plan's rooms, and declared in a shared design's projection.
@@ -475,6 +570,21 @@ assert.deepEqual(reshapedRooms.find(({ id }) => id === "R")!.planEdgeWallIds, jo
 const reshapedLeft = laminated(reshapedRooms.find(({ id }) => id === "L")!);
 assert.deepEqual(getRoomWallFinishDepths(reshapedLeft), {});
 assert.equal(getCanonicalRoomWallFinish(reshapedLeft, "w-ab").depthMm, 0);
+// Naming never stops a damaged design loading (a design without it loads): a plan that isn't an object, or one that doesn't
+// compile, names nothing, and nor does an outline with a damaged point.
+const storedUnnamed = JSON.parse(JSON.stringify(snapshotToStored(unnamed(jointImport.rooms))));
+for (const damagedPlan of ["not-a-document", 42, true, { id: "broken", revisionId: "r", floors: "none" }]) {
+  const design = { ...storedUnnamed, floorPlan: { ...storedUnnamed.floorPlan, canonicalDocument: damagedPlan, canonicalGeometryHash: undefined } };
+  for (let load = 0; load < 2; load += 1) {
+    assert.deepEqual(storedToSnapshot(design).rooms.map(({ planEdgeWallIds }) => planEdgeWallIds), [undefined, undefined],
+      `${JSON.stringify(damagedPlan)} loads, unnamed`);
+  }
+}
+const damagedOutline = JSON.parse(JSON.stringify(storedUnnamed));
+damagedOutline.rooms[0].planPolygon[1] = null;
+assert.deepEqual(storedToSnapshot(damagedOutline).rooms.map(({ planEdgeWallIds }) => planEdgeWallIds), [undefined, jointIds[1]],
+  "a damaged outline isn't named, and the design still loads");
+// The 2D renderer can't be drawn here (no browser): this pins that it hands the imported plan its rooms.
 assert.match(read("components/editor/renderers/RoomRenderer2D.tsx"), /<CanonicalFloorPlanWalls2D\s+model=\{canonicalPlan\} rooms=\{rooms\}/,
   "The 2D plan hands its rooms to the imported plan's walls, which draw their panels.");
 

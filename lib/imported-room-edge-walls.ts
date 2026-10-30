@@ -17,27 +17,43 @@ const POINT_TOLERANCE_M = 0.002;
 const scenesByDocument = new WeakMap<FloorPlanDocumentV2, CompiledFloorPlanSceneV2 | null>();
 const scenesByGeometry = new Map<string, CompiledFloorPlanSceneV2 | null>();
 
+/** A point of a saved outline, when it is one: a damaged design's may be anything. */
+function isPlanPoint(point: unknown): point is { x: number; z: number } {
+  return typeof point === "object" && point !== null &&
+    Number.isFinite((point as { x?: unknown }).x) && Number.isFinite((point as { z?: unknown }).z);
+}
+
 function needsEdgeWallIds(room: RoomSnapshot): boolean {
   return typeof room.floorElevationMm === "number" && room.planShape === "custom_polygon" &&
-    (room.planPolygon?.length ?? 0) >= 3 && !sanitizePlanEdgeWallIds(room.planEdgeWallIds);
+    Array.isArray(room.planPolygon) && room.planPolygon.length >= 3 && room.planPolygon.every(isPlanPoint) &&
+    !sanitizePlanEdgeWallIds(room.planEdgeWallIds);
+}
+
+/** A key for a document a design is loaded with again from new objects: its geometry, else its revision. */
+function documentKey(document: FloorPlanDocumentV2, geometryHash: unknown): string | null {
+  if (typeof document.id !== "string") return null;
+  if (typeof geometryHash === "string" && geometryHash) return `${document.id}:${geometryHash}`;
+  return typeof document.revisionId === "string" ? `${document.id}:revision:${document.revisionId}` : null;
 }
 
 function compiledPlan(floorPlan: PersistedFloorPlanState): CompiledFloorPlanSceneV2 | null {
-  const document = floorPlan.canonicalDocument;
-  if (!document) return null;
-  const geometryKey = floorPlan.canonicalGeometryHash ? `${document.id}:${floorPlan.canonicalGeometryHash}` : null;
-  const known = scenesByDocument.get(document) ?? (geometryKey ? scenesByGeometry.get(geometryKey) : undefined);
-  if (known !== undefined) return known;
+  const document: unknown = floorPlan.canonicalDocument;
+  if (typeof document !== "object" || document === null) return null;
+  const plan = document as FloorPlanDocumentV2;
+  const key = documentKey(plan, floorPlan.canonicalGeometryHash);
+  // A failed compile (null) is kept too, so a broken plan isn't compiled again on every load.
+  if (scenesByDocument.has(plan)) return scenesByDocument.get(plan) ?? null;
+  if (key && scenesByGeometry.has(key)) return scenesByGeometry.get(key) ?? null;
   let scene: CompiledFloorPlanSceneV2 | null;
   try {
-    scene = compileFloorPlanDocumentV2(document);
+    scene = compileFloorPlanDocumentV2(plan);
   } catch {
     scene = null;
   }
-  scenesByDocument.set(document, scene);
-  if (geometryKey) {
+  scenesByDocument.set(plan, scene);
+  if (key) {
     if (scenesByGeometry.size >= 4) scenesByGeometry.delete(scenesByGeometry.keys().next().value!);
-    scenesByGeometry.set(geometryKey, scene);
+    scenesByGeometry.set(key, scene);
   }
   return scene;
 }
@@ -50,7 +66,7 @@ export function matchImportedRoomEdgeWallIds(room: RoomSnapshot, scene: Compiled
     if (!outer) continue;
     const edges = roomPolygonEdges(outer, new Map(floor.walls.map((wall) => [wall.id, wall])));
     const polygon = room.planPolygon ?? [];
-    if (edges.length !== polygon.length) return undefined;
+    if (edges.length !== polygon.length || !polygon.every(isPlanPoint)) return undefined;
     const center = roomOutlineCenterMm(edges.map(({ point }) => point));
     const same = edges.every(({ point }, index) =>
       Math.abs((point.xMm - center.xMm) / 1000 - polygon[index].x) < POINT_TOLERANCE_M &&
@@ -65,10 +81,27 @@ function isPending(room: RoomSnapshot): boolean {
   return (room.planEdgeWallIds !== undefined && !sanitizePlanEdgeWallIds(room.planEdgeWallIds)) || needsEdgeWallIds(room);
 }
 
-/** The rooms with their edges named where they can be; the same list when no room needs it. */
+/**
+ * The rooms with their edges named where they can be; the same list when no room needs it. Naming never stops a design
+ * loading: if anything in a damaged design makes it fail, the rooms are returned as they were saved, less ids that aren't a
+ * list of strings.
+ */
 export function withImportedRoomEdgeWallIds(
   rooms: RoomSnapshot[], floorPlan: PersistedFloorPlanState | undefined
 ): RoomSnapshot[] {
+  try {
+    return nameImportedRoomEdges(rooms, floorPlan);
+  } catch {
+    return rooms.map((room) => {
+      if (room?.planEdgeWallIds === undefined || sanitizePlanEdgeWallIds(room.planEdgeWallIds)) return room;
+      const unnamed: RoomSnapshot = { ...room };
+      delete unnamed.planEdgeWallIds;
+      return unnamed;
+    });
+  }
+}
+
+function nameImportedRoomEdges(rooms: RoomSnapshot[], floorPlan: PersistedFloorPlanState | undefined): RoomSnapshot[] {
   if (!rooms.some(isPending)) return rooms;
   let scene: CompiledFloorPlanSceneV2 | null | undefined;
   return rooms.map((room) => {

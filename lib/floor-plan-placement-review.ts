@@ -3,13 +3,18 @@ import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { getCabinetPlanningDimsMm } from "@/features/cabinetry/designItemAdapters";
 import type { DesignSnapshot } from "@/lib/room-types";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
-import { findCanonicalPlacementPanel, findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
+import {
+  buildCanonicalPlacementPanels,
+  findCanonicalPlacementPanel,
+  findCanonicalPlacementWall,
+} from "@/lib/floor-plan-placement-boundaries";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import { isFootprintInsideRoomPolygon } from "@/lib/design-page-geometry";
 
 /** The wall edit preserves every item. A collision requires a separate furniture transaction. */
 export function reviewProposedPlacements(snapshot: DesignSnapshot, model: CanonicalFloorPlanRenderModel): string[] {
   const issues: string[] = [];
+  const panels = buildCanonicalPlacementPanels(model, snapshot.rooms); // once for every item
   for (const room of snapshot.rooms) {
     for (const item of room.items) {
       const product = resolveDesignItemVisualProduct(item);
@@ -23,7 +28,7 @@ export function reviewProposedPlacements(snapshot: DesignSnapshot, model: Canoni
       const wall = findCanonicalPlacementWall(model, room, item.position, item.rotationY ?? 0,
         scaled);
       if (wall) issues.push(`Placement ${item.instanceId} intersects proposed wall ${wall}. Move it in Furnish; its position is preserved.`);
-      const panel = wall ? null : findCanonicalPlacementPanel(model, snapshot.rooms, room, item.position, item.rotationY ?? 0, scaled);
+      const panel = wall ? null : findCanonicalPlacementPanel(panels, model, room, item.position, item.rotationY ?? 0, scaled);
       if (panel) issues.push(`Placement ${item.instanceId} intersects the wall panel on proposed wall ${panel}. Move it in Furnish; its position is preserved.`);
       const [width, depth] = getRotatedFootprint(scaled.w / 1000, scaled.d / 1000, item.rotationY ?? 0);
       if (room.planPolygon?.length && !isFootprintInsideRoomPolygon(item.position[0], item.position[2], width / 2, depth / 2, room.planPolygon, room.planHoles)) {

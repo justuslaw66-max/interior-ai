@@ -7,16 +7,13 @@ import type {
   CanonicalFloorPlanWallSolid,
 } from "@/lib/floor-plan-render-model";
 import { getWallFinishDepthMm } from "@/lib/laminate-wall-backing";
-import {
-  getRoomMeasuredWallIds,
-  getRoomWallFinishDepths,
-  readPlanEdgeWallIds,
-  type RoomWallFinishDepths,
-  type WallFinishRoom,
-} from "@/lib/room-wall-finish-depths";
+import { getRoomMeasuredWallIds, type WallFinishRoom } from "@/lib/room-wall-finish-depths";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
-import { NO_FACE_TRIMS, trimFaceEdge, wallSurfaceEdge, type FaceTrimsMm } from "./geometry";
+import { trimFaceEdge, wallSurfaceEdge, type FaceTrimsMm } from "./geometry";
+import { getCanonicalFaceTrimsMm } from "./roomFaceLimits";
+
+export { getCanonicalFaceTrimsMm } from "./roomFaceLimits";
 import { resolveRoomSurfaceAssignments } from "./surfaceMaterials";
 
 type PlanPoint = { x: number; z: number };
@@ -71,71 +68,6 @@ export function getCanonicalOpeningHighlightDepth(wallThicknessMm: number, panel
   return Math.max(0.08, (wallThicknessMm + (panelDepthMm > 0 ? 2 * (panelDepthMm + 3) : 0)) / 1000);
 }
 
-type CornerTrim = { wallId: string; corner: PlanPoint; trimMm: number };
-const cornerTrimsByDepths = new WeakMap<RoomWallFinishDepths, { outline: unknown; edges: unknown; trims: CornerTrim[] }>();
-
-/**
- * Where two laminates meet at an inside corner of a room's outline, the one on the wall whose id sorts later stops at the
- * other's panel instead of running into it, as in a drawn room (legacyWallSurfaceMiterOffset, house-plan-3d/geometry.ts):
- * cut back along its face until it clears the other's (the other's depth over the corner's sine at a right angle). Each entry
- * is that wall, the corner on the centre line (plan metres) and the cut. Outside corners, and walls meeting at less than about
- * 12 degrees from straight on (an arc running into a wall along it), are left alone.
- */
-function getRoomCornerTrims(room: CanonicalFinishRoom): CornerTrim[] {
-  const edges = readPlanEdgeWallIds(room);
-  const outline = room.planPolygon ?? room.polygon;
-  const depths = getRoomWallFinishDepths(room);
-  if (!edges || !outline) return [];
-  const known = cornerTrimsByDepths.get(depths);
-  if (known && known.outline === outline && known.edges === edges) return known.trims;
-  const origin = room.planPosition ?? { x: room.x ?? 0, z: room.z ?? 0 };
-  const area = outline.reduce((sum, point, index) => {
-    const next = outline[(index + 1) % outline.length];
-    return sum + point.x * next.z - next.x * point.z;
-  }, 0);
-  const trims = outline.flatMap((point, index): CornerTrim[] => {
-    const before = (index - 1 + outline.length) % outline.length;
-    const [first, second] = [edges[before], edges[index]];
-    const [firstDepth, secondDepth] = [depths[`wall-${before}`] ?? 0, depths[`wall-${index}`] ?? 0];
-    if (first === second || firstDepth <= 0 || secondDepth <= 0) return [];
-    const into = { x: point.x - outline[before].x, z: point.z - outline[before].z };
-    const next = outline[(index + 1) % outline.length];
-    const out = { x: next.x - point.x, z: next.z - point.z };
-    const lengths = (Math.hypot(into.x, into.z) * Math.hypot(out.x, out.z)) || 1;
-    const cross = into.x * out.z - into.z * out.x;
-    const sine = Math.abs(cross) / lengths, cosine = -(into.x * out.x + into.z * out.z) / lengths; // of the corner's angle
-    if (cross * area <= 0 || sine < 0.2) return [];
-    const stops = first > second ? first : second;
-    const [ownDepth, otherDepth] = stops === first ? [firstDepth, secondDepth] : [secondDepth, firstDepth];
-    // Clear of the other panel across its own depth: at its face for an obtuse corner, at its front for an acute one.
-    const trimMm = ((otherDepth + Math.max(0, cosine) * ownDepth) * 1000) / sine;
-    return [{ wallId: stops, corner: { x: point.x + origin.x, z: point.z + origin.z }, trimMm }];
-  });
-  cornerTrimsByDepths.set(depths, { outline, edges, trims });
-  return trims;
-}
-
-/** How far a slice's finish stops short of each end of its face, in millimetres, for a corner it meets (getRoomCornerTrims). */
-export function getCanonicalFaceTrimsMm(
-  room: CanonicalFinishRoom, wall: Pick<CanonicalFloorPlanWallRenderModel, "id" | "centerlineSegments">,
-  solid: CanonicalFloorPlanWallSolid, side: 1 | -1
-): FaceTrimsMm {
-  const trims = getRoomCornerTrims(room).filter(({ wallId }) => wallId === wall.id);
-  const first = wall.centerlineSegments[0], last = wall.centerlineSegments.at(-1);
-  if (!trims.length || !first || !last) return NO_FACE_TRIMS;
-  const distance = (corner: PlanPoint, point: { xMm: number; zMm: number }) =>
-    Math.hypot(corner.x - point.xMm / 1000, corner.z - point.zMm / 1000);
-  const atWall = { start: 0, end: 0 };
-  for (const { corner, trimMm } of trims) {
-    const end = distance(corner, first.start) <= distance(corner, last.end) ? "start" : "end";
-    atWall[end] = Math.max(atWall[end], trimMm);
-  }
-  const atStart = solid.startOffsetMm <= first.startOffsetMm + 0.5 ? atWall.start : 0;
-  const atEnd = solid.endOffsetMm >= last.endOffsetMm - 0.5 ? atWall.end : 0;
-  // The face runs from the wall's start on side 1 and from its end on side -1 (wallSurfaceEdge).
-  return side === 1 ? { startMm: atStart, endMm: atEnd } : { startMm: atEnd, endMm: atStart };
-}
-
 // One strip per slice and finish, kept while both are the same (the floor's walls are kept with the plan; a room's finish is
 // read again on each plan rebuild, such as every frame of an item drag, but its strip's shape needn't be).
 const stripsBySolid = new WeakMap<CanonicalFloorPlanWallSolid, Map<string, { value: string; strip: CanonicalPanelStrip2D }>>();
@@ -174,7 +106,7 @@ export function getCanonicalPanelStrips2D(
     if (depthMm <= 0) return [];
     const finish = { paintColorHex: settings.paintColorHex ?? null, materialId: settings.materialId ?? null };
     return wall.solids.filter((solid) => solid.bottomMm <= wall.baseOffsetMm + 0.5).map((solid) => {
-      const trims = getCanonicalFaceTrimsMm(room, wall, solid, side);
+      const trims = getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side);
       const key = `${floor.id}:${solid.id}:${roomId}:panel`;
       const value = `${side}|${depthMm}|${trims.startMm}|${trims.endMm}|${finish.paintColorHex}|${finish.materialId}`;
       const known = stripsBySolid.get(solid) ?? new Map<string, { value: string; strip: CanonicalPanelStrip2D }>();

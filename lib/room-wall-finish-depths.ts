@@ -22,8 +22,9 @@ import { parseWallPanelId } from "@/lib/wall-panel-ids";
  *
  * An imported plan's room is a drawn shape too, edge N its outline's, but its finishes are saved under the plan's own wall
  * ids and drawn by the imported plan's 3D view (canonical-floor-plan/CanonicalWallSurfaceMesh.tsx, J's "Two: drawn rooms,
- * then imported"). Its `planEdgeWallIds` name the wall each edge lies on, so edge N's depth is that wall's finish. An
- * imported room saved before it had them keeps the bare wall: its edges can't be matched to its walls.
+ * then imported"). Its `planEdgeWallIds` name the wall each edge lies on, so edge N's depth is that wall's finish. A room
+ * saved before it had them is matched to its plan when the design loads (lib/imported-room-edge-walls.ts); one that can't be
+ * matched (its outline no longer the plan's) keeps the bare wall, and its plan draws its laminates flat.
  */
 
 /** A room snapshot or a plan room: what the depths are read from. */
