@@ -5,8 +5,8 @@ The faithful trace copies what is drawn - solid fills as polygons, every line, a
 lettering and small marks by their outline - and reads nothing as a room, a door or a wall. The app draws it as the
 plan's clean vector drawing in place of stage 1's reading of the page.
 
-Only for dark ink on light paper (a plan drawn light on a dark ground traces as one black sheet) and a picture that is
-not blurred (stage 1's softness measure around solid black, at most --max-softness: a blurred scan or photo is left).
+Only for dark ink on light paper (a plan drawn light on a dark ground traces as one black sheet; with FV_INVERT_DARK=1
+such a plan is traced turned over instead, since 30 Oct) and a picture that is not blurred (stage 1's softness measure around solid black, at most --max-softness: a blurred scan or photo is left).
 A picture that is merely soft without solid black (a low-resolution JPEG plan enlarged into a brochure page) is traced,
 which is better than the app's older pixel trace (J, 24 Oct); since r8 its lettering is copied letter by letter where
 it runs together or into the line work under it, and since r9 that holds for such a plan as the app renders a PDF page
@@ -60,6 +60,23 @@ def softness(g):
 def paper_tone(g):
     """the picture's most common grey: its paper (dark for a plan drawn in light lines on a dark ground)"""
     return int(np.argmax(np.bincount(g.ravel(), minlength=256)))
+
+
+def light_on_dark(g):
+    """True for a plan drawn light on a dark ground: its paper (most common grey) under 128 and its ink lighter - at
+    least twice as much ink lighter than the paper as darker (floorplan_vectorize.light_on_dark: the same rule)"""
+    hist = np.bincount(g.ravel(), minlength=256)
+    paper = int(np.argmax(hist))
+    if paper >= 128:
+        return False
+    lighter = int(hist[min(255, paper + 60):].sum())
+    darker = int(hist[:max(0, paper - 60)].sum())
+    if lighter < 2 * darker or lighter < 0.002 * g.size:
+        return False
+    # and dark round its edges, as a page is: a plan whose black fills cover more than half of white paper is not
+    b = max(1, min(g.shape[:2]) // 50)
+    frame = np.concatenate([g[:b].ravel(), g[-b:].ravel(), g[:, :b].ravel(), g[:, -b:].ravel()])
+    return float(np.median(frame)) < 128
 
 
 def read_gray(path):
@@ -299,6 +316,10 @@ def main(argv):
         g = read_gray(src)
         H, W = g.shape
         reason = None
+        # No upload gives nothing (beta step 2.1): with FV_INVERT_DARK=1 a plan drawn light on a dark ground is traced
+        # turned over, as dark ink on light paper (the app draws the trace on white), instead of being left
+        if os.environ.get("FV_INVERT_DARK", "0") == "1" and light_on_dark(g):
+            g = 255 - g
         if H * W > ONE_X_SHARE * max_px:
             reason = "picture too large for the faithful trace (%d x %d px)" % (W, H)
         elif paper_tone(g) < 128:

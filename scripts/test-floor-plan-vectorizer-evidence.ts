@@ -599,6 +599,26 @@ async function main() {
       assert.ok(!off.semantics.notes.some((note) => note.startsWith("Faithful trace")), "off: not run");
       summary.push("provider: the faithful trace replaces stage 1's drawing when on; a page it leaves, a failure, an invalid drawing or a timeout keeps stage 1's, noted");
 
+      // The page budget (FLOOR_PLAN_VECTORIZER_PAGE_BUDGET=1, beta step 2.1): the faithful trace runs inside the page's own
+      // time limit. A page that reaches it with too little left comes back with stage 1's reading and drawing, noted; a
+      // trace that would run past the limit is cut at it. Off unless set.
+      assert.equal(floorPlanVectorizerRuntimeConfiguration({}).pageBudget, false, "the page budget is off unless set");
+      assert.equal(floorPlanVectorizerRuntimeConfiguration({}).faithfulMinMs, 30_000);
+      const budgetConfig = { ...faithfulConfig, pageBudget: true, faithfulMinMs: 1_000 };
+      writeFileSync(path.join(directory, "faithful_drawing.py"), "import sys\nsys.exit('must not run')\n");
+      const spent = await new PythonFloorPlanVectorizerProvider(budgetConfig).analyzePage(page, { timeoutMs: 900 });
+      assert.equal(JSON.stringify(spent.drawing), stage1Drawing, "nearly spent: stage 1's drawing kept");
+      assert.equal(spent.rooms.length > 0, true, "nearly spent: stage 1's reading kept");
+      assert.ok(spent.semantics.notes.some((note) => /^Faithful trace not used: the page's time limit was nearly spent \(\d+ s\)$/.test(note)));
+      writeFileSync(path.join(directory, "faithful_drawing.py"), "import time\ntime.sleep(30)\n");
+      const cut = await new PythonFloorPlanVectorizerProvider({ ...budgetConfig, faithfulTimeoutMs: 600_000 }).analyzePage(page, { timeoutMs: 3_000 });
+      assert.ok(cut.semantics.notes.some((note) => /^Faithful trace unavailable: .*exceeded [12]\d{3} ms/.test(note)),
+        "a trace that would run past the page's limit is cut at it, not at its own 600 s");
+      assert.equal(JSON.stringify(cut.drawing), stage1Drawing);
+      const roomy = await faithfulRun(`import sys, json\njson.dump(json.loads(${JSON.stringify(JSON.stringify(faithfulDrawing))}), open(sys.argv[2], 'w'))\n`, budgetConfig);
+      assert.equal(roomy.drawing?.version, "faithful-trace-r6", "time left: the faithful trace still replaces stage 1's drawing");
+      summary.push("provider: with the page budget on, a page near its time limit keeps stage 1's reading and drawing, and the trace is cut at the limit");
+
       // A page the vectorizer could not read (stage 1 failed or ran out of time) is still drawn by the faithful trace,
       // on its own (J, 24 Oct): it does not need stage 1.
       const writesDrawing = `import sys, json\njson.dump(json.loads(${JSON.stringify(JSON.stringify(faithfulDrawing))}), open(sys.argv[2], 'w'))\n`;

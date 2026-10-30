@@ -293,6 +293,67 @@ def _reduced(draw, w, h, s=4):
     return cv2.resize(big, (w, h), interpolation=cv2.INTER_AREA)
 
 
+class DarkGround(unittest.TestCase):
+    """No upload gives nothing (beta step 2.1, 30 Oct 2026): with FV_INVERT_DARK=1 a plan drawn light on a dark ground is
+    traced turned over; stage 1 (floorplan_vectorize.light_on_dark) uses the same rule"""
+
+    @staticmethod
+    def _grid(paper, ink, size=200):
+        g = np.full((size, size), paper, np.uint8)
+        for x in range(30, 180, 30):
+            cv2.line(g, (x, 20), (x, 180), ink, 3)
+        for y in range(30, 180, 50):
+            cv2.line(g, (20, y), (180, y), ink, 3)
+        return g
+
+    def test_which_pages_are_light_on_dark(self):
+        self.assertTrue(fd.light_on_dark(self._grid(0, 255)), "white lines on black")
+        self.assertTrue(fd.light_on_dark(self._grid(40, 230)), "light lines on a dark blue page, in grey")
+        self.assertFalse(fd.light_on_dark(self._grid(255, 0)), "an ordinary plan")
+        self.assertFalse(fd.light_on_dark(self._grid(100, 20)), "a dim photo of an ordinary plan: its ink darker than its paper")
+        heavy = self._grid(255, 0)
+        cv2.rectangle(heavy, (25, 25), (175, 175), 0, -1)
+        self.assertFalse(fd.light_on_dark(heavy), "a plan of heavy black fills on white paper")
+        self.assertFalse(fd.light_on_dark(np.full((200, 200), 10, np.uint8)), "a black page with nothing on it")
+
+    def test_stage1_uses_the_same_rule(self):
+        import floorplan_vectorize as fv
+        for g in (self._grid(0, 255), self._grid(40, 230), self._grid(255, 0), self._grid(100, 20)):
+            self.assertEqual(fv.light_on_dark(g), fd.light_on_dark(g))
+
+    def test_traced_turned_over_only_with_the_switch(self):
+        saved = os.environ.get("FV_INVERT_DARK")
+        try:
+            with tempfile.TemporaryDirectory() as folder:
+                src, out = os.path.join(folder, "dark.png"), os.path.join(folder, "out.json")
+                cv2.imwrite(src, self._grid(0, 255))
+                os.environ.pop("FV_INVERT_DARK", None)
+                fd.main([src, out])
+                with open(out) as f:
+                    self.assertIn("dark ground", json.load(f)["skipped"], "off: left, as before")
+                os.environ["FV_INVERT_DARK"] = "1"
+                fd.main([src, out])
+                with open(out) as f:
+                    d = json.load(f)
+                self.assertNotIn("skipped", d)
+                self.assertTrue(d["items"], "on: traced")
+                self.assertTrue(all(it.get("tone", 0) < 128 for it in d["items"]), "drawn as dark ink, as the app draws on white")
+                plain = os.path.join(folder, "plain.png")
+                cv2.imwrite(plain, self._grid(255, 0))
+                fd.main([plain, out])
+                with open(out) as f:
+                    on = json.load(f)
+                os.environ.pop("FV_INVERT_DARK", None)
+                fd.main([plain, out])
+                with open(out) as f:
+                    self.assertEqual(json.load(f), on, "an ordinary plan is traced the same with the switch on")
+        finally:
+            if saved is None:
+                os.environ.pop("FV_INVERT_DARK", None)
+            else:
+                os.environ["FV_INVERT_DARK"] = saved
+
+
 class Sharp(unittest.TestCase):
     """(r11) the trace as sharp and joined as the drawing it copies"""
 
