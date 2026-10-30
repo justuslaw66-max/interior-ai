@@ -6,6 +6,7 @@ import { type ThreeEvent } from "@react-three/fiber";
 import { Line } from "@react-three/drei/core/Line";
 import { Html } from "@react-three/drei/web/Html";
 import { useCursor } from "@react-three/drei/web/useCursor";
+import { Lock } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import {
@@ -911,18 +912,7 @@ export function Furniture({
             className={`designer-lock ${hovered ? "designer-lock-active" : ""}`}
             title="Locked by designer"
           >
-            <svg
-              viewBox="0 0 24 24"
-              width="14"
-              height="14"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path
-                fill="currentColor"
-                d="M17 9h-1V7a4 4 0 0 0-8 0v2H7a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2Zm-7-2a2 2 0 1 1 4 0v2h-4V7Zm3 9a1 1 0 1 1-2 0v-2a1 1 0 1 1 2 0v2Z"
-              />
-            </svg>
+            <Lock size={14} aria-hidden="true" focusable="false" />
           </div>
         </Html>
       )}

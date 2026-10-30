@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
 export type PlanToolIconName =
-  | "upload"
   | "straightWall"
   | "rectangleWall"
   | "arcWall"
@@ -56,33 +55,6 @@ export function PlanToolIcon({
   const inset = muted
     ? "#c6c9ce"
     : "#b7b9bd";
-
-  if (name === "upload") {
-    return (
-      <PlanToolSvg className={svgClass}>
-        <path
-          d="M12 18V10h8M44 10h8v8M52 46v8h-8M20 54h-8v-8"
-          stroke="#60a5fa"
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-        <path
-          d="M23 13h18l8 8v29H23V13Z"
-          fill="#bfdbfe"
-          stroke="#93c5fd"
-          strokeWidth="2"
-        />
-        <path d="M41 13v10h8" fill="#dbeafe" stroke="#93c5fd" strokeWidth="2" />
-        <rect x="27" y="30" width="18" height="10" rx="1.5" fill="#60a5fa" />
-        <text x="28" y="27" fill="#60a5fa" fontSize="8" fontWeight="700">
-          JPG
-        </text>
-        <text x="29" y="38" fill="#ffffff" fontSize="8" fontWeight="700">
-          CAD
-        </text>
-      </PlanToolSvg>
-    );
-  }
 
   if (name === "straightWall") {
     return (

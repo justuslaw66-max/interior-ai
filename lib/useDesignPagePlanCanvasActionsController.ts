@@ -25,7 +25,6 @@ export type UseDesignPagePlanCanvasActionsControllerInput = {
     clearPlanFocusPoints: () => void;
     setDesignPanelOpen: Dispatch<SetStateAction<boolean>>;
     setPlanFocusPanelRevealed: Dispatch<SetStateAction<boolean>>;
-    goPlan: () => void;
     goFurnish: () => void;
     dismissPlanCanvasGuidance: Dispatch<SetStateAction<string | null>>;
   };
@@ -66,12 +65,6 @@ export function useDesignPagePlanCanvasActionsController({
     actions.changeCalibrationMode(true);
   }, [actions]);
 
-  const startEmptyPlanRoom = useCallback(() => {
-    actions.setDesignPanelOpen(true);
-    actions.goPlan();
-    actions.setGuidedPlanStartMode("start");
-  }, [actions]);
-
   const restoreDesignTools = useCallback(() => {
     actions.setDesignPanelOpen(true);
     actions.setPlanFocusPanelRevealed(false);
@@ -99,7 +92,6 @@ export function useDesignPagePlanCanvasActionsController({
         furnish: actions.goFurnish,
         dismiss: actions.dismissPlanCanvasGuidance,
       },
-      emptyPrompt: { startRoom: startEmptyPlanRoom },
       restoreTools: { restore: restoreDesignTools },
     }),
     [
@@ -112,7 +104,6 @@ export function useDesignPagePlanCanvasActionsController({
       actions.undoFloorPlanTraceRoomPoint,
       finishPlanFocus,
       restoreDesignTools,
-      startEmptyPlanRoom,
       startRoomDraw,
       startScaleFromGuidance,
       startScaleFromManualActions,

@@ -246,7 +246,7 @@ async function placeArmchairSetInBedroom(page: Page) {
 
   const drawer = page.getByTestId("catalog-item-drawer");
   await expect(drawer.getByText("Cammy Armchair", { exact: true })).toBeVisible();
-  await expect(drawer).toContainText("Castlery • Arm Chair");
+  await expect(drawer).toContainText("Castlery • Armchair");
   await drawer.getByRole("button", { name: /Set of 2/ }).click();
 
   const addToRoom = page.getByTestId("catalog-detail-add-to-room");

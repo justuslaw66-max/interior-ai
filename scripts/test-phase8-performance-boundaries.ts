@@ -501,7 +501,7 @@ async function assertSurfaceMaterialRuntimeBoundary(): Promise<void> {
   assert.doesNotMatch(panelSource, /useSurfaceMaterialCatalog\(true\)/);
   assert.match(
     panelSource,
-    /showStandaloneFloorFinishPanel[\s\S]*?setRoomFinishPanelOpen\(\(open\) => !open\)[\s\S]*?renderSurfaceMaterialBrowser\(\)/
+    /open=\{roomFinishPanelOpen && holder === surfaceBrowserHolder\}[\s\S]*?showStandaloneFloorFinishPanel[\s\S]*?roomFinishPanelOpen \? setRoomFinishPanelOpen\(false\) : openRoomSurface\("floor", true\)[\s\S]*?renderSurfaceMaterialBrowser\("floorFinish"\)/
   );
   const hookSource = read("lib/useSurfaceMaterialCatalog.ts");
   assert.match(hookSource, /if \(!enabled \|\| snapshot\.status !== "idle"\) return/);

@@ -10,6 +10,7 @@ import type {
 import type { SelectedCabinetExportKind } from "@/features/cabinetry/selectedCabinetExportFeedback";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
+import { exactEdgeBandingM, roundedEdgeBandingM } from "@/features/cabinetry/edgeBandingTotals";
 import { Button } from "@/components/ui/Button";
 
 export type { SelectedCabinetExportKind } from "@/features/cabinetry/selectedCabinetExportFeedback";
@@ -18,9 +19,7 @@ export type SelectedCabinetDocumentation = CabinetDocumentationSnapshot & {
   bom: CabinetBOMItem[];
 };
 
-function sumEdgeBandingMetres(documentation: SelectedCabinetDocumentation | null): number {
-  return documentation ? documentation.edgeBandingSchedule.reduce((sum, item) => sum + item.totalLengthM, 0) : 0;
-}
+const sumEdgeBandingMetres = (doc: SelectedCabinetDocumentation | null) => (doc ? exactEdgeBandingM(doc.cutList) : 0);
 
 export interface SelectedCabinetPanelProps {
   measurementUnit: PlanMeasurementUnit;
@@ -221,7 +220,7 @@ export function SelectedCabinetPanel({
                   data-material-schedule-count={String(selectedCabinetDocumentationSnapshot.materialSchedule.length)}
                   data-hardware-schedule-count={String(selectedCabinetDocumentationSnapshot.hardwareSchedule.length)}
                   data-edge-banding-schedule-count={String(selectedCabinetDocumentationSnapshot.edgeBandingSchedule.length)}
-                  data-edge-banding-total-m={String(Math.round(edgeBandingTotalM * 100) / 100)}
+                  data-edge-banding-total-m={String(roundedEdgeBandingM(selectedCabinetDocumentationSnapshot.cutList))}
                   data-cut-list-count={String(selectedCabinetDocumentationSnapshot.cutList.length)}
                   data-dimension-schedule-count={String(selectedCabinetDocumentationSnapshot.dimensionSchedule.length)}
                   data-drawing-view-schedule-count={String(selectedCabinetDocumentationSnapshot.drawingViewSchedule.length)}

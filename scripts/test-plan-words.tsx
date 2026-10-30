@@ -7,7 +7,7 @@ import { buildSharePageRooms } from "../lib/public-share-page-model";
 import type { RoomSnapshot } from "../lib/room-types";
 import { storeyDisplayLabel, storeyLevelLabel } from "../lib/storey-labels";
 import { buildSurfaceRoomSummaries } from "../components/editor/design-controls-plan/surfaceSummaryRows";
-import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS } from "../components/editor/renderers/canvasChipStyle";
+import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS, CANVAS_FIELD_TEXT_CLASS } from "../components/editor/renderers/canvasChipStyle";
 
 // UX phase 4f (audit ED7): the Plan's words. Storeys read "Level 1" and "Basement 1": the saved
 // "1F", "B1" and "3F Copy" are mapped when shown, never rewritten. The canvas's Floor chip is
@@ -76,7 +76,15 @@ for (const file of ["components/editor/design-page/MultiSelectionToolbar.tsx", "
 assert.deepEqual(CANVAS_CHIP_TEXT, { fontSize: 12, fontWeight: 700, lineHeight: "16px" });
 assert.equal(CANVAS_CHIP.minHeight, 24);
 assert.equal(CANVAS_CHIP_BUTTON.minHeight, 32);
-assert.equal(CANVAS_CHIP_TOUCH_CLASS, "touch:min-h-11 touch:min-w-11");
+// Important: the chips set their minimum size inline, which beats a plain class (30 Oct 2026).
+assert.equal(CANVAS_CHIP_TOUCH_CLASS, "touch:!min-h-11 touch:!min-w-11");
+// The size fields take a class, not an inline size, so they're 16px on touch screens (no iOS zoom).
+assert.equal(CANVAS_FIELD_TEXT_CLASS, "text-xs touch:text-base");
+for (const testId of ["active-room-dimension-editor-width", "active-room-dimension-editor-depth", "wall-draw-segment-length-editor"]) {
+  const field = renderer.slice(renderer.indexOf(`data-testid="${testId}"`), renderer.indexOf("/>", renderer.indexOf(`data-testid="${testId}"`)));
+  assert.match(field, /className=\{CANVAS_FIELD_TEXT_CLASS\}/, `${testId} takes the field text class.`);
+  assert.doesNotMatch(field, /fontSize|CANVAS_CHIP_TEXT/, `${testId} sets no inline text size.`);
+}
 const blockOf = (testId: string) => {
   const start = renderer.indexOf(`data-testid="${testId}"`);
   assert.ok(start >= 0, testId);
