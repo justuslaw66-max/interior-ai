@@ -301,6 +301,59 @@ for (let step = 0; step < 10; step += 1) {
   assert.equal(hRoomPath(0.68, -1 + step * 0.045), true, `a 68 cm passage at ${step}`);
   assert.equal(hRoomPath(0.4, -1 + step * 0.045), false, `a 40 cm passage at ${step}`);
 }
+// An opening in a thin wall between two parts of a room: never through one 40 cm clear, always through one 60 cm clear.
+const splitRoomPath = (clear: number, start: number) => {
+  const open = clear + 0.12, wall = { west: -1.66, east: -1.54 };
+  const split: RoomSnapshot = {
+    ...room, id: "split", items: [], geometry: { width: 6, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
+    zones: [{ id: "east", type: "seating", itemIds: [], anchor: [2, 0, 1.5], source: "manual" }],
+    planPolygon: [
+      { x: -3, z: -2 }, { x: wall.west, z: -2 }, { x: wall.west, z: start }, { x: wall.east, z: start }, { x: wall.east, z: -2 },
+      { x: 3, z: -2 }, { x: 3, z: 2 }, { x: wall.east, z: 2 }, { x: wall.east, z: start + open }, { x: wall.west, z: start + open },
+      { x: wall.west, z: 2 }, { x: -3, z: 2 },
+    ],
+  };
+  return computeCirculationAnalysis({
+    room: split, items: [], catalogItems, openings: [{ id: "w", roomId: "split", wall: "west", offsetMm: 1500, widthMm: 800, kind: "door" }],
+  }).pathValid;
+};
+for (let step = 0; step < 9; step += 1) {
+  assert.equal(splitRoomPath(0.6, -0.5 + step * 0.05), true, `a 60 cm opening at ${step}`);
+  assert.equal(splitRoomPath(0.4, -0.5 + step * 0.05), false, `a 40 cm opening at ${step}`);
+}
+// An item near a shaped room's wall blocks the walk past it as near as it does in a rectangle: a bed whose foot is 45 cm from
+// an L's notch wall leaves no way from the east door, and one 70 cm from it does. Walk spots stand half a cell off the wall.
+const bedPath = (gap: number) => {
+  const bedDepth = 2.1, bedSouth = -1.94 + 0.01 + bedDepth, notchWall = bedSouth + gap + 0.06;
+  const bedL: RoomSnapshot = {
+    ...room, id: "bedl", items: [], zones: [], geometry: { width: 6, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
+    planPolygon: [{ x: -3, z: -2 }, { x: 3, z: -2 }, { x: 3, z: notchWall }, { x: 0.4, z: notchWall }, { x: 0.4, z: 2 }, { x: -3, z: 2 }],
+  };
+  const blocker = { ...sofa, id: "bed-block", dimsMm: { w: 1600, d: bedDepth * 1000, h: 400 } } as typeof sofa;
+  return computeCirculationAnalysis({
+    room: bedL, catalogItems: { ...catalogItems, "bed-block": blocker },
+    items: [{ instanceId: "bed", productId: "bed-block", variantId: blocker.defaultVariantId, position: [1.2, 0, bedSouth - bedDepth / 2] }],
+    openings: [{ id: "e", roomId: "bedl", wall: "east", offsetMm: -1000, widthMm: 800, kind: "door" }],
+  }).pathValid;
+};
+assert.equal(bedPath(0.45), false, "45 cm from the notch wall");
+assert.equal(bedPath(0.7), true, "70 cm from the notch wall");
+// A painted square stays on the floor: one beside an angled wall is painted smaller.
+const angledMap = computeCirculationAnalysis({
+  room: { ...room, id: "wedge", items: [], geometry: { width: 4, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
+    planPolygon: [{ x: 0, z: -2 }, { x: 2, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 0 }] },
+  items: [], catalogItems, openings: [],
+});
+const wedgeFaces = getRoomFinishedOutline({ ...room, id: "wedge", planShape: "custom_polygon",
+  planPolygon: [{ x: 0, z: -2 }, { x: 2, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 0 }] }, { w: 4, d: 4 }, 0.06);
+assert.ok(wedgeFaces && angledMap.heatmap.some((cell) => cell.size !== undefined));
+for (const cell of angledMap.heatmap) {
+  const half = (cell.size ?? 0.42) / 2 - 1e-9;
+  for (const [dx, dz] of [[-half, -half], [half, -half], [half, half], [-half, half]]) {
+    assert.ok(getBoxGapToFinishedOutline(wedgeFaces, { minX: cell.x + dx, maxX: cell.x + dx, minZ: cell.z + dz, maxZ: cell.z + dz }) >= 0,
+      `a painted square's corner at ${cell.x + dx}, ${cell.z + dz}`);
+  }
+}
 // An item past an angled wall stands past it by its overlap along the wall's way in: 10 cm past a 45° corner wall.
 const angled: RoomSnapshot = { ...room, geometry: { width: 4, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
   planPolygon: [{ x: -2, z: -2 }, { x: 1, z: -2 }, { x: 2, z: -1 }, { x: 2, z: 2 }, { x: -2, z: 2 }] };

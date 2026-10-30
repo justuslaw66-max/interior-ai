@@ -46,24 +46,35 @@ function nearestOnOutline(room: HousePlanRoom2D, point: RoomPlanPolygonPoint): R
   return { center: best.center, inward: best.inward };
 }
 
-// Kept per list of openings and room: placement scores dozens of candidate spots against the same doors.
-const doorPointsByOpenings = new WeakMap<readonly RoomOpening2D[], WeakMap<RoomSnapshot, RoomDoorPoint[]>>();
+// Kept per drawn outline (or room, for a built-in L) and the doors' own values: placement scores dozens of candidate spots
+// against the same doors, and a room snapshot is copied whenever an item in it moves.
+const doorPointsByOutline = new WeakMap<object, Map<string, RoomDoorPoint[]>>();
+
+function doorsKey(planRoom: HousePlanRoom2D, doors: readonly RoomOpening2D[]): string {
+  return JSON.stringify([
+    planRoom.x, planRoom.z, planRoom.w, planRoom.d, planRoom.shape, planRoom.floorLevel, planRoom.wallThickness, planRoom.holes,
+    doors.map(({ id, roomId, wall, offsetMm, widthMm, canonicalWallId, canonicalHost, requestedWorldCenterMm }) =>
+      [id, roomId, wall, offsetMm, widthMm, canonicalWallId, canonicalHost, requestedWorldCenterMm]),
+  ]);
+}
 
 /** The room's doors (its own and those with no room), or null for a rectangle. */
 export function getShapedRoomDoorPoints(room: RoomSnapshot, openings: readonly RoomOpening2D[]): RoomDoorPoint[] | null {
   if (getRoomWallFaceIds(room)[0] === "north") return null;
-  const known = doorPointsByOpenings.get(openings)?.get(room);
-  if (known) return known;
   const planRoom = toPlanRoom(room);
   const doors = openings.filter((opening) => opening.kind === "door" && (!opening.roomId || opening.roomId === room.id));
+  const outlineKey: object = room.planPolygon ?? room;
+  const key = doorsKey(planRoom, doors);
+  const known = doorPointsByOutline.get(outlineKey)?.get(key);
+  if (known) return known;
   const points = resolveDesignPageOpeningHosts(doors, [planRoom]).flatMap(({ resolution }): RoomDoorPoint[] => {
     // The host's way in is told by the direction to the room's centre, which a notch's walls can face away from, so the way
     // in is the outline's own, by its winding, as the 3D view tells a wall's inside.
     const at = resolution.status === "resolved" ? resolution.host.worldCenter : resolution.requestedWorldCenter;
     return at ? [nearestOnOutline(planRoom, { x: at.x - planRoom.x, z: at.z - planRoom.z })] : [];
   });
-  const byRoom = doorPointsByOpenings.get(openings) ?? new WeakMap<RoomSnapshot, RoomDoorPoint[]>();
-  byRoom.set(room, points);
-  doorPointsByOpenings.set(openings, byRoom);
+  const byKey = doorPointsByOutline.get(outlineKey) ?? new Map<string, RoomDoorPoint[]>();
+  if (byKey.size > 16) byKey.clear();
+  doorPointsByOutline.set(outlineKey, byKey.set(key, points));
   return points;
 }

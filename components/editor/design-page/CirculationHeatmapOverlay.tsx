@@ -26,7 +26,7 @@ export function CirculationHeatmapOverlay({
             position={[cell.x, 0, cell.z]}
             rotation={[-Math.PI / 2, 0, 0]}
           >
-            <planeGeometry args={[0.42, 0.42]} />
+            <planeGeometry args={[cell.size ?? 0.42, cell.size ?? 0.42]} />
             <meshBasicMaterial color={color} transparent opacity={opacity} depthWrite={false} />
           </mesh>
         );
