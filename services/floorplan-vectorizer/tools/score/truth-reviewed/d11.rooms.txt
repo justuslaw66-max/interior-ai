@@ -1,0 +1,26 @@
+# fresh/d11.png - 2-room flat. Typed from the plan image only.
+# KITCHEN is separated from LIVING/DINING only by a partial wall (upper half); the lower half is fully open -> one space.
+space: LIVING/DINING + KITCHEN
+space: BEDROOM
+space: BATH/WC
+space: AIR-CON LEDGE
+# printed over three lines as "HOUSE" / "HOLD" / "SHELTER" (no hyphen)
+space: HOUSE HOLD SHELTER
+# The entrance hall (between bath and shelter) is open to LIVING/DINING, so it is part of that space.
+# BEDROOM / LIVING: three staggered sliding panels drawn partly open along the dividing line; counted as ONE sliding door.
+door: BEDROOM | LIVING/DINING
+# dashed folding (triangle) door in the top wall of the bath
+door: BATH/WC | BEDROOM
+# dashed folding (triangle) door in the right wall of the bath
+door: BATH/WC | LIVING/DINING
+door: HOUSE HOLD SHELTER | LIVING/DINING
+# main entrance: unequal double-leaf door (inside) + matching gate (outside) in the same opening, counted once
+door: LIVING/DINING | OUTSIDE
+windows: BEDROOM = 1
+# one window above the dining table + one window in the kitchen's top wall (drying rack outside it)
+windows: LIVING/DINING = 2
+# bath window is in its left wall, facing the AIR-CON LEDGE
+windows: BATH/WC = 1
+# The outlined rectangle above the living/kitchen windows (with drying rack) is an external ledge, unlabelled: not a space.
+# The small hatched box on the kitchen's right wall and the crossed box above the bath are ducts, not spaces.
+entrance: LIVING/DINING

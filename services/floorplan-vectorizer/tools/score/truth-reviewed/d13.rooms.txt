@@ -1,0 +1,33 @@
+# d13 - typed from the plan image only
+# LIVING/DINING and KITCHEN: the wall between them stops short, leaving a wide opening (about 2 door widths)
+# with no door -> read as open plan, one space. The entrance foyer is part of the same space.
+space: LIVING/DINING + KITCHEN
+space: BEDROOM
+# Room between BEDROOM and BATH/WC (bed drawn, window on the left wall) has NO printed label.
+# It is closed off from LIVING/DINING only by a folding door drawn in dashed lines (optional/future door).
+space: (unlabelled room with bed)
+space: BATH/WC
+space: AIR-CON LEDGE
+space: HOUSE HOLD SHELTER
+# Not counted: unlabelled ledge with a drying rack outside the kitchen window (outside the flat, no label),
+# and the small crossed box (riser) beside the entrance.
+
+# main entrance: unequal double-leaf door swinging in, plus a gate of the same shape swinging out, in the same opening -> one line
+door: OUTSIDE | LIVING/DINING
+# three sliding panels drawn staggered
+door: BEDROOM | LIVING/DINING
+# folding door, dashed
+door: (unlabelled room with bed) | LIVING/DINING
+# folding door, dashed
+door: BATH/WC | LIVING/DINING
+door: HOUSE HOLD SHELTER | LIVING/DINING
+
+windows: BEDROOM = 1
+windows: LIVING/DINING = 2
+# the 2 above = one in the living top wall + one in the kitchen top wall (opening onto the drying-rack ledge;
+# drawn as thin parallel lines, read as a window, not a door)
+windows: (unlabelled room with bed) = 1
+# BATH/WC window opens onto the AIR-CON LEDGE
+windows: BATH/WC = 1
+
+entrance: LIVING/DINING

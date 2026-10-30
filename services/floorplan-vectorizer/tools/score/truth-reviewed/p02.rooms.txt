@@ -1,0 +1,32 @@
+# p02 - upper-floor 3-bedroom unit with balcony
+# The drawing is a redraw with NO interior door leaves: all room doorways are plain openings -> gap lines.
+# "TRELLIS ABOVE PES ONLY" is a note on a dashed overhead outline outside the unit, not a space.
+space: LIVING + DINING + KITCHEN
+space: BEDROOM 3
+space: BEDROOM 2
+space: MASTER BEDROOM
+space: BATH 2
+space: MASTER BATH
+space: HS
+space: A/C LEDGE
+space: BALCONY
+door: OUTSIDE | LIVING
+# sliding glass door: two panel pairs in one wall = one sliding door
+door: LIVING | BALCONY
+gap: BEDROOM 3 | LIVING
+gap: BEDROOM 2 | LIVING
+# master bedroom opening onto the corridor is a bit wider than a door, no leaf drawn
+gap: MASTER BEDROOM | LIVING
+gap: BATH 2 | LIVING
+gap: MASTER BATH | MASTER BEDROOM
+# HS: door frame notches in the bottom wall towards the kitchen, no leaf drawn; the inner HS outline is drawn closed
+gap: HS | LIVING
+windows: BEDROOM 3 = 1
+windows: BEDROOM 2 = 1
+# master: one continuous L-shaped corner window (full top wall, wrapping a short way down the right wall)
+windows: MASTER BEDROOM = 1
+windows: BATH 2 = 1
+windows: MASTER BATH = 1
+# thin triple-line band between KITCHEN and A/C LEDGE read as a kitchen window/glazed screen (could be a thin partition)
+windows: LIVING = 1
+entrance: LIVING

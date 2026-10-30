@@ -1,0 +1,80 @@
+# s042 - HDB 5-Room Model A-Maisonette (139 sqm). Typed from the plan image only (caption, teoalida banner, dimensions ignored).
+# two floors
+# LOWER FLOOR PLAN is the left drawing (x 45-262), UPPER FLOOR PLAN the right drawing (x 313-548).
+# LOWER FLOOR: LIVING ROOM and DINING / FAMILY have no wall or door between them (the kitchen's right wall x 148 stops at
+# y 335; the dining side is open to the living side at its full width) -> one space. The staircase (UP 16R, x 215-258,
+# y 250-340) is part of it. The small entrance pocket (x 152-215, y 396-427, "1000" dimension) is the porch in front of
+# the entrance door, not a space of its own.
+# "ACCESS BALCONY" (printed under the dimensions, "ACCESS" x 85-120 / "BALCONY" x 195-235, y 440-470) is the shared
+# corridor = OUTSIDE, not a space. The balcony at the top (x 128-260, y 55-108) is the private BALCONY.
+space: LIVING ROOM + DINING / FAMILY
+space: KITCHEN
+space: WASH AREA
+space: STORE
+space: BALCONY
+# UPPER FLOOR: the three VOID rectangles (over the balcony x 417-545 y 55-108, over the living room x 475-545 y 210-255 and
+# x 475-510 y 285-320, and over the access balcony x 335-545 y 425-450) are not spaces. The central landing between the
+# four bedroom/bath doors (x 433-475, y 208-325) has no label; the upper end of the staircase (x 475-545, y 255-325) opens
+# into it with no wall -> one unlabelled space.
+space: BEDROOM 2
+space: BATH/ W.C. 1
+space: BATH/ W.C. 2
+space: MASTER BEDROOM
+space: BEDROOM 3
+space: (unlabelled upper landing with staircase)
+# Not typed: the black duct boxes with a cross (x 45-62 y 205-250 lower; x 313-340 y 205-245 upper), the toilet and sink
+# fixtures, the kitchen counter.
+
+# LOWER FLOOR doors
+# main entrance: unequal double leaf (door + gate) in the opening x 189-214 between the wall stub x 152-188 (y 395) and the
+# store wall x 215; big arc swings up into the living side (x 189-214, y 366-396), small gate arcs below (y 397-410)
+door: LIVING ROOM | OUTSIDE
+# store door: leaf hinged on the right wall (x 257, y 347-376), arc x 231-257, swings into the living side
+door: STORE | LIVING ROOM
+# sliding glass door in the 4400 wide wall between balcony and living room (y 108, "100 DROP"), glazing drawn as panels
+door: BALCONY | LIVING ROOM
+# kitchen bottom wall: ONE line (the wall's top line, y 333) is drawn across the 0.9 m opening between two jambs
+# (x 103-128, y 333-337, "100 DROP") -> sliding door (rule of 4 Oct 2026)
+door: KITCHEN | LIVING ROOM
+# wash area door in the left wall of the wash area (x 118, y 220-244): leaf drawn open along y 219, arc x 118-142, swings in
+door: WASH AREA | KITCHEN
+
+# UPPER FLOOR doors (all hinged leaves with swing arcs)
+# bedroom 2: leaf hinged at the left of the opening in its bottom wall (x 432-460, y 208), arc inside the bedroom
+door: BEDROOM 2 | (unlabelled upper landing with staircase)
+# bath 2: opening in its right wall (x 433, y 211-235), arc inside the bath
+door: BATH/ W.C. 2 | (unlabelled upper landing with staircase)
+# master bedroom: opening in its right wall (x 433, y 297-322), arc inside the bedroom
+door: MASTER BEDROOM | (unlabelled upper landing with staircase)
+# bedroom 3: opening in its top wall (x 437-460, y 326), arc inside the bedroom
+door: BEDROOM 3 | (unlabelled upper landing with staircase)
+# bath 1 opens into the master bedroom: opening in its bottom wall (x 360-388, y 278), arc inside the bath, "100 DROP"
+door: BATH/ W.C. 1 | MASTER BEDROOM
+
+# LOWER FLOOR windows
+# DINING / FAMILY: one glazed band in the bottom wall (x 62-145, y 421-427, grey band; a short white slot at x 49-62 is its
+# left end) facing the access balcony; counted under LIVING ROOM (first label of the open-plan space)
+windows: LIVING ROOM = 1
+# KITCHEN: top wall (y 207-215) glazed band x 62-115 ("1800") with three outward casement leaves (arcs x 62-80, 80-96, 96-114)
+# -> one window
+windows: KITCHEN = 1
+# WASH AREA: the same glazed band continues x 115-128 (the "400" piece) in the wash area's top wall, cut off from the
+# kitchen window by the wash area's left wall; read as a small window - uncertain
+windows: WASH AREA = 1
+# BALCONY top edge (x 148-240, y 55-62) is two thin lines with a white strip = parapet/railing, not counted.
+# LIVING ROOM left wall (x 128, y 135-205), right wall (x 258) and the STORE walls are plain double thin lines: no windows.
+
+# UPPER FLOOR windows
+# BEDROOM 2: glazed wall onto the VOID over the balcony (y 108, x 418-541): panel strips x 427-452, 455-505, 508-535 with
+# thin joints, same drawing as the lower sliding door; read as one continuous window - uncertain (could be 3)
+windows: BEDROOM 2 = 1
+# BATH/ W.C. 1 and 2: dotted glazing band in the top wall (y 206-212): x 346-386 for bath 1, x 395-410 for bath 2, separated
+# by the partition wall x 388-392
+windows: BATH/ W.C. 1 = 1
+windows: BATH/ W.C. 2 = 1
+# MASTER BEDROOM and BEDROOM 3: one glazed band each in the bottom wall facing the void over the access balcony
+# (x 338-432 and x 437-540, y 417-422), separated by the black column at x 433
+windows: MASTER BEDROOM = 1
+windows: BEDROOM 3 = 1
+
+entrance: LIVING ROOM

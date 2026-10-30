@@ -1,0 +1,59 @@
+# s037 - HDB 5-Room Improved (point block), 1977-1985. Typed from the plan image only (title "5-ROOM IMPROVED (POINT BLOCK)", scale,
+# dimension figures, "100 DROP" notes and the grey banner with teoalida.com ignored).
+# Labels: "BATH/" + "WC 2" -> "BATH/ WC 2"; "BATH/" + "WC 1" -> "BATH/ WC 1" (the "1" is partly under the door arc, x 366, y 210-218).
+# DINING/FAMILY AREA and LIVING ROOM: no wall or door between them (the area is L-shaped around the bedroom block) -> one space.
+# The entrance lobby (x 68-128, y 238-300) is open to it at its full width -> part of it.
+# Not spaces: REFUSE CHUTE (shaft box, x 205-255, y 30-72) and the small hatch beside it (x 225-245, y 72-85).
+space: LIVING ROOM + DINING/FAMILY AREA
+space: KITCHEN
+space: STORE
+space: BATH/ WC 2
+space: BATH/ WC 1
+space: MAIN BEDROOM
+space: BALCONY
+# middle bedroom (x 245-373, y 410-600)
+space: BEDROOM
+# right bedroom (x 385-515, y 412-600)
+space: BEDROOM
+
+# main entrance: double leaf (door + gate) in the west wall, x 45-110, y 253-298
+door: LIVING ROOM | OUTSIDE
+# STORE: hinged leaf in its south wall, gap x 98-127 at y 235, swings south into the lobby
+door: STORE | LIVING ROOM
+# KITCHEN east side: the wall of BATH/ WC 2 ends at y 250 and the black pier starts at y 287; ONE line (x 238) is drawn across
+# that 0.85 m opening between the two jambs, with a "100 DROP" arrow -> sliding door by the rule of 4 Oct 2026.
+# (UNCERTAIN: can also be read as a doorway with a floor-level step.)
+door: KITCHEN | LIVING ROOM
+# BATH/ WC 2: hinged leaf in its west wall onto the kitchen, x 240, y 217-247, swings into the bath
+door: BATH/ WC 2 | KITCHEN
+# BATH/ WC 1: hinged leaf in its east wall onto the main bedroom, x 380, y 192-218, swings into the bath
+door: BATH/ WC 1 | MAIN BEDROOM
+# MAIN BEDROOM: leaf in the gap of its bottom wall, x 390-425 at y 295, swings into the room
+door: MAIN BEDROOM | LIVING ROOM
+# BALCONY: glazed panel in the west wall, x 437-443, y 300-352 (two lines with grey glazing between), "100 DROP" arrow at its lower end.
+# It is the only way onto the balcony, so it is typed as the (sliding glass) balcony door. (UNCERTAIN: could be a window.)
+door: BALCONY | LIVING ROOM
+# middle bedroom: leaf in its top wall, gap x 340-373 at y 410-418, swings into the room
+door: BEDROOM | LIVING ROOM
+# right bedroom: leaf in its top wall, gap x 388-423 at y 410-418, swings into the room
+door: BEDROOM | LIVING ROOM
+
+# LIVING ROOM + DINING/FAMILY AREA: casement band (3 units) in the bottom wall x 82-237, y 590-605; and the glazing in the west
+# wall x 61-69, y 360-540 (3-4 thin lines with a bluish tint, between two black piers) -> 2. The store's west wall (x 63-68,
+# two plain lines) is a wall. (UNCERTAIN: bottom band could be counted as 3 units.)
+windows: LIVING ROOM = 2
+# KITCHEN: casement band (3 leaves) in the east wall, x 243-250, y 75-150, facing the outside recess
+windows: KITCHEN = 1
+# BATH/ WC 2: glazed band (grey) in the top wall, x 282-316, y 153-160
+windows: BATH/ WC 2 = 1
+# BATH/ WC 1: dashed glazing band in the top wall, x 320-378, y 153-160, with a small post at x 348 -> counted as 1 (UNCERTAIN: 2?)
+windows: BATH/ WC 1 = 1
+# MAIN BEDROOM: glazing band (4-5 leaves, one grey mullion at y 237) in the east wall, x 594-607, y 160-290. The top wall
+# x 385-518, y 150-160 is a plain wall (no dashes or glazing, unlike the bath windows beside it) -> not a window (UNCERTAIN).
+windows: MAIN BEDROOM = 1
+# middle bedroom: casement band in the bottom wall x 247-373, y 590-607
+windows: BEDROOM = 1
+# right bedroom: casement band in the bottom wall x 383-513, y 590-607; glazing in the east wall x 513-530, y 420-555
+windows: BEDROOM = 2
+
+entrance: LIVING ROOM

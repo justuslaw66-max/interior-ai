@@ -1,0 +1,48 @@
+# c21 - typed from the plan image only (labels are printed rotated 90 degrees)
+# FOYER, DINING and LIVING have no wall or door between them (only dashed ceiling lines) -> one space.
+# The short passage leading to BEDROOM 2 / BEDROOM 3 / MASTER BEDROOM / COMMON BATH is open to LIVING at its
+# full width (no wall narrowing, no door) -> read as part of the same space, not a separate corridor.
+space: FOYER + DINING + LIVING
+space: KITCHEN
+space: HS
+space: WC
+space: AC LEDGE
+space: JR. MASTER BEDROOM
+space: JR. MASTER BATH
+space: COMMON BATH
+space: BEDROOM 2
+space: BEDROOM 3
+space: MASTER BEDROOM
+space: MASTER BATH
+space: BALCONY
+
+door: OUTSIDE | FOYER
+door: JR. MASTER BEDROOM | FOYER
+door: JR. MASTER BATH | JR. MASTER BEDROOM
+# pocket sliding door
+door: KITCHEN | FOYER
+# HS door drawn closed (thin rectangle in splayed jambs), faces the kitchen
+door: HS | KITCHEN
+# WC door: leaf drawn folded open against the wall, thin line across the opening, no swing arc
+door: WC | KITCHEN
+door: COMMON BATH | FOYER
+# pocket sliding door between COMMON BATH and BEDROOM 2 (panel half out of the wall pocket, right between the
+# two hinged doors). Fairly sure but small: could be misread.
+door: COMMON BATH | BEDROOM 2
+door: BEDROOM 2 | FOYER
+door: BEDROOM 3 | FOYER
+door: MASTER BEDROOM | FOYER
+door: MASTER BATH | MASTER BEDROOM
+# full-width sliding door
+door: BALCONY | FOYER
+
+windows: JR. MASTER BEDROOM = 1
+# KITCHEN, WC and BEDROOM 2 windows all face the AC LEDGE
+windows: KITCHEN = 1
+windows: WC = 1
+windows: BEDROOM 2 = 1
+windows: BEDROOM 3 = 1
+windows: MASTER BEDROOM = 1
+windows: MASTER BATH = 1
+
+entrance: FOYER

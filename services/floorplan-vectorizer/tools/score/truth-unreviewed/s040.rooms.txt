@@ -1,0 +1,67 @@
+# s040 - 5-ROOM MODEL 'A' (STAIR), HDB 1982-85. Typed from the plan image only (title, scale, dimensions, "HDB 5-Room Model A..."
+# footer and teoalida.com banner ignored).
+# The walled block on the right (x 558-688, y 372-740, no label, no stairs drawn) is the common stair core / lobby of the block and
+# the lift box (x 598-640, y 97-155) is a shaft: read as OUTSIDE, not typed as a space (uncertain). The small open notch outside
+# BEDROOM 2's top-left corner (x 95-125, y 192-212, walled on three sides, open at the top, no label) is not an enclosed space.
+# LIVING ROOM / DINING takes in the passage x 195-238, y 420-478 that the BEDROOM 2, STORE and BEDROOM 3 doors open into (open to the
+# living area at its full width, no wall or door between) and the area left of the balcony (x 245-375, y 585-680).
+space: LIVING ROOM / DINING
+space: KITCHEN
+space: MASTER BEDROOM
+space: BEDROOM 2
+space: BEDROOM 3
+space: STORE
+space: BATH/ W.C. 1
+space: BATH/ W.C. 2
+# BALCONY (x 378-548, y 590-690) is walled on both ends (columns/thick wall), its inner side towards the living room is the glazed
+# line y 583-590 and its outer side the glazed band y 677-690; the main entrance opens into it.
+space: BALCONY
+
+# main entrance: door + gate drawn in the same opening of the thick stair-core wall (x 548-558, y 600-640; arcs on both sides, x 528-574),
+# counted once. It leads from the stair core into the BALCONY, so the balcony is the entrance space.
+door: BALCONY | OUTSIDE
+# BALCONY / LIVING ROOM / DINING: the whole inner side (x 378-550, y 583-590, "100 DROP") is a long glazed line with a second, offset
+# line (x 420-505, y 580-582) = staggered sliding panels -> sliding glass door, typed as one door (uncertain: could be fixed glazing
+# plus a sliding leaf, or windows only).
+door: BALCONY | LIVING ROOM / DINING
+# KITCHEN bottom wall: opening x 505-547 (about 1.0 m, between the column x 470-505 and the stair-core wall x 548-558); ONE thin line
+# is drawn across it at y 370 with a "100 DROP" arrow -> door-sized opening, one line, jamb to jamb -> sliding door by the rule of
+# 4 Oct 2026. UNCERTAIN: the arrow says this may be only a floor-drop edge (then gap or open plan).
+door: KITCHEN | LIVING ROOM / DINING
+# hinged leaf in the bottom wall of MASTER BEDROOM (opening x 402-437, y 357, arc up into the bedroom)
+door: MASTER BEDROOM | LIVING ROOM / DINING
+# BEDROOM 2: leaf at the right end of its bottom wall (arc x 195-228, y 388-420), swings into the bedroom
+door: BEDROOM 2 | LIVING ROOM / DINING
+# STORE: leaf in its right wall (x 195, y 423-453; arc x 195-222), swings out into the passage that is part of LIVING ROOM / DINING
+door: STORE | LIVING ROOM / DINING
+# BEDROOM 3: leaf at the right end of its top wall (arc x 195-228, y 480-512), swings into the bedroom
+door: BEDROOM 3 | LIVING ROOM / DINING
+# BATH/ W.C. 1: leaf in its bottom wall (arc x 368-398, y 182-215, "100 DROP"), opens into MASTER BEDROOM
+door: BATH/ W.C. 1 | MASTER BEDROOM
+# BATH/ W.C. 2: leaf in its right wall (x 503-508, y 155-188; arc x 473-503), opens into KITCHEN
+door: BATH/ W.C. 2 | KITCHEN
+
+# BEDROOM 2: glazed band x 132-232, y 197-224 in the top wall holding two double-casement units with a mullion (double line) at x 183;
+# no solid wall piece between them -> ONE window (uncertain: could be two).
+windows: BEDROOM 2 = 1
+# MASTER BEDROOM: glazed band x 250-360, y 197-224 in the top wall, two double-casement units with a mullion at x 308 -> ONE window
+# (uncertain: could be two). The black column x 232-240 / blank strip x 240-250 separates it from BEDROOM 2's window.
+windows: MASTER BEDROOM = 1
+# KITCHEN: glazed band x 508-596, y 98-112 in the top wall (gallery side): casement units x 508-556 and x 556-580 plus a narrow light
+# x 583-596, one continuous frame -> 1 (uncertain)
+windows: KITCHEN = 1
+# BATH/ W.C. 1: hatched window in its left (west) wall, x 362-367, y 105-155. BATH/ W.C. 2: small window (white box with dash)
+# in its top wall, x 441-465, y 98-105.
+windows: BATH/ W.C. 1 = 1
+windows: BATH/ W.C. 2 = 1
+# BEDROOM 3: grey glazing band x 105-232, y 678-690 in the bottom wall
+windows: BEDROOM 3 = 1
+# LIVING ROOM / DINING: glazing band x 240-340, y 677-690 in the bottom wall (same line style as BEDROOM 3's band, less shaded), then a
+# solid piece x 340-378 (columns joined by a black wall stub) -> 1 (uncertain: could be read as plain wall)
+windows: LIVING ROOM / DINING = 1
+# BALCONY outer side: three-line glazing band with dashed sash ends, x 378-548, y 677-690, one continuous run between the columns
+# -> 1 (uncertain: might be a railing-type edge)
+windows: BALCONY = 1
+# Long thin double lines of the BEDROOM 2 / STORE / BEDROOM 3 left wall (x 100-107) and the kitchen / master right walls have no
+# sash lines: walls.
+entrance: BALCONY

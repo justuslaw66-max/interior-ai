@@ -1,0 +1,43 @@
+# s009 - 2-room flat with household shelter (HDB flexi layout; no type caption in the picture). Typed from the plan image only
+# (dimension figures ignored). Labels: a printed line break is one blank (LIVING/ + DINING, BATH/ + WC, AIR- + CON + LEDGE).
+# LIVING/ DINING: the foyer in front of the bath, the shelter door and the entrance (x 380-510, y 500-620) is open to it at its
+# full width -> part of LIVING/ DINING.
+# consistency pass (decided readings): the kitchen west side is only dashed (not a wall) -> open plan
+space: LIVING/ DINING + KITCHEN
+space: BEDROOM
+# KITCHEN: bounded by walls on three sides (top window wall, east wall, shelter wall) and, on its west side, by a short real wall
+# piece (x 510-518, y 240-297) followed by a DASHED line (x 510, y 300-485) on the wall axis. Read as a separate space (as the
+# dashed kitchen outline of s001) joined to LIVING/ DINING by a doorway. UNCERTAIN: a dashed line is not a wall, so it could also be
+# read as open plan "LIVING/ DINING + KITCHEN".
+space: BATH/ WC
+space: AIR- CON LEDGE
+space: HOUSEHOLD SHELTER
+# Drying-rack recess above the kitchen window (x 518-668, y 190-235): no label, enclosed by a thin line on top (y 190) and right
+# (x 662-668), the black wall on the left and the kitchen window wall below. Typed as an unlabelled space - uncertain.
+# consistency pass (decided readings): the drying-rack recess is not a space
+
+# Main entrance: unequal double leaf (small arc x 400-418, large arc x 418-485, inward) + gate (same arcs outward) in the opening
+# x 400-487, y 620-645 -> counted once.
+door: LIVING/ DINING | OUTSIDE
+# Shelter door: leaf drawn open (y 511) hinged at (509, 512), arc to (509, 560); it opens into LIVING/ DINING.
+door: HOUSEHOLD SHELTER | LIVING/ DINING
+# BEDROOM east side (x 336-352, y 140-398) is a sliding partition: a wall stub with a thin panel (x 347-352, y 175-228) at the top, a
+# stub with a thin panel (x 347-352, y 335-398) at the bottom, and the opening between them (y 228-335) -> one sliding door.
+door: BEDROOM | LIVING/ DINING
+# folding (V) door, apex left, in the opening x 382, y 515-580 in the east side of the bath (V at x 349-380, y 515-545)
+door: BATH/ WC | LIVING/ DINING
+# KITCHEN west side: dashed line only, no leaf -> doorway (see the note at KITCHEN)
+
+# BEDROOM: top-wall window (x 201-323, three lines) + long window in the west wall (x 150-168, y 213-398, thin inner rectangle)
+windows: BEDROOM = 2
+# LIVING/ DINING: top-wall window (x 363-487) + TWO windows in the west wall: x 150-168, y 402-445 (double-lined panes) and
+# x 150-168, y 445-500 (single sash rectangle), divided by a thin cross line at y 445. UNCERTAIN: could be read as one window (1+1).
+windows: LIVING/ DINING = 4
+# KITCHEN: window band in its top wall (x 545-645, y 232-238, end boxes x 528-545 and 645-658) faces the drying-rack recess.
+# The east wall (x 662-672, y 340-485) is two thin plain lines between black wall pieces: read as wall, not a window (uncertain).
+# BATH/ WC: window in the wall shared with AIR- CON LEDGE (x 213-221, y 518-580, double rectangle with grey fill)
+windows: BATH/ WC = 1
+# AIR- CON LEDGE: the thin grey-barred rectangle on its west edge (x 153-158, y 520-625) is read as the ledge's louvre screen /
+# railing, not a window (uncertain).
+
+entrance: LIVING/ DINING

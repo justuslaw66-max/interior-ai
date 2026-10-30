@@ -1,0 +1,62 @@
+# s066 - 3-bedroom + study flat with HS (BuyCondo-watermarked plan). Typed from the plan image only
+# (watermark "BUYCONDO.sg", the "BP NO." / dated lines, scale bar and the site-plan thumbnail at the bottom are ignored).
+# LIVING, DINING and the entrance foyer have no wall between them -> one space. The long passage in front of BEDROOM 2 / BEDROOM 3
+# (x 400-640, y 365-413) is open to the living area at its full width at its east end (x 640-650) -> part of LIVING + DINING.
+# The lobby below MASTER BEDROOM's wardrobe (x 232-398, y 362-413) has no wall to MASTER BEDROOM -> part of MASTER BEDROOM.
+space: LIVING + DINING
+space: KITCHEN
+space: STUDY
+space: HS
+space: BALCONY
+space: BEDROOM 2
+space: BEDROOM 3
+space: MASTER BEDROOM
+space: MASTER BATH
+space: BATH 2
+# two RC LEDGEs: one long ledge above BEDROOM 2 + BEDROOM 3 (x 363-633, y 168-197), one above MASTER BEDROOM (x 230-358, y 207-240)
+space: RC LEDGE
+space: RC LEDGE
+# two AC LEDGEs: one beside the study (x 800-922, y 213-265), one below BATH 2 / MASTER BATH / KITCHEN (x 305-500, y 515-570)
+space: AC LEDGE
+space: AC LEDGE
+# Not typed: the crossed (X) boxes = ducts/risers (x 225-262 y 478-510; x 450-500 y 415-458; x 500-545 y 415-440; x 800-830 y 213-265);
+# the shower cubicles inside MASTER BATH (x 225-272, y 420-478) and BATH 2 (x 450-498, y 460-508) behind thin glass-screen lines;
+# furniture / wardrobes / the hatched dashed wall fittings; W, F, DB fixture letters.
+
+# main entrance: unequal double leaf (small leaf x 718-723, large leaf x 783-788, both arcing inward) in the opening x 718-788, y ~575
+door: LIVING | OUTSIDE
+# sliding glass door, three-line glazing x 644-774, y 203-212, between living and the balcony
+door: BALCONY | LIVING
+# HS door in the HS west wall (opening y 416-451); leaf hinged at (790,453) drawn open into the living/dining, wide arc
+door: HS | LIVING
+# kitchen right wall: pocket sliding panel (slot in the wall x 632-638, y 445-482, panel drawn out to y 503), opening y 485-527
+door: KITCHEN | LIVING
+# BEDROOM 2: leaf hinged at the party wall (493,362), drawn open northwards, arc to jamb at x 452
+door: BEDROOM 2 | LIVING
+# BEDROOM 3: mirror image, hinge (507,362), jamb at x 548
+door: BEDROOM 3 | LIVING
+# MASTER BEDROOM: leaf hinge (398,412), leaf drawn open along y 408-412 flat to the west, arc up to the stub at (398,364);
+# the door closes a virtual line x 398 between the wardrobe stub and the BATH 2 wall piece (no wall drawn there) - uncertain
+door: MASTER BEDROOM | LIVING
+# MASTER BATH: opening x 308-350 in the wall y 418-420, leaf hinged (350,420) drawn open into the bath (vertical x 349-353)
+door: MASTER BATH | MASTER BEDROOM
+# BATH 2: opening x 403-445 in the wall y 420, leaf hinged (445,420) drawn open into the bath (vertical x 443-447)
+door: BATH 2 | LIVING
+# STUDY: opening x 795, y 345-392 (about 0.95 m) between the end of the living/study wall and the HS wall, nothing drawn across
+gap: STUDY | LIVING
+
+# BEDROOM 2, BEDROOM 3, MASTER BEDROOM: glazing band (thick line + thin line) along the whole top wall, onto the RC LEDGEs
+windows: BEDROOM 2 = 1
+windows: BEDROOM 3 = 1
+windows: MASTER BEDROOM = 1
+# MASTER BATH: white double slot in the left outer wall x 217-225, y 420-468 (by the shower)
+windows: MASTER BATH = 1
+# BATH 2: window x 412-448 in its bottom wall onto the lower AC LEDGE
+windows: BATH 2 = 1
+# KITCHEN: window x 497-505, y 522-545 in its left wall onto the lower AC LEDGE
+windows: KITCHEN = 1
+# STUDY: window x 832-867, y 266-272 in its top wall onto the upper AC LEDGE
+windows: STUDY = 1
+# BALCONY: triple-line railing only, not windows. LIVING + DINING: the only glazing is the balcony sliding door (counted as door).
+
+entrance: LIVING

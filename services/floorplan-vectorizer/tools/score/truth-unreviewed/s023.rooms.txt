@@ -1,0 +1,46 @@
+# s023 - 2-ROOM STANDARD (CORRIDOR), HDB 1960-1970. Typed from the plan image only (title, "SCALE 1:100", dimension figures, "DROP" notes,
+# the grey HDB caption bar and the teoalida.com banner ignored). Source image 480x840; coordinates are source pixels.
+# Labels: "BATH/" + "W.C." printed on two lines -> "BATH/ W.C.".
+space: UTILITY
+space: BALCONY
+space: BATH/ W.C.
+space: KITCHEN
+space: LIVING
+space: BEDROOM
+# ACCESS BALCONY (below the flat, y 665) is the shared access corridor, no walls drawn -> OUTSIDE (as in room4), not a space.
+# Not typed: the crossed box at x 95-125, y 195-240 (riser / duct). The large blank area right of the kitchen and bedroom (x 240-370,
+# y 200-430) is outside the flat (only dimension lines).
+# The BALCONY (x 128-228, y 200-292) is enclosed: windows on top and right, the kitchen / bath on its bottom side; it is reached only
+# through the kitchen door (and the utility / bath doors lead off it).
+
+# main entrance: door in the bottom wall of LIVING (opening x 190-226, y 597-628, leaf swung inward, "DROP" note), no gate drawn
+door: LIVING | OUTSIDE
+# hinged leaf in the wall between LIVING and BEDROOM (opening x 232-236, y 453-488, swings into the bedroom)
+door: BEDROOM | LIVING
+# hinged door in the top wall of the KITCHEN: opening x 195-228 at y 293, hinge (227,293), arc up to (227,257), leaf folds against the
+# kitchen's right wall inside the balcony
+door: KITCHEN | BALCONY
+# KITCHEN bottom side: ONE line (y 388) drawn across the opening between two jambs (wall end x 193 and right wall x 229), 35 px = about
+# 0.8 m wide -> sliding door (rule of 4 Oct 2026). UNCERTAIN: a "DROP" arrow sits at this line, so it may be only a floor-drop edge
+# (then it would be a gap)
+door: KITCHEN | LIVING
+# narrow folding (triangle) door in the top wall of the bath (V x 112-135, apex (120,298)), opens onto the balcony
+door: BATH/ W.C. | BALCONY
+# hinged door in the bottom wall of UTILITY (opening x 182-215, y 165-200, arc x 182-214, swings into the utility)
+door: UTILITY | BALCONY
+
+# UTILITY: curved bay window in the top wall (x 182-262, y 60-86, four leaves, one frame) = 1
+windows: UTILITY = 1
+# BALCONY: casement pair in the top wall (x 126-171, y 175-200) = 1; casement pair in the right wall (glazing x 233-237, y 202-233,
+# sashes drawn outward x 238-258) = 1
+windows: BALCONY = 2
+# KITCHEN: glazed band in the top wall, x 167-192, y 291-298, facing the balcony
+windows: KITCHEN = 1
+# LIVING: one continuous window run in the bottom wall (x 108-190, y 625-631, post at x 132), beside the entrance door
+windows: LIVING = 1
+# BEDROOM: one continuous window run in the bottom wall between the columns (x 235-360, y 625-631, posts at x 270 and x 325)
+windows: BEDROOM = 1
+# BATH/ W.C.: no window read. Its top wall (x 108-157, y 290-297) is a plain thin wall except the folding door (a round post at x 142
+# between the door and the wall piece) - UNCERTAIN. The left walls of LIVING / BEDROOM / BATH are hollow double-line walls without sash
+# posts or glazing lines -> walls.
+entrance: LIVING

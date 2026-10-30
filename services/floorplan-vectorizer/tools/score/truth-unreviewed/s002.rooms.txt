@@ -1,0 +1,35 @@
+# s002 - 2-room flat (HDB). Typed from the plan image only (no caption).
+# Labels: a printed line break is one blank ("AIR-CON" + "LEDGE", "HOUSE-" "HOLD" "SHELTER").
+# The entrance foyer between the kitchen and the shelter (x 371-460, y 442-540) is open to LIVING/DINING at its full
+# width -> part of it.
+# KITCHEN: its side to the foyer is ONE thin line (x 371, y 442-577, about 2.4 m, the whole side, no jambs) and the kitchen
+# has no other door or opening. Not a door-sized opening and not this drawing's sliding symbol (staggered panels, see the
+# bedroom) -> read as the edge of an open kitchen: KITCHEN is open to LIVING/DINING, one space. Uncertain: the other
+# reading is a sliding door KITCHEN | LIVING/DINING.
+space: LIVING/DINING + KITCHEN
+space: BEDROOM
+space: BATH/WC
+space: AIR-CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Not typed: the drying-rack box outside the kitchen window (x 180-215, y 435-578) and the two boxes outside the top
+# windows (x 240-350 and x 395-525, y 175-190) - unlabelled ledges. The rectangle x 530-545, y 372-418 is a cupboard.
+
+# main entrance: door (unequal double leaf) + gate in the same opening x 386-460, y 543-562
+door: LIVING/DINING | OUTSIDE
+# shelter door in its left wall, swings into the foyer
+door: HOUSE- HOLD SHELTER | LIVING/DINING
+# BEDROOM / LIVING/DINING: no wall below a short stub (x 381-386, y 200-237); three staggered sliding panels are drawn
+# stacked open beside the stub (x 371-377, y 200-258) -> a sliding partition, typed as one door
+door: BEDROOM | LIVING/DINING
+# folding (triangle) door in the right wall of the bath
+door: BATH/WC | LIVING/DINING
+
+windows: BEDROOM = 1
+# sash window in the top wall + the kitchen sash window in the left wall (x 215-225, y 450-555, faces the drying rack)
+windows: LIVING/DINING = 2
+# bath window (three lines) in its left wall x 272-280, y 340-380, facing the AIR-CON LEDGE
+windows: BATH/WC = 1
+# LIVING/DINING right wall below the black pier (x 547-553, y 290-425) and the kitchen bottom wall x 305-380 are two thin
+# lines without a glazing line -> read as walls, not windows (uncertain).
+
+entrance: LIVING/DINING

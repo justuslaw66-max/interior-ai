@@ -1,0 +1,71 @@
+# s054 - HDB 5-Room Improved (corridor-end), typed from the plan image only (title strip, "For more floor plans / teoalida.com"
+# banner and dimension figures ignored). There is no ACCESS BALCONY label: the main entrance is in the left end wall and the
+# corridor outside it is OUTSIDE.
+# Labels: a printed line break is one blank ("BATH/" + "W.C. 2"; "LIVING / DINING" is printed on one line with spaces round the
+# slash). The label of the bath beside the main bedroom is printed "BATH// W.C. 1" - the second slash is a stray line; typed
+# "BATH/ W.C. 1" (the scorer ignores punctuation anyway).
+#
+# LIVING / DINING: the lobby in front of the BEDROOM 3, STORE and BEDROOM 2 doors (x 423-476, y 350-428, 1200 wide) is open to
+# the living area at its full west side -> part of LIVING / DINING.
+space: LIVING / DINING
+space: KITCHEN
+space: SERVICE BALCONY
+space: BATH/ W.C. 2
+space: MAIN BEDROOM
+space: BATH/ W.C. 1
+space: BEDROOM 3
+space: STORE
+space: BEDROOM 2
+space: STUDY
+# Not typed: the two stacked boxes outside the left wall beside the entrance (x 103-122, y 455-540: corridor-side boxes, no label,
+# outside the flat's wall - uncertain) and the WC / basin fixtures.
+
+# main entrance: door (inward semicircle with "100 DROP") + gate (outward arcs) in the opening of the left wall x 121, y 540-592
+door: LIVING / DINING | OUTSIDE
+# KITCHEN south side: x 208-248 between the wall end (x 208) and the wall stub (x 248-275) ONE thin line across a 0.9 m opening,
+# jamb to jamb -> sliding door (rule of 4 Oct 2026); could also be read as a doorway (uncertain)
+door: KITCHEN | LIVING / DINING
+# BATH/ W.C. 2: folding (triangle) door in its bottom wall x 155-190, y 192-208, opens onto KITCHEN
+door: BATH/ W.C. 2 | KITCHEN
+# SERVICE BALCONY: hinged leaf in its bottom wall (opening x 197-235, y 207), arc inside the balcony
+door: SERVICE BALCONY | KITCHEN
+# MAIN BEDROOM: hinged leaf in its bottom wall (arc x 387-423, y 315-348, swings into the bedroom)
+door: MAIN BEDROOM | LIVING / DINING
+# BATH/ W.C. 1: folding (triangle) door in the left wall of the bath (x 432-445, y 128-158), opens onto MAIN BEDROOM
+door: BATH/ W.C. 1 | MAIN BEDROOM
+# BEDROOM 3: leaf hinged at the stub x 437-440 (y 350), arc swings north into the bedroom (x 440-476, y 316-350)
+door: BEDROOM 3 | LIVING / DINING
+# STORE: leaf in the left side of the store (x 476, y 378-413), drawn open along y 413 and swinging out into the lobby
+door: STORE | LIVING / DINING
+# BEDROOM 2: leaf hinged at the stub x 438-440 (y 428), arc swings south into the bedroom (x 440-476, y 428-462)
+door: BEDROOM 2 | LIVING / DINING
+# STUDY: opening about 1.4 m wide (x 318-382) between two wall stubs in its top wall (y 500), no leaf drawn
+gap: STUDY | LIVING / DINING
+
+# BATH/ W.C. 2: white band between two lines in the top wall x 130-192, y 83-92 (same type as the bath 1 band) -> 1 window
+windows: BATH/ W.C. 2 = 1
+# SERVICE BALCONY: top edge x 195-275, y 83-93 is a plain band between two lines with no sash -> read as a parapet, no window
+# (uncertain). Its right wall (x 275-285, y 103-180) is a thin duct wall with white cells.
+# KITCHEN: small glazed strip x 234-274, y 203-208 in the wall shared with SERVICE BALCONY (right of the balcony door)
+windows: KITCHEN = 1
+# MAIN BEDROOM: one window in the top wall x 302-422, y 83-103 (dashed sash marks), between two columns
+windows: MAIN BEDROOM = 1
+# BATH/ W.C. 1: top wall band x 435-500, y 85-93 + a window opening in the right wall (gap in the dark wall, white box
+# x 507-513, y 118-166) facing the open area outside -> 2 (the right-wall one is uncertain)
+windows: BATH/ W.C. 1 = 2
+# The right (end) wall x 568-585 is glazed in separate units between dark columns: unit A y 207-262 (BEDROOM 3), column
+# y 262-298, then ONE long unit B y 298-497 (cap, paired panes, long slider, paired panes, cap) that runs past the lower end of
+# BEDROOM 3, the whole STORE and the upper end of BEDROOM 2 with no wall piece in it (the partitions at y 372-378 and y 425-430
+# stop at its inner jamb), column y 500-538, unit C y 540-595 (BEDROOM 2). Unit B is counted once for each space whose outer
+# wall it fills (uncertain).
+# BEDROOM 3: casement pair in its top wall x 515-568, y 168-197 (two leaves, one frame = 1) + unit A + part of unit B = 3
+windows: BEDROOM 3 = 3
+windows: STORE = 1
+# BEDROOM 2: part of unit B + unit C + bottom wall window x 452-558, y 598-618 = 3
+windows: BEDROOM 2 = 3
+# STUDY: bottom wall window x 305-423, y 598-618 (dashed sash marks), between columns
+windows: STUDY = 1
+# LIVING / DINING: bottom wall window x 158-277, y 598-618. The left (entrance) wall is solid dark wall, no window.
+windows: LIVING / DINING = 1
+
+entrance: LIVING / DINING

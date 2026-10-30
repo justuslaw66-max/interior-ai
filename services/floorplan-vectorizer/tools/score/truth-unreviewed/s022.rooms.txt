@@ -1,0 +1,41 @@
+# s022 - 2 ROOM (POINT BLOCK) TYPE 4, scale 1:100. Typed from the plan image only (title / "TYPE : 4" / "SCALE 1:100" caption, dimension figures
+# and "RAMP UP 50" note ignored). Source image 800x754; coordinates below are source pixels.
+# Labels: a printed line break is one blank ("LIVING/" + "DINING", "BATH/" + "WC", "AIR-" + "CON" + "LEDGE").
+# The bedroom door is drawn in the left wall of BEDROOM (x 372-378, y 218-268); there is no passage between LIVING/ DINING and the bath.
+space: LIVING/ DINING
+space: BEDROOM
+space: BATH/ WC
+space: KITCHEN
+space: AIR- CON LEDGE
+# ACCESS BALCONY (printed below the flat, y 560) is the shared access corridor, no walls drawn -> OUTSIDE (as in room4), not a space.
+# Not typed: the unlabelled drying-rack recess in the kitchen's bottom-right corner (x 552-625, y 466-500: box with two pole bays, open to the
+# access side); the outlined strip above the kitchen window (x 507-560, y 327-352) is slab-edge lines, not an enclosed space.
+
+# main entrance: opening x 298-362, y 485-500 in the bottom wall of LIVING/ DINING; unequal double leaf (arcs inward, y 440-480) + gate
+# (arcs outward, y 500-545) in the same opening, counted once
+door: LIVING/ DINING | OUTSIDE
+# hinged leaf in the left wall of BEDROOM (hinge at about (372,218), arc to (378,268)), swings into the bedroom
+door: BEDROOM | LIVING/ DINING
+# folding (triangle) door in the top wall of the bath (strip y 282-293, V x 377-414, apex (395,298)); above the strip is the bedroom floor
+door: BATH/ WC | BEDROOM
+# folding (triangle) door in the bottom wall of the bath (strip y 371-379, V x 377-414, apex (395,360)); below the strip is the kitchen
+door: BATH/ WC | KITCHEN
+# KITCHEN door drawn CLOSED in its frame in the left wall: thin leaf outline x 371-378, y 437-487 (rounded hinge end at y 437, same 0.9 m
+# width as the bedroom door), no swing arc - UNCERTAIN (could be a wall jog); read as a door because the kitchen has no other way in
+door: KITCHEN | LIVING/ DINING
+
+# LIVING/ DINING top wall: two casement units (pair x 193-250, then single+pair x 262-350) divided by a hollow post box at x 250-262,
+# y 203-212 (the thin outer sill line is continuous) -> read as 2 windows - UNCERTAIN (1 if the post is a mullion)
+windows: LIVING/ DINING = 2
+# BEDROOM: top wall casement (single + pair, one frame x 412-525, y 98-130) = 1; right wall glazing band x 548-560, y 178-232 between
+# two black wall pieces = 1; bottom wall hatched sash box x 482-520, y 276-285 with swing arc, looking onto the AIR- CON LEDGE = 1
+windows: BEDROOM = 3
+# BATH/ WC: narrow grey glazing band in its right wall (x 473-479, y 292-318) facing the AIR- CON LEDGE
+windows: BATH/ WC = 1
+# KITCHEN: louvred casement window in the top wall (x 507-602, y 352-382, three leaves, one frame) = 1; grey glazing band in the right wall
+# (x 610-618, y 423-472, below the black wall piece) = 1. The bottom-right notch (x 552-625, y 466-500) is read as a drying-rack recess:
+# no window counted there.
+windows: KITCHEN = 2
+# AIR- CON LEDGE: L-shaped (wide part x 482-555, y 283-318 plus a narrow strip x 482-500, y 318-372 along the bath's right wall), read as
+# one ledge space.
+entrance: LIVING/ DINING

@@ -1,0 +1,62 @@
+# s076 - HDB Executive Apartment (point block, 3-sided unit). Typed from the plan image only (title "EXECUTIVE APARTMENT (POINT
+# BLOCK.)", "SCALE 1:100", the grey banner text and the teoalida.com web banner are captions, not spaces; dimension strings ignored).
+# Labels: a printed line break is one blank ("BATH/" + "W.C. 1" -> "BATH/ W.C. 1", "LIVING/" + "DINING").
+# The passage in front of the BEDROOM 3 / BEDROOM 2 / BATH/ W.C. 1 / MAIN BEDROOM doorways (x 190-272, y 181-215) is open to
+# LIVING/ DINING at its full width -> part of LIVING/ DINING. So is the entrance lobby in front of the STORE (x 495-541,
+# y 217-262): its west side is open to the living room, the main entrance is in its south end.
+# Not typed: the unlabelled box/ledge outside the east wall of the living room (x 497-509, y 262-368, three compartments) - it is
+# read as the outer sill of the east glazing, see the windows note.
+space: MAIN BEDROOM
+space: BATH/ W.C. 1
+space: BEDROOM 2
+space: KITCHEN
+space: BATH/ W.C. 2
+space: STORE
+space: BEDROOM 3
+space: STUDY/ BEDROOM
+space: LIVING/ DINING
+
+# main entrance at the south end of the lobby (x 511-541, y 265): door leaf swinging into the lobby (arc north) and a gate pair
+# swinging outward (arcs south, "100 DROP") in the same opening -> one line
+door: LIVING/ DINING | OUTSIDE
+# STORE door: dashed leaf hinged at about (511,217), closes the 25-px opening x 511-536 in the store's bottom wall, swings south
+door: STORE | LIVING/ DINING
+# KITCHEN south wall: the double-line wall stops at x 417 and resumes at x 444; between those two jambs (about 0.9 m) only ONE thin
+# line is drawn (x 417-444, y 216) -> sliding door (rule of 4 Oct 2026)
+door: KITCHEN | LIVING/ DINING
+# BATH/ W.C. 2 door: in the bath's west wall (opening x 446, y 78-101), leaf drawn open along the top wall (x 446-468, y 77) with its
+# arc inside the bath; opens into the kitchen
+door: BATH/ W.C. 2 | KITCHEN
+# BATH/ W.C. 1 door: arc inside the bath, hinged at (227,152), opening x 226 y 127-152 in the bath's west wall, into MAIN BEDROOM
+door: BATH/ W.C. 1 | MAIN BEDROOM
+# MAIN BEDROOM door: dashed leaf/arc hinged at about (225,178), closes the opening x 192-224 in the bedroom's south wall
+door: MAIN BEDROOM | LIVING/ DINING
+# BEDROOM 3 door: dashed arc hinged at about (190,181), closes the opening y 181-205 in the east wall (x 190), swings into the room
+door: BEDROOM 3 | LIVING/ DINING
+# BEDROOM 2 door: dashed leaf/arc hinged at about (275,205), closes the opening y 181-205 in the west wall (x 275), swings into the room
+door: BEDROOM 2 | LIVING/ DINING
+# STUDY/ BEDROOM east wall: the double-line wall stops at y 297 and resumes at y 342; between those jambs (about 1.4 m) only ONE
+# thin line is drawn (x 189, y 298-341) -> sliding door (rule of 4 Oct 2026). Uncertain: could also be read as a glazed wall piece.
+door: STUDY/ BEDROOM | LIVING/ DINING
+
+# MAIN BEDROOM: glazed band in the top wall (x 83-208, left band + a white sash box x 130-175 + right band, no solid piece between ->
+# 1; uncertain) and the west-wall glazing band between the black corner pieces (x 63-70, y 88-162) -> 2
+windows: MAIN BEDROOM = 2
+# BATH/ W.C. 1: small louvre-type window in the top wall (x 232-275, y 72-76)
+windows: BATH/ W.C. 1 = 1
+# BEDROOM 2: glazed band with outer box in the top wall (x 287-362)
+windows: BEDROOM 2 = 1
+# KITCHEN: triple casement drawn open (three arcs, x 378-433, y 57-71) in the top wall, one frame -> 1
+windows: KITCHEN = 1
+# BATH/ W.C. 2: small louvre-type window in the top wall (x 447-485, y 72-76)
+windows: BATH/ W.C. 2 = 1
+# BEDROOM 3: west-wall glazing band between the black junction pieces (x 63-70, y 182-266)
+windows: BEDROOM 3 = 1
+# STUDY/ BEDROOM: west-wall band (x 63-70, y 285-345) + bottom-wall band (x 83-172, y 358-366)
+windows: STUDY/ BEDROOM = 2
+# LIVING/ DINING bottom wall: three window bands separated by black wall pieces - x 203-278, x 295-362, x 395-452 (y 355-371)
+# + the east wall: glazing x 493-497 with an outer sill box x 497-509 split by two cross-bars (y 305, y 331), read as ONE window
+# with three panes like the bottom ones (their outer boxes have mullion dots too). The east one is uncertain (could be 0 or 3).
+windows: LIVING/ DINING = 4
+# STORE: walls are plain double lines, no window.
+entrance: LIVING/ DINING

@@ -1,0 +1,35 @@
+# s028 - HDB 3-ROOM IMPROVED (CORRIDOR), 60 sqm. Typed from the plan image only ("3-ROOM IMPROVED (CORRIDOR)", scale,
+# dimensions and the teoalida.com banner are not typed). ACCESS BALCONY below the flat is the corridor = OUTSIDE.
+space: LIVING ROOM
+space: KITCHEN
+space: WC
+space: BATH
+space: BEDROOM 1
+space: BEDROOM 2
+# Not typed: the refuse chute box with a cross (x 90-132, y 85-140, shaft), the sink/drainer at x 113-140, y 160-205
+# (fixture), the open exterior pocket east of WC/BATH (x 315-370, y 85-195), the access-balcony railing at y 630-640.
+
+# main entrance: double leaf drawn both sides of the wall (door arcs inward, gate arcs outward) in the opening x 203-237, y 548
+door: LIVING ROOM | OUTSIDE
+door: BEDROOM 1 | LIVING ROOM
+door: BEDROOM 2 | LIVING ROOM
+door: WC | KITCHEN
+door: BATH | KITCHEN
+# KITCHEN / LIVING ROOM: opening x 168-213 at y 313 (about 1 m) between two wall ends, ONE line drawn across it (the line is
+# also the "100 DROP" level line) -> sliding door by the rule of 4 Oct 2026 (uncertain: it could be read as a gap).
+door: KITCHEN | LIVING ROOM
+
+# KITCHEN: four casement leaves in the top wall x 132-235, y 70-93: two pairs (hinged at x 132/184 and 184/235, meeting at
+# x 158 and x 210) around a shared hinge post at x 184 -> 2 windows (uncertain: could be one 4-leaf window).
+windows: KITCHEN = 2
+# WC and BATH: a narrow glazed band in each right wall facing the open pocket: WC x 311-314, y 92-115; BATH x 311-314, y 140-160.
+windows: WC = 1
+windows: BATH = 1
+# BEDROOM 1: one casement pair (hinged x 316 and x 367, meeting at x 340) in its top wall, y 175-197, facing the pocket.
+windows: BEDROOM 1 = 1
+# LIVING ROOM and BEDROOM 2: one sliding two-pane window each in the bottom wall (posts x 148/173/198 and x 281/306/331, y 543-550).
+windows: LIVING ROOM = 1
+windows: BEDROOM 2 = 1
+# The right wall (x 370-380, y 190-565) is solid black; the left wall (x 108-113) and the other partitions are plain thin double lines.
+
+entrance: LIVING ROOM

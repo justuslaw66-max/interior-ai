@@ -1,0 +1,44 @@
+# h2_4room_shelter.jpg - 4-room flat with household shelter. Typed from the plan image only.
+space: LIVING/DINING
+space: KITCHEN
+space: BEDROOM 3
+space: BEDROOM 2
+space: MAIN BEDROOM
+# printed over three lines as "HOUSE-" / "HOLD" / "SHELTER" (hyphenated line break)
+space: HOUSEHOLD SHELTER
+space: BATH/WC 1
+space: BATH/WC 2
+space: SERVICE YARD
+# labelled, enclosed by a parapet outline, no door into it
+space: AIR-CON LEDGE
+# The 1100-wide passage between bedrooms and shelter/baths is open to LIVING/DINING, so it is part of LIVING/DINING.
+# "RAMP UP" texts are notes, not room labels.
+door: BEDROOM 3 | LIVING/DINING
+door: BEDROOM 2 | LIVING/DINING
+# door in the short vertical wall at the right end of the passage
+door: MAIN BEDROOM | LIVING/DINING
+door: HOUSEHOLD SHELTER | LIVING/DINING
+door: BATH/WC 2 | LIVING/DINING
+# bath 1 door lies right of the main-bedroom door line, so it opens into the main bedroom
+door: BATH/WC 1 | MAIN BEDROOM
+# folding (triangle) door in the wall between kitchen and service yard
+door: KITCHEN | SERVICE YARD
+# main entrance: hinged door + folding gate, counted once
+door: LIVING/DINING | OUTSIDE
+# about 1 m opening between two wall stubs in the wall between kitchen and living/dining, no leaf drawn
+gap: KITCHEN | LIVING/DINING
+windows: LIVING/DINING = 1
+windows: BEDROOM 3 = 1
+windows: BEDROOM 2 = 1
+# MAIN BEDROOM: 4-leaf casement band in the top wall (wraps a short way round the top-right corner, counted as the same window)
+# + a narrow slot window set in the black right wall. The slot could also be a wall recess - uncertain.
+windows: MAIN BEDROOM = 2
+# bath 1 window is in its bottom wall facing the AIR-CON LEDGE
+windows: BATH/WC 1 = 1
+# bath 2 window is in its bottom wall facing the SERVICE YARD (not an outer wall of the flat)
+windows: BATH/WC 2 = 1
+# kitchen window is the grey band below the folding door, in the wall shared with the SERVICE YARD
+windows: KITCHEN = 1
+# SERVICE YARD outer (right) edge is a plain double-line parapet with a drying rack outside: no window counted.
+# The small box right of the entrance door is a fitting/duct, not a space.
+entrance: LIVING/DINING

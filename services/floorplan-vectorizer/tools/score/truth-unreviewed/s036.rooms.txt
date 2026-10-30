@@ -1,0 +1,61 @@
+# s036 - HDB 5-Room Standard (stairs), 1976-1980. Typed from the plan image only (title "5 ROOM STANDARD (STAIRS)", scale note,
+# dimension figures, "100 DROP" notes and the grey teoalida.com banner ignored).
+# Labels: "BATH/" + "W.C." (line break) -> "BATH/ W.C.". Two spaces carry that label (top-left one beside the kitchen, and
+# the one at the top right beside the main bedroom) and two carry "BEDROOM" (no numbers printed).
+# DINING + LIVING: no wall or door between them. The dining (x 297-428, y 150-330) is open to the lobby/living below it along
+# y 336 from x 327 to 428 (only the wall pier x 288-327, y 326-336 stands at its west end) -> one open-plan space. The lobby in
+# front of the bedroom doors (x 380-500, y 335-380) is open to it at its full width -> part of it.
+space: LIVING + DINING
+# KITCHEN: enclosed by thin double-line walls east (x 287-293, y 180-283) and south (y 326-336, x 185-288) plus a black pier.
+space: KITCHEN
+# top-left bath (x 110-183, y 152-228), folding door from the kitchen
+space: BATH/ W.C.
+# top-right bath (x 432-505, y 143-245), door from the passage that belongs to MAIN BEDROOM
+space: BATH/ W.C.
+# MAIN BEDROOM includes the passage x 432-505, y 250-328 (open to the room at x 505 over its full length, no wall/door).
+space: MAIN BEDROOM
+# lower-left bedroom (x 380-505, y 380-555)
+space: BEDROOM
+# lower-right bedroom (x 510-640, y 335-555)
+space: BEDROOM
+# BALCONY (x 185-365, y 570-640): black side walls, parapet drawn as a thin double line at y 635-640
+space: BALCONY
+
+# main entrance: double leaf (large inward arc + small outward arc = door + gate) in the left outer wall, x 151-217, y 520-557
+door: LIVING | OUTSIDE
+# balcony: pair of swing leaves (hinged x 232 and x 318, closing at x 273), y 570-612
+door: BALCONY | LIVING
+# KITCHEN east side: the thin wall ends at y 283 and the black pier starts at y 326; ONE line (x 287) is drawn across that
+# 1.0 m opening between the two jambs, with a "100 DROP" arrow -> sliding door by the rule of 4 Oct 2026.
+# (UNCERTAIN: it can also be read as a doorway with a floor-level step.)
+door: KITCHEN | LIVING
+# top-left bath: folding (triangle) door in its top wall onto the kitchen, x 137-153, y 150-158
+door: BATH/ W.C. | KITCHEN
+# top-right bath: folding (triangle) door in its bottom wall, x 478-497, y 233-245, onto the main-bedroom passage
+door: BATH/ W.C. | MAIN BEDROOM
+# main bedroom: hinged leaf drawn open along x 466 (y 293-328), closes across the gap x 466-500 at y 328
+door: MAIN BEDROOM | LIVING
+# lower-left bedroom: leaf in its top wall, gap x 470-503 at y 378, swings into the bedroom
+door: BEDROOM | LIVING
+# lower-right bedroom: leaf in the gap of its west wall at its north-west corner, x 503, y 335-372, swings to the north east
+door: BEDROOM | LIVING
+
+# KITCHEN: casement band (4 leaves) in the top wall, x 135-235, y 85-100, between the shaft wall and the solid black wall
+windows: KITCHEN = 1
+# LIVING + DINING: (a) casement band in the dining top wall x 297-428, y 140-155 (4 leaves, one band) ... (b) two glazed side
+# panels beside the balcony double door, x 188-228 and x 322-360, both at y 564-570 (they face the balcony) -> 3 in all.
+# (UNCERTAIN: the two side panels are thin grey double lines; the dining band could be counted as 2 units.)
+windows: LIVING = 3
+# top-right bath: top wall x 450-500, y 140-146 has a dashed glazing line (a short solid piece x 430-450 beside it) -> 1 window.
+# (UNCERTAIN: could be a plain wall.) The top-left bath's left wall (x 107-115, y 152-228) is two plain thin lines -> wall, no window.
+windows: BATH/ W.C. = 1
+# MAIN BEDROOM: casement band (4 leaves) in the top wall x 508-638, y 140-153, and the multi-line glazing in the east wall
+# x 640-652, y 178-291 (stopped by the black pier x 640-650, y 292-332) -> 2
+windows: MAIN BEDROOM = 2
+# lower-left bedroom: casement band (4 leaves) in the bottom wall x 383-503, y 557-575
+windows: BEDROOM = 1
+# lower-right bedroom: casement band (4 leaves) in the bottom wall x 510-638, y 557-575; east glazing x 640-652, y 335-555
+# broken by a small black post at (639-646, 435-447) into two roughly equal windows -> 3 in all (UNCERTAIN: post may be a mullion -> 2).
+windows: BEDROOM = 3
+
+entrance: LIVING

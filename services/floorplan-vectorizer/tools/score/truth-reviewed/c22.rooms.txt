@@ -1,0 +1,49 @@
+# c22 - typed from the plan image only (labels are printed rotated 90 degrees)
+# FOYER, DINING and LIVING: no wall or door between them (only dashed ceiling lines) -> one space.
+# The small lobby between the BEDROOM 2, BEDROOM 3 and COMMON BATH doors is open to DINING at its full width
+# (no door, no narrowing) -> read as part of the same space, not a separate corridor.
+space: FOYER + DINING + LIVING
+space: KITCHEN
+space: HS
+space: WC
+# there are TWO spaces labelled AC LEDGE: this one beside KITCHEN/WC ...
+space: AC LEDGE
+space: BEDROOM 3
+space: COMMON BATH
+space: BEDROOM 2
+space: MASTER BEDROOM
+space: MASTER BATH
+# ... and this one beside MASTER BEDROOM / MASTER BATH
+space: AC LEDGE
+space: BALCONY
+
+door: OUTSIDE | FOYER
+# pocket sliding door
+door: KITCHEN | FOYER
+# HS door drawn closed (thin rectangle in splayed jambs), faces the kitchen
+door: HS | KITCHEN
+# WC door: leaf drawn folded open, thin line across the opening, no swing arc
+door: WC | KITCHEN
+door: BEDROOM 3 | FOYER
+door: COMMON BATH | FOYER
+door: BEDROOM 2 | FOYER
+door: MASTER BEDROOM | FOYER
+# pocket sliding door
+door: MASTER BATH | MASTER BEDROOM
+# sliding door
+door: BALCONY | FOYER
+
+# KITCHEN and WC windows face the lower AC LEDGE; MASTER BATH window faces the upper AC LEDGE
+windows: KITCHEN = 1
+windows: WC = 1
+windows: BEDROOM 3 = 1
+windows: COMMON BATH = 1
+windows: BEDROOM 2 = 1
+windows: MASTER BEDROOM = 1
+windows: MASTER BATH = 1
+# The glazing band at the balcony end of LIVING is one continuous band but it is wider than the balcony:
+# the part beyond the balcony edge faces the exterior, so it is counted as 1 window (the rest is the balcony door).
+# Unclear because no mullion separates the two parts.
+windows: FOYER = 1
+
+entrance: FOYER

@@ -1,0 +1,80 @@
+# s047 - HDB Executive Apartment, corner unit (corridor end), 142 sqm. Typed from the plan image only (title "EXECUTIVE APARTMENT
+# (CORRIDOR END)", "SCALE 1:100", dimension figures, the grey banner and the "teoalida.com" web banner are ignored).
+# Labels: a printed line break is one blank ("BATH/" + "W.C. 2" -> "BATH/ W.C. 2", "STUDY/" + "BEDROOM" -> "STUDY/ BEDROOM").
+# ACC. BAL. (x 50-190, y 640-690) is the access balcony / corridor end in front of the entrance: no walls around it (only dimension
+# lines on its west and south sides), so it is OUTSIDE, not a space (same reading as room4).
+# KITCHEN is L-shaped: the main part (x 60-190, y 395-640) plus the strip above the STORE (x 190-268, y 395-455), open to it at its
+# full width (no wall at x 190 between y 402 and 453). The bath-1 door and the store door open onto that strip.
+# DINING is also L-shaped: the hall (x 272-505, y 258-393) plus the 1200-wide passage left of the study (x 272-320, y 393-522).
+# Not typed: REFUSE CHUTE (dark shaft box x 40-80, y 385-425), the sink/drainer counter (x 58-85, y 430-500), the small box by the
+# chute (x 80-90, y 405-420), the open air notch west of the bath block (x 60-165, y 260-385, no walls, no label).
+space: MAIN BEDROOM
+space: BEDROOM 2
+space: BEDROOM 3
+space: BATH/ W.C. 2
+space: BATH/ W.C. 1
+space: DINING
+space: STUDY/ BEDROOM
+space: STORE
+space: KITCHEN
+space: LIVING ROOM
+space: BALCONY
+
+# main entrance: door (one inward leaf, arc x 190-226, y 645-680) + gate (two leaves, arcs x 168-190) in the same opening of the
+# living-room left wall, y 642-680
+door: LIVING ROOM | OUTSIDE
+# BALCONY: two sliding panels stacked in the wall x 506 (long thin outlined rectangles y 561-600 and y 601-641, "100 DROP")
+door: BALCONY | LIVING ROOM
+# MAIN BEDROOM door: leaf hinged at (305,258) on the column, arc up into the bedroom; opening x 270-305 in its bottom wall
+door: MAIN BEDROOM | DINING
+# BEDROOM 2 door: leaf hinged at (432,258) on the column, arc up into the bedroom; opening x 397-432
+door: BEDROOM 2 | DINING
+# BEDROOM 3 door: leaf hinged at (446,258) on the column, arc up into the bedroom; opening x 446-481
+door: BEDROOM 3 | DINING
+# STUDY/ BEDROOM door: leaf hinged at (325,402) in its left wall (open along y 402), arc into the study; opening x 325, y 402-437;
+# it faces the 1200 passage = part of DINING
+door: STUDY/ BEDROOM | DINING
+# BATH/ W.C. 2 door: leaf hinged at (208,260) in the top wall of the bath, swings into the bath; opens onto the MAIN BEDROOM
+# ("100 DROP" label above it inside the main bedroom)
+door: BATH/ W.C. 2 | MAIN BEDROOM
+# BATH/ W.C. 1 door: leaf hinged at (200,395) in the bottom wall of the bath, swings into the bath; opens onto the kitchen strip
+door: BATH/ W.C. 1 | KITCHEN
+# STORE door: hinged leaf drawn open upward (arc x 225-262, y 418-455) in the top wall of the store; opens onto the kitchen strip
+door: STORE | KITCHEN
+# KITCHEN to DINING: the only way out of the kitchen. Opening x 269, y 399-453 (about 1250 mm) between the bath-1 wall corner and
+# the store corner, ONE thin line drawn across it (the wall line x 269 is doubled above and below) -> sliding door (rule of
+# 4 Oct 2026). Uncertain: a little over the 1.2 m "floor edge" length, but it has wall corners at both ends.
+door: KITCHEN | DINING
+# DINING / LIVING ROOM: the 1200 passage (x 270-321) ends at y 522 between the store wall corner (x 270) and the study wall corner
+# (x 321) with nothing drawn across it and no narrowing at its end -> doorway between DINING and LIVING ROOM (uncertain: could be
+# read as one open-plan space DINING + LIVING ROOM)
+gap: DINING | LIVING ROOM
+
+# KITCHEN: glazed band in the top wall x 80-152, y 383-395, three casement leaves with arcs drawn outside (x 80-103, 105-127,
+# 128-150), posts at x 103 and x 127, no solid wall piece in it -> ONE window (uncertain: could be 2 or 3)
+windows: KITCHEN = 1
+# BATH/ W.C. 2: glazed left wall x 164-170, y 262-312 (dashed inner line); the plain double line y 314-332 below it is wall
+windows: BATH/ W.C. 2 = 1
+# BATH/ W.C. 1: glazed left wall x 164-170, y 335-383 (dashed inner line)
+windows: BATH/ W.C. 1 = 1
+# MAIN BEDROOM: glazed band in the top wall x 152-308 (y 60-68) + glazed left wall x 145-153, y 88-222 (three lines, grey middle
+# line, between two columns)
+windows: MAIN BEDROOM = 2
+# BEDROOM 2: glazed band in the top wall x 317-436 (y 60-68); its side walls are plain double partitions
+windows: BEDROOM 2 = 1
+# BEDROOM 3: glazed band in the top wall x 446-573 (y 60-68) + white slot in the thick right wall x 573-585, y 93-220 (long sash
+# y 93-195 and short sash y 196-220 with only a thin frame bar between: counted as ONE, uncertain - could be 2)
+windows: BEDROOM 3 = 2
+# DINING: right wall x 502-508, y 262-392: continuous glazing band, grey sash pieces at both ends (y 262-293, y 360-392) and a
+# white piece between; counted as ONE window (uncertain: could be 2)
+windows: DINING = 1
+# STUDY/ BEDROOM: right wall x 502-508, y 397-518: same grey / white / grey band (y 400-427, 427-490, 490-518) -> ONE window
+# (uncertain: could be 2)
+windows: STUDY/ BEDROOM = 1
+# LIVING ROOM: bottom wall y 683-690 is thick solid wall (x 190-290, x 442-500) with a thin white strip x 291-442 between them,
+# read as one window (uncertain: it has only two lines, could be plain wall)
+windows: LIVING ROOM = 1
+# BALCONY: the east side x 573-585, y 551-660 between two solid corner pieces is two thin lines with a dashed line at its ends only;
+# read as the balcony railing / parapet, NOT a window (uncertain: the dashes also look like glazing)
+
+entrance: LIVING ROOM
