@@ -69,7 +69,7 @@ assert.match(chipMarkup, /<button(?=[^>]*data-testid="catalog-category-chip-sofa
 
 // The card: name, size, price and one Add; the heart saves it; details open from the card.
 const card: CatalogCardView = {
-  id: "winora", variantId: "sand", variantLabel: "Sand", title: "Winora Armchair", brand: "Castlery", category: "Arm Chair",
+  id: "winora", variantId: "sand", variantLabel: "Sand", title: "Winora Armchair", brand: "Castlery", category: "Armchair",
   thumbUrl: null, fallbackThumbUrl: null, priceAmount: 549, dimsLabel: "70.5 x 85 cm", dimsMm: { w: 705, d: 850, h: 850 },
   primarySwatches: [], badges: [], imageClassName: "h-full w-full object-contain",
 };

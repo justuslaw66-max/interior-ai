@@ -20,12 +20,11 @@ import type {
   FloorPlanLibraryLayout,
 } from "@/lib/floor-plan-library-schema";
 import { resolveFloorPlanRoomIdentities } from "@/lib/floor-plan-room-labels";
+import { catalogHomeHeights } from "@/lib/home-height-rules";
 
 const ADAPTER_VERSION = "catalog-v1-to-document-v2-1";
 const DEFAULT_CREATED_AT = "1970-01-01T00:00:00.000Z";
 const DEFAULT_WALL_THICKNESS_MM = 200;
-const DEFAULT_STOREY_HEIGHT_MM = 2800;
-const DEFAULT_WALL_HEIGHT_MM = 2600;
 
 type Point = FloorPlanPointMmV2;
 
@@ -327,6 +326,13 @@ export function catalogV1LayoutToFloorPlanDocumentV2(
   options: CatalogV1FloorPlanAdapterOptions = {}
 ): CatalogV1FloorPlanAdapterResult {
   const sourceId = sourceIdFor(catalog);
+  // the brochure's stated height (the layout's, else the plan's), else the height rules' for the property type
+  const heights = catalogHomeHeights({
+    propertyType: catalog.floor_plan.property_type,
+    penthouse: layout.penthouse,
+    stated: [layout.ceiling_height, catalog.floor_plan.ceiling_height],
+    sourcePage: layout.source_page,
+  });
   const reviewIssues: FloorPlanReviewIssue[] = [];
   let reviewSequence = 0;
   const addReviewIssue = (
@@ -686,7 +692,7 @@ export function catalogV1LayoutToFloorPlanDocumentV2(
           addVertex(point, `Legacy schema-v1 reference zone ${zone.id}.`).id
         ),
         baseOffsetMm: 0,
-        heightMm: DEFAULT_WALL_HEIGHT_MM,
+        heightMm: heights.wallMm,
         locked: zone.locked,
         provenance: legacyProvenance(
           sourceId,
@@ -826,6 +832,10 @@ export function catalogV1LayoutToFloorPlanDocumentV2(
       `${name} is a visible compatibility default, not source evidence.`
     ),
   });
+  const assumedEvidence = (valueMm: number, name: string) => {
+    const { valueMm: _valueMm, ...evidence } = assumedProperty(valueMm, name);
+    return evidence;
+  };
   const document: FloorPlanDocumentV2 = {
     schemaVersion: 2,
     units: "mm",
@@ -857,33 +867,15 @@ export function catalogV1LayoutToFloorPlanDocumentV2(
         name: "Floor plan",
         levelIndex: 0,
         elevationMm: 0,
-        storeyHeightMm: DEFAULT_STOREY_HEIGHT_MM,
+        storeyHeightMm: heights.storeyMm,
         slabThicknessMm: 150,
         verticalEvidence: {
-          elevation: (() => {
-            const { valueMm: _valueMm, ...evidence } = assumedProperty(
-              0,
-              "Floor elevation"
-            );
-            return evidence;
-          })(),
-          storeyHeight: (() => {
-            const { valueMm: _valueMm, ...evidence } = assumedProperty(
-              DEFAULT_STOREY_HEIGHT_MM,
-              "Storey height"
-            );
-            return evidence;
-          })(),
-          slabThickness: (() => {
-            const { valueMm: _valueMm, ...evidence } = assumedProperty(
-              150,
-              "Slab thickness"
-            );
-            return evidence;
-          })(),
+          elevation: assumedEvidence(0, "Floor elevation"),
+          storeyHeight: assumedEvidence(heights.storeyMm, "Storey height"),
+          slabThickness: assumedEvidence(150, "Slab thickness"),
         },
         defaults: {
-          wallHeight: assumedProperty(DEFAULT_WALL_HEIGHT_MM, "Wall height"),
+          wallHeight: heights.wallProperty((page, note) => legacyProvenance(sourceId, page, note)),
           doorHeight: assumedProperty(2100, "Door height"),
           windowHeight: assumedProperty(1200, "Window height"),
           windowSillHeight: assumedProperty(900, "Window sill height"),

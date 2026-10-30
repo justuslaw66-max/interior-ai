@@ -376,6 +376,7 @@ import type {
   CabinetSupplierSkuMappingItem,
   PlacedCabinetAsset,
 } from "./types";
+import { exactEdgeBandingM, roundedEdgeBandingM } from "./edgeBandingTotals";
 
 /**
  * Optional immutable inputs for callers that already generated cabinetry parts
@@ -3699,9 +3700,8 @@ export function buildCabinetProjectSchedulePackage(input: {
       (roomId ? input.roomNamesById?.[roomId] : undefined) ??
       roomId ??
       "Unassigned room";
-    const edgeBandingTotalM = roundM(
-      documentation.cutList.reduce((sum, item) => sum + item.edgeBandingMm / 1000, 0)
-    );
+    const edgeBandingExactM = exactEdgeBandingM(documentation.cutList);
+    const edgeBandingTotalM = roundM(edgeBandingExactM);
     const releaseBlockerCount = documentation.releaseChecklist.filter(
       (item) => item.status === "blocked"
     ).length;
@@ -3711,7 +3711,7 @@ export function buildCabinetProjectSchedulePackage(input: {
     totals.materialScheduleCount += documentation.materialSchedule.length;
     totals.hardwareScheduleCount += documentation.hardwareSchedule.length;
     totals.edgeBandingScheduleCount += documentation.edgeBandingSchedule.length;
-    totals.edgeBandingTotalM += edgeBandingTotalM;
+    totals.edgeBandingTotalM += edgeBandingExactM;
     totals.cutListCount += documentation.cutList.length;
     totals.estimatedTotal += documentation.quoteSummary.estimatedTotal;
     totals.releaseChecklistCount += documentation.releaseChecklist.length;
@@ -3736,7 +3736,7 @@ export function buildCabinetProjectSchedulePackage(input: {
       roomSummary.assemblyTypes.push(pkg.millworkDefinition.assemblyType);
     }
     roomSummary.estimatedTotal += documentation.quoteSummary.estimatedTotal;
-    roomSummary.edgeBandingTotalM += edgeBandingTotalM;
+    roomSummary.edgeBandingTotalM += edgeBandingExactM;
     roomSummary.releaseBlockerCount += releaseBlockerCount;
     roomMap.set(roomKey, roomSummary);
 
@@ -4448,9 +4448,7 @@ export function buildCabinetProjectFinishSchedulePackage(input: {
       const definitionMaterials = new Map(
         definition.materials.map((material) => [material.id, material])
       );
-      const edgeBandingTotalM = roundM(
-        documentation.cutList.reduce((sum, item) => sum + item.edgeBandingMm / 1000, 0)
-      );
+      const edgeBandingTotalM = roundedEdgeBandingM(documentation.cutList);
 
       for (const material of documentation.materialSchedule) {
         const definitionMaterial = definitionMaterials.get(material.materialId);
@@ -4626,7 +4624,7 @@ export function buildCabinetProjectFinishSchedulePackage(input: {
     hardwareCount: hardware.length,
     edgeBandingCount: edgeBanding.length,
     materialAreaSqM: roundSqM(materials.reduce((sum, material) => sum + material.areaSqM, 0)),
-    edgeBandingTotalM: roundM(assets.reduce((sum, item) => sum + item.edgeBandingTotalM, 0)),
+    edgeBandingTotalM: roundedEdgeBandingM(placedPackages.flatMap((pkg) => pkg.documentation.cutList)),
     hardwareQuantity: hardware.reduce((sum, item) => sum + item.quantity, 0),
     mappedSkuCount: procurementPackage.totals.mappedSkuCount,
     missingSkuCount: schedule.totals.supplierMissingSkuCount,
@@ -4811,9 +4809,7 @@ function summarizeRevisionAsset(
     bomLineCount: pkg.bom.length,
     materialScheduleCount: documentation.materialSchedule.length,
     hardwareScheduleCount: documentation.hardwareSchedule.length,
-    edgeBandingTotalM: roundM(
-      documentation.edgeBandingSchedule.reduce((sum, item) => sum + item.totalLengthM, 0)
-    ),
+    edgeBandingTotalM: roundedEdgeBandingM(documentation.cutList),
     quoteTotal: roundMoney(documentation.quoteSummary.estimatedTotal),
     supplierReadinessStatus: documentation.supplierReadiness.status,
     fabricationReleaseStatus: documentation.fabricationReleaseReadiness.status,
@@ -5153,20 +5149,10 @@ export function buildCabinetProjectRevisionPackage(input: {
         generateCabinetDocumentation(asset.cabinetDefinition).quoteSummary.estimatedTotal),
     0
   );
-  const currentEdgeBandingTotal = input.assets.reduce(
-    (sum, asset) =>
-      sum +
-      (asset.edgeBandingScheduleSnapshot ?? generateCabinetDocumentation(asset.cabinetDefinition).edgeBandingSchedule)
-        .reduce((edgeSum, item) => edgeSum + item.totalLengthM, 0),
-    0
-  );
-  const previousEdgeBandingTotal = (input.previousAssets ?? []).reduce(
-    (sum, asset) =>
-      sum +
-      (asset.edgeBandingScheduleSnapshot ?? generateCabinetDocumentation(asset.cabinetDefinition).edgeBandingSchedule)
-        .reduce((edgeSum, item) => edgeSum + item.totalLengthM, 0),
-    0
-  );
+  const assetCutList = (asset: PlacedCabinetAsset) =>
+    asset.cutListSnapshot ?? generateCabinetDocumentation(asset.cabinetDefinition).cutList;
+  const currentEdgeBandingTotal = exactEdgeBandingM(input.assets.flatMap(assetCutList));
+  const previousEdgeBandingTotal = exactEdgeBandingM((input.previousAssets ?? []).flatMap(assetCutList));
   const totals: CabinetProjectRevisionTotals = {
     currentAssetCount: input.assets.length,
     previousAssetCount: input.previousAssets?.length ?? 0,
@@ -5573,9 +5559,7 @@ export function buildCabinetProjectCutListPackage(input: {
         "Unassigned room";
       const shopDrawingFileName = `${fileSafeName(definition.name)}-shop-drawing.svg`;
       const fabricationDxfFileName = `${fileSafeName(definition.name)}-cut-layout.dxf`;
-      const edgeBandingM = roundM(
-        documentation.cutList.reduce((sum, item) => sum + item.edgeBandingMm / 1000, 0)
-      );
+      const edgeBandingM = roundedEdgeBandingM(documentation.cutList);
 
       for (const item of documentation.cutList) {
         const areaSqM = largestFaceAreaSqM({
@@ -6313,9 +6297,7 @@ export function buildCabinetProjectFabricationReleasePackage(input: {
         (asset.roomId ? input.roomNamesById?.[asset.roomId] : undefined) ??
         asset.roomId ??
         "Unassigned room";
-      const edgeBandingTotalM = roundM(
-        documentation.edgeBandingSchedule.reduce((sum, item) => sum + item.totalLengthM, 0)
-      );
+      const edgeBandingTotalM = roundedEdgeBandingM(documentation.cutList);
 
       return {
         id: asset.id,
@@ -6361,7 +6343,7 @@ export function buildCabinetProjectFabricationReleasePackage(input: {
     supplierMissingSkuCount: assets.reduce((sum, asset) => sum + asset.supplierMissingSkuCount, 0),
     customQuoteRequiredCount: assets.reduce((sum, asset) => sum + asset.customQuoteRequiredCount, 0),
     cutListCount: assets.reduce((sum, asset) => sum + asset.cutListCount, 0),
-    edgeBandingTotalM: roundM(assets.reduce((sum, asset) => sum + asset.edgeBandingTotalM, 0)),
+    edgeBandingTotalM: roundedEdgeBandingM(placedPackages.flatMap((pkg) => pkg.documentation.cutList)),
   };
   const status: CabinetProjectFabricationReleasePackage["status"] =
     totals.blockedCount > 0 || totals.releaseBlockerCount > 0 || totals.supplierMissingSkuCount > 0
@@ -7140,9 +7122,7 @@ export function buildCabinetProjectCncBatchPackage(input: {
         (asset.roomId ? input.roomNamesById?.[asset.roomId] : undefined) ??
         asset.roomId ??
         "Unassigned room";
-      const edgeBandingTotalM = roundM(
-        documentation.edgeBandingSchedule.reduce((sum, item) => sum + item.totalLengthM, 0)
-      );
+      const edgeBandingTotalM = roundedEdgeBandingM(documentation.cutList);
 
       for (const material of documentation.materialSchedule) {
         const existing =
@@ -7201,7 +7181,7 @@ export function buildCabinetProjectCncBatchPackage(input: {
     cutListCount: assets.reduce((sum, asset) => sum + asset.cutListCount, 0),
     materialScheduleCount: materials.length,
     materialAreaSqM: roundSqM(materials.reduce((sum, material) => sum + material.areaSqM, 0)),
-    edgeBandingTotalM: roundM(assets.reduce((sum, asset) => sum + asset.edgeBandingTotalM, 0)),
+    edgeBandingTotalM: roundedEdgeBandingM(placedPackages.flatMap((pkg) => pkg.documentation.cutList)),
     machiningReviewRequiredCount: assets.filter((asset) => asset.machiningReviewRequired).length,
     releaseBlockerCount: assets.reduce((sum, asset) => sum + asset.releaseBlockerCount, 0),
   };

@@ -20,5 +20,14 @@ export const CANVAS_CHIP: CSSProperties = {
 /** A chip you press that isn't on a wall (the room's toolbar, "Add door here"): 32px tall. */
 export const CANVAS_CHIP_BUTTON: CSSProperties = { ...CANVAS_CHIP, minHeight: 32, justifyContent: "center" };
 
-/** Every pressable chip is 44px on touch screens, where a finger presses it. */
-export const CANVAS_CHIP_TOUCH_CLASS = "touch:min-h-11 touch:min-w-11";
+/**
+ * Every pressable chip is 44px on touch screens, where a finger presses it. Important, because the
+ * chip styles set their minimum size inline, which would otherwise win.
+ */
+export const CANVAS_CHIP_TOUCH_CLASS = "touch:!min-h-11 touch:!min-w-11";
+
+/**
+ * The 2D canvas's size fields: 12px like the chips, 16px on touch screens, so iOS doesn't zoom the
+ * page in when one takes focus. A class, not an inline size, so the phone rule can apply.
+ */
+export const CANVAS_FIELD_TEXT_CLASS = "text-xs touch:text-base";

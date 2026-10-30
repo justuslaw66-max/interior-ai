@@ -42,7 +42,7 @@ export function registerExportTests() {
       await expect(page.getByTestId("cabinet-material-schedule")).toHaveAttribute("data-material-schedule-count", "4");
       await expect(page.getByTestId("cabinet-hardware-schedule")).toHaveAttribute("data-hardware-schedule-count", "3");
       await expect(page.getByTestId("cabinet-edge-banding-schedule")).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(page.getByTestId("cabinet-edge-banding-schedule")).toHaveAttribute("data-edge-banding-total-m", "27.36");
+      await expect(page.getByTestId("cabinet-edge-banding-schedule")).toHaveAttribute("data-edge-banding-total-m", "27.37");
       await expect(page.getByTestId("cabinet-edge-banding-row")).toHaveCount(4);
       await expect(page.getByTestId("cabinet-cut-list")).toHaveAttribute("data-cut-list-count", "27");
       await expect(page.getByTestId("cabinet-installer-notes")).toHaveAttribute("data-installer-note-count", /\d+/);
@@ -179,7 +179,7 @@ export function registerExportTests() {
       expect(packageJson.documentation.drawingViewSchedule.some((item: { viewType: string }) => item.viewType === "side_section")).toBe(true);
       expect(packageJson.documentation.drawingViewSchedule.some((item: { viewType: string }) => item.viewType === "plan_footprint")).toBe(true);
       expect(packageJson.documentation.edgeBandingSchedule).toHaveLength(4);
-      expect(packageJson.documentation.edgeBandingSchedule.reduce((sum: number, item: { totalLengthM: number }) => sum + item.totalLengthM, 0)).toBeCloseTo(27.36, 2);
+      expect(packageJson.documentation.cutList.reduce((sum: number, item: { edgeBandingMm: number; quantity: number }) => sum + (item.edgeBandingMm * item.quantity) / 1000, 0)).toBeCloseTo(27.366, 3);
       expect(packageJson.documentation.supplierSkuMappings).toHaveLength(10);
       expect(packageJson.documentation.supplierReadiness.status).toBe("ready_for_fabricator_review");
       expect(packageJson.documentation.supplierReadiness.mappedSkuCount).toBe(7);

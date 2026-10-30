@@ -101,7 +101,6 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `components/EmptyDesignsState.tsx` — Implements `EmptyDesignsState` for Empty Designs State.
 - `components/GoogleAddressAutocomplete.tsx` — Implements `GoogleAddressAutocomplete` for Google Address Autocomplete.
 - `components/InviteCopyButton.tsx` — Implements `InviteCopyButton` for Invite Copy Button.
-- `components/InviteLinkInline.tsx` — Implements `InviteLinkInline` for Invite Link Inline.
 - `components/OnboardingChecklist.tsx` — Implements `OnboardingChecklist` for Onboarding Checklist.
 - `components/public-share/PublicShareClientBoundary.tsx` — Provides Public Share Client Boundary logic for react ui components.
 - `components/public-share/PublicShareClientBoundaryImpl.tsx` — Implements `PublicShareClientBoundaryImpl` for Public Share Client Boundary Impl.
@@ -180,7 +179,6 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `components/editor/design-controls-plan/PlanToolComponents.tsx` — Defines `CollapsiblePlanHeader`, `PlanToolSection`, `PlanToolTile`, `CollapsiblePlanSection` for Plan Tool Components.
 - `components/editor/design-controls-plan/PlanToolIcon.tsx` — Defines `PlanToolIcon`, `PlanToolIconName` for Plan Tool Icon.
 - `components/editor/design-page/DesignPagePlanCanvasOverlays.tsx` — Defines `DesignPagePlanCanvasOverlays`, `DesignPagePlanCanvasOverlaysState`, `DesignPagePlanCanvasOverlaysActions` for Design Page Plan Canvas Overlays.
-- `components/editor/design-page/EmptyPlanCanvasPrompt.tsx` — Implements `EmptyPlanCanvasPrompt` for Empty Plan Canvas Prompt.
 - `components/editor/design-page/FloorStackControl.tsx` — Defines `FloorStackControl`, `FloorStackControlItem` for Floor Stack Control.
 - `components/editor/design-page/ImportedFloorPlanWallEditor.tsx` — Defines `ImportedFloorPlanWallEditor`, `ImportedFloorPlanWallEditorProps` for Imported Floor Plan Wall Editor.
 - `components/editor/design-page/PlanAnnotationDialog.tsx` — Defines `PlanAnnotationDialog`, `PlanAnnotationDialogProps` for Plan Annotation Dialog.
@@ -303,7 +301,6 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `components/editor/renderers/house-plan-3d/windowOpeningGeometry.ts` — Computes the clipped aperture-only hit volume for a 3D window opening.
 - `components/editor/renderers/house-plan-3d/WindowOpeningMesh.tsx` — Renders an aperture-only 3D window hit target, outline, selection, and drag entry point.
 - `components/editor/renderers/HousePlanRenderer3D.tsx` — Renders multi-room 3D walls, openings, finishes, selection, and aperture-only window interactions.
-- `components/FPSMeter.tsx` — Implements `FPSMeter` for FPSMeter.
 - `components/public-share/ShareScene.tsx` — Implements `ShareScene` for Share Scene.
 - `components/ReadOnlyViewer.tsx` — Implements `ReadOnlyViewer` for Read Only Viewer.
 - `components/scene/DesignerGrid.tsx` — Defines `DesignerGrid`, `DesignerGridCoverage` for Designer Grid.
@@ -662,7 +659,6 @@ The present uncommitted work centers on editable doors and windows across 2D and
 - `lib/observability.ts` — Defines `sanitizeObservabilityMeta`, `logOperationalEvent`, `OperationalLog` for observability.
 - `lib/onboarding.ts` — Defines `getOnboardingProgress`, `isOnboardingEligible`, `checkActivation`, `getNextBestActionNudge`, and related exports for onboarding.
 - `lib/onboardingActions.ts` — Implements `autoCompleteStep` for onboarding Actions.
-- `lib/performance-monitor.ts` — Implements `PerformanceMonitor` for performance monitor.
 - `lib/phase15-release-evidence.ts` — Defines `createPhase15HumanEvidenceTemplate`, `canonicalizePhase15ReleaseManifest`, `validatePhase15HumanEvidence`, `productOwnerPublicKeyFingerprint`, and related exports for phase15 release evidence.
 - `lib/plan-canvas-guidance.ts` — Defines `resolvePlanCanvasGuidance`, `PlanCanvasGuidanceTone`, `PlanCanvasGuidanceAction`, `PlanCanvasGuidance` for plan canvas guidance.
 - `lib/plan.ts` — Defines `isPro`, `Plan` for plan.

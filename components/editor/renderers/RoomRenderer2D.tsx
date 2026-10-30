@@ -1,7 +1,9 @@
 "use client";
 import { StableLine as Line } from "./StableLine";
 import { Html } from "@react-three/drei/web/Html";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { Check } from "lucide-react";
+import { overallPlanGuideLayout } from "@/lib/room-renderer-2d-overall-dimensions";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { clampFloorPatternScale, getFloorMaterialById, normalizeFloorRotationDeg } from "@/lib/floor-materials";
@@ -62,7 +64,7 @@ import { getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
 import { moveOpeningCenterFromWorldPoint,
   projectWorldPointToOpeningHost, resizeOpeningFromWorldPoint } from "@/lib/design-page-opening-interaction";
-import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS } from "./canvasChipStyle";
+import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS, CANVAS_FIELD_TEXT_CLASS } from "./canvasChipStyle";
 import { memoizeByObject } from "./memoizeByObject";
 type RectZone = {
   id: string;
@@ -695,6 +697,11 @@ function getRoomBounds(room: HouseRoom2D) {
     top: room.z - room.d / 2,
     bottom: room.z + room.d / 2,
   };
+}
+
+function roomBoundsById(rooms: HouseRoom2D[], roomId: string | null) {
+  const room = rooms.find((candidate) => candidate.id === roomId);
+  return room ? getRoomBounds(room) : null;
 }
 
 function getRoomsBounds(rooms: HouseRoom2D[]) {
@@ -1760,19 +1767,26 @@ export default function RoomRenderer2D({
       ? buildRoomDrawStartSnapMarkers(rooms, activeDrawRoomPreviewPoint)
       : [];
   const overallPlanBounds = useMemo(() => getRoomsBounds(rooms), [rooms]);
+  const overallGuides = overallPlanGuideLayout({ planBounds: overallPlanBounds, selectedRoomBounds: roomBoundsById(rooms, activeRoomId),
+    zoomPxPerM: planZoom, rotated: planViewOrientation === "rotated" });
   const overallPlanDimension =
     overallPlanBounds && rooms.length > 1
       ? {
           width: overallPlanBounds.right - overallPlanBounds.left,
           depth: overallPlanBounds.bottom - overallPlanBounds.top,
-          centerX: (overallPlanBounds.left + overallPlanBounds.right) / 2,
-          centerZ: (overallPlanBounds.top + overallPlanBounds.bottom) / 2,
-          widthGuideZ: overallPlanBounds.top - 0.78,
-          depthGuideX: overallPlanBounds.left - 0.78,
+          widthGuideZ: overallPlanBounds.top - overallGuides.widthGuideOffsetM,
+          depthGuideX: overallPlanBounds.left - overallGuides.depthGuideOffsetM,
           tick: 0.13,
           y: 0.017,
         }
       : null;
+  // The overall labels; the one on a guide that runs up the screen is written up it, bottom to top.
+  const overallLabelStyle = (vertical: boolean): CSSProperties => ({
+    background: colour("rgba(255,255,255,0.92)"), border: colour("1px solid rgba(82,82,91,0.28)"), borderRadius: 6,
+    boxShadow: "0 1px 4px rgba(15,23,42,0.1)", color: colour("#3f3f46"), fontSize: 12, fontWeight: 750,
+    padding: vertical ? "6px 2px" : "2px 6px", pointerEvents: "none", whiteSpace: "nowrap",
+    ...(vertical ? { writingMode: "vertical-rl", transform: "rotate(180deg)" } : null),
+  });
   const overallWidthLabel =
     planViewOrientation === "rotated" ? "Overall vertical" : "Overall horizontal";
   const overallDepthLabel =
@@ -3323,14 +3337,11 @@ export default function RoomRenderer2D({
                     }}
                   >
                     {isSelectedRoom ? (
-                      <span
+                      <Check
                         data-testid="house-room-2d-selection-badge"
                         data-room-id={room.id}
-                        aria-hidden="true"
-                        style={{ fontSize: 12, fontWeight: 900 }}
-                      >
-                        ✓
-                      </span>
+                        aria-hidden="true" size={12} strokeWidth={3}
+                      />
                     ) : null}
                     {room.name}
                   </div>
@@ -3575,7 +3586,7 @@ export default function RoomRenderer2D({
                       >
                         <span>Width</span>
                         <input
-                          data-testid="active-room-dimension-editor-width"
+                          data-testid="active-room-dimension-editor-width" className={CANVAS_FIELD_TEXT_CLASS}
                           autoFocus
                           type="number"
                           inputMode="numeric"
@@ -3599,7 +3610,7 @@ export default function RoomRenderer2D({
                             border: "none",
                             background: "transparent",
                             color: colour("#166534"),
-                            ...CANVAS_CHIP_TEXT,
+                            fontWeight: 700, lineHeight: "16px",
                             outline: "none",
                           }}
                         />
@@ -3654,7 +3665,7 @@ export default function RoomRenderer2D({
                       >
                         <span>Depth</span>
                         <input
-                          data-testid="active-room-dimension-editor-depth"
+                          data-testid="active-room-dimension-editor-depth" className={CANVAS_FIELD_TEXT_CLASS}
                           autoFocus
                           type="number"
                           inputMode="numeric"
@@ -3678,7 +3689,7 @@ export default function RoomRenderer2D({
                             border: "none",
                             background: "transparent",
                             color: colour("#166534"),
-                            ...CANVAS_CHIP_TEXT,
+                            fontWeight: 700, lineHeight: "16px",
                             outline: "none",
                           }}
                         />
@@ -3796,24 +3807,13 @@ export default function RoomRenderer2D({
           />
           <Html
             zIndexRange={[13, 0]}
-            position={[overallPlanDimension.centerX, 0.021, overallPlanDimension.widthGuideZ]}
+            position={[overallGuides.widthLabelX, 0.021, overallPlanDimension.widthGuideZ]}
             center
             transform={false}
           >
             <div
               data-testid="overall-plan-dimension-width"
-              style={{
-                background: colour("rgba(255,255,255,0.92)"),
-                border: colour("1px solid rgba(82,82,91,0.28)"),
-                borderRadius: 6,
-                boxShadow: "0 1px 4px rgba(15,23,42,0.1)",
-                color: colour("#3f3f46"),
-                fontSize: 12,
-                fontWeight: 750,
-                padding: "2px 6px",
-                pointerEvents: "none",
-                whiteSpace: "nowrap",
-              }}
+              style={overallLabelStyle(overallGuides.verticalLabel === "width")}
             >
               {overallWidthLabel} {formatDimension(overallPlanDimension.width)}
             </div>
@@ -3854,24 +3854,13 @@ export default function RoomRenderer2D({
           />
           <Html
             zIndexRange={[13, 0]}
-            position={[overallPlanDimension.depthGuideX, 0.021, overallPlanDimension.centerZ]}
+            position={[overallPlanDimension.depthGuideX, 0.021, overallGuides.depthLabelZ]}
             center
             transform={false}
           >
             <div
               data-testid="overall-plan-dimension-depth"
-              style={{
-                background: colour("rgba(255,255,255,0.92)"),
-                border: colour("1px solid rgba(82,82,91,0.28)"),
-                borderRadius: 6,
-                boxShadow: "0 1px 4px rgba(15,23,42,0.1)",
-                color: colour("#3f3f46"),
-                fontSize: 12,
-                fontWeight: 750,
-                padding: "2px 6px",
-                pointerEvents: "none",
-                whiteSpace: "nowrap",
-              }}
+              style={overallLabelStyle(overallGuides.verticalLabel === "depth")}
             >
               {overallDepthLabel} {formatDimension(overallPlanDimension.depth)}
             </div>
@@ -4488,7 +4477,7 @@ export default function RoomRenderer2D({
                   onPointerDown={(event) => event.stopPropagation()}
                 >
                   <input
-                    data-testid="wall-draw-segment-length-editor"
+                    data-testid="wall-draw-segment-length-editor" className={CANVAS_FIELD_TEXT_CLASS}
                     autoFocus
                     type="text"
                     inputMode={measurementUnit === "ft-in" ? "text" : "decimal"}
@@ -4513,7 +4502,6 @@ export default function RoomRenderer2D({
                       border: "none",
                       background: "transparent",
                       color: colour("#1d4ed8"),
-                      fontSize: 12,
                       fontWeight: 800,
                       outline: "none",
                     }}

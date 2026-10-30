@@ -81,7 +81,9 @@ assert.equal(frame.match(/h-9 w-9 touch:h-11 touch:w-11 [^"]*opacity-0 touch:opa
 const barToggle = read("components/editor/command-bar/CommandBarCanvasControls.tsx");
 assert.match(barToggle, /const policy = useTabletPanelPolicy\(useMediaQuery\(TABLET_MEDIA_QUERY\), storedCollapsed\);/);
 assert.match(barToggle, /onClick=\{\(\) => toggleStepPanel\(policy, storedCollapsed, setCollapsed\)\}/);
-assert.match(read("components/editor/design-page/DesignPageEditorChrome.tsx"), /const tablet = useTabletPanelPolicy\(useMediaQuery\(TABLET_MEDIA_QUERY\), bar\.designSidebarCollapsed\);[\s\S]*?collapsed: tablet\.collapsed,/);
+// The canvas toolbar centres on the model's frame, which is the tablet policy's (below), through the
+// editor's canvas variables (30 Oct 2026); the chrome no longer works out a frame of its own.
+assert.doesNotMatch(read("components/editor/design-page/DesignPageEditorChrome.tsx"), /useTabletPanelPolicy|resolveCanvasFrameBox/);
 const model = read("lib/useDesignPagePlanPresentationModel.ts");
 assert.match(model, /const tablet = useTabletPanelPolicy\(isTabletWidth\(layout\.viewportWidth\), layout\.designPanelCollapsed\);/);
 assert.match(model, /designPanelCollapsed: tablet\.collapsed,[\s\S]*?tabletRightInsetPx: tablet\.rightInsetPx,/);
@@ -146,5 +148,9 @@ assert.match(
   /useReportTabletRightPanel\("inspector", wide && !docked && takesOver, configuration\.floatingWidthPx \+ configuration\.floatingRightPx\);/,
   "A floating inspector for a wall, door or window; not for a room, which is selected on arrival."
 );
+// A room is edited in the Plan panel's room card on a tablet while it's open (30 Oct 2026): the card's
+// Surfaces rows report it, and the room's inspector waits; the card shows Width and Depth up to lg.
+assert.match(read("components/editor/design-controls-plan/RoomSurfaceRows.tsx"), /\}\) \{\n  useReportStepPanelRoomCard\(\);\n  if \(hidden\) return null;/);
+assert.match(read("components/editor/DesignControlsPlanPanel.tsx"), /data-testid="mobile-selected-room-dimensions"\s+className="[^"]*\blg:hidden"/);
 
 console.log("Tablet panel checks passed.");

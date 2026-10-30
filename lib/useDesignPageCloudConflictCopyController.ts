@@ -58,7 +58,6 @@ type ConflictCopyControllerInput = {
     lastPersistedSnapshotFingerprint: string | null;
     lastCloudSaveError: string | null;
     isSaving: boolean;
-    isDesigner: boolean;
     savedViews: NamedCameraView[];
     style: Style;
     budget: Budget;
@@ -91,7 +90,6 @@ type ConflictCopyControllerInput = {
     setLastCloudSaveError: Dispatch<SetStateAction<string | null>>;
     setIsSaving: Dispatch<SetStateAction<boolean>>;
     fetchShareStatus: (designId: string) => Promise<void>;
-    enableShare: (designId: string) => Promise<void>;
     showRuleToast: (message: string) => void;
   };
   adapters: {
@@ -273,7 +271,6 @@ function publishTransition(
   copy: CreatedConflictCopyIdentity,
 ) {
   void input.actions.fetchShareStatus(copy.designId);
-  if (input.state.isDesigner) void input.actions.enableShare(copy.designId);
   track("design_conflict_saved_as_copy", {
     prior_design_id: conflict.designId,
     saved_design_id: copy.designId,

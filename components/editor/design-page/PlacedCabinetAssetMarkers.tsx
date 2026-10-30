@@ -6,6 +6,7 @@ import {
   type ParametricCabinetDesignItem,
 } from "@/features/cabinetry/designItemAdapters";
 import { generateCabinetBOM } from "@/features/cabinetry/generateCabinetBOM";
+import { roundedEdgeBandingM } from "@/features/cabinetry/edgeBandingTotals";
 import { generateCabinetDocumentation } from "@/features/cabinetry/generateCabinetDocumentation";
 import { generateCabinetParts } from "@/features/cabinetry/generateCabinetParts";
 import {
@@ -119,12 +120,7 @@ function PlacedCabinetAssetMarkerPair({
         getGeneratedDocumentation().edgeBandingSchedule.length
     ),
     "data-edge-banding-total-m": String(
-      Math.round(
-        (
-          item.edgeBandingScheduleSnapshot ??
-          getGeneratedDocumentation().edgeBandingSchedule
-        ).reduce((sum, entry) => sum + entry.totalLengthM, 0) * 100
-      ) / 100
+      roundedEdgeBandingM(item.cutListSnapshot ?? getGeneratedDocumentation().cutList)
     ),
     "data-cut-list-count": String(
       item.cutListSnapshot?.length ?? getGeneratedDocumentation().cutList.length

@@ -130,10 +130,10 @@ export function CabinetDetailedPreviewPanel({
       className="relative min-h-0 bg-(--scene-preview-ground) [&_[data-dimension-field=depth]]:!top-28"
     >
       <CabinetStudioPreviewInteractionController {...interaction} />
-      <div className="pointer-events-none absolute inset-x-4 top-4 z-30 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2">
+      <div className="pointer-events-none absolute inset-x-4 top-4 z-30 grid grid-cols-[1fr_auto] items-start gap-2 xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         <div
           data-testid="cabinet-preview-summary" data-surface="floating"
-          className="pointer-events-none min-w-0 max-w-full justify-self-start rounded-md bg-surface-floating/90 px-3 py-2 text-xs text-control-label-idle shadow-sm ring-1 ring-surface-floating-edge"
+          className="pointer-events-none row-start-2 min-w-0 max-w-full justify-self-start rounded-md bg-surface-floating/90 px-3 py-2 text-xs text-control-label-idle shadow-sm ring-1 ring-surface-floating-edge xl:row-start-auto"
         >
           <span className="block break-words">{dimensionsLabel}</span>
           <span className="mt-1 block break-words font-semibold text-on-accent-tint">
@@ -142,7 +142,7 @@ export function CabinetDetailedPreviewPanel({
         </div>
         <div
           data-testid="cabinet-preview-controls"
-          className="pointer-events-auto flex items-center gap-2"
+          className="pointer-events-auto col-span-2 flex items-center gap-2 xl:col-span-1"
         >
           <CabinetPreviewViewSelector value={view} onChange={onViewChange} />
           <Button

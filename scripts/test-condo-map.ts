@@ -146,8 +146,8 @@ for (const dev of Object.values(maps)) {
   const files = fs.existsSync(folder) ? fs.readdirSync(folder).sort() : [];
   assert.deepEqual(files, [...used].sort(), `${dev.slug}: the overlays folder holds its plans' pictures and nothing else`);
 }
-assert.equal(plannedUnits, 279, "the units with a plan on the map (30 Oct 2026)");
-assert.equal(plannedLevels, 279, "one storey each: none of the two-level units' plans is sure yet");
+assert.equal(plannedUnits, 350, "the units with a plan on the map (30 Oct 2026: 279 by their outline, 71 by their windows)");
+assert.equal(plannedLevels, 350, "one storey each: none of the two-level units' plans is sure yet");
 assert.throws(() => parseCondoDevelopmentMap({ ...(raw("1953/map.json")), plans: { "#03-01": [{ f: 3, file: "../x.webp", corners: [[0, 0], [0, 0], [0, 0], [0, 0]], z: 1 }] } }), CondoMapDataError);
 assert.throws(() => parseCondoDevelopmentMap({ ...(raw("1953/map.json")), plans: { "#03-01": [{ f: 3, file: "0123456789abcdef.webp", corners: [[0, 0], [0, 0], [0, 0]], z: 1 }] } }), CondoMapDataError);
 assert.deepEqual(parseCondoDevelopmentMap({ ...(raw("1953/map.json")), plans: undefined }).plans, {}, "a map without plans has none");
