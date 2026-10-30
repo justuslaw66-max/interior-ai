@@ -31,6 +31,7 @@ import { buildOpeningWallSurfacePanels } from "../components/editor/renderers/ho
 import { withContinuousWallSelection } from "../components/editor/renderers/house-plan-3d/continuousWallSelection";
 import { buildLegacyPhysicalOpeningAssemblies } from "../components/editor/renderers/house-plan-3d/LegacyWallOpeningMeshes";
 import {
+  getDeepestWallFinish,
   getRectangleWallClearances,
   getRoomWallFaceIds,
   getRoomWallFinishDepths,
@@ -86,10 +87,33 @@ const paintedWithOutsidePanel = room({
   panels: { [V2_EAST_OUTSIDE]: { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } },
 });
 assert.deepEqual(getRoomWallFinishDepths(paintedWithOutsidePanel), {}, "a panel on the wall's outside face stands outside");
-assert.deepEqual(
-  getRoomWallFinishDepths({ ...laminate, floorElevationMm: 0 }), {},
-  "a room from an imported plan keeps the bare wall: its walls draw the finish flat (the next PR)"
-);
+// A room from an imported plan (J: "Two: drawn rooms, then imported"): its finishes are saved under the plan's wall ids, and
+// each edge of its outline names the wall it lies on (planEdgeWallIds), so edge N's depth is its wall's finish.
+const importedOutline = [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }];
+const imported = room({
+  default: { paintColorHex: "#ffffff" },
+  faces: { "plan-north": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST }, "wall-1": { materialId: NORDIC_ACACIA } },
+  panels: { "wall-panel:v2:1:lam:wall-2:segment-start:segment-end:interior": { materialId: NORDIC_ACACIA } },
+}, {
+  floorElevationMm: 0, planShape: "custom_polygon", planPolygon: importedOutline,
+  planEdgeWallIds: ["plan-north", "plan-east", "plan-south", "plan-west"],
+});
+assert.deepEqual(getRoomWallFinishDepths(imported), { "wall-0": 0.044 },
+  "edge 0 takes its wall's laminate; neither a drawn face's key (wall-1) nor a panel counts: the imported 3D view draws neither");
+assert.deepEqual(getRoomWallFinishDepths({ ...imported, planEdgeWallIds: undefined }), {},
+  "an imported room saved before its edges were named keeps the bare wall");
+assert.deepEqual(getRoomWallFinishDepths({ ...imported, planEdgeWallIds: ["plan-north", "plan-east"] }), {},
+  "and so does one whose outline no longer matches them");
+assert.deepEqual(getRoomWallFinishDepths({ ...imported, planEdgeWallIds: ["plan-west", "plan-north", "plan-east", "plan-south"] }),
+  { "wall-1": 0.044 }, "kept per surfaces and edges: a plan edit can move the room's edges onto other walls");
+assert.deepEqual(getRoomSideFinishDepths(imported, { w: 4, d: 3 }), { north: 0.044 });
+const importedPlanRoom = buildHousePlan2D([imported], 4, 3).rooms[0];
+assert.deepEqual(getRoomWallFinishDepths(importedPlanRoom), { "wall-0": 0.044 }, "the plan room carries the edges (edgeWallIds)");
+assert.deepEqual(getRoomClearInsideMetrics(importedPlanRoom, (mm) => `${Math.round(mm)}`), ["Clear inside 3880 × 2836"]);
+assert.equal(getDeepestWallFinish(importedPlanRoom, "wall-0")?.materialId, NORDIC_ACACIA);
+assert.equal(getDeepestWallFinish(importedPlanRoom, "wall-1"), null);
+near(clampToRoomInsideFinishes(0, -9, 1, 0.6, 4, 3, getFurnitureWallInset(0.12), 0, "custom_polygon", importedOutline, undefined,
+  getRoomWallFinishDepths(imported))[1], -1.5 + getFurnitureWallInset(0.12) + 0.044 + 0.3, "furniture stops at the imported wall's panel");
 
 // The outline inside the panels: each edge moves in by its own depth.
 assert.deepEqual(

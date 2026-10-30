@@ -1,9 +1,4 @@
-import {
-  BufferGeometry,
-  Float32BufferAttribute,
-  Path,
-  Shape,
-} from "three";
+import { Matrix4, Path, Shape, Vector3 } from "three";
 
 import type {
   CompiledFloorPlanOpeningV2,
@@ -11,6 +6,8 @@ import type {
 } from "@/lib/floor-plan-compiler-v2";
 import { buildCanonicalOpeningSymbolLinesV2 } from "@/lib/floor-plan-opening-primitives";
 import type { PlanarUnionPolygonMm } from "@/lib/floor-plan-planar-union";
+import { buildWallFinishShellGeometry } from "../house-plan-3d/geometry";
+import { mapWallFinishShellUvs } from "../house-plan-3d/wallFinishShellUvs";
 import { isFloorPlanVoidRoom } from "@/lib/floor-plan-void-rooms";
 import type {
   CanonicalFloorPlanLineSegment,
@@ -80,13 +77,14 @@ export function planarUnionShapes(polygons: PlanarUnionPolygonMm[]) {
   });
 }
 
-export function wallSurfaceEdge(solid: CanonicalFloorPlanWallSolid, side: 1 | -1) {
+/** A wall slice's face on the room's side, as a line from corner to corner, `offsetMm` in front of the face. */
+export function wallSurfaceEdge(solid: CanonicalFloorPlanWallSolid, side: 1 | -1, offsetMm = 1.5) {
   const dx = solid.end.xMm - solid.start.xMm;
   const dz = solid.end.zMm - solid.start.zMm;
   const segmentLengthMm = Math.max(1, Math.hypot(dx, dz));
   const normalX = -dz / segmentLengthMm;
   const normalZ = dx / segmentLengthMm;
-  const renderOffsetMm = side * 1.5;
+  const renderOffsetMm = side * offsetMm;
   const authoredStart =
     side === 1 ? solid.footprint.startLeft : solid.footprint.endRight;
   const authoredEnd =
@@ -143,37 +141,28 @@ export function wallSurfaceLayout(
   };
 }
 
-export function wallSurfaceGeometry(solid: CanonicalFloorPlanWallSolid, side: 1 | -1) {
-  const edge = wallSurfaceEdge(solid, side);
+/**
+ * A wall slice's finish, in floor space, as the box a drawn room's panel is (house-plan-3d's buildWallFinishShellGeometry):
+ * from the face to `depthMm` in front of it (a laminate on its board, 10 to 44 mm; any other finish its 1.5 mm skin), the
+ * slice's height, and along the face from corner to corner. It has no side against the wall. Its front shows the picture
+ * from the face's start to its end, and its ends, top and bottom the picture's edge there (mapWallFinishShellUvs).
+ */
+export function wallFinishShellGeometry(solid: CanonicalFloorPlanWallSolid, side: 1 | -1, depthMm: number) {
+  const edge = wallSurfaceEdge(solid, side, 0);
+  const length = Math.max(0.001, Math.hypot(edge.end.x - edge.start.x, edge.end.z - edge.start.z));
+  const along = { x: (edge.end.x - edge.start.x) / length, z: (edge.end.z - edge.start.z) / length };
+  const depth = Math.max(0.0005, depthMm / 1000);
   const bottom = solid.bottomMm / 1000;
-  const top = solid.topMm / 1000;
-  const geometry = new BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new Float32BufferAttribute(
-      [
-        edge.start.x,
-        bottom,
-        edge.start.z,
-        edge.end.x,
-        bottom,
-        edge.end.z,
-        edge.end.x,
-        top,
-        edge.end.z,
-        edge.start.x,
-        top,
-        edge.start.z,
-      ],
-      3
-    )
-  );
-  geometry.setAttribute(
-    "uv",
-    new Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2)
-  );
-  geometry.setIndex([0, 1, 2, 0, 2, 3]);
-  geometry.computeVertexNormals();
+  const top = Math.max(bottom + 0.001, solid.topMm / 1000);
+  const geometry = buildWallFinishShellGeometry({ widthMeters: length, heightMeters: top - bottom, thicknessMeters: depth });
+  mapWallFinishShellUvs(geometry, 0, 1);
+  // The box's +X runs along the face and its kept broad side (+Z) faces away from the wall: X × Y.
+  const outward = new Vector3(-along.z, 0, along.x);
+  geometry.applyMatrix4(new Matrix4().makeBasis(new Vector3(along.x, 0, along.z), new Vector3(0, 1, 0), outward).setPosition(
+    (edge.start.x + edge.end.x) / 2 + (outward.x * depth) / 2,
+    (bottom + top) / 2,
+    (edge.start.z + edge.end.z) / 2 + (outward.z * depth) / 2
+  ));
   return geometry;
 }
 

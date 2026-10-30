@@ -17,6 +17,14 @@ import {
   migrateLegacyWallSurfaceFacesToCanonical,
 } from "@/lib/floor-plan-legacy-adapters";
 import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
+import { buildHousePlan2D } from "@/lib/design-page-house-plan";
+import { assertSharedDesignInput, assertSharedDesignSnapshotPublic } from "@/lib/shared-design-projection-schema";
+import { wallFinishShellGeometry } from "@/components/editor/renderers/canonical-floor-plan/geometry";
+import {
+  getCanonicalOpeningHighlightDepth,
+  getCanonicalPanelStrips2D,
+  getCanonicalWallPanelDepthMm,
+} from "@/components/editor/renderers/canonical-floor-plan/canonicalWallPanels";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
 
 const wall = (
@@ -258,16 +266,14 @@ assert.equal(windowIdentity.topMm, 2100);
 const read = (relativePath: string) =>
   fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
 const canonicalRenderer = read("components/editor/renderers/CanonicalFloorPlanStructure.tsx");
+const canonicalWallSurfaceSource = read("components/editor/renderers/canonical-floor-plan/CanonicalWallSurfaceMesh.tsx");
 const houseRenderer = read("components/editor/renderers/HousePlanRenderer3D.tsx");
 const geometryController = read("lib/useDesignPageRoomGeometry.ts");
 const placementWorkspace = read("lib/useDesignPagePlacementWorkspaceRegistration.ts");
-assert.match(canonicalRenderer, /testId: "canonical-wall-surface-3d"/);
-assert.match(canonicalRenderer, /getWallFaceSurfaceSettings\([\s\S]*?wallId/);
-assert.match(canonicalRenderer, /canonicalRoomId: room\.id/);
-const canonicalWallSurfaceSource = canonicalRenderer.slice(
-  canonicalRenderer.indexOf("function CanonicalWallSurfaceMesh"),
-  canonicalRenderer.indexOf("function CanonicalOpening3DSymbol")
-);
+assert.match(canonicalRenderer, /<CanonicalWallSurfaceMesh\b/);
+assert.match(canonicalWallSurfaceSource, /testId: "canonical-wall-surface-3d"/);
+assert.match(canonicalWallSurfaceSource, /getWallFaceSurfaceSettings\([\s\S]*?wallId/);
+assert.match(canonicalWallSurfaceSource, /canonicalRoomId: room\.id/);
 assert.doesNotMatch(
   canonicalWallSurfaceSource,
   /castShadow/,
@@ -288,5 +294,84 @@ assert.match(
   placementWorkspace,
   /const canEditPlanGeometry =[\s\S]*?!Boolean\(designSnapshot\.floorPlan\?\.canonicalDocument\)/
 );
+
+// An imported plan's finish stands at its depth (J, 29 Oct 2026: "Two: drawn rooms, then imported"): a laminate on its board,
+// 10 to 44 mm off the wall, anything else a 1.5 mm skin, drawn as a drawn room's panel is, as a box with no side against the
+// wall. The shared wall runs down x = 4000 mm and is 200 mm thick, so its faces are at 3900 mm (left) and 4100 mm (right).
+const near = (actual: number, expected: number) => assert.ok(Math.abs(actual - expected) < 1e-9, `${actual} ≠ ${expected}`);
+const NORDIC_ACACIA = "greenlam-woodgrains-5394";
+const DEEPEST = { board: "mdf", boardThicknessMm: 18, fixing: "battens" } as const;
+assert.ok(shared.solids.length === 1);
+const shellX = (side: 1 | -1, depthMm: number) => {
+  const geometry = wallFinishShellGeometry(shared.solids[0], side, depthMm);
+  geometry.computeBoundingBox();
+  const box = geometry.boundingBox!;
+  const outward = Array.from({ length: geometry.getAttribute("normal").count }, (_, index) =>
+    Math.round(geometry.getAttribute("normal").getX(index)));
+  const mm = (metres: number) => Math.round(metres * 10_000) / 10;
+  return { min: mm(box.min.x), max: mm(box.max.x), top: mm(box.max.y),
+    towardWall: outward.includes(side) };
+};
+assert.deepEqual(shellX(1, 44), { min: 3856, max: 3900, top: 2600, towardWall: false },
+  "The left room's laminate runs from its face 44 mm into the room, with no side against the wall.");
+assert.deepEqual(shellX(-1, 44), { min: 4100, max: 4144, top: 2600, towardWall: false });
+assert.deepEqual(shellX(1, 1.5), { min: 3898.5, max: 3900, top: 2600, towardWall: false }, "paint is a 1.5 mm skin, as before");
+const shellUvs = wallFinishShellGeometry(shared.solids[0], 1, 44);
+const frontU = Array.from({ length: shellUvs.getAttribute("uv").count }, (_, index) => index)
+  .filter((index) => shellUvs.getAttribute("normal").getX(index) < -0.999)
+  .map((index) => [Math.round(shellUvs.getAttribute("position").getZ(index) * 1000), shellUvs.getAttribute("uv").getX(index)]);
+assert.deepEqual([...new Set(frontU.map(([z, u]) => `${z}:${u}`))].sort(), ["0:0", "3000:1"],
+  "The front shows the picture from the face's start corner to its end, as the flat finish did.");
+assert.match(canonicalWallSurfaceSource, /getWallFinishDepthMm\(material, settings, WALL_FINISH_SKIN_MM\)/);
+assert.match(canonicalWallSurfaceSource, /side=\{FrontSide\}/);
+assert.doesNotMatch(canonicalWallSurfaceSource, /polygonOffset|DoubleSide/, "The box has its own front: one-sided, no depth offset.");
+assert.match(canonicalWallSurfaceSource, /wallSurfaceEdge\(solid, side, finishDepthMm \+ SELECTION_OUTLINE_CLEARANCE_MM\)/,
+  "The selection outline stands 3 mm in front of the finish.");
+
+// The 2D plan's strips: each room's laminate on each floor-standing slice of a wall, from its bare face to the panel's face.
+// (This scene's walls have their own vertices, so they aren't joined at the corners: each face runs to its wall's ends.)
+const finishedRooms = buildHousePlan2D([
+  { ...previous, surfaces: { walls: { default: { paintColorHex: "#eeeeee" },
+    faces: { shared: { materialId: NORDIC_ACACIA, panelBacking: DEEPEST }, "left-north": { materialId: NORDIC_ACACIA } } } } },
+  { ...previous, id: "right", surfaces: { walls: { default: { paintColorHex: "#eeeeee" } } } },
+], 8, 3).rooms;
+const stripsOf = (model: typeof renderModel) => getCanonicalPanelStrips2D(model.floors[0], finishedRooms).map((strip) => [
+  strip.wallId, strip.roomId, ...strip.corners.map(({ x, z }) => `${Math.round(x * 1000)},${Math.round(z * 1000)}`),
+]);
+assert.deepEqual(stripsOf(renderModel), [
+  ["left-north", "left", "0,100", "4000,100", "4000,110", "0,110"],
+  ["shared", "left", "3900,0", "3900,3000", "3856,3000", "3856,0"],
+], "Only laminates have strips (the right room's paint has none), each its own finish's depth deep.");
+const withOpenings = (...openings: CompiledFloorPlanOpeningV2[]) => buildCanonicalFloorPlanRenderModel({
+  ...scene, floors: [{ ...scene.floors[0], openings }],
+});
+assert.deepEqual(stripsOf(withOpenings(opening("swing"))).filter(([wallId]) => wallId === "left-north").map((strip) => strip.slice(2, 4)),
+  [["0,100", "1000,100"], ["1900,100", "4000,100"]], "A strip stops at a door: the panel above it doesn't stand on the floor.");
+assert.equal(stripsOf(withOpenings(opening("fixed", "window"))).filter(([wallId]) => wallId === "left-north").length, 3,
+  "It runs on under a window's sill, as the 3D panel does.");
+// An opening's hover and selection box stands 3 mm in front of the deeper of its wall's rooms' laminates on each side.
+assert.equal(getCanonicalWallPanelDepthMm(shared, finishedRooms), 44);
+assert.equal(getCanonicalWallPanelDepthMm(renderModel.floors[0].walls.find(({ id }) => id === "right-east")!, finishedRooms), 0);
+near(getCanonicalOpeningHighlightDepth(200, 44), 0.294);
+near(getCanonicalOpeningHighlightDepth(200, 0), 0.2);
+near(getCanonicalOpeningHighlightDepth(50, 0), 0.08);
+assert.match(canonicalRenderer, /panelDepthMm=\{getCanonicalWallPanelDepthMm\(wall, rooms\)\}/);
+assert.match(canonicalRenderer, /<boxGeometry args=\{\[host\.length, height, getCanonicalOpeningHighlightDepth\(wallThicknessMm, panelDepthMm\)\]\} \/>/);
+assert.match(canonicalRenderer, /<CanonicalPanelStrips2D floor=\{activeFloor\} rooms=\{rooms\} isPro=\{theme === "pro"\} \/>/);
+assert.match(read("components/editor/renderers/RoomRenderer2D.tsx"), /<CanonicalFloorPlanWalls2D\s+model=\{canonicalPlan\} rooms=\{rooms\}/,
+  "The 2D plan hands its rooms to the imported plan's walls, which draw their panels.");
+
+// Each edge of an imported room's outline names the plan wall it lies on, which its finishes are saved under, and it is
+// saved with the room, so the room is measured to that wall's finished face (lib/room-wall-finish-depths.ts).
+const projectedRoom = ambiguousProjection.snapshot.rooms[0];
+const projectedLoop = compatibilityDocument.floors[0].rooms[0];
+assert.equal(projectedRoom.planEdgeWallIds?.length, projectedRoom.planPolygon?.length);
+assert.deepEqual(projectedRoom.planEdgeWallIds, projectedLoop.wallLoops.find(({ kind }) => kind === "outer")?.walls.map(({ wallId }) => wallId),
+  "A straight wall gives one edge, in the loop's order.");
+assert.deepEqual(storedToSnapshot(snapshotToStored(ambiguousProjection.snapshot)).rooms[0].planEdgeWallIds, projectedRoom.planEdgeWallIds);
+assert.deepEqual(buildHousePlan2D([projectedRoom], 4, 3).rooms[0].edgeWallIds, projectedRoom.planEdgeWallIds);
+const sharedRoom = { version: 3, rooms: [snapshotToStored(ambiguousProjection.snapshot).rooms[0]], activeRoomId: projectedRoom.id, title: "t" };
+assert.doesNotThrow(() => assertSharedDesignInput(sharedRoom), "A shared design keeps the edges: its projection declares them.");
+assert.doesNotThrow(() => assertSharedDesignSnapshotPublic(sharedRoom));
 
 console.log("Canonical wall finishes and opening semantics checks passed.");

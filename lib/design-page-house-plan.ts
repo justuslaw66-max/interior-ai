@@ -1567,6 +1567,7 @@ export type HousePlanRoom2D = {
   floorSlabThicknessMm?: number;
   shape: RoomPlanShape;
   polygon?: Array<{ x: number; z: number }>;
+  edgeWallIds?: string[]; // an imported room's: the plan wall each edge of `polygon` lies on (RoomSnapshot.planEdgeWallIds)
   holes?: Array<Array<{ x: number; z: number }>>;
   surfaces?: RoomSurfaceFinishes;
   surfaceFinishes?: RoomSurfaceFinishes;
@@ -1847,6 +1848,12 @@ function mergeRoomSurfaceFinishes(
   };
 }
 
+const CANONICAL_FLOOR_FIELDS = ["floorElevationMm", "floorStoreyHeightMm", "floorSlabThicknessMm"] as const;
+/** A canonical import's exact floor fields, each kept when it is a whole number of millimetres. */
+function canonicalFloorFields(room: RoomSnapshot): Pick<HousePlanRoom2D, (typeof CANONICAL_FLOOR_FIELDS)[number]> {
+  return Object.fromEntries(CANONICAL_FLOOR_FIELDS.flatMap((key) => (Number.isInteger(room[key]) ? [[key, room[key]]] : [])));
+}
+
 export function buildHousePlan2D(
   rooms: RoomSnapshot[],
   fallbackWidth: number,
@@ -1880,17 +1887,10 @@ export function buildHousePlan2D(
           ? room.floorLevel
           : 1,
       ...(room.floorLabel ? { floorLabel: room.floorLabel } : {}),
-      ...(typeof room.floorElevationMm === "number" && Number.isInteger(room.floorElevationMm)
-        ? { floorElevationMm: room.floorElevationMm }
-        : {}),
-      ...(typeof room.floorStoreyHeightMm === "number" && Number.isInteger(room.floorStoreyHeightMm)
-        ? { floorStoreyHeightMm: room.floorStoreyHeightMm }
-        : {}),
-      ...(typeof room.floorSlabThicknessMm === "number" && Number.isInteger(room.floorSlabThicknessMm)
-        ? { floorSlabThicknessMm: room.floorSlabThicknessMm }
-        : {}),
+      ...canonicalFloorFields(room),
       shape: room.planShape ?? "rectangle",
       ...(room.planPolygon ? { polygon: room.planPolygon } : {}),
+      ...(room.planEdgeWallIds ? { edgeWallIds: room.planEdgeWallIds } : {}),
       ...(room.planHoles?.length ? { holes: room.planHoles } : {}),
       ...(roomSurfaces ? { surfaces: roomSurfaces } : {}),
       ...(roomSurfaces ? { surfaceFinishes: roomSurfaces } : {}),

@@ -11,7 +11,7 @@ import {
 import { parseWallPanelId } from "@/lib/wall-panel-ids";
 
 /**
- * How far each wall's laminate panel stands into a drawn room, so the room is measured to the panel's face (J, 29 Oct 2026).
+ * How far each wall's laminate panel stands into a room, so the room is measured to the panel's face (J, 29 Oct 2026).
  *
  * A laminate wall finish sits on its board, 10 to 44 mm off the wall (lib/laminate-wall-backing.ts). Paint and tiles count as
  * nothing. A wall's depth is the deepest finish anywhere on it, panels included (J: "At the deepest panel"), so furniture
@@ -20,9 +20,10 @@ import { parseWallPanelId } from "@/lib/wall-panel-ids";
  * Faces are named as the 3D view names them: `north` (z = -depth / 2), `east`, `south` and `west` for a rectangle, and
  * `wall-N` for edge N of an L-shape's or a drawn shape's outline (components/editor/renderers/house-plan-3d/geometry.ts).
  *
- * Only drawn rooms: an imported plan's walls are drawn flat (CanonicalFloorPlanStructure.tsx) and named by the plan's own
- * wall ids, so its rooms keep the bare wall until they draw the panel's depth too (the second PR, J's "Two: drawn rooms,
- * then imported").
+ * An imported plan's room is a drawn shape too, edge N its outline's, but its finishes are saved under the plan's own wall
+ * ids and drawn by the imported plan's 3D view (canonical-floor-plan/CanonicalWallSurfaceMesh.tsx, J's "Two: drawn rooms,
+ * then imported"). Its `planEdgeWallIds` name the wall each edge lies on, so edge N's depth is that wall's finish. An
+ * imported room saved before it had them keeps the bare wall: its edges can't be matched to its walls.
  */
 
 /** A room snapshot or a plan room: what the depths are read from. */
@@ -36,6 +37,9 @@ export type WallFinishRoom = {
   surfaceFinishes?: RoomSurfaceAssignments;
   /** Set only on a room made from an imported plan (lib/floor-plan-legacy-adapters.ts): its exact floor elevation. */
   floorElevationMm?: number;
+  /** An imported room's: the plan wall each outline edge lies on (a room snapshot's, and a plan room's). */
+  planEdgeWallIds?: readonly string[];
+  edgeWallIds?: readonly string[];
 };
 
 /** Each face's panel depth off the bare wall, in metres; a face that isn't listed has none. */
@@ -78,6 +82,19 @@ export function getWallPanelFaceId(panelId: string, roomId: string): string | nu
   return getDeterministicWallFaceId(parts.faceToken);
 }
 
+/**
+ * Where a room's finishes are saved for each face: under the face's own id in a drawn room; under the plan wall each outline
+ * edge lies on in an imported room. Null for an imported room whose edges aren't named (saved before they were, or an
+ * outline that no longer matches them).
+ */
+function getFinishFaceKeys(room: WallFinishRoom): Map<string, string> | null {
+  const faceIds = getRoomWallFaceIds(room);
+  if (typeof room.floorElevationMm !== "number") return new Map(faceIds.map((faceId) => [faceId, faceId]));
+  const wallIds = room.planEdgeWallIds ?? room.edgeWallIds;
+  if (!wallIds || wallIds.length !== faceIds.length || roomShapeOf(room) !== "custom_polygon") return null;
+  return new Map(faceIds.map((faceId, index) => [faceId, wallIds[index]]));
+}
+
 function finishDepthMeters(settings: ReturnType<typeof getWallFaceSurfaceSettings>): number {
   return getWallFinishDepthMm(getRuntimeSurfaceMaterialById(settings.materialId), settings, 0) / 1000;
 }
@@ -88,14 +105,18 @@ const depthsBySurfaces = new WeakMap<RoomSurfaceAssignments, { roomId: string; f
 
 function faceListKey(room: WallFinishRoom): string {
   const shape = roomShapeOf(room);
-  return shape === "custom_polygon" ? `${shape}:${(room.planPolygon ?? room.polygon)?.length ?? 0}` : shape;
+  const faces = shape === "custom_polygon" ? `${shape}:${(room.planPolygon ?? room.polygon)?.length ?? 0}` : shape;
+  // An imported plan's edit can move a room's edges onto other walls and keep its surfaces.
+  return typeof room.floorElevationMm === "number" ? `${faces}:${(room.planEdgeWallIds ?? room.edgeWallIds)?.join("|")}` : faces;
 }
 
-/** Each face's panel depth in a drawn room: the deepest of the face's own finish and the finished panels on it. */
+/**
+ * Each face's panel depth: the deepest of the face's own finish and the finished panels on it, keyed by the face (`wall-N`
+ * for each edge of an imported room's outline).
+ */
 export function getRoomWallFinishDepths(room: WallFinishRoom | null | undefined): RoomWallFinishDepths {
-  if (!room || typeof room.floorElevationMm === "number") return NO_WALL_FINISH_DEPTHS;
-  const surfaces = room.surfaces ?? room.surfaceFinishes;
-  if (!surfaces?.walls) return NO_WALL_FINISH_DEPTHS;
+  const surfaces = room?.surfaces ?? room?.surfaceFinishes;
+  if (!room || !surfaces?.walls) return NO_WALL_FINISH_DEPTHS;
   const faces = faceListKey(room);
   const known = depthsBySurfaces.get(surfaces);
   if (known && known.roomId === room.id && known.faces === faces) return known.depths;
@@ -105,13 +126,17 @@ export function getRoomWallFinishDepths(room: WallFinishRoom | null | undefined)
 }
 
 function measureRoomWallFinishDepths(room: WallFinishRoom, surfaces: RoomSurfaceAssignments): RoomWallFinishDepths {
+  const finishKeys = getFinishFaceKeys(room);
+  if (!finishKeys) return NO_WALL_FINISH_DEPTHS;
   const depths: Record<string, number> = {};
   const deepen = (faceId: string, depth: number) => {
     if (depth > 0) depths[faceId] = Math.max(depths[faceId] ?? 0, depth);
   };
-  for (const faceId of getRoomWallFaceIds(room)) {
-    deepen(faceId, finishDepthMeters(getWallFaceSurfaceSettings(surfaces, faceId, normalizeFloorRotationDeg, clampFloorPatternScale)));
+  for (const [faceId, finishKey] of finishKeys) {
+    deepen(faceId, finishDepthMeters(getWallFaceSurfaceSettings(surfaces, finishKey, normalizeFloorRotationDeg, clampFloorPatternScale)));
   }
+  // An imported plan's walls take one finish per room face; its 3D view draws no panels.
+  if (typeof room.floorElevationMm === "number") return Object.keys(depths).length > 0 ? depths : NO_WALL_FINISH_DEPTHS;
   for (const panelId of Object.keys(surfaces.walls?.panels ?? {})) {
     const faceId = getWallPanelFaceId(panelId, room.id);
     if (!faceId) continue;
@@ -130,12 +155,14 @@ export function getDeepestWallFinish(
   room: WallFinishRoom, faceId: string
 ): ReturnType<typeof getWallFaceSurfaceSettings> | null {
   const surfaces = room.surfaces ?? room.surfaceFinishes;
-  if (!surfaces?.walls || typeof room.floorElevationMm === "number") return null;
+  const finishKey = getFinishFaceKeys(room)?.get(faceId);
+  if (!surfaces?.walls || !finishKey) return null;
+  const imported = typeof room.floorElevationMm === "number";
   // Panels first, so one as deep as the face's finish wins: it's the finish the 3D view draws where the panel is.
   const finishes = [
-    ...Object.keys(surfaces.walls.panels ?? {}).filter((panelId) => getWallPanelFaceId(panelId, room.id) === faceId).map(
+    ...Object.keys((!imported && surfaces.walls.panels) || {}).filter((panelId) => getWallPanelFaceId(panelId, room.id) === faceId).map(
       (panelId) => getWallPanelSurfaceSettings(surfaces, faceId, panelId, normalizeFloorRotationDeg, clampFloorPatternScale)),
-    getWallFaceSurfaceSettings(surfaces, faceId, normalizeFloorRotationDeg, clampFloorPatternScale),
+    getWallFaceSurfaceSettings(surfaces, finishKey, normalizeFloorRotationDeg, clampFloorPatternScale),
   ];
   let deepest: { depth: number; finish: (typeof finishes)[number] | null } = { depth: 0, finish: null };
   for (const finish of finishes) {

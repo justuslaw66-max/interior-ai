@@ -50,6 +50,8 @@ const rendererPath = path.join(
 const rendererSourcePaths = [
   rendererPath,
   path.join(path.dirname(rendererPath), "CanonicalFloorPlanStructure.tsx"),
+  path.join(path.dirname(rendererPath), "canonical-floor-plan", "CanonicalWallSurfaceMesh.tsx"),
+  path.join(path.dirname(rendererPath), "canonical-floor-plan", "surfaceMaterials.ts"),
   path.join(path.dirname(rendererPath), "GeneratedWindowFrame3D.tsx"),
   path.join(path.dirname(rendererPath), "house-plan-3d", "geometry.ts"),
   path.join(path.dirname(rendererPath), "house-plan-3d", "LegacyWallOpeningMeshes.tsx"),
@@ -426,8 +428,8 @@ assert.doesNotMatch(
 );
 
 const canonicalWallSurfaceSource = source.slice(
-  source.indexOf("function CanonicalWallSurfaceMesh"),
-  source.indexOf("function CanonicalOpening3DSymbol")
+  source.indexOf("function useCanonicalWallFinish"),
+  source.indexOf("function CanonicalWallSelectionOutline")
 );
 assert.match(
   source,

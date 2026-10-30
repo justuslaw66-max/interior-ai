@@ -3881,7 +3881,7 @@ export default function RoomRenderer2D({
 
       {canonicalPlan && (
         <CanonicalFloorPlanWalls2D
-          model={canonicalPlan}
+          model={canonicalPlan} rooms={rooms}
           wallEditing={canonicalWallEditing}
           activeFloorId={activeFloorId}
           activeFloorLevel={activeFloorLevel}

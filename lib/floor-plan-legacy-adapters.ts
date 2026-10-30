@@ -228,13 +228,11 @@ function sampleWall(
   });
 }
 
-function roomPolygon(
-  loop: CompiledFloorPlanRoomLoopV2,
-  wallById: Map<string, CompiledFloorPlanWallV2>
-) {
+/** The loop's outline points, each with the wall its edge to the next point lies on (an arc gives several). */
+function roomPolygonEdges(loop: CompiledFloorPlanRoomLoopV2, wallById: Map<string, CompiledFloorPlanWallV2>) {
   return loop.walls.flatMap((reference) => {
     const wall = wallById.get(reference.wallId);
-    return wall ? sampleWall(wall, reference.direction) : [];
+    return wall ? sampleWall(wall, reference.direction).map((point) => ({ point, wallId: wall.id })) : [];
   });
 }
 
@@ -357,7 +355,8 @@ export function canonicalFloorPlanToDesignSnapshot(
     return namedFloorPlanRooms(floor.rooms).map((compiledRoom, roomIndex) => {
       const outer = compiledRoom.wallLoops.find((loop) => loop.kind === "outer");
       if (!outer) throw new Error(`Room ${compiledRoom.id} has no outer loop`);
-      const polygon = roomPolygon(outer, wallById);
+      const edges = roomPolygonEdges(outer, wallById);
+      const polygon = edges.map(({ point }) => point);
       if (polygon.length < 3) throw new Error(`Room ${compiledRoom.id} has no usable polygon`);
       const bounds = {
         left: Math.min(...polygon.map((point) => point.xMm)),
@@ -365,10 +364,7 @@ export function canonicalFloorPlanToDesignSnapshot(
         top: Math.min(...polygon.map((point) => point.zMm)),
         bottom: Math.max(...polygon.map((point) => point.zMm)),
       };
-      const center = {
-        xMm: Math.round((bounds.left + bounds.right) / 2),
-        zMm: Math.round((bounds.top + bounds.bottom) / 2),
-      };
+      const center = { xMm: Math.round((bounds.left + bounds.right) / 2), zMm: Math.round((bounds.top + bounds.bottom) / 2) };
       const adjacentWalls = floor.walls.filter((wall) =>
         wall.adjacentRoomIds.includes(compiledRoom.id)
       );
@@ -402,9 +398,10 @@ export function canonicalFloorPlanToDesignSnapshot(
         x: (point.xMm - center.xMm) / 1000,
         z: (point.zMm - center.zMm) / 1000,
       }));
+      room.planEdgeWallIds = edges.map(({ wallId }) => wallId);
       const holePolygons = compiledRoom.wallLoops
         .filter((loop) => loop.kind === "hole")
-        .map((loop) => roomPolygon(loop, wallById))
+        .map((loop) => roomPolygonEdges(loop, wallById).map(({ point }) => point))
         .filter((points) => points.length >= 3);
       if (holePolygons.length) {
         room.planHoles = holePolygons.map((points) =>
