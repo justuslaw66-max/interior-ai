@@ -5,6 +5,7 @@ import {
   getRectangleWallClearances,
   getRoomWallFaceIds,
   getRoomWallFinishDepths,
+  hasRoomWallPanels,
   hasWallFinishDepths,
   NO_WALL_FINISH_DEPTHS,
   type RoomWallFinishDepths,
@@ -70,13 +71,14 @@ function offsetEdge(points: readonly RoomPlanPolygonPoint[], index: number, inse
  */
 export function insetPolygonEdges(points: readonly RoomPlanPolygonPoint[], insets: readonly number[]): RoomPlanPolygonPoint[] {
   const inwardSign = signedArea(points) >= 0 ? 1 : -1;
-  const lines = points.map((_, index) => offsetEdge(points, index, Math.max(0, insets[index] ?? 0), inwardSign));
+  // An inset may be negative: an imported room's edge on a wall thinner than its average stands that much nearer its centre line.
+  const lines = points.map((_, index) => offsetEdge(points, index, insets[index] ?? 0, inwardSign));
   return points.map((point, index) => {
     const before = lines[(index - 1 + points.length) % points.length];
     const after = lines[index];
     const cross = before.dx * after.dz - before.dz * after.dx;
     if (Math.abs(cross) < 1e-9) {
-      const inset = Math.max(insets[(index - 1 + points.length) % points.length] ?? 0, insets[index] ?? 0, 0);
+      const inset = Math.max(insets[(index - 1 + points.length) % points.length] ?? 0, insets[index] ?? 0);
       return { x: point.x + after.nx * inset, z: point.z + after.nz * inset };
     }
     const t = ((after.x - before.x) * after.dz - (after.z - before.z) * after.dx) / cross;
@@ -219,8 +221,9 @@ export function getRoomClearInsideMetrics(
   room: WallFinishRoom & { shape: RoomPlanShape; w: number; d: number; wallThickness?: number },
   formatLengthMm: (valueMm: number) => string
 ): string[] {
+  // Shown when a wall has a laminate (J: "Add a clear size"); measured to each wall's own face (getRoomWallFinishDepths).
+  if (!hasRoomWallPanels(room)) return [];
   const depths = getRoomWallFinishDepths(room);
-  if (!hasWallFinishDepths(depths)) return [];
   const halfWall = (room.wallThickness ?? 0.12) / 2;
   const outline = { shape: room.shape, polygon: room.polygon ? [...room.polygon] : undefined, w: room.w, d: room.d };
   const faceIds = getRoomWallFaceIds(outline);

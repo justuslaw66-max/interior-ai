@@ -997,8 +997,8 @@ export function CanonicalFloorPlanWalls3D({
             ) : null;
             const surfaces = wall.roomSides.flatMap(({ roomId: surfaceRoomId, side }) => {
               const room = rooms.find((candidate) => candidate.id === surfaceRoomId);
-              if (!room) return [];
-              const trims = getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side);
+              const trims = room && getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side, (id) => cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, id)));
+              if (!room || !trims || trims.hidden) return [];
               return [
                 <CanonicalWallSurfaceMesh
                   key={`${floor.id}:${solid.id}:surface:${surfaceRoomId}`}

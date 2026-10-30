@@ -54,11 +54,12 @@ export function buildCanonicalPlacementPanels(
     const room = roomById.get(roomId);
     const panelMm = room ? getCanonicalRoomWallFinish(room, wall.id).depthMm - PANEL_CONTACT_TOLERANCE_MM : 0;
     if (!room || panelMm <= 0) return [];
-    return wall.solids.map((solid) => {
+    return wall.solids.flatMap((solid) => {
       const trims = getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side);
+      if (trims.hidden) return [];
       const ends = { startMm: trims.startMm + PANEL_CONTACT_TOLERANCE_MM, endMm: trims.endMm + PANEL_CONTACT_TOLERANCE_MM };
       const bare = trimFaceEdge(wallSurfaceEdge(solid, side, 0), ends), face = trimFaceEdge(wallSurfaceEdge(solid, side, panelMm), ends);
-      return { floorId: floor.id, wallId: wall.id, bottomMm: solid.bottomMm, topMm: solid.topMm, outline: [bare.start, bare.end, face.end, face.start] };
+      return [{ floorId: floor.id, wallId: wall.id, bottomMm: solid.bottomMm, topMm: solid.topMm, outline: [bare.start, bare.end, face.end, face.start] }];
     });
   })));
 }

@@ -374,7 +374,7 @@ export interface RoomSnapshot {
   planPosition?: RoomPlanPosition;
   planShape?: RoomPlanShape;
   planPolygon?: RoomPlanPolygonPoint[];
-  planEdgeWallIds?: string[]; // an imported room's: the plan wall each planPolygon edge (point i to i + 1) lies on
+  planEdgeWallIds?: string[]; planEdgeWallThicknessesMm?: number[]; // an imported room's: each planPolygon edge's wall, its thickness
   /**
    * Ordered local-space void/courtyard loops inside planPolygon. Canonical imports populate these from room wall loops so
    * floor and ceiling surfaces cannot silently fill a source-authored hole.

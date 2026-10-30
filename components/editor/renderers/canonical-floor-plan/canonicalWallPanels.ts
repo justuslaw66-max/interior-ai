@@ -105,17 +105,18 @@ export function getCanonicalPanelStrips2D(
     const { settings, depthMm } = getCanonicalRoomWallFinish(room, wall.id);
     if (depthMm <= 0) return [];
     const finish = { paintColorHex: settings.paintColorHex ?? null, materialId: settings.materialId ?? null };
-    return wall.solids.filter((solid) => solid.bottomMm <= wall.baseOffsetMm + 0.5).map((solid) => {
+    return wall.solids.filter((solid) => solid.bottomMm <= wall.baseOffsetMm + 0.5).flatMap((solid) => {
       const trims = getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side);
+      if (trims.hidden) return [];
       const key = `${floor.id}:${solid.id}:${roomId}:panel`;
       const value = `${side}|${depthMm}|${trims.startMm}|${trims.endMm}|${finish.paintColorHex}|${finish.materialId}`;
       const known = stripsBySolid.get(solid) ?? new Map<string, { value: string; strip: CanonicalPanelStrip2D }>();
       stripsBySolid.set(solid, known);
       const kept = known.get(roomId);
-      if (kept?.value === value) return kept.strip;
+      if (kept?.value === value) return [kept.strip];
       const strip = buildStrip(key, wall.id, roomId, solid, side, depthMm, trims, finish);
       known.set(roomId, { value, strip });
-      return strip;
+      return [strip];
     });
   }));
 }

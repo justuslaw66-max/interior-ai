@@ -1567,7 +1567,7 @@ export type HousePlanRoom2D = {
   floorSlabThicknessMm?: number;
   shape: RoomPlanShape;
   polygon?: Array<{ x: number; z: number }>;
-  edgeWallIds?: string[]; // an imported room's: the plan wall each edge of `polygon` lies on (RoomSnapshot.planEdgeWallIds)
+  edgeWallIds?: string[]; edgeWallThicknessesMm?: number[]; // an imported room's: each edge's plan wall, its thickness
   holes?: Array<Array<{ x: number; z: number }>>;
   surfaces?: RoomSurfaceFinishes;
   surfaceFinishes?: RoomSurfaceFinishes;
@@ -1889,7 +1889,7 @@ export function buildHousePlan2D(
       ...canonicalFloorFields(room),
       shape: room.planShape ?? "rectangle",
       ...(room.planPolygon ? { polygon: room.planPolygon } : {}),
-      ...(room.planEdgeWallIds ? { edgeWallIds: room.planEdgeWallIds } : {}),
+      ...(room.planEdgeWallIds ? { edgeWallIds: room.planEdgeWallIds, edgeWallThicknessesMm: room.planEdgeWallThicknessesMm } : {}),
       ...(room.planHoles?.length ? { holes: room.planHoles } : {}),
       ...(roomSurfaces ? { surfaces: roomSurfaces } : {}),
       ...(roomSurfaces ? { surfaceFinishes: roomSurfaces } : {}),

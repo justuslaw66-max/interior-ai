@@ -33,11 +33,11 @@ function sampleWall(
   });
 }
 
-/** The loop's outline points, each with the wall its edge to the next point lies on (an arc gives several). */
+/** The loop's outline points, each with the wall its edge to the next point lies on and its thickness (an arc gives several). */
 export function roomPolygonEdges(loop: CompiledFloorPlanRoomLoopV2, wallById: Map<string, CompiledFloorPlanWallV2>) {
   return loop.walls.flatMap((reference) => {
     const wall = wallById.get(reference.wallId);
-    return wall ? sampleWall(wall, reference.direction).map((point) => ({ point, wallId: wall.id })) : [];
+    return wall ? sampleWall(wall, reference.direction).map((point) => ({ point, wallId: wall.id, thicknessMm: wall.thicknessMm })) : [];
   });
 }
 

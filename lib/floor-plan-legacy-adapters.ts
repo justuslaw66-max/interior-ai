@@ -363,7 +363,7 @@ export function canonicalFloorPlanToDesignSnapshot(
         x: (point.xMm - center.xMm) / 1000,
         z: (point.zMm - center.zMm) / 1000,
       }));
-      room.planEdgeWallIds = edges.map(({ wallId }) => wallId);
+      Object.assign(room, { planEdgeWallIds: edges.map(({ wallId }) => wallId), planEdgeWallThicknessesMm: edges.map(({ thicknessMm }) => thicknessMm) });
       const holePolygons = compiledRoom.wallLoops
         .filter((loop) => loop.kind === "hole")
         .map((loop) => roomPolygonEdges(loop, wallById).map(({ point }) => point))

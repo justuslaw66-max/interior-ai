@@ -38,9 +38,14 @@ export type WallFinishRoom = {
   surfaceFinishes?: RoomSurfaceAssignments;
   /** Set only on a room made from an imported plan (lib/floor-plan-legacy-adapters.ts): its exact floor elevation. */
   floorElevationMm?: number;
-  /** An imported room's: the plan wall each outline edge lies on (a room snapshot's, and a plan room's). */
+  /** An imported room's: the plan wall each outline edge lies on, and that wall's thickness (a room snapshot's, a plan room's). */
   planEdgeWallIds?: readonly string[];
   edgeWallIds?: readonly string[];
+  planEdgeWallThicknessesMm?: readonly number[];
+  edgeWallThicknessesMm?: readonly number[];
+  /** The room's one wall thickness, in metres: a room snapshot's geometry, a plan room's own. */
+  geometry?: { wallThickness?: number };
+  wallThickness?: number;
 };
 
 /** Each face's panel depth off the bare wall, in metres; a face that isn't listed has none. */
@@ -88,10 +93,28 @@ export function sanitizePlanEdgeWallIds(value: unknown): string[] | undefined {
   return Array.isArray(value) && value.every((entry) => typeof entry === "string") ? value : undefined;
 }
 
+/** A saved list of edge wall thicknesses, when it is one: positive millimetres, one per edge. */
+export function sanitizePlanEdgeWallThicknesses(value: unknown, edges: number): number[] | undefined {
+  return Array.isArray(value) && value.length === edges && value.every((entry) => Number.isFinite(entry) && entry > 0) ? value : undefined;
+}
+
+const validEdgeWallIds = new WeakSet<readonly string[]>();
+
 /** An imported room's edge wall ids, when they name each edge of its outline; otherwise none. */
 export function readPlanEdgeWallIds(room: WallFinishRoom): readonly string[] | undefined {
-  const wallIds = sanitizePlanEdgeWallIds(room.planEdgeWallIds ?? room.edgeWallIds);
-  return wallIds && roomShapeOf(room) === "custom_polygon" && wallIds.length === getRoomWallFaceIds(room).length ? wallIds : undefined;
+  const value = room.planEdgeWallIds ?? room.edgeWallIds;
+  const polygon = room.planPolygon ?? room.polygon;
+  if (!value || !polygon || roomShapeOf(room) !== "custom_polygon" || value.length !== polygon.length || polygon.length < 3) return undefined;
+  if (validEdgeWallIds.has(value)) return value;
+  if (!sanitizePlanEdgeWallIds(value)) return undefined;
+  validEdgeWallIds.add(value);
+  return value;
+}
+
+/** An imported room's edge walls' thicknesses in millimetres, when its edges are named and the thicknesses saved with them. */
+function readPlanEdgeWallThicknesses(room: WallFinishRoom): readonly number[] | undefined {
+  const edges = readPlanEdgeWallIds(room);
+  return edges && sanitizePlanEdgeWallThicknesses(room.planEdgeWallThicknessesMm ?? room.edgeWallThicknessesMm, edges.length);
 }
 
 /**
@@ -128,51 +151,104 @@ function finishDepthMeters(settings: ReturnType<typeof getWallFaceSurfaceSetting
   return getWallFinishDepthMm(getRuntimeSurfaceMaterialById(settings.materialId), settings, 0) / 1000;
 }
 
-// Surfaces are replaced, not changed, when edited, so a room's depths are kept while its surfaces are the same object and it
-// has the same faces: the 3D view asks once per item, and the 2D plan copies a room on every frame of a room drag.
-const depthsBySurfaces = new WeakMap<RoomSurfaceAssignments, { roomId: string; faces: string; depths: RoomWallFinishDepths }>();
+/** The room's one wall thickness, which placement insets half of from every edge (ROOM_DIMENSION_DEFAULTS when not set). */
+function roomWallThickness(room: WallFinishRoom): number {
+  return room.geometry?.wallThickness ?? room.wallThickness ?? 0.12;
+}
+
+type MeasuredDepths = { roomId: string; faces: string; depths: RoomWallFinishDepths; panels: RoomWallFinishDepths };
+// Surfaces are replaced, not changed, when edited, so a room's depths are kept while its surfaces are the same object (or, for
+// an imported room without surfaces, its edges) and it has the same faces: the 3D view asks once per item, and the 2D plan
+// copies a room on every frame of a room drag.
+const depthsByOwner = new WeakMap<object, MeasuredDepths>();
+const edgeKeys = new WeakMap<readonly unknown[], string>();
+const joined = (list: readonly unknown[] | undefined) => {
+  if (!list) return "";
+  const known = edgeKeys.get(list);
+  if (known !== undefined) return known;
+  const key = list.join("|");
+  edgeKeys.set(list, key);
+  return key;
+};
 
 function faceListKey(room: WallFinishRoom): string {
   const shape = roomShapeOf(room);
   const faces = shape === "custom_polygon" ? `${shape}:${(room.planPolygon ?? room.polygon)?.length ?? 0}` : shape;
+  if (typeof room.floorElevationMm !== "number") return faces;
   // An imported plan's edit can move a room's edges onto other walls and keep its surfaces.
-  return typeof room.floorElevationMm === "number" ? `${faces}:${readPlanEdgeWallIds(room)?.join("|")}` : faces;
+  return `${faces}:${joined(readPlanEdgeWallIds(room))}:${joined(readPlanEdgeWallThicknesses(room))}:${roomWallThickness(room)}`;
+}
+
+function readRoomDepths(room: WallFinishRoom | null | undefined): MeasuredDepths | null {
+  const surfaces = room?.surfaces ?? room?.surfaceFinishes;
+  const imported = room && typeof room.floorElevationMm === "number";
+  const owner: object | undefined = surfaces?.walls ? surfaces : imported ? readPlanEdgeWallThicknesses(room) : undefined;
+  if (!room || !owner) return null;
+  const faces = faceListKey(room);
+  const known = depthsByOwner.get(owner);
+  if (known && known.roomId === room.id && known.faces === faces) return known;
+  const measured = { roomId: room.id, faces, ...measureRoomWallFinishDepths(room, surfaces?.walls ? surfaces : undefined) };
+  depthsByOwner.set(owner, measured);
+  return measured;
 }
 
 /**
- * Each face's panel depth: the deepest of the face's own finish and the finished panels on it, keyed by the face (`wall-N`
- * for each edge of an imported room's outline).
+ * How far each face's finished face stands in from where the room's own wall inset puts its bare face, in metres, keyed by
+ * the face (`wall-N` for each edge of an imported room's outline): the deepest of the face's own finish and the finished
+ * panels on it. A room is inset by half its one wall thickness everywhere (getFurnitureWallInset); an imported plan's walls
+ * vary, so each edge of an imported room also takes its own wall's difference from that, half the thicker wall's extra (or
+ * less, for a thinner one), so its furniture, checks and clear size measure from that wall's own face.
  */
 export function getRoomWallFinishDepths(room: WallFinishRoom | null | undefined): RoomWallFinishDepths {
-  const surfaces = room?.surfaces ?? room?.surfaceFinishes;
-  if (!room || !surfaces?.walls) return NO_WALL_FINISH_DEPTHS;
-  const faces = faceListKey(room);
-  const known = depthsBySurfaces.get(surfaces);
-  if (known && known.roomId === room.id && known.faces === faces) return known.depths;
-  const depths = measureRoomWallFinishDepths(room, surfaces);
-  depthsBySurfaces.set(surfaces, { roomId: room.id, faces, depths });
-  return depths;
+  return readRoomDepths(room)?.depths ?? NO_WALL_FINISH_DEPTHS;
 }
 
-function measureRoomWallFinishDepths(room: WallFinishRoom, surfaces: RoomSurfaceAssignments): RoomWallFinishDepths {
+/** Each face's laminate depth alone, without an imported room's wall corrections: what the panels themselves are. */
+export function getRoomWallPanelDepths(room: WallFinishRoom | null | undefined): RoomWallFinishDepths {
+  return readRoomDepths(room)?.panels ?? NO_WALL_FINISH_DEPTHS;
+}
+
+/** Whether any of the room's walls has a laminate standing off it. */
+export function hasRoomWallPanels(room: WallFinishRoom | null | undefined): boolean {
+  return hasWallFinishDepths(getRoomWallPanelDepths(room));
+}
+
+function measureRoomWallFinishDepths(
+  room: WallFinishRoom, surfaces: RoomSurfaceAssignments | undefined
+): { depths: RoomWallFinishDepths; panels: RoomWallFinishDepths } {
   const finishKeys = getFinishFaceKeys(room);
-  if (!finishKeys) return NO_WALL_FINISH_DEPTHS;
-  const depths: Record<string, number> = {};
+  if (!finishKeys) return { depths: NO_WALL_FINISH_DEPTHS, panels: NO_WALL_FINISH_DEPTHS };
+  const panels: Record<string, number> = {};
   const deepen = (faceId: string, depth: number) => {
-    if (depth > 0) depths[faceId] = Math.max(depths[faceId] ?? 0, depth);
+    if (depth > 0) panels[faceId] = Math.max(panels[faceId] ?? 0, depth);
   };
-  for (const [faceId, finishKey] of finishKeys) {
+  for (const [faceId, finishKey] of surfaces ? finishKeys : []) {
     deepen(faceId, finishDepthMeters(getWallFaceSurfaceSettings(surfaces, finishKey, normalizeFloorRotationDeg, clampFloorPatternScale)));
   }
+  const panelDepths = Object.keys(panels).length > 0 ? panels : NO_WALL_FINISH_DEPTHS;
   // An imported plan's walls take one finish per room face; its 3D view draws no panels.
-  if (typeof room.floorElevationMm === "number") return Object.keys(depths).length > 0 ? depths : NO_WALL_FINISH_DEPTHS;
-  for (const panelId of Object.keys(surfaces.walls?.panels ?? {})) {
+  if (typeof room.floorElevationMm === "number") return { depths: withEdgeWallCorrections(room, panelDepths), panels: panelDepths };
+  for (const panelId of Object.keys(surfaces?.walls?.panels ?? {})) {
     const faceId = getWallPanelFaceId(panelId, room.id);
-    if (!faceId) continue;
+    if (!faceId || !surfaces) continue;
     deepen(faceId, finishDepthMeters(
       getWallPanelSurfaceSettings(surfaces, faceId, panelId, normalizeFloorRotationDeg, clampFloorPatternScale)
     ));
   }
+  const depths = Object.keys(panels).length > 0 ? panels : NO_WALL_FINISH_DEPTHS;
+  return { depths, panels: depths };
+}
+
+/** An imported room's depths with each edge's own wall's half-thickness less the room's (see getRoomWallFinishDepths). */
+function withEdgeWallCorrections(room: WallFinishRoom, panels: RoomWallFinishDepths): RoomWallFinishDepths {
+  const thicknesses = readPlanEdgeWallThicknesses(room);
+  if (!thicknesses) return panels;
+  const halfRoomWall = roomWallThickness(room) / 2;
+  const depths: Record<string, number> = {};
+  thicknesses.forEach((thicknessMm, index) => {
+    const value = (panels[`wall-${index}`] ?? 0) + thicknessMm / 2000 - halfRoomWall;
+    if (Math.abs(value) > 1e-9) depths[`wall-${index}`] = value;
+  });
   return Object.keys(depths).length > 0 ? depths : NO_WALL_FINISH_DEPTHS;
 }
 

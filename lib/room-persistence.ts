@@ -77,6 +77,7 @@ export interface StoredDesign {
     planShape?: string;
     planPolygon?: Array<{ x: number; z: number }>;
     planEdgeWallIds?: string[];
+    planEdgeWallThicknessesMm?: number[];
     planHoles?: Array<Array<{ x: number; z: number }>>;
     surfaces?: RoomSurfaceAssignments;
     surfaceFinishes?: RoomSurfaceFinishes;
@@ -197,6 +198,7 @@ export function snapshotToStored(snapshot: DesignSnapshot): StoredDesign {
       planShape: room.planShape,
       planPolygon: room.planPolygon,
       planEdgeWallIds: room.planEdgeWallIds,
+      planEdgeWallThicknessesMm: room.planEdgeWallThicknessesMm,
       planHoles: room.planHoles,
       surfaces: room.surfaces ? { ...room.surfaces } : room.surfaceFinishes ? { ...room.surfaceFinishes } : undefined,
       surfaceFinishes: room.surfaceFinishes ? { ...room.surfaceFinishes } : room.surfaces ? { ...room.surfaces } : undefined,

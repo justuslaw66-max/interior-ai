@@ -43,7 +43,7 @@ const INPUT_DESIGN_KEYS = new Set([
 const PUBLIC_ROOM_KEYS = new Set([
   "ceilingVisible", "floorElevationMm", "floorLabel", "floorLevel",
   "floorSlabThicknessMm", "floorStoreyHeightMm", "geometry", "id", "items",
-  "layoutVersions", "name", "planEdgeWallIds", "planHoles", "planPolygon", "planPosition",
+  "layoutVersions", "name", "planEdgeWallIds", "planEdgeWallThicknessesMm", "planHoles", "planPolygon", "planPosition",
   "planShape", "roomType", "savedViews", "surfaceFinishes", "surfaceOpacity",
   "surfaces", "zones",
 ]);

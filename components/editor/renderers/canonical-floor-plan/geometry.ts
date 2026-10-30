@@ -142,7 +142,7 @@ export function wallSurfaceLayout(
 }
 
 /** How far a face's finish stops short of the face's start and end corners, in millimetres (an inside corner's panel). */
-export type FaceTrimsMm = { startMm: number; endMm: number };
+export type FaceTrimsMm = { startMm: number; endMm: number; hidden?: boolean };
 export const NO_FACE_TRIMS: FaceTrimsMm = Object.freeze({ startMm: 0, endMm: 0 });
 
 /** A face line cut back at its ends, keeping at least a millimetre of it. */
