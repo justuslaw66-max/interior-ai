@@ -55,8 +55,9 @@ export function buildCabinetryAvailableSpaces({
     roomType: activeRoom.roomType === "balcony" ? "custom" : activeRoom.roomType,
     heightMm: Math.round((activeRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight) * 1000),
     baseboardOffsetMm,
-    // The back stands off the face by the baseboard; the ends keep the allowance from the end walls' baseboards too.
-    installationClearanceSideMm: imported ? wallMm + CABINET_RUN_END_ALLOWANCE_MM : CABINET_RUN_END_ALLOWANCE_MM + baseboardOffsetMm,
+    // The back stands off the face by the baseboard; a run on the floor keeps the allowance from the end walls' baseboards too
+    // (the host's baseboard clearances, read by getCabinetAvailableSegments).
+    installationClearanceSideMm: imported ? wallMm + CABINET_RUN_END_ALLOWANCE_MM : CABINET_RUN_END_ALLOWANCE_MM,
   };
   const openings = getRoomHostOpenings(activeRoom.id, planRoomCount, planOpenings);
 
@@ -72,7 +73,7 @@ export function buildCabinetryAvailableSpaces({
       widthMm: Math.max(1, Math.round((southEast.x - northWest.x) * 1000)),
       depthMm: Math.max(1, Math.round((southEast.z - northWest.z) * 1000)),
       openings,
-    }).map((space) => withRectangleFaceSegment(space, northWest, southEast));
+    }).map((space) => withRectangleFaceSegment(space, northWest, southEast, baseboardOffsetMm));
   }
 
   // The L-shape's or drawn shape's walls along their outline (the wall centre line), where their openings are drawn.
@@ -112,17 +113,20 @@ function getRoomHostOpenings(roomId: string, planRoomCount: number, planOpenings
  * A rectangle's host on its finished face. The segment runs along +x or +z, so its offsets keep the room's direction, measured
  * from the face's middle; its openings (measured from the room's centre) move by that middle.
  */
-function withRectangleFaceSegment(space: CabinetHostSpace, northWest: { x: number; z: number }, southEast: { x: number; z: number }): CabinetHostSpace {
+function withRectangleFaceSegment(
+  space: CabinetHostSpace, northWest: { x: number; z: number }, southEast: { x: number; z: number }, baseboardMm: number
+): CabinetHostSpace {
   const alongX = space.wall === "north" || space.wall === "south";
   const line = space.wall === "north" ? northWest.z : space.wall === "south" ? southEast.z : space.wall === "west" ? northWest.x : southEast.x;
   const [start, end] = alongX ? [northWest.x, southEast.x] : [northWest.z, southEast.z];
   const middleMm = ((start + end) / 2) * 1000;
   const inward = space.wall === "north" || space.wall === "west" ? 1 : -1;
+  const baseboards = { startBaseboardClearanceMm: baseboardMm, endBaseboardClearanceMm: baseboardMm };
   return {
     ...space,
     wallSegment: alongX
-      ? { startXmm: start * 1000, startZmm: line * 1000, endXmm: end * 1000, endZmm: line * 1000, inwardNormalX: 0, inwardNormalZ: inward }
-      : { startXmm: line * 1000, startZmm: start * 1000, endXmm: line * 1000, endZmm: end * 1000, inwardNormalX: inward, inwardNormalZ: 0 },
+      ? { startXmm: start * 1000, startZmm: line * 1000, endXmm: end * 1000, endZmm: line * 1000, inwardNormalX: 0, inwardNormalZ: inward, ...baseboards }
+      : { startXmm: line * 1000, startZmm: start * 1000, endXmm: line * 1000, endZmm: end * 1000, inwardNormalX: inward, inwardNormalZ: 0, ...baseboards },
     openings: space.openings.map((opening) => ({ ...opening, offsetMm: Number((opening.offsetMm - middleMm).toFixed(3)) })),
   };
 }
@@ -141,7 +145,9 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceEdge, baseboa
   const outlineSegment = space.wallSegment;
   if (!outlineSegment) return space;
   const sideMm = space.installationClearanceLeftMm ?? CABINET_RUN_END_ALLOWANCE_MM;
+  // The back stands the baseboard off the face, so at an acute corner that share stands back too (baseboardMm × cot).
   const endClearanceMm = (corner: AcuteCorner | null) => (corner ? sideMm / corner.sin + baseboardMm * corner.cot : sideMm);
+  const baseboardClearanceMm = (corner: AcuteCorner | null) => (corner ? baseboardMm / corner.sin : baseboardMm);
   const length = space.availableWidthMm || 1;
   const dx = (outlineSegment.endXmm - outlineSegment.startXmm) / length, dz = (outlineSegment.endZmm - outlineSegment.startZmm) / length;
   const shiftMm = ((outlineSegment.startXmm + outlineSegment.endXmm) / 2 - (face.start.x + face.end.x) * 500) * dx +
@@ -155,6 +161,7 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceEdge, baseboa
       ...outlineSegment,
       startXmm: face.start.x * 1000, startZmm: face.start.z * 1000, endXmm: face.end.x * 1000, endZmm: face.end.z * 1000,
       startSetbackPerDepth: face.startAcute?.cot ?? 0, endSetbackPerDepth: face.endAcute?.cot ?? 0,
+      startBaseboardClearanceMm: baseboardClearanceMm(face.startAcute), endBaseboardClearanceMm: baseboardClearanceMm(face.endAcute),
     },
     openings: space.openings.map((opening) => ({ ...opening, offsetMm: Number((opening.offsetMm + shiftMm).toFixed(3)) })),
   };

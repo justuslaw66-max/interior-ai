@@ -44,10 +44,13 @@ export function getCabinetAvailableSegments(
   if (!Number.isFinite(space.availableWidthMm) || space.availableWidthMm <= 0) return [];
   const halfWidthMm = space.availableWidthMm / 2;
   const depthMm = Number.isFinite(assemblyDepthMm) ? Math.max(0, assemblyDepthMm) : 0;
+  // A run standing on the floor also keeps clear of the end walls' baseboards; a wall cabinet hangs above them.
+  const onFloor = !(assemblyBottomMm > 0);
+  const segment = space.wallSegment;
   const startBoundaryMm = -halfWidthMm + Math.max(0, space.installationClearanceLeftMm ?? 0) +
-    depthMm * Math.max(0, space.wallSegment?.startSetbackPerDepth ?? 0);
+    depthMm * Math.max(0, segment?.startSetbackPerDepth ?? 0) + (onFloor ? Math.max(0, segment?.startBaseboardClearanceMm ?? 0) : 0);
   const endBoundaryMm = halfWidthMm - Math.max(0, space.installationClearanceRightMm ?? 0) -
-    depthMm * Math.max(0, space.wallSegment?.endSetbackPerDepth ?? 0);
+    depthMm * Math.max(0, segment?.endSetbackPerDepth ?? 0) - (onFloor ? Math.max(0, segment?.endBaseboardClearanceMm ?? 0) : 0);
   if (endBoundaryMm <= startBoundaryMm) return [];
 
   const blockedIntervals = mergeIntervals(

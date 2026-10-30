@@ -56,16 +56,25 @@ function faceLine(outline: readonly Point[], index: number, inset: number, inwar
 
 type Joint = { end: Point; start: Point; corner: boolean; acute: AcuteCorner | null };
 
+/** A bend under this is drawn straight on: its faces step between their depths (as the room checks' outline does). */
+const STRAIGHT_ON_BEND_COS = Math.cos((10 * Math.PI) / 180);
+/** How far a corner of the faces may sit from its outline vertex, per metre of the deeper face: past it, the faces step. */
+const MAX_CORNER_REACH_PER_INSET = 1 / Math.sin((5 * Math.PI) / 180);
+
 /** Where face `before` (whose edge ends at `beforeEnd`) ends and face `after` (whose edge starts at `afterStart`) starts. */
 function joinFaces(beforeEnd: Point, afterStart: Point, before: FaceLine, after: FaceLine, insetBefore: number, insetAfter: number): Joint {
   const cross = before.dx * after.dz - before.dz * after.dx;
-  if (Math.abs(cross) < 1e-9) {
-    // Straight on (or turned back): each face stops at its edge's end, and the faces step between their depths.
-    const end = { x: beforeEnd.x + before.nx * insetBefore, z: beforeEnd.z + before.nz * insetBefore };
-    return { end, start: { x: afterStart.x + after.nx * insetAfter, z: afterStart.z + after.nz * insetAfter }, corner: false, acute: null };
-  }
+  // Straight on, or bent under 10° (a hand-drawn wall, a millimetre off): each face stops at its edge's end, and the faces step
+  // between their depths. Joined where their lines cross, faces of different depths met far along the wall.
+  const step = (): Joint => ({
+    end: { x: beforeEnd.x + before.nx * insetBefore, z: beforeEnd.z + before.nz * insetBefore },
+    start: { x: afterStart.x + after.nx * insetAfter, z: afterStart.z + after.nz * insetAfter }, corner: false, acute: null,
+  });
+  if (Math.abs(cross) < 1e-9 || before.dx * after.dx + before.dz * after.dz > STRAIGHT_ON_BEND_COS) return step();
   const t = ((after.x - before.x) * after.dz - (after.z - before.z) * after.dx) / cross;
   const point = { x: before.x + before.dx * t, z: before.z + before.dz * t };
+  const reach = Math.max(Math.hypot(point.x - beforeEnd.x, point.z - beforeEnd.z), Math.hypot(point.x - afterStart.x, point.z - afterStart.z));
+  if (reach > Math.max(insetBefore, insetAfter) * MAX_CORNER_REACH_PER_INSET) return step();
   // A convex corner (the next face turns into the room) under 90°: a run's front corner reaches the other face before its end.
   const cos = -(before.dx * after.dx + before.dz * after.dz);
   const convex = after.dx * before.nx + after.dz * before.nz > 1e-9;
@@ -88,25 +97,39 @@ function joinKeptFaces(outline: readonly Point[], lines: FaceLine[], insets: num
   });
 }
 
+/** The edges kept for faces: those with a length, less any zero-area spike (an edge drawn out and straight back). */
+function keptEdges(outline: readonly Point[], lines: FaceLine[]): number[] {
+  const count = outline.length;
+  const length = (index: number) => Math.hypot(outline[(index + 1) % count].x - outline[index].x, outline[(index + 1) % count].z - outline[index].z);
+  const kept = outline.map((_, index) => index).filter((index) => length(index) > 1e-6);
+  const spikes = new Set<number>();
+  kept.forEach((index, order) => {
+    const next = kept[(order + 1) % kept.length];
+    if (lines[index].dx * lines[next].dx + lines[index].dz * lines[next].dz < -0.9998) spikes.add(index).add(next);
+  });
+  return kept.filter((index) => !spikes.has(index));
+}
+
 /**
  * Each edge's face, joined to its neighbours'. An edge whose face would run backwards (an edge shorter than its face is deep,
  * such as a 10 mm chamfer at a corner) is dropped and its neighbours joined past it, until none is: otherwise they ran past
- * each other's faces.
+ * each other's faces. With fewer than three faces left (a room narrower than its walls) there are none.
  */
 function buildFaceEdges(outline: readonly Point[], insets: number[]) {
   const count = outline.length, sign = signedArea(outline) >= 0 ? 1 : -1;
   const lines = outline.map((_, index) => faceLine(outline, index, insets[index], sign));
-  const length = (index: number) => Math.hypot(outline[(index + 1) % count].x - outline[index].x, outline[(index + 1) % count].z - outline[index].z);
-  let kept = outline.map((_, index) => index).filter((index) => length(index) > 1e-6);
-  if (kept.length < 3) return { edges: outline.map(() => ({ start: outline[0], end: outline[0], startAcute: null, endAcute: null })), polygon: [] };
+  const none: { edges: BuiltInFaceEdge[]; polygon: Point[] } = { edges: outline.map(() => ({ start: outline[0], end: outline[0], startAcute: null, endAcute: null })), polygon: [] };
+  let kept = keptEdges(outline, lines);
+  if (kept.length < 3) return none;
   let joints = joinKeptFaces(outline, lines, insets, kept);
   const runsOn = (order: number) => {
     const start = joints[order].start, end = joints[(order + 1) % kept.length].end, line = lines[kept[order]];
     return (end.x - start.x) * line.dx + (end.z - start.z) * line.dz > 1e-6;
   };
-  for (let round = 0; round < count && kept.length >= 3; round += 1) {
+  for (let round = 0; round <= count; round += 1) {
     const next = kept.filter((_, order) => runsOn(order));
-    if (next.length === kept.length || next.length < 3) break;
+    if (next.length === kept.length) break;
+    if (next.length < 3) return none;
     kept = next;
     joints = joinKeptFaces(outline, lines, insets, kept);
   }
@@ -267,10 +290,11 @@ export function getBuiltInSnapTarget(
   room: RoomSnapshot, position: readonly [number, number, number], width: number, depth: number, rotationY: number
 ): [number, number] {
   const [effectiveWidth, effectiveDepth] = getRotatedFootprint(width, depth, rotationY);
+  const faces = isImportedPlanRoom(room) ? [] : getRoomBuiltInFaces(room).polygon;
+  // An imported plan's room, or one with no faces, snaps half the wall plus 2 cm in from its rectangle, as furniture does.
   const inset = getFurnitureWallInset(room.geometry.wallThickness ?? 0.12);
-  const points = isImportedPlanRoom(room)
-    ? [{ x: -room.geometry.width / 2 + inset, z: -room.geometry.depth / 2 + inset }, { x: room.geometry.width / 2 - inset, z: room.geometry.depth / 2 - inset }]
-    : getRoomBuiltInFaces(room).polygon;
+  const points = faces.length ? faces
+    : [{ x: -room.geometry.width / 2 + inset, z: -room.geometry.depth / 2 + inset }, { x: room.geometry.width / 2 - inset, z: room.geometry.depth / 2 - inset }];
   const xs = points.map((point) => point.x), zs = points.map((point) => point.z);
   const [x, , z] = position;
   const candidates: Array<[number, number]> = [

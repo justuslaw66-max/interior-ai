@@ -191,7 +191,7 @@ const builtIn = (x: number) => isPlacementContainedInRoom({
 assert.equal(builtIn(2 - 0.06 - 0.044 - 0.5), true, "a built-in may stand against the panel's face");
 assert.equal(contained(2 - 0.06 - 0.044 - 0.5), false, "furniture keeps 2 cm off it");
 assert.equal(builtIn(2 - 0.06 - 0.044 - 0.5 + 0.001), false, "but not into the panel");
-assert.deepEqual([isBuiltInItem({ assetType: "parametric_cabinet" }), isBuiltInItem({ assetType: "catalog" })], [true, false]);
+assert.deepEqual([isBuiltInItem({ assetType: "parametric_cabinet" }), isBuiltInItem({ assetType: "catalog_item" })], [true, false]);
 
 // The clear size inside the panels, for the room inspector; nothing without panels.
 const metres = (valueMm: number) => `${(valueMm / 1000).toFixed(2)} m`;

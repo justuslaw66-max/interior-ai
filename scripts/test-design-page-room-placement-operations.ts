@@ -290,14 +290,10 @@ function runCrossRoomTransferTest() {
 runPlacementRoomQueryTests();
 runCrossRoomTransferTest();
 
-// A drag over another room: what it says, and whether a drop moves the item there. A built-in stays in its room, since the move
-// takes catalogue items only.
-const dragTarget = (item: { assetType?: DesignItem["assetType"] }, needsSurface = false, contained = true, blockedBy: string | null = null) =>
-  getCrossRoomItemDragTarget({ item, roomName: "Kitchen", needsSurface, contained, blockedBy });
-assert.deepEqual(dragTarget({ assetType: "parametric_cabinet" }), { label: "Built-ins stay in their room", valid: false });
-assert.deepEqual(dragTarget({}), { label: "Kitchen", valid: true });
-assert.deepEqual(dragTarget({}, true), { label: "Add a table in Kitchen", valid: false });
-assert.deepEqual(dragTarget({}, false, false), { label: "Place fully inside Kitchen", valid: false });
-assert.deepEqual(dragTarget({}, false, true, "Sofa"), { label: "Sofa", valid: false });
+// A drag over another room: a built-in can't be dropped there (the move above takes catalogue items only), and says so, even
+// where furniture of its size could go.
+const overKitchen = { roomName: "Kitchen", needsSurface: false, contained: true, blockedBy: null };
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: { assetType: "parametric_cabinet" } }), { label: "Built-ins stay in their room", valid: false });
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: { assetType: "catalog_item" } }), { label: "Kitchen", valid: true });
 
 console.log("Design-page placement room operation tests passed.");

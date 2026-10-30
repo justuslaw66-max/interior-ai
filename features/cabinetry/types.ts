@@ -166,10 +166,9 @@ export interface CabinetHostSpace {
   wallSegment?: {
     startXmm: number; startZmm: number;
     endXmm: number; endZmm: number;
-    inwardNormalX: number;
-    inwardNormalZ: number;
-    /** How far a run's start and end stand back from an acute corner there, per mm of its depth (the angle's cotangent). */
-    startSetbackPerDepth?: number; endSetbackPerDepth?: number;
+    inwardNormalX: number; inwardNormalZ: number;
+    /** Per end: the stand-back from an acute corner per mm of a run's depth (the angle's cotangent), and more from the end walls' baseboards for a run on the floor. */
+    startSetbackPerDepth?: number; endSetbackPerDepth?: number; startBaseboardClearanceMm?: number; endBaseboardClearanceMm?: number;
   };
   availableWidthMm: number;
   availableHeightMm: number;

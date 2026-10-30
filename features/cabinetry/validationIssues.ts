@@ -257,6 +257,22 @@ function inferFixes(
   return undefined;
 }
 
+/** True when the run where it stands (its width about its segment's centre) would cross the next wall at a corner under 90°
+ * at its depth (fitSegments.ts keeps a deeper run's end further back there), though clear of the host's openings. */
+function isRunTooDeepForCorner(
+  definition: CabinetDefinition,
+  fit: NonNullable<CabinetDefinition["fitState"]>,
+  segmentsAtAnyDepth: ReturnType<typeof getCabinetAvailableSegments>,
+  mountingHeightMm: number
+): boolean {
+  const halfWidthMm = getCabinetOverallWidth(definition) / 2, centreMm = fit.segment.centerOffsetMm;
+  // Within a millimetre: Fit rounds a run's width to the millimetre.
+  const holdsRun = (segments: typeof segmentsAtAnyDepth) => segments.some((segment) =>
+    centreMm - halfWidthMm >= segment.startMm - 1 && centreMm + halfWidthMm <= segment.endMm + 1);
+  if (!holdsRun(segmentsAtAnyDepth)) return false;
+  return !holdsRun(getCabinetAvailableSegments(fit.host, getCabinetOverallHeight(definition), mountingHeightMm, getCabinetOverallDepth(definition)));
+}
+
 function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIssueDraft[] {
   const fit = definition.fitState;
   if (!fit) return [];
@@ -292,8 +308,7 @@ function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIss
   const availableSegments = getCabinetAvailableSegments(
     fit.host,
     getCabinetOverallHeight(definition),
-    mountingHeightMm,
-    getCabinetOverallDepth(definition)
+    mountingHeightMm
   );
   const segmentStillAvailable = availableSegments.some(
     (segment) =>
@@ -301,17 +316,17 @@ function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIss
       fit.segment.endMm <= segment.endMm + 0.5
   );
   if (!segmentStillAvailable) {
-    // The segment fits a shallower run: a corner under 90° keeps a deeper run's end further back (fitSegments.ts).
-    const tooDeepForCorner = getCabinetAvailableSegments(fit.host, getCabinetOverallHeight(definition), mountingHeightMm).some(
-      (segment) => fit.segment.startMm >= segment.startMm - 0.5 && fit.segment.endMm <= segment.endMm + 0.5);
     drafts.push({
-      code: tooDeepForCorner ? "fit.corner_depth" : "fit.opening_conflict",
+      code: "fit.opening_conflict",
       severity: "error",
       field: "fit.segment",
-      message: tooDeepForCorner
-        ? "The design is now too deep for its fitted segment: at the corner under 90°, its front corner would cross the next wall."
-        : "A recorded door, window, or obstruction now overlaps the fitted wall segment.",
+      message: "A recorded door, window, or obstruction now overlaps the fitted wall segment.",
       target: { scope: "fit", field: "segment", hostId: fit.host.id },
+    });
+  } else if (isRunTooDeepForCorner(definition, fit, availableSegments, mountingHeightMm)) {
+    drafts.push({
+      code: "fit.corner_depth", severity: "error", field: "fit.segment", target: { scope: "fit", field: "segment", hostId: fit.host.id },
+      message: "The design is now too deep for where it stands: at the corner under 90°, its front corner would cross the next wall.",
     });
   }
   if (
