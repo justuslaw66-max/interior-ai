@@ -152,6 +152,21 @@ async function run(): Promise<void> {
     assertHealthyImportedOption(option);
   }
 
+  // Pro's "All 3D models" picker: models in one family that share a product name get what tells
+  // them apart (31 Oct 2026). Kelsey's 160 and 180 tables were both "Kelsey Marble Dining Table".
+  const pickerNames = options.map((option) => `${option.familyKey} ${option.pickerLabel}`);
+  assert.deepEqual(
+    pickerNames.filter((name, index) => pickerNames.indexOf(name) !== index),
+    [],
+    "No two models of one family may share a name in the All 3D models picker"
+  );
+  const pickerLabelOf = (id: string) => options.find((option) => option.id === id)?.pickerLabel;
+  assert.equal(pickerLabelOf("dining-real-castlery-kelsey-marble-160"), "Kelsey Marble Dining Table (160 cm)", "Sizes tell them apart");
+  assert.equal(pickerLabelOf("sofa-real-castlery-jaron-extended-3s-wide-arm"), "Jaron Recliner Sofa (Wide Arm, 316 cm)", "The width joins the arm style");
+  assert.equal(pickerLabelOf("sofa-real-castlery-hamilton-chaise-sectional-right"), "Hamilton Chaise Sectional Sofa (Right)", "Same size: the id's words");
+  assert.equal(pickerLabelOf("coffee-real-castlery-hugg-nesting-square-performance-dune-opened"), "Hugg Nesting Square Coffee Table (Dune, Open)");
+  assert.equal(pickerLabelOf("armchair-real-castlery-mori-performance-fabric-armchair-natural-wood"), "Mori Performance Fabric Armchair", "A name of its own stays as it was");
+
   const optionIds = new Set(options.map((option) => option.id));
   const missingSentinels = SENTINEL_PRODUCT_IDS.filter((id) => !optionIds.has(id));
   assert.deepEqual(missingSentinels, [], "Sentinel catalog products disappeared from imported options");
