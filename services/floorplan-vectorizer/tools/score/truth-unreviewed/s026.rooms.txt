@@ -1,0 +1,27 @@
+# s026 - HDB studio-type unit (one ROOM, KITCHEN, BATH & WC), "ACCESS CORRIDOR" below. Typed from the plan image only.
+# Dimension figures, "76 DROP" notes and the REFUSE CHUTE box (a shaft, not a space) are not typed.
+# KITCHEN and ROOM: the kitchen's whole front (x 150-270, y 250, about 2.6 m) is ONE line with no jambs - it carries the
+# "76 DROP" floor-step notes and a stepped kerb line (x 195-268, y 250-257) -> a floor edge, not a wall or a door -> open plan
+# (RULES decided reading: a long single line along the open side of a kitchen).
+space: ROOM + KITCHEN
+# BATH & WC: one enclosed space. The horizontal line across it at y 212 (x 275-318) has no jambs and no door; the door and
+# the label are in the upper part, the fixture (hatched boxes + oval) in the lower part -> one room, not two.
+space: BATH & WC
+# Not typed: REFUSE CHUTE (shaft box, x 112-160, y 143-190), the small fixture at x 160-175, y 155-170, the clothes-drying
+# poles (4 dots) above the kitchen wall at x 230-253, y 135-143, and ACCESS CORRIDOR (the exterior, = OUTSIDE).
+
+# main entrance: single hinged leaf in the bottom wall, arc swinging into ROOM (x 168-208, y 405-450)
+door: ROOM | OUTSIDE
+# BATH & WC door in its left wall (opening y 167-201 at x 272), arc swings into the bath
+door: BATH & WC | ROOM
+
+# KITCHEN: single glazing band in the top (outer) wall x 165-265, y 143-150 with one mid post at x 214 (end posts and mid
+# post look the same, a sliding window with two panes) -> 1 (uncertain, could be two windows).
+# ROOM: glazing band (three lines) in the top wall x 337-393, y 250-258, facing the open space east of the bath -> 1.
+# The long thin double-line left (x 146-153), right (x 405-413) and bottom (x 150-400, y 447-452) walls carry no glazing
+# line and read as walls between the black columns.
+windows: ROOM = 2
+# BATH & WC: glazing band in the right wall, x 321-324, y 153-209, with a post at y 181 (two panes) -> 1 (uncertain).
+windows: BATH & WC = 1
+
+entrance: ROOM

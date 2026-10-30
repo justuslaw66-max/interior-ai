@@ -1,6 +1,7 @@
 "use client";
 
 import type { generateCabinetDocumentation } from "../generateCabinetDocumentation";
+import { roundedEdgeBandingM } from "../edgeBandingTotals";
 import { formatCabinetLabel } from "../formatCabinetLabel";
 import type { CabinetBOMItem } from "../types";
 import type { CabinetOutputTab } from "./CabinetOutputTabs";
@@ -338,14 +339,7 @@ export function CabinetProductionOutputs({
         data-edge-banding-schedule-count={String(
           documentation.edgeBandingSchedule.length
         )}
-        data-edge-banding-total-m={String(
-          Math.round(
-            documentation.edgeBandingSchedule.reduce(
-              (sum, item) => sum + item.totalLengthM,
-              0
-            ) * 100
-          ) / 100
-        )}
+        data-edge-banding-total-m={String(roundedEdgeBandingM(documentation.cutList))}
         className="grid gap-2"
       >
         {sectionTitle("Edge Banding")}

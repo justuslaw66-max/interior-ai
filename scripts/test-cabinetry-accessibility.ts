@@ -148,7 +148,7 @@ const viewSelector = renderToStaticMarkup(
 assert.match(viewSelector, /role="group"/);
 assert.equal((viewSelector.match(/aria-pressed="true"/g) ?? []).length, 1);
 assert.match(viewSelector, /Use the arrow keys to move between views/);
-assert.match(viewSelector, /✓/);
+assert.equal((viewSelector.match(/lucide-check/g) ?? []).length, 1, "The chosen view has a check icon.");
 
 const decorativeDoor = renderToStaticMarkup(
   createElement(CabinetDoorStylePreview, { doorStyle: "shaker" })

@@ -599,6 +599,55 @@ async function main() {
       assert.ok(!off.semantics.notes.some((note) => note.startsWith("Faithful trace")), "off: not run");
       summary.push("provider: the faithful trace replaces stage 1's drawing when on; a page it leaves, a failure, an invalid drawing or a timeout keeps stage 1's, noted");
 
+      // The page budget (FLOOR_PLAN_VECTORIZER_PAGE_BUDGET=1, beta step 2.1): the faithful trace runs inside the page's own
+      // time limit. A page that reaches it with too little left comes back with stage 1's reading and drawing, noted; a
+      // trace that would run past the limit is cut at it. Off unless set.
+      assert.equal(floorPlanVectorizerRuntimeConfiguration({}).pageBudget, false, "the page budget is off unless set");
+      assert.equal(floorPlanVectorizerRuntimeConfiguration({}).faithfulMinMs, 30_000);
+      const budgetConfig = { ...faithfulConfig, pageBudget: true, faithfulMinMs: 1_000 };
+      writeFileSync(path.join(directory, "faithful_drawing.py"), "import sys\nsys.exit('must not run')\n");
+      const spent = await new PythonFloorPlanVectorizerProvider(budgetConfig).analyzePage(page, { timeoutMs: 900 });
+      assert.equal(JSON.stringify(spent.drawing), stage1Drawing, "nearly spent: stage 1's drawing kept");
+      assert.equal(spent.rooms.length > 0, true, "nearly spent: stage 1's reading kept");
+      assert.ok(spent.semantics.notes.some((note) => /^Faithful trace not used: the page's time limit was nearly spent \(\d+ s\)$/.test(note)));
+      writeFileSync(path.join(directory, "faithful_drawing.py"), "import time\ntime.sleep(30)\n");
+      const cut = await new PythonFloorPlanVectorizerProvider({ ...budgetConfig, faithfulTimeoutMs: 600_000 }).analyzePage(page, { timeoutMs: 3_000 });
+      assert.ok(cut.semantics.notes.some((note) => /^Faithful trace unavailable: .*exceeded [12]\d{3} ms/.test(note)),
+        "a trace that would run past the page's limit is cut at it, not at its own 600 s");
+      assert.equal(JSON.stringify(cut.drawing), stage1Drawing);
+      const roomy = await faithfulRun(`import sys, json\njson.dump(json.loads(${JSON.stringify(JSON.stringify(faithfulDrawing))}), open(sys.argv[2], 'w'))\n`, budgetConfig);
+      assert.equal(roomy.drawing?.version, "faithful-trace-r6", "time left: the faithful trace still replaces stage 1's drawing");
+      summary.push("provider: with the page budget on, a page near its time limit keeps stage 1's reading and drawing, and the trace is cut at the limit");
+
+      // The name reader (FLOOR_PLAN_NAME_READER=1, beta step 2.2) runs between stage 1 and the exporter, on stage 1's model
+      // in place; it fails soft (a failure or a timeout leaves the model as it was, noted). Off unless set.
+      assert.equal(floorPlanVectorizerRuntimeConfiguration({}).nameReader, false, "the name reader is off unless set");
+      assert.equal(floorPlanVectorizerRuntimeConfiguration({}).nameReaderTimeoutMs, 60_000);
+      writeFileSync(path.join(directory, "floorplan_vectorize.py"),
+        "import sys\nopen(sys.argv[2] + '.json', 'w').write('{}')\n");
+      const exporterSeeing = (read: boolean) => writeFileSync(path.join(directory, "app_evidence.py"),
+        `import sys, json, shutil\nassert ('read' in json.load(open(sys.argv[1]))) == ${read ? "True" : "False"}\nshutil.copyfile(${JSON.stringify(fixture)}, sys.argv[2])\n`);
+      exporterSeeing(true);
+      writeFileSync(path.join(directory, "name_reader.py"),
+        "import sys, json\nm = json.load(open(sys.argv[2]))\nm['read'] = True\njson.dump(m, open(sys.argv[2], 'w'))\n");
+      const readerConfig = { ...config, nameReader: true, nameReaderTimeoutMs: 10_000 };
+      const read = await new PythonFloorPlanVectorizerProvider(readerConfig).analyzePage(page, { timeoutMs: 30_000 });
+      assert.equal(read.rooms.length > 0, true);
+      assert.ok(!read.semantics.notes.some((note) => note.startsWith("Name reader")), "read: no note");
+      exporterSeeing(false);
+      writeFileSync(path.join(directory, "name_reader.py"), "import sys\nsys.exit('no RapidOCR')\n");
+      const readerFailed = await new PythonFloorPlanVectorizerProvider(readerConfig).analyzePage(page, { timeoutMs: 30_000 });
+      assert.equal(readerFailed.rooms.length > 0, true, "a reader that fails leaves stage 1's model to the exporter");
+      assert.ok(readerFailed.semantics.notes.some((note) => /^Name reader unavailable: .*no RapidOCR/.test(note)));
+      writeFileSync(path.join(directory, "name_reader.py"), "import time\ntime.sleep(30)\n");
+      const slowReader = await new PythonFloorPlanVectorizerProvider({ ...readerConfig, nameReaderTimeoutMs: 400 }).analyzePage(page, { timeoutMs: 30_000 });
+      assert.ok(slowReader.semantics.notes.some((note) => /^Name reader unavailable: .*exceeded 400 ms/.test(note)));
+      const readerOff = await new PythonFloorPlanVectorizerProvider(config).analyzePage(page, { timeoutMs: 30_000 });
+      assert.ok(!readerOff.semantics.notes.some((note) => note.startsWith("Name reader")), "off: not run");
+      writeFileSync(path.join(directory, "app_evidence.py"), `import sys, shutil\nshutil.copyfile(${JSON.stringify(fixture)}, sys.argv[2])\n`);
+      writeFileSync(path.join(directory, "floorplan_vectorize.py"), "import sys, time\ntime.sleep(0.3)\nopen(sys.argv[2] + '.json', 'w').write('{}')\n");
+      summary.push("provider: the name reader runs between stage 1 and the exporter when on; a failure or a timeout leaves stage 1's model, noted");
+
       // A page the vectorizer could not read (stage 1 failed or ran out of time) is still drawn by the faithful trace,
       // on its own (J, 24 Oct): it does not need stage 1.
       const writesDrawing = `import sys, json\njson.dump(json.loads(${JSON.stringify(JSON.stringify(faithfulDrawing))}), open(sys.argv[2], 'w'))\n`;

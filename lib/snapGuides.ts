@@ -176,13 +176,12 @@ export function computeSnapCandidates(
         const bestSnap = pickBestWallSnap(wallSnaps, 0.02); // 2cm threshold for snapping
         
         if (bestSnap) {
-          // Add guide with mode information in label
-          const modeEmoji = bestSnap.mode === "flush" ? "📍" : bestSnap.mode === "breathing-room" ? "💨" : "🎯";
+          // The wall and the snap mode, in words ("Left wall · Flush to wall"; emoji until 30 Oct 2026).
           guides.push({
             type: "WALL",
             from: [selectedAABB.centerX, 0, selectedAABB.centerZ],
             to: wall.axis === "x" ? [wall.coord, 0, selectedAABB.centerZ] : [selectedAABB.centerX, 0, wall.coord],
-            label: `${wall.label} ${modeEmoji} ${bestSnap.label}`,
+            label: `${wall.label} · ${bestSnap.label}`,
             distance: bestSnap.distance,
           });
         }

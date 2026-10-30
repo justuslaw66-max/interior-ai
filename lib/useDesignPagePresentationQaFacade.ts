@@ -150,7 +150,7 @@ export type UseDesignPagePresentationQaFacadeInput = {
       deleteRoom: CommandActions["deleteRoom"];
     };
     planCanvas: Omit<PlanCanvasInputActions,
-      "addFloorPlanOpening" | "fitPlanView" | "setDesignPanelOpen" | "goPlan" | "goFurnish"
+      "addFloorPlanOpening" | "fitPlanView" | "setDesignPanelOpen" | "goFurnish"
     >;
     selection: {
       duplicateItem: CommandActions["duplicateItem"];
@@ -320,7 +320,6 @@ export function useDesignPagePresentationQaFacade({
       addFloorPlanOpening: actions.plan.addFloorPlanOpening,
       fitPlanView: actions.plan.fitPlanView,
       setDesignPanelOpen: actions.shell.setDesignPanelOpen,
-      goPlan: actions.navigation.plan,
       goFurnish: actions.navigation.furnish,
     },
   });

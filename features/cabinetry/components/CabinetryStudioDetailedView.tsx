@@ -1,6 +1,7 @@
 "use client";
 
 import { Lock, Unlock } from "lucide-react";
+import { DisclosureChevron } from "@/components/ui/DisclosureChevron";
 import { Button } from "@/components/ui/Button";
 import { ChoiceTile } from "@/components/ui/ChoiceTile";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
@@ -2496,8 +2497,7 @@ export function CabinetryStudioDetailedView({
                       }
                     }}
                   >
-                    <span>Fabrication details</span>
-                    <span aria-hidden="true">{fabricationOpen ? "−" : "+"}</span>
+                    <span>Fabrication details</span><DisclosureChevron open={fabricationOpen} />
                   </button>
                   {!fabricationOpen ? (
                     <p className="text-xs leading-5 text-label-secondary">
@@ -2616,8 +2616,8 @@ export function CabinetryStudioDetailedView({
             <div className="grid gap-3">
               <div className="flex items-center justify-between gap-3">
                 <button
-                  type="button"
-                  className="text-left text-xs font-semibold text-control-label-idle underline-offset-2 hover:underline"
+                  type="button" aria-expanded={advancedOpen}
+                  className="inline-flex items-center gap-1 text-left text-xs font-semibold text-control-label-idle underline-offset-2 hover:underline"
                   onClick={() => {
                     const nextOpen = !advancedOpen;
                     setAdvancedOpen(nextOpen);
@@ -2628,7 +2628,7 @@ export function CabinetryStudioDetailedView({
                     }
                   }}
                 >
-                  Advanced {advancedOpen ? "−" : "+"}
+                  Advanced <DisclosureChevron open={advancedOpen} />
                 </button>
                 {advancedOpen ? (
                   <Button

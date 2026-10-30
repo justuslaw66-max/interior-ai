@@ -1,0 +1,55 @@
+# s033 - 3-ROOM NEW FLAT (CORRIDOR), HDB New Generation 1976-1988. Typed from the plan image only (title, "SCALE 1:100", dimension figures,
+# "100 DROP" / "UP 3R 400" level notes, the grey HDB caption bar and the teoalida.com banner ignored). Source image 640x840; coordinates
+# in notes are source pixels.
+# Glazing reading used throughout: a window is a pane (grey line or casement arcs) set between posts in the wall; a plain double line is a
+# wall; thick black blocks are structural wall / columns. A continuous band between solid pieces = ONE window.
+# ACCESS BALCONY (x 205-455, y 600-690) is the shared access corridor of the block, outside the dwelling -> OUTSIDE, not a space (as in
+# room4). The gate / box with arcs at its west end (x 165-232, y 615-672) belongs to the corridor, not to the flat, and is not typed.
+# MAIN BEDROOM includes the part x 371-455, y 345-376 beside its door: the vertical line at x 371 (y 320-375) is the extension line of
+# the 1000 / 1900 dimension, not a wall.
+# The passage x 335-372, y 378-433 in front of the main-bedroom, store and bedroom doors has no wall to the living room -> part of LIVING ROOM.
+# BATH/ WC 2: the single thin line inside it (x 365, y 85-143) is a partition / screen with no door or gap on its line -> one room.
+space: KITCHEN/ DINING
+space: LIVING ROOM
+space: MAIN BEDROOM
+space: BEDROOM
+space: STORE
+space: BATH/ WC 2
+space: BATH/ WC 1
+# Not typed: the REFUSE CHUTE box x 178-222, y 72-136 (crossed, thick black walls: shaft), the small fixture x 222-235, y 92-112, the sink and
+# drainer x 205-228, y 153-222, the D-shaped fixture x 308-325, y 128-155 outside the bath-2 wall, the WC / basin / bath fixtures.
+
+# main entrance, in the living room's south wall at x 285-325 (y 596-600), next to the bedroom's west wall: door leaf hinged near (322,580)
+# with its arc inward to (289,580), small gate arcs outward at y 598, "UP 3R 400" step lobby x 281-325, y 580-612 -> one line
+door: LIVING ROOM | OUTSIDE
+# KITCHEN/ DINING | LIVING ROOM: opening x 244-282 (38 px = about 0.9 m) at y 340-344 between two thin wall stubs (x 208-244 and x 282-324),
+# ONE thin line drawn across it, noted "100 DROP" -> sliding door (rule of 4 Oct 2026). UNCERTAIN: the "DROP" note says the line may only
+# mark the floor-level edge (then it would be a gap)
+door: KITCHEN/ DINING | LIVING ROOM
+# MAIN BEDROOM: opening x 335-371 in its bottom wall (y 377), hinge (335,377), arc (335,341)-(371,376), swings into the bedroom
+door: MAIN BEDROOM | LIVING ROOM
+# STORE: opening y 381-413 in its west wall (x 372), hinge (372,411), arc (372,381)-(343,411), leaf swings out into the living-room passage
+door: STORE | LIVING ROOM
+# BEDROOM: opening x 337-371 in its top wall (y 437), hinge (338,437), arc (371,438)-(338,470), swings into the bedroom
+door: BEDROOM | LIVING ROOM
+# BATH/ WC 2: opening y 95-126 in its west wall (x 326), arc (362,93)-(328,125) swings into the bath, opens on the kitchen/dining
+door: BATH/ WC 2 | KITCHEN/ DINING
+# BATH/ WC 1: opening x 333-366 in its bottom wall (y 205), hinge (333,205), arc (333,173)-(366,205), swings into the bath, opens on MAIN BEDROOM
+door: BATH/ WC 1 | MAIN BEDROOM
+
+# KITCHEN/ DINING: top-wall band x 224-322, y 76-90 (casement units x 224-271 and x 272-322, post at x 271), between the refuse-chute box and
+# the black corner = 1. West wall (x 197-202, y 136-340) is a plain thin double line (grey tone in the scan) = wall.
+windows: KITCHEN/ DINING = 1
+# LIVING ROOM: south-wall pane x 232-278, y 595-600 between posts at x 229-232 and x 278-281 (plain wall x 208-229 left of it) = 1.
+# West wall (x 197-202, y 385-575) is a plain thin double line like the kitchen's = wall.
+windows: LIVING ROOM = 1
+# MAIN BEDROOM: casement pair in the top wall right of the bath, frame x 403-452, y 187-212 = 1
+windows: MAIN BEDROOM = 1
+# BEDROOM: south-wall pane x 367-415, y 595-600 between posts at x 363-366 and x 415-418 (plain wall pieces x 330-363 and x 418-452) = 1
+windows: BEDROOM = 1
+# bath windows: dotted grey louvre bands in their east walls (x 397-402) facing the open exterior: BATH/ WC 2 y 87-133, BATH/ WC 1 y 150-175
+windows: BATH/ WC 2 = 1
+windows: BATH/ WC 1 = 1
+# STORE: no window (east wall is the thick black party wall x 453-462).
+
+entrance: LIVING ROOM

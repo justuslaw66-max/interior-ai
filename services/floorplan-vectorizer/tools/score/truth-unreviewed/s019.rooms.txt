@@ -1,0 +1,42 @@
+# s019 - 2 Room Flexi (Type 2) / Type-1B (HDB). Typed from the plan image only (captions "2 Room Flexi (Type 2)", "Type-1B",
+# "Floor Area: 47m2 ..." and all dimension figures ignored). One dwelling, one floor.
+# Labels: a printed line break is one blank ("LIVING/" + "DINING" -> "LIVING/ DINING", "HOUSE-" "HOLD" "SHELTER", "AIR-" "CON" "LEDGE").
+# The entrance foyer between the shelter and the kitchen/bath block (x 272-372, y 480-620) is open to LIVING/ DINING at its full
+# width (100 px, no wall, no door) -> part of LIVING/ DINING.
+# consistency pass (decided readings): the kitchen side towards the living is ONE thin line along its whole open side (no jambs) = floor edge -> open plan
+space: LIVING/ DINING + KITCHEN
+space: BEDROOM
+space: BATH/ WC
+space: AIR- CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Not typed: the drying-rack recess east of the kitchen window (x 572-612, y 500-665): no label, drawn as a rack (vertical bars)
+# inside a plain outline whose outer side is a single thin line open to the exterior (same reading as the s001 drying-rack
+# recess) - uncertain. The thin outline boxes above the two top windows (x 195-348 and x 433-540, y 120-140) are window
+# projections with no walls and no label, not spaces. The area below the shelter (x 160-270, y 640-740) is the outside corridor.
+
+# main entrance: door (unequal double leaf, arcs inward) + gate (arcs outward) in the same opening x 280-358, y 620-640 -> one line
+door: LIVING/ DINING | OUTSIDE
+# shelter door in its east wall, leaf drawn open (line at y 535, arc to y 588) into the foyer, plus the closed-frame rectangle
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# flexi partition between the bedroom and the living area (x 372-385): wall piece x 372-383 from the top wall to y 222, then an
+# opening about y 222-350 closed by sliding panels (two thin leaves drawn, x 375 y 235-317 and x 381 y 222-288) -> sliding door
+door: BEDROOM | LIVING/ DINING
+# folding (triangle) door in the west wall of the bath (x 372-395, y 390-430), opens onto the living area
+door: BATH/ WC | LIVING/ DINING
+# KITCHEN west side (x 372, y 500-620): no wall drawn there, only ONE thin line from the bath's bottom corner down to the black
+# block at y 620 (a thin box x 372-380, y 503-548 is a wall piece at its top end; the line below it, y 548-620, spans the
+# door-sized opening). One line across an opening -> sliding door (rule of 4 Oct 2026). Uncertain: could be an open kitchen (gap).
+
+# top outer wall: LIVING/ DINING one sash band x 205-342 (three panes, thin tick dividers at x 250 and 297, no solid piece) = 1
+windows: LIVING/ DINING = 2
+# BEDROOM top wall: one sash band x 441-532 (two panes, divider tick at x 486) = 1; its east wall (x 553-572) is solid black
+windows: BEDROOM = 1
+# bath window in its east wall onto the AIR-CON LEDGE (x 502-507, y 385-437, three lines with end ticks); the wall below it
+# (y 437-497) is a plain double line
+windows: BATH/ WC = 1
+# kitchen window in its east wall onto the drying-rack recess (x 560-572, y 533-637, three panes with tick dividers) = 1
+# Not counted: the thin double line forming LIVING/ DINING's west wall between the two black columns (x 163-175, y 263-423): two
+# plain lines with no inner glazing line and no end ticks, like the other thin partition walls -> read as wall (uncertain).
+# The AIR-CON LEDGE's east edge (x 568-572, y 385-490) is a louvre/railing line, not a window.
+
+entrance: LIVING/ DINING

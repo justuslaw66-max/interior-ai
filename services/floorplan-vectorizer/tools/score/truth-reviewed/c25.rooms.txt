@@ -1,0 +1,35 @@
+# c25 - typed from the plan image only ("TYPE B3b / Area / Unit(s)" caption and watermark ignored)
+# LIVING, DINING and KITCHEN plus the entrance hall: no wall or door between them -> one space.
+# This drawing shows NO door leaves for the bedrooms and baths - only the main entrance and the balcony sliding
+# door are drawn. The room doorways are therefore gaps.
+# The short passage between BEDROOM 2 and BATH 2 is open to DINING at its full width -> part of the same space.
+space: LIVING + DINING + KITCHEN
+space: BALCONY
+space: BEDROOM 2
+space: MASTER BEDROOM
+space: MASTER BATH
+space: BATH 2
+space: A/C LEDGE
+# Not counted: "ST" cupboard by the entrance (fixture letters), shower cubicles, crossed riser boxes.
+
+# main entrance: unequal double leaf (one large, one small arc) -> one line
+door: OUTSIDE | LIVING
+# sliding panels
+door: BALCONY | LIVING
+
+# MASTER BEDROOM doorway: no wall opening as such - two small jamb nubs face each other across the passage just
+# west of the BEDROOM 2 / BATH 2 doorways; the passage west of the nubs is read as part of MASTER BEDROOM.
+gap: MASTER BEDROOM | LIVING
+gap: BEDROOM 2 | LIVING
+# bath doorways have a single thin threshold line across them, no leaf
+gap: BATH 2 | LIVING
+gap: MASTER BATH | MASTER BEDROOM
+
+windows: MASTER BEDROOM = 1
+windows: BEDROOM 2 = 1
+windows: MASTER BATH = 1
+# BATH 2 window and the KITCHEN window (counted under the open-plan space) both face the A/C LEDGE
+windows: BATH 2 = 1
+windows: LIVING = 1
+
+entrance: LIVING

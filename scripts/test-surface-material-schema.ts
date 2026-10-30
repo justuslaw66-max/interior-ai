@@ -34,6 +34,7 @@ import { buildOpeningWallSurfacePanels } from "../components/editor/renderers/ho
 import { getContinuousWallPanelId } from "../components/editor/renderers/house-plan-3d/continuousWallSelection";
 import {
   buildWallSurfacePanels,
+  getWallInteriorSurfaceSide,
   getWallOpenings,
   getWallSegments,
   joinedLegacyWallSurfacePart,
@@ -706,6 +707,29 @@ assert.equal(
   -1,
   "west wall finishes should render only on the room-facing side"
 );
+// A drawn outline's walls take the room's side from the outline's winding, either way round (29 Oct 2026). The direction to
+// the room's centre, used before, put the finish outside a wall whose line runs through the centre, and outside the walls a
+// concave notch puts past it.
+const isInsideOutline = (polygon: Array<{ x: number; z: number }>, x: number, z: number) =>
+  polygon.reduce((inside, a, index) => {
+    const b = polygon[(index + polygon.length - 1) % polygon.length];
+    return (a.z > z) !== (b.z > z) && x < ((b.x - a.x) * (z - a.z)) / (b.z - a.z) + a.x ? !inside : inside;
+  }, false);
+const drawnOutlines: Array<[string, Array<{ x: number; z: number }>]> = [
+  ["a rectangle drawn one way", [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]],
+  ["a rectangle drawn the other way", [{ x: -2, z: -1.5 }, { x: -2, z: 1.5 }, { x: 2, z: 1.5 }, { x: 2, z: -1.5 }]],
+  ["an L whose notch corner is the centre", [{ x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 0 }, { x: 0, z: 0 }, { x: 0, z: 2 }, { x: -2, z: 2 }]],
+  ["the same L drawn the other way", [{ x: -2, z: 2 }, { x: 0, z: 2 }, { x: 0, z: 0 }, { x: 2, z: 0 }, { x: 2, z: -2 }, { x: -2, z: -2 }]],
+  ["a U whose notch holds the centre", [{ x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 2 }, { x: 1, z: 2 }, { x: 1, z: -1 }, { x: -1, z: -1 }, { x: -1, z: 2 }, { x: -2, z: 2 }]],
+];
+for (const [label, polygon] of drawnOutlines) {
+  const drawnRoom = { ...wallSideTestRoom, id: "drawn", shape: "custom_polygon" as const, polygon };
+  getWallSegments(drawnRoom).forEach((segment, index) => {
+    const side = getWallInteriorSurfaceSide(segment);
+    const step = { x: Math.sin(segment.rotationY) * side * 0.01, z: Math.cos(segment.rotationY) * side * 0.01 };
+    assert.ok(isInsideOutline(polygon, segment.x + step.x, segment.z + step.z), `${label}: wall-${index}'s finish faces the room`);
+  });
+}
 
 const doricaCrema120Runtime = findRuntimeMaterialFixture(
   "gardenia-flooring-dorica-crema-0010006-120x120-nat-196270-0"

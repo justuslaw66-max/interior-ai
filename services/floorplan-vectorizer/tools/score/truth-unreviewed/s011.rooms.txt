@@ -1,0 +1,39 @@
+# s011 - small flat (one bedroom, kitchen, bath/WC, household shelter; dimensions 6300 / 3400 / 2900 etc. ignored). Typed from the plan image only.
+# Labels: a printed line break is one blank ("LIVING/" + "DINING" -> "LIVING/ DINING", "HOUSE-" "HOLD" "SHELTER", "BATH/" "WC").
+# The entrance foyer (x 280-387, y 560-640) is open to LIVING/ DINING at its full width -> part of LIVING/ DINING.
+# consistency pass (decided readings): the kitchen side towards the living is ONE thin line along its whole open side (no jambs) = floor edge -> open plan
+space: LIVING/ DINING + KITCHEN
+space: BEDROOM
+space: BATH/ WC
+space: AIR-CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Not typed: the unlabelled drying-rack projection outside the kitchen window (x 592-637, y 372-518: outline box with
+# three slat lines x 597-622, y 382-503) - same reading as the drying-rack recess of s001 (uncertain).
+# Not typed: fixtures (tall unit x 387-410, y 480-540 in the kitchen, WC pan, basin), dimension text.
+
+# main entrance: unequal double leaf (arcs inward, x 285-350, y 583-640) + gate (arcs outward, y 668-740) in the same opening
+# x 285-385, y 640-668 -> one line
+door: LIVING/ DINING | OUTSIDE
+# shelter door drawn closed in its frame (white rectangle x 265-280, y 520-570 in the thick wall), swing arc into the foyer
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# folding (triangle) door in the left wall of the bath, x 393-420, y 560-607, from the foyer
+door: BATH/ WC | LIVING/ DINING
+# sliding panels in the wall between LIVING/ DINING and BEDROOM at x 387-394: one panel y 136-257, a grey second panel
+# y 206-285; wall stubs y 136-175 and y 332-376; the opening between the stubs is about 2.3 m (uncertain: could be read as a
+# plain doorway, but panels are drawn so it is typed as a door)
+door: BEDROOM | LIVING/ DINING
+# KITCHEN left side (x 387, y 385-540): ONE thin line drawn across the whole side, no leaf and no other access to the
+# kitchen -> sliding door (rule of 4 Oct 2026). Uncertain: it could also be a thin partition wall with no door drawn.
+
+# top outer wall (y 125-136, thin white wall with outline): two glazed bands, x 222-346 (LIVING/ DINING) and x 422-546 (BEDROOM);
+# the wall pieces x 163-222, x 346-422 and x 546-580 have no glazing line -> wall
+windows: LIVING/ DINING = 2
+# BEDROOM: top-wall window x 422-546 + tall narrow window in the right wall (x 575-593, y 220-315, inner bar y 225-308)
+windows: BEDROOM = 2
+# KITCHEN: long tall window in the right wall x 583-592, y 388-497 (looks onto the drying rack)
+# BATH/ WC: window in the right wall facing the AIR-CON LEDGE, x 517-527, y 558-612 (the wall below y 612 is plain)
+windows: BATH/ WC = 1
+# The outer edge of the AIR-CON LEDGE (two thin grey lines x 588-592, y 558-678) is read as the ledge's own screen/railing, not
+# a window. LIVING/ DINING left wall (x 163-190) and the bottom walls are solid black -> no windows.
+
+entrance: LIVING/ DINING

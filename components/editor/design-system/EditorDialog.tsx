@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useRef, type ReactNode } from "react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useEditorDialogLifecycle } from "@/components/editor/design-system/useEditorDialogLifecycle";
 
@@ -83,7 +84,7 @@ type EditorDialogCloseButtonProps = {
   onClick: () => void;
 };
 
-/** The × in the dialog's corner: 44px, with the shared focus ring. */
+/** The close (X) in the dialog's corner: 44px, with the shared focus ring. */
 function EditorDialogCloseButton({ buttonRef, id, label, testId, disabled, className, onClick }: EditorDialogCloseButtonProps) {
   return (
     <button
@@ -92,10 +93,10 @@ function EditorDialogCloseButton({ buttonRef, id, label, testId, disabled, class
       aria-label={label}
       data-testid={testId}
       disabled={disabled}
-      className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-xl font-semibold outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       onClick={onClick}
     >
-      <span aria-hidden="true">×</span>
+      <X className="h-5 w-5" aria-hidden="true" />
     </button>
   );
 }

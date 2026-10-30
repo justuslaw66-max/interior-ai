@@ -10,6 +10,8 @@ import type { DesignItem, RoomSnapshot } from "@/lib/room-types";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { ViewerLighting } from "@/components/editor/design-page/lighting";
+import { CanvasBackground } from "@/components/scene/CanvasBackground";
+import { useCanvasPalette } from "@/lib/canvas-colours";
 import type { DesignLightingSettings } from "@/lib/lightingPresets";
 import type { PublicShareCameraView } from "@/lib/public-share-saved-views";
 
@@ -91,6 +93,24 @@ function RoomShell({ room }: { room: RoomSnapshot }) {
   );
 }
 
+/**
+ * The ground around the room and the sky behind it, as in the editor's 3D view (30 Oct 2026):
+ * #F3F5F5 ground and #F4F2ED background in light, #232325 and #1C1C1E in dark. Without them the
+ * canvas was see-through, so the card behind it showed instead.
+ */
+function ShareSurroundings() {
+  const { colour } = useCanvasPalette();
+  return (
+    <>
+      <CanvasBackground light="#f4f2ed" />
+      <mesh position={[0, -0.1, 0]} rotation-x={-Math.PI / 2}>
+        <planeGeometry args={[80, 80]} />
+        <meshBasicMaterial color={colour("#f3f5f5")} toneMapped={false} />
+      </mesh>
+    </>
+  );
+}
+
 function Furniture({ item }: { item: DesignItem }) {
   const product = resolveDesignItemVisualProduct(item, CATALOG_ITEMS);
   if (!product) return null;
@@ -137,6 +157,7 @@ export function ShareScene({
         roomHeight={room.geometry.height}
         items={room.items}
       />
+      <ShareSurroundings />
       <RoomShell room={room} />
       {room.items.map((item) => (
         <Furniture key={item.instanceId} item={item} />

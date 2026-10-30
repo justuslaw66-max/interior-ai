@@ -1,0 +1,62 @@
+# s053 - HDB 4-Room Model A2 (corridor), typed from the plan image only (title strip, "For more floor plans / teoalida.com" banner
+# and dimension figures ignored). The ACCESS BALCONY along the bottom is the shared corridor = OUTSIDE, not a space; the small gate
+# with X bracing and two arcs at the corridor's left end (x 85-125, y 500-557) belongs to the corridor, not to the flat.
+# Labels: a printed line break is one blank ("KITCHEN/" + "DINING", "BATH/" + "W.C. 2", "SERVICE" + "BALCONY").
+#
+# LIVING: the lobby in front of the BEDROOM 2 / BEDROOM 3 doors (x 380-430, y 322-378, 1200 x 1200) has no wall or door to the living
+# area at its west side, full width -> part of LIVING.
+space: LIVING
+space: KITCHEN/ DINING
+space: STORE
+space: SERVICE BALCONY
+space: BATH/ W.C. 2
+space: MAIN BEDROOM
+space: BATH/ W.C. 1
+space: BEDROOM 2
+space: BEDROOM 3
+# Not typed: the cabinet box in the corner of SERVICE BALCONY (x 243-258, y 155-182) and the WC / basin fixtures.
+
+# main entrance: double leaf (inward arc with "100 DROP" + gate arcs outside) in the opening x 197-240, y 460-520
+door: LIVING | OUTSIDE
+# KITCHEN/ DINING south side: x 165-213 between the end of the store wall (x 165) and the wall stub (x 213-245) there is ONE thin
+# line across a 1.1 m opening, jamb to jamb -> sliding door (rule of 4 Oct 2026); could also be read as a doorway (uncertain)
+door: KITCHEN/ DINING | LIVING
+# STORE: hinged leaf in the right side of the store (x 165, y 280-318), arc swings out into KITCHEN/ DINING
+door: STORE | KITCHEN/ DINING
+# BATH/ W.C. 2: leaf hinged in the bottom wall (opening x 120-158, y 182), arc inside the bath, opens onto KITCHEN/ DINING
+door: BATH/ W.C. 2 | KITCHEN/ DINING
+# SERVICE BALCONY: leaf hinged in the bottom wall (opening x 162-200, y 182), arc inside the balcony
+door: SERVICE BALCONY | KITCHEN/ DINING
+# MAIN BEDROOM: leaf in its bottom wall (arc x 345-376, y 283-330, swinging into the bedroom)
+door: MAIN BEDROOM | LIVING
+# BATH/ W.C. 1: hinged leaf in the left wall of the bath (opening x 388-392, y 123-158), arc inside the bath, opens onto MAIN BEDROOM
+door: BATH/ W.C. 1 | MAIN BEDROOM
+# BEDROOM 2 and BEDROOM 3: two leaves hinged at the wall stubs x 393-395 (y 322 and y 378), arcs swing into the bedrooms; openings
+# x 395-430 at y 322 and at y 378, between the stubs and the pier at x 430-435 (y 322-380)
+door: BEDROOM 2 | LIVING
+door: BEDROOM 3 | LIVING
+
+# BATH/ W.C. 2: one window in the top wall (white band x 107-157, y 80-88). The two white slots that flank the dark core of its left
+# wall (x 82-87 and x 99-103, y 98-180) are read as wall detail / duct, not windows (uncertain).
+windows: BATH/ W.C. 2 = 1
+# KITCHEN/ DINING: the strip in the top wall x 205-238, y 180-184 is a window onto SERVICE BALCONY (next to the balcony door)
+windows: KITCHEN/ DINING = 1
+# SERVICE BALCONY: its top edge (x 163-243, y 80-90) is a plain band between two lines, no sash -> read as a parapet, no window
+# (uncertain). Its right wall (x 247-257, y 100-152) is a thin duct wall with white cells, read as a wall.
+# MAIN BEDROOM: one window in the top wall x 272-364, y 80-98 (box with double line), between two columns
+windows: MAIN BEDROOM = 1
+# BATH/ W.C. 1: top wall window x 392-445, y 80-86, plus a window opening in its right wall (gap in the dark wall, white box
+# x 462-470, y 113-166) facing the open area outside - two windows (the right-wall one is uncertain)
+windows: BATH/ W.C. 1 = 2
+# BEDROOM 2: a double casement in its top wall x 470-535, y 165-197 (two leaves meeting at x 503, one frame -> 1 window), plus the
+# right-wall glazing. The right wall (x 537-548) carries ONE long glazed band y 219-455 that runs along both bedrooms with no wall
+# piece in it (the partition at y 345-352 stops at the inner jamb); counted once for each bedroom (uncertain).
+windows: BEDROOM 2 = 2
+# BEDROOM 3: right-wall glazing (part of the long band, y 355-455) + bottom (corridor) wall window x 392-535, y 497-502: a
+# double-line sash x 392-508 and a capsule x 510-535 joined with no solid piece -> 1 window (could be read as 2)
+windows: BEDROOM 3 = 2
+# LIVING: two windows in the corridor wall: x 97-187 (capsule x 97-133 + double-line sash x 133-187, joined, counted 1) and
+# x 255-375, split by the entrance and its columns
+windows: LIVING = 2
+
+entrance: LIVING

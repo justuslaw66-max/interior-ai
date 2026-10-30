@@ -1,0 +1,43 @@
+# s016 - small flat (1 bedroom) with household shelter, typed from the plan image only (dimension strings ignored).
+# Labels: a printed line break is one blank ("LIVING/" + "DINING" -> "LIVING/ DINING", "BATH/" + "WC", "AIR-" "CON" "LEDGE",
+# "HOUSE-" "HOLD" "SHELTER").
+# LIVING/ DINING includes the entrance foyer east of the shelter (x 250-310, y 355-460): no wall or door between them.
+# The thin vertical line at x 310 (y 100-520) is a dimension extension line, not a wall.
+space: LIVING/ DINING
+space: BEDROOM
+space: BATH/ WC
+space: KITCHEN
+space: AIR- CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Not typed: the planter-like boxes outside the top wall (x 205-293 and x 318-420, y 132-145; small square x 430-440, y 140-150)
+# - unlabelled facade strips. Not typed: the drying-rack box below the AIR- CON LEDGE (x 400-497, y 360-390): drawn as a rack
+# (bars) in a box open to the sky, no door, reachable only through the kitchen window -> a fixture, not a room (uncertain).
+# Not typed: the small closed box west of BATH/ WC (x 312-328, y 352-388), a cupboard/niche.
+
+# main entrance: unequal double leaf drawn inward (big arc + small arc) + gate leaf arcs outward, same opening x 250-303, y 458-470
+door: LIVING/ DINING | OUTSIDE
+# shelter door in its east wall (x 240-247, y 383-412): leaf drawn open, arc swings out into the foyer
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# BATH/ WC has TWO folding (triangle) doors: one in its top wall (x 312-352, y 296-312) opening into the south-west corner of
+# BEDROOM (the bedroom floor x 315-355, y 235-295, just inside its doorway); one in its bottom wall (x 330-362, y 378-390)
+# opening into KITCHEN.
+door: BATH/ WC | BEDROOM
+door: BATH/ WC | KITCHEN
+# BEDROOM: its west wall (x 313-318) stops at y 235; the opening y 235-283 (about 1.2 m) between that wall end and the bath's
+# wall stub has nothing drawn across it, no leaf -> doorway
+gap: BEDROOM | LIVING/ DINING
+# KITCHEN: its west side is open between the bath's south-west corner (310, 390) and the black column (x 310-330, y 440-465):
+# opening about 1.2 m, nothing drawn across it -> doorway
+gap: KITCHEN | LIVING/ DINING
+
+# LIVING/ DINING: one glazed band in the top wall x 211-287 (three panes, one frame). Left wall is solid black: no window.
+windows: LIVING/ DINING = 1
+# BEDROOM: top wall window x 352-413 (two panes, one frame) + glazed panel in the right wall x 432-440, y 205-252
+windows: BEDROOM = 2
+# BATH/ WC window: grey glazing band in the wall shared with the AIR- CON LEDGE (x 394-398, y 310-345)
+windows: BATH/ WC = 1
+# KITCHEN: window in its top wall x 408-485, y 385-392 (three panes, one frame) facing the drying-rack box; the bottom wall
+# (y 464-470, x 330-497) is two plain thin lines, no glazing -> no window there.
+windows: KITCHEN = 1
+
+entrance: LIVING/ DINING

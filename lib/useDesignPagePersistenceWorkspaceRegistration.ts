@@ -140,7 +140,6 @@ export function useDesignPagePersistenceWorkspaceRegistration({
       },
       session: {
         isAuthenticated: Boolean(base.state.identity.session?.user),
-        isDesigner: coreShell.derived.access.isDesigner,
       },
       newPlan: {
         pendingReplacement: underlay.state.pendingTemplateReplacement,

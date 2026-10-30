@@ -1,0 +1,61 @@
+# s065 - 3-bedroom + study condo unit (same development / same "BP NO." list as s064). Typed from the plan image only
+# ("BP NO." list, scale bar, "BUYCONDO.sg" watermark and the "...RISE" fragment ignored).
+# LIVING, DINING and STUDY: no wall or door between them. The entrance hall (x 290-440, y 100-300), the STUDY alcove
+# (x 452-573, y 222-285: walls on three sides, open at its full width, 2.5 m, to the south) and the lobby in front of the
+# bedroom doors (x 440-683, y 285-330) are all open to the living area -> one space. The DB niche (x 375-437, y 100-127)
+# is a cupboard, not a room. Labels are listed LIVING first so the door lines can name it.
+space: LIVING + DINING + STUDY
+# KITCHEN is closed by thick walls on all sides except the west opening (x 445, y 138-179), which has a pocket door.
+space: KITCHEN
+space: BATH 2
+space: MASTER BATH
+space: BEDROOM 3
+space: BEDROOM 2
+# MASTER BEDROOM includes the lobby under MASTER BATH (x 683-857, y 278-322, with the wardrobe x 775-857, y 273-307):
+# no wall to the bedroom, its only door is the leaf at x 683 (below).
+space: MASTER BEDROOM
+space: BALCONY
+space: AC LEDGE
+# there are TWO spaces labelled RC LEDGE: this one below BEDROOM 3 / BEDROOM 2 (x 445-712, y 490-520) ...
+space: RC LEDGE
+# ... and this one below MASTER BEDROOM (x 722-857, y 450-481)
+space: RC LEDGE
+# Not typed: the white boxes in the baths (x 585-632, y 177-226 beside BATH 2; x 808-855, y 210-268 beside MASTER BATH) are
+# shower cubicles (thin screen line, no door; the second has the window below); crossed boxes (x 585-625 y 232-270;
+# x 808-855 y 178-208; x 560-580 y 185-215; x 289-308 y 477-497) are shafts; F, W, DB; wardrobe boxes with hanger marks;
+# the dashed strips beside walls (x 287-293 y 370-413 etc.) are furniture / curtain boxes. The lobby above the entrance
+# (x 290-365, y 78-105, thin top line) is outside the flat.
+
+# main entrance: unequal double leaf in the opening x 293-360, y 105 (leaves drawn open, one dashed arc, one solid) = one line
+door: LIVING | OUTSIDE
+# KITCHEN: pocket door in the opening between the wall stubs x 437-450 (y 138 and y 179); the leaf is drawn as a thin grey
+# bar sliding into the wall (x 445-448, y 160-212), as in the pocket doors of c22 -> door, not gap (UNCERTAIN)
+door: KITCHEN | LIVING
+# BATH 2 door in the bath's bottom wall: opening x 640-680 (y 270), leaf along x 633-638 (y 228-270), arc into the bath
+door: BATH 2 | LIVING
+# MASTER BATH door in the bath's bottom wall: opening x 745-800 (y 270), leaf along x 742 (y 225-270), arc into the bath
+door: MASTER BATH | MASTER BEDROOM
+# MASTER BEDROOM door: leaf hinged at (683,277), drawn open along the bath's bottom wall (grey bar x 683-726, y 276-281),
+# dashed arc down to (683,331); it sits in an undrawn wall at x ~683
+door: MASTER BEDROOM | LIVING
+# BEDROOM 3 and BEDROOM 2 doors in their top walls (openings x 527-567 and x 592-630 at y 325), leaves along the party wall
+door: BEDROOM 3 | LIVING
+door: BEDROOM 2 | LIVING
+# balcony: glazing band x 297-438, y 477-488 drawn with two lines + end ticks, 2.9 m wide, jamb to jamb -> sliding door
+door: LIVING | BALCONY
+
+# KITCHEN: narrow window in its east wall onto the AC LEDGE (x 573-581, y 128-168, two white strips in the thick wall)
+windows: KITCHEN = 1
+# BATH 2: three-line window in the top wall (x 634-668, y 168-178) onto the AC LEDGE
+windows: BATH 2 = 1
+# MASTER BATH: narrow window in the right outer wall (x 853-861, y 235-268), in the shower cubicle part of the bath
+windows: MASTER BATH = 1
+# the three bedrooms: two-line window strip in each south wall onto the RC LEDGE
+# BEDROOM 3 x 452-570, y 477-488; BEDROOM 2 x 592-712, y 478-488; MASTER BEDROOM x 722-855, y 437-447
+windows: BEDROOM 3 = 1
+windows: BEDROOM 2 = 1
+windows: MASTER BEDROOM = 1
+# No windows typed for the living part: its left wall (x 283-290) is solid thick wall; the glazing along the balcony is the
+# balcony door. AC LEDGE railing (dotted band) is not a window.
+
+entrance: LIVING

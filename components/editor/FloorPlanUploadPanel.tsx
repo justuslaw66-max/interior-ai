@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { Maximize2 } from "lucide-react";
 import { useFloorPlanUploadDialogLifecycle } from "./useFloorPlanUploadDialogLifecycle";
 import { FloorPlanUploadWorkspaceDialog } from "./FloorPlanUploadWorkspaceDialog";
 import type { FloorPlanLifecycleIdentity } from "./design-controls-plan/DesignControlsPlanPanel.types";
@@ -304,9 +305,7 @@ export default function FloorPlanUploadPanel({
               See your floor plan at full size without covering your design.
             </span>
           </span>
-          <span aria-hidden="true" className="shrink-0 text-lg">
-            ↗
-          </span>
+          <Maximize2 className="h-5 w-5 shrink-0" aria-hidden="true" />
         </button>
         {!underlay && !showDrawRoomTools && (
           <div

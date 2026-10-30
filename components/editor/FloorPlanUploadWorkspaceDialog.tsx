@@ -2,6 +2,7 @@
 
 import { createPortal } from "react-dom";
 import type { RefObject } from "react";
+import { X } from "lucide-react";
 import FloorPlanImportWorkspace from "./FloorPlanImportWorkspace";
 import type { FloorPlanUploadChooseState } from "./FloorPlanUploadChooseStep";
 import {
@@ -62,9 +63,9 @@ function WorkspaceHeader({
         ) : null}
         <button ref={closeButtonRef} id={FLOOR_PLAN_WORKSPACE_CLOSE_ACTION_ID}
           type="button" aria-label="Close floor plan upload"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-box-border bg-control-secondary text-xl text-control-label-idle hover:bg-control-quiet-hover"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-box-border bg-control-secondary text-control-label-idle hover:bg-control-quiet-hover"
           disabled={historyConfirmationOpen} onClick={onClose}>
-          <span aria-hidden="true">×</span>
+          <X className="h-5 w-5" aria-hidden="true" />
         </button>
       </div>
     </header>

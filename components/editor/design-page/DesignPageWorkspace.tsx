@@ -19,6 +19,7 @@ import { buildDesignPagePanelWorkspaceRegistration } from "@/lib/design-page-pan
 import { buildDesignPageDialogLayerModel } from "@/lib/design-page-dialog-layer-model";
 import { DEFAULT_EDITOR_CAMERA_VIEW } from "@/lib/design-page-editor-configuration";
 import { EDITOR_DOWNLOAD_OPENER_ID } from "@/lib/editor-download-focus";
+import { canvasFrameStyle } from "@/lib/editor-canvas-insets";
 import { PRO_PLAN_PRICING } from "@/lib/pro-plan-catalog";
 import { useDesignPageCabinetryWorkspaceRegistration } from "@/lib/useDesignPageCabinetryWorkspaceRegistration";
 import { useDesignPagePresentationBackupRegistrationFacade } from "@/lib/useDesignPagePresentationBackupRegistrationFacade";
@@ -452,12 +453,10 @@ export function DesignPageWorkspace() {
   return (
     <DesignPageComposition>
       <DesignPagePresentationQaLayer {...presentationQaLayerModel} />
-      <div className={isClientPreview ? "absolute inset-0" : "absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"}>
+      <div className={isClientPreview ? "absolute inset-0" : "absolute inset-0 max-md:bottom-[calc(4rem+env(safe-area-inset-bottom))]"} style={canvasFrameStyle(sceneRegionModel.configuration.canvas.planSafeArea.frame)}>
         <CanvasBehindPage covered={panelRegionModel.state.shopping !== null}><DesignPageSceneRegion {...sceneRegionModel} /></CanvasBehindPage>
         <DesignPageEditorChrome {...editorChromeModel} />
-        {viewMode === "2d" &&
-        editorMode === "adjust" &&
-        sourceReferenceUnderlay ? (
+        {viewMode === "2d" && editorMode === "adjust" && sourceReferenceUnderlay ? (
           <div className="pointer-events-auto absolute bottom-4 left-4 z-40 flex items-center gap-3 rounded-xl border border-separator bg-surface-floating/95 px-3 py-2 shadow-lg backdrop-blur md:left-[318px]">
             <div>
               <div className="text-xs font-semibold text-label">

@@ -1,0 +1,68 @@
+# s070 - 3-bedroom + study flat with balcony and "Outdoor Cooking" ("111 m2 / 1195 Sqft" caption and scale bar ignored). Typed from the plan image only.
+# Labels are printed in mixed case; typed UPPER CASE. "A/C" "Ledge" (line break) -> "A/C LEDGE".
+# LIVING, DINING and KITCHEN: no wall or door between them (kitchen island + stools only) -> one space. The long corridor in front of
+# the study / bedroom doors / bath 2 (x 322-545, y 345-380) is open to it at its full width -> part of the same space.
+# The Master Bedroom entrance recess (x 548-590, y 343-378) is inside the Master Bedroom.
+space: LIVING + DINING + KITCHEN
+# BALCONY (x 100-330, y 155-197): left wall black, top and right edges are thin double lines (railing / glazing), no parapet label.
+space: BALCONY
+space: STUDY
+space: BEDROOM 2
+space: BEDROOM 1
+space: A/C LEDGE
+space: MASTER BEDROOM
+space: BATHROOM 2
+space: BATHROOM 1
+space: WC
+# OUTDOOR COOKING (x 312-378, y 420-497): walled on the right (x 378) and top (WC), a thick pier (x 304-311, y 463-497) on the left,
+# a pocket sliding door on the left side, hob + sink counter on its right. Separate space with its own label.
+space: OUTDOOR COOKING
+# Not typed: DB cupboard (x 160-182, y 462-490), the X-crossed riser box (x 462-488, y 383-405), shower/shelf lines, wardrobes drawn
+# with louvres (x 393-445 y 312-338; x 545-607 y 312-338; x 592-612 y 383-465; x 555-605 y 465-488), dimension-free notes.
+
+# BALCONY <-> living: the whole boundary (x 95-308, y 197-200) is a glazed double line; the sliding leaf is the panel with end marks at
+# x 148-250 (extra bar below it, y 200-206). Typed as a sliding glass door.
+door: BALCONY | LIVING
+# main entrance (x 102-145, y 430-471): door leaf with arc swinging in + a second small arc / threshold line (gate) in the same opening -> one line
+door: LIVING | OUTSIDE
+# STUDY: opening x 335-378 in its bottom wall (y 340-345), leaf hinged at (378, 340) swinging into the study
+door: STUDY | LIVING
+# BEDROOM 2: opening x 456-493 in its bottom wall, leaf hinged at (493, 338), swings into the bedroom
+door: BEDROOM 2 | LIVING
+# BEDROOM 1: opening x 505-545 in its bottom wall, leaf hinged at (505, 338), swings into the bedroom
+door: BEDROOM 1 | LIVING
+# MASTER BEDROOM: opening x 548, y 343-378 (between the bedroom 1 wall stub and the master wall stub), leaf hinged at (548, 343), arc to (586, 343) -> swings into the master bedroom
+door: MASTER BEDROOM | LIVING
+# BATHROOM 2: opening x 391-427 in its top wall (y 380-385), leaf hinged at (392, 385) swinging into the bath.
+# (The second small arc inside bath 2, x 396-424, y 428-457, is read as the shower-cubicle door: a cubicle is not a space, not typed.)
+door: BATHROOM 2 | LIVING
+# BATHROOM 1: no door in its top wall (solid). The only leaf is in its east wall: opening x 538, y 410-445, leaf hinged at (537, 453) with arc to (509, 453), swings into the bath, from the MASTER BEDROOM.
+# (UNCERTAIN: the arc could also be an inner door between a dry lobby x 468-538, y 385-453 and the wet end; typed as one bathroom.)
+door: BATHROOM 1 | MASTER BEDROOM
+# WC: opening x 315-343 in its bottom wall (y 418-420) with a folding (triangle) door V, opens onto OUTDOOR COOKING
+door: WC | OUTDOOR COOKING
+# OUTDOOR COOKING west side (x 305-311, y 420-463): sliding door drawn as a thick panel with a grey tail parked in a pocket beside the WC wall (x 304-311, y 385-435);
+# opening about 1 m. UNCERTAIN: could be read as a plain doorway (gap).
+door: LIVING | OUTDOOR COOKING
+
+# top outer wall of the three bedrooms: one thin double-line sash band each (x 390-497, x 500-600, y 197-208)
+# LIVING/DINING/KITCHEN: (a) the glazed balcony wall has FIXED glazing on both sides of the sliding leaf (x 95-148 and x 250-308, y 197-200) -> 2 windows
+# (UNCERTAIN: could be read as part of the balcony door only), (b) KITCHEN window in the south wall: thin double line x 225-303, y 492-497, between a thick wall end and the pier -> 1
+windows: LIVING = 3
+# STUDY: glazing band in its top wall x 322-378, y 222-232 (faces the open space between the balcony and bedroom 2)
+windows: STUDY = 1
+windows: BEDROOM 2 = 1
+# BEDROOM 1: top band x 500-600 + a three-line glazed strip in its right wall x 607-613, y 288-312 facing the A/C LEDGE
+windows: BEDROOM 1 = 2
+# MASTER BEDROOM: one continuous L-shaped glazing band wrapping the top-right corner: top wall x 681-745 (y 313-322) and right wall x 738-745, y 313-433.
+# No solid piece at the corner -> counted as ONE (UNCERTAIN: could be two).
+windows: MASTER BEDROOM = 1
+# baths: thin three-line windows in their bottom (outer) walls: bath 2 x 408-445, bath 1 x 490-520, y 493-497
+windows: BATHROOM 2 = 1
+windows: BATHROOM 1 = 1
+# OUTDOOR COOKING: thin double line in its south wall x 311-378, y 492-497 (same drawing as the kitchen window). UNCERTAIN: could be an open louvre / railing.
+windows: OUTDOOR COOKING = 1
+# A/C LEDGE: right side is a hatched louvre screen (x 650-655, y 205-312), not a window.
+# WC: enclosed, no window.
+
+entrance: LIVING

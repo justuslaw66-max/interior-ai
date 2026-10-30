@@ -1,7 +1,20 @@
-import type { CondoDevelopmentMap, LonLat } from "@/lib/condo-map/condo-map-data";
+import type { CondoDevelopmentMap, CondoUnitPlan, LonLat } from "@/lib/condo-map/condo-map-data";
 import type { Ring } from "@/lib/condo-map/condo-map-geometry";
 import { condoMapOptions, hideBasemapBuildingsOnSites } from "./condo-map-basemap";
-import { condoLayers, condoModelSlug, condoModels, condoPickLayers, condoPickTarget, condoSources, condoViewUpdates } from "./condo-map-layers";
+import {
+  CONDO_PLAN_LIFT_M,
+  condoLayerId,
+  condoLayers,
+  condoModelSlug,
+  condoModels,
+  condoPickLayers,
+  condoPickTarget,
+  condoPlanImage,
+  condoPlanLayer,
+  condoPlanSourceId,
+  condoSources,
+  condoViewUpdates,
+} from "./condo-map-layers";
 import { boundsAround, liftPixels, unitOutOfView, type CondoMapView, type CondoMapsBySlug } from "./condo-map-view";
 import type { MapboxBounds, MapboxEvent, MapboxGlobal, MapboxMap } from "./mapbox-gl-types";
 
@@ -73,10 +86,37 @@ export function addCondoDevelopment(map: MapboxMap, dev: CondoDevelopmentMap, or
   for (const layer of condoLayers(dev)) map.addLayer(layer);
 }
 
-export function applyCondoView(map: MapboxMap, dev: CondoDevelopmentMap, view: CondoMapView, modelsFailed: boolean): void {
-  const { filters, paint } = condoViewUpdates(dev, view, modelsFailed);
+export function applyCondoView(map: MapboxMap, dev: CondoDevelopmentMap, view: CondoMapView, modelsFailed: boolean, origin: string): void {
+  const { filters, paint, plan } = condoViewUpdates(dev, view, modelsFailed);
   for (const [layerId, filter] of filters) if (map.getLayer(layerId)) map.setFilter(layerId, filter);
   for (const [layerId, property, value] of paint) if (map.getLayer(layerId)) map.setPaintProperty(layerId, property, value);
+  showCondoPlan(map, dev.slug, plan, origin);
+}
+
+// the plan each map shows for each development (its picture and corners), so an unchanged view doesn't load it again
+const SHOWN_PLANS = new WeakMap<MapboxMap, Map<string, string>>();
+
+/**
+ * A development's chosen unit's plan on its floor, or none. Its picture source and layer are made the first time one
+ * shows (most developments are never chosen), then pointed at the next plan; with none, the layer is hidden.
+ */
+export function showCondoPlan(map: MapboxMap, slug: string, plan: CondoUnitPlan | null, origin: string): void {
+  const layerId = condoLayerId(slug, "plan");
+  const shown = SHOWN_PLANS.get(map) ?? new Map<string, string>();
+  SHOWN_PLANS.set(map, shown);
+  if (!plan) {
+    if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "visibility", "none");
+    return;
+  }
+  const image = condoPlanImage(slug, plan, origin);
+  const key = JSON.stringify(image);
+  const source = map.getSource(condoPlanSourceId(slug));
+  if (!source) map.addSource(condoPlanSourceId(slug), { type: "image", ...image });
+  else if (shown.get(slug) !== key) source.updateImage(image);
+  shown.set(slug, key);
+  if (!map.getLayer(layerId)) map.addLayer(condoPlanLayer(slug, plan));
+  else map.setPaintProperty(layerId, "raster-elevation", plan.z + CONDO_PLAN_LIFT_M);
+  map.setLayoutProperty(layerId, "visibility", "visible");
 }
 
 /** Clicks on a unit pick it (or, off every unit, nothing); the pointer shows a hand over one. Returns the unbinding. */

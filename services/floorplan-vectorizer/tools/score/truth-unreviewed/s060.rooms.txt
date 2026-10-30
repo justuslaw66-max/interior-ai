@@ -1,0 +1,61 @@
+# s060 - 5-ROOM IMPROVED (POINT BLOCK), "Page 1 of 2" caption. Typed from the plan image only (title, scale note,
+# dimension lines, "Page 1 of 2" and the "100 DROP" level notes ignored). One dwelling, one floor.
+# Labels: a printed line break is one blank ("BATH/" + "WC 2" -> "BATH/ WC 2").
+# The entrance foyer (x 175-265, y 455-570, in front of the STORE door and the main door) is open to LIVING/DINING at its
+# full width -> part of LIVING/DINING. The strip in front of the bedroom doors (x 440-660, y 500-580) is open too.
+space: LIVING/DINING
+space: KITCHEN
+space: STORE
+space: BATH/ WC 2
+space: BATH/ WC 1
+space: MAIN BEDROOM
+space: BEDROOM 2
+space: BEDROOM 3
+space: BALCONY
+# Unlabelled ledge: the small niche x 530-660, y 925-967 between the balcony's right pier (x 515-530) and the BEDROOM 3
+# pier (x 660-675). Closed by the glazing band of LIVING/DINING on top, the two piers at the sides and a single thin line
+# (parapet) along the bottom (y 967) - read as an A/C-ledge-type recess (UNCERTAIN, see report).
+space: (unlabelled ledge beside balcony)
+# Not typed: REFUSE CHUTE box (x 375-450, y 85-165, crossed, thick walls) = shaft; the open-air recess above the baths
+# (x 450-660, y 160-330) is outside, not a space.
+
+# main entrance in the left wall, x 165-175, y 492-553: door leaf swings in, gate (arrow, "100 DROP") swings out ->
+# door + gate in the same opening = one line
+door: LIVING/DINING | OUTSIDE
+# store door: opening x 222-268 in the store's bottom wall (y 450), leaf hinged at x 268 and drawn open along x 268 (grey
+# strip y 450-500), arc into the foyer
+door: STORE | LIVING/DINING
+# KITCHEN: ONE line drawn across a door-sized opening (x 433, y 503-558, about 0.9 m) between the corner of the baths'
+# bottom wall (y 500) and the black pier (y 562-578); "100 DROP" printed beside it -> sliding door (rule of 4 Oct 2026)
+door: KITCHEN | LIVING/DINING
+# BATH/ WC 2 door in its left wall (x 437, y 446-495), leaf hinged at y 495, arc into the bath, opens to the kitchen
+door: BATH/ WC 2 | KITCHEN
+# BATH/ WC 1 door in its right wall (x 660, y 400-447), leaf hinged at y 447, arc into the bath; opens to MAIN BEDROOM
+door: BATH/ WC 1 | MAIN BEDROOM
+# three bedroom doors, each a quarter-circle arc in the bedroom's left wall (x 660-667): y 500-560, y 580-640, y 795-855
+door: MAIN BEDROOM | LIVING/DINING
+door: BEDROOM 2 | LIVING/DINING
+door: BEDROOM 3 | LIVING/DINING
+# balcony sliding door: the thicker panel x 270-420 (y 920-925, "100 DROP" at x 350) in the single line y 922 that bounds
+# the balcony (the rest of that line, x 175-270 and x 420-520, is a single thin line = floor edge, not typed)
+door: BALCONY | LIVING/DINING
+
+# KITCHEN: continuous glazing band in its east wall (x 440-453, y 163-325) with four casement leaves drawn with swing arcs
+# (hinge posts at y 200 and y 285), facing the open-air recess. No solid wall piece breaks it -> counted as 1 (UNCERTAIN: 1 / 2 / 4).
+windows: KITCHEN = 1
+# bath windows: louvre/frame bands in the top walls (x 492-550, y 330-338 and x 558-660), facing the open-air recess
+windows: BATH/ WC 2 = 1
+windows: BATH/ WC 1 = 1
+# MAIN BEDROOM: three-line window in the top wall (x 680-935, y 291-300) + glazing band in the right wall (x 960-975, y 395-568)
+windows: MAIN BEDROOM = 2
+# BEDROOM 2: right-wall glazing band x 960-975, y 570-800 (the partitions meet it with small posts, so one band per room)
+windows: BEDROOM 2 = 1
+# BEDROOM 3: right-wall band x 960-975, y 800-925 + window in the bottom wall (x 675-935, y 1005-1015)
+windows: BEDROOM 3 = 2
+# LIVING/DINING: (a) left wall x 163-177, y 650-910, a long band between black piers drawn like the bedroom windows (two
+# close outer lines + white gap + inner line) -> window (UNCERTAIN: could be a plain thin wall);
+# (b) three-line glazing band x 530-660, y 913-925 facing the unlabelled ledge niche.
+# Not counted: the short three-line strip in the left wall beside the main door (x 163-172, y 457-482, only 0.35 m).
+windows: LIVING/DINING = 2
+
+entrance: LIVING/DINING

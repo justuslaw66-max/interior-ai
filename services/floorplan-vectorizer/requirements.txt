@@ -5,3 +5,12 @@ numpy>=1.26
 opencv-python-headless>=4.9,<5
 scikit-image>=0.22
 pytesseract>=0.3.10
+# The name reader (name_reader.py, FLOOR_PLAN_NAME_READER=1): RapidOCR 1.3.24 (PP-OCR on ONNX Runtime, Apache-2.0, its
+# model files inside the package) is installed with --no-deps by worker.Dockerfile, because its own requirement
+# opencv-python would sit beside opencv-python-headless. These are the rest of what it needs.
+onnxruntime>=1.16,<2
+pyclipper>=1.2
+shapely>=1.7
+PyYAML>=5.4
+Pillow>=9
+six>=1.15

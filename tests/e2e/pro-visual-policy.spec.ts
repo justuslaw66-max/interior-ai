@@ -539,17 +539,18 @@ async function mockShareFallbackDesign(page: Page) {
 }
 
 /**
- * Pro's designer workspace shares a design by itself once it has loaded (`useDesignPagePersistence`),
- * a moment after the title shows; in WebKit it once landed just after a count was taken. Counts of
- * Share's own requests start after that one.
+ * Pro's designer workspace never shares a design by itself: only Share creates a link (CH-0010,
+ * 30 Oct 2026). Before, it shared a moment after the title showed, so this waits a second past the
+ * loaded design and designer mode and checks that no share request was made.
  */
-async function waitForDesignerAutoShare(
+async function expectNoAutomaticShare(
+  page: Page,
   shareMock: Awaited<ReturnType<typeof mockShareFallbackDesign>>,
   designId = SHARE_FALLBACK_DESIGN_ID
 ) {
-  await expect
-    .poll(() => shareMock.getDesignShareRequestCount(designId), { timeout: FIRST_LOAD_TIMEOUT_MS })
-    .toBeGreaterThan(0);
+  await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
+  await page.waitForTimeout(1_000);
+  expect(shareMock.getDesignShareRequestCount(designId)).toBe(0);
 }
 
 async function setShareFallbackClipboardMode(
@@ -1896,7 +1897,7 @@ test.describe("Pro visual policy", () => {
     await expect(page.getByTestId("pro-mode-indicator")).toBeVisible();
     await setShareFallbackClipboardMode(page, "permission-denied");
     await waitForSharedDesign(page);
-    await waitForDesignerAutoShare(shareMock);
+    await expectNoAutomaticShare(page, shareMock);
     const requestCountBeforeActivation = shareMock.getShareRequestCount();
     proVisualMark(page, "explicit-share-activation-baseline", { requestCountBeforeActivation });
     const share = await activateShare(page, "keyboard");
@@ -1976,7 +1977,7 @@ test.describe("Pro visual policy", () => {
     await identity.sessionReady;
     await setShareFallbackClipboardMode(page, "rejected");
     await waitForSharedDesign(page);
-    await waitForDesignerAutoShare(shareMock);
+    await expectNoAutomaticShare(page, shareMock);
     let requestCountBeforeActivation = shareMock.getShareRequestCount();
     await activateShare(page, "pointer");
     expect(shareMock.getShareRequestCount()).toBe(
@@ -2054,7 +2055,7 @@ test.describe("Pro visual policy", () => {
     ).toBe(0);
 
     await waitForSharedDesign(page, SHARE_FALLBACK_NEXT_DESIGN_ID);
-    await waitForDesignerAutoShare(shareMock, SHARE_FALLBACK_NEXT_DESIGN_ID);
+    await expectNoAutomaticShare(page, shareMock, SHARE_FALLBACK_NEXT_DESIGN_ID);
     requestCountBeforeActivation = shareMock.getShareRequestCount();
     await activateShare(page, "pointer");
     expect(shareMock.getShareRequestCount()).toBe(

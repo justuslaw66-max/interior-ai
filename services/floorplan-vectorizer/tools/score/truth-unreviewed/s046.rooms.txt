@@ -1,0 +1,58 @@
+# s046 - HDB 4-Room Simplified (corridor unit, 84 sqm). Typed from the plan image only (title "4-ROOM SIMPLIFIED (CORRIDOR)",
+# "SCALE 1:100", dimension figures and the grey banner at the bottom are ignored).
+# Labels: a printed line break is one blank ("KITCHEN/" + "DINING" -> "KITCHEN/ DINING", "BATH/" + "WC 2" -> "BATH/ WC 2").
+# ACCESS BALCONY (x 135-520, y 535-625, railing along its south edge, open at both ends) is the shared access corridor = OUTSIDE,
+# not a space (same reading as room4 / s045). The gate drawn at its west end (x 98-155, y 553-596, one big arc + two small leaves in
+# the wall line x 130-135) joins that corridor to the neighbouring corridor, not to the flat: not typed (uncertain).
+# The short lobby in front of the BEDROOM 2 / MAIN BEDROOM / BEDROOM 3 doors (x 335-421, y 358-418) is open at its full width to
+# LIVING ROOM (Bedroom 3's left wall only starts at y 411) -> part of LIVING ROOM.
+# Not typed: REFUSE CHUTE (dark shaft box x 112-158, y 80-130), the sink/drainer counter (x 135-165, y 150-215), the small box by
+# the chute (x 158-172, y 95-120), the D-shaped fixtures on the bath-2 left wall (x 232-250, y 143-163).
+# The side walls of the flat (x 130-137 and x 510-520, between the dark columns) are plain double lines = party walls to the
+# next units. The open air well between BATH/ WC 2 and BATH/ WC 1 (x 308-447, y 90-178) has no label and no walls: not a space.
+space: KITCHEN/ DINING
+space: STORE
+space: BATH/ WC 2
+space: BATH/ WC 1
+space: BEDROOM 2
+space: MAIN BEDROOM
+space: LIVING ROOM
+space: BEDROOM 3
+
+# main entrance: door (one inward leaf, big arc above the line) + gate (two leaves, arcs below the line) in the same opening
+# x 312-348, y 527
+door: LIVING ROOM | OUTSIDE
+# BEDROOM 2 door: leaf hinged at (370,358) on the column, swings up into the bedroom; opening x 335-370 at y 358
+door: BEDROOM 2 | LIVING ROOM
+# MAIN BEDROOM door: leaf hinged at (383,358) on the column, swings up into the bedroom; opening x 383-421 at y 358
+door: MAIN BEDROOM | LIVING ROOM
+# BEDROOM 3 door: leaf hinged at (383,418), swings down into the bedroom; opening x 383-421 at y 418
+door: BEDROOM 3 | LIVING ROOM
+# BATH/ WC 1 door: leaf hinged at (460,178) in the bottom wall of the bath, swings into the bath; opens onto the MAIN BEDROOM
+door: BATH/ WC 1 | MAIN BEDROOM
+# BATH/ WC 2 door: leaf hinged at (252,96) in the left wall of the bath (drawn closed along x 250, y 96-132, arc inside); opens
+# onto the kitchen
+door: BATH/ WC 2 | KITCHEN/ DINING
+# STORE door: hinged leaf drawn open to the east (arc x 207-245, y 310-345), in the right wall of the store
+door: STORE | KITCHEN/ DINING
+# KITCHEN/ DINING to LIVING ROOM: opening x 208-247 at y 357 (about 900 mm) between the store wall end (x 207) and the column
+# (x 247-253), ONE thin line drawn across it, jamb to jamb -> sliding door (rule of 4 Oct 2026)
+door: KITCHEN/ DINING | LIVING ROOM
+
+# KITCHEN/ DINING: glazed band in the top wall x 155-247, y 83-93, casement leaves with arcs drawn outside (x 170-195, 196-221,
+# 222-247) and a post at x 194; no solid wall piece in it -> counted as ONE window (uncertain: could be read as 2 or 3).
+windows: KITCHEN/ DINING = 1
+# BATH/ WC 2: glazed right wall x 302-307, y 87-139 (dashed inner line, one mullion bar at y 112) -> one window (uncertain, could be 2)
+windows: BATH/ WC 2 = 1
+# BATH/ WC 1: glazed left wall x 447-452, y 87-139, same drawing with a mullion bar at y 112 -> one window (uncertain, could be 2)
+windows: BATH/ WC 1 = 1
+# BEDROOM 2: glazed band x 308-372 in its top wall (y 176-180) with a double casement (two leaves, arcs into the air well)
+windows: BEDROOM 2 = 1
+# MAIN BEDROOM: glazed band x 382-444 in its top wall (y 176-180) with a double casement
+windows: MAIN BEDROOM = 1
+# LIVING ROOM: long glazed band in the bottom wall x 172-302, y 521-528 (grey inner panes), left of the entrance door
+windows: LIVING ROOM = 1
+# BEDROOM 3: glazed band x 410-482 in the bottom wall (y 548-553), between two plain wall pieces
+windows: BEDROOM 3 = 1
+
+entrance: LIVING ROOM

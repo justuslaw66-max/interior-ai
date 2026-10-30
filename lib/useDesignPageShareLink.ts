@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState, type Dispatch, type SetStateAction } from "react";
-import { track } from "@/lib/analytics";
+import { track, trackProductEvent } from "@/lib/analytics";
 import { copyFallbackShareLinkWithFeedback } from "@/lib/copy-fallback-share-link";
 import { designApi } from "@/lib/design-api-client";
 import { EDITOR_FEEDBACK_DURATION_MS } from "@/lib/editor-feedback-tone";
@@ -30,6 +30,7 @@ export async function createAndCopyShareLink(designId: string, updates: ShareLin
 
     updates.setShareToken(data.shareToken);
     updates.setShareEnabled(true);
+    trackProductEvent("design_shared", { source: "share_link", result: "success" });
     const shareUrl = `${window.location.origin}/share/${data.shareToken}`;
 
     try {

@@ -1,0 +1,37 @@
+# p03 - lower storey of a duplex (internal staircase shown, other storey not in the image)
+# The drawing is a redraw with NO interior door leaves: all room doorways are plain openings -> gap lines.
+# The staircase (unlabelled) is open at its foot to the living/corridor floor -> part of the LIVING space.
+space: LIVING + DINING + KITCHEN
+space: JUNIOR SUITE
+space: BEDROOM 4
+space: JUNIOR SUITE BATH
+space: BATH 3
+space: HS
+space: LINEN
+space: WC
+space: A/C LEDGE
+# two balconies, both labelled BALCONY: first = top-left (off JUNIOR SUITE), second = top-right (off LIVING)
+space: BALCONY
+space: BALCONY
+door: OUTSIDE | LIVING
+# sliding glass doors (overlapping thin panels)
+door: JUNIOR SUITE | BALCONY
+# living: two panel pairs in one wall = one sliding door (to the top-right balcony)
+door: LIVING | BALCONY
+gap: JUNIOR SUITE | LIVING
+gap: BEDROOM 4 | LIVING
+gap: JUNIOR SUITE BATH | JUNIOR SUITE
+gap: BATH 3 | LIVING
+# HS: door frame notches in the bottom wall towards the kitchen, no leaf drawn; the inner HS outline is drawn closed
+gap: HS | LIVING
+# LINEN is divided from KITCHEN only by a single thin line (door erased?) plus a short thin triple-line screen by the counter; read as an opening
+gap: LINEN | LIVING
+gap: WC | LINEN
+windows: BEDROOM 4 = 1
+# the window over the staircase counts for the LIVING space
+windows: LIVING = 1
+windows: JUNIOR SUITE BATH = 1
+# BATH 3 window band is in the wall towards LINEN (a yard-like space), not a true outer wall
+windows: BATH 3 = 1
+windows: WC = 1
+entrance: LIVING
