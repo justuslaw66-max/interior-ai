@@ -33,8 +33,10 @@ function scrollingAncestor(element: HTMLElement): HTMLElement | null {
 
 /**
  * A docked inspector is the Plan rail's last card, so at 1280×720 a wall's Change material sat below
- * the rail's fold (30 Oct 2026). When the selection changes, the rail scrolls just enough to show
- * the inspector, keeping its top in view when it's taller than the rail.
+ * the rail's fold (30 Oct 2026). When a wall, ceiling, door, window, fixed element or note is picked,
+ * the rail scrolls just enough to show the inspector, keeping its top in view when it's taller than
+ * the rail. Not for a room: one is selected whenever a plan opens, and the rail would scroll the
+ * room navigator out of sight on arrival.
  */
 function useRevealDockedInspector(element: HTMLElement | null, docked: boolean, selectionKey: string) {
   useEffect(() => {
@@ -76,7 +78,7 @@ export function useInspectorPlacement(state: InspectorState, configuration: Insp
   }, [inSheet]);
   useReportTabletRightPanel("inspector", wide && !docked && takesOver, configuration.floatingWidthPx + configuration.floatingRightPx);
   const [element, setElement] = useState<HTMLDivElement | null>(null);
-  useRevealDockedInspector(element, docked && !inSheet, selectionKey);
+  useRevealDockedInspector(element, docked && !inSheet && takesOver, selectionKey);
   if (inSheet) return { shown: true, inSheet, portalTarget: sheet.slot, attach: setElement };
   return { shown: wide && !roomInPanel, inSheet, portalTarget: docked ? configuration.portalTarget : null, attach: setElement };
 }

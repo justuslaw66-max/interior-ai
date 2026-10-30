@@ -162,7 +162,7 @@ assert.match(inspectorSource, /const \{ attach, \.\.\.placement \} = useInspecto
 assert.match(placementSource, /const roomInPanel = tablet && roomCardShown && room;[\s\S]*?shown: wide && !roomInPanel,/);
 assert.match(inspectorSource, /<div ref=\{attach\} data-testid="selection-inspector"/);
 // Docked in the Plan rail, the inspector scrolls into view when the selection changes (30 Oct 2026).
-assert.match(placementSource, /useRevealDockedInspector\(element, docked && !inSheet, selectionKey\);/);
+assert.match(placementSource, /useRevealDockedInspector\(element, docked && !inSheet && takesOver, selectionKey\);/);
 assert.match(placementSource, /if \(above < 0\) rail\.scrollTop \+= above;\s*else if \(below > 0\) rail\.scrollTop \+= Math\.min\(below, above\);/);
 assert.match(placementSource, /if \(placement\.inSheet\) return \{ className: surface, clearSize: "touch" as const,[\s\S]*?clearSize: "icon" as const, style \};/, "Done is a 44px target; × Deselect 36px, 44px on touch (UX 5n).");
 assert.match(inspectorSource, /<Button\s+size=\{frame\.clearSize\}\s+data-testid="selection-inspector-clear"/);
