@@ -6,7 +6,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import * as THREE from "three";
 
 import { CanvasFrameCard, applyCanvasLensShift } from "../components/editor/canvas/CanvasFrameCard";
-import { CanvasViewToolbar, canvasToolbarLeft } from "../components/editor/canvas/CanvasViewToolbar";
+import { CANVAS_TOOLBAR_LEFT, CanvasViewToolbar } from "../components/editor/canvas/CanvasViewToolbar";
 import { KeyboardShortcutsButton, KeyboardShortcutsList } from "../components/editor/canvas/KeyboardShortcutsSheet";
 import { PhoneCanvasPills } from "../components/editor/canvas/PhoneCanvasPills";
 import { handleUndoRedoKeyDown } from "../hooks/useUndoRedoHotkeys";
@@ -19,6 +19,7 @@ import {
 import {
   FULL_WINDOW_CANVAS,
   WIDE_PLAN_TOP_INSET_PX,
+  canvasFrameStyle,
   isWideEditor,
   resolveCanvas3DInsetsPx,
   resolveCanvasFrameBox,
@@ -46,7 +47,6 @@ const noop = () => {};
 // The toolbar, over the canvas card beside the docked step panel (the rounded inset frame).
 const dockedFrame = resolveCanvasFrameBox({ wide: true, clientPreview: false, panelVisible: true, shopping: false, collapsed: false, isDesigner: false });
 const toolbarProps = {
-  frame: dockedFrame,
   viewMode: "2d" as const,
   onViewModeChange: noop,
   canFit: true,
@@ -68,7 +68,7 @@ const toolbarProps = {
 };
 const toolbar = renderToStaticMarkup(<CanvasViewToolbar {...toolbarProps} />);
 assert.match(toolbar, /^<div role="group" aria-label="Canvas controls" data-testid="canvas-view-toolbar" class="absolute top-bar-4 z-40 flex -translate-x-1\/2 /);
-assert.match(toolbar, /style="left:clamp\(490px, calc\(50% \+ 147px\), calc\(100% - 540px\)\)"/);
+assert.ok(toolbar.includes(`style="left:${CANVAS_TOOLBAR_LEFT}"`), "The toolbar takes its place from the editor's canvas variables.");
 const order = ["editor-view-toggle", "editor-view-2d", "editor-view-3d", "canvas-fit-view", "command-undo", "command-redo"];
 const positions = order.map((testId) => toolbar.indexOf(`data-testid="${testId}"`));
 assert.ok(positions.every((position, index) => position > 0 && (index === 0 || position > positions[index - 1])), "2D | 3D, then Fit, Undo and Redo.");
@@ -102,9 +102,20 @@ assert.equal(existsSync(join(process.cwd(), "components/editor/design-page/Prese
 assert.match(read("lib/useDesignPagePresentationQaFacade.ts"), /savedViews: \{ views: state\.document\.activeRoom\?\.savedViews \?\? \[\], nameInput: state\.presentation\.cameraViewNameInput \}/);
 assert.match(read("lib/useDesignPagePresentationQaFacade.ts"), /savedViews: savedViewActions\(presentExport\.actions\)/);
 
-// Centred on the canvas card, but clear of a 340px right panel and the step panel.
-assert.equal(canvasToolbarLeft(FULL_WINDOW_CANVAS), "clamp(188px, calc(50% + 0px), calc(100% - 540px))");
-assert.equal(canvasToolbarLeft(dockedFrame), "clamp(490px, calc(50% + 147px), calc(100% - 540px))", "1440 wide: 867, the card's middle.");
+// Centred on the canvas card, but clear of a 340px right panel and the step panel. The card's place
+// comes from the editor's CSS variables (30 Oct 2026), from the frame the 2D fit uses: 1440 wide,
+// clamp(490px, 720 + 147px, 900px) is 867, the card's middle.
+assert.equal(
+  CANVAS_TOOLBAR_LEFT,
+  "clamp(calc(var(--canvas-frame-left, 0px) + 188px), calc(50% + (var(--canvas-frame-left, 0px) - var(--canvas-frame-right, 0px)) / 2), calc(100% - 540px))"
+);
+assert.deepEqual(canvasFrameStyle(dockedFrame), {
+  "--canvas-frame-left": "302px",
+  "--canvas-frame-right": "8px",
+  "--canvas-centre-x": "calc(302px + (100% - 310px) / 2)",
+  "--canvas-overlay-max-width": "calc(100% - 310px - 2rem)",
+});
+assert.equal(canvasFrameStyle(FULL_WINDOW_CANVAS)["--canvas-centre-x" as never], "calc(0px + (100% - 0px) / 2)", "Phones: the window's middle.");
 for (const [input, expected] of [
   [{ panelVisible: false, shopping: false, collapsed: false, isDesigner: false }, 0],
   [{ panelVisible: true, shopping: false, collapsed: false, isDesigner: false }, 318],
@@ -143,7 +154,10 @@ assert.deepEqual(
   { safeAreaLeftPx: 318, safeAreaRightPx: 284, safeAreaTopPx: WIDE_PLAN_TOP_INSET_PX, safeAreaBottomPx: 0 },
   "A canvas that fills the editor takes the insets as they are."
 );
-assert.match(read("components/editor/design-page/DesignPageEditorChrome.tsx"), /const frame = resolveCanvasFrameBox\(\{\s*wide,\s*clientPreview: bar\.isClientPreview,/, "The toolbar centres on the card the canvas sits in.");
+// The toolbar centres on the card the canvas sits in, from the variables the editor sets from the
+// scene's frame, so it moves with Plan's canvas focus; the chrome no longer works out its own.
+assert.doesNotMatch(read("components/editor/design-page/DesignPageEditorChrome.tsx"), /resolveCanvasFrameBox/);
+assert.match(read("components/editor/design-page/DesignPageWorkspace.tsx"), /max-md:bottom-\[calc\(4rem\+env\(safe-area-inset-bottom\)\)\]"\} style=\{canvasFrameStyle\(sceneRegionModel\.configuration\.canvas\.planSafeArea\.frame\)\}>\s*<CanvasBehindPage[\s\S]*?<DesignPageEditorChrome /);
 assert.match(read("lib/useDesignPagePlanPresentationModel.ts"), /const canvasFrame = resolveCanvasFrameBox\(\{ wide: viewportWidth >= 768, clientPreview: isClientPreview, panelVisible: primaryLeftPanelVisible, \.\.\.leftPanel \}\);/);
 assert.equal(
   renderToStaticMarkup(<CanvasFrameCard frame={dockedFrame}><canvas /></CanvasFrameCard>),

@@ -727,6 +727,7 @@ const CANVAS_SOURCES = [
   "components/scene/FurnitureItem.tsx",
   "features/cabinetry/components/CabinetPreviewScene3D.tsx",
   "features/cabinetry/components/CabinetSceneItem.tsx",
+  "components/public-share/ShareScene.tsx",
 ];
 const COLOUR_IN_STRING = /#[0-9a-fA-F]{6}\b|rgba?\([^)]*\)/g;
 function colourCallArguments(text: string): string[] {
@@ -784,5 +785,12 @@ assert.match(
   /userData=\{captureLightUserData\(\{ color: "#f3f5f5" \}\)\}[\s\S]*userData=\{captureLightUserData\(\{ cellColor: "#ffffff", sectionColor: "#ffffff" \}\)\}[\s\S]*<CanvasBackground light=\{configuration\.backgroundColor\} \/>/,
   "The workspace ground, its grid and the background keep their light colours for exports."
 );
+
+// A bare `border` takes the text's colour (Tailwind 4), so in dark the catalogue's filter fields
+// had white outlines (30 Oct 2026). Every border there names its token.
+for (const className of read("components/catalog/CatalogFilterDrawer.tsx").match(/className="[^"]*"/g) ?? []) {
+  if (!/\bborder\b/.test(className)) continue;
+  assert.match(className, /\bborder-(?:separator|box-border|control-secondary-border)\b/, `A filter border names its token: ${className}`);
+}
 
 console.log("Light and dark colour checks passed.");

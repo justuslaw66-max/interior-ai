@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Redo2, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Eye, EyeOff, Redo2, X } from "lucide-react";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayArea } from "@/lib/display-units";
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
@@ -327,13 +327,13 @@ export default function FloorPropertiesPanel({
                     </button>
                     <button
                       type="button"
-                      className="h-7 w-7 rounded-md text-xs font-semibold text-label-secondary hover:bg-control-track-hover disabled:opacity-40"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-label-secondary hover:bg-control-track-hover disabled:opacity-40 touch:h-11 touch:w-11"
                       disabled={!canEdit || isActive || !onToggleFloorVisibility}
                       aria-label={`${isHidden ? "Show" : "Hide"} ${option.label}`}
                       title={isActive ? "The level you're on stays visible" : isHidden ? "Show level" : "Hide level"}
                       onClick={() => onToggleFloorVisibility?.(option.level)}
                     >
-                      {isHidden ? "○" : "●"}
+                      {isHidden ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                     </button>
                   </div>
                 );

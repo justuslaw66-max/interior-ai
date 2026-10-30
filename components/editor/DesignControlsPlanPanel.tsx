@@ -81,7 +81,7 @@ import { WallPaintPicker } from "./design-controls-plan/WallPaintPicker";
 import { SurfaceMaterialCatalogBoundary } from "./design-controls-plan/SurfaceMaterialCatalogBoundary";
 import { SurfaceBrowserFilterBar } from "./design-controls-plan/SurfaceBrowserFilterBar";
 import { SurfaceBrowserHeader } from "./design-controls-plan/SurfaceBrowserHeader";
-import { RoomSurfaceRows, openRoomSurfaceTarget, roomSurfaceRowsOf, type RoomSurfaceTarget } from "./design-controls-plan/RoomSurfaceRows";
+import { RoomSurfaceRows, openRoomSurfaceTarget, roomSurfaceRowsOf, surfaceBrowserHolderOf, type RoomSurfaceTarget } from "./design-controls-plan/RoomSurfaceRows";
 import {
   SURFACE_MATERIAL_INITIAL_VISIBLE_COUNT,
   SURFACE_MATERIAL_VISIBLE_INCREMENT,
@@ -1057,8 +1057,8 @@ export default function DesignControlsPlanPanel({
     />
   );
   // A room's Floor, Walls or Ceiling row opens the picker for that surface; walls open on Paint (UX audit ED8).
-  const openRoomSurface = (target: RoomSurfaceTarget) => {
-    onSurfaceTargetChange(target); setSurfaceTab("tiles"); setWallSurfaceMode("paint"); setRoomFinishPanelOpen(true); setPlanSectionCollapsed("selectedRoom", false);
+  const openRoomSurface = (target: RoomSurfaceTarget, reveal = false) => {
+    if (reveal) pendingSurfaceRevealRef.current = true; onSurfaceTargetChange(target); setSurfaceTab("tiles"); setWallSurfaceMode("paint"); setRoomFinishPanelOpen(true); setPlanSectionCollapsed("selectedRoom", false);
   };
   const openSurfaceSummary = (source: "header" | "information_fallback") => {
     setSurfaceSummaryOpen(true);
@@ -1174,12 +1174,13 @@ export default function DesignControlsPlanPanel({
         : "border-box-border bg-field hover:bg-control-secondary-hover",
     ].join(" ");
   };
-  const renderSurfaceMaterialBrowser = () => (
+  const surfaceBrowserHolder = surfaceBrowserHolderOf(Boolean(visiblePlanOpening), isPlanSectionCollapsed("selectedRoom"));
+  const renderSurfaceMaterialBrowser = (holder: ReturnType<typeof surfaceBrowserHolderOf>) => (
     <SurfaceMaterialCatalogBoundary
       ref={surfaceWorkspaceRef}
       data-testid="room-surfaces-floor-panel" data-floor-material-id={activeRoomFloorMaterialId}
       data-surface-target={activeSurfaceTarget} data-surface-material-id={activeTargetMaterialId ?? ""}
-      open={roomFinishPanelOpen} status={surfaceCatalog.status} onRetry={surfaceCatalog.retry}
+      open={roomFinishPanelOpen && holder === surfaceBrowserHolder} status={surfaceCatalog.status} onRetry={surfaceCatalog.retry}
       className="mt-2 rounded-lg border border-box-border bg-tile p-2"
     >
       {!hasRooms ? (
@@ -2172,14 +2173,10 @@ export default function DesignControlsPlanPanel({
             <>
               {!visiblePlanOpening && (
                 <>
-              {roomFinishPanelOpen && (
-                <>
-                  {renderSurfaceMaterialBrowser()}
-                </>
-              )}
+              {renderSurfaceMaterialBrowser("room")}
               <div
                 data-testid="mobile-selected-room-dimensions"
-                className="mt-2 grid grid-cols-2 gap-2 border-t border-separator pt-2 md:hidden"
+                className="mt-2 grid grid-cols-2 gap-2 border-t border-separator pt-2 lg:hidden"
               >
                 <MeasurementField
                   label="Width"
@@ -2512,7 +2509,7 @@ export default function DesignControlsPlanPanel({
               </div>
             </div>
             <div className="flex gap-2">
-              <Button data-testid="standalone-change-floor-finish" variant="secondary" size="compact" disabled={!canEdit} aria-expanded={roomFinishPanelOpen} onClick={() => setRoomFinishPanelOpen((open) => !open)}>Browse / hide</Button>
+              <Button data-testid="standalone-change-floor-finish" variant="secondary" size="compact" disabled={!canEdit} aria-expanded={roomFinishPanelOpen} onClick={() => (roomFinishPanelOpen ? setRoomFinishPanelOpen(false) : openRoomSurface("floor", true))}>Browse / hide</Button>
               <Button
                 variant="secondary" size="compact"
                 disabled={!canEdit}
@@ -2522,7 +2519,7 @@ export default function DesignControlsPlanPanel({
               </Button>
             </div>
           </div>
-          {renderSurfaceMaterialBrowser()}
+          {renderSurfaceMaterialBrowser("floorFinish")}
             <div className="mt-3 rounded-xl border border-box-border bg-field p-3">
               <div className="flex items-center justify-between gap-3">
                 <div>

@@ -2,6 +2,7 @@
 
 import type { PendingCatalogPlacementScene } from "@/lib/catalog-placement";
 import type { ManualPlacementScore } from "@/lib/manual-placement-scoring";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 type PlacementQuality = {
@@ -342,36 +343,32 @@ export function CatalogPlacementConfirmPanel({
               Centre
             </Button>
             <Button
-              size="icon"
-              data-testid="catalog-placement-nudge-left"
+              size="icon" data-testid="catalog-placement-nudge-left"
               aria-label="Nudge placement left"
               onClick={() => actions.onNudge(-nudgeStepMeters, 0)}
             >
-              ←
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             </Button>
             <Button
-              size="icon"
-              data-testid="catalog-placement-nudge-up"
+              size="icon" data-testid="catalog-placement-nudge-up"
               aria-label="Nudge placement back"
               onClick={() => actions.onNudge(0, -nudgeStepMeters)}
             >
-              ↑
+              <ArrowUp className="h-4 w-4" aria-hidden="true" />
             </Button>
             <Button
-              size="icon"
-              data-testid="catalog-placement-nudge-down"
+              size="icon" data-testid="catalog-placement-nudge-down"
               aria-label="Nudge placement front"
               onClick={() => actions.onNudge(0, nudgeStepMeters)}
             >
-              ↓
+              <ArrowDown className="h-4 w-4" aria-hidden="true" />
             </Button>
             <Button
-              size="icon"
-              data-testid="catalog-placement-nudge-right"
+              size="icon" data-testid="catalog-placement-nudge-right"
               aria-label="Nudge placement right"
               onClick={() => actions.onNudge(nudgeStepMeters, 0)}
             >
-              →
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
         </div>

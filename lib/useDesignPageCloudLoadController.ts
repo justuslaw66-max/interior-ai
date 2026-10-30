@@ -67,7 +67,6 @@ type CloudLoadControllerInput = {
     setStyle: Dispatch<SetStateAction<Style>>;
     setBudget: Dispatch<SetStateAction<Budget>>;
     fetchShareStatus: (id?: string) => Promise<void>;
-    enableShare: (id: string) => Promise<void>;
     showRuleToast: (message: string) => void;
   };
 };
@@ -153,9 +152,6 @@ function commitLoadedCloudDesign(
     actions.setBudget(presentation.budget);
   }
   void actions.fetchShareStatus(data.id);
-  if (nextMode === "designer" && !data.shareEnabled) {
-    void actions.enableShare(data.id);
-  }
   actions.showRuleToast(`Loaded ${presentation.title}`);
 }
 
