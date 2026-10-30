@@ -8,7 +8,7 @@ import {
 } from "../lib/design-page-editor-shell-metrics";
 import { buildHousePlan2D } from "../lib/design-page-house-plan";
 import { resolveLoneRoomPlanFrame2D } from "../lib/room-renderer-2d-lone-room";
-import { OVERALL_GUIDE_GAP_PX, overallPlanGuideOffsetsM } from "../lib/room-renderer-2d-overall-dimensions";
+import { OVERALL_GUIDE_GAP_PX, overallPlanGuideLayout } from "../lib/room-renderer-2d-overall-dimensions";
 import { createRoom } from "../lib/room-types";
 
 const root = process.cwd();
@@ -989,28 +989,43 @@ assert.match(
   "The central policy should skip low-tier and transparent/decorative shadows while retaining cast-only furniture shadows."
 );
 
-// The 2D plan's overall guides (30 Oct 2026): 48px out at any zoom, past the selected room's
-// Width or Depth chip when it's on that edge, and the label on the guide running up the screen is
-// written up it.
+// The 2D plan's overall guides (30 Oct 2026): 48px out at any zoom. The one running across the
+// screen moves out past the selected room's chip and measurements; the one running up the screen
+// stays 48px out (a tablet's step panel covers more) and its label slides off them, written up it.
 {
-  const plan = { left: -4, top: -3 };
-  const inside = { left: -1, top: 0 };
-  const at80 = overallPlanGuideOffsetsM({ planBounds: plan, selectedRoomBounds: inside, zoomPxPerM: 80, rotated: false });
-  assert.equal(at80.widthGuideOffsetM, OVERALL_GUIDE_GAP_PX / 80, "48px out, not 0.78 m.");
-  assert.equal(at80.depthGuideOffsetM, OVERALL_GUIDE_GAP_PX / 80);
-  assert.equal(at80.verticalLabel, "depth");
-  const zoomedOut = overallPlanGuideOffsetsM({ planBounds: plan, selectedRoomBounds: inside, zoomPxPerM: 30, rotated: false });
-  assert.equal(Math.round(zoomedOut.widthGuideOffsetM * 30), 48, "Still 48px when zoomed out (0.78 m was 23px).");
-  const corner = overallPlanGuideOffsetsM({ planBounds: plan, selectedRoomBounds: plan, zoomPxPerM: 80, rotated: false });
-  assert.equal(Math.round(corner.widthGuideOffsetM * 80), 52, "Past the Width chip: 24 + 12 + 16px.");
-  assert.equal(Math.round(corner.depthGuideOffsetM * 80), Math.round(0.46 * 80 + 55 + 16), "Past the Depth chip, across its width.");
-  const turned = overallPlanGuideOffsetsM({ planBounds: plan, selectedRoomBounds: plan, zoomPxPerM: 80, rotated: true });
-  assert.equal(Math.round(turned.widthGuideOffsetM * 80), Math.round(0.3 * 80 + 55 + 16), "Turned, the Width chip sits across the guide.");
+  const plan = { left: -4, right: 4, top: -3, bottom: 3 };
+  const layout = (room: typeof plan | null, zoomPxPerM: number, rotated: boolean) =>
+    overallPlanGuideLayout({ planBounds: plan, selectedRoomBounds: room, zoomPxPerM, rotated });
+  const inside = layout({ left: -1, right: 1, top: 0, bottom: 2 }, 80, false);
+  assert.equal(inside.widthGuideOffsetM, OVERALL_GUIDE_GAP_PX / 80, "48px out, not 0.78 m.");
+  assert.equal(inside.depthGuideOffsetM, OVERALL_GUIDE_GAP_PX / 80);
+  assert.deepEqual([inside.widthLabelX, inside.depthLabelZ, inside.verticalLabel], [0, 0, "depth"], "Labels at the plan's middle.");
+  assert.equal(Math.round(layout({ left: -1, right: 1, top: 0, bottom: 2 }, 30, false).widthGuideOffsetM * 30), 48, "Still 48px when zoomed out (0.78 m was 23px).");
+  // The room runs down the plan's left edge from its top: its measurements hang 16 + 31px above it.
+  const corner = layout({ left: -4, right: -1, top: -3, bottom: 3 }, 80, false);
+  assert.equal(Math.round(corner.widthGuideOffsetM * 80), 16 + 31 + 12 + 6, "Past the measurements, not just the Width chip (24 + 12px).");
+  assert.equal(corner.depthGuideOffsetM, OVERALL_GUIDE_GAP_PX / 80, "The depth guide stays 48px out, clear of a tablet's step panel.");
+  assert.ok(Math.abs(corner.depthLabelZ) * 80 >= 80 + 12 + 6 - 1e-6, "The depth label slides off the Depth chip at the room's middle.");
+  // Turned: the width guide runs up the screen on the left. The room on that edge has its Width chip
+  // at the middle, and its measurements at the screen's top (world +x), so the label slides down.
+  const turned = layout({ left: -1, right: 1, top: -3, bottom: 0 }, 80, true);
+  assert.equal(turned.widthGuideOffsetM, OVERALL_GUIDE_GAP_PX / 80);
   assert.equal(turned.verticalLabel, "width");
-  assert.equal(overallPlanGuideOffsetsM({ planBounds: null, selectedRoomBounds: null, zoomPxPerM: 0, rotated: false }).widthGuideOffsetM, 48);
+  assert.ok(Math.abs(turned.widthLabelX + (80 + 12 + 6) / 80) < 1e-9, "Below the Width chip, away from the measurements.");
+  const turnedLeft = layout({ left: -4, right: -1, top: -2, bottom: 2 }, 80, true);
+  assert.equal(Math.round(turnedLeft.depthGuideOffsetM * 80), Math.round(0.46 * 80 + 12 + 12 + 6), "Turned, the depth guide moves out past the Depth chip.");
+  // A plan 120px tall can't fit the 160px label beside the chip, so the guide moves out past it.
+  const short = overallPlanGuideLayout({ planBounds: { left: -4, right: 4, top: -0.75, bottom: 0.75 },
+    selectedRoomBounds: { left: -4, right: -1, top: -0.75, bottom: 0.75 }, zoomPxPerM: 80, rotated: false });
+  assert.equal(Math.round(short.depthGuideOffsetM * 80), Math.round(0.46 * 80 + 58 + 12 + 6), "Past the Depth chip's width.");
+  assert.equal(short.depthLabelZ, 0);
+  const none = overallPlanGuideLayout({ planBounds: null, selectedRoomBounds: null, zoomPxPerM: 0, rotated: false });
+  assert.deepEqual([none.widthGuideOffsetM, none.widthLabelX, none.depthLabelZ], [48, 0, 0]);
 }
 const overallSource = readFileSync(join(process.cwd(), "components/editor/renderers/RoomRenderer2D.tsx"), "utf8");
 assert.match(overallSource, /widthGuideZ: overallPlanBounds\.top - overallGuides\.widthGuideOffsetM,\s*depthGuideX: overallPlanBounds\.left - overallGuides\.depthGuideOffsetM,/);
+assert.match(overallSource, /position=\{\[overallGuides\.widthLabelX, 0\.021, overallPlanDimension\.widthGuideZ\]\}/);
+assert.match(overallSource, /position=\{\[overallPlanDimension\.depthGuideX, 0\.021, overallGuides\.depthLabelZ\]\}/);
 assert.match(overallSource, /data-testid="overall-plan-dimension-depth"\s*style=\{overallLabelStyle\(overallGuides\.verticalLabel === "depth"\)\}/);
 assert.match(overallSource, /\.\.\.\(vertical \? \{ writingMode: "vertical-rl", transform: "rotate\(180deg\)" \} : null\)/);
 

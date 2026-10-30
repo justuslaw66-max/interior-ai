@@ -2,7 +2,7 @@
 import { StableLine as Line } from "./StableLine";
 import { Html } from "@react-three/drei/web/Html";
 import { Check } from "lucide-react";
-import { overallPlanGuideOffsetsM } from "@/lib/room-renderer-2d-overall-dimensions";
+import { overallPlanGuideLayout } from "@/lib/room-renderer-2d-overall-dimensions";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
@@ -1767,15 +1767,13 @@ export default function RoomRenderer2D({
       ? buildRoomDrawStartSnapMarkers(rooms, activeDrawRoomPreviewPoint)
       : [];
   const overallPlanBounds = useMemo(() => getRoomsBounds(rooms), [rooms]);
-  const overallGuides = overallPlanGuideOffsetsM({ planBounds: overallPlanBounds, selectedRoomBounds: roomBoundsById(rooms, activeRoomId),
+  const overallGuides = overallPlanGuideLayout({ planBounds: overallPlanBounds, selectedRoomBounds: roomBoundsById(rooms, activeRoomId),
     zoomPxPerM: planZoom, rotated: planViewOrientation === "rotated" });
   const overallPlanDimension =
     overallPlanBounds && rooms.length > 1
       ? {
           width: overallPlanBounds.right - overallPlanBounds.left,
           depth: overallPlanBounds.bottom - overallPlanBounds.top,
-          centerX: (overallPlanBounds.left + overallPlanBounds.right) / 2,
-          centerZ: (overallPlanBounds.top + overallPlanBounds.bottom) / 2,
           widthGuideZ: overallPlanBounds.top - overallGuides.widthGuideOffsetM,
           depthGuideX: overallPlanBounds.left - overallGuides.depthGuideOffsetM,
           tick: 0.13,
@@ -3809,7 +3807,7 @@ export default function RoomRenderer2D({
           />
           <Html
             zIndexRange={[13, 0]}
-            position={[overallPlanDimension.centerX, 0.021, overallPlanDimension.widthGuideZ]}
+            position={[overallGuides.widthLabelX, 0.021, overallPlanDimension.widthGuideZ]}
             center
             transform={false}
           >
@@ -3856,7 +3854,7 @@ export default function RoomRenderer2D({
           />
           <Html
             zIndexRange={[13, 0]}
-            position={[overallPlanDimension.depthGuideX, 0.021, overallPlanDimension.centerZ]}
+            position={[overallPlanDimension.depthGuideX, 0.021, overallGuides.depthLabelZ]}
             center
             transform={false}
           >
