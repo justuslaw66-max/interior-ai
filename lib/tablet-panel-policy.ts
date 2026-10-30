@@ -98,6 +98,37 @@ export function useTabletPanelPolicy(tablet: boolean, collapsed: boolean): Table
 }
 
 /**
+ * The Plan panel's room card is on screen (30 Oct 2026). On a tablet a selected room is edited
+ * there, Width and Depth included, so its inspector doesn't float beside the panel and leave a
+ * sliver of canvas; with the panel hidden, the inspector is back. The card reports while it's shown.
+ */
+let roomCardsShown = 0;
+const roomCardListeners = new Set<() => void>();
+
+function setRoomCardShown(change: 1 | -1) {
+  roomCardsShown += change;
+  roomCardListeners.forEach((listener) => listener());
+}
+
+export function useReportStepPanelRoomCard() {
+  useEffect(() => {
+    setRoomCardShown(1);
+    return () => setRoomCardShown(-1);
+  }, []);
+}
+
+export function useStepPanelRoomCardShown(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      roomCardListeners.add(onChange);
+      return () => roomCardListeners.delete(onChange);
+    },
+    () => roomCardsShown > 0,
+    () => false
+  );
+}
+
+/**
  * The step panel's toggles: showing it clears the stored collapse and, beside a right panel on a
  * tablet, holds it open; hiding it stores the collapse.
  */

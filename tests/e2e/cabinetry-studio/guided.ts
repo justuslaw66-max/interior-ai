@@ -443,7 +443,7 @@ export function registerGuidedTests() {
       await perspectiveView.press("ArrowRight");
       await expect(frontView).toBeFocused();
       await expect(frontView).toHaveAttribute("aria-pressed", "true");
-      await expect(frontView).toContainText("✓");
+      await expect(frontView.locator("svg.lucide-check")).toHaveCount(1);
       await frontView.press("End");
       await expect(topView).toBeFocused();
       await expect(topView).toHaveAttribute("aria-pressed", "true");

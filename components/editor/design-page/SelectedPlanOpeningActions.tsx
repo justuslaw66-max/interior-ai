@@ -31,7 +31,7 @@ export function SelectedPlanOpeningActions({
   return (
     <div
       data-testid="selected-plan-opening-actions" data-touch-area data-surface="floating"
-      className="absolute left-1/2 top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-separator bg-surface-floating/95 px-3 py-2 text-xs text-control-label shadow-xl backdrop-blur md:flex"
+      className="absolute left-1/2 md:left-[var(--canvas-centre-x,50%)] top-bar-28 z-30 hidden -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-separator bg-surface-floating/95 px-3 py-2 text-xs text-control-label shadow-xl backdrop-blur md:flex"
       style={{ maxWidth: "calc(100% - 2rem)" }}
     >
       <span className="font-semibold">

@@ -5,6 +5,7 @@ import {
   EditorDialogActions,
   EditorDialogButton,
 } from "@/components/editor/design-system/EditorDialog";
+import { Check } from "lucide-react";
 import type { AISuggestionAction } from "@/lib/ai/applySuggestion";
 import type { AINotesResponse } from "@/lib/design-page-types";
 import { Button } from "@/components/ui/Button";
@@ -47,7 +48,7 @@ export function AiNotesDialog({
           role="status"
           className="mb-4 inline-flex items-center rounded-full bg-success-tint px-2.5 py-1 text-xs font-medium text-on-success-tint"
         >
-          <span aria-hidden="true">✓</span>&nbsp;Instant result (cached)
+          <Check className="mr-1 h-3.5 w-3.5" aria-hidden="true" />Instant result (cached)
         </div>
       ) : null}
         {data && (

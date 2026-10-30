@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { LayoutPanelLeft, Maximize, ShoppingBag, Sofa, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 
@@ -26,7 +27,7 @@ type ToolButtonProps = {
 };
 
 // The rail's shortcuts are quiet icon buttons; the step that's open is pressed, black (UX 5n, Q3).
-// Fit to screen is an action, so it has no pressed state.
+// Fit to screen is an action, so it has no pressed state. The icons are lucide's (30 Oct 2026).
 function ToolButton({
   active,
   label,
@@ -47,51 +48,6 @@ function ToolButton({
     >
       {children}
     </Button>
-  );
-}
-
-function DesignIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M5 5h14v14H5z" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M5 10h14M10 5v14" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
-}
-
-function AdjustIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M12 4v16M4 12h16" stroke="currentColor" strokeWidth="1.8" />
-      <path d="m9 7 3-3 3 3M9 17l3 3 3-3M7 9l-3 3 3 3M17 9l3 3-3 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function CartIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M6 7h13l-1.2 7.2a2 2 0 0 1-2 1.7H9.2a2 2 0 0 1-2-1.6L5.8 5.8H3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9 20h.1M16 20h.1" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function AiIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M12 3.5 13.8 9l5.7 1.8-5.7 1.8L12 18l-1.8-5.4-5.7-1.8L10.2 9 12 3.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M18 15.5 18.8 18l2.2.8-2.2.7L18 22l-.8-2.5-2.2-.7 2.2-.8.8-2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function FitIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none">
-      <path d="M5 9V5h4M15 5h4v4M19 15v4h-4M9 19H5v-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9 9h6v6H9z" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
   );
 }
 
@@ -117,7 +73,7 @@ export default function EditorToolRail({
         title="Draw or upload a floor plan"
         onClick={onDesign}
       >
-        <DesignIcon />
+        <LayoutPanelLeft className="h-5 w-5" aria-hidden="true" />
       </ToolButton>
       <ToolButton
         active={mode === "adjust"}
@@ -126,7 +82,7 @@ export default function EditorToolRail({
         title="Add and adjust furniture"
         onClick={onAdjust}
       >
-        <AdjustIcon />
+        <Sofa className="h-5 w-5" aria-hidden="true" />
       </ToolButton>
       {aiDesignEnabled && (
         <ToolButton
@@ -136,7 +92,7 @@ export default function EditorToolRail({
           title="Suggest a layout"
           onClick={onAi}
         >
-          <AiIcon />
+          <Sparkles className="h-5 w-5" aria-hidden="true" />
         </ToolButton>
       )}
       <ToolButton
@@ -146,7 +102,7 @@ export default function EditorToolRail({
         title="Shopping list"
         onClick={onCart}
       >
-        <CartIcon />
+        <ShoppingBag className="h-5 w-5" aria-hidden="true" />
       </ToolButton>
       <div className="my-1 h-px w-7 bg-separator" />
       <ToolButton
@@ -155,7 +111,7 @@ export default function EditorToolRail({
         title="Fit to screen"
         onClick={onFitPlan}
       >
-        <FitIcon />
+        <Maximize className="h-5 w-5" aria-hidden="true" />
       </ToolButton>
     </div>
   );

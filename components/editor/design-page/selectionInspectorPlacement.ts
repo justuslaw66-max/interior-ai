@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   isPhoneSheetInspectorSelection,
   setPhoneSheetInspectorActive,
   usePhoneSheetInspector,
 } from "@/lib/phone-step-sheet";
-import { useReportTabletRightPanel } from "@/lib/tablet-panel-policy";
+import { TABLET_MEDIA_QUERY, useReportTabletRightPanel, useStepPanelRoomCardShown } from "@/lib/tablet-panel-policy";
 import { CANVAS_TOOLBAR_MEDIA_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 
 type InspectorState = Parameters<typeof isPhoneSheetInspectorSelection>[0];
@@ -23,14 +23,50 @@ type InspectorConfiguration = {
   floatingWidthPx: number;
 };
 
+/** The nearest ancestor that scrolls up and down: the Plan rail, for a docked inspector. */
+function scrollingAncestor(element: HTMLElement): HTMLElement | null {
+  for (let node = element.parentElement; node; node = node.parentElement) {
+    if (/auto|scroll/.test(getComputedStyle(node).overflowY)) return node;
+  }
+  return null;
+}
+
+/**
+ * A docked inspector is the Plan rail's last card, so at 1280×720 a wall's Change material sat below
+ * the rail's fold (30 Oct 2026). When a wall, ceiling, door, window, fixed element or note is picked,
+ * the rail scrolls just enough to show the inspector, keeping its top in view when it's taller than
+ * the rail. Not for a room: one is selected whenever a plan opens, and the rail would scroll the
+ * room navigator out of sight on arrival.
+ */
+function useRevealDockedInspector(element: HTMLElement | null, docked: boolean, selectionKey: string) {
+  useEffect(() => {
+    if (!docked || !element) return;
+    const frame = requestAnimationFrame(() => {
+      const rail = scrollingAncestor(element);
+      if (!rail) return;
+      const railBox = rail.getBoundingClientRect();
+      const box = element.getBoundingClientRect();
+      const above = box.top - railBox.top;
+      const below = box.bottom - railBox.bottom;
+      if (above < 0) rail.scrollTop += above;
+      else if (below > 0) rail.scrollTop += Math.min(below, above);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [docked, element, selectionKey]);
+}
+
 /**
  * Where the inspector goes: from md, floating or docked in the Plan rail; on phones (UX 4d, audit
  * AX2), the step sheet for a wall, ceiling, door, window, fixed element or note, with Done to
  * deselect, and nowhere otherwise (rooms keep the Plan panel's room section). Floating for one of
- * those on a tablet, the step panel steps aside for it (AX11).
+ * those on a tablet, the step panel steps aside for it (AX11). A room on a tablet is edited in the
+ * Plan panel's room card while that's open, so its inspector doesn't float beside it (30 Oct 2026).
  */
-export function useInspectorPlacement(state: InspectorState, configuration: InspectorConfiguration) {
+export function useInspectorPlacement(state: InspectorState, configuration: InspectorConfiguration, selectionKey = "", room = false) {
   const wide = useMediaQuery(CANVAS_TOOLBAR_MEDIA_QUERY);
+  const tablet = useMediaQuery(TABLET_MEDIA_QUERY);
+  const roomCardShown = useStepPanelRoomCardShown();
+  const roomInPanel = tablet && roomCardShown && room;
   const sheet = usePhoneSheetInspector();
   const takesOver = isPhoneSheetInspectorSelection(state);
   const inSheet = !wide && Boolean(sheet.slot) && takesOver;
@@ -41,8 +77,10 @@ export function useInspectorPlacement(state: InspectorState, configuration: Insp
     return () => setPhoneSheetInspectorActive(false);
   }, [inSheet]);
   useReportTabletRightPanel("inspector", wide && !docked && takesOver, configuration.floatingWidthPx + configuration.floatingRightPx);
-  if (inSheet) return { shown: true, inSheet, portalTarget: sheet.slot };
-  return { shown: wide, inSheet, portalTarget: docked ? configuration.portalTarget : null };
+  const [element, setElement] = useState<HTMLDivElement | null>(null);
+  useRevealDockedInspector(element, docked && !inSheet && takesOver, selectionKey);
+  if (inSheet) return { shown: true, inSheet, portalTarget: sheet.slot, attach: setElement };
+  return { shown: wide && !roomInPanel, inSheet, portalTarget: docked ? configuration.portalTarget : null, attach: setElement };
 }
 
 /**

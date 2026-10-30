@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { ChevronsLeftRight } from "lucide-react";
 import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
 import { sourceDrawingInk, sourceDrawingStroke, sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
 import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
@@ -70,7 +71,7 @@ export function FloorPlanSourceCompareWipe({ layer, wipe, onWipe, annotations, w
           if (event.key === "ArrowLeft") onWipe(Math.max(0, wipe - 2));
           if (event.key === "ArrowRight") onWipe(Math.min(100, wipe + 2));
         }}>
-        <span className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-700 px-2 py-1 text-xs font-semibold text-white">⇔</span>
+        <span className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-700 px-1.5 py-1 text-white"><ChevronsLeftRight className="h-4 w-4" aria-hidden="true" /></span>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { EDITOR_BAR_HEIGHT_PX } from "@/lib/design-page-editor-configuration";
 
 export { EDITOR_BAR_HEIGHT_PX };
@@ -74,6 +75,24 @@ export function resolveCanvasFrameBox({
   const panelOpen = panelVisible && (shopping || !collapsed);
   // The step panel's cards end 294px in (Pro's, beside the tool rail, 366px); Pro's rail, 72px.
   return framedCanvas(panelOpen ? (isDesigner ? 366 : 294) : isDesigner ? 72 : 0);
+}
+
+/**
+ * The canvas card's place, as CSS variables on the editor (30 Oct 2026), from the frame the 2D fit
+ * uses, so they follow the step panel and Plan's canvas focus: `--canvas-frame-left` and
+ * `--canvas-frame-right`; `--canvas-centre-x`, the card's middle as a `left` for what centres over
+ * the canvas (`md:left-[var(--canvas-centre-x,50%)] -translate-x-1/2`); and
+ * `--canvas-overlay-max-width`, the card's width less 1rem a side, so a wide one stays on the card.
+ * Their `100%` is the editor, the containing block of whatever uses them.
+ */
+export function canvasFrameStyle(frame: CanvasFrameBox): CSSProperties {
+  const besidePx = frame.leftPx + frame.rightPx;
+  return {
+    "--canvas-frame-left": `${frame.leftPx}px`,
+    "--canvas-frame-right": `${frame.rightPx}px`,
+    "--canvas-centre-x": `calc(${frame.leftPx}px + (100% - ${besidePx}px) / 2)`,
+    "--canvas-overlay-max-width": `calc(100% - ${besidePx}px - 2rem)`,
+  } as CSSProperties;
 }
 
 /**
