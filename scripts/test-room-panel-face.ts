@@ -100,7 +100,8 @@ assert.deepEqual(
   [[-2000, -1490], [1956, -1490], [1956, 1500], [-2000, 1500]]
 );
 // Two near-parallel edges moved in by different depths meet in a step, not metres away: a north wall drawn as two edges with
-// a 0.1 mm kink and a 44 mm laminate on its west half. One point per corner keeps the deeper end, so each edge keeps its face.
+// a 0.1 mm kink and a 44 mm laminate on its west half. The one-point outline (the clamp's and the cabinets') keeps the
+// step's deeper end at that corner.
 const kinked = [{ x: -2, z: -1.5 }, { x: 0, z: -1.5001 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }];
 const kinkInsets = [0.104, 0.06, 0.06, 0.06, 0.06];
 const mm = (point: { x: number; z: number }) => [Math.round(point.x * 1000) || 0, Math.round(point.z * 1000) || 0];
@@ -124,6 +125,32 @@ const splitStrips = getRoomPanelStrips2D({
 assert.deepEqual(splitStrips.map((strip) => [strip.faceId, strip.faceLine.map(([x, , z]) => mm({ x, z }))]), [
   ["wall-2", [[1940, 1896], [0, 1896]]], ["wall-3", [[0, 1930], [-1940, 1930]]],
 ]);
+// Every other corner is where the two moved lines cross, as before: a triangle's sharp corner beside a 44 mm panel ends the
+// panel's 2D strip at the other wall's finished face (it doesn't step through that wall), and the clamp's corner stays inside.
+for (const [degrees, faceEnd, clampCorner] of [[45, 1.811, 1.956], [40, 1.783, 1.948], [30, 1.7, 1.924], [20, 1.539, 1.879]]) {
+  const height = 4 * Math.tan((degrees * Math.PI) / 180);
+  const triangle = [{ x: -2, z: -1 }, { x: 2, z: -1 }, { x: -2, z: -1 + height }];
+  const triangleWalls = { default: { paintColorHex: "#ffffff" }, faces: { "wall-0": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } } };
+  const [triangleStrip] = getRoomPanelStrips2D({
+    id: "tri", name: "Tri", roomType: "living", shape: "custom_polygon", polygon: triangle, w: 4, d: height, x: 0, z: 0, wallThickness: 0.12,
+    surfaces: { walls: triangleWalls },
+  }).strips;
+  assert.equal(Math.round(triangleStrip.faceLine[1][0] * 1000), Math.round(faceEnd * 1000), `${degrees}°`);
+  const clampOutline = getRoomOutlineInsideFinishes({ shape: "custom_polygon", polygon: triangle, w: 4, d: height }, { "wall-0": 0.044 });
+  assert.equal(Math.round((clampOutline.polygon?.[1].x ?? 0) * 1000), Math.round(clampCorner * 1000), `${degrees}° clamp`);
+}
+// A face that would turn back on itself is passed over, and its neighbours meet past it: a 10 mm chamfer at a corner, and a
+// 5 mm jog in a wall beside a 44 mm panel (the two pieces' faces then step at the jog). An 8 cm jog keeps its own face.
+const chamfered = [{ x: -2, z: -1.5 }, { x: 1.99, z: -1.5 }, { x: 2, z: -1.49 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }];
+assert.deepEqual(insetPolygonEdges(chamfered, chamfered.map(() => 0.06)).map(mm).slice(1, 3), [[1940, -1440], [1940, -1440]]);
+const jogged = (rise: number) => [
+  { x: -2, z: -1.5 }, { x: 0, z: -1.5 }, { x: 0, z: -1.5 + rise }, { x: 2, z: -1.5 + rise }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 },
+];
+const jogInsets = [0.104, 0.06, 0.06, 0.06, 0.06, 0.06];
+assert.deepEqual(insetPolygonEdgesWithSteps(jogged(0.005), jogInsets).slice(1, 3).map((corner) => isInsetStep(corner) ? corner.map(mm) : mm(corner)),
+  [[[0, -1396], [0, -1435]], [[0, -1396], [0, -1435]]]);
+assert.deepEqual(insetPolygonEdgesWithSteps(jogged(0.08), jogInsets).slice(1, 3).map((corner) => isInsetStep(corner) ? corner.map(mm) : mm(corner)),
+  [[-60, -1396], [-60, -1360]]);
 const closedTwice = [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }, { x: -2, z: -1.5 }];
 assert.deepEqual(insetPolygonEdges(closedTwice, closedTwice.map(() => 0.06)).map(mm),
   [[-1940, -1440], [1940, -1440], [1940, 1440], [-1940, 1440], [-1940, -1440]]);

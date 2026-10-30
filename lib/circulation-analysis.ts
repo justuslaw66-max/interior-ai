@@ -5,6 +5,7 @@ import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
 import { getShapedRoomDoorPoints } from "@/lib/room-door-points";
 import {
+  crossesFinishedFace,
   getPointClearanceInFinishedOutline,
   getRoomFinishedOutline,
   type RoomFinishedOutline,
@@ -132,7 +133,11 @@ function nearestCellIndex(cells: GridCell[][], point: { x: number; z: number }):
   return best?.key ?? null;
 }
 
-function hasPath(cells: GridCell[][], starts: Array<{ x: number; z: number }>, destinations: Array<{ x: number; z: number }>): boolean {
+type CellLink = (xIndex: number, zIndex: number, nextX: number, nextZ: number) => boolean;
+
+function hasPath(
+  cells: GridCell[][], starts: Array<{ x: number; z: number }>, destinations: Array<{ x: number; z: number }>, linked?: CellLink
+): boolean {
   const startKeys = starts.map((point) => nearestCellIndex(cells, point)).filter((entry): entry is [number, number] => Boolean(entry));
   const destinationKeys = new Set(
     destinations
@@ -159,7 +164,7 @@ function hasPath(cells: GridCell[][], starts: Array<{ x: number; z: number }>, d
       const nextZ = zIndex + dz;
       const row = cells[nextZ];
       const next = row?.[nextX];
-      if (!next || next.blocked) continue;
+      if (!next || next.blocked || (linked && !linked(xIndex, zIndex, nextX, nextZ))) continue;
       const key = `${nextX}:${nextZ}`;
       if (visited.has(key)) continue;
       visited.add(key);
@@ -177,6 +182,8 @@ type WalkableArea = {
   maxZ: number;
   /** A cell centre's clearance to the walls' finished faces, or null where the cell isn't on the room's floor. */
   wallClearance: (x: number, z: number, xIndex: number, zIndex: number) => number | null;
+  /** Whether a walk between two neighbouring floor cells stays off the walls; any two do in a rectangle. */
+  linked?: CellLink;
 };
 
 /** Each grid cell's walk over the area, in the order the grid is built, so a table and the grid agree cell for cell. */
@@ -190,6 +197,20 @@ function forEachCell(area: Omit<WalkableArea, "wallClearance">, gridSizeM: numbe
 // placement builds a map for each of dozens of candidate spots in one room.
 const areasByOutline = new WeakMap<RoomFinishedOutline, Map<number, WalkableArea>>();
 
+/** Whether some spot in the cell, sampled a quarter cell apart, is at least half a cell from every face. */
+function cellReachesClearFloor(outline: RoomFinishedOutline, x: number, z: number, gridSizeM: number): boolean {
+  const offsets = [-2, -1, 0, 1, 2].map((step) => (step * gridSizeM) / 4);
+  return offsets.some((dx) => offsets.some((dz) =>
+    (getPointClearanceInFinishedOutline(outline, { x: x + dx, z: z + dz }) ?? 0) >= gridSizeM / 2 - 0.001));
+}
+
+/**
+ * An outline's floor cells: a cell whose centre is inside the faces and that reaches a spot half a cell clear of every face,
+ * as a rectangle's cells all are. The grid isn't lined up with a shaped room's faces, so a passage 45 cm clear or more has a
+ * row of floor cells wherever it falls against the grid (one narrower has none), with each cell's own clearance kept for the
+ * width checks. A walk between two neighbouring cells counts only where it stays off the walls, as it may now pass close to
+ * a thin wall between two of the room's parts.
+ */
 function getOutlineWalkableArea(outline: RoomFinishedOutline, gridSizeM: number): WalkableArea {
   const known = areasByOutline.get(outline)?.get(gridSizeM);
   if (known) return known;
@@ -199,11 +220,25 @@ function getOutlineWalkableArea(outline: RoomFinishedOutline, gridSizeM: number)
     minZ: bounds.minZ + gridSizeM / 2, maxZ: bounds.maxZ - gridSizeM / 2,
   };
   const table: (number | null)[][] = [];
+  const centres: { x: number; z: number }[][] = [];
   forEachCell(extent, gridSizeM, (x, z, xIndex, zIndex) => {
     const clearance = getPointClearanceInFinishedOutline(outline, { x, z });
-    (table[zIndex] ??= [])[xIndex] = clearance !== null && clearance >= gridSizeM / 2 - 0.001 ? clearance : null;
+    const onFloor = clearance !== null && clearance > 0 &&
+      (clearance >= gridSizeM / 2 - 0.001 || cellReachesClearFloor(outline, x, z, gridSizeM));
+    (table[zIndex] ??= [])[xIndex] = onFloor ? clearance : null;
+    (centres[zIndex] ??= [])[xIndex] = { x, z };
   });
-  const area: WalkableArea = { ...extent, wallClearance: (_x, _z, xIndex, zIndex) => table[zIndex]?.[xIndex] ?? null };
+  const links = new Map<string, boolean>();
+  const linked: CellLink = (xIndex, zIndex, nextX, nextZ) => {
+    const key = `${Math.min(xIndex, nextX)}:${Math.min(zIndex, nextZ)}:${nextX !== xIndex ? "x" : "z"}`;
+    let link = links.get(key);
+    if (link === undefined) {
+      link = !crossesFinishedFace(outline, centres[zIndex][xIndex], centres[nextZ][nextX]);
+      links.set(key, link);
+    }
+    return link;
+  };
+  const area: WalkableArea = { ...extent, wallClearance: (_x, _z, xIndex, zIndex) => table[zIndex]?.[xIndex] ?? null, linked };
   areasByOutline.set(outline, (areasByOutline.get(outline) ?? new Map()).set(gridSizeM, area));
   return area;
 }
@@ -281,7 +316,7 @@ export function computeCirculationAnalysis({
       .filter((anchor): anchor is [number, number, number] => Boolean(anchor))
       .map((anchor) => ({ x: anchor[0], z: anchor[2] })),
   ];
-  const pathValid = hasPath(cells, starts, destinations);
+  const pathValid = hasPath(cells, starts, destinations, area.linked);
   const warnings: string[] = [];
   const hasObstacles = obstacles.length > 0;
   if (!pathValid) warnings.push("No clear walking path from the door to the room zones.");

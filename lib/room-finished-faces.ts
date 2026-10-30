@@ -140,18 +140,6 @@ function distanceToSegment(point: RoomPlanPolygonPoint, a: RoomPlanPolygonPoint,
   return Math.hypot(point.x - (a.x + dx * t), point.z - (a.z + dz * t));
 }
 
-/**
- * How far a point is from a segment along the plan's axes: the larger of the x and z moves to the nearest point on it. An
- * item's box stands past a wall by this much at a corner, as a rectangle room measures it, not by the straight line.
- */
-function axisDistanceToSegment(point: RoomPlanPolygonPoint, a: RoomPlanPolygonPoint, b: RoomPlanPolygonPoint): number {
-  const ax = a.x - point.x, az = a.z - point.z, bx = b.x - a.x, bz = b.z - a.z;
-  const at = (t: number) => Math.max(Math.abs(ax + bx * t), Math.abs(az + bz * t));
-  // The larger of two lines through t is least at an end, where one of them is zero, or where they cross.
-  const candidates = [0, 1, -ax / bx, -az / bz, (az - ax) / (bx - bz), -(ax + az) / (bx + bz)];
-  return Math.min(...candidates.filter(Number.isFinite).map((t) => at(Math.max(0, Math.min(1, t)))));
-}
-
 function nearestFace(outline: RoomFinishedOutline, point: RoomPlanPolygonPoint, measure: typeof distanceToSegment): number {
   let nearest = Infinity;
   forEachFace(outline, (a, b) => { nearest = Math.min(nearest, measure(point, a, b)); });
@@ -200,6 +188,41 @@ function reachPastFace(point: RoomPlanPolygonPoint, a: RoomPlanPolygonPoint, b: 
   return along < 0 || along > length ? 0 : Math.max(0, -intoRoom(point, a, b, roomSide));
 }
 
+/** The next face along a loop from `index` (by `by`, +1 or -1) that has a length: a step's jog can be of none. */
+function neighbourFace(points: readonly RoomPlanPolygonPoint[], index: number, by: 1 | -1): [RoomPlanPolygonPoint, RoomPlanPolygonPoint] | null {
+  const count = points.length;
+  for (let step = 1; step < count; step += 1) {
+    const at = (index + by * step + count * step) % count;
+    const a = points[at], b = points[(at + 1) % count];
+    if (a.x !== b.x || a.z !== b.z) return [a, b];
+  }
+  return null;
+}
+
+/**
+ * How far a point out of the room stands past the walls: past the face it is nearest, along that face's way in, or, nearest
+ * a corner, past the further of the corner's two faces (as a rectangle measures each of its walls, so a box past two walls
+ * stands past them by the larger overhang, not the straight line to the corner).
+ */
+function depthPastFaces(outline: RoomFinishedOutline, point: RoomPlanPolygonPoint): number {
+  let best = { distance: Infinity, depth: 0 };
+  for (const { points, roomSide } of outline.loops) {
+    points.forEach((a, index) => {
+      const b = points[(index + 1) % points.length];
+      const dx = b.x - a.x, dz = b.z - a.z, lengthSq = dx * dx + dz * dz;
+      if (lengthSq === 0) return;
+      const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.z - a.z) * dz) / lengthSq));
+      const distance = Math.hypot(point.x - (a.x + dx * t), point.z - (a.z + dz * t));
+      if (distance >= best.distance) return;
+      const past = (face: [RoomPlanPolygonPoint, RoomPlanPolygonPoint] | null) =>
+        face ? Math.max(0, -intoRoom(point, face[0], face[1], roomSide)) : 0;
+      const corner = t === 0 ? neighbourFace(points, index, -1) : t === 1 ? neighbourFace(points, index, 1) : null;
+      best = { distance, depth: Math.max(past([a, b]), past(corner)) };
+    });
+  }
+  return best.depth;
+}
+
 /** With no floor between the walls, each wall's face line still counts: the box's least distance into the room from them. */
 function gapAcrossFaceLines(outline: RoomFinishedOutline, box: Box): number {
   const corners = boxCorners(box);
@@ -210,9 +233,9 @@ function gapAcrossFaceLines(outline: RoomFinishedOutline, box: Box): number {
 /**
  * An item's footprint (an axis-aligned box in the room's plan) to the nearest finished face. While it's inside, the clear
  * gap: its straight-line distance to the nearest face, a wall's corner included. Otherwise less than zero by the most it
- * stands past a face: a corner out of the room by its x or z move back in, whichever is larger (as a rectangle room
- * measures each wall), a wall's corner standing into it, or, with every corner inside, its far side past a wall it runs
- * across (a narrow notch or a courtyard it spans).
+ * stands past a face: a corner out of the room past the wall it is nearest, along that wall's way in (past the further of
+ * two at a corner, as a rectangle room measures each wall), a wall's corner standing into it, or, with every corner inside,
+ * its far side past a wall it runs across (a narrow notch or a courtyard it spans).
  */
 export function getBoxGapToFinishedOutline(outline: RoomFinishedOutline, box: Box): number {
   if (outline.inverted) return gapAcrossFaceLines(outline, box);
@@ -228,8 +251,25 @@ export function getBoxGapToFinishedOutline(outline: RoomFinishedOutline, box: Bo
     }
     gap = Math.min(gap, distanceToBox(a, box), distanceToBox(b, box), ...corners.map((corner) => distanceToSegment(corner, a, b)));
   });
-  for (const corner of outside) overlap = Math.max(overlap, nearestFace(outline, corner, axisDistanceToSegment));
+  for (const corner of outside) overlap = Math.max(overlap, depthPastFaces(outline, corner));
   return crossed || outside.length > 0 ? -overlap : gap;
+}
+
+function segmentsTouch(a: RoomPlanPolygonPoint, b: RoomPlanPolygonPoint, c: RoomPlanPolygonPoint, d: RoomPlanPolygonPoint): boolean {
+  const side = (p: RoomPlanPolygonPoint, q: RoomPlanPolygonPoint, r: RoomPlanPolygonPoint) =>
+    Math.sign((q.x - p.x) * (r.z - p.z) - (q.z - p.z) * (r.x - p.x));
+  const [s1, s2, s3, s4] = [side(a, b, c), side(a, b, d), side(c, d, a), side(c, d, b)];
+  if (s1 !== s2 && s3 !== s4) return true;
+  const within = (p: RoomPlanPolygonPoint, q: RoomPlanPolygonPoint, r: RoomPlanPolygonPoint) =>
+    Math.min(p.x, q.x) <= r.x && r.x <= Math.max(p.x, q.x) && Math.min(p.z, q.z) <= r.z && r.z <= Math.max(p.z, q.z);
+  return (s1 === 0 && within(a, b, c)) || (s2 === 0 && within(a, b, d)) || (s3 === 0 && within(c, d, a)) || (s4 === 0 && within(c, d, b));
+}
+
+/** Whether the straight walk from one point to another meets a finished face (runs into a wall). */
+export function crossesFinishedFace(outline: RoomFinishedOutline, from: RoomPlanPolygonPoint, to: RoomPlanPolygonPoint): boolean {
+  let crosses = false;
+  forEachFace(outline, (a, b) => { crosses ||= segmentsTouch(from, to, a, b); });
+  return crosses;
 }
 
 /** A point's clearance to the nearest finished face, or null when it isn't inside them (in a notch, a hole or past a wall). */

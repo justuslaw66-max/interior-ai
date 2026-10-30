@@ -25,20 +25,24 @@ function toPlanRoom(room: RoomSnapshot): HousePlanRoom2D {
   };
 }
 
-/** The point on the room's outline nearest `point`, and its wall's way in. */
+/** The point on the room's walls nearest `point` (its outline's or a courtyard's), and that wall's way into the room. */
 function nearestOnOutline(room: HousePlanRoom2D, point: RoomPlanPolygonPoint): RoomDoorPoint {
   const outline = getRoomPlanOutlinePoints({ shape: room.shape, polygon: room.polygon, w: room.w, d: room.d });
-  const sign = getOutlineInwardSign(outline);
+  // A courtyard's walls face out of it, into the room.
+  const loops = [{ points: outline, sign: getOutlineInwardSign(outline) }, ...(room.holes ?? [])
+    .filter((hole) => hole.length >= 3).map((hole) => ({ points: hole, sign: -getOutlineInwardSign(hole) }))];
   let best: RoomDoorPoint & { distance: number } = { center: point, inward: { x: 0, z: 0 }, distance: Infinity };
-  outline.forEach((a, index) => {
-    const b = outline[(index + 1) % outline.length];
-    const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
-    if (length === 0) return;
-    const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.z - a.z) * dz) / (length * length)));
-    const center = { x: a.x + dx * t, z: a.z + dz * t };
-    const distance = Math.hypot(point.x - center.x, point.z - center.z);
-    if (distance < best.distance) best = { center, inward: { x: (-dz / length) * sign, z: (dx / length) * sign }, distance };
-  });
+  for (const { points, sign } of loops) {
+    points.forEach((a, index) => {
+      const b = points[(index + 1) % points.length];
+      const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
+      if (length === 0) return;
+      const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.z - a.z) * dz) / (length * length)));
+      const center = { x: a.x + dx * t, z: a.z + dz * t };
+      const distance = Math.hypot(point.x - center.x, point.z - center.z);
+      if (distance < best.distance) best = { center, inward: { x: (-dz / length) * sign, z: (dx / length) * sign }, distance };
+    });
+  }
   return { center: best.center, inward: best.inward };
 }
 

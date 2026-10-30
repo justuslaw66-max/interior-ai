@@ -281,4 +281,41 @@ assert.ok(besideLDoor.warnings.includes("Too close to a door or its swing."));
 const [looseDoor] = getShapedRoomDoorPoints(builtInL, [{ ...southDoor, id: "door-e", wall: "east", offsetMm: 1500 }]) ?? [];
 assert.ok(looseDoor && looseDoor.center.x === 2.5 && Math.abs(looseDoor.center.z - 0.32) < 1e-9, JSON.stringify(looseDoor));
 
+// A doorway between two parts of a drawn room is walked through wherever it falls against the 45 cm grid: an H-shaped room
+// whose parts are joined by a passage 68 cm clear, at ten offsets, and never through one 40 cm clear.
+const hRoomPath = (clear: number, start: number) => {
+  const top = start, bottom = start + clear + 0.12;
+  const hRoom: RoomSnapshot = {
+    ...room, id: "h", items: [], geometry: { width: 4, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
+    zones: [{ id: "east", type: "seating", itemIds: [], anchor: [1.3, 0, 0], source: "manual" }],
+    planPolygon: [
+      { x: -2, z: -2 }, { x: -1.2, z: -2 }, { x: -1.2, z: top }, { x: -0.4, z: top }, { x: -0.4, z: -2 }, { x: 2, z: -2 },
+      { x: 2, z: 2 }, { x: -0.4, z: 2 }, { x: -0.4, z: bottom }, { x: -1.2, z: bottom }, { x: -1.2, z: 2 }, { x: -2, z: 2 },
+    ],
+  };
+  return computeCirculationAnalysis({
+    room: hRoom, items: [], catalogItems, openings: [{ id: "w", roomId: "h", wall: "west", offsetMm: 0, widthMm: 800, kind: "door" }],
+  }).pathValid;
+};
+for (let step = 0; step < 10; step += 1) {
+  assert.equal(hRoomPath(0.68, -1 + step * 0.045), true, `a 68 cm passage at ${step}`);
+  assert.equal(hRoomPath(0.4, -1 + step * 0.045), false, `a 40 cm passage at ${step}`);
+}
+// An item past an angled wall stands past it by its overlap along the wall's way in: 10 cm past a 45° corner wall.
+const angled: RoomSnapshot = { ...room, geometry: { width: 4, depth: 4, wallThickness: 0.12 }, planShape: "custom_polygon",
+  planPolygon: [{ x: -2, z: -2 }, { x: 1, z: -2 }, { x: 2, z: -1 }, { x: 2, z: 2 }, { x: -2, z: 2 }] };
+const pastAngled = { x: 1.5 - 0.06 * Math.SQRT1_2 + 0.1 * Math.SQRT1_2, z: -1.5 + 0.06 * Math.SQRT1_2 - 0.1 * Math.SQRT1_2 };
+assert.ok(Math.abs(getRoomWallClearance(angled, { x: pastAngled.x - 0.15, z: pastAngled.z + 0.15 }, { w: 0.3, d: 0.3 }) + 0.1) < 1e-9);
+// A door onto an imported room's courtyard is on the courtyard's wall, its way in out of the courtyard.
+const courtyardRoom: RoomSnapshot = {
+  ...room, id: "court", floorElevationMm: 0, planPosition: { x: 10, z: 20 }, geometry: { width: 6, depth: 6, wallThickness: 0.2 },
+  planShape: "custom_polygon", planPolygon: [{ x: -3, z: -3 }, { x: 3, z: -3 }, { x: 3, z: 3 }, { x: -3, z: 3 }],
+  planHoles: [[{ x: -1, z: -1 }, { x: 1, z: -1 }, { x: 1, z: 1 }, { x: -1, z: 1 }]],
+};
+const [patio] = getShapedRoomDoorPoints(courtyardRoom, [{
+  id: "patio", roomId: "court", wall: "west", offsetMm: 0, widthMm: 900, kind: "door", canonicalWallId: "court-east",
+  canonicalHost: { floorId: "f1", floorLevel: 1, pathKind: "line", startMm: { x: 11000, z: 19000 }, endMm: { x: 11000, z: 21000 }, thicknessMm: 200, offsetOriginMm: 0 },
+}]) ?? [];
+assert.ok(patio && patio.center.x === 1 && patio.center.z === 0 && patio.inward.x === 1, JSON.stringify(patio));
+
 console.log("Manual placement scoring checks passed");

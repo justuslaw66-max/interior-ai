@@ -68,50 +68,74 @@ function offsetEdge(points: readonly RoomPlanPolygonPoint[], index: number, inse
 export type InsetCorner = RoomPlanPolygonPoint | readonly [RoomPlanPolygonPoint, RoomPlanPolygonPoint];
 
 const ZERO_EDGE_METERS = 1e-6;
-/** How far along either edge, in the deeper of the two depths, two moved edges may meet before they meet in a step. */
-const CORNER_REACH_LIMIT = 2;
+/** Two edges turning by less than this (10°) are near-straight: moved in by different depths, they meet in a step. */
+const NEAR_STRAIGHT_SIN = Math.sin((10 * Math.PI) / 180);
 
-/**
- * Where two moved edges meet at `point`. Two edges moved in by different depths that run straight on, or would meet further
- * along either edge than its own length or twice the deeper depth (near-parallel walls, as a wall drawn with a slight kink or
- * an arc's pieces are, would meet metres away), meet in a step instead: the end of the first moved edge, then the start of
- * the second. Edges moved in by the same depth always meet at their corner, as before.
- */
-function insetCorner(point: RoomPlanPolygonPoint, before: OffsetLine, after: OffsetLine): InsetCorner {
-  const cross = before.dx * after.dz - before.dz * after.dx;
-  if (Math.abs(cross) >= 1e-9) {
-    const t = ((after.x - before.x) * after.dz - (after.z - before.z) * after.dx) / cross;
-    const corner = { x: before.x + before.dx * t, z: before.z + before.dz * t };
-    const pastBefore = Math.abs((corner.x - point.x) * before.dx + (corner.z - point.z) * before.dz);
-    const pastAfter = Math.abs((corner.x - point.x) * after.dx + (corner.z - point.z) * after.dz);
-    const reach = CORNER_REACH_LIMIT * Math.max(before.inset, after.inset);
-    const meets = pastBefore <= Math.min(before.length, reach) && pastAfter <= Math.min(after.length, reach);
-    if (before.inset === after.inset || meets) return corner;
-  }
-  const start = { x: point.x + after.nx * after.inset, z: point.z + after.nz * after.inset };
-  if (before.inset === after.inset) return start;
-  return [{ x: point.x + before.nx * before.inset, z: point.z + before.nz * before.inset }, start];
+/** The foot of `point` on a moved edge's line. */
+function footOn(line: OffsetLine, point: RoomPlanPolygonPoint): RoomPlanPolygonPoint {
+  const along = (point.x - line.x) * line.dx + (point.z - line.z) * line.dz;
+  return { x: line.x + line.dx * along, z: line.z + line.dz * along };
 }
 
 /**
+ * Where two moved edges meet, at the corner `point` of the outline: where their lines cross. Two edges in line or nearly so
+ * (a turn under 10°: a wall drawn as two pieces, with a slight kink, or an arc's pieces) moved in by different depths would
+ * cross far off, or never, so they meet in a step at the corner instead: the first face up to it, then a jog to the second.
+ */
+function insetCorner(point: RoomPlanPolygonPoint, before: OffsetLine, after: OffsetLine): InsetCorner {
+  const cross = before.dx * after.dz - before.dz * after.dx;
+  const nearStraight = Math.abs(cross) < NEAR_STRAIGHT_SIN && before.dx * after.dx + before.dz * after.dz > 0;
+  if (Math.abs(cross) >= 1e-9 && !(nearStraight && before.inset !== after.inset)) {
+    const t = ((after.x - before.x) * after.dz - (after.z - before.z) * after.dx) / cross;
+    return { x: before.x + before.dx * t, z: before.z + before.dz * t };
+  }
+  const start = footOn(after, point);
+  return before.inset === after.inset ? start : [footOn(before, point), start];
+}
+
+/** Each corner, from the nearest edges either side of it still in the outline: one an edge passed over doesn't stop. */
+function cornersBetween(points: readonly RoomPlanPolygonPoint[], lines: readonly OffsetLine[], kept: readonly boolean[]): InsetCorner[] {
+  const count = points.length;
+  const nearest = (from: number, by: number) => {
+    let index = (from + count) % count;
+    while (!kept[index]) index = (index + by + count) % count;
+    return index;
+  };
+  return points.map((_, index) => {
+    const before = nearest(index - 1, -1);
+    // A corner past passed-over edges takes the first of their points, so they all meet at the same place.
+    return insetCorner(points[(before + 1) % count], lines[before], lines[nearest(index, 1)]);
+  });
+}
+
+const cornerOut = (corner: InsetCorner) => (isInsetStep(corner) ? corner[1] : corner);
+const cornerIn = (corner: InsetCorner) => (isInsetStep(corner) ? corner[0] : corner);
+
+/**
  * The polygon with each edge moved in by its own distance (`insets[i]` for the edge from point i to point i + 1), one corner
- * per point, a step where two moved edges don't meet by a corner (insetCorner). An edge of no length (a drawn outline closed
- * with its first point repeated) is passed over: its two corners are where the edges either side of it meet. The opposite
- * `inwardSign` moves the edges out instead (a hole's walls, which stand out of it into the room).
+ * per point (insetCorner). An edge of no length (a drawn outline closed with its first point repeated) is passed over, and
+ * so is an edge whose moved face would turn back on itself (a jog or a chamfer shorter than the depth its neighbours move
+ * in), as many times as that takes: its corners are where the edges either side of it meet. The opposite `inwardSign`
+ * moves the edges out instead (a hole's walls, which stand out of it into the room).
  */
 export function insetPolygonEdgesWithSteps(
   points: readonly RoomPlanPolygonPoint[], insets: readonly number[], inwardSign: 1 | -1 = getOutlineInwardSign(points)
 ): InsetCorner[] {
-  const count = points.length;
   const lines = points.map((_, index) => offsetEdge(points, index, Math.max(0, insets[index] ?? 0), inwardSign));
-  const real = lines.map((line) => line.length > ZERO_EDGE_METERS);
-  if (!real.some(Boolean)) return points.map(({ x, z }) => ({ x, z }));
-  const step = (from: number, by: number) => {
-    let index = (from + count) % count;
-    while (!real[index]) index = (index + by + count) % count;
-    return lines[index];
-  };
-  return points.map((point, index) => insetCorner(point, step(index - 1, -1), step(index, 1)));
+  const kept = lines.map((line) => line.length > ZERO_EDGE_METERS);
+  if (!kept.some(Boolean)) return points.map(({ x, z }) => ({ x, z }));
+  let corners = cornersBetween(points, lines, kept);
+  for (let round = 0; round < points.length; round += 1) {
+    const reversed = lines.map((line, index) => {
+      const from = cornerOut(corners[index]), to = cornerIn(corners[(index + 1) % corners.length]);
+      return kept[index] && (to.x - from.x) * line.dx + (to.z - from.z) * line.dz < -1e-9;
+    });
+    // An outline that would keep fewer than three edges is narrower than its walls: it is left turned inside out.
+    if (!reversed.some(Boolean) || kept.filter((keep, index) => keep && !reversed[index]).length < 3) break;
+    reversed.forEach((turned, index) => { if (turned) kept[index] = false; });
+    corners = cornersBetween(points, lines, kept);
+  }
+  return corners;
 }
 
 /**
@@ -124,7 +148,7 @@ export function getInsetPolygonFaces(
   const corners = insetPolygonEdgesWithSteps(points, insets, inwardSign);
   return corners.map((corner, index) => {
     const next = corners[(index + 1) % corners.length];
-    return { start: isInsetStep(corner) ? corner[1] : corner, end: isInsetStep(next) ? next[0] : next };
+    return { start: cornerOut(corner), end: cornerIn(next) };
   });
 }
 
