@@ -891,7 +891,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 | CH-0007 | P1 | REQUIRES_PRODUCT_DECISION | Canonical catalog source/precedence and Shopify intent are product/catalog decisions. |
 | CH-0008 | P1 | REQUIRES_PRODUCT_DECISION | The owner must classify 73 unspecified entries and choose the controlled status model. |
 | CH-0009 | P2 | DOWNGRADED_WITH_EVIDENCE | CH-0001 now makes the bounded route allowlisted-admin-only; mutable request-time package execution remains material debt. |
-| CH-0010 | P1 | REQUIRES_PRODUCT_DECISION | Irreversible revocation is fail-safe, but automatic designer sharing changes the user contract. |
+| CH-0010 | P1, resolved | RESOLVED | Only Share creates a link (no automatic designer sharing), turning sharing off clears the token, and sharing again writes a new one (30 Oct 2026). |
 | CH-0011 | P1, conditional | REQUIRES_PRODUCT_DECISION | Legal basis, consent, opt-out, masking, and project-side PostHog state require an owner decision and external verification. |
 | CH-0012 | P1, resolved | RESOLVED | Supported editable entry points now converge on the canonical persisted-document loader; legacy bookmarks temporarily redirect. |
 | CH-0013 | P1, resolved | RESOLVED | Phase 8A/B runtime work is preserved and `ci.catalog-materials` now singly owns the required schema/browser-helper/lazy-boundary suite; generator drift remains required once through production-artifact evidence. |
@@ -972,6 +972,7 @@ Current superseding statuses are: CH-0017 **TRUTHFULNESS AND REQUIRED EXTERNAL W
 
 ### CH-0010 — revoked share links can return
 
+- **Status:** RESOLVED (30 Oct 2026, branch `ux/finish`). Product decision (J delegated it to the recommendation): a design is shared only when its owner presses Share; designer mode, a load, a save and a conflict copy no longer share it. `DELETE` clears `shareToken` as well as `shareEnabled`, and every `POST` that writes a link writes a new token, so a link turned off never works again. The `design_shared` product event moves to the Share action (`lib/useDesignPageShareLink.ts`), which never sent it before. Guards: `scripts/test-design-page-share-link.ts`; browser: `tests/e2e/pro-visual-policy.spec.ts` checks that designer mode makes no share request.
 - **Current evidence and affected symbols:** `DELETE app/api/designs/[id]/share/route.ts` sets only `shareEnabled: false`. The POST path reuses `design.shareToken` unless explicit regeneration is requested. `lib/useDesignPagePersistence.ts` automatically calls `enableShare` when a designer-mode design loads or when designer mode becomes active.
 - **Reach and impact:** Authenticated sharing and public link reads are core production workflows. This is a privacy/revocation defect: a recipient URL believed revoked can work again; no underlying design-row corruption is shown.
 - **Dependencies and tests:** Product must decide automatic designer sharing, while permanent token invalidation should remain fail-safe. Add disable/reload/auto-enable/re-enable concurrency tests proving the old token never works and a new token does.
@@ -1118,7 +1119,7 @@ Risk order includes blocked findings so decisions are visible; `READY` ordering 
 7. `CH-0028` — `EXTERNALLY VERIFIED — RESOLVED` at `db346a51718967bd4dc1605b07c0850e02fd08d1`.
 8. `CH-0029` — `OPEN — POST-RESPONSE BROWSER/MAIN-THREAD STARVATION`, **selected active batch**; local remediation complete, external verification pending.
 9. `CH-0018` — `BLOCKED_DEPENDENCY` (populated upgrade/data-loss evidence).
-10. `CH-0010` — `REQUIRES_PRODUCT_DECISION` (permanent share revocation and auto-sharing).
+10. `CH-0010` — `RESOLVED` (30 Oct 2026: no auto-sharing; revocation is permanent).
 11. `CH-0011` — `REQUIRES_PRODUCT_DECISION` (privacy consent/masking and external PostHog state).
 12. `CH-0004` — `READY`, not started (trusted event provenance).
 13. `CH-0006` — `BLOCKED_DEPENDENCY` (legacy public API consumers).

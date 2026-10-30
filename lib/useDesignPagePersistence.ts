@@ -9,7 +9,6 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { track, trackProductEvent } from "@/lib/analytics";
 import { getAnonId } from "@/lib/anon";
 import { designApi, DesignApiError } from "@/lib/design-api-client";
 import { resolveDesignTitle, withoutDesignTitle } from "@/lib/design-title";
@@ -75,7 +74,6 @@ type DesignPagePersistenceState = {
   };
   session: {
     isAuthenticated: boolean;
-    isDesigner: boolean;
   };
   lifecycle: {
     localBackupHydrated: boolean;
@@ -136,7 +134,7 @@ export function useDesignPagePersistence({
       mode,
       notes,
     },
-    session: { isAuthenticated, isDesigner },
+    session: { isAuthenticated },
     lifecycle: { localBackupHydrated },
   },
   actions: {
@@ -269,32 +267,6 @@ export function useDesignPagePersistence({
     [designId, setShareEnabled, setShareToken]
   );
 
-  const enableShare = useCallback(
-    async (id: string) => {
-      const requestEpoch = documentEpochRef.current;
-      try {
-        const data = await designApi.share(id);
-        if (requestEpoch === documentEpochRef.current) {
-          setShareToken(data?.shareToken ?? null);
-          setShareEnabled(true);
-          if (data?.shareToken) {
-            track("share_link_created", {
-              design_id: id,
-              shared_context: true,
-            });
-            trackProductEvent("design_shared", {
-              source: "share_link",
-              result: "success",
-            });
-          }
-        }
-      } catch {
-        // Explicit share actions surface errors; automatic designer sharing is best-effort.
-      }
-    },
-    [setShareEnabled, setShareToken]
-  );
-
   const sharedExplicitSaveActions = {
     currentWriteIsBlocked: currentCloudWriteIsBlocked,
     setIsSaving,
@@ -314,13 +286,12 @@ export function useDesignPagePersistence({
   const saveDesignToCloud = useDesignPageManualCloudSave({
     state: {
       savedViews, style, budget, mode, notes,
-      isAuthenticated, isDesigner, itemsCount: items.length,
+      isAuthenticated, itemsCount: items.length,
     },
     actions: {
       ...sharedExplicitSaveActions,
       setDesignId,
       fetchShareStatus,
-      enableShare,
       showRuleToast,
     },
     adapters: sharedExplicitSaveAdapters,
@@ -401,7 +372,6 @@ export function useDesignPagePersistence({
       setStyle,
       setBudget,
       fetchShareStatus,
-      enableShare,
       showRuleToast,
     },
   });
@@ -411,15 +381,14 @@ export function useDesignPagePersistence({
       cloudSaveConflict, designId, shareToken, shareEnabled,
       currentStoredDesignFingerprint, lastCloudRevision, lastDbSaveAt,
       lastPersistedSnapshotFingerprint, lastCloudSaveError, isSaving,
-      isDesigner, savedViews, style, budget, mode, notes,
+      savedViews, style, budget, mode, notes,
     },
     actions: {
       currentCloudWriteIsBlocked, cloudBaseline: cloudBaselineController.actions,
       readDesignRoute, replaceDesignRoute, restoreDesignRoute, cancelDesignLoad,
       setCloudSaveConflict, setDesignId, setShareToken, setShareEnabled,
       setLastCloudRevision, setLastDbSaveAt, setLastPersistedSnapshotFingerprint,
-      setLastCloudSaveError, setIsSaving, fetchShareStatus, enableShare,
-      showRuleToast,
+      setLastCloudSaveError, setIsSaving, fetchShareStatus, showRuleToast,
     },
     adapters: {
       cloudWriteQueue,
@@ -543,12 +512,6 @@ export function useDesignPagePersistence({
     window.addEventListener("online", retryAfterReconnect);
     return () => window.removeEventListener("online", retryAfterReconnect);
   }, [cloudSaveConflict, designId, isAuthenticated, lastCloudSaveError]);
-
-  useEffect(() => {
-    if (!isDesigner) return;
-    if (!designId || shareEnabled) return;
-    void enableShare(designId);
-  }, [designId, enableShare, isDesigner, shareEnabled]);
 
   useEffect(() => {
     if (!designId) setIsSaving(false);

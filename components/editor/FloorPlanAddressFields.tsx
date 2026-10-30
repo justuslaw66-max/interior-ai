@@ -1,6 +1,7 @@
 "use client";
 
 import GoogleAddressAutocomplete from "@/components/GoogleAddressAutocomplete";
+import { DisclosureChevron } from "@/components/ui/DisclosureChevron";
 
 type FloorPlanAddressFieldsProps = {
   address: string;
@@ -84,9 +85,9 @@ export default function FloorPlanAddressFields({
           <span className="block text-xs font-semibold">Browse approved floor plans</span>
           <span className={`mt-0.5 block truncate text-xs ${subtle}`}>{browseAddressSummary}</span>
         </span>
-        <span className="shrink-0 text-xs font-semibold text-on-accent-tint">
+        <span className="inline-flex shrink-0 items-center text-xs font-semibold text-on-accent-tint">
           {browseStatus === "loading" ? "Loading…" : browseStatus === "error" ? "Unavailable" : `${browseCount} plans`}
-          <span aria-hidden="true" className="ml-1">{browseOpen ? "−" : "+"}</span>
+          <DisclosureChevron open={browseOpen} className="ml-1" />
         </span>
       </button>
     </div>

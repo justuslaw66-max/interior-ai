@@ -460,8 +460,8 @@ assert.match(
 
 assert.match(
   fs.readFileSync(path.join(designPageComponentsPath, "DesignPagePlanCanvasOverlays.tsx"), "utf8"),
-  /data-testid="plan-canvas-tool-row"\s+className="pointer-events-none absolute left-1\/2 top-bar-17 z-30 flex w-max max-w-\[calc\(100vw-2rem\)\] -translate-x-1\/2 flex-wrap items-center justify-center gap-2 md:top-bar-20"\s*>\s*\{quickActions\}\s*\{tips\}/,
-  "Manual plan quick actions, with Tips after them in one row, are centred near the top of the canvas (UX 4d)."
+  /data-testid="plan-canvas-tool-row"\s+className="pointer-events-none absolute left-1\/2 md:left-\[var\(--canvas-centre-x,50%\)\] top-bar-17 z-30 flex w-max max-w-\[calc\(100vw-2rem\)\] md:max-w-\[var\(--canvas-overlay-max-width,100%\)\] -translate-x-1\/2 flex-wrap items-center justify-center gap-2 md:top-bar-20"\s*>\s*\{quickActions\}\s*\{tips\}/,
+  "Manual plan quick actions, with Tips after them in one row, are centred near the top of the canvas card (UX 4d; on the card, not the window, since 30 Oct 2026)."
 );
 assert.match(
   planManualQuickActionsSource,
@@ -471,7 +471,7 @@ assert.match(
 
 assert.match(
   planGuidedActionsToggleSource,
-  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 top-bar-17 -translate-x-1\/2 gap-2 px-3 py-2 md:top-bar-20[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
+  /const toggleClass = \[[\s\S]{0,500}?state\.compact[\s\S]{0,300}?left-1\/2 md:left-\[var\(--canvas-centre-x,50%\)\] top-bar-17 -translate-x-1\/2 gap-2 px-3 py-2 md:top-bar-20[\s\S]{0,900}?data-testid="plan-guided-actions-toggle"[\s\S]{0,400}?className=\{toggleClass\}/,
   "Guided actions toggle should derive its shared top-center placement class locally."
 );
 

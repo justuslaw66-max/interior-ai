@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { X } from "lucide-react";
 import { TABLET_ITEM_PANEL_INSET_PX, useReportTabletRightPanel } from "@/lib/tablet-panel-policy";
 import { ShopStep, type ShopStepProps } from "@/components/editor/shop/ShopStep";
 import {
@@ -78,7 +79,8 @@ function ClientPreviewExitAction({
         onClick={onExit}
         title="Exit presentation mode (P)"
       >
-        ✕ Exit presentation
+        <X className="h-4 w-4" aria-hidden="true" />
+        Exit presentation
       </Button>
     </div>
   );

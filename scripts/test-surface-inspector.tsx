@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { RoomSurfaceRows, roomSurfaceRowsOf } from "../components/editor/design-controls-plan/RoomSurfaceRows";
+import { RoomSurfaceRows, roomSurfaceRowsOf, surfaceBrowserHolderOf } from "../components/editor/design-controls-plan/RoomSurfaceRows";
 import { SurfaceBrowserHeader, type SurfaceBrowserHeaderProps } from "../components/editor/design-controls-plan/SurfaceBrowserHeader";
 import {
   SelectedSurfaceInspector,
@@ -149,9 +149,16 @@ for (const id of ["surface-brush-toggle", "surface-summary-open", "surface-targe
 assert.match(proHeader, /data-testid="surfaces-tab-tiles"[^>]*>Materials<\/button>/, "Tiles is Materials.");
 
 const planPanel = read("components/editor/DesignControlsPlanPanel.tsx");
-assert.match(planPanel, /const openRoomSurface = \(target: RoomSurfaceTarget\) => \{\s+onSurfaceTargetChange\(target\); setSurfaceTab\("tiles"\); setWallSurfaceMode\("paint"\); setRoomFinishPanelOpen\(true\); setPlanSectionCollapsed\("selectedRoom", false\);/);
+assert.match(planPanel, /const openRoomSurface = \(target: RoomSurfaceTarget, reveal = false\) => \{\s+if \(reveal\) pendingSurfaceRevealRef\.current = true; onSurfaceTargetChange\(target\); setSurfaceTab\("tiles"\); setWallSurfaceMode\("paint"\); setRoomFinishPanelOpen\(true\); setPlanSectionCollapsed\("selectedRoom", false\);/);
 assert.match(planPanel, /<SurfaceBrowserHeader\s+pro=\{isDesigner\}[\s\S]*?onBack=\{\(\) => setRoomFinishPanelOpen\(false\)\}/);
 assert.match(planPanel, /\{ value: "materials", label: "Materials", testId: "wall-surface-mode-materials" \}/);
 assert.doesNotMatch(planPanel, /data-testid="selected-room-floor-finish"|"Change floor"/);
 
+// One Surfaces browser (30 Oct 2026): the room's card holds it unless it's showing a door or window,
+// or folded; then Floor finish does. The plan panel draws it in exactly one of the two.
+assert.equal(surfaceBrowserHolderOf(false, false), "room");
+assert.equal(surfaceBrowserHolderOf(true, false), "floorFinish");
+assert.equal(surfaceBrowserHolderOf(false, true), "floorFinish");
+assert.equal((planPanel.match(/renderSurfaceMaterialBrowser\("(?:room|floorFinish)"\)/g) ?? []).sort().join(), 'renderSurfaceMaterialBrowser("floorFinish"),renderSurfaceMaterialBrowser("room")');
+assert.match(planPanel, /open=\{roomFinishPanelOpen && holder === surfaceBrowserHolder\}/);
 console.log("Surface inspector and Surfaces rows (ED5, ED8) checks passed");

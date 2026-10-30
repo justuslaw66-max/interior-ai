@@ -193,8 +193,17 @@ export async function waitForCatalogReady(page: Page): Promise<boolean> {
     .catch(() => false);
   if (!searchVisible) return false;
 
-  return expect(page.getByTestId("catalog-focused-category-pill"))
+  const panelReady = await expect(page.getByTestId("catalog-focused-category-pill"))
     .toBeVisible({ timeout: 30000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!panelReady) return false;
+  // The product lists load after the page: until both arrive, the panel lists the built-in products
+  // only (no sofas) and adding waits, with the results marked busy. A spec that picks a card before
+  // then can lose it when the full list re-orders (30 Oct 2026: 06-catalog-compare's traces show
+  // clicks 0.2 s after /api/models/imported started, which took 2.5 to 2.9 s).
+  return expect(page.getByTestId("catalog-results-focus-target"))
+    .toHaveAttribute("aria-busy", "false", { timeout: 30000 })
     .then(() => true)
     .catch(() => false);
 }

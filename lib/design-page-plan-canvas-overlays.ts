@@ -1,5 +1,4 @@
 import type { FloorPlanTool } from "@/components/editor/FloorPlanToolStrip";
-import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type {
   FloorPlanDrawRoomMode,
@@ -42,7 +41,6 @@ export type DesignPagePlanCanvasOverlaysState = {
     /** On a phone the step panel is a sheet over the canvas: the tip sits above it, not on it. */
     aboveStepSheet: boolean;
   } | null;
-  emptyPromptVisible: boolean;
   restoreTools: {
     label: string;
   } | null;
@@ -55,7 +53,6 @@ export type DesignPagePlanCanvasOverlaysInput = {
   showBetaStart: boolean;
   isClientPreview: boolean;
   isDesigner: boolean;
-  viewMode: EditorViewMode;
   editorMode: DesignPageEditorMode;
   designControlsPanelVisible: boolean;
   designControlsPanelMode: DesignControlsPanelMode;
@@ -82,7 +79,6 @@ export function resolveDesignPagePlanCanvasOverlaysState({
   showBetaStart,
   isClientPreview,
   isDesigner,
-  viewMode,
   editorMode,
   designControlsPanelVisible,
   designControlsPanelMode,
@@ -103,21 +99,12 @@ export function resolveDesignPagePlanCanvasOverlaysState({
 }: DesignPagePlanCanvasOverlaysInput): DesignPagePlanCanvasOverlaysState {
   const manualQuickActionsVisible =
     showGuidedActionsToggle && !guidedActionsEnabled && !activeInteraction;
-  const emptyPromptVisible =
-    !isClientPreview &&
-    viewMode === "2d" &&
-    roomCount === 0 &&
-    !floorPlanTraceRoomMode &&
-    !showBetaStart &&
-    !manualQuickActionsVisible &&
-    !designControlsPanelVisible;
   const restoreToolsVisible =
     !isClientPreview &&
     !isDesigner &&
     !designControlsPanelVisible &&
     !planCanvasFocusActive &&
     !showBetaStart &&
-    !emptyPromptVisible &&
     (editorMode === "design" ||
       editorMode === "adjust" ||
       editorMode === "ai");
@@ -194,7 +181,6 @@ export function resolveDesignPagePlanCanvasOverlaysState({
             aboveStepSheet: designControlsPanelVisible,
           }
         : null,
-    emptyPromptVisible,
     restoreTools: restoreToolsVisible
       ? {
           label:

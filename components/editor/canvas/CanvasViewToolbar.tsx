@@ -4,11 +4,8 @@ import { Maximize, Redo2, Undo2 } from "lucide-react";
 import EditorViewToggle, { type EditorViewMode } from "@/components/editor/EditorViewToggle";
 import { CanvasSavedViews, type CanvasSavedViewsActions, type CanvasSavedViewsState } from "@/components/editor/canvas/CanvasSavedViews";
 import { Button } from "@/components/ui/Button";
-import type { CanvasFrameBox } from "@/lib/editor-canvas-insets";
 
 export type CanvasViewToolbarProps = {
-  /** The canvas card's place in the editor: the toolbar centres itself on the card. */
-  frame: CanvasFrameBox;
   viewMode: EditorViewMode;
   onViewModeChange: (next: EditorViewMode) => void;
   /** Fit waits for a room to frame, and doesn't act in the Present step. */
@@ -28,11 +25,12 @@ export type CanvasViewToolbarProps = {
  * The toolbar's centre: the middle of the canvas card beside the step panel (the rounded inset
  * frame), but never so far right that a right panel (the item panel, 340px at right-4) would cover
  * Undo and Redo, and never over the step panel. In 3D, with Views (UX 4e), half the toolbar is about
- * 160px, 172px on touch screens.
+ * 160px, 172px on touch screens. The card's place comes from the editor's CSS variables
+ * (canvasFrameStyle), the frame the 2D fit uses, so the toolbar follows Plan's canvas focus too
+ * (30 Oct 2026; it kept the step panel's place while tracing hid it).
  */
-export function canvasToolbarLeft(frame: CanvasFrameBox): string {
-  return `clamp(${frame.leftPx + 188}px, calc(50% + ${(frame.leftPx - frame.rightPx) / 2}px), calc(100% - 540px))`;
-}
+export const CANVAS_TOOLBAR_LEFT =
+  "clamp(calc(var(--canvas-frame-left, 0px) + 188px), calc(50% + (var(--canvas-frame-left, 0px) - var(--canvas-frame-right, 0px)) / 2), calc(100% - 540px))";
 
 const TOOLBAR_CLASS =
   "absolute top-bar-4 z-40 flex -translate-x-1/2 items-center gap-1 rounded-xl border p-1 shadow-[0_4px_14px_rgba(23,23,23,0.08)]";
@@ -51,7 +49,7 @@ export function CanvasViewToolbar(props: CanvasViewToolbarProps) {
       aria-label="Canvas controls"
       data-testid="canvas-view-toolbar"
       className={`${TOOLBAR_CLASS} border-separator bg-surface-floating text-label`}
-      style={{ left: canvasToolbarLeft(props.frame) }}
+      style={{ left: CANVAS_TOOLBAR_LEFT }}
     >
       <EditorViewToggle value={props.viewMode} onChange={props.onViewModeChange} variant="canvas" />
       {props.viewMode === "3d" ? <CanvasSavedViews {...props.savedViews} size="toolbar" /> : null}

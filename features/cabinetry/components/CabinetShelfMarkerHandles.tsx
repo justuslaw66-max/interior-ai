@@ -12,6 +12,7 @@ import {
   cabinetMillimetresToDisplay,
   formatCabinetMeasurement,
 } from "../measurementUnits";
+import { MoveVertical } from "lucide-react";
 import { useCabinetMeasurementUnit } from "./CabinetMeasurementUnitContext";
 
 /** A custom shelf height supplied and owned by the integrating editor. */
@@ -372,9 +373,7 @@ export function CabinetShelfMarkerHandles({
           >
             <span
               aria-hidden="true"
-              className={`absolute inset-x-0 top-1/2 h-px -translate-y-1/2 ${
-                drag ? "bg-sky-300" : "bg-white/65"
-              }`}
+              className={`absolute inset-x-0 top-1/2 h-px -translate-y-1/2 ${drag ? "bg-sky-300" : "bg-white/65"}`}
             />
             <span
               aria-hidden="true"
@@ -384,7 +383,7 @@ export function CabinetShelfMarkerHandles({
                   : "border-white/20 bg-slate-950/90 text-slate-50 hover:border-sky-300 hover:bg-slate-900"
               }`}
             >
-              <span className="mr-1 text-sm leading-none text-sky-200">↕</span>
+              <MoveVertical className="mr-1 h-3.5 w-3.5 shrink-0 text-sky-200" aria-hidden="true" />
               {formatMeasurement(valueMm)}
             </span>
           </button>

@@ -2,6 +2,7 @@
 
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { Check } from "lucide-react";
 import {
   useEffect,
   useId,
@@ -243,9 +244,7 @@ export function CabinetPreviewViewSelector({
           onClick={() => onChange(option.value)}
           onKeyDown={(event) => selectViewWithKeyboard(index, event)}
         >
-          <span aria-hidden="true" className="mr-1 inline-block w-3 text-center">
-            {value === option.value ? "✓" : ""}
-          </span>
+          {value === option.value ? <Check className="mr-1 h-3 w-3 shrink-0" aria-hidden="true" /> : <span className="mr-1 w-3 shrink-0" aria-hidden="true" />}
           {option.label}
         </button>
       ))}

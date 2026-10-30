@@ -3,6 +3,7 @@ import { confirmPlanTemplateReplacementIfNeeded } from "../plan-template-test-ut
 import { chooseStartTemplate } from "../variant-test-utils";
 import {
   addOneRoom,
+  boxesOverlap,
   chooseTemplateStart,
   clearBrowserStorageBeforeNextLoad,
   clickWithFallback,
@@ -288,6 +289,18 @@ export function registerTemplateTests() {
       "data-plan-2d-orientation",
       planOrientationBeforeFit ?? "normal"
     );
+    // The overall labels keep clear of the selected room's chips and measurements (30 Oct 2026).
+    const boxOf = async (testId: string) => {
+      const target = page.getByTestId(testId).first();
+      return (await target.count()) > 0 ? target.boundingBox() : null;
+    };
+    for (const axis of ["width", "depth"] as const) {
+      for (const other of ["active-room-dimension-width", "active-room-dimension-depth", "active-room-measurement-hud"]) {
+        const [overallBox, otherBox] = await Promise.all([boxOf(`overall-plan-dimension-${axis}`), boxOf(other)]);
+        if (!overallBox || !otherBox) continue;
+        expect(boxesOverlap(overallBox, otherBox), `Overall ${axis} is clear of ${other}`).toBe(false);
+      }
+    }
     await page.getByRole("button", { name: "3D", exact: true }).click();
     await expect(page.getByTestId("room-pan-navigator")).toBeVisible();
     await page.getByTestId("room-pan-navigator").scrollIntoViewIfNeeded();

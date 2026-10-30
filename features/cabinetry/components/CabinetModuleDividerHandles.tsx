@@ -12,6 +12,7 @@ import {
   cabinetMillimetresToDisplay,
   formatCabinetMeasurement,
 } from "../measurementUnits";
+import { MoveHorizontal } from "lucide-react";
 import { useCabinetMeasurementUnit } from "./CabinetMeasurementUnitContext";
 
 /**
@@ -382,9 +383,7 @@ export function CabinetModuleDividerHandles({
           >
             <span
               aria-hidden="true"
-              className={`absolute inset-y-0 left-1/2 w-px -translate-x-1/2 ${
-                drag ? "bg-sky-300" : "bg-white/65"
-              }`}
+              className={`absolute inset-y-0 left-1/2 w-px -translate-x-1/2 ${drag ? "bg-sky-300" : "bg-white/65"}`}
             />
             <span
               aria-hidden="true"
@@ -394,7 +393,7 @@ export function CabinetModuleDividerHandles({
                   : "border-white/20 bg-slate-950/90 text-slate-50 hover:border-sky-300 hover:bg-slate-900"
               }`}
             >
-              <span className="mr-1 text-sm leading-none text-sky-200">↔</span>
+              <MoveHorizontal className="mr-1 h-3.5 w-3.5 shrink-0 text-sky-200" aria-hidden="true" />
               {formatMeasurement(valueMm)}
             </span>
           </button>
