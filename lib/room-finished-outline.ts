@@ -2,7 +2,6 @@ import { clampToRoom } from "@/lib/design-page-geometry";
 import { L_SHAPE_NOTCH_RATIO } from "@/lib/room-floor-area";
 import type { RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 import {
-  getRectangleWallClearances,
   getRoomWallFaceIds,
   getRoomWallFinishDepths,
   hasWallFinishDepths,
@@ -42,11 +41,13 @@ export function getRoomPlanOutlinePoints({ shape, polygon, w, d }: RoomPlanOutli
   return [{ x: left, z: top }, { x: right, z: top }, { x: right, z: bottom }, { x: left, z: bottom }];
 }
 
-function signedArea(points: readonly RoomPlanPolygonPoint[]): number {
-  return points.reduce((sum, point, index) => {
+/** Which way an outline's edges face its inside: +1 when the inside is on their local +Z normal's side (−dz, dx). */
+export function getOutlineInwardSign(points: readonly RoomPlanPolygonPoint[]): 1 | -1 {
+  const area = points.reduce((sum, point, index) => {
     const next = points[(index + 1) % points.length];
     return sum + point.x * next.z - next.x * point.z;
-  }, 0) / 2;
+  }, 0);
+  return area >= 0 ? 1 : -1;
 }
 
 type OffsetLine = { x: number; z: number; dx: number; dz: number; nx: number; nz: number };
@@ -65,10 +66,12 @@ function offsetEdge(points: readonly RoomPlanPolygonPoint[], index: number, inse
 
 /**
  * The polygon with each edge moved in by its own distance (`insets[i]` for the edge from point i to point i + 1). Each corner
- * is where its two moved edges meet; where they run straight on, the corner moves in by the deeper of the two.
+ * is where its two moved edges meet; where they run straight on, the corner moves in by the deeper of the two. The opposite
+ * `inwardSign` moves the edges out instead (a hole's walls, which stand out of it into the room).
  */
-export function insetPolygonEdges(points: readonly RoomPlanPolygonPoint[], insets: readonly number[]): RoomPlanPolygonPoint[] {
-  const inwardSign = signedArea(points) >= 0 ? 1 : -1;
+export function insetPolygonEdges(
+  points: readonly RoomPlanPolygonPoint[], insets: readonly number[], inwardSign: 1 | -1 = getOutlineInwardSign(points)
+): RoomPlanPolygonPoint[] {
   const lines = points.map((_, index) => offsetEdge(points, index, Math.max(0, insets[index] ?? 0), inwardSign));
   return points.map((point, index) => {
     const before = lines[(index - 1 + points.length) % points.length];
@@ -108,32 +111,6 @@ export function getRoomOutlineInsideFinishes(outline: RoomPlanOutline, depths: R
   };
   insideOutlineByDepths.set(depths, { outline, inside });
   return inside;
-}
-
-/**
- * The panels on the room's bounding rectangle, as `north`, `east`, `south` and `west`: for a rectangle its walls' own, and
- * for an L-shape or a drawn shape the deepest panel among the walls along each side. The checks that measure a room by its
- * bounding rectangle (lib/constraints/evaluate.ts, the walkway map, placement scoring, plan review) stop at these, so every
- * shape's checks measure from the panel on its outer walls (J, 29 Oct 2026: "Fix it, all from the face").
- */
-export function getRoomSideFinishDepths(room: WallFinishRoom | null | undefined, size: { w: number; d: number }): RoomWallFinishDepths {
-  const depths = getRoomWallFinishDepths(room);
-  if (!room || !hasWallFinishDepths(depths)) return depths;
-  const faceIds = getRoomWallFaceIds(room);
-  if (faceIds[0] === "north") return depths; // A rectangle's walls are its sides.
-  const shape = room.planShape ?? room.shape ?? "rectangle";
-  const points = getRoomPlanOutlinePoints({ shape, polygon: [...(room.planPolygon ?? room.polygon ?? [])], w: size.w, d: size.d });
-  const xs = points.map(({ x }) => x), zs = points.map(({ z }) => z);
-  const bounds = { west: Math.min(...xs), east: Math.max(...xs), north: Math.min(...zs), south: Math.max(...zs) };
-  const sides: Record<string, number> = {};
-  faceIds.forEach((faceId, index) => {
-    const start = points[index], end = points[(index + 1) % points.length];
-    const along = (value: number, axis: "x" | "z") => Math.abs(start[axis] - value) < 1e-6 && Math.abs(end[axis] - value) < 1e-6;
-    const side = along(bounds.west, "x") ? "west" : along(bounds.east, "x") ? "east"
-      : along(bounds.north, "z") ? "north" : along(bounds.south, "z") ? "south" : null;
-    if (side && (depths[faceId] ?? 0) > (sides[side] ?? 0)) sides[side] = depths[faceId];
-  });
-  return sides;
 }
 
 /**
@@ -229,15 +206,4 @@ export function getRoomClearInsideMetrics(
   const widthMm = Math.max(0, Math.max(...xs) - Math.min(...xs)) * 1000;
   const depthMm = Math.max(0, Math.max(...zs) - Math.min(...zs)) * 1000;
   return [`Clear inside ${formatLengthMm(widthMm)} × ${formatLengthMm(depthMm)}`];
-}
-
-/** `getRectangleWallClearances` for a room snapshot: its drawn size, its wall (12 cm when not set) and its sides' panels. */
-export function getRoomWallClearances(
-  room: WallFinishRoom & { geometry: { width: number; depth: number; wallThickness?: number } },
-  center: { x: number; z: number },
-  footprint: { w: number; d: number }
-): { x: number; z: number } {
-  const { width, depth, wallThickness = 0.12 } = room.geometry;
-  const depths = getRoomSideFinishDepths(room, { w: width, d: depth });
-  return getRectangleWallClearances({ width, depth, wallThickness, depths, center, footprint });
 }

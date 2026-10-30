@@ -10,10 +10,9 @@ import {
   getFurnitureRoomFrameInsideFinishes,
   getRoomClearInsideMetrics,
   getRoomOutlineInsideFinishes,
-  getRoomSideFinishDepths,
-  getRoomWallClearances,
   insetPolygonEdges,
 } from "../lib/room-finished-outline";
+import { getRoomWallClearance } from "../lib/room-finished-faces";
 import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "../lib/floor-materials";
 import type { PersistedPlanOpening, RoomSnapshot } from "../lib/room-types";
@@ -158,24 +157,25 @@ const wide = getRectangleWallClearances({
   width: 4, depth: 3, wallThickness: 0.12, depths: { west: 0.044 }, center: { x: 0.005, z: 0 }, footprint: { w: 3.8, d: 0.5 },
 });
 near(wide.x, 0.001);
-near(getRoomWallClearances(tiledWithPanel, { x: 1.3, z: 0 }, { w: 1, d: 0.5 }).x, clear.x, "a room snapshot's clearances");
-// An L-shape's or drawn shape's checks measure its rectangle: each side stops at the deepest panel along it.
+near(getRoomWallClearance(tiledWithPanel, { x: 1.3, z: 0 }, { w: 1, d: 0.5 }), Math.min(clear.x, clear.z), "a room snapshot's clearance");
+// An L-shape's or drawn shape's checks measure to its own walls (lib/room-finished-faces.ts), each in front of its own panel:
+// a console 2 cm off the built-in L's notch wall (wall-2, at z = 0.24 m) is against a wall, not 25 cm from the far one.
 const lRoom = room(
   { default: { paintColorHex: "#ffffff" }, faces: { "wall-1": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST }, "wall-2": { materialId: NORDIC_ACACIA } } },
   { planShape: "l_shape" }
 );
-assert.deepEqual(getRoomSideFinishDepths(lRoom, { w: 4, d: 3 }), { east: 0.044 }, "the notch's walls are inside the rectangle");
-assert.deepEqual(getRoomSideFinishDepths(tiledWithPanel, { w: 4, d: 3 }), { north: 0.01, east: 0.044 }, "a rectangle's walls are its sides");
-const lLaminate = room({ default: { materialId: NORDIC_ACACIA } }, { planShape: "l_shape" });
-assert.match(
-  evaluateConstraints({
-    design: { items: [{ instanceId: "c", productId: CONSOLE, position: [0, 0, -1.5 + inset + 0.01 + consoleDepth / 2], rotationY: 0 }] },
-    movedItemId: "c",
-    room: { width: 4, depth: 3, wallThickness: 0.12, wallFinishRoom: lLaminate },
-  }).find((result) => result.id === "wall-gap")?.message ?? "",
-  /\(2cm gap\)/,
-  "an L-shaped room's checks measure from its panels as a rectangle's do"
-);
+const notchConsoleZ = (gap: number) => 0.24 - 0.06 - gap - consoleDepth / 2;
+const lWallMessage = (lRoomWalls: RoomSnapshot, z: number) => evaluateConstraints({
+  design: { items: [{ instanceId: "c", productId: CONSOLE, position: [1.1, 0, z], rotationY: Math.PI }] },
+  movedItemId: "c",
+  room: { width: 4, depth: 3, wallThickness: 0.12, wallFinishRoom: lRoomWalls },
+}).find((result) => result.id === "wall-gap")?.message ?? "";
+assert.match(lWallMessage(lRoom, notchConsoleZ(0.01 + 0.02)), /Placed nicely against wall \(2cm gap\)/, "2 cm off the notch wall's panel");
+assert.match(lWallMessage(lRoom, notchConsoleZ(0.02)), /Too tight to wall \(1cm\)/, "2 cm off the bare notch wall is 1 cm off its panel");
+assert.match(lWallMessage(room({ default: { paintColorHex: "#ffffff" } }, { planShape: "l_shape" }), notchConsoleZ(-0.15)),
+  /Too tight to wall \(-15cm\)/, "15 cm into the notch's wall, which the bounding rectangle didn't see");
+near(getRoomWallClearance(lRoom, { x: 1.1, z: notchConsoleZ(0.05) }, { w: 1.5, d: consoleDepth }), 0.04,
+  "placement scoring's clearance: to the notch wall's panel, 10 mm in front of the wall");
 
 // Built-ins: a cabinet run along a wall is the clear length between the walls either side, less their panels.
 const [north, east] = buildCabinetryAvailableSpaces({ activeRoom: tiledWithPanel, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });

@@ -4,7 +4,7 @@ import { computeCirculationAnalysis } from "@/lib/circulation-analysis";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
-import { getRoomWallClearances } from "@/lib/room-finished-outline";
+import { getRoomWallClearance } from "@/lib/room-finished-faces";
 
 export type ManualPlacementScoreKind =
   | "great"
@@ -161,8 +161,8 @@ export function scoreManualPlacement({
     dimsMm.d / 1000,
     item.rotationY ?? 0
   );
-  const clearance = getRoomWallClearances(room, center, { w: effectiveWidth, d: effectiveDepth }); // To the finished faces.
-  const nearestWallClearance = Math.min(clearance.x, clearance.z);
+  // To the nearest finished face: an L-shape's or a drawn shape's own, its notch's walls included.
+  const nearestWallClearance = getRoomWallClearance(room, center, { w: effectiveWidth, d: effectiveDepth });
   const warnings: string[] = [];
   const suggestions: string[] = [];
   const actions: ManualPlacementAction[] = [];
