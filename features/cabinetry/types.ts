@@ -164,12 +164,12 @@ export interface CabinetHostSpace {
   wall?: "north" | "south" | "east" | "west";
   /** Arbitrary room-local wall segment, stored in millimetres. */
   wallSegment?: {
-    startXmm: number;
-    startZmm: number;
-    endXmm: number;
-    endZmm: number;
+    startXmm: number; startZmm: number;
+    endXmm: number; endZmm: number;
     inwardNormalX: number;
     inwardNormalZ: number;
+    /** How far a run's start and end stand back from an acute corner there, per mm of its depth (the angle's cotangent). */
+    startSetbackPerDepth?: number; endSetbackPerDepth?: number;
   };
   availableWidthMm: number;
   availableHeightMm: number;

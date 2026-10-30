@@ -31,17 +31,23 @@ function mergeIntervals(intervals: Array<{ startMm: number; endMm: number }>) {
   return merged;
 }
 
+/**
+ * The stretches of a host a run can fill. `assemblyDepthMm` keeps a run's ends back from an acute corner, where its front corner
+ * would otherwise cross the next wall's face (`wallSegment`'s setbacks, features/cabinetry/roomCabinetHosts.ts).
+ */
 export function getCabinetAvailableSegments(
   space: CabinetHostSpace,
   assemblyHeightMm: number,
-  assemblyBottomMm = 0
+  assemblyBottomMm = 0,
+  assemblyDepthMm = 0
 ): CabinetFitSegment[] {
   if (!Number.isFinite(space.availableWidthMm) || space.availableWidthMm <= 0) return [];
   const halfWidthMm = space.availableWidthMm / 2;
-  const startBoundaryMm =
-    -halfWidthMm + Math.max(0, space.installationClearanceLeftMm ?? 0);
-  const endBoundaryMm =
-    halfWidthMm - Math.max(0, space.installationClearanceRightMm ?? 0);
+  const depthMm = Number.isFinite(assemblyDepthMm) ? Math.max(0, assemblyDepthMm) : 0;
+  const startBoundaryMm = -halfWidthMm + Math.max(0, space.installationClearanceLeftMm ?? 0) +
+    depthMm * Math.max(0, space.wallSegment?.startSetbackPerDepth ?? 0);
+  const endBoundaryMm = halfWidthMm - Math.max(0, space.installationClearanceRightMm ?? 0) -
+    depthMm * Math.max(0, space.wallSegment?.endSetbackPerDepth ?? 0);
   if (endBoundaryMm <= startBoundaryMm) return [];
 
   const blockedIntervals = mergeIntervals(

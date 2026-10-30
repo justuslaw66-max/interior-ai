@@ -5,7 +5,8 @@ import { join } from "node:path";
 import type { ParametricCabinetDesignItem } from "../features/cabinetry/designItemAdapters";
 import { createCabinetPreset } from "../features/cabinetry/presets";
 import { fitCabinetToSpace, getCabinetFitPlacement } from "../features/cabinetry/fitToSpace";
-import { buildCabinetryAvailableSpaces, clampBuiltInToRoom } from "../features/cabinetry/roomCabinetHosts";
+import { buildCabinetryAvailableSpaces } from "../features/cabinetry/roomCabinetHosts";
+import { clampBuiltInToRoom } from "../lib/room-built-in-faces";
 import type { CabinetHostSpace } from "../features/cabinetry/types";
 import {
   buildSelectedCabinetAssetManifest,
@@ -155,13 +156,6 @@ const doorCentreZ = (segment.startZmm + segment.endZmm) / 2 + eastWall.openings[
 near(doorCentreZ, -1_000, "the door stays where it is drawn, measured along the face");
 const drawnRun = fitRun(drawn, eastWall);
 assert(drawnRun.z - drawnRun.width / 2 >= -1 + 0.4 - 1e-6 || drawnRun.z + drawnRun.width / 2 <= -1 - 0.4 + 1e-6, "the run keeps clear of the door");
-// A nib narrower than the walls either side are thick has no face: its walls aren't offered.
-const nib = {
-  ...drawn, id: "room-nib", surfaces: undefined,
-  planPolygon: [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0.05, z: 1.5 }, { x: 0.05, z: 1.6 }, { x: -0.05, z: 1.6 }, { x: -0.05, z: 1.5 }, { x: -2, z: 1.5 }],
-} as ReturnType<typeof createRoom>;
-assert.equal(buildCabinetryAvailableSpaces({ activeRoom: nib, activePlanRoom: null, planRoomCount: 1, planOpenings: [] })
-  .some((space) => ["wall-3", "wall-4", "wall-5"].includes(space.wallId ?? "")), false, "a 100 mm nib between 120 mm walls has no faces");
 
 const definition = createCabinetPreset("base", "controller-cabinet");
 const cabinet = {

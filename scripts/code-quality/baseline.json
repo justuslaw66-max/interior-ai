@@ -393,7 +393,7 @@
       "limit": 400
     },
     "features/cabinetry/useDesignPageCabinetry.ts": {
-      "lines": 1189,
+      "lines": 1152,
       "limit": 400
     },
     "features/cabinetry/validation.ts": {
@@ -657,7 +657,7 @@
       "limit": 400
     },
     "lib/useDesignPageSceneItemDrag.ts": {
-      "lines": 659,
+      "lines": 651,
       "limit": 400
     },
     "lib/useDesignPageSelectionInspectorModel.ts": {
@@ -2605,7 +2605,7 @@
     "features/cabinetry/useDesignPageCabinetry.ts": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 908
+        "maximum": 874
       },
       "complexFunctions": {
         "count": 3,
@@ -3938,12 +3938,6 @@
         "maximum": 280
       }
     },
-    "lib/useDesignPageCabinetryWorkspaceRegistration.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 64
-      }
-    },
     "lib/useDesignPageCameraBridgeController.ts": {
       "overlongFunctions": {
         "count": 1,
@@ -4417,11 +4411,11 @@
     "lib/useDesignPageSceneItemDrag.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 530
+        "maximum": 522
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 81
+        "maximum": 80
       }
     },
     "lib/useDesignPageScenePerformance.ts": {

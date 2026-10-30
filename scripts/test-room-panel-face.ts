@@ -38,6 +38,7 @@ import {
   getWallPanelFaceId,
 } from "../lib/room-wall-finish-depths";
 import { clampToPlacementRoom, isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
+import { clampItemToRoom } from "../lib/room-built-in-faces";
 
 // The room measured to the laminate panel's face (J, 29 Oct 2026): "Add a clear size", "At the deepest panel", "Fix it, all
 // from the face". A laminate stands 10 mm off the wall by default (MDF 9 mm and 1 mm of laminate), 44 mm at most.
@@ -192,6 +193,9 @@ assert.equal(builtIn(2 - 0.06 - 0.044 - 0.5), true, "a built-in may stand agains
 assert.equal(contained(2 - 0.06 - 0.044 - 0.5), false, "furniture keeps 2 cm off it");
 assert.equal(builtIn(2 - 0.06 - 0.044 - 0.5 + 0.001), false, "but not into the panel");
 assert.deepEqual([isBuiltInItem({ assetType: "parametric_cabinet" }), isBuiltInItem({ assetType: "catalog" })], [true, false]);
+// An item dragged into another room is clamped by its own rule there: furniture 2 cm off the panel, a built-in against it.
+near(clampItemToRoom({ assetType: "catalog" }, tiledWithPanel, 5, 0, 1, 0.5)[0], 2 - 0.06 - 0.044 - 0.02 - 0.5);
+near(clampItemToRoom({ assetType: "parametric_cabinet" }, tiledWithPanel, 5, 0, 1, 0.5)[0], 2 - 0.06 - 0.044 - 0.5);
 
 // The clear size inside the panels, for the room inspector; nothing without panels.
 const metres = (valueMm: number) => `${(valueMm / 1000).toFixed(2)} m`;
@@ -362,7 +366,7 @@ const read = (path: string) => readFileSync(path, "utf8");
 assert.match(read("lib/useDesignPageHousePlanState.ts"), /clampToRoomInsideFinishes\([\s\S]*?getRoomWallFinishDepths\(activeRoom\)\s*\)/);
 assert.match(
   read("lib/useDesignPageSceneItemDrag.ts"),
-  /: clampToRoomInsideFinishes\([^\n]*\n(?:[^\n]*\n){7}\s*targetRoom\.planHoles,\s*getRoomWallFinishDepths\(targetRoom\)\s*\)/,
+  /: clampItemToRoom\(mover, targetRoom,/,
   "an item dragged into another room is clamped to that room's own shape and panels"
 );
 for (const file of ["lib/useDesignPageSceneItemDrag.ts", "lib/useDesignPageSelectionTransforms.ts"]) {

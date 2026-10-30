@@ -25,8 +25,7 @@ export function useDesignPageCabinetryWorkspaceRegistration({
     documentSelection.boundaries;
   const selectionInspection =
     planAuthoring.boundaries.selectionInspection;
-  const { activeRoom, roomWidth, roomDepth, wallThickness } =
-    documentRoom.derived.room;
+  const { activeRoom } = documentRoom.derived.room;
 
   const cabinetry = useDesignPageCabinetryRegistrationFacade({
     state: {
@@ -45,9 +44,6 @@ export function useDesignPageCabinetryWorkspaceRegistration({
       isDesigner: coreShell.derived.access.isDesigner,
       canEdit: coreShell.derived.access.canEdit,
       designId: base.state.identity.designId,
-      roomWidth,
-      roomDepth,
-      wallThickness,
       rotationSnapEnabled:
         selectionInspection.state.inspection.rotationSnapEnabled,
       rotationSnapStepRadians:

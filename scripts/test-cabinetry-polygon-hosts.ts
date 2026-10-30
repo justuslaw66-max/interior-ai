@@ -15,10 +15,12 @@ import {
 } from "../features/cabinetry/generateCabinetDocumentation";
 import { snapshotToStored, storedToSnapshot } from "../lib/room-persistence";
 import { createRoom, type DesignSnapshot, type RoomSnapshot } from "../lib/room-types";
-import { buildCabinetryAvailableSpaces, clampBuiltInToRoom } from "../features/cabinetry/roomCabinetHosts";
+import { buildCabinetryAvailableSpaces, getCabinetCopyOffset } from "../features/cabinetry/roomCabinetHosts";
+import { getCabinetAvailableSegments } from "../features/cabinetry/fitSegments";
 import type { CabinetHostSpace } from "../features/cabinetry/types";
 import { canonicalFloorPlanToDesignSnapshot } from "../lib/floor-plan-legacy-adapters";
-import { getCanonicalPlanModel } from "../lib/room-built-in-faces";
+import { compileCanonicalFloorPlanRenderModel } from "../lib/floor-plan-render-model";
+import { clampBuiltInToRoom, getBuiltInSnapTarget } from "../lib/room-built-in-faces";
 import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
 import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
 
@@ -286,97 +288,147 @@ assert.deepEqual(
   "fewer than three polygon points should not create misleading hosts"
 );
 
-// Built-ins against the finished face (J, 29 Oct 2026: "Face, back flush"; features/cabinetry/roomCabinetHosts.ts).
+// Built-ins against the finished face (J, 29 Oct 2026: "Face, back flush"; features/cabinetry/roomCabinetHosts.ts and
+// lib/room-built-in-faces.ts).
 const nearMm = (actual: number, expected: number, message: string) =>
   assert.ok(Math.abs(actual - expected) < 0.01, `${message}: ${actual} ≠ ${expected}`);
-type FittedRun = { x: number; z: number; width: number; depth: number; rotationY: number; fitX: number; fitZ: number };
+type FittedRun = { x: number; z: number; width: number; depth: number; rotationY: number; fitX: number; fitZ: number; space: CabinetHostSpace };
 /** Fit a base run along `space`, place it as the Studio does (the built-in clamp), and give where Fit put it too. */
-function placeFittedRun(room: RoomSnapshot, space: CabinetHostSpace, canonicalDocument?: ReturnType<typeof authoredApartment>): FittedRun {
+function placeFittedRun(room: RoomSnapshot, space: CabinetHostSpace): FittedRun {
   const fitted = fitCabinetToSpace(createCabinetPreset("base", `run-${space.id}`), space, { mode: "fit_width" });
   assert.equal(fitted.ok, true, `${space.label} should fit`);
   const at = getCabinetFitPlacement(fitted.definition, room.geometry.width, room.geometry.depth)!;
   const width = fitted.definition.totalWidth / 1000, depth = fitted.definition.depth / 1000;
-  const [x, z] = clampBuiltInToRoom(room, at.position[0], at.position[2], width, depth, at.rotationY, { canonicalDocument });
-  return { x, z, width, depth, rotationY: at.rotationY, fitX: at.position[0], fitZ: at.position[2] };
+  const [x, z] = clampBuiltInToRoom(room, at.position[0], at.position[2], width, depth, at.rotationY);
+  return { x, z, width, depth, rotationY: at.rotationY, fitX: at.position[0], fitZ: at.position[2], space };
 }
-/** How far the run's back stands in front of the line z (north) or x (west) etc., along its own inward normal. */
-const backOffset = (run: FittedRun, faceX: number, faceZ: number) =>
-  (run.x - Math.sin(run.rotationY) * run.depth / 2 - faceX) * Math.sin(run.rotationY) +
-  (run.z - Math.cos(run.rotationY) * run.depth / 2 - faceZ) * Math.cos(run.rotationY);
-
-// An imported plan: each wall's own face. The apartment's walls are 200 mm, but 100 mm where the living room and bedroom meet;
-// the rooms carry only their walls' average (175 mm), which would stand a run 12.5 mm into a 200 mm wall and 37.5 mm off the
-// 100 mm one.
-const apartment = authoredApartment();
-const apartmentModel = getCanonicalPlanModel(apartment);
-const importedRooms = canonicalFloorPlanToDesignSnapshot(apartment).snapshot.rooms;
-const living = importedRooms.find((room) => room.id === "living")!;
-assert.equal(living.geometry.wallThickness, 0.175, "the fixture's living room carries its walls' average");
-const livingSpaces = buildCabinetryAvailableSpaces({ activeRoom: living, activePlanRoom: null, planRoomCount: 2, planOpenings: [], canonicalDocument: apartment });
-assert.deepEqual(livingSpaces.map((space) => Math.round(space.availableWidthMm)), [4000 - 100 - 50, 6000 - 200, 4000 - 100 - 50, 6000 - 200],
-  "the living room's faces: half of each wall in, 50 mm at the shared wall");
-const livingRuns = livingSpaces.map((space) => placeFittedRun(living, space, apartment));
-nearMm(backOffset(livingRuns[0], 0, -3 + 0.1) * 1000, 0, "a run's back on the 200 mm north wall's face");
-nearMm(backOffset(livingRuns[1], 2 - 0.05, 0) * 1000, 0, "a run's back on the 100 mm shared wall's face");
-livingRuns.forEach((run, index) => {
-  nearMm(run.x * 1000, run.fitX * 1000, `living wall-${index}: the clamp keeps the run where Fit put it`);
-  nearMm(run.z * 1000, run.fitZ * 1000, `living wall-${index}: the clamp keeps the run where Fit put it`);
-  const dims = { w: run.width * 1000, d: run.depth * 1000, h: 870 };
-  const contained = (x: number, z: number) => isPlacementContainedInRoom({
-    room: living, position: [x, 0, z], rotationY: run.rotationY, dimensions: dims, canonicalModel: apartmentModel, builtIn: true,
-  });
-  assert.equal(contained(run.x, run.z), true, `living wall-${index}: a fitted run touches the plan's walls but is inside`);
-  // A 10 mm nudge along the wall, as the inspector's nudge does, after the clamp.
-  const along = { x: Math.cos(run.rotationY) * 0.01, z: -Math.sin(run.rotationY) * 0.01 };
-  const [nudgedX, nudgedZ] = clampBuiltInToRoom(living, run.x + along.x, run.z + along.z, run.width, run.depth, run.rotationY,
-    { from: [run.x, run.z], canonicalDocument: apartment });
-  assert.equal(contained(nudgedX, nudgedZ), true, `living wall-${index}: still inside after a 10 mm nudge`);
-  nearMm(backOffset({ ...run, x: nudgedX, z: nudgedZ }, run.x - Math.sin(run.rotationY) * run.depth / 2, run.z - Math.cos(run.rotationY) * run.depth / 2) * 1000, 0,
-    `living wall-${index}: the nudge keeps the back on the face`);
-  assert.equal(isPlacementContainedInRoom({
-    room: living, position: [run.x, 0, run.z], rotationY: run.rotationY, dimensions: dims, canonicalModel: apartmentModel,
-  }), false, `living wall-${index}: furniture as large would be into the wall`);
-});
-
-// Angled corners: a run on a straight wall next to an obtuse corner is inside the faces as Fit places it, so it stays put.
-// The furniture clamp grew its box by half the wall and moved runs 166–800 mm off their walls.
-const angledRoom = (planPolygon: Array<{ x: number; z: number }>) => ({
-  ...createRoom("angled", "Angled", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }),
-  planShape: "custom_polygon" as const, planPolygon,
+const runsOf = (room: RoomSnapshot) =>
+  buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).map((space) => placeFittedRun(room, space));
+const containedAt = (room: RoomSnapshot, run: FittedRun, x = run.x, z = run.z, rotationY = run.rotationY, builtIn = true) =>
+  isPlacementContainedInRoom({ room, position: [x, 0, z], rotationY, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 }, builtIn });
+/** A move as the inspector makes one: clamped from where the run stands, then checked as the move is. */
+function moveRun(room: RoomSnapshot, run: FittedRun, dx: number, dz: number) {
+  const [x, z] = clampBuiltInToRoom(room, run.x + dx, run.z + dz, run.width, run.depth, run.rotationY, { from: [run.x, run.z] });
+  return { x, z, contained: containedAt(room, run, x, z) };
+}
+/** How far a point stands from the line through `start` and `end`. */
+const distanceFromLine = (point: { x: number; z: number }, start: { x: number; z: number }, end: { x: number; z: number }) =>
+  Math.abs((end.x - start.x) * (point.z - start.z) - (end.z - start.z) * (point.x - start.x)) / Math.hypot(end.x - start.x, end.z - start.z);
+/** The middle of the run's back, which stands on its wall's face. */
+const backMiddle = (run: FittedRun) => ({ x: run.x - Math.sin(run.rotationY) * run.depth / 2, z: run.z - Math.cos(run.rotationY) * run.depth / 2 });
+const drawnRoom = (planPolygon: Array<{ x: number; z: number }>, extra: Partial<RoomSnapshot> = {}) => ({
+  ...createRoom("drawn", "Drawn", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }),
+  planShape: "custom_polygon" as const, planPolygon, ...extra,
 }) as RoomSnapshot;
+
+// Angled corners: a run on a straight wall next to an obtuse corner is inside the faces as Fit places it, so it stays put and
+// moves. The furniture clamp grew its box by half the wall and moved runs 166–800 mm off their walls.
 for (const [label, outline] of [
   ["a 120° corner", [{ x: -2, z: -1.5 }, { x: 1.134, z: -1.5 }, { x: 2, z: 0 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]],
   ["a 0.3 m chamfer", [{ x: -2, z: -1.5 }, { x: 1.7, z: -1.5 }, { x: 2, z: -1.2 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]],
   ["a 1 m chamfer", [{ x: -2, z: -1.5 }, { x: 1, z: -1.5 }, { x: 2, z: -0.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]],
+  // Under 90°, a run stands back from the corner by its depth's share (cot of the angle), so its front corner stays inside.
+  ["a 60° corner", [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2 - 3 / Math.tan(Math.PI / 3), z: 1.5 }, { x: -2, z: 1.5 }]],
+  ["a 45° corner", [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: -1, z: 1.5 }, { x: -2, z: 1.5 }]],
 ] as const) {
-  const room = angledRoom(outline.map((point) => ({ ...point })));
-  buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: [] })
-    .filter((space) => space.wallId !== "wall-1")
-    .forEach((space) => {
-      const run = placeFittedRun(room, space);
-      nearMm(Math.hypot(run.x - run.fitX, run.z - run.fitZ) * 1000, 0, `${label}, ${space.wallId}: the run stays where Fit put it`);
-      assert.equal(isPlacementContainedInRoom({
-        room, position: [run.x, 0, run.z], rotationY: run.rotationY, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 }, builtIn: true,
-      }), true, `${label}, ${space.wallId}: and is inside`);
-    });
+  const room = drawnRoom(outline.map((point) => ({ ...point })));
+  for (const run of runsOf(room)) {
+    const wall = run.space.wallId;
+    nearMm(Math.hypot(run.x - run.fitX, run.z - run.fitZ) * 1000, 0, `${label}, ${wall}: the run stays where Fit put it`);
+    assert.equal(containedAt(room, run), true, `${label}, ${wall}: and is inside`);
+    const index = Number(String(wall).replace("wall-", ""));
+    nearMm(distanceFromLine(backMiddle(run), outline[index], outline[(index + 1) % outline.length]) * 1000, 60, `${label}, ${wall}: its back on the face`);
+    const along = { x: Math.cos(run.rotationY), z: -Math.sin(run.rotationY) };
+    for (const step of [0.01, -0.01, 0.2]) {
+      assert.equal(moveRun(room, run, along.x * step, along.z * step).contained, true, `${label}, ${wall}: a ${step * 1000} mm move along is kept`);
+    }
+  }
 }
+const acute = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2 - 3 / Math.tan(Math.PI / 3), z: 1.5 }, { x: -2, z: 1.5 }]);
+const [acuteNorth] = buildCabinetryAvailableSpaces({ activeRoom: acute, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+const acuteSegments = getCabinetAvailableSegments(acuteNorth, 870, 0, 580);
+nearMm(acuteSegments[0].endMm, acuteNorth.availableWidthMm / 2 - 10 - 580 / Math.tan(Math.PI / 3),
+  "a 580 mm deep run stops 335 mm more before a 60° corner, where Fit and the Space step's usable length agree");
+
+// Two edges running straight on with different panels: each face stands at its own depth, and they step at the joint.
+const split = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0, z: 1.5 }, { x: -2, z: 1.5 }], {
+  surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { "wall-2": { materialId: "greenlam-woodgrains-5394", panelBacking: { board: "mdf", boardThicknessMm: 18, fixing: "battens" } } } } },
+});
+const splitRuns = runsOf(split);
+const [panelled, bare] = ["wall-2", "wall-3"].map((wall) => splitRuns.find((run) => run.space.wallId === wall)!);
+nearMm(panelled.space.wallSegment!.startZmm, panelled.space.wallSegment!.endZmm, "the panelled piece's face is straight");
+nearMm(panelled.space.wallSegment!.startZmm, 1500 - 60 - 44, "on its panel");
+nearMm(bare.space.wallSegment!.startZmm, 1500 - 60, "the bare piece's face is its own");
+splitRuns.forEach((run) => {
+  nearMm(Math.hypot(run.x - run.fitX, run.z - run.fitZ) * 1000, 0, `split ${run.space.wallId}: the run stays where Fit put it`);
+  assert.equal(containedAt(split, run), true, `split ${run.space.wallId}: and is inside`);
+});
+
+// Moves that stop at a face are kept: into the wall it stays, along past its end it stops at the end allowance's limit.
+const [rectNorth] = runsOf(createRoom("rect", "Rect", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }));
+const rect = createRoom("rect", "Rect", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 });
+const intoWall = moveRun(rect, rectNorth, 0, -0.01);
+assert.equal(intoWall.contained, true, "a nudge into the wall is kept");
+assert.ok(Math.abs(intoWall.z - rectNorth.z) < 0.0001, "and leaves the run on the face, within 0.1 mm");
+const pastEnd = moveRun(rect, rectNorth, 0.05, 0);
+assert.equal(pastEnd.contained, true, "a nudge past the end is kept");
+assert.ok(Math.abs((pastEnd.x - rectNorth.x) * 1000 - 10) < 0.1, "and goes as far as the face, 10 mm (within 0.1 mm)");
+// Snap to wall: to the nearest face, here the panelled one.
+const panelledRoom = { ...rect, surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { north: { materialId: "greenlam-woodgrains-5394", panelBacking: { board: "mdf", boardThicknessMm: 18, fixing: "battens" } } } } } } as RoomSnapshot;
+const [snapX, snapZ] = getBuiltInSnapTarget(panelledRoom, [0, 0, -1], 0.6, 0.58, 0);
+nearMm((snapZ - 0.29) * 1000, -1500 + 60 + 44, "snaps its back onto the north panel's face");
+nearMm(snapX, 0, "without moving along");
+
+// Place as copy: 15 cm along its wall from the fitted run, as far as it still fits. An L-shape's walls have no compass name; a
+// copy moved 15 cm in x and z and stopped as soon as that line met a wall.
+const lShape = { ...createRoom("l", "L", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }), planShape: "l_shape" as const };
+buildCabinetryAvailableSpaces({ activeRoom: lShape, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).forEach((space) => {
+  const fitted = fitCabinetToSpace(createCabinetPreset("base", `copy-${space.id}`), space, { mode: "fit_width" });
+  const at = getCabinetFitPlacement(fitted.definition, 4, 3)!;
+  // A 600 mm module in the run's middle, so there is room along the wall.
+  const [offsetX, offsetZ] = getCabinetCopyOffset(space);
+  const [copyX, copyZ] = clampBuiltInToRoom(lShape, at.position[0] + offsetX, at.position[2] + offsetZ, 0.6, 0.58, at.rotationY, { from: [at.position[0], at.position[2]] });
+  nearMm(Math.hypot(copyX - at.position[0], copyZ - at.position[2]) * 1000, 150, `L ${space.wallId}: the copy moves 15 cm along its wall`);
+  const along = (copyX - at.position[0]) * Math.cos(at.rotationY) - (copyZ - at.position[2]) * Math.sin(at.rotationY);
+  nearMm(Math.abs(along) * 1000, 150, `L ${space.wallId}: and none of it off the wall`);
+});
 
 // A nib narrower than its walls: an outward one 100 mm wide between 120 mm walls has no faces of its own (its sides' faces lie
 // inside each other's wall); an inward pilaster's sides are real faces.
-const nibRoom = angledRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0.05, z: 1.5 }, { x: 0.05, z: 1.6 }, { x: -0.05, z: 1.6 }, { x: -0.05, z: 1.5 }, { x: -2, z: 1.5 }]);
+const nibRoom = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0.05, z: 1.5 }, { x: 0.05, z: 1.6 }, { x: -0.05, z: 1.6 }, { x: -0.05, z: 1.5 }, { x: -2, z: 1.5 }]);
 assert.deepEqual(buildCabinetryAvailableSpaces({ activeRoom: nibRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).map((space) => space.wallId),
   ["wall-0", "wall-1", "wall-2", "wall-6", "wall-7"], "the nib's three walls aren't offered");
-const pilasterRoom = angledRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0.05, z: 1.5 }, { x: 0.05, z: 1.4 }, { x: -0.05, z: 1.4 }, { x: -0.05, z: 1.5 }, { x: -2, z: 1.5 }]);
+const pilasterRoom = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0.05, z: 1.5 }, { x: 0.05, z: 1.4 }, { x: -0.05, z: 1.4 }, { x: -0.05, z: 1.5 }, { x: -2, z: 1.5 }]);
 assert.equal(buildCabinetryAvailableSpaces({ activeRoom: pilasterRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).length, 8,
   "a pilaster's sides and front are faces");
 
 // A recorded baseboard: the back stands off the face by it, and the ends keep the 10 mm allowance from the end walls' baseboards.
 const baseboardRoom = createRoom("baseboard", "Baseboard", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 });
 baseboardRoom.geometry.baseboardDepth = 0.015;
-const [baseboardNorth] = buildCabinetryAvailableSpaces({ activeRoom: baseboardRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
-const baseboardRun = placeFittedRun(baseboardRoom, baseboardNorth);
+const [baseboardRun] = runsOf(baseboardRoom);
 nearMm((baseboardRun.x - baseboardRun.width / 2 - (-2 + 0.06)) * 1000, 15 + 10, "10 mm from the west wall's baseboard");
 nearMm(((2 - 0.06) - (baseboardRun.x + baseboardRun.width / 2)) * 1000, 15 + 10, "10 mm from the east wall's baseboard");
-nearMm(backOffset(baseboardRun, 0, -1.5 + 0.06) * 1000, 15, "its back against the north wall's baseboard");
+nearMm((backMiddle(baseboardRun).z - (-1.5 + 0.06)) * 1000, 15, "its back against the north wall's baseboard");
+
+// An imported plan's rooms keep the line's rule for now: their walls each have their own thickness (the apartment's are 200 mm,
+// 100 mm between its rooms), which the room doesn't carry (175 mm, their average), and they can be angled or curved. Hosts on
+// the outline a whole average wall plus 10 mm off each end, and furniture's clamp and containment; moves are kept.
+const living = canonicalFloorPlanToDesignSnapshot(authoredApartment()).snapshot.rooms.find((room) => room.id === "living")!;
+assert.equal(living.geometry.wallThickness, 0.175, "the fixture's living room carries its walls' average");
+const livingSpaces = buildCabinetryAvailableSpaces({ activeRoom: living, activePlanRoom: null, planRoomCount: 2, planOpenings: [] });
+assert.deepEqual(livingSpaces.map((space) => [Math.round(space.availableWidthMm), space.installationClearanceLeftMm]),
+  [[4000, 185], [6000, 185], [4000, 185], [6000, 185]], "the line's hosts");
+const livingModel = compileCanonicalFloorPlanRenderModel(authoredApartment());
+livingSpaces.map((space) => placeFittedRun(living, space)).forEach((run) => {
+  const dims = { w: run.width * 1000, d: run.depth * 1000, h: 870 };
+  const check = (x: number, z: number, builtIn: boolean) => isPlacementContainedInRoom({
+    room: living, position: [x, 0, z], rotationY: run.rotationY, dimensions: dims, canonicalModel: livingModel, builtIn,
+  });
+  assert.equal(check(run.x, run.z, true), true, `living ${run.space.wallId}: a fitted run is inside, by furniture's rule`);
+  assert.equal(check(run.x, run.z, true), check(run.x, run.z, false), `living ${run.space.wallId}: the same as furniture's`);
+  const along = { x: Math.cos(run.rotationY) * 0.01, z: -Math.sin(run.rotationY) * 0.01 };
+  const [nudgedX, nudgedZ] = clampBuiltInToRoom(living, run.x + along.x, run.z + along.z, run.width, run.depth, run.rotationY, { from: [run.x, run.z] });
+  assert.equal(check(nudgedX, nudgedZ, true), true, `living ${run.space.wallId}: still inside after a 10 mm nudge`);
+});
 
 console.log("Cabinet polygon host and placement tests passed.");

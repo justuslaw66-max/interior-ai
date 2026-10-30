@@ -19,7 +19,7 @@ import type { DesignItem, RoomSnapshot } from "@/lib/room-types";
 import { compileCanonicalFloorPlanRenderModel, type CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
-import { BUILT_IN_CONTACT_TOLERANCE, builtInFootprintFits, getRoomBuiltInFaces } from "@/lib/room-built-in-faces";
+import { builtInFootprintFits, getRoomBuiltInFaces, isImportedPlanRoom } from "@/lib/room-built-in-faces";
 
 type PlacementDimensions = Pick<DimensionsMm, "w" | "d"> & Partial<Pick<DimensionsMm, "h">>;
 type ExcludedPlacementItems = string | string[] | undefined;
@@ -161,24 +161,6 @@ export function findPlacementBlockerInRoom({
   });
 }
 
-/**
- * A built-in inside its room's finished faces, by its real (turned) footprint (lib/room-built-in-faces.ts), and in an imported
- * plan clear of the plan's walls; it may touch a face, which the walls' footprint test would count as a hit.
- */
-function isBuiltInPlacementContained(
-  room: RoomSnapshot,
-  position: [number, number, number],
-  rotationY: number,
-  dimensions: PlacementDimensions,
-  canonicalModel?: CanonicalFloorPlanRenderModel
-): boolean {
-  const toleranceMm = BUILT_IN_CONTACT_TOLERANCE * 1000;
-  const inner = { ...dimensions, w: Math.max(0, dimensions.w - 2 * toleranceMm), d: Math.max(0, dimensions.d - 2 * toleranceMm) };
-  if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, inner)) return false;
-  const faces = getRoomBuiltInFaces(room, canonicalModel);
-  return builtInFootprintFits(faces, position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY);
-}
-
 export function isPlacementContainedInRoom({
   room,
   position,
@@ -196,7 +178,11 @@ export function isPlacementContainedInRoom({
   canonicalModel?: CanonicalFloorPlanRenderModel;
   builtIn?: boolean;
 }): boolean {
-  if (builtIn) return isBuiltInPlacementContained(room, position, rotationY, dimensions, canonicalModel);
+  // A built-in may stand against the finished face, by its real (turned) footprint; an imported plan's rooms keep furniture's
+  // rule for now (lib/room-built-in-faces.ts).
+  if (builtIn && !isImportedPlanRoom(room)) {
+    return builtInFootprintFits(getRoomBuiltInFaces(room), position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY);
+  }
   if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   // Inside the room's laminate panels (lib/room-finished-outline.ts).
   const outline = getRoomOutlineInsideFinishes({

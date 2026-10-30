@@ -12,8 +12,8 @@ import {
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
-import { getRotatedFootprint, snapRotationRadians } from "@/lib/design-page-utils";
-import { getBuiltInWallInset } from "@/lib/room-finished-outline";
+import { snapRotationRadians } from "@/lib/design-page-utils";
+import { clampBuiltInToRoom, getBuiltInSnapTarget } from "@/lib/room-built-in-faces";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { getActiveRoom } from "@/lib/room-types";
 import type {
@@ -36,7 +36,7 @@ import {
   updateCabinetPlacementMetadata,
 } from "./designItemAdapters";
 import { getCabinetFitPlacement } from "./fitToSpace";
-import { buildCabinetryAvailableSpaces, clampBuiltInToRoom } from "./roomCabinetHosts";
+import { buildCabinetryAvailableSpaces, getCabinetCopyOffset } from "./roomCabinetHosts";
 import { generateCabinetBOM } from "./generateCabinetBOM";
 import {
   buildCabinetProjectHandoffPackage,
@@ -120,9 +120,6 @@ export type DesignPageCabinetryConfiguration = {
   isDesigner: boolean;
   canEdit: boolean;
   designId: string | null;
-  roomWidth: number;
-  roomDepth: number;
-  wallThickness: number;
   rotationSnapEnabled: boolean;
   rotationSnapStepRadians: number;
 };
@@ -303,9 +300,6 @@ export function useDesignPageCabinetry({
     isDesigner,
     canEdit,
     designId,
-    roomWidth,
-    roomDepth,
-    wallThickness,
     rotationSnapEnabled,
     rotationSnapStepRadians,
   } = configuration;
@@ -401,10 +395,9 @@ export function useDesignPageCabinetry({
     };
   }, [assetStorage, designSnapshot.rooms, replaceActiveItemsSnapshot, setDesignSnapshot]);
 
-  const canonicalDocument = designSnapshot.floorPlan?.canonicalDocument;
   const availableSpaces = useMemo(
-    () => buildCabinetryAvailableSpaces({ activeRoom, activePlanRoom, planRoomCount, planOpenings, canonicalDocument }),
-    [activePlanRoom, activeRoom, canonicalDocument, planOpenings, planRoomCount]
+    () => buildCabinetryAvailableSpaces({ activeRoom, activePlanRoom, planRoomCount, planOpenings }),
+    [activePlanRoom, activeRoom, planOpenings, planRoomCount]
   );
   const preferredSpaceId =
     activeRoom &&
@@ -516,7 +509,7 @@ export function useDesignPageCabinetry({
             const rotationY = fitPlacement?.rotationY ?? getCabinetRotationY(item);
             const [safeX, safeZ] = fitPlacement
               ? clampBuiltInToRoom(targetRoom, fitPlacement.position[0], fitPlacement.position[2], definition.totalWidth / 1000,
-                  definition.depth / 1000, rotationY, { canonicalDocument: snapshot.floorPlan?.canonicalDocument })
+                  definition.depth / 1000, rotationY)
               : [item.position?.[0] ?? 0, item.position?.[2] ?? 0];
             const position: ItemPosition = fitPlacement
               ? [safeX, fitPlacement.position[1], safeZ]
@@ -675,21 +668,11 @@ export function useDesignPageCabinetry({
         room.geometry.depth
       );
       const placementRotationY = fitPlacement?.rotationY ?? 0;
-      const fitWall = payload.definition.fitState?.host.wall;
-      const copyOffsetX =
-        payload.placeAsCopy &&
-        (!fitWall || fitWall === "north" || fitWall === "south")
-          ? 0.15
-          : 0;
-      const copyOffsetZ =
-        payload.placeAsCopy &&
-        (fitWall === "east" || fitWall === "west" || !fitWall)
-          ? 0.15
-          : 0;
+      // A copy moves 15 cm along its wall from the fitted run, as far as it still fits.
+      const [copyOffsetX, copyOffsetZ] = payload.placeAsCopy ? getCabinetCopyOffset(payload.definition.fitState?.host) : [0, 0];
       const fitAt: [number, number] = [fitPlacement?.position[0] ?? 0, fitPlacement?.position[2] ?? 0];
       const [safeX, safeZ] = clampBuiltInToRoom(room, fitAt[0] + copyOffsetX, fitAt[1] + copyOffsetZ,
-        payload.definition.totalWidth / 1000, payload.definition.depth / 1000, placementRotationY,
-        { from: fitAt, canonicalDocument: snapshot.floorPlan?.canonicalDocument }); // A copy moves along from the fitted run.
+        payload.definition.totalWidth / 1000, payload.definition.depth / 1000, placementRotationY, { from: fitAt });
       const now = new Date().toISOString();
       const documentationSnapshot = generateCabinetDocumentation(payload.definition);
       const position: ItemPosition = [
@@ -740,6 +723,17 @@ export function useDesignPageCabinetry({
         qty: 1,
         includeInCheckout: false,
       };
+      // Placed over another item (a copy with no room beside its run, say), it is refused, as a move onto one is.
+      const placedBounds = getItemAABB(item);
+      const blocker = placedBounds && room.items.find((other) => {
+        const bounds = CATALOG_ITEMS[other.productId]?.category === "rug" ? null : getItemAABB(other);
+        return Boolean(bounds && aabbIntersects(placedBounds, bounds));
+      });
+      if (blocker) {
+        assetStorage.deleteGeneratedGlb({ glbAssetUrl });
+        showToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
+        return false;
+      }
 
       const nextItems = commitItemsToRoom(
         room.id,
@@ -778,6 +772,8 @@ export function useDesignPageCabinetry({
       commitItemsToRoom,
       createInstanceId,
       getDesignSnapshot,
+      getItemAABB,
+      getItemDisplayName,
       showToast,
       studio,
       updateCabinetItemDefinition,
@@ -818,7 +814,7 @@ export function useDesignPageCabinetry({
       if (!planningDimensionsMm) return;
       const rotationY = getCabinetRotationY(item);
       const [safeX, safeZ] = clampBuiltInToRoom(activeRoom, targetX, targetZ, planningDimensionsMm.w / 1000,
-        planningDimensionsMm.d / 1000, rotationY, { from: [item.position[0], item.position[2]], canonicalDocument });
+        planningDimensionsMm.d / 1000, rotationY, { from: [item.position[0], item.position[2]] });
       const nextPosition: ItemPosition = [
         safeX,
         item.position[1] ?? 0,
@@ -866,7 +862,6 @@ export function useDesignPageCabinetry({
     [
       activeRoom,
       canEdit,
-      canonicalDocument,
       commitItems,
       findSelectedPlacementBlocker,
       getItemDisplayName,
@@ -894,46 +889,15 @@ export function useDesignPageCabinetry({
   );
 
   const snapSelectedToWall = useCallback(() => {
-    if (!selected || !canEdit) return;
+    if (!selected || !activeRoom || !canEdit) return;
     if (isDesigner && selected.item.locked) return;
     const planningDimensionsMm = selected.planningDimensionsMm;
     if (!planningDimensionsMm) return;
-    const rotationY = getCabinetRotationY(selected.item);
-    const [effectiveWidth, effectiveDepth] = getRotatedFootprint(
-      planningDimensionsMm.w / 1000,
-      planningDimensionsMm.d / 1000,
-      rotationY
-    );
-    const wallInset = getBuiltInWallInset(wallThickness); // Built-ins snap against the face; the move stops at a panel.
-    const wallX = Math.max(0, roomWidth / 2 - wallInset - effectiveWidth / 2);
-    const wallZ = Math.max(0, roomDepth / 2 - wallInset - effectiveDepth / 2);
-    const candidates: Array<[number, number]> = [
-      [-wallX, selected.item.position[2]],
-      [wallX, selected.item.position[2]],
-      [selected.item.position[0], -wallZ],
-      [selected.item.position[0], wallZ],
-    ];
-    const [targetX, targetZ] = candidates.reduce((best, candidate) => {
-      const bestDistance = Math.hypot(
-        best[0] - selected.item.position[0],
-        best[1] - selected.item.position[2]
-      );
-      const candidateDistance = Math.hypot(
-        candidate[0] - selected.item.position[0],
-        candidate[1] - selected.item.position[2]
-      );
-      return candidateDistance < bestDistance ? candidate : best;
-    }, candidates[0]);
+    // The nearest side of the room's finished faces; the move stops at the first face it meets.
+    const [targetX, targetZ] = getBuiltInSnapTarget(activeRoom, selected.item.position,
+      planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, getCabinetRotationY(selected.item));
     moveSelectedToPosition(targetX, targetZ, "Snap built-in to wall");
-  }, [
-    canEdit,
-    isDesigner,
-    moveSelectedToPosition,
-    roomDepth,
-    roomWidth,
-    selected,
-    wallThickness,
-  ]);
+  }, [activeRoom, canEdit, isDesigner, moveSelectedToPosition, selected]);
 
   const setSelectedRotation = useCallback(
     (targetRotationY: number, actionLabel = "Rotate built-in") => {
@@ -945,7 +909,7 @@ export function useDesignPageCabinetry({
         ? snapRotationRadians(targetRotationY, rotationSnapStepRadians)
         : targetRotationY;
       const [safeX, safeZ] = clampBuiltInToRoom(activeRoom, selected.item.position[0], selected.item.position[2],
-        planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, resolvedRotationY, { canonicalDocument });
+        planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, resolvedRotationY);
       const nextPosition: ItemPosition = [
         safeX,
         selected.item.position[1] ?? 0,
@@ -993,7 +957,6 @@ export function useDesignPageCabinetry({
     [
       activeRoom,
       canEdit,
-      canonicalDocument,
       commitItems,
       findSelectedPlacementBlocker,
       getItemDisplayName,

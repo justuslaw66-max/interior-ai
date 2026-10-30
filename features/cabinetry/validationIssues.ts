@@ -290,7 +290,8 @@ function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIss
   const availableSegments = getCabinetAvailableSegments(
     fit.host,
     getCabinetOverallHeight(definition),
-    mountingHeightMm
+    mountingHeightMm,
+    getCabinetOverallDepth(definition)
   );
   const segmentStillAvailable = availableSegments.some(
     (segment) =>

@@ -11,7 +11,7 @@ import {
   isSurfaceOnlyCatalogItem,
 } from "@/lib/catalog-placement";
 import { evaluateConstraints, type ConstraintResult } from "@/lib/constraints/evaluate";
-import { aabbIntersects, getFurnitureWallInset, type AABB } from "@/lib/design-page-geometry";
+import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import {
   applyDesignItemTransformPatches,
@@ -20,8 +20,8 @@ import {
   type DesignItemTransformPatch,
 } from "@/lib/design-page-item-commands";
 import type { HistoryCommand, HistoryStatus } from "@/lib/historyManager";
-import { clampToRoomInsideFinishes, isBuiltInItem } from "@/lib/room-finished-outline";
-import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
+import { clampItemToRoom } from "@/lib/room-built-in-faces";
+import { isBuiltInItem } from "@/lib/room-finished-outline";
 import type {
   SceneItemDragEndContext,
   SceneItemMoveContext,
@@ -385,17 +385,9 @@ export function useDesignPageSceneItemDrag({
             : null;
           const [safeX, safeZ] = surfacePlacement
             ? [surfacePlacement.position[0], surfacePlacement.position[2]]
-            : clampToRoomInsideFinishes( // The target room's own shape and panels; clampToRoom is the active room's.
+            : clampItemToRoom(mover, targetRoom, // The target room's own shape and panels; clampToRoom is the active room's.
                 targetLocalPosition[0], targetLocalPosition[2],
-                configuredPlanningDims.w / 1000, configuredPlanningDims.d / 1000,
-                targetRoom.geometry.width, targetRoom.geometry.depth,
-                getFurnitureWallInset(targetRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness),
-                mover.rotationY ?? 0,
-                targetRoom.planShape,
-                targetRoom.planPolygon,
-                targetRoom.planHoles,
-                getRoomWallFinishDepths(targetRoom)
-              );
+                configuredPlanningDims.w / 1000, configuredPlanningDims.d / 1000, mover.rotationY ?? 0);
           const targetPosition: [number, number, number] = surfacePlacement
             ? surfacePlacement.position
             : [
@@ -422,7 +414,7 @@ export function useDesignPageSceneItemDrag({
             targetRoom,
             targetPosition,
             surfacePlacement?.rotationY ?? mover.rotationY ?? 0,
-            configuredPlanningDims
+            configuredPlanningDims, isBuiltInItem(mover)
           );
           setCrossRoomDragTarget({
             roomId: targetRoom.id,
