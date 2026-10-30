@@ -461,7 +461,9 @@ for (const [label, middleZ] of [["bent 2°", -1.5 + 2 * Math.tan(Math.PI / 90)],
     const hosts = buildCabinetryAvailableSpaces({ activeRoom: bent, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
     const pieces = ["wall-0", "wall-1"].map((wall) => hosts.find((space) => space.wallId === wall));
     pieces.forEach((piece, index) => {
-      assert.ok(piece && Math.abs(piece.availableWidthMm - 1940) < 6, `${label}, panel on ${panelled}: wall-${index} is offered, about 1940 mm (${piece?.availableWidthMm})`);
+      // Each wall's core runs on half the wall past the bend (as the 3D view draws it), so at an inward bend the other piece's
+      // face starts there, up to 60 mm further on.
+      assert.ok(piece && piece.availableWidthMm > 1870 && piece.availableWidthMm < 1946, `${label}, panel on ${panelled}: wall-${index} is offered, 1.88–1.94 m (${piece?.availableWidthMm})`);
     });
     const panelX = panelled === "wall-0" ? -1 : 1;
     const intoPanel = builtInFootprintFits(getRoomBuiltInFaces(bent), panelX, -1.42 + 0.29, 1, 0.58, 0);
@@ -473,7 +475,8 @@ for (const [label, middleZ] of [["bent 2°", -1.5 + 2 * Math.tan(Math.PI / 90)],
 // so it keeps the line's rule (its hosts, clamp and snap are furniture's, as an imported plan's are).
 const spiked = drawnRoom([{ x: -2, z: -1.5 }, { x: 0, z: -1.5 }, { x: 0, z: -2.5 }, { x: 0, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
 const spikedHosts = buildCabinetryAvailableSpaces({ activeRoom: spiked, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
-assert.deepEqual(spikedHosts.map((space) => space.wallId), ["wall-0", "wall-3", "wall-4", "wall-5", "wall-6"], "the spike's two edges aren't offered");
+assert.deepEqual(spikedHosts.map((space) => space.wallId), ["wall-0", "wall-4", "wall-5", "wall-6"], "the spike's two edges aren't offered, and the wall either side of it is one face, listed once");
+assert.equal(Math.round(spikedHosts[0].availableWidthMm), 3880, "the whole north wall's");
 assert.ok(getRoomBuiltInFaces(spiked).polygon.every((point) => point.z >= -1.44 - 1e-9), "and no face runs out along it");
 const tiny = drawnRoom([{ x: 0, z: 0 }, { x: 0.1, z: 0 }, { x: 0.05, z: 0.08 }]);
 const hostsOf = (room: RoomSnapshot) => buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
@@ -484,7 +487,7 @@ assert.deepEqual(hostsOf(tiny), hostsOf({ ...tiny, floorElevationMm: 0 }), "so i
 // own and the wall's face runs on across it; an inward pilaster's sides are real faces.
 const nibRoom = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0.05, z: 1.5 }, { x: 0.05, z: 1.6 }, { x: -0.05, z: 1.6 }, { x: -0.05, z: 1.5 }, { x: -2, z: 1.5 }]);
 assert.deepEqual(buildCabinetryAvailableSpaces({ activeRoom: nibRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).map((space) => space.wallId),
-  ["wall-0", "wall-1", "wall-2", "wall-6", "wall-7"], "the nib's three walls aren't offered");
+  ["wall-0", "wall-1", "wall-2", "wall-7"], "the nib's three walls aren't offered, and the south wall either side of it is one face, listed once");
 const pilasterRoom = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0.05, z: 1.5 }, { x: 0.05, z: 1.4 }, { x: -0.05, z: 1.4 }, { x: -0.05, z: 1.5 }, { x: -2, z: 1.5 }]);
 assert.equal(buildCabinetryAvailableSpaces({ activeRoom: pilasterRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).length, 8,
   "a pilaster's sides and front are faces");
@@ -503,7 +506,8 @@ const hungWidth = fitCabinetToSpace(createCabinetPreset("wall", "hung"), { ...ba
 nearMm((hung.position[0] - hungWidth / 2 - (-2 + 0.06)) * 1000, 10, "wall cabinets: 10 mm from the west wall's face");
 
 // A run made deeper after Fit: flagged only where Fit put it at a corner under 90°, not for a run far along the wall, and only
-// once its front corner would cross the slanted wall (a 60° corner leaves it 10 mm, about 17 mm of depth).
+// once its front corner would cross the slanted wall (10 mm off it at a 60° corner: about 20 mm deeper, 10 mm over cos 60°,
+// plus the 1 mm holdsRun allows).
 const tooDeep = (definition: CabinetDefinition) =>
   validateCabinetDefinition(definition).issues.some((issue) => issue.code === "fit.corner_depth");
 const deeperBy = (definition: CabinetDefinition, mm: number) =>
@@ -516,6 +520,52 @@ const shortRun = fitCabinetToSpace(createCabinetPreset("base", "corner-short"), 
 assert.equal(tooDeep(deeperBy(shortRun, 40)), false, "a run fitted by height only stands far from the corner: deeper, it is still fine");
 const narrowed = resizeCabinetToOverallWidth(setCabinetOverallWidthLocked(cornerRun, false), cornerRun.totalWidth - 600).definition;
 assert.equal(tooDeep(deeperBy(narrowed, 40)), false, "nor is a full run narrowed by 60 cm and then deepened");
+
+// A straight wall drawn in two pieces is one face, listed once, with the doors of both pieces on it.
+const twoPiece = drawnRoom([{ x: -2, z: -1.5 }, { x: 0, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
+for (const doorX of [-1, 1]) {
+  const door = { id: "door", roomId: twoPiece.id, wall: "north" as const, kind: "door" as const, offsetMm: doorX * 1000, widthMm: 800, heightMm: 2100, bottomMm: 0 };
+  const hosts = buildCabinetryAvailableSpaces({ activeRoom: twoPiece, activePlanRoom: null, planRoomCount: 1, planOpenings: [door] });
+  const north = hosts.filter((space) => space.wallId === "wall-0" || space.wallId === "wall-1");
+  assert.equal(north.length, 1, `door at x ${doorX} m: the north face is listed once`);
+  assert.deepEqual(north[0].openings.map((opening) => [Math.round(opening.offsetMm), opening.widthMm]), [[doorX * 1000, 800]], `door at x ${doorX} m: on its host`);
+  const run = placeFittedRun(twoPiece, north[0]);
+  assert.ok(run.x + run.width / 2 <= doorX - 0.4 + 1e-9 || run.x - run.width / 2 >= doorX + 0.4 - 1e-9, `door at x ${doorX} m: the run stays off it`);
+  nearMm(run.width * 1000, 2530, `door at x ${doorX} m: and fills the longer side`);
+}
+
+// A rectangle's hosts are its faces' lines, whatever a column in a corner does to the faces' outline; runs keep 10 mm off it.
+const square = (x: number, z: number) => [{ x, z }, { x: x + 0.3, z }, { x: x + 0.3, z: z + 0.3 }, { x, z: z + 0.3 }];
+for (const [corner, column] of [["north-west", square(-1.94, -1.44)], ["south-east", square(1.64, 1.14)]] as const) {
+  const columned = { ...rect, planHoles: [column] } as RoomSnapshot;
+  const runs = runsOf(columned);
+  assert.deepEqual(runs.map((run) => [run.space.wall, Math.round(run.space.availableWidthMm)]), [["north", 3880], ["east", 2880], ["south", 3880], ["west", 2880]], `${corner} column: the four faces`);
+  const ends = runs.map((run) => [-1, 1].map((side) => Math.round((run.rotationY % Math.PI === 0 ? run.x + side * Math.cos(run.rotationY) * run.width / 2 : run.z - side * Math.sin(run.rotationY) * run.width / 2) * 1000)).sort((a, b) => a - b));
+  assert.deepEqual(ends, corner === "north-west" ? [[-1630, 1930], [-1430, 1430], [-1930, 1930], [-1130, 1430]] : [[-1930, 1930], [-1430, 1130], [-1930, 1630], [-1430, 1430]], `${corner} column: runs 10 mm off it and the walls`);
+}
+
+// A narrow room: its runs' ends keep the allowance, not their fronts, which may stand up to the wall across (585 mm away).
+for (const narrow of [createRoom("narrow", "Narrow", "kitchen", { width: 3, depth: 0.705, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }),
+  drawnRoom([{ x: -1.5, z: -0.3525 }, { x: 1.5, z: -0.3525 }, { x: 1.5, z: 0.3525 }, { x: -1.5, z: 0.3525 }], { geometry: { width: 3, depth: 0.705, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 } })]) {
+  const north = buildCabinetryAvailableSpaces({ activeRoom: narrow, activePlanRoom: null, planRoomCount: 1, planOpenings: [] })[0];
+  for (const preset of ["base", "wall"] as const) {
+    const definition = fitOn(preset === "wall" ? { ...north, mountingHeightMm: 1450 } : north, preset);
+    assert.equal(definition.totalWidth, 2860, `${narrow.planShape ?? "rectangle"}, ${preset}: fills the wall`);
+  }
+}
+
+// A face ends where a solid stands in front of it even when that solid is lower than a run's raised back (a bend's corner under
+// a run on a 20 mm baseboard): the run keeps the allowance from the face's end, 10 mm up on the wall and 30 mm on the floor.
+const bentIn = drawnRoom([{ x: -1.15, z: -2.11 }, { x: 0.06, z: -1.975 }, { x: 1.15, z: -2.11 }, { x: 1.15, z: 2.11 }, { x: -1.15, z: 2.11 }],
+  { geometry: { width: 2.3, depth: 4.22, wallThickness: 0.08, height: 2.6, slabThickness: 0.1, baseboardDepth: 0.02 } });
+const bentFace = getRoomBuiltInFaces(bentIn).exposed[1]!;
+const bentHost = buildCabinetryAvailableSpaces({ activeRoom: bentIn, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).find((space) => space.wallId === "wall-1")!;
+for (const [preset, allowanceMm] of [["wall", 10], ["base", 30]] as const) {
+  const definition = fitOn(preset === "wall" ? { ...bentHost, mountingHeightMm: 1450 } : bentHost, preset), run = placed(bentIn, definition);
+  const along = (run.position[0] - bentFace.start.x) * Math.cos(run.rotationY) - (run.position[2] - bentFace.start.z) * Math.sin(run.rotationY);
+  nearHalfMm(along * 1000 - definition.totalWidth / 2, allowanceMm, `${preset} run at the bend: its start from the face's end`);
+  assert.equal(run.inside, true, `${preset} run at the bend: inside`);
+}
 
 // An imported plan's rooms keep the line's rule for now: their walls each have their own thickness (the apartment's are 200 mm,
 // 100 mm between its rooms), which the room doesn't carry (175 mm, their average), and they can be angled or curved. Hosts on

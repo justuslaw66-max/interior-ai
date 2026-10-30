@@ -3,18 +3,23 @@ import type { RoomPlanPolygonPoint } from "@/lib/room-types";
 
 /**
  * A drawn room's finished region (J, 29 Oct 2026: "Face, back flush"), where its built-ins stand: inside its outline (the
- * walls' centre line), outside its columns, and outside every wall's solid. A wall's solid is its band, from its centre line
- * to its face (half the wall, and its laminate panel) along its edge, and the corners as the 3D view joins its walls
- * (components/editor/renderers/house-plan-3d/geometry.ts): where two walls turn away from the room, their faces run on to meet
- * where their lines cross, within a wall's thickness of the corner (legacyWallSurfaceMiterOffset); where a wall runs straight
- * back along the last (a spike, a stub's tip), it runs on half its thickness past the end (legacyWallPartRegion). A wall's
- * exposed face is where a run can stand with its back against it; what a run there keeps clear of is every solid in front.
+ * walls' centre line), outside its columns, and outside its walls as the 3D view draws them
+ * (components/editor/renderers/house-plan-3d/geometry.ts): each wall's core, its thickness wide along its edge and run on half
+ * its thickness past each end (legacyWallPartRegion), and each laminate panel, from the wall's face its finish depth into the
+ * room, ended where the 3D view joins it to the next wall (legacyWallSurfaceMiterOffset). A wall's face is half the wall and
+ * its panel in from its edge; where it is exposed, a run can stand with its back against it, keeping clear of every solid it
+ * would meet along the face.
  */
 
 type Point = RoomPlanPolygonPoint;
 
-/** A wall, room-local metres: its start, direction, normal towards its room, length and how deep its face stands. */
-export type RegionWall = { start: Point; dx: number; dz: number; nx: number; nz: number; length: number; face: number };
+/**
+ * A wall as the 3D view draws it, room-local metres: its start, direction (east for an edge with no length, as the 3D view's
+ * is), normal towards its room, length, panel depth, how deep its face stands, and its face id (which orders its panel joins).
+ */
+export type RegionWall = {
+  start: Point; dx: number; dz: number; nx: number; nz: number; length: number; panel: number; face: number; faceId: string;
+};
 
 /** A wall's exposed face. */
 export type BuiltInFaceHost = {
@@ -22,8 +27,8 @@ export type BuiltInFaceHost = {
   start: Point;
   end: Point;
   /**
-   * What a run against it keeps clear of: the walls' solids and the room's columns, cut to the room's side of the face, as
-   * convex outlines of [along the face, into the room] mm about the face's middle.
+   * What a run against it keeps clear of: the walls' solids and the room's columns, cut to the room's side of the face, and
+   * its two ends, as convex outlines of [along the face, into the room] mm about the face's middle.
    */
   obstacles: Array<Array<[number, number]>>;
 };
@@ -32,12 +37,14 @@ export type BuiltInRegion = {
   outline: Point[];
   holes: Point[][];
   walls: RegionWall[];
-  /** The walls' bands and corners, convex outlines, room-local metres. */
+  /** The walls' cores and panels, convex outlines, room-local metres. */
   solids: Point[][];
   /** Each wall's exposed face, or null where none is (a wall inside another, or with no length). */
   exposed: Array<BuiltInFaceHost | null>;
 };
 
+/** How near two wall ends meet to join, as the 3D view joins them (LEGACY_WALL_JOIN_TOLERANCE_METERS). */
+const JOIN_TOLERANCE = 0.002;
 /** Two walls this near parallel (the cross of their directions) join square, as the 3D view joins them (intersectOffsetLines). */
 const PARALLEL_CROSS = 0.00001;
 /** Solids are cut this far (mm) in front of a face: one flush with it (the next stretch of a straight wall) stays behind it. */
@@ -65,83 +72,52 @@ function signedArea(points: readonly Point[]): number {
   }, 0) / 2;
 }
 
-/** The outline's edges with a length as walls, the room on the side its winding puts it (getOutlineInteriorSide). */
-function buildWalls(outline: readonly Point[], faces: readonly number[]): RegionWall[] {
+/** Every edge of the outline as a wall, the room on the side its winding puts it (getWallSegments, getOutlineInteriorSide). */
+function buildWalls(outline: readonly Point[], faceIds: readonly string[], panels: readonly number[], thickness: number): RegionWall[] {
   const sign = signedArea(outline) >= 0 ? 1 : -1;
-  return outline.flatMap((start, index) => {
+  return outline.map((start, index) => {
     const next = outline[(index + 1) % outline.length];
     const length = Math.hypot(next.x - start.x, next.z - start.z);
-    if (!(length > 1e-9)) return [];
-    const dx = (next.x - start.x) / length, dz = (next.z - start.z) / length;
-    return [{ start, dx, dz, nx: -dz * sign, nz: dx * sign, length, face: faces[index] ?? 0 }];
+    const [dx, dz] = length > 0 ? [(next.x - start.x) / length, (next.z - start.z) / length] : [1, 0];
+    const panel = panels[index] ?? 0;
+    return { start, dx, dz, nx: -dz * sign, nz: dx * sign, length, panel, face: thickness / 2 + panel, faceId: faceIds[index] ?? "" };
   });
 }
 
-/** A half-plane: the points p with (p − origin)·(ax, az) ≥ offset. */
-type HalfPlane = { origin: Point; ax: number; az: number; offset: number };
+const at = (wall: RegionWall, along: number, across: number): Point =>
+  ({ x: wall.start.x + wall.dx * along + wall.nx * across, z: wall.start.z + wall.dz * along + wall.nz * across });
 
-/** The convex polygon cut to a half-plane (Sutherland–Hodgman). */
-function clipToHalfPlane(points: readonly Point[], { origin, ax, az, offset }: HalfPlane): Point[] {
-  const value = (point: Point) => (point.x - origin.x) * ax + (point.z - origin.z) * az - offset;
-  const output: Point[] = [];
-  points.forEach((point, index) => {
-    const next = points[(index + 1) % points.length];
-    const here = value(point), there = value(next);
-    if (here >= 0) output.push(point);
-    if ((here >= 0) !== (there >= 0)) {
-      const t = here / (here - there);
-      output.push({ x: point.x + (next.x - point.x) * t, z: point.z + (next.z - point.z) * t });
-    }
-  });
-  return output;
-}
-
-/** The part of a square about `origin` inside every half-plane. */
-function intersectHalfPlanes(origin: Point, size: number, planes: HalfPlane[]): Point[] {
-  const square = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, z]) => ({ x: origin.x + x * size, z: origin.z + z * size }));
-  return planes.reduce<Point[]>((points, plane) => (points.length ? clipToHalfPlane(points, plane) : points), square);
-}
-
-const hasArea = (points: readonly Point[]) => points.length >= 3 && Math.abs(signedArea(points)) > 1e-12;
-
-/** The bands, from each wall's centre line to its face along its edge. */
-function buildBands(walls: readonly RegionWall[]): Point[][] {
-  return walls.map(({ start, dx, dz, nx, nz, length, face }) => {
-    const end = { x: start.x + dx * length, z: start.z + dz * length };
-    return [start, end, { x: end.x + nx * face, z: end.z + nz * face }, { x: start.x + nx * face, z: start.z + nz * face }];
-  });
+/**
+ * Where a wall's panel ends at one end (`end` 0 its start, 1 its end), along the wall from its start: where its face meets the
+ * next wall's face, or that wall's panel when this wall's id sorts later; within a wall's thickness of the corner
+ * (legacyWallSurfaceMiterOffset).
+ */
+function panelEndAlong(walls: readonly RegionWall[], index: number, end: 0 | 1, thickness: number): number {
+  const wall = walls[index], endpoint = end * wall.length, target = at(wall, endpoint, 0);
+  const near = (point: Point) => Math.hypot(point.x - target.x, point.z - target.z) <= JOIN_TOLERANCE;
+  const adjacent = walls.find((other, otherIndex) => otherIndex !== index && (near(other.start) || near(at(other, other.length, 0))));
+  if (!adjacent) return endpoint;
+  const cross = wall.dx * adjacent.dz - wall.dz * adjacent.dx;
+  if (Math.abs(cross) < PARALLEL_CROSS) return endpoint;
+  const adjacentFace = thickness / 2 + (wall.faceId > adjacent.faceId ? adjacent.panel : 0);
+  const first = at(wall, 0, thickness / 2), second = at(adjacent, 0, adjacentFace);
+  const along = ((second.x - first.x) * adjacent.dz - (second.z - first.z) * adjacent.dx) / cross;
+  return Math.min(endpoint + thickness, Math.max(endpoint - thickness, along));
 }
 
 /**
- * The corner where wall `before` ends and wall `after` starts, at `corner`: where the walls turn away from the room, the
- * stretch past both their ends and inside both their faces, within `thickness` of the corner along each; where the second runs
- * straight back along the first, each runs on half `thickness`, half the wall thick.
+ * The walls' cores (run on half the wall past each end) and their panels' boxes, as the 3D view draws them: a wall no longer
+ * than the join tolerance has neither (getWallSolidSpans).
  */
-function buildCorner(corner: Point, before: RegionWall, after: RegionWall, thickness: number): Point[][] {
-  const plane = (ax: number, az: number, offset: number): HalfPlane => ({ origin: corner, ax, az, offset });
-  const cross = before.dx * after.dz - before.dz * after.dx;
-  if (Math.abs(cross) < PARALLEL_CROSS) {
-    if (before.dx * after.dx + before.dz * after.dz > 0) return [];
-    const half = thickness / 2, ends: Array<[RegionWall, number]> = [[before, 1], [after, -1]];
-    return ends.map(([wall, way]) => intersectHalfPlanes(corner, 2 * thickness, [
-      plane(wall.dx * way, wall.dz * way, 0), plane(-wall.dx * way, -wall.dz * way, -half), plane(wall.nx, wall.nz, 0), plane(-wall.nx, -wall.nz, -half),
-    ])).filter(hasArea);
-  }
-  const block = intersectHalfPlanes(corner, 2 * (thickness + before.face + after.face), [
-    plane(before.dx, before.dz, 0), plane(-before.dx, -before.dz, -thickness),
-    plane(-after.dx, -after.dz, 0), plane(after.dx, after.dz, -thickness),
-    plane(before.nx, before.nz, 0), plane(-before.nx, -before.nz, -before.face),
-    plane(after.nx, after.nz, 0), plane(-after.nx, -after.nz, -after.face),
-  ]);
-  return hasArea(block) ? [block] : [];
-}
-
 function buildSolids(walls: readonly RegionWall[], thickness: number): Point[][] {
-  const corners = walls.flatMap((wall, index) => {
-    const next = walls[(index + 1) % walls.length];
-    return buildCorner({ x: next.start.x, z: next.start.z }, wall, next, thickness);
+  const half = thickness / 2, drawn = (wall: RegionWall) => wall.length > JOIN_TOLERANCE;
+  const cores = walls.filter(drawn).map((wall) => [at(wall, -half, -half), at(wall, wall.length + half, -half), at(wall, wall.length + half, half), at(wall, -half, half)]);
+  const panels = walls.flatMap((wall, index) => {
+    if (!(wall.panel > 0) || !drawn(wall)) return [];
+    const from = panelEndAlong(walls, index, 0, thickness), to = from + Math.max(0.001, panelEndAlong(walls, index, 1, thickness) - from);
+    return [[at(wall, from, half), at(wall, to, half), at(wall, to, wall.face), at(wall, from, wall.face)]];
   });
-  return [...buildBands(walls), ...corners];
+  return [...cores, ...panels];
 }
 
 /** The stretches along a face where a solid stands just behind it, merged where they meet (to a ten-thousandth of a mm). */
@@ -164,6 +140,7 @@ function getCoveredBehind(solids: readonly FacePoint[][]): Array<[number, number
  */
 function buildFaceHost(region: Omit<BuiltInRegion, "exposed">, index: number): BuiltInFaceHost | null {
   const wall = region.walls[index];
+  if (!(wall.length > 1e-9)) return null;
   const origin = { x: wall.start.x + wall.nx * wall.face, z: wall.start.z + wall.nz * wall.face };
   const toFrame = (point: Point): FacePoint => {
     const x = (point.x - origin.x) * 1000, z = (point.z - origin.z) * 1000;
@@ -189,57 +166,64 @@ function buildFaceHost(region: Omit<BuiltInRegion, "exposed">, index: number): B
   const inRoom = (point: Point) =>
     isInsideRing(point, region.outline) && !region.holes.some((hole) => isInsideRing(point, hole));
   const lengthMm = wall.length * 1000;
-  // Each exposed stretch, and whether its ends are open (its face ends, nothing in front) rather than met by a solid.
-  const exposed = getCoveredBehind(solids).flatMap(([coverFrom, coverTo]) =>
+  // Each exposed stretch, by the stretch of face behind them, of which the one most along the wall's own edge is its face.
+  const pieces = getCoveredBehind(solids).map(([coverFrom, coverTo]) =>
     getObstacleFreeSpans(obstacles, FACE_EDGE_MM, FACE_PROBE_MM, 0, coverFrom, coverTo)
-      .map(([from, to]) => ({ from, to, openFrom: from - coverFrom < 1e-9, openTo: coverTo - to < 1e-9 })))
-    .filter(({ from, to }) => to - from > FACE_EDGE_MM && to > 0 && from < lengthMm && inRoom(fromFrame((from + to) / 2, FACE_PROBE_MM / 2)));
+      .filter(([from, to]) => to - from > FACE_EDGE_MM && to > 0 && from < lengthMm && inRoom(fromFrame((from + to) / 2, FACE_PROBE_MM / 2))));
+  const alongEdge = (stretch: typeof pieces[number]) => stretch.reduce((sum, [from, to]) => sum + Math.max(0, Math.min(to, lengthMm) - Math.max(from, 0)), 0);
+  const exposed = pieces.reduce((best, stretch) => (alongEdge(stretch) > alongEdge(best) ? stretch : best), pieces[0] ?? []);
   if (!exposed.length) return null;
-  const first = exposed[0], last = exposed[exposed.length - 1], middle = (first.from + last.to) / 2;
+  const from = exposed[0][0], to = exposed[exposed.length - 1][1];
   // Found when first read (by Fit's hosts): containment and the clamp need only the region.
   let found: Array<Array<[number, number]>> | undefined;
   return {
-    start: fromFrame(first.from, 0),
-    end: fromFrame(last.to, 0),
-    get obstacles() { return (found ??= getFaceObstacles(region, toFrame, first, last, middle)); },
+    start: fromFrame(from, 0),
+    end: fromFrame(to, 0),
+    get obstacles() { return (found ??= getFaceObstacles(region, toFrame, from, to)); },
   };
 }
 
 /**
- * What a run on a face keeps clear of: every solid and column standing in front of the face along its exposed stretch (and
- * 100 mm past its ends), cut to the room's side of it; and its open ends, as lines across them. In the face's frame, about its
- * middle, to a hundredth of a mm.
+ * What a run on a face from `from` to `to` keeps clear of: every solid and column standing in front of the face along it (and
+ * 100 mm past its ends), cut to the room's side of it; and its ends, as lines across them (the face less 10 mm each end,
+ * whatever ends it: a corner, a deeper panel, a solid too low to meet a raised back). In the face's frame, about its middle,
+ * to a hundredth of a mm.
  */
-function getFaceObstacles(
-  region: Omit<BuiltInRegion, "exposed">, toFrame: (point: Point) => FacePoint,
-  first: { from: number; openFrom: boolean }, last: { to: number; openTo: boolean }, middle: number
-): Array<Array<[number, number]>> {
-  const inReach = (points: readonly FacePoint[]) => points.some(([along]) => along > first.from - 100) && points.some(([along]) => along < last.to + 100) &&
+function getFaceObstacles(region: Omit<BuiltInRegion, "exposed">, toFrame: (point: Point) => FacePoint, from: number, to: number): Array<Array<[number, number]>> {
+  const inReach = (points: readonly FacePoint[]) => points.some(([along]) => along > from - 100) && points.some(([along]) => along < to + 100) &&
     points.some(([, into]) => into > FACE_EDGE_MM) && points.some(([, into]) => into < FACE_REACH_MM);
   const solids = [...region.solids, ...region.holes].map((points) => points.map(toFrame)).filter(inReach)
-    .map((points) => clipToStrip(points, FACE_EDGE_MM, FACE_REACH_MM)).filter((points) => points.length >= 2);
-  const openEnds = [first.openFrom ? first.from : null, last.openTo ? last.to : null]
-    .filter((along): along is number => along !== null).map((along): FacePoint[] => [[along, 0], [along, FACE_REACH_MM]]);
-  const round = (value: number) => Math.round(value * 100) / 100;
-  return [...solids, ...openEnds].filter(inReach).map((points) => points.map(([along, into]): [number, number] => [round(along - middle), round(into)]));
+    .map((points) => clipToStrip(points, FACE_EDGE_MM, FACE_REACH_MM)).filter((points) => points.length >= 2 && inReach(points));
+  const ends = [from, to].map((along): FacePoint[] => [[along, 0], [along, FACE_REACH_MM]]);
+  const round = (value: number) => Math.round(value * 100) / 100, middle = (from + to) / 2;
+  return [...solids, ...ends].map((points) => points.map(([along, into]): [number, number] => [round(along - middle), round(into)]));
 }
 
 /**
- * The region of a room's `outline` (room-local metres) with its walls `thickness` thick and each edge's face `faces` in from
- * it (half the wall and its panel); the exposed faces in the outline's edge order, null for an edge with no length.
+ * What a run on wall `index`'s face between `start` and `end` (room-local metres, on its face line) keeps clear of, as an
+ * exposed face's obstacles are given (about the stretch's middle): for a host the face's closed form gives.
  */
-export function buildBuiltInRegion(outline: Point[], faces: readonly number[], thickness: number, holes: Point[][]): BuiltInRegion {
-  const walls = buildWalls(outline, faces);
+export function getBuiltInFaceObstaclesAlong(region: BuiltInRegion, index: number, start: Point, end: Point): Array<Array<[number, number]>> {
+  const wall = region.walls[index];
+  const origin = { x: wall.start.x + wall.nx * wall.face, z: wall.start.z + wall.nz * wall.face };
+  const toFrame = (point: Point): FacePoint => {
+    const x = (point.x - origin.x) * 1000, z = (point.z - origin.z) * 1000;
+    return [x * wall.dx + z * wall.dz, x * wall.nx + z * wall.nz];
+  };
+  const [from, to] = [toFrame(start)[0], toFrame(end)[0]].sort((a, b) => a - b);
+  return getFaceObstacles(region, toFrame, from, to);
+}
+
+/**
+ * The region of a room's `outline` (room-local metres) with its walls `thickness` thick and each edge's face id and panel depth;
+ * the exposed faces in the outline's edge order, null for an edge with none.
+ */
+export function buildBuiltInRegion(
+  outline: Point[], faceIds: readonly string[], panels: readonly number[], thickness: number, holes: Point[][]
+): BuiltInRegion {
+  const walls = buildWalls(outline, faceIds, panels, thickness);
   const base = { outline, holes: holes.filter((hole) => hole.length >= 3), walls, solids: buildSolids(walls, thickness) };
-  const byWall = walls.map((_, index) => buildFaceHost(base, index));
-  let next = 0;
-  const exposed = outline.map((start) => {
-    const wall = walls[next];
-    if (!wall || wall.start !== start) return null;
-    next += 1;
-    return byWall[next - 1];
-  });
-  return { ...base, exposed };
+  return { ...base, exposed: walls.map((_, index) => buildFaceHost(base, index)) };
 }
 
 /** True when the convex outlines overlap by more than a touch (separating axes). */

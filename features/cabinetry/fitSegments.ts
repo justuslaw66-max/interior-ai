@@ -60,7 +60,7 @@ function getEndClearancesMm(space: CabinetHostSpace, assemblyBottomMm: number): 
 
 /**
  * The stretches of a host a run can fill. On a face with obstacles (another wall at a corner, a panel, a column, the face's
- * open ends: `wallSegment.obstacles`, lib/room-built-in-region.ts), a run `assemblyDepthMm` deep standing out from the face by
+ * two ends: `wallSegment.obstacles`, lib/room-built-in-region.ts), a run `assemblyDepthMm` deep standing out from the face by
  * the baseboard keeps the end allowance from each, measured from whatever its nearest point meets, and on the floor a
  * baseboard's depth more.
  */
@@ -75,7 +75,7 @@ export function getCabinetAvailableSegments(
   const depthMm = Number.isFinite(assemblyDepthMm) ? Math.max(0, assemblyDepthMm) : 0;
   const segment = space.wallSegment;
   const [startClearanceMm, endClearanceMm] = getEndClearancesMm(space, assemblyBottomMm);
-  // With obstacles, the allowance is kept from them (and from the face's open ends, which are among them), not along the face.
+  // With obstacles, the allowance is kept from them (the face's two ends are among them), not from the host's ends.
   const obstacles = segment?.obstacles ?? [];
   const startBoundaryMm = -halfWidthMm + (obstacles.length ? 0 : startClearanceMm);
   const endBoundaryMm = halfWidthMm - (obstacles.length ? 0 : endClearanceMm);

@@ -11,7 +11,7 @@ import type { RoomPlanPolygonPoint, RoomSnapshot } from "@/lib/room-types";
 
 /**
  * Where a built-in cabinet may stand in a drawn room: in its finished region (lib/room-built-in-region.ts), inside its outline
- * and outside its walls' solids and panels as the 3D view draws them, its back allowed against a face (J, 29 Oct 2026: "Face,
+ * and outside its walls and panels as the 3D view draws them, its back allowed against a face (J, 29 Oct 2026: "Face,
  * back flush"). Furniture's rule still holds wherever the region would refuse more. A room from an imported plan keeps
  * furniture's rule for now (its walls each have their own thickness, which its room doesn't carry), as does a room with no
  * exposed face (its walls fill it) or no wall thickness.
@@ -43,8 +43,8 @@ function buildRoomBuiltInFaces(room: RoomSnapshot, size: { w: number; d: number 
   const faceIds = getRoomWallFaceIds({ shape, polygon: room.planPolygon });
   const depths = getRoomWallFinishDepths(room);
   const thickness = 2 * getBuiltInWallInset(room.geometry.wallThickness);
-  const insets = faceIds.map((faceId) => thickness / 2 + (depths[faceId] ?? 0));
-  const region = buildBuiltInRegion(outline, insets, thickness, room.planHoles ?? []);
+  const panels = faceIds.map((faceId) => depths[faceId] ?? 0), insets = panels.map((panel) => thickness / 2 + panel);
+  const region = buildBuiltInRegion(outline, faceIds, panels, thickness, room.planHoles ?? []);
   const polygon: Point[] = [];
   const exposed = region.exposed.filter((face) => face !== null);
   exposed.forEach((face, order) => {
@@ -145,8 +145,9 @@ export function clampBuiltInToRoom(
 }
 
 /**
- * Where Snap to wall sends a built-in: to the nearest side of its room's exposed faces along x or z (the move then stops at
- * the first face it meets). A room on furniture's rule snaps as furniture does, half the wall plus 2 cm in from its rectangle.
+ * Where Snap to wall sends a built-in: to the nearest side of its room's exposed faces along x or z. The move then takes it
+ * there if it fits there, without checking what stands between (as for furniture), or else toward it as far as the clamp's
+ * halving search finds it fits. A room on furniture's rule snaps as furniture does, half the wall plus 2 cm in from its rectangle.
  */
 export function getBuiltInSnapTarget(
   room: RoomSnapshot, position: readonly [number, number, number], width: number, depth: number, rotationY: number

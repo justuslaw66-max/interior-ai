@@ -866,7 +866,7 @@ export function useDesignPageCabinetry({
     if (isDesigner && selected.item.locked) return;
     const planningDimensionsMm = selected.planningDimensionsMm;
     if (!planningDimensionsMm) return;
-    // The nearest side of the room's finished faces; the move stops at the first face it meets.
+    // The nearest side of the room's finished faces: there if it fits there (the way isn't checked), else toward it.
     const [targetX, targetZ] = getBuiltInSnapTarget(activeRoom, selected.item.position,
       planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, getCabinetRotationY(selected.item));
     moveSelectedToPosition(targetX, targetZ, "Snap built-in to wall");

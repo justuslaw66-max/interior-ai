@@ -70,15 +70,22 @@ export function getObstacleReach(obstacle: FaceObstacle, y0: number, y1: number,
 }
 
 /**
- * The stretches of [from, to] where a run's cross-sections, from y0 to y1, keep `clearance` from every obstacle. With no
- * clearance, a run may touch an obstacle (end on its face) but not overlap it.
+ * The stretches of [from, to] where a run's cross-sections, from y0 to y1, keep `clearance` from every obstacle they would
+ * meet along the face: one that stands between y0 and y1 (another wall at its end, a column beside it), measured from the
+ * nearest point of its part in front of the run's back, wherever that is. One wholly in front of the run (the wall across a
+ * narrow room) or behind its back keeps none: the run may stand up to it, or over it. With no clearance, a run may touch an
+ * obstacle (end on its face) but not overlap it.
  */
 export function getObstacleFreeSpans(
   obstacles: readonly FaceObstacle[], y0: number, y1: number, clearance: number, from: number, to: number
 ): Array<[number, number]> {
   if (!(to > from)) return [];
+  // Met when it stands more than a thousandth of a mm into the run's depth (one flush with its back or front isn't), and kept
+  // clear of from its part in front of the run's back.
+  const [back, front] = y1 - y0 > 0.002 ? [y0 + 0.001, y1 - 0.001] : [y0, y1];
   const blocked = obstacles
-    .map((obstacle) => getObstacleReach(obstacle, y0, y1, clearance))
+    .filter((obstacle) => clipToStrip(obstacle, back, front).length > 0)
+    .map((obstacle) => getObstacleReach(clipToStrip(obstacle, y0), y0, y1, clearance))
     .filter((reach): reach is [number, number] => reach !== null && reach[1] > from && reach[0] < to)
     .sort((left, right) => left[0] - right[0]);
   const free: Array<[number, number]> = [];

@@ -2,7 +2,7 @@ import { PLAN_OPENING_DEFAULT_HEIGHT_METERS } from "@/lib/design-page-plan-overl
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { clampBuiltInToRoom, getRoomBuiltInFaces, usesFurnitureRuleForBuiltIns } from "@/lib/room-built-in-faces";
-import type { BuiltInFaceHost } from "@/lib/room-built-in-region";
+import { getBuiltInFaceObstaclesAlong, type BuiltInFaceHost } from "@/lib/room-built-in-region";
 import { getRoomOutlineInsideFinishes, getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { RoomSnapshot } from "@/lib/room-types";
@@ -58,15 +58,20 @@ export function buildCabinetryAvailableSpaces({
   }
 
   if (isRectangle) {
-    const faces = getRoomBuiltInFaces(activeRoom, size), [northWest, , southEast] = faces.polygon;
-    // A column in the room stands in front of the faces: the hosts keep clear of it (their exposed faces' obstacles).
-    const columns = activeRoom.planHoles?.length ? faces.exposed : [];
+    // The faces' corners: each wall's face half the wall and its panel in from the outline (north, east, south, west).
+    const faces = getRoomBuiltInFaces(activeRoom, size), [inNorth, inEast, inSouth, inWest] = faces.insets;
+    const northWest = { x: faces.outline[0].x + inWest, z: faces.outline[0].z + inNorth };
+    const southEast = { x: faces.outline[2].x - inEast, z: faces.outline[2].z - inSouth };
+    // A column in the room stands in front of the faces: the hosts keep clear of it (and of the walls and the faces' ends).
+    const corners = [northWest, { x: southEast.x, z: northWest.z }, southEast, { x: northWest.x, z: southEast.z }];
+    const obstaclesAlong = (index: number) => activeRoom.planHoles?.length
+      ? getBuiltInFaceObstaclesAlong(faces, index, corners[index], corners[(index + 1) % 4]) : undefined;
     return createCabinetRoomWallSpaces({
       ...sharedSpaceInput,
       widthMm: Math.max(1, Math.round((southEast.x - northWest.x) * 1000)),
       depthMm: Math.max(1, Math.round((southEast.z - northWest.z) * 1000)),
       openings,
-    }).map((space) => withRectangleFaceSegment(space, northWest, southEast, baseboardOffsetMm, columns[RECTANGLE_WALLS.indexOf(space.wall ?? "north")]));
+    }).map((space) => withRectangleFaceSegment(space, northWest, southEast, baseboardOffsetMm, obstaclesAlong(RECTANGLE_WALLS.indexOf(space.wall ?? "north"))));
   }
 
   // The L-shape's or drawn shape's walls along their outline (the wall centre line), where their openings are drawn; each
@@ -75,15 +80,27 @@ export function buildCabinetryAvailableSpaces({
   const outline = getRoomPlanOutlinePoints({
     shape: activeRoom.planShape ?? "rectangle", polygon: activeRoom.planPolygon, w: activeRoom.geometry.width, d: activeRoom.geometry.depth,
   });
-  const faces = getRoomBuiltInFaces(activeRoom).exposed;
-  return createCabinetPolygonWallSpaces({
+  const outlineSpaces = createCabinetPolygonWallSpaces({
     ...sharedSpaceInput,
     polygon: outline,
     openings: mapCabinetCardinalOpeningsToPolygonWalls({ polygon: outline, openings }),
     installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM,
-  }).flatMap((space) => {
-    const face = faces[wallIndex(space.wallId ?? "")];
-    return face ? [withFaceSegment(space, face, baseboardOffsetMm)] : [];
+  });
+  return placeOnFaces(outlineSpaces, getRoomBuiltInFaces(activeRoom).exposed, baseboardOffsetMm);
+}
+
+/**
+ * Each outline host on its wall's exposed face. A straight wall drawn in pieces has one face over them all: it is listed once,
+ * as its first piece, with every piece's doors and windows.
+ */
+function placeOnFaces(spaces: CabinetHostSpace[], exposed: ReadonlyArray<BuiltInFaceHost | null>, baseboardMm: number): CabinetHostSpace[] {
+  const listed = new Set<string>();
+  return spaces.flatMap((space) => {
+    const face = exposed[wallIndex(space.wallId ?? "")];
+    const key = face && [face.start.x, face.start.z, face.end.x, face.end.z].map((value) => value.toFixed(6)).join();
+    if (!face || !key || listed.has(key)) return [];
+    listed.add(key);
+    return [withFaceSegment(space, face, baseboardMm, spaces)];
   });
 }
 
@@ -139,16 +156,16 @@ const RECTANGLE_WALLS = ["north", "east", "south", "west"];
 
 function withRectangleFaceSegment(
   space: CabinetHostSpace, northWest: { x: number; z: number }, southEast: { x: number; z: number }, baseboardMm: number,
-  face?: BuiltInFaceHost | null
+  faceObstacles?: Array<Array<[number, number]>>
 ): CabinetHostSpace {
   const alongX = space.wall === "north" || space.wall === "south";
   const line = space.wall === "north" ? northWest.z : space.wall === "south" ? southEast.z : space.wall === "west" ? northWest.x : southEast.x;
   const [start, end] = alongX ? [northWest.x, southEast.x] : [northWest.z, southEast.z];
   const middleMm = ((start + end) / 2) * 1000;
   const inward = space.wall === "north" || space.wall === "west" ? 1 : -1;
-  // The exposed face runs along its outline edge (west along the south wall, north along the west); the host east or south.
+  // The face's frame runs along its outline edge (west along the south wall, north along the west); the host east or south.
   const flip = space.wall === "south" || space.wall === "west" ? -1 : 1;
-  const obstacles = face?.obstacles.map((points) => points.map(([along, into]): [number, number] => [along * flip, into]));
+  const obstacles = faceObstacles?.map((points) => points.map(([along, into]): [number, number] => [along * flip, into]));
   const baseboards = { startBaseboardClearanceMm: baseboardMm, endBaseboardClearanceMm: baseboardMm, ...(obstacles?.length ? { obstacles } : {}) };
   return {
     ...space,
@@ -164,27 +181,42 @@ function wallIndex(wallId: string): number {
 }
 
 /**
- * An outline host moved onto its exposed face: the face's own length and ends, with its openings, measured from the outline
- * edge's middle, re-measured from the face's middle, and the walls and columns in front of it to keep clear of.
+ * An outline host moved onto its exposed face: the face's own length and ends, the walls and columns in front of it to keep
+ * clear of, and the doors and windows of every piece of the outline along it, measured from the face's middle.
  */
-function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboardMm: number): CabinetHostSpace {
+function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboardMm: number, spaces: CabinetHostSpace[]): CabinetHostSpace {
   const outlineSegment = space.wallSegment;
   if (!outlineSegment) return space;
+  const widthMm = Math.hypot(face.end.x - face.start.x, face.end.z - face.start.z) * 1000;
   const length = space.availableWidthMm || 1;
   const dx = (outlineSegment.endXmm - outlineSegment.startXmm) / length, dz = (outlineSegment.endZmm - outlineSegment.startZmm) / length;
-  const shiftMm = ((outlineSegment.startXmm + outlineSegment.endXmm) / 2 - (face.start.x + face.end.x) * 500) * dx +
-    ((outlineSegment.startZmm + outlineSegment.endZmm) / 2 - (face.start.z + face.end.z) * 500) * dz;
+  const pieces = spaces.filter(({ wallSegment: piece }) => piece && isOnLine(piece, outlineSegment, dx, dz));
+  const openings = pieces.flatMap((piece) => {
+    const segment = piece.wallSegment;
+    if (!segment) return [];
+    const shiftMm = ((segment.startXmm + segment.endXmm) / 2 - (face.start.x + face.end.x) * 500) * dx +
+      ((segment.startZmm + segment.endZmm) / 2 - (face.start.z + face.end.z) * 500) * dz;
+    return piece.openings.map((opening) => ({ ...opening, offsetMm: Number((opening.offsetMm + shiftMm).toFixed(3)) }))
+      .filter((opening) => Math.abs(opening.offsetMm) < widthMm / 2 + opening.widthMm / 2);
+  });
   return {
     ...space,
-    availableWidthMm: Math.hypot(face.end.x - face.start.x, face.end.z - face.start.z) * 1000,
+    availableWidthMm: widthMm,
     wallSegment: {
       ...outlineSegment,
       startXmm: face.start.x * 1000, startZmm: face.start.z * 1000, endXmm: face.end.x * 1000, endZmm: face.end.z * 1000,
       startBaseboardClearanceMm: baseboardMm, endBaseboardClearanceMm: baseboardMm,
       ...(face.obstacles.length ? { obstacles: face.obstacles } : {}),
     },
-    openings: space.openings.map((opening) => ({ ...opening, offsetMm: Number((opening.offsetMm + shiftMm).toFixed(3)) })),
+    openings,
   };
+}
+
+/** True when the outline piece runs the same way along the same line as the segment (a straight wall drawn in pieces). */
+function isOnLine(piece: NonNullable<CabinetHostSpace["wallSegment"]>, segment: NonNullable<CabinetHostSpace["wallSegment"]>, dx: number, dz: number): boolean {
+  const length = Math.hypot(piece.endXmm - piece.startXmm, piece.endZmm - piece.startZmm) || 1;
+  const parallel = ((piece.endXmm - piece.startXmm) * dx + (piece.endZmm - piece.startZmm) * dz) / length > 1 - 1e-9;
+  return parallel && Math.abs((piece.startXmm - segment.startXmm) * dz - (piece.startZmm - segment.startZmm) * dx) < 0.001;
 }
 
 /**
