@@ -56,6 +56,7 @@ export function floorPlanVectorizerRuntimeConfiguration(
   const faithfulTimeout = Number.parseInt(environment.FLOOR_PLAN_FAITHFUL_TRACE_TIMEOUT_MS ?? "", 10);
   const faithfulPixels = Number.parseInt(environment.FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS ?? "", 10);
   const faithfulMin = Number.parseInt(environment.FLOOR_PLAN_FAITHFUL_TRACE_MIN_MS ?? "", 10);
+  const readerTimeout = Number.parseInt(environment.FLOOR_PLAN_NAME_READER_TIMEOUT_MS ?? "", 10);
   return Object.freeze({
     enabled: environment.FLOOR_PLAN_VECTORIZER_ENABLED === "1",
     pythonPath: environment.FLOOR_PLAN_VECTORIZER_PYTHON || "python3",
@@ -75,6 +76,10 @@ export function floorPlanVectorizerRuntimeConfiguration(
     // less than this left comes back with stage 1's reading, noted, instead of waiting longer.
     pageBudget: environment.FLOOR_PLAN_VECTORIZER_PAGE_BUDGET === "1",
     faithfulMinMs: Number.isFinite(faithfulMin) ? Math.max(5_000, Math.min(faithfulMin, 300_000)) : 30_000,
+    // The name reader (name_reader.py, RapidOCR; beta step 2.2): room names read a second time between stage 1 and the
+    // exporter, where stage 1 left them unread or misread. Off unless set; it fails soft, with its own time limit.
+    nameReader: environment.FLOOR_PLAN_NAME_READER === "1",
+    nameReaderTimeoutMs: Number.isFinite(readerTimeout) ? Math.max(5_000, Math.min(readerTimeout, 300_000)) : 60_000,
   });
 }
 
@@ -142,6 +147,7 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
         [`${this.config.directory}/floorplan_vectorize.py`, input, base, "--px-size"],
         { timeoutMs: options.timeoutMs, signal: options.signal }
       );
+      const readerNote = this.config.nameReader ? await this.readNames(input, base, options.signal) : null;
       await runProcess(
         this.config.pythonPath,
         [`${this.config.directory}/app_evidence.py`, `${base}.json`, `${base}.evidence.json`],
@@ -150,9 +156,10 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
           signal: options.signal,
         }
       );
-      const evidence = parseFloorPlanVectorizerEvidence(
+      const parsed = parseFloorPlanVectorizerEvidence(
         JSON.parse(await readFile(`${base}.evidence.json`, "utf8"))
       );
+      const evidence = readerNote ? withNote(parsed, readerNote) : parsed;
       if (!this.config.faithfulTrace) return evidence;
       if (!this.config.pageBudget) return await this.withFaithfulDrawing(evidence, input, base, options.signal);
       const leftMs = options.timeoutMs - (Date.now() - started);
@@ -162,6 +169,19 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
       return await this.withFaithfulDrawing(evidence, input, base, options.signal, Math.min(this.config.faithfulTimeoutMs, leftMs));
     } finally {
       await rm(workDirectory, { recursive: true, force: true });
+    }
+  }
+
+  /** The name reader on stage 1's model, in place, before the exporter reads it. It fails soft: a failure or a timeout
+   * leaves stage 1's model as it was, and the note says why. Cancelling the import still cancels it. */
+  private async readNames(input: string, base: string, signal?: AbortSignal): Promise<string | null> {
+    try {
+      await runProcess(this.config.pythonPath, [`${this.config.directory}/name_reader.py`, input, `${base}.json`],
+        { timeoutMs: this.config.nameReaderTimeoutMs, signal });
+      return null;
+    } catch (cause) {
+      if (signal?.aborted) throw cause;
+      return `Name reader unavailable: ${cause instanceof Error ? cause.message : "unknown error"}`;
     }
   }
 
