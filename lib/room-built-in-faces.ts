@@ -4,7 +4,6 @@ import {
   clampToRoomInsideFinishes,
   getBuiltInWallInset,
   getRoomPlanOutlinePoints,
-  isBuiltInItem,
 } from "@/lib/room-finished-outline";
 import { getRoomWallFaceIds, getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { RoomPlanPolygonPoint, RoomSnapshot } from "@/lib/room-types";
@@ -19,8 +18,11 @@ import type { RoomPlanPolygonPoint, RoomSnapshot } from "@/lib/room-types";
 
 type Point = RoomPlanPolygonPoint;
 
-/** One outline edge's face, and how far a run's ends must stand back from an acute corner there, per metre of its depth. */
-export type BuiltInFaceEdge = { start: Point; end: Point; startSetbackPerDepth: number; endSetbackPerDepth: number };
+/** A corner under 90° at one end of a face: its sine and cotangent. */
+export type AcuteCorner = { sin: number; cot: number };
+
+/** One outline edge's face, with the corner under 90° at either end, if any. A dropped edge's face has no length. */
+export type BuiltInFaceEdge = { start: Point; end: Point; startAcute: AcuteCorner | null; endAcute: AcuteCorner | null };
 
 export type BuiltInRoomFaces = {
   /** The outline, room-local, in face order (getRoomWallFaceIds). */
@@ -52,26 +54,23 @@ function faceLine(outline: readonly Point[], index: number, inset: number, inwar
   return { x: start.x + nx * inset, z: start.z + nz * inset, dx, dz, nx, nz };
 }
 
-type Joint = { end: Point; start: Point; corner: boolean; startSetback: number; endSetback: number };
+type Joint = { end: Point; start: Point; corner: boolean; acute: AcuteCorner | null };
 
-/** Where face `before` ends and face `after` starts, at the outline vertex between them. */
-function joinFaces(vertex: Point, before: FaceLine, after: FaceLine, insetBefore: number, insetAfter: number): Joint {
+/** Where face `before` (whose edge ends at `beforeEnd`) ends and face `after` (whose edge starts at `afterStart`) starts. */
+function joinFaces(beforeEnd: Point, afterStart: Point, before: FaceLine, after: FaceLine, insetBefore: number, insetAfter: number): Joint {
   const cross = before.dx * after.dz - before.dz * after.dx;
   if (Math.abs(cross) < 1e-9) {
-    // Straight on (or turned back): each face stops at the vertex, and the faces step between their depths.
-    const end = { x: vertex.x + before.nx * insetBefore, z: vertex.z + before.nz * insetBefore };
-    return { end, start: { x: vertex.x + after.nx * insetAfter, z: vertex.z + after.nz * insetAfter }, corner: false, startSetback: 0, endSetback: 0 };
+    // Straight on (or turned back): each face stops at its edge's end, and the faces step between their depths.
+    const end = { x: beforeEnd.x + before.nx * insetBefore, z: beforeEnd.z + before.nz * insetBefore };
+    return { end, start: { x: afterStart.x + after.nx * insetAfter, z: afterStart.z + after.nz * insetAfter }, corner: false, acute: null };
   }
   const t = ((after.x - before.x) * after.dz - (after.z - before.z) * after.dx) / cross;
   const point = { x: before.x + before.dx * t, z: before.z + before.dz * t };
-  // At a corner under 90°, a run's front corner reaches the other face before its end does: it stands back by cot(angle) × depth.
-  const alongAfter = after.dx * before.nx + after.dz * before.nz, alongBefore = before.dx * after.nx + before.dz * after.nz;
-  const normals = after.nx * before.nx + after.nz * before.nz;
-  return {
-    end: point, start: point, corner: true,
-    startSetback: alongAfter > 1e-9 ? Math.max(0, -normals / alongAfter) : 0,
-    endSetback: alongBefore < -1e-9 ? Math.max(0, normals / alongBefore) : 0,
-  };
+  // A convex corner (the next face turns into the room) under 90°: a run's front corner reaches the other face before its end.
+  const cos = -(before.dx * after.dx + before.dz * after.dz);
+  const convex = after.dx * before.nx + after.dz * before.nz > 1e-9;
+  const sin = Math.sqrt(Math.max(0, 1 - cos * cos));
+  return { end: point, start: point, corner: true, acute: convex && cos > 1e-9 && sin > 1e-9 ? { sin, cot: cos / sin } : null };
 }
 
 function signedArea(points: readonly Point[]): number {
@@ -81,6 +80,48 @@ function signedArea(points: readonly Point[]): number {
   }, 0) / 2;
 }
 
+/** The joint at the start of each kept edge (in the order kept), from the kept edge before it. */
+function joinKeptFaces(outline: readonly Point[], lines: FaceLine[], insets: number[], kept: number[]): Joint[] {
+  return kept.map((index, order) => {
+    const previous = kept[(order - 1 + kept.length) % kept.length];
+    return joinFaces(outline[(previous + 1) % outline.length], outline[index], lines[previous], lines[index], insets[previous], insets[index]);
+  });
+}
+
+/**
+ * Each edge's face, joined to its neighbours'. An edge whose face would run backwards (an edge shorter than its face is deep,
+ * such as a 10 mm chamfer at a corner) is dropped and its neighbours joined past it, until none is: otherwise they ran past
+ * each other's faces.
+ */
+function buildFaceEdges(outline: readonly Point[], insets: number[]) {
+  const count = outline.length, sign = signedArea(outline) >= 0 ? 1 : -1;
+  const lines = outline.map((_, index) => faceLine(outline, index, insets[index], sign));
+  const length = (index: number) => Math.hypot(outline[(index + 1) % count].x - outline[index].x, outline[(index + 1) % count].z - outline[index].z);
+  let kept = outline.map((_, index) => index).filter((index) => length(index) > 1e-6);
+  if (kept.length < 3) return { edges: outline.map(() => ({ start: outline[0], end: outline[0], startAcute: null, endAcute: null })), polygon: [] };
+  let joints = joinKeptFaces(outline, lines, insets, kept);
+  const runsOn = (order: number) => {
+    const start = joints[order].start, end = joints[(order + 1) % kept.length].end, line = lines[kept[order]];
+    return (end.x - start.x) * line.dx + (end.z - start.z) * line.dz > 1e-6;
+  };
+  for (let round = 0; round < count && kept.length >= 3; round += 1) {
+    const next = kept.filter((_, order) => runsOn(order));
+    if (next.length === kept.length || next.length < 3) break;
+    kept = next;
+    joints = joinKeptFaces(outline, lines, insets, kept);
+  }
+  const edges: BuiltInFaceEdge[] = outline.map((_, index) => {
+    const order = kept.indexOf(index);
+    const nextOrder = order >= 0 ? (order + 1) % kept.length : Math.max(0, kept.findIndex((other) => other > index));
+    const end = joints[nextOrder].end;
+    if (order < 0) return { start: end, end, startAcute: null, endAcute: null };
+    return { start: joints[order].start, end, startAcute: joints[order].acute, endAcute: joints[nextOrder].acute };
+  });
+  const polygon = joints.flatMap((joint) =>
+    joint.corner || Math.hypot(joint.end.x - joint.start.x, joint.end.z - joint.start.z) < 1e-9 ? [joint.start] : [joint.end, joint.start]);
+  return { edges, polygon };
+}
+
 function buildRoomBuiltInFaces(room: RoomSnapshot, size: { w: number; d: number }): BuiltInRoomFaces {
   const shape = room.planShape ?? "rectangle";
   const outline = getRoomPlanOutlinePoints({ shape, polygon: room.planPolygon, w: size.w, d: size.d });
@@ -88,19 +129,7 @@ function buildRoomBuiltInFaces(room: RoomSnapshot, size: { w: number; d: number 
   const depths = getRoomWallFinishDepths(room);
   const halfWall = getBuiltInWallInset(room.geometry.wallThickness);
   const insets = faceIds.map((faceId) => halfWall + (depths[faceId] ?? 0));
-  const count = outline.length, sign = signedArea(outline) >= 0 ? 1 : -1;
-  const lines = outline.map((_, index) => faceLine(outline, index, insets[index], sign));
-  const joints = outline.map((vertex, index) => {
-    const previous = (index - 1 + count) % count;
-    return joinFaces(vertex, lines[previous], lines[index], insets[previous], insets[index]);
-  });
-  const edges = outline.map((_, index) => {
-    const startJoint = joints[index], endJoint = joints[(index + 1) % count];
-    return { start: startJoint.start, end: endJoint.end, startSetbackPerDepth: startJoint.startSetback, endSetbackPerDepth: endJoint.endSetback };
-  });
-  const polygon = joints.flatMap((joint) =>
-    joint.corner || Math.hypot(joint.end.x - joint.start.x, joint.end.z - joint.start.z) < 1e-9 ? [joint.start] : [joint.end, joint.start]);
-  return { outline, faceIds, insets, edges, polygon, holes: room.planHoles ?? [] };
+  return { outline, faceIds, insets, ...buildFaceEdges(outline, insets), holes: room.planHoles ?? [] };
 }
 
 type FacesInputs = Pick<RoomSnapshot, "planShape" | "planPolygon" | "planHoles" | "surfaces" | "surfaceFinishes"> & { w: number; d: number; wall?: number };
@@ -228,13 +257,6 @@ export function clampBuiltInToRoom(
     x, z, width, depth, room.geometry.width, room.geometry.depth, getBuiltInWallInset(room.geometry.wallThickness),
     rotationY, room.planShape ?? "rectangle", room.planPolygon, room.planHoles, getRoomWallFinishDepths(room)
   );
-}
-
-/** An item kept inside a room: a built-in by clampBuiltInToRoom, furniture by its own clamp. */
-export function clampItemToRoom(
-  item: { assetType?: string }, room: RoomSnapshot, x: number, z: number, width: number, depth: number, rotationY = 0
-): [number, number] {
-  return isBuiltInItem(item) ? clampBuiltInToRoom(room, x, z, width, depth, rotationY) : clampAsFurniture(room, x, z, width, depth, rotationY);
 }
 
 /**

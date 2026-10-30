@@ -96,6 +96,7 @@ function inferTitle(code: string, draft: CabinetValidationIssueDraft): string {
     "fit.width.exceeded": "The design no longer fits its host",
     "fit.height.exceeded": "The design is taller than its fitted space",
     "fit.opening_conflict": "A recorded opening conflicts with the fitted segment",
+    "fit.corner_depth": "The design is too deep for its corner",
     "fit.depth.exceeded": "The design projects beyond the recorded depth",
     "fit.outlet.review": "Recorded outlets need access review",
     "fit.baseboard.clearance": "Baseboard clearance is included in placement",
@@ -126,6 +127,7 @@ function inferResolution(code: string, draft: CabinetValidationIssueDraft): stri
     "fit.width.exceeded": "Refit the assembly or unlock module widths so the system can redistribute them.",
     "fit.height.exceeded": "Refit the height or reduce the assembly height below the recorded ceiling clearance.",
     "fit.opening_conflict": "Choose another wall segment or refit after reviewing the door or window location.",
+    "fit.corner_depth": "Fit to Space again, or reduce the depth: a deeper run stands further back from a corner under 90°.",
     "fit.depth.exceeded": "Reduce the cabinet depth or verify that its projection leaves safe circulation.",
     "fit.outlet.review": "Confirm an accessible service opening, relocation, or approved cutout before fabrication.",
     "fit.baseboard.clearance": "Confirm the recorded offset matches the installed baseboard before placement.",
@@ -299,11 +301,16 @@ function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIss
       fit.segment.endMm <= segment.endMm + 0.5
   );
   if (!segmentStillAvailable) {
+    // The segment fits a shallower run: a corner under 90° keeps a deeper run's end further back (fitSegments.ts).
+    const tooDeepForCorner = getCabinetAvailableSegments(fit.host, getCabinetOverallHeight(definition), mountingHeightMm).some(
+      (segment) => fit.segment.startMm >= segment.startMm - 0.5 && fit.segment.endMm <= segment.endMm + 0.5);
     drafts.push({
-      code: "fit.opening_conflict",
+      code: tooDeepForCorner ? "fit.corner_depth" : "fit.opening_conflict",
       severity: "error",
       field: "fit.segment",
-      message: "A recorded door, window, or obstruction now overlaps the fitted wall segment.",
+      message: tooDeepForCorner
+        ? "The design is now too deep for its fitted segment: at the corner under 90°, its front corner would cross the next wall."
+        : "A recorded door, window, or obstruction now overlaps the fitted wall segment.",
       target: { scope: "fit", field: "segment", hostId: fit.host.id },
     });
   }

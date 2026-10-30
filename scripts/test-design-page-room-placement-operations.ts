@@ -8,7 +8,7 @@ import type {
   DesignSnapshot,
   RoomSnapshot,
 } from "@/lib/room-types";
-import { transferDesignPageItemToRoom } from "@/lib/useDesignPageCrossRoomItemTransfer";
+import { getCrossRoomItemDragTarget, transferDesignPageItemToRoom } from "@/lib/useDesignPageCrossRoomItemTransfer";
 import {
   clampToPlacementRoom,
   findPlacementBlockerInRoom,
@@ -289,5 +289,15 @@ function runCrossRoomTransferTest() {
 
 runPlacementRoomQueryTests();
 runCrossRoomTransferTest();
+
+// A drag over another room: what it says, and whether a drop moves the item there. A built-in stays in its room, since the move
+// takes catalogue items only.
+const dragTarget = (item: { assetType?: DesignItem["assetType"] }, needsSurface = false, contained = true, blockedBy: string | null = null) =>
+  getCrossRoomItemDragTarget({ item, roomName: "Kitchen", needsSurface, contained, blockedBy });
+assert.deepEqual(dragTarget({ assetType: "parametric_cabinet" }), { label: "Built-ins stay in their room", valid: false });
+assert.deepEqual(dragTarget({}), { label: "Kitchen", valid: true });
+assert.deepEqual(dragTarget({}, true), { label: "Add a table in Kitchen", valid: false });
+assert.deepEqual(dragTarget({}, false, false), { label: "Place fully inside Kitchen", valid: false });
+assert.deepEqual(dragTarget({}, false, true, "Sofa"), { label: "Sofa", valid: false });
 
 console.log("Design-page placement room operation tests passed.");

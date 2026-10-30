@@ -15,12 +15,12 @@ import {
 } from "../features/cabinetry/generateCabinetDocumentation";
 import { snapshotToStored, storedToSnapshot } from "../lib/room-persistence";
 import { createRoom, type DesignSnapshot, type RoomSnapshot } from "../lib/room-types";
-import { buildCabinetryAvailableSpaces, getCabinetCopyOffset } from "../features/cabinetry/roomCabinetHosts";
+import { buildCabinetryAvailableSpaces, getCabinetCopyOffset, getCabinetPlacement } from "../features/cabinetry/roomCabinetHosts";
 import { getCabinetAvailableSegments } from "../features/cabinetry/fitSegments";
 import type { CabinetHostSpace } from "../features/cabinetry/types";
 import { canonicalFloorPlanToDesignSnapshot } from "../lib/floor-plan-legacy-adapters";
 import { compileCanonicalFloorPlanRenderModel } from "../lib/floor-plan-render-model";
-import { clampBuiltInToRoom, getBuiltInSnapTarget } from "../lib/room-built-in-faces";
+import { clampBuiltInToRoom, getBuiltInSnapTarget, getRoomBuiltInFaces } from "../lib/room-built-in-faces";
 import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
 import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
 
@@ -347,8 +347,25 @@ for (const [label, outline] of [
 const acute = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2 - 3 / Math.tan(Math.PI / 3), z: 1.5 }, { x: -2, z: 1.5 }]);
 const [acuteNorth] = buildCabinetryAvailableSpaces({ activeRoom: acute, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
 const acuteSegments = getCabinetAvailableSegments(acuteNorth, 870, 0, 580);
-nearMm(acuteSegments[0].endMm, acuteNorth.availableWidthMm / 2 - 10 - 580 / Math.tan(Math.PI / 3),
+nearMm(acuteSegments[0].endMm, acuteNorth.availableWidthMm / 2 - 10 / Math.sin(Math.PI / 3) - 580 / Math.tan(Math.PI / 3),
   "a 580 mm deep run stops 335 mm more before a 60° corner, where Fit and the Space step's usable length agree");
+/** How far a run's nearest corner stands from the line through `start` and `end` (its four corners, at floor level). */
+const runCorners = (run: FittedRun, back = 0) => [[-1, 0], [1, 0], [1, 1], [-1, 1]].map(([side, front]) => {
+  const along = side * run.width / 2, across = -run.depth / 2 + front * run.depth + (front ? 0 : -back);
+  return { x: run.x + along * Math.cos(run.rotationY) + across * Math.sin(run.rotationY), z: run.z - along * Math.sin(run.rotationY) + across * Math.cos(run.rotationY) };
+});
+const nearestTo = (run: FittedRun, start: { x: number; z: number }, end: { x: number; z: number }, back = 0) =>
+  Math.min(...runCorners(run, back).map((corner) => distanceFromLine(corner, start, end)));
+// At a corner under 90° the 10 mm is measured from the next face to the run's nearest point, its front corner, not along the
+// wall (10 × sin 60° = 8.7 mm): the slanted wall's face is 60 mm in from its centre line.
+const acuteRuns = runsOf(acute);
+const slantStart = { x: 2, z: -1.5 }, slantEnd = { x: 2 - 3 / Math.tan(Math.PI / 3), z: 1.5 };
+// (Fit rounds a run's width to the millimetre, so within half of one.)
+const nearHalfMm = (actual: number, expected: number, message: string) => assert.ok(Math.abs(actual - expected) < 0.5, `${message}: ${actual} ≠ ${expected}`);
+nearHalfMm(nearestTo(acuteRuns[0], slantStart, slantEnd) * 1000, 60 + 10, "the north run's front corner is 10 mm from the slanted wall's face");
+const acuteBaseboard = { ...acute, geometry: { ...acute.geometry, baseboardDepth: 0.015 } } as RoomSnapshot;
+const [baseboardAcuteRun] = runsOf(acuteBaseboard);
+nearHalfMm(nearestTo(baseboardAcuteRun, slantStart, slantEnd) * 1000, 60 + 15 + 10, "and 10 mm from its 15 mm baseboard");
 
 // Two edges running straight on with different panels: each face stands at its own depth, and they step at the joint.
 const split = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0, z: 1.5 }, { x: -2, z: 1.5 }], {
@@ -379,19 +396,55 @@ const [snapX, snapZ] = getBuiltInSnapTarget(panelledRoom, [0, 0, -1], 0.6, 0.58,
 nearMm((snapZ - 0.29) * 1000, -1500 + 60 + 44, "snaps its back onto the north panel's face");
 nearMm(snapX, 0, "without moving along");
 
-// Place as copy: 15 cm along its wall from the fitted run, as far as it still fits. An L-shape's walls have no compass name; a
-// copy moved 15 cm in x and z and stopped as soon as that line met a wall.
+// Placing, as the Studio places (getCabinetPlacement): an L kitchen's second run shares the corner with the first, wall
+// cabinets hang over a base run, and a copy of a run lands beside it. Placing doesn't refuse an item in the way, as before.
 const lShape = { ...createRoom("l", "L", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }), planShape: "l_shape" as const };
-buildCabinetryAvailableSpaces({ activeRoom: lShape, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).forEach((space) => {
-  const fitted = fitCabinetToSpace(createCabinetPreset("base", `copy-${space.id}`), space, { mode: "fit_width" });
-  const at = getCabinetFitPlacement(fitted.definition, 4, 3)!;
-  // A 600 mm module in the run's middle, so there is room along the wall.
-  const [offsetX, offsetZ] = getCabinetCopyOffset(space);
-  const [copyX, copyZ] = clampBuiltInToRoom(lShape, at.position[0] + offsetX, at.position[2] + offsetZ, 0.6, 0.58, at.rotationY, { from: [at.position[0], at.position[2]] });
-  nearMm(Math.hypot(copyX - at.position[0], copyZ - at.position[2]) * 1000, 150, `L ${space.wallId}: the copy moves 15 cm along its wall`);
-  const along = (copyX - at.position[0]) * Math.cos(at.rotationY) - (copyZ - at.position[2]) * Math.sin(at.rotationY);
-  nearMm(Math.abs(along) * 1000, 150, `L ${space.wallId}: and none of it off the wall`);
+const lSpaces = buildCabinetryAvailableSpaces({ activeRoom: lShape, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+const placed = (room: RoomSnapshot, definition: ReturnType<typeof createCabinetPreset>, copy = false) => {
+  const { position, rotationY } = getCabinetPlacement(definition, room, copy);
+  const inside = isPlacementContainedInRoom({ room, position, rotationY, dimensions: { w: definition.totalWidth, d: definition.depth, h: definition.height }, builtIn: true });
+  return { position, rotationY, inside };
+};
+const fitOn = (space: CabinetHostSpace, preset: "base" | "wall", options: Parameters<typeof fitCabinetToSpace>[2] = { mode: "fit_width" }) =>
+  fitCabinetToSpace(createCabinetPreset(preset, `${preset}-${space.id}`), space, options).definition;
+const [lNorth, lEast] = [lSpaces[0], lSpaces[1]].map((space) => placed(lShape, fitOn(space, "base")));
+assert.equal(lNorth.inside && lEast.inside, true, "an L kitchen: a base run on the north wall, then one on the east, both placed");
+const wallUnits = placed(lShape, fitOn({ ...lSpaces[0], mountingHeightMm: 1450 }, "wall"));
+assert.equal(wallUnits.inside, true, "wall cabinets over the base run, placed");
+nearMm(wallUnits.position[1] * 1000, 1450, "at 1.45 m");
+const fullRun = fitOn(lSpaces[0], "base");
+const fullCopy = placed(lShape, fullRun, true);
+assert.equal(fullCopy.inside, true, "a copy of a run filling its wall is placed, on it");
+assert.ok(Math.abs((fullCopy.position[0] - lNorth.position[0]) * 1000 - 10) < 0.1 && fullCopy.position[2] === lNorth.position[2],
+  "it moves only into the 10 mm allowance, up to the east wall's face");
+// A copy moves 15 cm along its wall, as far as it still fits. An L-shape's walls have no compass name; a copy moved 15 cm in x
+// and z and stopped as soon as that line met a wall.
+lSpaces.forEach((space) => {
+  const single = fitOn(space, "base", { mode: "fit_height" });
+  const original = placed(lShape, single), copy = placed(lShape, single, true);
+  assert.equal(copy.inside, true, `L ${space.wallId}: the copy is placed`);
+  const dx = copy.position[0] - original.position[0], dz = copy.position[2] - original.position[2];
+  nearMm(Math.hypot(dx, dz) * 1000, 150, `L ${space.wallId}: the copy moves 15 cm`);
+  nearMm(Math.abs(dx * Math.cos(original.rotationY) - dz * Math.sin(original.rotationY)) * 1000, 150, `L ${space.wallId}: along its wall`);
 });
+
+// A tiny edge at a corner (a 10 mm chamfer, a 5 mm jog): its face would run backwards, so it is dropped and its neighbours'
+// faces meet past it. The north face ran 25 mm into the east wall, and its run 15 mm.
+const chamfered = drawnRoom([{ x: -2, z: -1.5 }, { x: 1.99, z: -1.5 }, { x: 2, z: -1.49 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
+const chamferedSpaces = buildCabinetryAvailableSpaces({ activeRoom: chamfered, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+nearMm(chamferedSpaces[0].availableWidthMm, 3880, "a 10 mm chamfer: the north face runs to the east wall's face");
+assert.equal(chamferedSpaces.some((space) => space.wallId === "wall-1"), false, "and the chamfer isn't offered");
+const chamferedRun = placeFittedRun(chamfered, chamferedSpaces[0]);
+nearMm((2 - 0.06 - (chamferedRun.x + chamferedRun.width / 2)) * 1000, 10, "its run ends 10 mm from the east face");
+assert.equal(containedAt(chamfered, chamferedRun), true, "and is inside");
+for (const degrees of [1, 10, 45, 80, 89]) {
+  const angle = (degrees * Math.PI) / 180, jogX = 2 + 0.005 * Math.sin(angle), jogZ = -1.5 + 0.005 * Math.cos(angle);
+  const jogged = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: jogX, z: jogZ }, { x: jogX, z: 1.5 }, { x: -2, z: 1.5 }]);
+  const faces = getRoomBuiltInFaces(jogged).polygon;
+  assert.ok(Math.max(...faces.map((point) => point.x)) <= jogX - 0.06 + 1e-9, `a 5 mm jog at ${degrees}°: no face reaches past the east wall's`);
+  assert.ok(Math.min(...faces.map((point) => point.z)) >= -1.5 + 0.06 - 1e-9, `a 5 mm jog at ${degrees}°: nor past the north wall's`);
+  runsOf(jogged).forEach((run) => assert.equal(containedAt(jogged, run), true, `a 5 mm jog at ${degrees}°: ${run.space.wallId}'s run is inside`));
+}
 
 // A nib narrower than its walls: an outward one 100 mm wide between 120 mm walls has no faces of its own (its sides' faces lie
 // inside each other's wall); an inward pilaster's sides are real faces.
@@ -429,6 +482,7 @@ livingSpaces.map((space) => placeFittedRun(living, space)).forEach((run) => {
   const along = { x: Math.cos(run.rotationY) * 0.01, z: -Math.sin(run.rotationY) * 0.01 };
   const [nudgedX, nudgedZ] = clampBuiltInToRoom(living, run.x + along.x, run.z + along.z, run.width, run.depth, run.rotationY, { from: [run.x, run.z] });
   assert.equal(check(nudgedX, nudgedZ, true), true, `living ${run.space.wallId}: still inside after a 10 mm nudge`);
+  assert.deepEqual(getCabinetCopyOffset(run.space, living), [0.15, 0.15], `living ${run.space.wallId}: a copy moves 15 cm in x and z, as on the line`);
 });
 
 console.log("Cabinet polygon host and placement tests passed.");

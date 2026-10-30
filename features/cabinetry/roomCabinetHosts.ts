@@ -2,9 +2,11 @@ import { PLAN_OPENING_DEFAULT_HEIGHT_METERS } from "@/lib/design-page-plan-overl
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import {
+  clampBuiltInToRoom,
   getRoomBuiltInFaces,
   isBuiltInFaceInRoom,
   isImportedPlanRoom,
+  type AcuteCorner,
   type BuiltInFaceEdge,
 } from "@/lib/room-built-in-faces";
 import { getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
@@ -13,9 +15,10 @@ import type { RoomSnapshot } from "@/lib/room-types";
 import {
   createCabinetPolygonWallSpaces,
   createCabinetRoomWallSpaces,
+  getCabinetFitPlacement,
   mapCabinetCardinalOpeningsToPolygonWalls,
 } from "./fitToSpace";
-import type { CabinetHostSpace } from "./types";
+import type { CabinetDefinition, CabinetHostSpace } from "./types";
 
 /**
  * A room's walls as Fit to Space hosts (J, 29 Oct 2026: "Face, back flush"). Each host is its wall's finished face
@@ -86,7 +89,7 @@ export function buildCabinetryAvailableSpaces({
   const faces = getRoomBuiltInFaces(activeRoom);
   return outlineSpaces
     .filter((space) => isBuiltInFaceInRoom(faces, wallIndex(space.wallId ?? "")))
-    .map((space) => withFaceSegment(space, faces.edges[wallIndex(space.wallId ?? "")]));
+    .map((space) => withFaceSegment(space, faces.edges[wallIndex(space.wallId ?? "")], baseboardOffsetMm));
 }
 
 /** The room's openings as Fit sees them; a roomless one (from an older design) belongs to the only room. */
@@ -129,12 +132,16 @@ function wallIndex(wallId: string): number {
 }
 
 /**
- * An outline host moved onto its face: the face's own length and ends (and their setbacks from acute corners), with its
- * openings, measured from the outline edge's middle, re-measured from the face's middle.
+ * An outline host moved onto its face: the face's own length and ends, with its openings, measured from the outline edge's
+ * middle, re-measured from the face's middle. At a corner under 90° a run's end stands back so that its nearest point, its
+ * front corner, keeps the allowance (and the baseboard) from the next face, measured from that face: the allowance over the
+ * angle's sine, the baseboard's own share, and the run's depth times its cotangent (`getCabinetAvailableSegments`).
  */
-function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceEdge): CabinetHostSpace {
+function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceEdge, baseboardMm: number): CabinetHostSpace {
   const outlineSegment = space.wallSegment;
   if (!outlineSegment) return space;
+  const sideMm = space.installationClearanceLeftMm ?? CABINET_RUN_END_ALLOWANCE_MM;
+  const endClearanceMm = (corner: AcuteCorner | null) => (corner ? sideMm / corner.sin + baseboardMm * corner.cot : sideMm);
   const length = space.availableWidthMm || 1;
   const dx = (outlineSegment.endXmm - outlineSegment.startXmm) / length, dz = (outlineSegment.endZmm - outlineSegment.startZmm) / length;
   const shiftMm = ((outlineSegment.startXmm + outlineSegment.endXmm) / 2 - (face.start.x + face.end.x) * 500) * dx +
@@ -142,22 +149,43 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceEdge): Cabine
   return {
     ...space,
     availableWidthMm: Math.hypot(face.end.x - face.start.x, face.end.z - face.start.z) * 1000,
+    installationClearanceLeftMm: endClearanceMm(face.startAcute),
+    installationClearanceRightMm: endClearanceMm(face.endAcute),
     wallSegment: {
       ...outlineSegment,
       startXmm: face.start.x * 1000, startZmm: face.start.z * 1000, endXmm: face.end.x * 1000, endZmm: face.end.z * 1000,
-      startSetbackPerDepth: face.startSetbackPerDepth, endSetbackPerDepth: face.endSetbackPerDepth,
+      startSetbackPerDepth: face.startAcute?.cot ?? 0, endSetbackPerDepth: face.endAcute?.cot ?? 0,
     },
     openings: space.openings.map((opening) => ({ ...opening, offsetMm: Number((opening.offsetMm + shiftMm).toFixed(3)) })),
   };
 }
 
-/** Where Place as copy puts a copy of a fitted run: 15 cm along its wall; a run fitted nowhere moves 15 cm in x and z. */
-export function getCabinetCopyOffset(host: CabinetHostSpace | undefined): [number, number] {
+/**
+ * Where Place as copy puts a copy of a fitted run in `room`: 15 cm along its wall. A run fitted nowhere, or in an imported plan's
+ * room (which keeps the line's rule), moves 15 cm along x for a north or south wall, z for an east or west one, or both.
+ */
+export function getCabinetCopyOffset(host: CabinetHostSpace | undefined, room: RoomSnapshot): [number, number] {
   const segment = host?.wallSegment;
-  if (segment) {
+  if (segment && !isImportedPlanRoom(room)) {
     const length = Math.hypot(segment.endXmm - segment.startXmm, segment.endZmm - segment.startZmm) || 1;
     return [(0.15 * (segment.endXmm - segment.startXmm)) / length, (0.15 * (segment.endZmm - segment.startZmm)) / length];
   }
   const wall = host?.wall;
   return [!wall || wall === "north" || wall === "south" ? 0.15 : 0, !wall || wall === "east" || wall === "west" ? 0.15 : 0];
+}
+
+/**
+ * Where a built-in is placed in `room`: where Fit to Space put it, or the room's middle, kept inside the room
+ * (clampBuiltInToRoom). A copy moves from there along its wall as far as it still fits.
+ */
+export function getCabinetPlacement(
+  definition: CabinetDefinition, room: RoomSnapshot, placeAsCopy = false
+): { position: [number, number, number]; rotationY: number } {
+  const fitted = getCabinetFitPlacement(definition, room.geometry.width, room.geometry.depth);
+  const rotationY = fitted?.rotationY ?? 0;
+  const at: [number, number] = [fitted?.position[0] ?? 0, fitted?.position[2] ?? 0];
+  const [offsetX, offsetZ] = placeAsCopy ? getCabinetCopyOffset(definition.fitState?.host, room) : [0, 0];
+  const [x, z] = clampBuiltInToRoom(room, at[0] + offsetX, at[1] + offsetZ, definition.totalWidth / 1000, definition.depth / 1000,
+    rotationY, { from: at });
+  return { position: [x, fitted?.position[1] ?? 0, z], rotationY };
 }

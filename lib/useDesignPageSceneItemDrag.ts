@@ -20,7 +20,8 @@ import {
   type DesignItemTransformPatch,
 } from "@/lib/design-page-item-commands";
 import type { HistoryCommand, HistoryStatus } from "@/lib/historyManager";
-import { clampItemToRoom } from "@/lib/room-built-in-faces";
+import { clampToPlacementRoom } from "@/lib/useDesignPagePlacementRoomQueries";
+import { getCrossRoomItemDragTarget } from "@/lib/useDesignPageCrossRoomItemTransfer";
 import { isBuiltInItem } from "@/lib/room-finished-outline";
 import type {
   SceneItemDragEndContext,
@@ -385,7 +386,7 @@ export function useDesignPageSceneItemDrag({
             : null;
           const [safeX, safeZ] = surfacePlacement
             ? [surfacePlacement.position[0], surfacePlacement.position[2]]
-            : clampItemToRoom(mover, targetRoom, // The target room's own shape and panels; clampToRoom is the active room's.
+            : clampToPlacementRoom(targetRoom, // The target room's own shape and panels; clampToRoom is the active room's.
                 targetLocalPosition[0], targetLocalPosition[2],
                 configuredPlanningDims.w / 1000, configuredPlanningDims.d / 1000, mover.rotationY ?? 0);
           const targetPosition: [number, number, number] = surfacePlacement
@@ -414,21 +415,14 @@ export function useDesignPageSceneItemDrag({
             targetRoom,
             targetPosition,
             surfacePlacement?.rotationY ?? mover.rotationY ?? 0,
-            configuredPlanningDims, isBuiltInItem(mover)
+            configuredPlanningDims
           );
           setCrossRoomDragTarget({
             roomId: targetRoom.id,
-            label:
-              isSurfaceOnlyCatalogItem(product) && !surfacePlacement
-                ? `Add a table in ${targetRoom.name}`
-                : !contained
-                  ? `Place fully inside ${targetRoom.name}`
-                  : blocker
-                    ? getItemDisplayName(blocker) ?? targetRoom.name
-                    : targetRoom.name,
-            valid: Boolean(
-              (!isSurfaceOnlyCatalogItem(product) || surfacePlacement) && contained && !blocker
-            ),
+            ...getCrossRoomItemDragTarget({
+              item: mover, roomName: targetRoom.name, needsSurface: isSurfaceOnlyCatalogItem(product) && !surfacePlacement,
+              contained, blockedBy: blocker ? getItemDisplayName(blocker) ?? targetRoom.name : null,
+            }),
             kind: "item",
           });
           return true;

@@ -36,7 +36,7 @@ import {
   updateCabinetPlacementMetadata,
 } from "./designItemAdapters";
 import { getCabinetFitPlacement } from "./fitToSpace";
-import { buildCabinetryAvailableSpaces, getCabinetCopyOffset } from "./roomCabinetHosts";
+import { buildCabinetryAvailableSpaces, getCabinetPlacement } from "./roomCabinetHosts";
 import { generateCabinetBOM } from "./generateCabinetBOM";
 import {
   buildCabinetProjectHandoffPackage,
@@ -662,24 +662,10 @@ export function useDesignPageCabinetry({
         cabinetId: instanceId,
         blob: payload.glbBlob,
       });
-      const fitPlacement = getCabinetFitPlacement(
-        payload.definition,
-        room.geometry.width,
-        room.geometry.depth
-      );
-      const placementRotationY = fitPlacement?.rotationY ?? 0;
-      // A copy moves 15 cm along its wall from the fitted run, as far as it still fits.
-      const [copyOffsetX, copyOffsetZ] = payload.placeAsCopy ? getCabinetCopyOffset(payload.definition.fitState?.host) : [0, 0];
-      const fitAt: [number, number] = [fitPlacement?.position[0] ?? 0, fitPlacement?.position[2] ?? 0];
-      const [safeX, safeZ] = clampBuiltInToRoom(room, fitAt[0] + copyOffsetX, fitAt[1] + copyOffsetZ,
-        payload.definition.totalWidth / 1000, payload.definition.depth / 1000, placementRotationY, { from: fitAt });
+      // Where Fit put it (a copy 15 cm along its wall), kept inside the room.
+      const { position, rotationY: placementRotationY } = getCabinetPlacement(payload.definition, room, payload.placeAsCopy);
       const now = new Date().toISOString();
       const documentationSnapshot = generateCabinetDocumentation(payload.definition);
-      const position: ItemPosition = [
-        safeX,
-        fitPlacement?.position[1] ?? 0,
-        safeZ,
-      ];
       const item: DesignItem = {
         id: instanceId,
         instanceId,
@@ -723,17 +709,6 @@ export function useDesignPageCabinetry({
         qty: 1,
         includeInCheckout: false,
       };
-      // Placed over another item (a copy with no room beside its run, say), it is refused, as a move onto one is.
-      const placedBounds = getItemAABB(item);
-      const blocker = placedBounds && room.items.find((other) => {
-        const bounds = CATALOG_ITEMS[other.productId]?.category === "rug" ? null : getItemAABB(other);
-        return Boolean(bounds && aabbIntersects(placedBounds, bounds));
-      });
-      if (blocker) {
-        assetStorage.deleteGeneratedGlb({ glbAssetUrl });
-        showToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
-        return false;
-      }
 
       const nextItems = commitItemsToRoom(
         room.id,
@@ -772,8 +747,6 @@ export function useDesignPageCabinetry({
       commitItemsToRoom,
       createInstanceId,
       getDesignSnapshot,
-      getItemAABB,
-      getItemDisplayName,
       showToast,
       studio,
       updateCabinetItemDefinition,
