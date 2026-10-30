@@ -92,6 +92,16 @@ for (const template of templates) {
   review(template);
   for (const pack of template.furnishingPacks) review(template, pack.id);
 }
+// a condo or HDB template opens at that home's ceiling height (J, 30-31 Oct 2026); any other, at the room's own
+function heightsOf(id: string) {
+  const template = HOUSE_PLAN_TEMPLATES.find((candidate) => candidate.id === id);
+  assert.ok(template, `the ${id} template`);
+  const built = buildPlanTemplateDocument(template, { timestamp: 1, wallThickness: 0.12, roomHeight: 2.7 });
+  return [...new Set(built.rooms.map((templateRoom) => templateRoom.geometry.height))];
+}
+assert.deepEqual(heightsOf("small_condo"), [2.8], "Small condo: 2.8 m, a condo's ceiling");
+assert.deepEqual(heightsOf("hdb_two_room"), [2.6], "HDB-style 2-room: 2.6 m");
+assert.deepEqual(heightsOf("studio"), [2.7], "a template of no particular home keeps the room's height");
 for (const template of templates) {
   for (const pack of template.furnishingPacks) {
     assert.ok(!pack.intents.some((intent) => intent.category === "rug"), `${template.label}: rugs have no model, so packs have none.`);
