@@ -138,6 +138,18 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   `Faithful trace unavailable: …`, `No traced drawing: …`).
 - It needs numpy, OpenCV 4 and scikit-image from `requirements.txt`; not tesseract.
 
+No upload gives nothing (beta step 2.1, 30 Oct 2026; both switches off unless set in the worker's environment):
+- `FV_INVERT_DARK=1`: a plan drawn in light lines on a dark ground (120 Grange's brochure pages) is read by stage 1 and
+  traced by the faithful trace turned over, as dark ink on light paper, instead of being read as nothing and left. A
+  page counts as light on dark when its most common grey is darker than mid-grey, at least twice as much of its ink is
+  lighter than that as darker (a dim photo of an ordinary plan is left as it is), and it is dark round its edges. On
+  the 87 open test pages it picks exactly the two 120 Grange pages. Stage 1 marks such a page `inverted_dark_ground`.
+- `FLOOR_PLAN_VECTORIZER_PAGE_BUDGET=1`: the faithful trace runs inside the page's own time limit
+  (`FLOOR_PLAN_VECTORIZER_TIMEOUT_MS`) instead of after it, cut at that limit. A page that reaches the trace with less
+  than `FLOOR_PLAN_FAITHFUL_TRACE_MIN_MS` left (default 30000) keeps stage 1's reading without the trace, noted
+  (`Faithful trace not used: the page's time limit was nearly spent`). A page stage 1 could not read is still traced on
+  its own, as before.
+
 Everything runs on the worker; page bytes are written to a private temporary folder that is removed afterwards.
 Development history, scoring tools, truth files and test plans live in the main checkout's copy of this folder
 (`APP-EXPORT.md`, `TUNING.md`, `tools/`); this copy holds only what the worker runs.

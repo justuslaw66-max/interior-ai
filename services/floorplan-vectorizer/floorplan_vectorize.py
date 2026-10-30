@@ -51,6 +51,28 @@ OCR_THREADS = int(os.environ.get("FV_OCR_THREADS", "0") or 0) or max(1, min(8, (
 # shrunk to a third.  "1": a bold scan also needs most of its line work dark (measured: the bold scan 1.0, blurred copies and
 # plans with grey hairlines 0.07 - 0.47).
 BOLD_NEEDS_DARK = os.environ.get("FV_BOLD_NEEDS_DARK", "1") != "0"
+# No upload gives nothing (beta step 2.1, 30 Oct 2026). A plan drawn in light lines on a dark ground (120 Grange's
+# brochure pages) is read as nothing: every program here looks for dark ink on light paper. "1": such a page is read
+# turned over (its greys inverted) - paper the picture's most common grey and darker than mid-grey, at least twice as
+# much ink lighter than the paper as darker (a dim photo of an ordinary plan has its ink darker than its grey paper and is
+# left), and the page dark round its edges (a plan whose black fills cover most of white paper is left). Off by default; faithful_drawing.py reads the same switch and the same rule (light_on_dark there).
+INVERT_DARK = os.environ.get("FV_INVERT_DARK", "0") == "1"
+
+
+def light_on_dark(gray):
+    """True for a plan drawn light on a dark ground: its paper (most common grey) under 128 and its ink lighter"""
+    hist = np.bincount(gray.ravel(), minlength=256)
+    paper = int(np.argmax(hist))
+    if paper >= 128:
+        return False
+    lighter = int(hist[min(255, paper + 60):].sum())
+    darker = int(hist[:max(0, paper - 60)].sum())
+    if lighter < 2 * darker or lighter < 0.002 * gray.size:
+        return False
+    # and dark round its edges, as a page is: a plan whose black fills cover more than half of white paper is not
+    b = max(1, min(gray.shape[:2]) // 50)
+    frame = np.concatenate([gray[:b].ravel(), gray[-b:].ravel(), gray[:, :b].ravel(), gray[:, -b:].ravel()])
+    return float(np.median(frame)) < 128
 # Nothing left out (round 24, J 6 Oct: "trace it out exactly how it is first, do not leave anything out").  After every
 # reading, the drawing is compared with what the trace draws; drawn ink the trace has nowhere near (a duct's dashed cross, a
 # floor-drain triangle, a tap dot, lettering that could not be read) is traced as it is - plain strokes and small filled
@@ -1434,10 +1456,15 @@ def extract(path):
     bgr0 = cv2.imread(path, cv2.IMREAD_COLOR)
     if bgr0 is None:
         sys.exit("cannot read an image from %r (no such file, or not a PNG / JPEG / WebP)" % path)
+    inverted = INVERT_DARK and light_on_dark(cv2.cvtColor(bgr0, cv2.COLOR_BGR2GRAY))
+    if inverted:
+        bgr0 = 255 - bgr0                                   # (read as dark ink on light paper from here on)
     seg_map = seg_read(bgr0) if SEG_MODEL else None       # the model's reading, carried through every resize / turn / crop below
     gray0, flattened = flatten_background(bgr0)
     if not flattened:
         gray0 = cv2.imread(path, cv2.IMREAD_GRAYSCALE)      # (exactly the decode used so far: a JPEG's own grey differs by 1 from BGR->grey)
+        if inverted:
+            gray0 = 255 - gray0
     soft_edges = WM_SOFT and ink_paper_edge(gray0)[2] < RESTORE_EDGE
     # (how crisp the picture is as it came, before its background is flattened - flattening steepens a blurred copy's
     #  edges: c23's low-res copy measures 0.78 as it came, 1.0 flattened)
@@ -1554,6 +1581,8 @@ def extract(path):
         model["background_flattened"] = True
     if pre_scale != 1.0:
         model["pre_scale"] = round(pre_scale, 4); model["source_size"] = orig_size
+    if inverted:
+        model["inverted_dark_ground"] = True                      # (a page read as it came keeps its model byte for byte)
     if wm_frac:
         model["watermark_removed"] = round(wm_frac, 4)
     if restored is not None and restored["restored"]:
