@@ -1,4 +1,5 @@
 import assert from "assert";
+import { roundedEdgeBandingM } from "../../features/cabinetry/edgeBandingTotals";
 import {
   buildCabinetFabricationDxf,
   buildCabinetFabricationDxfFileName,
@@ -120,9 +121,9 @@ export function runPresetContractTests(): void {
     "cabinet run should produce edge-banding schedule rows"
   );
   assert.strictEqual(
-    Math.round(cabinetRunDocumentation.edgeBandingSchedule.reduce((sum, item) => sum + item.totalLengthM, 0) * 100) / 100,
-    27.36,
-    "cabinet run should total edge-banding length from the cut list"
+    roundedEdgeBandingM(cabinetRunDocumentation.cutList),
+    27.37,
+    "cabinet run should total edge-banding length from the cut list, rounded once (27.366 m)"
   );
   assert(
     cabinetRunDocumentation.edgeBandingSchedule.some((item) => item.materialId === "greenlam-solids-101" && item.partCount === 16),

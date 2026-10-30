@@ -176,7 +176,7 @@ export function DesignPageSceneRegion({
         <div
           data-testid="active-room-focus-toolbar"
           data-focus-enabled={activeRoomFocusEnabled ? "true" : "false"} data-surface="floating"
-          className="pointer-events-auto absolute left-1/2 top-bar-17 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full md:top-bar-20 border border-separator bg-surface-floating/95 px-2 py-1.5 text-xs text-label-secondary shadow-md backdrop-blur"
+          className="pointer-events-auto absolute left-1/2 md:left-[var(--canvas-centre-x,50%)] top-bar-17 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full md:top-bar-20 border border-separator bg-surface-floating/95 px-2 py-1.5 text-xs text-label-secondary shadow-md backdrop-blur"
         >
           <span
             aria-hidden="true"

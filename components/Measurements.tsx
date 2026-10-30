@@ -1,4 +1,5 @@
 import { Html } from "@react-three/drei";
+import { Check, TriangleAlert } from "lucide-react";
 import { Measure } from "@/lib/measurements";
 
 interface MeasurementsProps {
@@ -19,17 +20,17 @@ export function Measurements({ measures, visible = true }: MeasurementsProps) {
     ok: {
       bg: "rgba(51, 171, 111, 0.85)",
       text: "#ffffff",
-      icon: "✓",
+      icon: Check,
     },
     good: {
       bg: "rgba(16, 185, 129, 1)",
       text: "#ffffff",
-      icon: "✓",
+      icon: Check,
     },
     warn: {
       bg: "rgba(245, 158, 11, 0.9)",
       text: "#1f2937",
-      icon: "⚠",
+      icon: TriangleAlert,
     },
   };
 
@@ -37,6 +38,7 @@ export function Measurements({ measures, visible = true }: MeasurementsProps) {
     <>
       {measures.map((m, idx) => {
         const style = severityStyles[m.severity || "ok"];
+        const Icon = style.icon;
         return (
           <Html
             key={`measure-${idx}`}
@@ -60,7 +62,7 @@ export function Measurements({ measures, visible = true }: MeasurementsProps) {
               gap: "4px",
             }}
           >
-            <span>{style.icon}</span>
+            <Icon size={12} strokeWidth={2.5} aria-hidden="true" />
             <span>{m.label}</span>
           </Html>
         );

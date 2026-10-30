@@ -1,5 +1,6 @@
 "use client";
 
+import { DoorClosed, Grid2x2, Maximize, MousePointer2, PencilLine, Ruler, type LucideIcon } from "lucide-react";
 import type { FloorPlanTool } from "@/components/editor/FloorPlanToolStrip";
 import { Button } from "@/components/ui/Button";
 
@@ -39,60 +40,19 @@ const manualPlanQuickActionButtonClass = "group relative";
 const manualPlanQuickActionTooltipClass =
   "pointer-events-none absolute bottom-full left-1/2 z-40 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-surface-toast px-2 py-1 text-xs font-semibold text-on-surface-toast shadow-lg group-hover:block group-focus:block group-focus-visible:block";
 
+// The tool icons are lucide's (30 Oct 2026), the same set as the rest of the editor.
+const MANUAL_PLAN_ACTION_ICONS = {
+  select: MousePointer2,
+  scale: Ruler,
+  draw: PencilLine,
+  door: DoorClosed,
+  window: Grid2x2,
+  fit: Maximize,
+} satisfies Record<ManualPlanActionIconName, LucideIcon>;
+
 function ManualPlanActionIcon({ name }: { name: ManualPlanActionIconName }) {
-  const lineProps = {
-    stroke: "currentColor",
-    strokeWidth: 2,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
-    vectorEffect: "non-scaling-stroke" as const,
-  };
-
-  if (name === "select") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
-        <path d="M6 4l10 8-5 1.5 3 5-2.5 1.5-3-5-3.5 4V4z" {...lineProps} />
-      </svg>
-    );
-  }
-
-  if (name === "scale") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
-        <path d="M4 16l12-12 4 4L8 20l-4-4zM8 16l-2-2M11 13l-2-2M14 10l-2-2" {...lineProps} />
-      </svg>
-    );
-  }
-
-  if (name === "draw") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
-        <path d="M5 19h14M7 15l8.5-8.5 2 2L9 17H7v-2z" {...lineProps} />
-      </svg>
-    );
-  }
-
-  if (name === "door") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
-        <path d="M7 20V5h9v15M10 12h.01M16 20H5" {...lineProps} />
-      </svg>
-    );
-  }
-
-  if (name === "window") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
-        <path d="M5 6h14v12H5zM12 6v12M5 12h14" {...lineProps} />
-      </svg>
-    );
-  }
-
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none">
-      <path d="M8 4H4v4M16 4h4v4M20 16v4h-4M4 16v4h4M8 4L4 8M16 4l4 4M20 16l-4 4M4 16l4 4" {...lineProps} />
-    </svg>
-  );
+  const Icon = MANUAL_PLAN_ACTION_ICONS[name];
+  return <Icon className="h-4 w-4" aria-hidden="true" />;
 }
 
 export function PlanManualQuickActions({ state, actions }: PlanManualQuickActionsProps) {

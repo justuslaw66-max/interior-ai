@@ -12,6 +12,7 @@ import {
   cabinetMillimetresToDisplay,
   formatCabinetMeasurement,
 } from "../measurementUnits";
+import { MoveHorizontal, MoveVertical, type LucideIcon } from "lucide-react";
 import { useCabinetMeasurementUnit } from "./CabinetMeasurementUnitContext";
 
 export type CabinetOverallDimensionField = "totalWidth" | "height" | "depth";
@@ -69,7 +70,7 @@ type HandleDefinition = {
   direction: 1 | -1;
   placementClassName: string;
   cursorClassName: string;
-  directionGlyph: string;
+  DirectionIcon: LucideIcon;
 };
 
 const HANDLE_DEFINITIONS: readonly HandleDefinition[] = [
@@ -80,7 +81,7 @@ const HANDLE_DEFINITIONS: readonly HandleDefinition[] = [
     direction: 1,
     placementClassName: "bottom-3 left-1/2 -translate-x-1/2",
     cursorClassName: "cursor-ew-resize",
-    directionGlyph: "↔",
+    DirectionIcon: MoveHorizontal,
   },
   {
     field: "height",
@@ -89,7 +90,7 @@ const HANDLE_DEFINITIONS: readonly HandleDefinition[] = [
     direction: -1,
     placementClassName: "right-3 top-1/2 -translate-y-1/2",
     cursorClassName: "cursor-ns-resize",
-    directionGlyph: "↕",
+    DirectionIcon: MoveVertical,
   },
   {
     field: "depth",
@@ -98,7 +99,7 @@ const HANDLE_DEFINITIONS: readonly HandleDefinition[] = [
     direction: 1,
     placementClassName: "right-3 top-3",
     cursorClassName: "cursor-ew-resize",
-    directionGlyph: "↔",
+    DirectionIcon: MoveHorizontal,
   },
 ] as const;
 
@@ -398,9 +399,7 @@ export function CabinetOverallDimensionHandles({
             onBlur={(event) => cancelDragFromFocusLoss(event.currentTarget)}
             onKeyDown={(event) => adjustWithKeyboard(definition, event)}
           >
-            <span aria-hidden="true" className="text-sm leading-none text-sky-200">
-              {definition.directionGlyph}
-            </span>
+            <definition.DirectionIcon className="h-3.5 w-3.5 shrink-0 text-sky-200" aria-hidden="true" />
             <span className="sr-only">{definition.label}: </span>
             <span>{formatMeasurement(valueMm)}</span>
           </button>

@@ -98,6 +98,18 @@ export function registerSelectionTests() {
         previewStatusBox!.y + previewStatusBox!.height
       ).toBeLessThanOrEqual(depthHandleBox!.y);
 
+      // Below 1280px the bar stacks: the controls on top, then the summary and the status, so the
+      // summary keeps a readable width (30 Oct 2026; it was squeezed to a letter or two at ~1100px).
+      const desktopViewport = page.viewportSize();
+      await page.setViewportSize({ width: 1100, height: 760 });
+      await expect.poll(async () => (await previewSummary.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(150);
+      const narrowSummaryBox = await previewSummary.boundingBox();
+      const narrowControlsBox = await previewControls.boundingBox();
+      const narrowStatusBox = await previewStatus.boundingBox();
+      expect(narrowSummaryBox!.y).toBeGreaterThanOrEqual(narrowControlsBox!.y + narrowControlsBox!.height);
+      expect(narrowSummaryBox!.x + narrowSummaryBox!.width).toBeLessThanOrEqual(narrowStatusBox!.x);
+      if (desktopViewport) await page.setViewportSize(desktopViewport);
+
       await expect
         .poll(() => previewRenderer.getAttribute("data-preview-ready-key"))
         .not.toBe(modulePreviewKey);

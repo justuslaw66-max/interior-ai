@@ -48,7 +48,7 @@ export function PlanCanvasGuidance({ state, actions }: PlanCanvasGuidanceProps) 
     <div
       data-testid="plan-canvas-guidance" data-touch-area data-surface="floating"
       data-tone={state.guidance.tone}
-      className={`pointer-events-none absolute left-1/2 z-30 w-[min(92vw,390px)] -translate-x-1/2 rounded-xl border border-separator bg-surface-floating/95 px-3 py-2.5 shadow-xl backdrop-blur ${placementClass(state.aboveStepSheet)}`}
+      className={`pointer-events-none absolute left-1/2 md:left-[var(--canvas-centre-x,50%)] z-30 w-[min(92vw,390px)] md:max-w-[var(--canvas-overlay-max-width,100%)] -translate-x-1/2 rounded-xl border border-separator bg-surface-floating/95 px-3 py-2.5 shadow-xl backdrop-blur ${placementClass(state.aboveStepSheet)}`}
       style={onSheet ? { bottom: `calc(${sheet.heightPx + 8}px + env(safe-area-inset-bottom))` } : undefined}
       role={state.primaryAction ? "group" : "status"}
       aria-label={state.primaryAction ? state.guidance.title : undefined}

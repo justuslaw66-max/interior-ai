@@ -20,7 +20,7 @@ export function AiLayoutPreviewBanner({
   return (
     <div
       data-testid="ai-layout-preview-banner" data-surface="floating"
-      className="absolute left-1/2 top-36 z-30 md:top-bar-41 flex w-[min(92vw,620px)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg border border-success-tint-border bg-surface-floating/95 ring-1 ring-surface-floating-edge px-4 py-3 text-sm text-control-label shadow-xl backdrop-blur"
+      className="absolute left-1/2 md:left-[var(--canvas-centre-x,50%)] top-36 z-30 md:top-bar-41 flex w-[min(92vw,620px)] md:max-w-[var(--canvas-overlay-max-width,100%)] -translate-x-1/2 flex-wrap items-center justify-between gap-3 rounded-lg border border-success-tint-border bg-surface-floating/95 ring-1 ring-surface-floating-edge px-4 py-3 text-sm text-control-label shadow-xl backdrop-blur"
     >
       <div className="min-w-0">
         <div className="font-semibold">
