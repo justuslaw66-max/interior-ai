@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/Button";
 import { condoMapFileUrl, type CondoUnitCard as CondoUnit } from "@/lib/condo-map/condo-map-data";
 import { unitArea, unitFloorName, unitLayout } from "./condo-map-view";
 
-/** The chosen unit: its type, floor and stack, its layout and areas as the brochure gives them, and its plan. */
-export function CondoUnitCard({ slug, unit, onClose }: { slug: string; unit: CondoUnit; onClose: () => void }) {
+/**
+ * The chosen unit: its type, floor and stack, its layout and areas as the brochure gives them, and its plan, with a
+ * word when the map doesn't lay that plan on the unit's floor (it couldn't be placed, or its turn or mirror isn't sure).
+ */
+export function CondoUnitCard({ slug, unit, planOnMap, onClose }: { slug: string; unit: CondoUnit; planOnMap: boolean; onClose: () => void }) {
   const where = [unit.type ? `Type ${unit.type}` : null, unitFloorName(unit), unit.stack ? `stack ${unit.stack}` : null];
   return (
     <section aria-labelledby="condo-map-unit" className="rounded-xl border border-separator bg-surface-elevated p-4">
@@ -45,6 +48,11 @@ export function CondoUnitCard({ slug, unit, onClose }: { slug: string; unit: Con
       ) : (
         <p className="mt-3 text-xs text-label-secondary">There is no plan picture for this unit.</p>
       )}
+      {unit.plan && !planOnMap ? (
+        <p className="mt-2 text-xs text-label-secondary">
+          This plan isn&apos;t laid on the map&apos;s floor yet: how it sits in the building isn&apos;t certain enough.
+        </p>
+      ) : null}
     </section>
   );
 }

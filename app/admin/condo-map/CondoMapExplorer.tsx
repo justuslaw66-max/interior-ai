@@ -9,6 +9,7 @@ import {
   chooseUnit,
   chosenUnitCard,
   condoMapCredits,
+  unitPlans,
   type CondoMapView,
 } from "./condo-map-view";
 import { CondoMapPanel } from "./CondoMapPanel";
@@ -36,6 +37,7 @@ export function CondoMapExplorer({ developments, token }: { developments: CondoD
   const { ready, problem, modelsFailed } = useCondoMap({ token, container, overview, maps, view, onPick });
   const nameOf = (slug: string) => developments.find((summary) => summary.slug === slug)?.name ?? slug;
   const unit = chosenUnitCard(view, maps);
+  const planOnMap = unit !== null && view.slug !== null && maps[view.slug] !== undefined && unitPlans(maps[view.slug], unit.unit).length > 0;
   const message = mapMessage(token, ready, problem);
   const credits = condoMapCredits(maps);
   return (
@@ -43,7 +45,7 @@ export function CondoMapExplorer({ developments, token }: { developments: CondoD
       <aside aria-label="Developments, floors and units" className="space-y-4">
         <CondoMapPanel developments={developments} maps={maps} failed={failures.map((failure) => failure.slug)} view={view} onView={setView} />
         {unit && view.slug ? (
-          <CondoUnitCard slug={view.slug} unit={unit} onClose={() => setView((current) => chooseUnit(current, maps, null))} />
+          <CondoUnitCard slug={view.slug} unit={unit} planOnMap={planOnMap} onClose={() => setView((current) => chooseUnit(current, maps, null))} />
         ) : null}
       </aside>
       <section aria-label="Map" className="min-w-0 space-y-2">
