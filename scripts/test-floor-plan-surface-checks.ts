@@ -183,7 +183,7 @@ assert.deepEqual(HOUSE_ROOM_TYPES.map(({ label }) => label), HOUSE_ROOM_TYPES.ma
 const shareSource = readFileSync(path.join(process.cwd(), "lib", "shared-design-snapshot.ts"), "utf8");
 assert.match(shareSource, /const publicRoomTypes = new Set\(\[[^\]]*"balcony"/, "a shared balcony stays a balcony");
 assert.match(
-  readFileSync(path.join(process.cwd(), "features", "cabinetry", "useDesignPageCabinetry.ts"), "utf8"),
+  readFileSync(path.join(process.cwd(), "features", "cabinetry", "roomCabinetHosts.ts"), "utf8"),
   /roomType: activeRoom\.roomType === "balcony" \? "custom" : activeRoom\.roomType/,
   "cabinetry, which has no balcony templates, treats a balcony as a custom room"
 );

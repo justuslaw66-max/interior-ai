@@ -187,8 +187,8 @@ assert.match(
   "The 2D plan must still draw the L-shape notch."
 );
 assert.match(
-  readFileSync(join(process.cwd(), "features/cabinetry/useDesignPageCabinetry.ts"), "utf8"),
-  /getRoomPlanOutlinePoints\(getRoomOutlineInsideFinishes\(\{\s*shape: planShape/,
+  readFileSync(join(process.cwd(), "features/cabinetry/roomCabinetHosts.ts"), "utf8"),
+  /getRoomPlanOutlinePoints\(\{\s*shape: planShape/,
   "The cabinetry studio must still draw the L-shape notch."
 );
 assert.match(

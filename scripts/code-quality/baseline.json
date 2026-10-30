@@ -393,7 +393,7 @@
       "limit": 400
     },
     "features/cabinetry/useDesignPageCabinetry.ts": {
-      "lines": 1351,
+      "lines": 1216,
       "limit": 400
     },
     "features/cabinetry/validation.ts": {
@@ -2604,8 +2604,8 @@
     },
     "features/cabinetry/useDesignPageCabinetry.ts": {
       "overlongFunctions": {
-        "count": 9,
-        "maximum": 947
+        "count": 7,
+        "maximum": 933
       },
       "complexFunctions": {
         "count": 3,
@@ -3941,7 +3941,7 @@
     "lib/useDesignPageCabinetryWorkspaceRegistration.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 67
+        "maximum": 64
       }
     },
     "lib/useDesignPageCameraBridgeController.ts": {

@@ -55,7 +55,9 @@ export type IsPlacementContainedInRoom = (
   room: RoomSnapshot,
   position: [number, number, number],
   rotationY: number,
-  dimensions: PlacementDimensions
+  dimensions: PlacementDimensions,
+  /** The inset from the bare wall to keep inside; furniture's (half the wall plus 2 cm) when not given. */
+  wallInset?: number
 ) => boolean;
 
 type UseDesignPagePlacementRoomQueriesInput = {
@@ -165,6 +167,7 @@ export function isPlacementContainedInRoom({
   dimensions,
   houseRoom,
   canonicalModel,
+  wallInset,
 }: {
   room: RoomSnapshot;
   position: [number, number, number];
@@ -172,6 +175,7 @@ export function isPlacementContainedInRoom({
   dimensions: PlacementDimensions;
   houseRoom?: HousePlanRoom2D;
   canonicalModel?: CanonicalFloorPlanRenderModel;
+  wallInset?: number;
 }): boolean {
   if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   // Inside the room's laminate panels (lib/room-finished-outline.ts).
@@ -187,7 +191,7 @@ export function isPlacementContainedInRoom({
     position,
     rotationY,
     dimsMm: dimensions,
-    wallThickness: getFurnitureWallInset(
+    wallThickness: wallInset ?? getFurnitureWallInset(
       room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness
     ),
   });
@@ -222,7 +226,7 @@ export function useDesignPagePlacementRoomQueries({
 
   const isCatalogPlacementContainedInRoom =
     useCallback<IsPlacementContainedInRoom>(
-      (room, position, rotationY, dimensions) =>
+      (room, position, rotationY, dimensions, wallInset) =>
         isPlacementContainedInRoom({
           room,
           position,
@@ -230,6 +234,7 @@ export function useDesignPagePlacementRoomQueries({
           dimensions,
           houseRoom: houseRoomById.get(room.id),
           canonicalModel,
+          wallInset,
         }),
       [houseRoomById, canonicalModel]
     );

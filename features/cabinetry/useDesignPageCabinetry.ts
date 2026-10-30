@@ -11,18 +11,9 @@ import {
 
 import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
-import {
-  aabbIntersects,
-  getFurnitureWallInset,
-  type AABB,
-} from "@/lib/design-page-geometry";
+import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
 import { getRotatedFootprint, snapRotationRadians } from "@/lib/design-page-utils";
-import {
-  PLAN_OPENING_DEFAULT_HEIGHT_METERS,
-} from "@/lib/design-page-plan-overlays";
-import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
-import { getRoomOutlineInsideFinishes, getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
-import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
+import { getBuiltInWallInset } from "@/lib/room-finished-outline";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { getActiveRoom } from "@/lib/room-types";
 import type {
@@ -44,12 +35,8 @@ import {
   type ParametricCabinetDesignItem,
   updateCabinetPlacementMetadata,
 } from "./designItemAdapters";
-import {
-  createCabinetPolygonWallSpaces,
-  createCabinetRoomWallSpaces,
-  getCabinetFitPlacement,
-  mapCabinetCardinalOpeningsToPolygonWalls,
-} from "./fitToSpace";
+import { getCabinetFitPlacement } from "./fitToSpace";
+import { buildCabinetryAvailableSpaces, clampBuiltInToRoom } from "./roomCabinetHosts";
 import { generateCabinetBOM } from "./generateCabinetBOM";
 import {
   buildCabinetProjectHandoffPackage,
@@ -145,31 +132,12 @@ export type DesignPageCabinetryRefs = {
   replaceActiveItemsSnapshot: (items: DesignItem[]) => void;
 };
 
-type ClampToRoom = (
-  x: number,
-  z: number,
-  itemWidth: number,
-  itemDepth: number,
-  roomWidth: number,
-  roomDepth: number,
-  wallThickness: number,
-  rotationY?: number
-) => [number, number];
-
-type ClampToCatalogPlacementRoom = (
-  room: RoomSnapshot,
-  x: number,
-  z: number,
-  itemWidth: number,
-  itemDepth: number,
-  rotationY?: number
-) => [number, number];
-
 type IsCatalogPlacementContainedInRoom = (
   room: RoomSnapshot,
   position: ItemPosition,
   rotationY: number,
-  dimensionsMm: { w: number; d: number; h?: number }
+  dimensionsMm: { w: number; d: number; h?: number },
+  wallInset?: number
 ) => boolean;
 
 export type DesignPageCabinetryActions = {
@@ -185,8 +153,6 @@ export type DesignPageCabinetryActions = {
   ) => DesignItem[] | null;
   updateSelection: (next: Set<string>, primaryId: string | null) => void;
   createInstanceId: () => string;
-  clampToActiveRoom: ClampToRoom;
-  clampToCatalogPlacementRoom: ClampToCatalogPlacementRoom;
   isCatalogPlacementContainedInRoom: IsCatalogPlacementContainedInRoom;
   getItemAABB: (
     item: DesignItem,
@@ -231,94 +197,7 @@ export type DesignPageCabinetryControllerActions = {
   editSelected: () => void;
 };
 
-type CabinetryAvailableSpacesInput = {
-  activeRoom: RoomSnapshot | null;
-  activePlanRoom: { w: number; d: number } | null;
-  planRoomCount: number;
-  planOpenings: RoomOpening2D[];
-};
-
-export function buildCabinetryAvailableSpaces({
-  activeRoom,
-  activePlanRoom,
-  planRoomCount,
-  planOpenings,
-}: CabinetryAvailableSpacesInput): CabinetHostSpace[] {
-  if (!activeRoom) return [];
-
-  const wallInsetMm = Math.round(
-    (activeRoom.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness) * 1000
-  );
-  // Built-ins stand in front of each wall's laminate panel too (lib/room-wall-finish-depths.ts).
-  const wallFinishDepths = getRoomWallFinishDepths(activeRoom);
-  const panelMm = (faceId: string) => Math.round((wallFinishDepths[faceId] ?? 0) * 1000);
-  const widthMm = Math.max(
-    1,
-    Math.round((activePlanRoom?.w ?? activeRoom.geometry.width) * 1000) - wallInsetMm * 2 - panelMm("west") - panelMm("east")
-  );
-  const depthMm = Math.max(
-    1,
-    Math.round((activePlanRoom?.d ?? activeRoom.geometry.depth) * 1000) - wallInsetMm * 2 - panelMm("north") - panelMm("south")
-  );
-  const heightMm = Math.round(
-    (activeRoom.geometry.height ?? ROOM_DIMENSION_DEFAULTS.roomHeight) * 1000
-  );
-  const includeRoomlessOpenings = planRoomCount <= 1;
-  const sharedSpaceInput = {
-    roomId: activeRoom.id,
-    roomName: activeRoom.name,
-    roomType: activeRoom.roomType === "balcony" ? "custom" : activeRoom.roomType,
-    heightMm,
-    baseboardOffsetMm: Math.max(
-      0,
-      Math.round((activeRoom.geometry.baseboardDepth ?? 0) * 1000)
-    ),
-  };
-  const roomOpenings = planOpenings
-    .filter(
-      (opening) =>
-        opening.roomId === activeRoom.id ||
-        (includeRoomlessOpenings && !opening.roomId)
-    )
-    .map((opening) => ({
-      id: opening.id,
-      wall: opening.wall,
-      kind: opening.kind,
-      offsetMm: opening.offsetMm,
-      widthMm: opening.widthMm,
-      heightMm:
-        opening.heightMm ?? Math.round(PLAN_OPENING_DEFAULT_HEIGHT_METERS * 1000),
-      bottomMm: opening.kind === "window" ? opening.bottomMm ?? 900 : 0,
-      label: opening.kind === "door" ? "Door" : "Window",
-    }));
-
-  const planShape = activeRoom.planShape ?? "rectangle";
-  if (planShape !== "rectangle") {
-    // The L-shape's or drawn shape's outline, its edges moved in by their laminate panels (lib/room-finished-outline.ts).
-    const polygon = getRoomPlanOutlinePoints(getRoomOutlineInsideFinishes({
-      shape: planShape, polygon: activeRoom.planPolygon, w: activeRoom.geometry.width, d: activeRoom.geometry.depth,
-    }, wallFinishDepths));
-
-    return createCabinetPolygonWallSpaces({
-      ...sharedSpaceInput,
-      polygon,
-      openings: mapCabinetCardinalOpeningsToPolygonWalls({
-        polygon,
-        openings: roomOpenings,
-      }),
-      // Match the rectangular adapter's adjacent-wall deduction plus the
-      // default installation allowance without changing polygon geometry.
-      installationClearanceSideMm: wallInsetMm + 10,
-    });
-  }
-
-  return createCabinetRoomWallSpaces({
-    ...sharedSpaceInput,
-    widthMm,
-    depthMm,
-    openings: roomOpenings,
-  });
-}
+export { buildCabinetryAvailableSpaces };
 
 export function buildSelectedCabinetDocumentation(
   item: ParametricCabinetDesignItem
@@ -439,8 +318,6 @@ export function useDesignPageCabinetry({
     commitItemsToRoom,
     updateSelection,
     createInstanceId,
-    clampToActiveRoom,
-    clampToCatalogPlacementRoom,
     isCatalogPlacementContainedInRoom,
     getItemAABB,
     getItemDisplayName,
@@ -645,7 +522,7 @@ export function useDesignPageCabinetry({
                 : null;
             const rotationY = fitPlacement?.rotationY ?? getCabinetRotationY(item);
             const [safeX, safeZ] = fitPlacement
-              ? clampToCatalogPlacementRoom(
+              ? clampBuiltInToRoom(
                   targetRoom,
                   fitPlacement.position[0],
                   fitPlacement.position[2],
@@ -728,7 +605,6 @@ export function useDesignPageCabinetry({
     [
       assetStorage,
       canUseStudio,
-      clampToCatalogPlacementRoom,
       commitItemsToRoom,
       getDesignSnapshot,
       showToast,
@@ -823,7 +699,7 @@ export function useDesignPageCabinetry({
         (fitWall === "east" || fitWall === "west" || !fitWall)
           ? 0.15
           : 0;
-      const [safeX, safeZ] = clampToCatalogPlacementRoom(
+      const [safeX, safeZ] = clampBuiltInToRoom(
         room,
         (fitPlacement?.position[0] ?? 0) + copyOffsetX,
         (fitPlacement?.position[2] ?? 0) + copyOffsetZ,
@@ -916,7 +792,6 @@ export function useDesignPageCabinetry({
       accessLevel,
       assetStorage,
       canUseStudio,
-      clampToCatalogPlacementRoom,
       commitItemsToRoom,
       createInstanceId,
       getDesignSnapshot,
@@ -959,14 +834,12 @@ export function useDesignPageCabinetry({
       const { item, planningDimensionsMm } = selected;
       if (!planningDimensionsMm) return;
       const rotationY = getCabinetRotationY(item);
-      const [safeX, safeZ] = clampToActiveRoom(
+      const [safeX, safeZ] = clampBuiltInToRoom(
+        activeRoom,
         targetX,
         targetZ,
         planningDimensionsMm.w / 1000,
         planningDimensionsMm.d / 1000,
-        roomWidth,
-        roomDepth,
-        wallThickness,
         rotationY
       );
       const nextPosition: ItemPosition = [
@@ -980,7 +853,8 @@ export function useDesignPageCabinetry({
           activeRoom,
           nextPosition,
           rotationY,
-          planningDimensionsMm
+          planningDimensionsMm,
+          getBuiltInWallInset(activeRoom.geometry.wallThickness)
         )
       ) {
         showToast(`Place fully inside ${activeRoom.name}`);
@@ -1015,17 +889,13 @@ export function useDesignPageCabinetry({
     [
       activeRoom,
       canEdit,
-      clampToActiveRoom,
       commitItems,
       findSelectedPlacementBlocker,
       getItemDisplayName,
       isCatalogPlacementContainedInRoom,
       isDesigner,
-      roomDepth,
-      roomWidth,
       selected,
       showToast,
-      wallThickness,
     ]
   );
 
@@ -1056,7 +926,7 @@ export function useDesignPageCabinetry({
       planningDimensionsMm.d / 1000,
       rotationY
     );
-    const wallInset = getFurnitureWallInset(wallThickness);
+    const wallInset = getBuiltInWallInset(wallThickness); // Built-ins snap against the face; the move stops at a panel.
     const wallX = Math.max(0, roomWidth / 2 - wallInset - effectiveWidth / 2);
     const wallZ = Math.max(0, roomDepth / 2 - wallInset - effectiveDepth / 2);
     const candidates: Array<[number, number]> = [
@@ -1096,14 +966,12 @@ export function useDesignPageCabinetry({
       const resolvedRotationY = rotationSnapEnabled
         ? snapRotationRadians(targetRotationY, rotationSnapStepRadians)
         : targetRotationY;
-      const [safeX, safeZ] = clampToActiveRoom(
+      const [safeX, safeZ] = clampBuiltInToRoom(
+        activeRoom,
         selected.item.position[0],
         selected.item.position[2],
         planningDimensionsMm.w / 1000,
         planningDimensionsMm.d / 1000,
-        roomWidth,
-        roomDepth,
-        wallThickness,
         resolvedRotationY
       );
       const nextPosition: ItemPosition = [
@@ -1117,7 +985,8 @@ export function useDesignPageCabinetry({
           activeRoom,
           nextPosition,
           resolvedRotationY,
-          planningDimensionsMm
+          planningDimensionsMm,
+          getBuiltInWallInset(activeRoom.geometry.wallThickness)
         )
       ) {
         showToast(`Place fully inside ${activeRoom.name}`);
@@ -1152,19 +1021,15 @@ export function useDesignPageCabinetry({
     [
       activeRoom,
       canEdit,
-      clampToActiveRoom,
       commitItems,
       findSelectedPlacementBlocker,
       getItemDisplayName,
       isCatalogPlacementContainedInRoom,
       isDesigner,
-      roomDepth,
-      roomWidth,
       rotationSnapEnabled,
       rotationSnapStepRadians,
       selected,
       showToast,
-      wallThickness,
     ]
   );
 

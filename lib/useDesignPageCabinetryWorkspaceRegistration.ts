@@ -63,9 +63,6 @@ export function useDesignPageCabinetryWorkspaceRegistration({
       commitItemsToRoom: itemDocument.actions.commitItemsToRoom,
       updateSelection: itemSelection.actions.updateSelection,
       createInstanceId: itemDocument.actions.createInstanceId,
-      clampToActiveRoom: documentRoom.actions.room.clampToActiveRoom,
-      clampToCatalogPlacementRoom:
-        placement.actions.catalog.clampToCatalogPlacementRoom,
       isCatalogPlacementContainedInRoom:
         placement.actions.catalog.isCatalogPlacementContainedInRoom,
       getItemAABB: selectionInspection.actions.geometry.getItemAABB,
