@@ -294,6 +294,14 @@ runCrossRoomTransferTest();
 // where furniture of its size could go.
 const overKitchen = { roomName: "Kitchen", needsSurface: false, contained: true, blockedBy: null };
 assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: { assetType: "parametric_cabinet" } }), { label: "Built-ins stay in their room", valid: false });
-assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: { assetType: "catalog_item" } }), { label: "Kitchen", valid: true });
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: { assetType: "parametric_cabinet" }, contained: false, blockedBy: "Sofa" }),
+  { label: "Built-ins stay in their room", valid: false });
+// Furniture keeps the labels it had: a surface item needs a table, an item must fit inside, a blocker names itself.
+const sofa = { assetType: "catalog_item" } as const;
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: sofa }), { label: "Kitchen", valid: true });
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: sofa, needsSurface: true }), { label: "Add a table in Kitchen", valid: false });
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: sofa, contained: false }), { label: "Place fully inside Kitchen", valid: false });
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: sofa, blockedBy: "Dining table" }), { label: "Dining table", valid: false });
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: sofa, needsSurface: true, contained: false }), { label: "Add a table in Kitchen", valid: false });
 
 console.log("Design-page placement room operation tests passed.");

@@ -290,8 +290,9 @@ assert.deepEqual(
   "fewer than three polygon points should not create misleading hosts"
 );
 
-// Built-ins against the finished face (J, 29 Oct 2026: "Face, back flush"; features/cabinetry/roomCabinetHosts.ts and
-// lib/room-built-in-faces.ts).
+// Built-ins against the finished face (J, 29 Oct 2026: "Face, back flush"; features/cabinetry/roomCabinetHosts.ts,
+// lib/room-built-in-faces.ts and lib/room-built-in-region.ts). scripts/test-built-in-faces-oracle.ts checks thousands of
+// random rooms against the region's definition; these are worked examples.
 const nearMm = (actual: number, expected: number, message: string) =>
   assert.ok(Math.abs(actual - expected) < 0.01, `${message}: ${actual} ≠ ${expected}`);
 type FittedRun = { x: number; z: number; width: number; depth: number; rotationY: number; fitX: number; fitZ: number; space: CabinetHostSpace };
@@ -323,13 +324,13 @@ const drawnRoom = (planPolygon: Array<{ x: number; z: number }>, extra: Partial<
   planShape: "custom_polygon" as const, planPolygon, ...extra,
 }) as RoomSnapshot;
 
-// Angled corners: a run on a straight wall next to an obtuse corner is inside the faces as Fit places it, so it stays put and
+// Angled corners: a run on a straight wall next to an obtuse corner is in the region as Fit places it, so it stays put and
 // moves. The furniture clamp grew its box by half the wall and moved runs 166–800 mm off their walls.
 for (const [label, outline] of [
   ["a 120° corner", [{ x: -2, z: -1.5 }, { x: 1.134, z: -1.5 }, { x: 2, z: 0 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]],
   ["a 0.3 m chamfer", [{ x: -2, z: -1.5 }, { x: 1.7, z: -1.5 }, { x: 2, z: -1.2 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]],
   ["a 1 m chamfer", [{ x: -2, z: -1.5 }, { x: 1, z: -1.5 }, { x: 2, z: -0.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]],
-  // Under 90°, a run stands back from the corner by its depth's share (cot of the angle), so its front corner stays inside.
+  // Under 90°, a run stands back from the corner until its front corner keeps the 10 mm from the slanted face.
   ["a 60° corner", [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2 - 3 / Math.tan(Math.PI / 3), z: 1.5 }, { x: -2, z: 1.5 }]],
   ["a 45° corner", [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: -1, z: 1.5 }, { x: -2, z: 1.5 }]],
 ] as const) {
@@ -430,8 +431,8 @@ lSpaces.forEach((space) => {
   nearMm(Math.abs(dx * Math.cos(original.rotationY) - dz * Math.sin(original.rotationY)) * 1000, 150, `L ${space.wallId}: along its wall`);
 });
 
-// A tiny edge at a corner (a 10 mm chamfer, a 5 mm jog): its face would run backwards, so it is dropped and its neighbours'
-// faces meet past it. The north face ran 25 mm into the east wall, and its run 15 mm.
+// A tiny edge at a corner (a 10 mm chamfer, a 5 mm jog): its band lies inside its neighbours', so it has no exposed face, and
+// theirs meet past it. The north face ran 25 mm into the east wall, and its run 15 mm.
 const chamfered = drawnRoom([{ x: -2, z: -1.5 }, { x: 1.99, z: -1.5 }, { x: 2, z: -1.49 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
 const chamferedSpaces = buildCabinetryAvailableSpaces({ activeRoom: chamfered, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
 nearMm(chamferedSpaces[0].availableWidthMm, 3880, "a 10 mm chamfer: the north face runs to the east wall's face");
@@ -448,8 +449,9 @@ for (const degrees of [1, 10, 45, 80, 89]) {
   runsOf(jogged).forEach((run) => assert.equal(containedAt(jogged, run), true, `a 5 mm jog at ${degrees}°: ${run.space.wallId}'s run is inside`));
 }
 
-// A wall bent under 10° (hand-drawn, a millimetre off) with a panel on one piece: its faces step at the bend, as on a straight
-// wall. Joined where their lines crossed, they met 1.26 m along for a 2° bend, and a 1 mm bend offered neither piece.
+// A wall bent a little (hand-drawn, a millimetre off) with a panel on one piece: the panelled face ends at the bend, the bare
+// one runs to where the faces meet, as on a straight wall. Joined where their lines crossed, faces of different depths met
+// 1.26 m along for a 2° bend; a 1 mm bend offered neither piece.
 const panelOn = (wall: string): RoomSnapshot["surfaces"] => ({
   walls: { default: { paintColorHex: "#ffffff" }, faces: { [wall]: { materialId: "greenlam-woodgrains-5394", panelBacking: { board: "mdf", boardThicknessMm: 18, fixing: "battens" } } } },
 });
@@ -467,17 +469,19 @@ for (const [label, middleZ] of [["bent 2°", -1.5 + 2 * Math.tan(Math.PI / 90)],
   }
 }
 
-// Degenerate outlines: a zero-area spike drawn out of a wall is no wall; a room narrower than its walls has no faces at all.
+// Degenerate outlines: a zero-area spike drawn out of a wall is no wall; a room narrower than its walls has no exposed face,
+// so it keeps the line's rule (its hosts, clamp and snap are furniture's, as an imported plan's are).
 const spiked = drawnRoom([{ x: -2, z: -1.5 }, { x: 0, z: -1.5 }, { x: 0, z: -2.5 }, { x: 0, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
 const spikedHosts = buildCabinetryAvailableSpaces({ activeRoom: spiked, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
 assert.deepEqual(spikedHosts.map((space) => space.wallId), ["wall-0", "wall-3", "wall-4", "wall-5", "wall-6"], "the spike's two edges aren't offered");
 assert.ok(getRoomBuiltInFaces(spiked).polygon.every((point) => point.z >= -1.44 - 1e-9), "and no face runs out along it");
 const tiny = drawnRoom([{ x: 0, z: 0 }, { x: 0.1, z: 0 }, { x: 0.05, z: 0.08 }]);
-assert.deepEqual([getRoomBuiltInFaces(tiny).polygon.length, buildCabinetryAvailableSpaces({ activeRoom: tiny, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).length],
-  [0, 0], "a 0.1 m triangle room has no faces, so no hosts");
+const hostsOf = (room: RoomSnapshot) => buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+assert.equal(getRoomBuiltInFaces(tiny).polygon.length, 0, "a 0.1 m triangle room has no exposed face");
+assert.deepEqual(hostsOf(tiny), hostsOf({ ...tiny, floorElevationMm: 0 }), "so it has the line's hosts, as an imported plan's room");
 
-// A nib narrower than its walls: an outward one 100 mm wide between 120 mm walls has no faces of its own (its sides' faces lie
-// inside each other's wall); an inward pilaster's sides are real faces.
+// A nib narrower than its walls: an outward one 100 mm wide between 120 mm walls is filled by them, so it has no faces of its
+// own and the wall's face runs on across it; an inward pilaster's sides are real faces.
 const nibRoom = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0.05, z: 1.5 }, { x: 0.05, z: 1.6 }, { x: -0.05, z: 1.6 }, { x: -0.05, z: 1.5 }, { x: -2, z: 1.5 }]);
 assert.deepEqual(buildCabinetryAvailableSpaces({ activeRoom: nibRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).map((space) => space.wallId),
   ["wall-0", "wall-1", "wall-2", "wall-6", "wall-7"], "the nib's three walls aren't offered");
@@ -498,18 +502,20 @@ const hung = getCabinetPlacement(fitCabinetToSpace(createCabinetPreset("wall", "
 const hungWidth = fitCabinetToSpace(createCabinetPreset("wall", "hung"), { ...baseboardNorth, mountingHeightMm: 1450 }, { mode: "fit_width" }).definition.totalWidth / 1000;
 nearMm((hung.position[0] - hungWidth / 2 - (-2 + 0.06)) * 1000, 10, "wall cabinets: 10 mm from the west wall's face");
 
-// A run made deeper after Fit: flagged only where it stands at a corner under 90°, not for a run far along the wall.
+// A run made deeper after Fit: flagged only where Fit put it at a corner under 90°, not for a run far along the wall, and only
+// once its front corner would cross the slanted wall (a 60° corner leaves it 10 mm, about 17 mm of depth).
 const tooDeep = (definition: CabinetDefinition) =>
   validateCabinetDefinition(definition).issues.some((issue) => issue.code === "fit.corner_depth");
 const deeperBy = (definition: CabinetDefinition, mm: number) =>
   ({ ...definition, depth: definition.depth + mm, modules: definition.modules.map((module) => ({ ...module, depth: module.depth + mm })) });
 const cornerRun = fitCabinetToSpace(createCabinetPreset("base", "corner-full"), acuteNorth, { mode: "fit_width" }).definition;
 assert.equal(tooDeep(cornerRun), false, "a run fitted at a 60° corner is fine as fitted");
-assert.equal(tooDeep(deeperBy(cornerRun, 20)), true, "made 20 mm deeper, its front corner would cross the slanted wall");
+assert.equal(tooDeep(deeperBy(cornerRun, 2)), false, "made 2 mm deeper, it only uses the allowance");
+assert.equal(tooDeep(deeperBy(cornerRun, 40)), true, "made 40 mm deeper, its front corner would cross the slanted wall");
 const shortRun = fitCabinetToSpace(createCabinetPreset("base", "corner-short"), acuteNorth, { mode: "fit_height" }).definition;
-assert.equal(tooDeep(deeperBy(shortRun, 20)), false, "a run fitted by height only stands far from the corner: deeper, it is still fine");
+assert.equal(tooDeep(deeperBy(shortRun, 40)), false, "a run fitted by height only stands far from the corner: deeper, it is still fine");
 const narrowed = resizeCabinetToOverallWidth(setCabinetOverallWidthLocked(cornerRun, false), cornerRun.totalWidth - 600).definition;
-assert.equal(tooDeep(deeperBy(narrowed, 20)), false, "nor is a full run narrowed by 60 cm and then deepened");
+assert.equal(tooDeep(deeperBy(narrowed, 40)), false, "nor is a full run narrowed by 60 cm and then deepened");
 
 // An imported plan's rooms keep the line's rule for now: their walls each have their own thickness (the apartment's are 200 mm,
 // 100 mm between its rooms), which the room doesn't carry (175 mm, their average), and they can be angled or curved. Hosts on

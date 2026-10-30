@@ -129,8 +129,8 @@ does not replace the observed usability scenarios or the manual release signoff 
 3. Confirm Detailed editor, construction locks, manual bay sizing, custom shelf/door/drawer modes, clearance overlays, BOM, schedules, fabrication data, and export controls are not shown.
 4. Complete Type, Space, Size, Layout, Style, and Review. Confirm the preliminary estimate updates from the same definition and clearly says that final pricing can change.
 5. Place the design, select it, and confirm the inspector shows a simple preliminary estimate plus placement, Edit, and Delete controls without fabrication-level summaries or downloads.
+   - Fit to Space against the finished face (part of this check, not a separate one): fit a base run to a wall of a 4 m room with 120 mm walls. The Space step shows the wall as 3.88 m, and the placed run is 3.86 m, 10 mm from each end wall's face, its back against the wall. With a laminate panel on an end wall or the back wall, the run stops at the panel's face. In a drawn room with an angled corner, the run's nearest corner keeps the 10 mm from the angled wall's face. Nudge it along the wall: it moves without being pushed off the wall or refused. Drag it in 3D along the wall: the drag isn't refused. Drag it over another room: the label says built-ins stay in their room.
 6. Reopen the placed design and confirm it remains in Guided setup with the same dimensions, modules, finish, hardware, position, and rotation.
-7. Fit a base run to a wall of a 4 m room with 120 mm walls: the Space step shows the wall as 3.88 m, and the placed run is 3.86 m, 10 mm from each end wall's face and with its back against the wall. With a laminate panel on an end wall or the back wall, the run stops at the panel's face. Nudge it along the wall: it moves without being pushed off the wall or refused. Drag it in 3D along the wall: the drag isn't refused. Drag it over another room: the label says built-ins stay in their room.
 
 ### Pro
 
