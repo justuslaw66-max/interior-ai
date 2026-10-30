@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import {
+  catalogV1LayoutToFloorPlanDocumentV2,
   catalogV1ToFloorPlanDocumentV2Fixtures,
 } from "@/lib/floor-plan-catalog-v1-adapter";
 import {
@@ -7,6 +8,14 @@ import {
   validateFloorPlanDocumentV2,
 } from "@/lib/floor-plan-compiler-v2";
 import { getAllFloorPlanLibraryCatalogs } from "@/lib/floor-plan-library-yaml";
+import { floorPlanLibraryCatalogSchema } from "@/lib/floor-plan-library-schema";
+import {
+  HOME_CEILING_HEIGHTS_MM,
+  STOREY_ALLOWANCE_MM,
+  homeCeilingHeight,
+  homeKind,
+  templateCeilingHeightM,
+} from "@/lib/home-height-rules";
 
 const catalog = getAllFloorPlanLibraryCatalogs().find(
   (candidate) => candidate.floor_plan.plan_id === "sg-hdb-ping-yi-court"
@@ -239,5 +248,52 @@ assert.ok(
   ),
   "The service-strip louvre must remain a fixed canonical louvre."
 );
+
+// ---------- heights (J, 30 Oct 2026): the brochure's stated height wins, else the rules' height for the home
+assert.deepEqual(
+  [homeKind("hdb"), homeKind("HDB"), homeKind("condo"), homeKind("Executive Condo"), homeKind("townhouse"), homeKind(""), homeKind(null)],
+  ["hdb", "hdb", "condo", "condo", "landed", "unknown", "unknown"]
+);
+assert.equal(homeCeilingHeight({ propertyType: "hdb" }).heightMm, 2600, "HDB flats, BTO and resale alike: about 2.6 m");
+assert.equal(homeCeilingHeight({ propertyType: "hdb_resale" }).heightMm, 2600, "resale too (J, 31 Oct 2026)");
+assert.equal(homeCeilingHeight({ propertyType: "hdb", topFloor: true }).heightMm, 2750, "top floor: 2.7 to 2.8 m");
+assert.equal(homeCeilingHeight({ propertyType: "condo" }).heightMm, 2800, "condo: 2.8 m");
+assert.equal(homeCeilingHeight({ propertyType: "condo", penthouse: true }).heightMm, 3200, "condo penthouse: 3.2 m");
+assert.equal(homeCeilingHeight({ propertyType: "cluster_house" }).heightMm, 3000, "strata landed: 3.0 m");
+assert.equal(homeCeilingHeight({ propertyType: "hdb", penthouse: true }).heightMm, 2600, "a penthouse is a condo's");
+assert.equal(homeCeilingHeight({}).heightMm, HOME_CEILING_HEIGHTS_MM.hdb, "an unknown home keeps 2.6 m");
+assert.equal(templateCeilingHeightM(["condo", "den", "1-bed"]), 2.8, "the Small condo template opens at 2.8 m");
+assert.equal(templateCeilingHeightM(["flat", "HDB-style", "compact"]), 2.6);
+assert.equal(templateCeilingHeightM(["railroad", "older apartment"]), null, "a template of no particular home keeps the room's");
+
+const pingYi = fixtures[0].document.floors[0];
+assert.equal(pingYi.defaults.wallHeight.valueMm, 2600, "Ping Yi Court (BTO, 2025): 2.6 m");
+assert.equal(pingYi.defaults.wallHeight.evidence, "assumed", "no height stated: assumed, and shown as such");
+assert.match(pingYi.defaults.wallHeight.provenance.evidence[0]?.note ?? "", /an HDB flat, BTO or resale: about 2\.6 m/);
+assert.equal(pingYi.storeyHeightMm, 2600 + STOREY_ALLOWANCE_MM, "the storey is the walls plus the slab: 2.8 m");
+
+const firstLayout = catalog.layouts[0];
+const variant = (planPatch: object, layoutPatch: object = {}) =>
+  catalogV1LayoutToFloorPlanDocumentV2(
+    floorPlanLibraryCatalogSchema.parse({ ...catalog, floor_plan: { ...catalog.floor_plan, ...planPatch } }),
+    { ...firstLayout, ...layoutPatch }
+  ).document.floors[0];
+const condo = variant({ property_type: "condo" });
+assert.equal(condo.defaults.wallHeight.valueMm, 2800);
+assert.equal(condo.storeyHeightMm, 3000, "a condo's storey grows with its walls");
+assert.ok(condo.structures.every((structure) => structure.heightMm === 2800), "reference zones stand as high as the walls");
+assert.equal(variant({ property_type: "condo" }, { penthouse: true }).defaults.wallHeight.valueMm, 3200);
+assert.equal(variant({ property_type: "townhouse" }).defaults.wallHeight.valueMm, 3000);
+const stated = variant({ property_type: "condo", ceiling_height: { value_mm: 2950, source_page: 24, quote: "floor to ceiling 2.95 m" } });
+assert.equal(stated.defaults.wallHeight.valueMm, 2950, "the brochure's height wins over the rules");
+assert.equal(stated.defaults.wallHeight.evidence, "source_documented");
+assert.equal(stated.defaults.wallHeight.provenance.evidence[0]?.pageNumber, 24, "with the page that states it");
+assert.equal(stated.storeyHeightMm, 3150);
+const layoutStated = variant(
+  { ceiling_height: { value_mm: 2950, source_page: 24, quote: "2.95 m" } },
+  { ceiling_height: { value_mm: 3300, source_page: 31, quote: "penthouse 3.3 m" } }
+);
+assert.equal(layoutStated.defaults.wallHeight.valueMm, 3300, "a layout's own stated height wins over its plan's");
+assert.throws(() => floorPlanLibraryCatalogSchema.parse({ ...catalog, floor_plan: { ...catalog.floor_plan, ceiling_height: { value_mm: 900, source_page: 1, quote: "x" } } }));
 
 console.log("Schema-v1 to FloorPlanDocumentV2 adapter checks passed.");

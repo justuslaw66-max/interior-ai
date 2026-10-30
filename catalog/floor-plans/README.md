@@ -20,8 +20,9 @@ Public address results come only from immutable `FloorPlanRevision` database row
 12. Record the official unit-list URL in `unit_distribution_source` and its PDF/brochure page numbers on each building.
 13. Mark brochure tracings as approximate even when the block, stack, and floor mapping is verified.
 14. Keep `publication.status: draft` and `publication.visibility: review_only`, even when the fixture geometry is useful. `source.license_status` must describe known evidence and must never be upgraded by assumption.
-15. Run `npm run test:floor-plan-library` before submitting the fixture for review.
-16. If the source supplies complete alternative layouts, put them in a shared layout-level `configuration.group_id`. Give the default option `default_selected: true` and every materialized alternative its own `option_id`. Selecting a non-default layout is the explicit action that may create its separately authored rooms and walls; an annotation alone never does so.
+15. Record a ceiling height the brochure states as `ceiling_height: { value_mm, source_page, quote }`, on `floor_plan` for the whole plan or on a layout for that layout alone, and mark a condo's penthouse layouts `penthouse: true`. Without a stated height the app uses its height rules for the `property_type` (HDB 2.6 m, condo 2.8 m, penthouse 3.2 m, landed 3.0 m: `docs/architecture/home-heights.md`).
+16. Run `npm run test:floor-plan-library` before submitting the fixture for review.
+17. If the source supplies complete alternative layouts, put them in a shared layout-level `configuration.group_id`. Give the default option `default_selected: true` and every materialized alternative its own `option_id`. Selecting a non-default layout is the explicit action that may create its separately authored rooms and walls; an annotation alone never does so.
 
 Internal reviewers can use the review-only resolver to check addresses such as `Block 810A Chai Chee St #12-509`. When a building has unit-distribution data, a valid unit query is narrowed to only the mapped fixture or variants; an unknown stack or unavailable floor does not fall back to broad block results. Admins can inspect fixture previews and source links under `/admin/floor-plans`.
 

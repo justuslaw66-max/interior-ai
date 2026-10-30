@@ -493,7 +493,7 @@
       "limit": 400
     },
     "lib/floor-plan-catalog-v1-adapter.ts": {
-      "lines": 924,
+      "lines": 916,
       "limit": 400
     },
     "lib/floor-plan-compiler-v2.ts": {
@@ -561,7 +561,7 @@
       "limit": 400
     },
     "lib/floor-plan-library-schema.ts": {
-      "lines": 643,
+      "lines": 642,
       "limit": 400
     },
     "lib/floor-plan-quality.ts": {
@@ -3175,7 +3175,7 @@
     "lib/floor-plan-catalog-v1-adapter.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 591
+        "maximum": 584
       },
       "complexFunctions": {
         "count": 1,
