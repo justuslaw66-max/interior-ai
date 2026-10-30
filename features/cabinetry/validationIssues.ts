@@ -96,6 +96,7 @@ function inferTitle(code: string, draft: CabinetValidationIssueDraft): string {
     "fit.width.exceeded": "The design no longer fits its host",
     "fit.height.exceeded": "The design is taller than its fitted space",
     "fit.opening_conflict": "A recorded opening conflicts with the fitted segment",
+    "fit.corner_depth": "The design is too deep for its corner",
     "fit.depth.exceeded": "The design projects beyond the recorded depth",
     "fit.outlet.review": "Recorded outlets need access review",
     "fit.baseboard.clearance": "Baseboard clearance is included in placement",
@@ -126,6 +127,7 @@ function inferResolution(code: string, draft: CabinetValidationIssueDraft): stri
     "fit.width.exceeded": "Refit the assembly or unlock module widths so the system can redistribute them.",
     "fit.height.exceeded": "Refit the height or reduce the assembly height below the recorded ceiling clearance.",
     "fit.opening_conflict": "Choose another wall segment or refit after reviewing the door or window location.",
+    "fit.corner_depth": "Fit to Space again, or reduce the depth: a deeper run stands further back from a corner under 90°.",
     "fit.depth.exceeded": "Reduce the cabinet depth or verify that its projection leaves safe circulation.",
     "fit.outlet.review": "Confirm an accessible service opening, relocation, or approved cutout before fabrication.",
     "fit.baseboard.clearance": "Confirm the recorded offset matches the installed baseboard before placement.",
@@ -255,6 +257,22 @@ function inferFixes(
   return undefined;
 }
 
+/** True when the run where it stands (its width about its segment's centre) would cross the next wall at a corner under 90°
+ * at its depth (fitSegments.ts keeps a deeper run's end further back there), though clear of the host's openings. */
+function isRunTooDeepForCorner(
+  definition: CabinetDefinition,
+  fit: NonNullable<CabinetDefinition["fitState"]>,
+  segmentsAtAnyDepth: ReturnType<typeof getCabinetAvailableSegments>,
+  mountingHeightMm: number
+): boolean {
+  const halfWidthMm = getCabinetOverallWidth(definition) / 2, centreMm = fit.segment.centerOffsetMm;
+  // Within a millimetre: Fit rounds a run's width to the millimetre.
+  const holdsRun = (segments: typeof segmentsAtAnyDepth) => segments.some((segment) =>
+    centreMm - halfWidthMm >= segment.startMm - 1 && centreMm + halfWidthMm <= segment.endMm + 1);
+  if (!holdsRun(segmentsAtAnyDepth)) return false;
+  return !holdsRun(getCabinetAvailableSegments(fit.host, getCabinetOverallHeight(definition), mountingHeightMm, getCabinetOverallDepth(definition)));
+}
+
 function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIssueDraft[] {
   const fit = definition.fitState;
   if (!fit) return [];
@@ -304,6 +322,11 @@ function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIss
       field: "fit.segment",
       message: "A recorded door, window, or obstruction now overlaps the fitted wall segment.",
       target: { scope: "fit", field: "segment", hostId: fit.host.id },
+    });
+  } else if (isRunTooDeepForCorner(definition, fit, availableSegments, mountingHeightMm)) {
+    drafts.push({
+      code: "fit.corner_depth", severity: "error", field: "fit.segment", target: { scope: "fit", field: "segment", hostId: fit.host.id },
+      message: "The design is now too deep for where it stands: at the corner under 90°, its front corner would cross the next wall.",
     });
   }
   if (

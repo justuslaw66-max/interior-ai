@@ -669,7 +669,7 @@ export function CabinetryStudioGuidedView({
                                   0,
                                   30_000
                                 ) ?? 0
-                              )
+                              ), getCabinetOverallDepth(definition) // As Fit measures it: back from an acute corner.
                             );
                             const largestSegmentMm = segments.reduce(
                               (largest, segment) => Math.max(largest, segment.widthMm),

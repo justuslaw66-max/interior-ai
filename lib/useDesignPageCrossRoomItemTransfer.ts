@@ -19,6 +19,7 @@ import {
   SCENE_ITEM_DRAG_COMMAND_ID,
 } from "@/lib/design-page-item-commands";
 import type { HistoryCommand } from "@/lib/historyManager";
+import { isBuiltInItem } from "@/lib/room-finished-outline";
 import type {
   ClampToPlacementRoom,
   FindPlacementBlockerInRoom,
@@ -92,6 +93,23 @@ type UseDesignPageCrossRoomItemTransferInput = {
   refs: DesignPageCrossRoomItemTransferRefs;
   actions: DesignPageCrossRoomItemTransferActions;
 };
+
+/**
+ * What a drag over another room says, and whether dropping there moves the item. A built-in stays in its room: the move
+ * (transferDesignPageItemToRoom) takes catalogue items only.
+ */
+export function getCrossRoomItemDragTarget({ item, roomName, needsSurface, contained, blockedBy }: {
+  item: Pick<DesignItem, "assetType">;
+  roomName: string;
+  needsSurface: boolean;
+  contained: boolean;
+  blockedBy: string | null;
+}): { label: string; valid: boolean } {
+  if (isBuiltInItem(item)) return { label: "Built-ins stay in their room", valid: false };
+  if (needsSurface) return { label: `Add a table in ${roomName}`, valid: false };
+  if (!contained) return { label: `Place fully inside ${roomName}`, valid: false };
+  return blockedBy !== null ? { label: blockedBy, valid: false } : { label: roomName, valid: true };
+}
 
 export function transferDesignPageItemToRoom({
   instanceId,

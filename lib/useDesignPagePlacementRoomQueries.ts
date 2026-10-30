@@ -19,6 +19,7 @@ import type { DesignItem, RoomSnapshot } from "@/lib/room-types";
 import { compileCanonicalFloorPlanRenderModel, type CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
+import { builtInFootprintFits, getRoomBuiltInFaces, isImportedPlanRoom } from "@/lib/room-built-in-faces";
 
 type PlacementDimensions = Pick<DimensionsMm, "w" | "d"> & Partial<Pick<DimensionsMm, "h">>;
 type ExcludedPlacementItems = string | string[] | undefined;
@@ -55,7 +56,9 @@ export type IsPlacementContainedInRoom = (
   room: RoomSnapshot,
   position: [number, number, number],
   rotationY: number,
-  dimensions: PlacementDimensions
+  dimensions: PlacementDimensions,
+  /** A built-in cabinet, which may stand against the finished face; furniture keeps 2 cm off it. */
+  builtIn?: boolean
 ) => boolean;
 
 type UseDesignPagePlacementRoomQueriesInput = {
@@ -165,6 +168,7 @@ export function isPlacementContainedInRoom({
   dimensions,
   houseRoom,
   canonicalModel,
+  builtIn = false,
 }: {
   room: RoomSnapshot;
   position: [number, number, number];
@@ -172,7 +176,13 @@ export function isPlacementContainedInRoom({
   dimensions: PlacementDimensions;
   houseRoom?: HousePlanRoom2D;
   canonicalModel?: CanonicalFloorPlanRenderModel;
+  builtIn?: boolean;
 }): boolean {
+  // A built-in may stand against the finished face, by its real (turned) footprint; an imported plan's rooms keep furniture's
+  // rule for now (lib/room-built-in-faces.ts).
+  if (builtIn && !isImportedPlanRoom(room)) {
+    return builtInFootprintFits(getRoomBuiltInFaces(room), position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY);
+  }
   if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   // Inside the room's laminate panels (lib/room-finished-outline.ts).
   const outline = getRoomOutlineInsideFinishes({
@@ -222,7 +232,7 @@ export function useDesignPagePlacementRoomQueries({
 
   const isCatalogPlacementContainedInRoom =
     useCallback<IsPlacementContainedInRoom>(
-      (room, position, rotationY, dimensions) =>
+      (room, position, rotationY, dimensions, builtIn) =>
         isPlacementContainedInRoom({
           room,
           position,
@@ -230,6 +240,7 @@ export function useDesignPagePlacementRoomQueries({
           dimensions,
           houseRoom: houseRoomById.get(room.id),
           canonicalModel,
+          builtIn,
         }),
       [houseRoomById, canonicalModel]
     );

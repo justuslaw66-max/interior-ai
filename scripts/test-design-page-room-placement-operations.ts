@@ -8,7 +8,7 @@ import type {
   DesignSnapshot,
   RoomSnapshot,
 } from "@/lib/room-types";
-import { transferDesignPageItemToRoom } from "@/lib/useDesignPageCrossRoomItemTransfer";
+import { getCrossRoomItemDragTarget, transferDesignPageItemToRoom } from "@/lib/useDesignPageCrossRoomItemTransfer";
 import {
   clampToPlacementRoom,
   findPlacementBlockerInRoom,
@@ -289,5 +289,11 @@ function runCrossRoomTransferTest() {
 
 runPlacementRoomQueryTests();
 runCrossRoomTransferTest();
+
+// A drag over another room: a built-in can't be dropped there (the move above takes catalogue items only), and says so, even
+// where furniture of its size could go.
+const overKitchen = { roomName: "Kitchen", needsSurface: false, contained: true, blockedBy: null };
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: { assetType: "parametric_cabinet" } }), { label: "Built-ins stay in their room", valid: false });
+assert.deepEqual(getCrossRoomItemDragTarget({ ...overKitchen, item: { assetType: "catalog_item" } }), { label: "Kitchen", valid: true });
 
 console.log("Design-page placement room operation tests passed.");

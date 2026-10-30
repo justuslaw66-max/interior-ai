@@ -567,7 +567,7 @@ export function fitCabinetToSpace(
   const segments = getCabinetAvailableSegments(
     space,
     fittedAssemblyHeightMm,
-    mountingHeightMm
+    mountingHeightMm, getCabinetOverallDepth(definition)
   );
   const segment = chooseCabinetFitSegment(segments, alignment);
   if (!segment) {
