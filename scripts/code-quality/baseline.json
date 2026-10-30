@@ -233,7 +233,7 @@
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
-      "lines": 2569,
+      "lines": 2564,
       "limit": 400
     },
     "components/editor/renderers/house-plan-3d/surfaceMeshes.tsx": {
@@ -241,7 +241,7 @@
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/wallAndOpeningMeshes.tsx": {
-      "lines": 1088,
+      "lines": 1085,
       "limit": 250
     },
     "components/editor/renderers/HousePlanRenderer3D.tsx": {
@@ -621,7 +621,7 @@
       "limit": 400
     },
     "lib/useDesignPageOnboarding.ts": {
-      "lines": 653,
+      "lines": 646,
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
@@ -669,7 +669,7 @@
       "limit": 400
     },
     "lib/useDesignPageSurfaceActions.ts": {
-      "lines": 1622,
+      "lines": 1600,
       "limit": 400
     },
     "lib/useDesignPageSurfaceInspector.ts": {
@@ -4191,7 +4191,7 @@
     "lib/useDesignPageOnboarding.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 450
+        "maximum": 441
       }
     },
     "lib/useDesignPagePanelActions.ts": {

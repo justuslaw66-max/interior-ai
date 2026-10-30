@@ -39,6 +39,7 @@ import {
   getWallPaintDisplayName,
   normalizeWallPaintColorHex,
 } from "@/lib/wall-paint";
+import { getWallPanelAssignment, replaceWallPanelAssignment } from "@/lib/wall-panel-ids";
 
 export type SurfaceTargetMode = "floor" | "walls" | "selected_wall" | "ceiling";
 
@@ -174,29 +175,6 @@ export type UseDesignPageSurfaceActionsResult = {
   canApplySurfaceBrush: boolean;
   actions: DesignPageSurfaceActions;
 };
-
-function getPanelAssignment(
-  panels: Record<string, SurfaceSettings>,
-  panelId: string,
-  aliases: readonly string[]
-): SurfaceSettings | undefined {
-  return panels[panelId] ??
-    aliases.map((alias) => panels[alias]).find(Boolean);
-}
-
-function replacePanelAssignment(
-  panels: Record<string, SurfaceSettings>,
-  panelId: string,
-  aliases: readonly string[],
-  settings?: SurfaceSettings
-): Record<string, SurfaceSettings> {
-  const nextPanels = { ...panels };
-  [panelId, ...aliases].forEach((key) => {
-    delete nextPanels[key];
-  });
-  if (settings) nextPanels[panelId] = settings;
-  return nextPanels;
-}
 
 export function useDesignPageSurfaceActions({
   state,
@@ -546,7 +524,7 @@ export function useDesignPageSurfaceActions({
             const nextWallSettings = buildWallSurfaceSettings(
               appliedMaterialId,
               normalizedPanelId
-                ? (getPanelAssignment(
+                ? (getWallPanelAssignment(
                     currentPanels,
                     normalizedPanelId,
                     normalizedPanelAliases,
@@ -563,7 +541,7 @@ export function useDesignPageSurfaceActions({
             const nextWalls = normalizedPanelId
               ? {
                   ...currentWalls,
-                  panels: replacePanelAssignment(
+                  panels: replaceWallPanelAssignment(
                     currentPanels,
                     normalizedPanelId,
                     normalizedPanelAliases,
@@ -774,7 +752,7 @@ export function useDesignPageSurfaceActions({
               normalizedColor,
               paintName,
               normalizedPanelId
-                ? (getPanelAssignment(
+                ? (getWallPanelAssignment(
                     currentPanels,
                     normalizedPanelId,
                     normalizedPanelAliases,
@@ -792,7 +770,7 @@ export function useDesignPageSurfaceActions({
             const nextWalls = normalizedPanelId
               ? {
                   ...currentWalls,
-                  panels: replacePanelAssignment(
+                  panels: replaceWallPanelAssignment(
                     currentPanels,
                     normalizedPanelId,
                     normalizedPanelAliases,
@@ -1121,7 +1099,7 @@ export function useDesignPageSurfaceActions({
           const currentFaces = currentWalls.faces ?? {};
           const currentPanels = currentWalls.panels ?? {};
           const baseSettings = normalizedPanelId
-            ? (getPanelAssignment(
+            ? (getWallPanelAssignment(
                 currentPanels,
                 normalizedPanelId,
                 normalizedPanelAliases,
@@ -1146,7 +1124,7 @@ export function useDesignPageSurfaceActions({
           const nextWalls = normalizedPanelId
             ? {
                 ...currentWalls,
-                panels: replacePanelAssignment(
+                panels: replaceWallPanelAssignment(
                   currentPanels,
                   normalizedPanelId,
                   normalizedPanelAliases,
@@ -1242,7 +1220,7 @@ export function useDesignPageSurfaceActions({
           if (normalizedPanelId) {
             nextWalls = {
               ...currentWalls,
-              panels: replacePanelAssignment(
+              panels: replaceWallPanelAssignment(
                 currentPanels,
                 normalizedPanelId,
                 normalizedPanelAliases,
