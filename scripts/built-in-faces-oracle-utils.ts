@@ -154,4 +154,3 @@ function convexHull(points: Array<[number, number]>): Array<[number, number]> {
   const lower = half(sorted), upper = half([...sorted].reverse());
   return [...lower.slice(0, -1), ...upper.slice(0, -1)];
 }
-
