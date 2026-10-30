@@ -1,5 +1,5 @@
-import { condoMapFileUrl, type CondoDevelopmentMap, type CondoUnitCard, type LonLat } from "@/lib/condo-map/condo-map-data";
-import type { CondoMapView } from "./condo-map-view";
+import { condoMapFileUrl, type CondoDevelopmentMap, type CondoUnitCard, type CondoUnitPlan, type LonLat } from "@/lib/condo-map/condo-map-data";
+import { unitPlanOn, type CondoMapView } from "./condo-map-view";
 import type { MapboxJson, MapboxLayer } from "./mapbox-gl-types";
 
 /**
@@ -8,8 +8,11 @@ import type { MapboxJson, MapboxLayer } from "./mapbox-gl-types";
  *
  * The building is grey massing, storey by storey (or, for a development with detailed models, those models). With a
  * floor chosen: the storeys below stay, the chosen one is cut to its slab with its units painted on it by bedroom count
- * (the chosen unit orange), and the storeys above are a faint ghost of their outline. Invisible blocks on every unit
- * (opacity 0, still clickable) pick a unit. Two clip layers take Mapbox's own map off each site: its buildings and
+ * (the chosen unit orange, in a faint orange box), and the storeys above are a faint ghost of their outline. A chosen
+ * unit whose brochure plan the map has (map.json's plans) shows that plan on its floor instead, with its orange edge
+ * drawn into the picture: Mapbox draws a raised picture after the 3D layers and depth-tests it, so the box and the ghost
+ * would hide it, and both go while it shows (J, 30 Oct 2026). Invisible blocks on every unit (opacity 0, still
+ * clickable) pick a unit. Two clip layers take Mapbox's own map off each site: its buildings and
  * models off the footprint, its point-of-interest labels off the whole land lot. Its house numbers are drawn after
  * every layer the page adds, out of a clip's reach; condo-map-basemap turns them off close in.
  */
@@ -192,11 +195,11 @@ function massingFilters(detailed: boolean, floor: number | null): Array<[string,
   return [["mass", below], ["cut", ["all", ["==", F, floor], ["==", ["get", "kind"], "block"]]], ["balconies", below]];
 }
 
-function floorFilters(floor: number | null, unit: string | null): Array<[string, MapboxJson]> {
+function floorFilters(floor: number | null, unit: string | null, planShown: boolean): Array<[string, MapboxJson]> {
   // the chosen unit's part on its own floor (choosing a unit chooses its floor: condo-map-view)
-  const chosenUnit: MapboxJson = unit === null || floor === null ? NONE : ["all", ["==", ["get", "unit"], unit], ["==", F, floor]];
+  const chosenUnit: MapboxJson = unit === null || floor === null || planShown ? NONE : ["all", ["==", ["get", "unit"], unit], ["==", F, floor]];
   if (floor === null) return [["floor", NONE], ["unit", chosenUnit], ["pick", ALL], ["ghost", NONE]];
-  return [["floor", ["==", F, floor]], ["unit", chosenUnit], ["pick", ["<=", F, floor]], ["ghost", [">", F, floor]]];
+  return [["floor", ["==", F, floor]], ["unit", chosenUnit], ["pick", ["<=", F, floor]], ["ghost", planShown ? NONE : [">", F, floor]]];
 }
 
 /** Each unit's rooms in its bedroom count's colour: a match on the unit number, the units grouped by colour. */
@@ -220,18 +223,43 @@ function paintUpdates(dev: CondoDevelopmentMap, unit: string | null): CondoPaint
 }
 
 /**
- * What a view sets on a development's layers: their filters, and the colours of the chosen floor's rooms. A detailed
- * development whose models failed to load is drawn as massing instead (and its model layer shows nothing).
+ * What a view sets on a development's layers: their filters, the colours of the chosen floor's rooms, and the chosen
+ * unit's plan on its floor (or none). A detailed development whose models failed to load is drawn as massing instead
+ * (and its model layer shows nothing).
  */
 export function condoViewUpdates(dev: CondoDevelopmentMap, view: CondoMapView, modelsFailed = false) {
   const here = view.slug === dev.slug;
   const floor = here ? view.floor : null;
   const unit = here ? view.unit : null;
+  const plan = unitPlanOn(dev, view);
   const detailed = Boolean(dev.models) && !modelsFailed;
-  const parts = [...massingFilters(detailed, floor), ...floorFilters(floor, unit)];
+  const parts = [...massingFilters(detailed, floor), ...floorFilters(floor, unit, plan !== null)];
   if (dev.models) parts.push(["models", detailed ? modelFilter(floor) : NONE]);
   const filters: CondoFilterUpdate[] = parts.map(([part, filter]) => [condoLayerId(dev.slug, part), filter]);
-  return { filters, paint: paintUpdates(dev, unit) };
+  return { filters, paint: paintUpdates(dev, unit), plan };
+}
+
+// a plan stands this far over its floor's paint (its z), so the two never draw at one depth
+export const CONDO_PLAN_LIFT_M = 0.06;
+export const condoPlanSourceId = (slug: string) => sourceId(slug, "plan");
+
+/** A plan's picture as a Mapbox image source takes it: the data route's address and its corners (TL, TR, BR, BL). */
+export function condoPlanImage(slug: string, plan: CondoUnitPlan, origin: string): { url: string; coordinates: LonLat[] } {
+  return { url: new URL(condoMapFileUrl(slug, "overlays", plan.file), origin).href, coordinates: [...plan.corners] };
+}
+
+/**
+ * The plan's layer: the picture raised to its floor, lit by itself (the map's light and shadows would grey it), with no
+ * fade between one unit's plan and the next.
+ */
+export function condoPlanLayer(slug: string, plan: CondoUnitPlan): MapboxLayer {
+  return {
+    id: condoLayerId(slug, "plan"),
+    type: "raster",
+    source: condoPlanSourceId(slug),
+    layout: { visibility: "visible" },
+    paint: { "raster-elevation": plan.z + CONDO_PLAN_LIFT_M, "raster-emissive-strength": 1, "raster-fade-duration": 0, "raster-opacity": 1 },
+  };
 }
 
 /** The layers a click looks in, and which development and unit a hit belongs to. */

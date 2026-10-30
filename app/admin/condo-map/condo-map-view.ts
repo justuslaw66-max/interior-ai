@@ -1,4 +1,4 @@
-import type { CondoDevelopmentMap, CondoUnitCard, LonLat } from "@/lib/condo-map/condo-map-data";
+import type { CondoDevelopmentMap, CondoUnitCard, CondoUnitPlan, LonLat } from "@/lib/condo-map/condo-map-data";
 
 /**
  * What the admin condo map shows: a development (or none: all of them), one of its floors (or the whole building) and
@@ -42,6 +42,17 @@ export function chosenUnitCard(view: CondoMapView, maps: CondoMapsBySlug): Condo
 /** The units on a floor, a two-level unit on both of its storeys. */
 export function unitsOnFloor(dev: CondoDevelopmentMap, floor: number): CondoUnitCard[] {
   return dev.units.filter((unit) => unitStoreys(unit).includes(floor)).sort((a, b) => a.unit.localeCompare(b.unit, "en", { numeric: true }));
+}
+
+/** A unit's plans on the map's floors (none for a unit whose plan isn't placed surely enough: its floor stays painted). */
+export function unitPlans(dev: CondoDevelopmentMap, unit: string): readonly CondoUnitPlan[] {
+  return Object.hasOwn(dev.plans, unit) ? dev.plans[unit] : [];
+}
+
+/** The chosen unit's plan on the chosen floor, when this development is the one chosen and the map has that plan. */
+export function unitPlanOn(dev: CondoDevelopmentMap, view: CondoMapView): CondoUnitPlan | null {
+  if (view.slug !== dev.slug || view.unit === null || view.floor === null) return null;
+  return unitPlans(dev, view.unit).find((plan) => plan.f === view.floor) ?? null;
 }
 
 /** The box round some lon/lat points, as Mapbox's fitBounds takes it, or none for no points. */

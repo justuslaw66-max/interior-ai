@@ -41,6 +41,9 @@ export type MapboxCamera = {
   duration?: number;
 };
 
+/** An image source (a unit's plan on its floor): its picture and corners changed in place for the next plan. */
+export type MapboxImageSource = { updateImage(options: { url: string; coordinates: Array<[number, number]> }): unknown };
+
 export interface MapboxMap {
   on(type: string, listener: (event: MapboxEvent) => void): void;
   once(type: string, listener: (event: MapboxEvent) => void): void;
@@ -48,6 +51,8 @@ export interface MapboxMap {
   addSource(id: string, source: Record<string, MapboxJson>): void;
   addLayer(layer: MapboxLayer): void;
   getLayer(id: string): unknown;
+  getSource(id: string): MapboxImageSource | undefined;
+  setLayoutProperty(layerId: string, name: string, value: MapboxJson): void;
   setFilter(layerId: string, filter: MapboxJson): void;
   setPaintProperty(layerId: string, name: string, value: MapboxJson): void;
   addModel(id: string, url: string): void;
