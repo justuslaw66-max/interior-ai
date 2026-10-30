@@ -50,40 +50,103 @@ export function getOutlineInwardSign(points: readonly RoomPlanPolygonPoint[]): 1
   return area >= 0 ? 1 : -1;
 }
 
-type OffsetLine = { x: number; z: number; dx: number; dz: number; nx: number; nz: number };
+type OffsetLine = { x: number; z: number; dx: number; dz: number; nx: number; nz: number; length: number; inset: number };
 
-/** Edge `index` moved `inset` towards the inside: a point on it, its direction and its inward normal. */
+/** Edge `index` moved `inset` towards the inside: a point on it, its direction, its inward normal and its own length. */
 function offsetEdge(points: readonly RoomPlanPolygonPoint[], index: number, inset: number, inwardSign: number): OffsetLine {
   const start = points[index];
   const end = points[(index + 1) % points.length];
-  const length = Math.hypot(end.x - start.x, end.z - start.z) || 1;
-  const dx = (end.x - start.x) / length;
-  const dz = (end.z - start.z) / length;
+  const length = Math.hypot(end.x - start.x, end.z - start.z);
+  const dx = (end.x - start.x) / (length || 1);
+  const dz = (end.z - start.z) / (length || 1);
   const nx = -dz * inwardSign;
   const nz = dx * inwardSign;
-  return { x: start.x + nx * inset, z: start.z + nz * inset, dx, dz, nx, nz };
+  return { x: start.x + nx * inset, z: start.z + nz * inset, dx, dz, nx, nz, length, inset };
+}
+
+/** A corner of the moved outline: where its two edges meet, or a step between them (insetPolygonEdgesWithSteps). */
+export type InsetCorner = RoomPlanPolygonPoint | readonly [RoomPlanPolygonPoint, RoomPlanPolygonPoint];
+
+const ZERO_EDGE_METERS = 1e-6;
+/** How far along either edge, in the deeper of the two depths, two moved edges may meet before they meet in a step. */
+const CORNER_REACH_LIMIT = 2;
+
+/**
+ * Where two moved edges meet at `point`. Two edges moved in by different depths that run straight on, or would meet further
+ * along either edge than its own length or twice the deeper depth (near-parallel walls, as a wall drawn with a slight kink or
+ * an arc's pieces are, would meet metres away), meet in a step instead: the end of the first moved edge, then the start of
+ * the second. Edges moved in by the same depth always meet at their corner, as before.
+ */
+function insetCorner(point: RoomPlanPolygonPoint, before: OffsetLine, after: OffsetLine): InsetCorner {
+  const cross = before.dx * after.dz - before.dz * after.dx;
+  if (Math.abs(cross) >= 1e-9) {
+    const t = ((after.x - before.x) * after.dz - (after.z - before.z) * after.dx) / cross;
+    const corner = { x: before.x + before.dx * t, z: before.z + before.dz * t };
+    const pastBefore = Math.abs((corner.x - point.x) * before.dx + (corner.z - point.z) * before.dz);
+    const pastAfter = Math.abs((corner.x - point.x) * after.dx + (corner.z - point.z) * after.dz);
+    const reach = CORNER_REACH_LIMIT * Math.max(before.inset, after.inset);
+    const meets = pastBefore <= Math.min(before.length, reach) && pastAfter <= Math.min(after.length, reach);
+    if (before.inset === after.inset || meets) return corner;
+  }
+  const start = { x: point.x + after.nx * after.inset, z: point.z + after.nz * after.inset };
+  if (before.inset === after.inset) return start;
+  return [{ x: point.x + before.nx * before.inset, z: point.z + before.nz * before.inset }, start];
 }
 
 /**
- * The polygon with each edge moved in by its own distance (`insets[i]` for the edge from point i to point i + 1). Each corner
- * is where its two moved edges meet; where they run straight on, the corner moves in by the deeper of the two. The opposite
+ * The polygon with each edge moved in by its own distance (`insets[i]` for the edge from point i to point i + 1), one corner
+ * per point, a step where two moved edges don't meet by a corner (insetCorner). An edge of no length (a drawn outline closed
+ * with its first point repeated) is passed over: its two corners are where the edges either side of it meet. The opposite
  * `inwardSign` moves the edges out instead (a hole's walls, which stand out of it into the room).
+ */
+export function insetPolygonEdgesWithSteps(
+  points: readonly RoomPlanPolygonPoint[], insets: readonly number[], inwardSign: 1 | -1 = getOutlineInwardSign(points)
+): InsetCorner[] {
+  const count = points.length;
+  const lines = points.map((_, index) => offsetEdge(points, index, Math.max(0, insets[index] ?? 0), inwardSign));
+  const real = lines.map((line) => line.length > ZERO_EDGE_METERS);
+  if (!real.some(Boolean)) return points.map(({ x, z }) => ({ x, z }));
+  const step = (from: number, by: number) => {
+    let index = (from + count) % count;
+    while (!real[index]) index = (index + by + count) % count;
+    return lines[index];
+  };
+  return points.map((point, index) => insetCorner(point, step(index - 1, -1), step(index, 1)));
+}
+
+/**
+ * Each edge's own moved face, by its index (`wall-N` is edge N): from its start corner to its end corner, taking its own
+ * side of a step, so a face stands at its own depth up to the corner where it meets a deeper or shallower one.
+ */
+export function getInsetPolygonFaces(
+  points: readonly RoomPlanPolygonPoint[], insets: readonly number[], inwardSign: 1 | -1 = getOutlineInwardSign(points)
+): { start: RoomPlanPolygonPoint; end: RoomPlanPolygonPoint }[] {
+  const corners = insetPolygonEdgesWithSteps(points, insets, inwardSign);
+  return corners.map((corner, index) => {
+    const next = corners[(index + 1) % corners.length];
+    return { start: isInsetStep(corner) ? corner[1] : corner, end: isInsetStep(next) ? next[0] : next };
+  });
+}
+
+/**
+ * `insetPolygonEdgesWithSteps` with one point per corner, for a closed outline whose corners keep their indices (the
+ * furniture clamp, and the cabinets, which name each edge's wall `wall-N`): a step's deeper end, so the shallower face
+ * leans from the deeper depth at that corner to its own at the next. Two edges that run straight on move in by the deeper
+ * of the two, as before. Read a face where it stands with getInsetPolygonFaces.
  */
 export function insetPolygonEdges(
   points: readonly RoomPlanPolygonPoint[], insets: readonly number[], inwardSign: 1 | -1 = getOutlineInwardSign(points)
 ): RoomPlanPolygonPoint[] {
-  const lines = points.map((_, index) => offsetEdge(points, index, Math.max(0, insets[index] ?? 0), inwardSign));
-  return points.map((point, index) => {
-    const before = lines[(index - 1 + points.length) % points.length];
-    const after = lines[index];
-    const cross = before.dx * after.dz - before.dz * after.dx;
-    if (Math.abs(cross) < 1e-9) {
-      const inset = Math.max(insets[(index - 1 + points.length) % points.length] ?? 0, insets[index] ?? 0, 0);
-      return { x: point.x + after.nx * inset, z: point.z + after.nz * inset };
-    }
-    const t = ((after.x - before.x) * after.dz - (after.z - before.z) * after.dx) / cross;
-    return { x: before.x + before.dx * t, z: before.z + before.dz * t };
+  return insetPolygonEdgesWithSteps(points, insets, inwardSign).map((corner, index) => {
+    if (!isInsetStep(corner)) return corner;
+    const point = points[index];
+    const [end, start] = corner;
+    return Math.hypot(end.x - point.x, end.z - point.z) > Math.hypot(start.x - point.x, start.z - point.z) ? end : start;
   });
+}
+
+export function isInsetStep(corner: InsetCorner): corner is readonly [RoomPlanPolygonPoint, RoomPlanPolygonPoint] {
+  return Array.isArray(corner);
 }
 
 // One inset outline per room's depths while its outline is the same: an item's clamp runs on every drag frame, and the 3D view

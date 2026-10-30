@@ -1,9 +1,16 @@
-import { getRoomPlanOutlinePoints, getOutlineInwardSign, insetPolygonEdges } from "@/lib/room-finished-outline";
+import {
+  getOutlineInwardSign,
+  getRoomPlanOutlinePoints,
+  insetPolygonEdgesWithSteps,
+  isInsetStep,
+  type InsetCorner,
+} from "@/lib/room-finished-outline";
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
 import {
   getRectangleWallClearances,
   getRoomWallFaceIds,
   getRoomWallFinishDepths,
+  type RoomWallFinishDepths,
   type WallFinishRoom,
 } from "@/lib/room-wall-finish-depths";
 
@@ -22,16 +29,66 @@ export type FinishedFacesRoom = WallFinishRoom & {
   holes?: readonly (readonly RoomPlanPolygonPoint[])[];
 };
 
+type Box = { minX: number; maxX: number; minZ: number; maxZ: number };
+
 /**
  * The finished faces as loops (the outline first, then any holes, each grown by `faceOffset`), each with the side of its
- * edges the room is on (+1 on their local +Z normal's, (−dz, dx)), and their bounds.
+ * edges the room is on (+1 on their local +Z normal's, (−dz, dx)); their bounds, within the outline's own; and whether the
+ * walls leave no floor between them (an outline narrower than its walls turns inside out when moved in).
  */
 export type RoomFinishedOutline = {
   loops: { points: RoomPlanPolygonPoint[]; roomSide: 1 | -1 }[];
-  bounds: { minX: number; maxX: number; minZ: number; maxZ: number };
+  bounds: Box;
+  inverted: boolean;
+  /** With no floor: each outline edge's face line, a point on it and its way into the room. */
+  faceLines: { x: number; z: number; nx: number; nz: number }[];
 };
 
-type Box = RoomFinishedOutline["bounds"];
+const flattenSteps = (corners: readonly InsetCorner[]): RoomPlanPolygonPoint[] =>
+  corners.flatMap((corner) => (isInsetStep(corner) ? [...corner] : [corner]));
+
+function boundsOf(points: readonly RoomPlanPolygonPoint[]): Box {
+  const xs = points.map(({ x }) => x), zs = points.map(({ z }) => z);
+  return { minX: Math.min(...xs), maxX: Math.max(...xs), minZ: Math.min(...zs), maxZ: Math.max(...zs) };
+}
+
+function measureRoomFinishedOutline(
+  points: readonly RoomPlanPolygonPoint[], insets: readonly number[], holeLoops: readonly (readonly RoomPlanPolygonPoint[])[],
+  faceOffset: number
+): RoomFinishedOutline {
+  const roomSide = getOutlineInwardSign(points);
+  const outer = flattenSteps(insetPolygonEdgesWithSteps(points, insets, roomSide));
+  // A hole's walls stand out of it into the room, so it grows by the offset (an imported room's holes have no panels).
+  const holes = holeLoops.filter((hole) => hole.length >= 3).map((hole) => {
+    const side = getOutlineInwardSign(hole) === 1 ? -1 : 1;
+    return { points: flattenSteps(insetPolygonEdgesWithSteps(hole, hole.map(() => faceOffset), side)), roomSide: side } as const;
+  });
+  const faces = boundsOf(outer), drawn = boundsOf(points);
+  const inverted = getOutlineInwardSign(outer) !== roomSide;
+  return {
+    loops: [{ points: outer, roomSide }, ...holes],
+    bounds: {
+      minX: Math.max(faces.minX, drawn.minX), maxX: Math.min(faces.maxX, drawn.maxX),
+      minZ: Math.max(faces.minZ, drawn.minZ), maxZ: Math.min(faces.maxZ, drawn.maxZ),
+    },
+    inverted,
+    faceLines: inverted ? points.flatMap((a, index) => {
+      const b = points[(index + 1) % points.length];
+      const length = Math.hypot(b.x - a.x, b.z - a.z);
+      if (length === 0) return [];
+      const nx = (-(b.z - a.z) / length) * roomSide, nz = ((b.x - a.x) / length) * roomSide, inset = insets[index] ?? 0;
+      return [{ x: a.x + nx * inset, z: a.z + nz * inset, nx, nz }];
+    }) : [],
+  };
+}
+
+// The faces are measured once per room while its outline, size, offset and depths are the same: placement scores dozens of
+// candidate spots in one room, each through several checks.
+type KnownOutline = {
+  w: number; d: number; faceOffset: number; depths: RoomWallFinishDepths; shape: unknown; polygon: unknown; holes: unknown;
+  outline: RoomFinishedOutline;
+};
+const outlinesByRoom = new WeakMap<object, KnownOutline[]>();
 
 /** The room's finished faces, or null for a rectangle (and for a room the checks know only by its size). */
 export function getRoomFinishedOutline(
@@ -42,18 +99,16 @@ export function getRoomFinishedOutline(
   if (faceIds[0] === "north") return null;
   const depths = getRoomWallFinishDepths(room);
   const shape = room.planShape ?? room.shape ?? "rectangle";
-  const points = getRoomPlanOutlinePoints({ shape, polygon: [...(room.planPolygon ?? room.polygon ?? [])], w: size.w, d: size.d });
-  const outer = insetPolygonEdges(points, faceIds.map((faceId) => faceOffset + (depths[faceId] ?? 0)));
-  // A hole's walls stand out of it into the room, so it grows by the offset (an imported room's holes have no panels).
-  const holes = (room.planHoles ?? room.holes ?? []).filter((hole) => hole.length >= 3).map((hole) => {
-    const roomSide = getOutlineInwardSign(hole) === 1 ? -1 : 1;
-    return { points: insetPolygonEdges(hole, hole.map(() => faceOffset), roomSide), roomSide } as const;
-  });
-  const xs = outer.map(({ x }) => x), zs = outer.map(({ z }) => z);
-  return {
-    loops: [{ points: outer, roomSide: getOutlineInwardSign(points) }, ...holes],
-    bounds: { minX: Math.min(...xs), maxX: Math.max(...xs), minZ: Math.min(...zs), maxZ: Math.max(...zs) },
-  };
+  const polygon = room.planPolygon ?? room.polygon, holes = room.planHoles ?? room.holes;
+  const known = outlinesByRoom.get(room) ?? [];
+  const match = known.find((entry) => entry.w === size.w && entry.d === size.d && entry.faceOffset === faceOffset &&
+    entry.depths === depths && entry.shape === shape && entry.polygon === polygon && entry.holes === holes);
+  if (match) return match.outline;
+  const points = getRoomPlanOutlinePoints({ shape, polygon: [...(polygon ?? [])], w: size.w, d: size.d });
+  const insets = faceIds.map((faceId) => faceOffset + (depths[faceId] ?? 0));
+  const outline = measureRoomFinishedOutline(points, insets, holes ?? [], faceOffset);
+  outlinesByRoom.set(room, [{ w: size.w, d: size.d, faceOffset, depths, shape, polygon, holes, outline }, ...known].slice(0, 4));
+  return outline;
 }
 
 function isInsideLoop(point: RoomPlanPolygonPoint, loop: readonly RoomPlanPolygonPoint[]): boolean {
@@ -67,7 +122,7 @@ function isInsideLoop(point: RoomPlanPolygonPoint, loop: readonly RoomPlanPolygo
 
 function isInside(outline: RoomFinishedOutline, point: RoomPlanPolygonPoint): boolean {
   const [outer, ...holes] = outline.loops;
-  return isInsideLoop(point, outer.points) && !holes.some((hole) => isInsideLoop(point, hole.points));
+  return !outline.inverted && isInsideLoop(point, outer.points) && !holes.some((hole) => isInsideLoop(point, hole.points));
 }
 
 type FaceVisitor = (a: RoomPlanPolygonPoint, b: RoomPlanPolygonPoint, roomSide: 1 | -1) => void;
@@ -85,9 +140,21 @@ function distanceToSegment(point: RoomPlanPolygonPoint, a: RoomPlanPolygonPoint,
   return Math.hypot(point.x - (a.x + dx * t), point.z - (a.z + dz * t));
 }
 
-function distanceToFaces(outline: RoomFinishedOutline, point: RoomPlanPolygonPoint): number {
+/**
+ * How far a point is from a segment along the plan's axes: the larger of the x and z moves to the nearest point on it. An
+ * item's box stands past a wall by this much at a corner, as a rectangle room measures it, not by the straight line.
+ */
+function axisDistanceToSegment(point: RoomPlanPolygonPoint, a: RoomPlanPolygonPoint, b: RoomPlanPolygonPoint): number {
+  const ax = a.x - point.x, az = a.z - point.z, bx = b.x - a.x, bz = b.z - a.z;
+  const at = (t: number) => Math.max(Math.abs(ax + bx * t), Math.abs(az + bz * t));
+  // The larger of two lines through t is least at an end, where one of them is zero, or where they cross.
+  const candidates = [0, 1, -ax / bx, -az / bz, (az - ax) / (bx - bz), -(ax + az) / (bx + bz)];
+  return Math.min(...candidates.filter(Number.isFinite).map((t) => at(Math.max(0, Math.min(1, t)))));
+}
+
+function nearestFace(outline: RoomFinishedOutline, point: RoomPlanPolygonPoint, measure: typeof distanceToSegment): number {
   let nearest = Infinity;
-  forEachFace(outline, (a, b) => { nearest = Math.min(nearest, distanceToSegment(point, a, b)); });
+  forEachFace(outline, (a, b) => { nearest = Math.min(nearest, measure(point, a, b)); });
   return nearest;
 }
 
@@ -119,40 +186,55 @@ function depthInBox(point: RoomPlanPolygonPoint, box: Box): number {
   return Math.max(0, Math.min(point.x - box.minX, box.maxX - point.x, point.z - box.minZ, box.maxZ - point.z));
 }
 
+/** A point's distance into the room from a face's line: less than zero past it. */
+function intoRoom(point: RoomPlanPolygonPoint, a: RoomPlanPolygonPoint, b: RoomPlanPolygonPoint, roomSide: 1 | -1): number {
+  const dx = b.x - a.x, dz = b.z - a.z;
+  return (((point.z - a.z) * dx - (point.x - a.x) * dz) / (Math.hypot(dx, dz) || 1)) * roomSide;
+}
+
 /** How far a point stands past a face, out of the room, where it's level with the face (its foot falls on it). */
 function reachPastFace(point: RoomPlanPolygonPoint, a: RoomPlanPolygonPoint, b: RoomPlanPolygonPoint, roomSide: 1 | -1): number {
   const dx = b.x - a.x, dz = b.z - a.z;
   const length = Math.hypot(dx, dz);
   const along = length > 0 ? ((point.x - a.x) * dx + (point.z - a.z) * dz) / length : -1;
-  if (along < 0 || along > length) return 0;
-  return Math.max(0, -(((point.z - a.z) * dx - (point.x - a.x) * dz) / length) * roomSide);
+  return along < 0 || along > length ? 0 : Math.max(0, -intoRoom(point, a, b, roomSide));
+}
+
+/** With no floor between the walls, each wall's face line still counts: the box's least distance into the room from them. */
+function gapAcrossFaceLines(outline: RoomFinishedOutline, box: Box): number {
+  const corners = boxCorners(box);
+  return Math.min(...outline.faceLines.flatMap((line) =>
+    corners.map((corner) => (corner.x - line.x) * line.nx + (corner.z - line.z) * line.nz)));
 }
 
 /**
- * An item's footprint (an axis-aligned box in the room's plan) to the nearest finished face: the clear gap while it's inside,
- * and otherwise less than zero by the most it stands past a face: a corner out of the room, its far side past a wall it runs
- * across (a narrow notch or a courtyard it spans), or a wall's corner standing into it.
+ * An item's footprint (an axis-aligned box in the room's plan) to the nearest finished face. While it's inside, the clear
+ * gap: its straight-line distance to the nearest face, a wall's corner included. Otherwise less than zero by the most it
+ * stands past a face: a corner out of the room by its x or z move back in, whichever is larger (as a rectangle room
+ * measures each wall), a wall's corner standing into it, or, with every corner inside, its far side past a wall it runs
+ * across (a narrow notch or a courtyard it spans).
  */
 export function getBoxGapToFinishedOutline(outline: RoomFinishedOutline, box: Box): number {
+  if (outline.inverted) return gapAcrossFaceLines(outline, box);
   const corners = boxCorners(box);
+  const outside = corners.filter((corner) => !isInside(outline, corner));
   let gap = Infinity, overlap = 0, crossed = false;
   forEachFace(outline, (a, b, roomSide) => {
     if (segmentTouchesBox(a, b, box)) {
       crossed = true;
-      overlap = Math.max(overlap, depthInBox(a, box), depthInBox(b, box), ...corners.map((corner) => reachPastFace(corner, a, b, roomSide)));
+      overlap = Math.max(overlap, depthInBox(a, box), depthInBox(b, box));
+      if (!outside.length) overlap = Math.max(overlap, ...corners.map((corner) => reachPastFace(corner, a, b, roomSide)));
       return;
     }
     gap = Math.min(gap, distanceToBox(a, box), distanceToBox(b, box), ...corners.map((corner) => distanceToSegment(corner, a, b)));
   });
-  for (const corner of corners) {
-    if (!isInside(outline, corner)) overlap = Math.max(overlap, distanceToFaces(outline, corner));
-  }
-  return crossed || overlap > 0 ? -overlap : gap;
+  for (const corner of outside) overlap = Math.max(overlap, nearestFace(outline, corner, axisDistanceToSegment));
+  return crossed || outside.length > 0 ? -overlap : gap;
 }
 
 /** A point's clearance to the nearest finished face, or null when it isn't inside them (in a notch, a hole or past a wall). */
 export function getPointClearanceInFinishedOutline(outline: RoomFinishedOutline, point: RoomPlanPolygonPoint): number | null {
-  return isInside(outline, point) ? distanceToFaces(outline, point) : null;
+  return isInside(outline, point) ? nearestFace(outline, point, distanceToSegment) : null;
 }
 
 /**

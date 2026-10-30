@@ -10,7 +10,10 @@ import {
   getFurnitureRoomFrameInsideFinishes,
   getRoomClearInsideMetrics,
   getRoomOutlineInsideFinishes,
+  getInsetPolygonFaces,
   insetPolygonEdges,
+  insetPolygonEdgesWithSteps,
+  isInsetStep,
 } from "../lib/room-finished-outline";
 import { getRoomWallClearance } from "../lib/room-finished-faces";
 import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
@@ -96,6 +99,34 @@ assert.deepEqual(
     .map(({ x, z }) => [Math.round(x * 1000), Math.round(z * 1000)]),
   [[-2000, -1490], [1956, -1490], [1956, 1500], [-2000, 1500]]
 );
+// Two near-parallel edges moved in by different depths meet in a step, not metres away: a north wall drawn as two edges with
+// a 0.1 mm kink and a 44 mm laminate on its west half. One point per corner keeps the deeper end, so each edge keeps its face.
+const kinked = [{ x: -2, z: -1.5 }, { x: 0, z: -1.5001 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }];
+const kinkInsets = [0.104, 0.06, 0.06, 0.06, 0.06];
+const mm = (point: { x: number; z: number }) => [Math.round(point.x * 1000) || 0, Math.round(point.z * 1000) || 0];
+assert.deepEqual(insetPolygonEdgesWithSteps(kinked, kinkInsets).map((corner) => isInsetStep(corner) ? corner.map(mm) : mm(corner)), [
+  [-1940, -1396], [[0, -1396], [0, -1440]], [1940, -1440], [1940, 1440], [-1940, 1440],
+]);
+assert.deepEqual(insetPolygonEdges(kinked, kinkInsets).map(mm), [[-1940, -1396], [0, -1396], [1940, -1440], [1940, 1440], [-1940, 1440]]);
+// An outline closed with its first point repeated (as a drawn arc room is) has an edge of no length: its corner still moves in.
+// Two edges in line moved in by different depths step at their corner too (a south wall drawn as two pieces, 200 and 100
+// mm walls): each piece's face stands at its own depth up to the corner, where the one-point outline leans the shallower.
+const splitSouth = [{ x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 2 }, { x: 0, z: 2 }, { x: -2, z: 2 }];
+const splitInsets = [0.06, 0.06, 0.1, 0.05, 0.06];
+assert.deepEqual(getInsetPolygonFaces(splitSouth, splitInsets).slice(2, 4).map(({ start, end }) => [mm(start), mm(end)]),
+  [[[1940, 1900], [0, 1900]], [[0, 1950], [-1940, 1950]]]);
+assert.deepEqual(insetPolygonEdges(splitSouth, splitInsets).map(mm)[3], [0, 1900], "the one-point outline keeps the deeper end");
+// The 2D strips draw each piece at its own depth: a 44 mm laminate on one piece and a 10 mm one on the other.
+const splitStrips = getRoomPanelStrips2D({
+  id: "split", name: "Split", roomType: "living", shape: "custom_polygon", polygon: splitSouth, w: 4, d: 4, x: 0, z: 0, wallThickness: 0.12,
+  surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { "wall-2": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST }, "wall-3": { materialId: NORDIC_ACACIA } } } },
+}).strips;
+assert.deepEqual(splitStrips.map((strip) => [strip.faceId, strip.faceLine.map(([x, , z]) => mm({ x, z }))]), [
+  ["wall-2", [[1940, 1896], [0, 1896]]], ["wall-3", [[0, 1930], [-1940, 1930]]],
+]);
+const closedTwice = [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }, { x: -2, z: -1.5 }];
+assert.deepEqual(insetPolygonEdges(closedTwice, closedTwice.map(() => 0.06)).map(mm),
+  [[-1940, -1440], [1940, -1440], [1940, 1440], [-1940, 1440], [-1940, -1440]]);
 const lInside = getRoomOutlineInsideFinishes({ shape: "l_shape", w: 4, d: 3 }, { "wall-2": 0.02, "wall-3": 0.02 });
 assert.equal(lInside.shape, "custom_polygon");
 assert.deepEqual(lInside.polygon?.map(({ x, z }) => [Math.round(x * 1000), Math.round(z * 1000)]), [
@@ -157,7 +188,8 @@ const wide = getRectangleWallClearances({
   width: 4, depth: 3, wallThickness: 0.12, depths: { west: 0.044 }, center: { x: 0.005, z: 0 }, footprint: { w: 3.8, d: 0.5 },
 });
 near(wide.x, 0.001);
-near(getRoomWallClearance(tiledWithPanel, { x: 1.3, z: 0 }, { w: 1, d: 0.5 }), Math.min(clear.x, clear.z), "a room snapshot's clearance");
+near(getRoomWallClearance(tiledWithPanel, { x: 1.3, z: 0 }, { w: 1, d: 0.5 }), 2 - 0.06 - 0.044 - 0.5 - 1.3,
+  "a room snapshot's clearance: to the east panel's face, nearer than the north wall's");
 // An L-shape's or drawn shape's checks measure to its own walls (lib/room-finished-faces.ts), each in front of its own panel:
 // a console 2 cm off the built-in L's notch wall (wall-2, at z = 0.24 m) is against a wall, not 25 cm from the far one.
 const lRoom = room(

@@ -4,6 +4,7 @@ import { computeCirculationAnalysis } from "@/lib/circulation-analysis";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
+import { getShapedRoomDoorPoints } from "@/lib/room-door-points";
 import { getRoomWallClearance } from "@/lib/room-finished-faces";
 
 export type ManualPlacementScoreKind =
@@ -104,6 +105,19 @@ function getOpeningCenter(opening: RoomOpening2D, room: RoomSnapshot): { x: numb
   if (opening.wall === "south") return { x: offset, z: depth / 2 };
   if (opening.wall === "west") return { x: -width / 2, z: offset };
   return { x: width / 2, z: offset };
+}
+
+/** To the nearest of the room's doors: on its four sides for a rectangle, on the wall the plan puts it on for another shape. */
+function getNearestDoorDistance(room: RoomSnapshot, openings: RoomOpening2D[], center: { x: number; z: number }): number {
+  const shaped = getShapedRoomDoorPoints(room, openings);
+  if (shaped) return Math.min(Infinity, ...shaped.map((door) => distance2d(center, door.center)));
+  const matchingOpenings = openings.filter((opening) => !opening.roomId || opening.roomId === room.id);
+  return Math.min(
+    Infinity,
+    ...matchingOpenings
+      .filter((opening) => opening.kind === "door")
+      .map((opening) => distance2d(center, getOpeningCenter(opening, room)))
+  );
 }
 
 function countStyleMismatches(
@@ -245,14 +259,7 @@ export function scoreManualPlacement({
     warnings.push("Clearance is tight.");
   }
 
-  const matchingOpenings = openings.filter((opening) => !opening.roomId || opening.roomId === room.id);
-  const nearestDoorDistance = Math.min(
-    Infinity,
-    ...matchingOpenings
-      .filter((opening) => opening.kind === "door")
-      .map((opening) => distance2d(center, getOpeningCenter(opening, room)))
-  );
-  if (nearestDoorDistance < 0.85) {
+  if (getNearestDoorDistance(room, openings, center) < 0.85) {
     score -= 24;
     warnings.push("Too close to a door or its swing.");
     suggestions.push("Move it at least 85 cm away from the door opening.");

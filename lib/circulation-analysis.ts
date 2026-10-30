@@ -3,7 +3,12 @@ import { mapToTopCategory } from "@/lib/catalog/view-builders";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
-import { getPointClearanceInFinishedOutline, getRoomFinishedOutline } from "@/lib/room-finished-faces";
+import { getShapedRoomDoorPoints } from "@/lib/room-door-points";
+import {
+  getPointClearanceInFinishedOutline,
+  getRoomFinishedOutline,
+  type RoomFinishedOutline,
+} from "@/lib/room-finished-faces";
 import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 
 type CirculationCatalog = Record<string, CatalogItemSchema | undefined>;
@@ -91,6 +96,18 @@ function distanceToObstacle(point: { x: number; z: number }, obstacle: Obstacle)
   return Math.hypot(dx, dz);
 }
 
+/**
+ * Where the walk starts: 30 cm into the room from each of its doors, on the wall the plan puts it on for an L-shape or a drawn
+ * shape (lib/room-door-points.ts), or from the middle of the far side with no door.
+ */
+function getWalkStarts(room: RoomSnapshot, openings: RoomOpening2D[], area: WalkableArea, gridSizeM: number) {
+  const roomDoors = openings.filter((opening) => opening.kind === "door" && (!opening.roomId || opening.roomId === room.id));
+  const shaped = roomDoors.length > 0 ? getShapedRoomDoorPoints(room, openings) : null;
+  if (shaped?.length) return shaped.map(({ center, inward }) => ({ x: center.x + inward.x * 0.3, z: center.z + inward.z * 0.3 }));
+  if (roomDoors.length > 0 && !shaped) return roomDoors.map((opening) => getOpeningPoint(opening, room));
+  return [{ x: 0, z: area.maxZ + gridSizeM / 2 - 0.3 }];
+}
+
 function getOpeningPoint(opening: RoomOpening2D, room: RoomSnapshot): { x: number; z: number } {
   const offset = opening.offsetMm / 1000;
   const width = room.geometry.width;
@@ -159,8 +176,37 @@ type WalkableArea = {
   minZ: number;
   maxZ: number;
   /** A cell centre's clearance to the walls' finished faces, or null where the cell isn't on the room's floor. */
-  wallClearance: (x: number, z: number) => number | null;
+  wallClearance: (x: number, z: number, xIndex: number, zIndex: number) => number | null;
 };
+
+/** Each grid cell's walk over the area, in the order the grid is built, so a table and the grid agree cell for cell. */
+function forEachCell(area: Omit<WalkableArea, "wallClearance">, gridSizeM: number, visit: (x: number, z: number, xIndex: number, zIndex: number) => void) {
+  for (let z = area.minZ, zIndex = 0; z <= area.maxZ + 0.001; z += gridSizeM, zIndex += 1) {
+    for (let x = area.minX, xIndex = 0; x <= area.maxX + 0.001; x += gridSizeM, xIndex += 1) visit(x, z, xIndex, zIndex);
+  }
+}
+
+// An outline's cells are measured once per grid size: the room's faces are kept per room (lib/room-finished-faces.ts), and
+// placement builds a map for each of dozens of candidate spots in one room.
+const areasByOutline = new WeakMap<RoomFinishedOutline, Map<number, WalkableArea>>();
+
+function getOutlineWalkableArea(outline: RoomFinishedOutline, gridSizeM: number): WalkableArea {
+  const known = areasByOutline.get(outline)?.get(gridSizeM);
+  if (known) return known;
+  const { bounds } = outline;
+  const extent = {
+    minX: bounds.minX + gridSizeM / 2, maxX: bounds.maxX - gridSizeM / 2,
+    minZ: bounds.minZ + gridSizeM / 2, maxZ: bounds.maxZ - gridSizeM / 2,
+  };
+  const table: (number | null)[][] = [];
+  forEachCell(extent, gridSizeM, (x, z, xIndex, zIndex) => {
+    const clearance = getPointClearanceInFinishedOutline(outline, { x, z });
+    (table[zIndex] ??= [])[xIndex] = clearance !== null && clearance >= gridSizeM / 2 - 0.001 ? clearance : null;
+  });
+  const area: WalkableArea = { ...extent, wallClearance: (_x, _z, xIndex, zIndex) => table[zIndex]?.[xIndex] ?? null };
+  areasByOutline.set(outline, (areasByOutline.get(outline) ?? new Map()).set(gridSizeM, area));
+  return area;
+}
 
 /**
  * The walkable grid's extent: its outer cells' centres half a cell in from the walls' finished faces, which are half the wall
@@ -171,17 +217,7 @@ type WalkableArea = {
 function getWalkableArea(room: RoomSnapshot, gridSizeM: number): WalkableArea {
   const wallFace = (room.geometry.wallThickness ?? 0.12) / 2;
   const outline = getRoomFinishedOutline(room, { w: room.geometry.width, d: room.geometry.depth }, wallFace);
-  if (outline) {
-    const { bounds } = outline;
-    return {
-      minX: bounds.minX + gridSizeM / 2, maxX: bounds.maxX - gridSizeM / 2,
-      minZ: bounds.minZ + gridSizeM / 2, maxZ: bounds.maxZ - gridSizeM / 2,
-      wallClearance: (x, z) => {
-        const clearance = getPointClearanceInFinishedOutline(outline, { x, z });
-        return clearance !== null && clearance >= gridSizeM / 2 - 0.001 ? clearance : null;
-      },
-    };
-  }
+  if (outline) return getOutlineWalkableArea(outline, gridSizeM);
   const panels = getRoomWallFinishDepths(room);
   const minX = -room.geometry.width / 2 + wallFace + (panels.west ?? 0) + gridSizeM / 2;
   const maxX = room.geometry.width / 2 - wallFace - (panels.east ?? 0) - gridSizeM / 2;
@@ -201,27 +237,24 @@ function buildWalkableGrid(area: WalkableArea, obstacles: Obstacle[], gridSizeM:
   const cells: GridCell[][] = [];
   const heatmap: CirculationHeatCell[] = [];
   let minClearanceM = Infinity;
-  for (let z = area.minZ, zIndex = 0; z <= area.maxZ + 0.001; z += gridSizeM, zIndex += 1) {
-    const row: GridCell[] = [];
-    for (let x = area.minX, xIndex = 0; x <= area.maxX + 0.001; x += gridSizeM, xIndex += 1) {
-      const wallClearance = area.wallClearance(x, z);
-      if (wallClearance === null) {
-        row.push({ xIndex, zIndex, x, z, blocked: true, clearanceM: 0 });
-        continue;
-      }
-      const point = { x, z };
-      const blocked = obstacles.some((obstacle) => pointInsideObstacle(point, obstacle));
-      const obstacleClearance = obstacles.length
-        ? Math.min(...obstacles.map((obstacle) => distanceToObstacle(point, obstacle)))
-        : Infinity;
-      const clearanceM = blocked ? 0 : Math.min(wallClearance, obstacleClearance);
-      if (!blocked) minClearanceM = Math.min(minClearanceM, clearanceM);
-      const level = getClearanceLevel(blocked, clearanceM);
-      if (level !== "clear") heatmap.push({ x, z, clearanceM, level });
-      row.push({ xIndex, zIndex, x, z, blocked, clearanceM });
+  forEachCell(area, gridSizeM, (x, z, xIndex, zIndex) => {
+    const row = (cells[zIndex] ??= []);
+    const wallClearance = area.wallClearance(x, z, xIndex, zIndex);
+    if (wallClearance === null) {
+      row.push({ xIndex, zIndex, x, z, blocked: true, clearanceM: 0 });
+      return;
     }
-    cells.push(row);
-  }
+    const point = { x, z };
+    const blocked = obstacles.some((obstacle) => pointInsideObstacle(point, obstacle));
+    const obstacleClearance = obstacles.length
+      ? Math.min(...obstacles.map((obstacle) => distanceToObstacle(point, obstacle)))
+      : Infinity;
+    const clearanceM = blocked ? 0 : Math.min(wallClearance, obstacleClearance);
+    if (!blocked) minClearanceM = Math.min(minClearanceM, clearanceM);
+    const level = getClearanceLevel(blocked, clearanceM);
+    if (level !== "clear") heatmap.push({ x, z, clearanceM, level });
+    row.push({ xIndex, zIndex, x, z, blocked, clearanceM });
+  });
   return { cells, heatmap, minClearanceM };
 }
 
@@ -240,11 +273,7 @@ export function computeCirculationAnalysis({
     .filter((entry): entry is Obstacle => Boolean(entry));
   const { cells, heatmap, minClearanceM } = buildWalkableGrid(area, obstacles, gridSizeM);
 
-  const roomOpenings = openings.filter((opening) => opening.kind === "door" && (!opening.roomId || opening.roomId === room.id));
-  const starts =
-    roomOpenings.length > 0
-      ? roomOpenings.map((opening) => getOpeningPoint(opening, room))
-      : [{ x: 0, z: area.maxZ + gridSizeM / 2 - 0.3 }];
+  const starts = getWalkStarts(room, openings, area, gridSizeM);
   const destinations = [
     { x: 0, z: 0 },
     ...zones

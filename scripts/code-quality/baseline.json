@@ -3743,7 +3743,7 @@
     "lib/manual-placement-scoring.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 211
+        "maximum": 204
       },
       "complexFunctions": {
         "count": 1,
