@@ -53,6 +53,13 @@ export type CondoModelItem = {
   type: string | null;
 };
 
+/**
+ * A unit's plan laid on its floor at one storey (the masters' plan_overlays.py): the picture in `overlays/`, its four
+ * corners (top left, top right, bottom right, bottom left) and the height of its floor's paint, in metres. Only units
+ * whose plan's turn and mirror are sure have one; the others keep their painted floor.
+ */
+export type CondoUnitPlan = { f: number; file: string; corners: [LonLat, LonLat, LonLat, LonLat]; z: number };
+
 export type CondoDevelopmentMap = {
   slug: string;
   name: string;
@@ -71,6 +78,8 @@ export type CondoDevelopmentMap = {
   /** The land lot(s) with the footprint, where Mapbox's own point-of-interest labels are taken away. */
   labelClip: PolygonCoordinates[];
   models: { origin: LonLat; items: CondoModelItem[] } | null;
+  /** Each unit's plan on its floor, by unit number (none for a development exported before them). */
+  plans: Readonly<Record<string, CondoUnitPlan[]>>;
 };
 
 export type CondoDevelopmentSummary = {
@@ -224,6 +233,28 @@ function models(value: unknown, path: string): CondoDevelopmentMap["models"] {
   };
 }
 
+const PLAN_FILE = /^[a-f0-9]{16}\.webp$/;
+
+function unitPlans(value: unknown, path: string): Record<string, CondoUnitPlan[]> {
+  if (value === null || value === undefined) return {};
+  const out: Record<string, CondoUnitPlan[]> = {};
+  for (const [unit, entries] of Object.entries(fields(value, path))) {
+    out[unit] = list(entries, `${path}["${unit}"]`).map((entry, index) => {
+      const at = `${path}["${unit}"][${index}]`;
+      const plan = fields(entry, at);
+      const corners = list(plan.corners, `${at}.corners`).map((corner, c) => lonLat(corner, `${at}.corners[${c}]`));
+      if (corners.length !== 4) throw new CondoMapDataError(`${at}.corners`, "expected four corners");
+      return {
+        f: number(plan.f, `${at}.f`),
+        file: matching(plan.file, `${at}.file`, PLAN_FILE),
+        corners: [corners[0], corners[1], corners[2], corners[3]],
+        z: number(plan.z, `${at}.z`),
+      };
+    });
+  }
+  return out;
+}
+
 export function parseCondoDevelopmentMap(value: unknown, path = "map.json"): CondoDevelopmentMap {
   const body = fields(value, path);
   if (body.schema !== CONDO_MAP_DEVELOPMENT_SCHEMA) throw new CondoMapDataError(`${path}.schema`, "unknown schema");
@@ -245,6 +276,7 @@ export function parseCondoDevelopmentMap(value: unknown, path = "map.json"): Con
     clip: list(body.clip, `${path}.clip`).map((entry, index) => polygon(entry, `${path}.clip[${index}]`)),
     labelClip: list(body.labelClip, `${path}.labelClip`).map((entry, index) => polygon(entry, `${path}.labelClip[${index}]`)),
     models: models(body.models, `${path}.models`),
+    plans: unitPlans(body.plans, `${path}.plans`),
   };
 }
 
@@ -265,7 +297,7 @@ export function parseCondoMapIndex(value: unknown, path = "index.json"): CondoDe
   });
 }
 
-/** The data route's address for a development's file (its map, a plan picture, a model). */
+/** The data route's address for a development's file (its map, a plan picture, a plan on its floor, a model). */
 export function condoMapFileUrl(slug: string, ...parts: string[]): string {
   return ["/api/admin/condo-map", slug, ...parts].map((part, index) => (index === 0 ? part : encodeURIComponent(part))).join("/");
 }

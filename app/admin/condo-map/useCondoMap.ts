@@ -70,7 +70,7 @@ function useDevelopmentLayers(map: MapboxMap | null, maps: CondoMapsBySlug, view
         addCondoDevelopment(map, dev, window.location.origin);
         added.add(dev.slug);
       }
-      applyCondoView(map, dev, view, modelsFailed.includes(dev.slug));
+      applyCondoView(map, dev, view, modelsFailed.includes(dev.slug), window.location.origin);
     }
   }, [map, maps, view, modelsFailed]);
 }
