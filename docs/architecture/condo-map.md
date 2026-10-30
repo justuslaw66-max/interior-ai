@@ -67,10 +67,15 @@ the map with a re-export. 28 Oct 2026: every development has detailed 3D models,
 - **Only a plan that lies the right way is shown** (J, 30 Oct 2026). A unit with a nearly symmetric outline fits its
   plan turned or mirrored almost as well, and a wrong one would put the balcony on the wrong side. The export fits each
   plan again from all eight turns and mirrors and shows it only when its own fits clearly best (the masters'
-  `_tools/mapexport/plan_overlays.py`): 279 of the 426 units on the map then. A unit without one keeps its orange
-  box, and its card says its plan isn't laid on the floor yet; a check of the windows and facades is to recover more.
-  A mirrored unit's plan is mirrored, with its words turned back to read forwards. An attic's plan isn't shown: the
-  map doesn't offer an attic as a floor.
+  `_tools/mapexport/plan_overlays.py`): 279 of the 426 units. Where the outline can't tell, the windows can (J,
+  30 Oct 2026, "proceed"): each orientation is laid on the building, and the right one puts the plan's glass on the
+  building's outside and its outer walls on the outside (`plan_windows.py`). Checked on the units the outline
+  settles, it never chose otherwise at the thresholds used; it adds 71 units, 350 of the 426, 9 of them in another
+  orientation than the masters' fit recorded (their 3D models still read the facade the recorded way). The rest are
+  mostly plans mirrored along their facade, which puts the windows on the same walls either way. A unit without a plan
+  on the map keeps its orange box, and its card says its plan isn't laid on the floor yet. A mirrored unit's plan is
+  mirrored, with its words turned back to read forwards. An attic's plan isn't shown: the map doesn't offer an attic
+  as a floor.
 - **A chosen unit is kept in view.** A development's framing (tilted 50 degrees, turned 35) could leave a unit at the
   map's edge (32 Gilstead's #03-02, cut off). Once the camera settles, a unit whose outline at its storey isn't inside
   the map with a margin is brought to the middle, the zoom, tilt and turn kept (`keepUnitInView`); a move the user

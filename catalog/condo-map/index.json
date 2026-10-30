@@ -1,6 +1,6 @@
 {
  "schema": "interior-ai.condo-map.index.v1",
- "generator": "export_condo_map.py v5 (30 Oct 2026)",
+ "generator": "export_condo_map.py v6 (30 Oct 2026)",
  "developments": [
   {
    "slug": "10-evelyn",
