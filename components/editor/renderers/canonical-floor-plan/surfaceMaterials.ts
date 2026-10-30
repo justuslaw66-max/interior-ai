@@ -24,7 +24,9 @@ export function surfaceMaterialFallbackColor(
   return material ? "#c9c2b4" : null;
 }
 
-export function resolveRoomSurfaceAssignments(room: HousePlanRoom2D): RoomSurfaceAssignments | undefined {
+export function resolveRoomSurfaceAssignments(
+  room: Pick<HousePlanRoom2D, "surfaces" | "surfaceFinishes">
+): RoomSurfaceAssignments | undefined {
   const compatibility = room.surfaceFinishes;
   const current = room.surfaces;
   if (!compatibility) return current;

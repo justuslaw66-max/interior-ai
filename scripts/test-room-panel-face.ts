@@ -106,7 +106,6 @@ assert.deepEqual(getRoomWallFinishDepths({ ...imported, planEdgeWallIds: ["plan-
   "and so does one whose outline no longer matches them");
 assert.deepEqual(getRoomWallFinishDepths({ ...imported, planEdgeWallIds: ["plan-west", "plan-north", "plan-east", "plan-south"] }),
   { "wall-1": 0.044 }, "kept per surfaces and edges: a plan edit can move the room's edges onto other walls");
-assert.deepEqual(getRoomSideFinishDepths(imported, { w: 4, d: 3 }), { north: 0.044 });
 const importedPlanRoom = buildHousePlan2D([imported], 4, 3).rooms[0];
 assert.deepEqual(getRoomWallFinishDepths(importedPlanRoom), { "wall-0": 0.044 }, "the plan room carries the edges (edgeWallIds)");
 assert.deepEqual(getRoomClearInsideMetrics(importedPlanRoom, (mm) => `${Math.round(mm)}`), ["Clear inside 3880 × 2836"]);

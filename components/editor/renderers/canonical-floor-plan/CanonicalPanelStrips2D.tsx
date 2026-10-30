@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { Shape, Vector2 } from "three";
 import { noRaycast } from "@/components/scene/stableSceneProps";
 import { useCanvasPalette } from "@/lib/canvas-colours";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
@@ -12,7 +11,7 @@ import { getCanonicalPanelStrips2D } from "./canonicalWallPanels";
 
 /**
  * An imported plan's laminate panels on the 2D plan: each strip in the plan colour of its finish, with the panel's face as a
- * thin line, as a drawn room's are (RoomPanelFaces2D.tsx). Rebuilt when the floor or the rooms change.
+ * thin line, as a drawn room's are (RoomPanelFaces2D.tsx).
  */
 export function CanonicalPanelStrips2D({ floor, rooms, isPro }: {
   floor: CanonicalFloorPlanFloorRenderModel;
@@ -20,11 +19,8 @@ export function CanonicalPanelStrips2D({ floor, rooms, isPro }: {
   isPro: boolean;
 }) {
   const palette = useCanvasPalette();
-  const strips = useMemo(() => getCanonicalPanelStrips2D(floor, rooms).map((strip) => ({
-    ...strip,
-    // The plan is drawn looking down: a shape's y is the plan's -z, as the room shapes are (lib/room-plan-shape.ts).
-    shape: new Shape(strip.corners.map((point) => new Vector2(point.x, -point.z))),
-  })), [floor, rooms]);
+  // The strips, their shapes included, are kept per wall slice and finish, so a rebuilt list of rooms reuses them.
+  const strips = useMemo(() => getCanonicalPanelStrips2D(floor, rooms), [floor, rooms]);
   return strips.map((strip) => (
     <group
       key={strip.key}

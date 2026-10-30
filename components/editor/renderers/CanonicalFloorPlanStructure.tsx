@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useRef } from "react";
 import { Line } from "@react-three/drei/core/Line";
-import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { DoubleSide, Mesh } from "three";
 import type {
   CompiledFloorPlanOpeningV2,
@@ -41,8 +41,9 @@ import {
 } from "./canonical-floor-plan/openingDrag";
 import { CANONICAL_WALL_INDIRECT_FILL_INTENSITY } from "./canonical-floor-plan/surfaceMaterials";
 import { CanonicalWallSurfaceMesh } from "./canonical-floor-plan/CanonicalWallSurfaceMesh";
+import { meshRaycast, noRaycast, type CanonicalPointerEvent } from "./canonical-floor-plan/canonicalPointer";
 import { CanonicalPanelStrips2D } from "./canonical-floor-plan/CanonicalPanelStrips2D";
-import { getCanonicalOpeningHighlightDepth, getCanonicalWallPanelDepthMm } from "./canonical-floor-plan/canonicalWallPanels";
+import { getCanonicalFaceTrimsMm, getCanonicalOpeningHighlightDepth, getCanonicalWallPanelDepthMm } from "./canonical-floor-plan/canonicalWallPanels";
 import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
 import { useCanonicalWallBands } from "./canonical-floor-plan/useCanonicalWallBands";
 import { usePrebuiltCanonicalWallBands } from "./canonical-floor-plan/usePrebuiltCanonicalWallBands";
@@ -59,14 +60,10 @@ import { stableExtrudeOptions } from "./stableExtrudeOptions";
 
 export type { CanonicalOpeningDragMetricsV2 } from "./canonical-floor-plan/openingDrag";
 
-type CanonicalPointerEvent = ThreeEvent<MouseEvent | PointerEvent>;
 
 const CANONICAL_WALL_TOP_CAP_OFFSET_METERS = 0.0005;
 const CANONICAL_WALL_BODY_COLOR = "#ddddda";
 const CANONICAL_WALL_CUT_SURFACE_COLOR = CANONICAL_WALL_BODY_COLOR;
-const noRaycast = () => null;
-// R3F 9 skips a prop that becomes undefined, so turning picking back on must pass the default raycast.
-const meshRaycast = Mesh.prototype.raycast;
 
 function CanonicalStructure2D({
   structure,
@@ -1001,10 +998,11 @@ export function CanonicalFloorPlanWalls3D({
             const surfaces = wall.roomSides.flatMap(({ roomId: surfaceRoomId, side }) => {
               const room = rooms.find((candidate) => candidate.id === surfaceRoomId);
               if (!room) return [];
+              const trims = getCanonicalFaceTrimsMm(room, wall, solid, side);
               return [
                 <CanonicalWallSurfaceMesh
                   key={`${floor.id}:${solid.id}:surface:${surfaceRoomId}`}
-                  solid={solid} wallSolids={wall.solids}
+                  solid={solid} wallSolids={wall.solids} trimStartMm={trims.startMm} trimEndMm={trims.endMm}
                   wallId={wall.id}
                   floorId={floor.id}
                   floorElevationMm={floor.elevationMm}

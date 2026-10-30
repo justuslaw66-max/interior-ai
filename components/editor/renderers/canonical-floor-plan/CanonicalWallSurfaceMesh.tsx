@@ -2,34 +2,27 @@
 
 import { memo, useEffect, useMemo } from "react";
 import { Line } from "@react-three/drei/core/Line";
-import { useThree, type ThreeEvent } from "@react-three/fiber";
-import { FrontSide, Mesh } from "three";
+import { useThree } from "@react-three/fiber";
+import { FrontSide } from "three";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { CanonicalFloorPlanWallSolid } from "@/lib/floor-plan-render-model";
-import { clampFloorPatternScale, normalizeFloorRotationDeg } from "@/lib/floor-materials";
-import { getDrawnWallJointMm, getWallFinishDepthMm } from "@/lib/laminate-wall-backing";
-import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
-import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
+import { getDrawnWallJointMm } from "@/lib/laminate-wall-backing";
 import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
 import { useSurfaceMaterialTexture } from "../useSurfaceMaterialTexture";
-import { wallFinishShellGeometry, wallSurfaceEdge, wallSurfaceLayout } from "./geometry";
+import { meshRaycast, noRaycast, type CanonicalPointerEvent } from "./canonicalPointer";
+import { getCanonicalRoomWallFinish } from "./canonicalWallPanels";
+import { trimFaceEdge, wallFinishShellGeometry, wallSurfaceEdge, wallSurfaceLayout } from "./geometry";
 import {
   CANONICAL_ACTIVE_WALL_COLOR,
   CANONICAL_WALL_INDIRECT_FILL_INTENSITY,
   WALL_SURFACE_TEXTURE_RESOLUTION,
-  resolveRoomSurfaceAssignments,
   surfaceMaterialFallbackColor,
 } from "./surfaceMaterials";
-
-type CanonicalPointerEvent = ThreeEvent<MouseEvent | PointerEvent>;
 
 /** A finish that isn't a laminate is drawn as a 1.5 mm skin, as in drawn rooms (house-plan-3d/wallAndOpeningMeshes.tsx). */
 const WALL_FINISH_SKIN_MM = 1.5;
 /** The selection outline stands this far in front of the finish, as a drawn room's window outline does (#233). */
 const SELECTION_OUTLINE_CLEARANCE_MM = 3;
-const noRaycast = () => null;
-// R3F 9 skips a prop that becomes undefined, so turning picking back on must pass the default raycast.
-const meshRaycast = Mesh.prototype.raycast;
 
 type WallSurfaceProps = {
   solid: CanonicalFloorPlanWallSolid;
@@ -45,6 +38,9 @@ type WallSurfaceProps = {
   /** False while cut away, so a hidden surface takes no pointer events. */
   interactive: boolean;
   cutAway: boolean;
+  /** How far the finish stops short of its face's corners: where it meets another laminate at an inside corner. */
+  trimStartMm?: number;
+  trimEndMm?: number;
   onSelectWall?: (wallId: string, roomId: string | null, event: CanonicalPointerEvent) => void;
 };
 
@@ -53,10 +49,8 @@ function useCanonicalWallFinish({ solid, wallSolids, wallId, room, side }: WallS
   const { gl } = useThree();
   // Wall panels are laid from the floor and from the wall's start (canonical-floor-plan/geometry.ts).
   const layout = useMemo(() => wallSurfaceLayout(solid, side, wallSolids), [side, solid, wallSolids]);
-  const settings = getWallFaceSurfaceSettings(
-    resolveRoomSurfaceAssignments(room), wallId, normalizeFloorRotationDeg, clampFloorPatternScale
-  );
-  const material = getRuntimeSurfaceMaterialById(settings.materialId);
+  // Deep only on a wall the room is measured to, so furniture never stands inside a panel (canonicalWallPanels.ts).
+  const { settings, material, depthMm } = getCanonicalRoomWallFinish(room, wallId);
   const texture = useSurfaceMaterialTexture({
     material,
     roomWidthMeters: layout.lengthMeters,
@@ -82,7 +76,7 @@ function useCanonicalWallFinish({ solid, wallSolids, wallId, room, side }: WallS
     neutralFillIntensity: CANONICAL_WALL_INDIRECT_FILL_INTENSITY,
   });
   // A plain number, so the geometry's memo depends on the depth, not on the material object (React's compiler).
-  const finishDepthMm = getWallFinishDepthMm(material, settings, WALL_FINISH_SKIN_MM);
+  const finishDepthMm = depthMm > 0 ? depthMm : WALL_FINISH_SKIN_MM;
   return { settings, material, texture, displayedColor, displayedColorFillIntensity, finishDepthMm };
 }
 
@@ -96,8 +90,12 @@ function useCanonicalWallFinish({ solid, wallSolids, wallId, room, side }: WallS
  */
 export const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh(props: WallSurfaceProps) {
   const { solid, wallId, floorId, floorElevationMm, room, side, selected, opacity, geometryHash, interactive, cutAway } = props;
+  const { trimStartMm = 0, trimEndMm = 0 } = props;
   const { settings, material, texture, displayedColor, displayedColorFillIntensity, finishDepthMm } = useCanonicalWallFinish(props);
-  const geometry = useMemo(() => wallFinishShellGeometry(solid, side, finishDepthMm), [finishDepthMm, side, solid]);
+  const geometry = useMemo(
+    () => wallFinishShellGeometry(solid, side, finishDepthMm, { startMm: trimStartMm, endMm: trimEndMm }),
+    [finishDepthMm, side, solid, trimEndMm, trimStartMm]
+  );
   useEffect(() => () => geometry.dispose(), [geometry]);
   const roomOpacity = Math.max(0.05, Math.min(1, Number.isFinite(room.surfaceOpacity?.wall) ? room.surfaceOpacity!.wall! : 1));
   const shownOpacity = opacity * roomOpacity;
@@ -137,20 +135,25 @@ export const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh(p
         opacity={shownOpacity}
         depthWrite={shownOpacity > 0.34}
       />
-      {selected && <CanonicalWallSelectionOutline solid={solid} side={side} finishDepthMm={finishDepthMm} />}
+      {selected && (
+        <CanonicalWallSelectionOutline solid={solid} side={side} finishDepthMm={finishDepthMm} trimStartMm={trimStartMm} trimEndMm={trimEndMm} />
+      )}
     </mesh>
   );
 });
 
 /** The selected wall's outline, in front of its finish. */
-function CanonicalWallSelectionOutline({ solid, side, finishDepthMm }: {
+function CanonicalWallSelectionOutline({ solid, side, finishDepthMm, trimStartMm, trimEndMm }: {
   solid: CanonicalFloorPlanWallSolid;
   side: 1 | -1;
   finishDepthMm: number;
+  trimStartMm: number;
+  trimEndMm: number;
 }) {
   const edge = useMemo(
-    () => wallSurfaceEdge(solid, side, finishDepthMm + SELECTION_OUTLINE_CLEARANCE_MM),
-    [finishDepthMm, side, solid]
+    () => trimFaceEdge(wallSurfaceEdge(solid, side, finishDepthMm + SELECTION_OUTLINE_CLEARANCE_MM),
+      { startMm: trimStartMm, endMm: trimEndMm }),
+    [finishDepthMm, side, solid, trimEndMm, trimStartMm]
   );
   const bottom = solid.bottomMm / 1000 + 0.02;
   const top = solid.topMm / 1000 - 0.02;

@@ -3,7 +3,7 @@ import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { getCabinetPlanningDimsMm } from "@/features/cabinetry/designItemAdapters";
 import type { DesignSnapshot } from "@/lib/room-types";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
-import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
+import { findCanonicalPlacementPanel, findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import { isFootprintInsideRoomPolygon } from "@/lib/design-page-geometry";
 
@@ -23,6 +23,8 @@ export function reviewProposedPlacements(snapshot: DesignSnapshot, model: Canoni
       const wall = findCanonicalPlacementWall(model, room, item.position, item.rotationY ?? 0,
         scaled);
       if (wall) issues.push(`Placement ${item.instanceId} intersects proposed wall ${wall}. Move it in Furnish; its position is preserved.`);
+      const panel = wall ? null : findCanonicalPlacementPanel(model, snapshot.rooms, room, item.position, item.rotationY ?? 0, scaled);
+      if (panel) issues.push(`Placement ${item.instanceId} intersects the wall panel on proposed wall ${panel}. Move it in Furnish; its position is preserved.`);
       const [width, depth] = getRotatedFootprint(scaled.w / 1000, scaled.d / 1000, item.rotationY ?? 0);
       if (room.planPolygon?.length && !isFootprintInsideRoomPolygon(item.position[0], item.position[2], width / 2, depth / 2, room.planPolygon, room.planHoles)) {
         issues.push(`Placement ${item.instanceId} extends outside ${room.name} or into a void. Move it in Furnish; its position is preserved.`);

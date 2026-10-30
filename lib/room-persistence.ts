@@ -30,6 +30,7 @@ import {
   type DesignDocumentUnits,
 } from "./design-document-contract";
 import { migrateDesignDocument } from "./design-document-migrations";
+import { withImportedRoomEdgeWallIds } from "./imported-room-edge-walls";
 import {
   checkedDesignFloorPlanForStorage,
   packDesignFloorPlanForStorage,
@@ -224,15 +225,17 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
   // If it has the v3 multi-room format, use it directly
   if (stored.version === 3 && Array.isArray(stored.rooms)) {
     const lighting = resolveDesignLightingSettings(stored);
+    const floorPlan = readDesignFloorPlan(stored.floorPlan);
     return {
       ...(stored as StoredDesign & Record<string, unknown>),
       version: 3,
-      rooms: stored.rooms.map((room) => ({
+      // An imported room saved before its edges were named is matched to its plan (lib/imported-room-edge-walls.ts).
+      rooms: withImportedRoomEdgeWallIds(stored.rooms.map((room) => ({
         ...(room as RoomSnapshot),
         surfaces: room.surfaces ?? room.surfaceFinishes,
         surfaceFinishes: room.surfaceFinishes ?? room.surfaces,
         layoutVersions: room.layoutVersions ?? [],
-      })),
+      })), floorPlan),
       activeRoomId: stored.rooms.length === 0 ? "" : stored.activeRoomId,
       title: stored.title,
       style: stored.style,
@@ -240,7 +243,7 @@ export function storedToSnapshot(stored: StoredDesign): DesignSnapshot {
       lighting,
       lightingPreset: lighting.preset,
       notes: stored.notes,
-      floorPlan: readDesignFloorPlan(stored.floorPlan),
+      floorPlan,
     };
   }
 

@@ -1851,7 +1851,10 @@ function mergeRoomSurfaceFinishes(
 const CANONICAL_FLOOR_FIELDS = ["floorElevationMm", "floorStoreyHeightMm", "floorSlabThicknessMm"] as const;
 /** A canonical import's exact floor fields, each kept when it is a whole number of millimetres. */
 function canonicalFloorFields(room: RoomSnapshot): Pick<HousePlanRoom2D, (typeof CANONICAL_FLOOR_FIELDS)[number]> {
-  return Object.fromEntries(CANONICAL_FLOOR_FIELDS.flatMap((key) => (Number.isInteger(room[key]) ? [[key, room[key]]] : [])));
+  return Object.fromEntries(CANONICAL_FLOOR_FIELDS.flatMap((key): [string, number][] => {
+    const value = room[key];
+    return typeof value === "number" && Number.isInteger(value) ? [[key, value]] : [];
+  }));
 }
 
 export function buildHousePlan2D(
@@ -1872,11 +1875,7 @@ export function buildHousePlan2D(
     const storedZ = room.planPosition?.z;
     const fallbackX = index === 0 ? 0 : rightEdge + w / 2;
 
-    if (index === 0) {
-      rightEdge = w / 2;
-    } else {
-      rightEdge += w;
-    }
+    rightEdge = index === 0 ? w / 2 : rightEdge + w;
 
     return {
       id: room.id,

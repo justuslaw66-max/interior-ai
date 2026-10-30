@@ -1,10 +1,10 @@
 import { projectCanonicalFloorOpenings } from "@/lib/floor-plan-opening-projection";
 import { namedFloorPlanRooms } from "@/lib/floor-plan-void-rooms";
 import { transformSourceCalibration } from "./floor-plan-source-calibration-transform";
+import { roomOutlineCenterMm, roomPolygonEdges } from "@/lib/floor-plan-room-outline";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import {
   compileFloorPlanDocumentV2,
-  type CompiledFloorPlanRoomLoopV2,
   type CompiledFloorPlanSceneV2,
   type CompiledFloorPlanWallV2,
 } from "@/lib/floor-plan-compiler-v2";
@@ -201,41 +201,6 @@ function toLegacyRoomType(roomType: string): RoomType {
   return "custom";
 }
 
-function sampleWall(
-  wall: CompiledFloorPlanWallV2,
-  direction: "forward" | "reverse"
-): Array<{ xMm: number; zMm: number }> {
-  const authoredStart = direction === "forward" ? wall.start : wall.end;
-  if (wall.path.kind === "line" || !wall.center || wall.sweepRadians === undefined) {
-    return [authoredStart];
-  }
-  const sweep = direction === "forward" ? wall.sweepRadians : -wall.sweepRadians;
-  const startAngle = Math.atan2(
-    authoredStart.zMm - wall.center.zMm,
-    authoredStart.xMm - wall.center.xMm
-  );
-  const radius = Math.hypot(
-    authoredStart.xMm - wall.center.xMm,
-    authoredStart.zMm - wall.center.zMm
-  );
-  const segmentCount = Math.max(4, Math.ceil(Math.abs(sweep) / (Math.PI / 16)));
-  return Array.from({ length: segmentCount }, (_, index) => {
-    const angle = startAngle + sweep * (index / segmentCount);
-    return {
-      xMm: Math.round(wall.center!.xMm + Math.cos(angle) * radius),
-      zMm: Math.round(wall.center!.zMm + Math.sin(angle) * radius),
-    };
-  });
-}
-
-/** The loop's outline points, each with the wall its edge to the next point lies on (an arc gives several). */
-function roomPolygonEdges(loop: CompiledFloorPlanRoomLoopV2, wallById: Map<string, CompiledFloorPlanWallV2>) {
-  return loop.walls.flatMap((reference) => {
-    const wall = wallById.get(reference.wallId);
-    return wall ? sampleWall(wall, reference.direction).map((point) => ({ point, wallId: wall.id })) : [];
-  });
-}
-
 function transformPoint(
   point: { xMm: number; zMm: number },
   transform: FloorPlanAddressTransform
@@ -364,7 +329,7 @@ export function canonicalFloorPlanToDesignSnapshot(
         top: Math.min(...polygon.map((point) => point.zMm)),
         bottom: Math.max(...polygon.map((point) => point.zMm)),
       };
-      const center = { xMm: Math.round((bounds.left + bounds.right) / 2), zMm: Math.round((bounds.top + bounds.bottom) / 2) };
+      const center = roomOutlineCenterMm(polygon);
       const adjacentWalls = floor.walls.filter((wall) =>
         wall.adjacentRoomIds.includes(compiledRoom.id)
       );

@@ -141,21 +141,45 @@ export function wallSurfaceLayout(
   };
 }
 
+/** How far a face's finish stops short of the face's start and end corners, in millimetres (an inside corner's panel). */
+export type FaceTrimsMm = { startMm: number; endMm: number };
+export const NO_FACE_TRIMS: FaceTrimsMm = Object.freeze({ startMm: 0, endMm: 0 });
+
+/** A face line cut back at its ends, keeping at least a millimetre of it. */
+export function trimFaceEdge(edge: ReturnType<typeof wallSurfaceEdge>, trims: FaceTrimsMm): ReturnType<typeof wallSurfaceEdge> {
+  if (trims.startMm <= 0 && trims.endMm <= 0) return edge;
+  const length = Math.hypot(edge.end.x - edge.start.x, edge.end.z - edge.start.z);
+  const start = Math.min(trims.startMm / 1000, Math.max(0, length - 0.001));
+  const end = Math.min(trims.endMm / 1000, Math.max(0, length - 0.001 - start));
+  const along = { x: (edge.end.x - edge.start.x) / (length || 1), z: (edge.end.z - edge.start.z) / (length || 1) };
+  return {
+    start: { x: edge.start.x + along.x * start, z: edge.start.z + along.z * start },
+    end: { x: edge.end.x - along.x * end, z: edge.end.z - along.z * end },
+  };
+}
+
 /**
  * A wall slice's finish, in floor space, as the box a drawn room's panel is (house-plan-3d's buildWallFinishShellGeometry):
  * from the face to `depthMm` in front of it (a laminate on its board, 10 to 44 mm; any other finish its 1.5 mm skin), the
- * slice's height, and along the face from corner to corner. It has no side against the wall. Its front shows the picture
- * from the face's start to its end, and its ends, top and bottom the picture's edge there (mapWallFinishShellUvs).
+ * slice's height, and along the face from corner to corner, less `trims` where it stops at another panel. It has no side
+ * against the wall. Its front shows the picture from the face's start to its end, and its ends, top and bottom the picture's
+ * edge there (mapWallFinishShellUvs).
  */
-export function wallFinishShellGeometry(solid: CanonicalFloorPlanWallSolid, side: 1 | -1, depthMm: number) {
-  const edge = wallSurfaceEdge(solid, side, 0);
+export function wallFinishShellGeometry(
+  solid: CanonicalFloorPlanWallSolid, side: 1 | -1, depthMm: number, trims: FaceTrimsMm = NO_FACE_TRIMS
+) {
+  const face = wallSurfaceEdge(solid, side, 0);
+  const faceLength = Math.max(0.001, Math.hypot(face.end.x - face.start.x, face.end.z - face.start.z));
+  const edge = trimFaceEdge(face, trims);
   const length = Math.max(0.001, Math.hypot(edge.end.x - edge.start.x, edge.end.z - edge.start.z));
   const along = { x: (edge.end.x - edge.start.x) / length, z: (edge.end.z - edge.start.z) / length };
   const depth = Math.max(0.0005, depthMm / 1000);
   const bottom = solid.bottomMm / 1000;
   const top = Math.max(bottom + 0.001, solid.topMm / 1000);
   const geometry = buildWallFinishShellGeometry({ widthMeters: length, heightMeters: top - bottom, thicknessMeters: depth });
-  mapWallFinishShellUvs(geometry, 0, 1);
+  // The picture keeps its place on the face: a box cut back at a corner shows that much less of it.
+  const startU = Math.min(1, Math.hypot(edge.start.x - face.start.x, edge.start.z - face.start.z) / faceLength);
+  mapWallFinishShellUvs(geometry, startU, Math.min(1, startU + length / faceLength));
   // The box's +X runs along the face and its kept broad side (+Z) faces away from the wall: X × Y.
   const outward = new Vector3(-along.z, 0, along.x);
   geometry.applyMatrix4(new Matrix4().makeBasis(new Vector3(along.x, 0, along.z), new Vector3(0, 1, 0), outward).setPosition(

@@ -843,10 +843,11 @@ const read = (relativePath: string) =>
 const structureLayer = read("components/editor/design-page/DesignSceneStructureLayer.tsx");
 const renderer2d = read("components/editor/renderers/RoomRenderer2D.tsx");
 const renderer3d = read("components/editor/renderers/HousePlanRenderer3D.tsx");
-// The renderer, with the wall surfaces it draws from their own file (canonical-floor-plan/CanonicalWallSurfaceMesh.tsx).
+// The renderer, with the wall surfaces it draws and its pointer helpers from their own files (canonical-floor-plan/).
 const canonicalRenderer = [
   read("components/editor/renderers/CanonicalFloorPlanStructure.tsx"),
   read("components/editor/renderers/canonical-floor-plan/CanonicalWallSurfaceMesh.tsx"),
+  read("components/editor/renderers/canonical-floor-plan/canonicalPointer.ts"),
 ].join("\n");
 const sceneRegionRegistration = read(
   "lib/useDesignPageSceneRegionWorkspaceRegistration.ts"

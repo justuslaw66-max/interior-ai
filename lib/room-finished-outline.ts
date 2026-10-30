@@ -12,7 +12,8 @@ import {
 } from "@/lib/room-wall-finish-depths";
 
 /**
- * A drawn room's plan outline inside its laminate panels (J, 29 Oct 2026: the room measured to the panel face). Placement
+ * A room's plan outline inside its laminate panels, a drawn room's or an imported plan's (J, 29 Oct 2026: the room measured to
+ * the panel face; imported rooms' edges are named by their plan walls, lib/room-wall-finish-depths.ts). Placement
  * keeps its own inset from the bare wall (half the wall plus 2 cm, getFurnitureWallInset); each wall's panel depth
  * (lib/room-wall-finish-depths.ts) moves that wall's edge of the outline in, so the same clamps and containment checks stop
  * furniture at the panel. A room with no panels keeps its outline exactly.

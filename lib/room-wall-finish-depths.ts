@@ -82,17 +82,45 @@ export function getWallPanelFaceId(panelId: string, roomId: string): string | nu
   return getDeterministicWallFaceId(parts.faceToken);
 }
 
+/** A saved list of edge wall ids, when it is one: a list of strings. Anything else (a hand-edited or damaged design) is none. */
+export function sanitizePlanEdgeWallIds(value: unknown): string[] | undefined {
+  return Array.isArray(value) && value.every((entry) => typeof entry === "string") ? value : undefined;
+}
+
+/** An imported room's edge wall ids, when they name each edge of its outline; otherwise none. */
+export function readPlanEdgeWallIds(room: WallFinishRoom): readonly string[] | undefined {
+  const wallIds = sanitizePlanEdgeWallIds(room.planEdgeWallIds ?? room.edgeWallIds);
+  return wallIds && roomShapeOf(room) === "custom_polygon" && wallIds.length === getRoomWallFaceIds(room).length ? wallIds : undefined;
+}
+
 /**
  * Where a room's finishes are saved for each face: under the face's own id in a drawn room; under the plan wall each outline
- * edge lies on in an imported room. Null for an imported room whose edges aren't named (saved before they were, or an
- * outline that no longer matches them).
+ * edge lies on in an imported room. Null for an imported room whose edges aren't named (saved before they were and not yet
+ * matched to its plan, lib/imported-room-edge-walls.ts, or an outline that no longer matches them).
  */
 function getFinishFaceKeys(room: WallFinishRoom): Map<string, string> | null {
   const faceIds = getRoomWallFaceIds(room);
   if (typeof room.floorElevationMm !== "number") return new Map(faceIds.map((faceId) => [faceId, faceId]));
-  const wallIds = room.planEdgeWallIds ?? room.edgeWallIds;
-  if (!wallIds || wallIds.length !== faceIds.length || roomShapeOf(room) !== "custom_polygon") return null;
-  return new Map(faceIds.map((faceId, index) => [faceId, wallIds[index]]));
+  const wallIds = readPlanEdgeWallIds(room);
+  return wallIds ? new Map(faceIds.map((faceId, index) => [faceId, wallIds[index]])) : null;
+}
+
+const measuredWallIdsByEdges = new WeakMap<readonly string[], ReadonlySet<string>>();
+
+/**
+ * The plan walls an imported room is measured to: those its outline's edges lie on. The imported plan draws a room's laminate
+ * at its depth only on these, so what is drawn is what the room is measured to; elsewhere (a hole's walls, a room whose
+ * edges aren't named) it is drawn as the flat skin it was. Null for a drawn room.
+ */
+export function getRoomMeasuredWallIds(room: WallFinishRoom): ReadonlySet<string> | null {
+  if (typeof room.floorElevationMm !== "number") return null;
+  const wallIds = readPlanEdgeWallIds(room);
+  if (!wallIds) return new Set();
+  const known = measuredWallIdsByEdges.get(wallIds);
+  if (known) return known;
+  const measured = new Set(wallIds);
+  measuredWallIdsByEdges.set(wallIds, measured);
+  return measured;
 }
 
 function finishDepthMeters(settings: ReturnType<typeof getWallFaceSurfaceSettings>): number {
@@ -107,7 +135,7 @@ function faceListKey(room: WallFinishRoom): string {
   const shape = roomShapeOf(room);
   const faces = shape === "custom_polygon" ? `${shape}:${(room.planPolygon ?? room.polygon)?.length ?? 0}` : shape;
   // An imported plan's edit can move a room's edges onto other walls and keep its surfaces.
-  return typeof room.floorElevationMm === "number" ? `${faces}:${(room.planEdgeWallIds ?? room.edgeWallIds)?.join("|")}` : faces;
+  return typeof room.floorElevationMm === "number" ? `${faces}:${readPlanEdgeWallIds(room)?.join("|")}` : faces;
 }
 
 /**

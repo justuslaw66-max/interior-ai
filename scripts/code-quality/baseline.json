@@ -229,7 +229,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1068,
+      "lines": 1066,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -465,7 +465,7 @@
       "limit": 400
     },
     "lib/design-page-house-plan.ts": {
-      "lines": 2797,
+      "lines": 2796,
       "limit": 400
     },
     "lib/design-page-model-maps.ts": {
@@ -557,7 +557,7 @@
       "limit": 400
     },
     "lib/floor-plan-legacy-adapters.ts": {
-      "lines": 536,
+      "lines": 501,
       "limit": 400
     },
     "lib/floor-plan-library-schema.ts": {
