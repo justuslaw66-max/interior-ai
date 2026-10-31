@@ -118,9 +118,8 @@ function sanitizeVerticalEvidence(
   for (const [key, field] of VERTICAL_VALUES) {
     const before = current?.verticalEvidence?.[key];
     const stated = before?.evidence === "source_documented" && current?.[field] === next[field];
-    if (evidence[key].evidence === "source_documented" && !stated) {
-      sanitized[key] = { evidence: "user_confirmed", provenance: userConfirmedProvenance(input) };
-    }
+    if (evidence[key].evidence !== "source_documented") continue;
+    sanitized[key] = stated && before ? before : { evidence: "user_confirmed", provenance: userConfirmedProvenance(input) };
   }
   return sanitized;
 }

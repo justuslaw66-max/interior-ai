@@ -84,6 +84,18 @@ const keptStorey = applyReviewHomeType(typed, { floorId, homeType: "condo_pentho
 assert.deepEqual(keptStorey.kept, ["storey"]);
 assert.equal(keptStorey.document.floors[0].storeyHeightMm, 2900);
 assert.equal(keptStorey.document.floors[0].defaults.wallHeight.valueMm, 3200);
+assert.equal(keptStorey.storeyBelowWalls, true, "the review says the kept 2.9 m storey is now under 3.2 m walls + 0.2 m");
+assert.equal(condo.storeyBelowWalls, undefined);
+
+// 4a. Assumed floor-standing structures as tall as the walls (Ping Yi Court's core and ledge) follow them.
+const structures = original.floors[0].structures;
+assert.ok(structures.length > 0 && structures.some((structure) => structure.heightMm === 2600));
+const landed = applyReviewHomeType(original, { floorId, homeType: "landed", storeyTyped: false }).document.floors[0].structures;
+assert.ok(landed.some((structure) => structure.heightMm === 3000), "at least one structure follows");
+structures.forEach((structure, index) => {
+  const follows = (structure.heightEvidence ?? "assumed") === "assumed" && structure.baseOffsetMm === 0 && structure.heightMm === 2600;
+  assert.equal(landed[index].heightMm, follows ? 3000 : structure.heightMm, `${structure.name}: follows the walls only when assumed, on the floor, at their height`);
+});
 
 // 4b. The typing is recorded in the document, so it holds after a draft save or a resume (the review's state is new then).
 const marked = plan();
@@ -158,6 +170,12 @@ const stating = plan();
 if (stating.floors[0].verticalEvidence) stating.floors[0].verticalEvidence.storeyHeight.evidence = "source_documented";
 assert.equal(submit(stating, structuredClone(stating)).verticalEvidence?.storeyHeight.evidence, "source_documented",
   "a height the plan stated stays the plan's");
+const restated = structuredClone(stating);
+const restatedEvidence = restated.floors[0].verticalEvidence?.storeyHeight.provenance.evidence[0];
+assert.ok(restatedEvidence);
+restatedEvidence.extractorVersion = "forged";
+assert.deepEqual(submit(stating, restated).verticalEvidence?.storeyHeight, stating.floors[0].verticalEvidence?.storeyHeight,
+  "with the server's own provenance, not the client's");
 const untouched = submit(original, plan());
 assert.deepEqual(untouched.defaults.wallHeight, original.floors[0].defaults.wallHeight);
 

@@ -29,12 +29,13 @@ function heightWords(floor: Floor) {
 
 /** The review's home type: it sets the floor's assumed wall and storey heights by the height rules. */
 export default function FloorPlanReviewHomeType({
-  floor, homeType, kept, refused, disabled, onChange,
+  floor, homeType, kept, refused, storeyBelowWalls, disabled, onChange,
 }: {
   floor: Floor;
   homeType: ReviewHomeTypeId;
   kept: ReviewHomeTypeResult["kept"];
   refused: boolean;
+  storeyBelowWalls: boolean;
   disabled?: boolean;
   onChange: (next: ReviewHomeTypeId) => void;
 }) {
@@ -69,6 +70,9 @@ export default function FloorPlanReviewHomeType({
         ) : kept.map((item) => (
           <p key={item} className="mt-1">The {item} height stays as it is ({words[item]}).</p>
         ))}
+        {!refused && storeyBelowWalls ? (
+          <p className="mt-1">The storey is now less than 0.2 m above the walls: check it in Optional plan details.</p>
+        ) : null}
       </div>
     </div>
   );

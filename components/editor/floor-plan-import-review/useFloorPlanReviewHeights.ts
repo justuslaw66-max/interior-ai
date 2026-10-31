@@ -100,12 +100,14 @@ export function useFloorPlanReviewHeights(
   const [homeType, setHomeType] = useState<ReviewHomeTypeId>(() => reviewHomeTypeFor(floor));
   const [kept, setKept] = useState<ReviewHomeTypeResult["kept"]>([]);
   const [refused, setRefused] = useState(false);
+  const [storeyBelowWalls, setStoreyBelowWalls] = useState(false);
   const [storeyTyped, setStoreyTyped] = useState(false);
   const commit = (next: FloorPlanDocumentV2 | null) => { if (next) setCandidate(next); };
   return {
     homeType,
     kept,
     refused,
+    storeyBelowWalls,
     chooseHomeType: (next: ReviewHomeTypeId) => {
       if (!floor) return;
       const result = applyReviewHomeType(candidate, { floorId: floor.id, homeType: next, storeyTyped });
@@ -113,6 +115,7 @@ export function useFloorPlanReviewHeights(
       if (result.refused) return;
       setHomeType(next);
       setKept(result.kept);
+      setStoreyBelowWalls(Boolean(result.storeyBelowWalls));
       commit(result.document);
     },
     changeHeight: (key: DefaultKey, value: number) => {

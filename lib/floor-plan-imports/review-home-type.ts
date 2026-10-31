@@ -83,6 +83,8 @@ export type ReviewHomeTypeResult = {
   kept: Array<"wall" | "storey">;
   /** The home type's walls would be lower than an opening on the plan, so nothing changed. */
   refused?: boolean;
+  /** A storey height that stays (typed, confirmed or stated) is now lower than the walls plus 200 mm. */
+  storeyBelowWalls?: boolean;
 };
 
 /**
@@ -105,6 +107,7 @@ export function applyReviewHomeType(
   if (wall.evidence === "assumed") {
     floor.defaults.wallHeight = { valueMm: heights.wallMm, evidence: "assumed",
       provenance: reviewProvenance(wall.provenance, sourceId, "consumer-review-home-type-1", note) };
+    raiseStructuresWithWalls(floor, wall.valueMm, heights.wallMm);
   } else kept.push("wall");
   const storey = floor.verticalEvidence?.storeyHeight;
   if ((storey?.evidence ?? "assumed") === "assumed" && !input.storeyTyped && !storeyTypedAtReview(floor)) {
@@ -117,5 +120,15 @@ export function applyReviewHomeType(
   if (errors(next) > errors(document)) {
     return { document, kept: [], refused: true };
   }
-  return { document: next, kept };
+  const storeyBelowWalls = kept.includes("storey") && floor.storeyHeightMm < storeyHeightForWallMm(floor.defaults.wallHeight.valueMm);
+  return { document: next, kept, ...(storeyBelowWalls ? { storeyBelowWalls } : {}) };
+}
+
+/** Assumed floor-standing structures as tall as the old walls (a core, a ledge, a column) follow the walls. */
+function raiseStructuresWithWalls(floor: FloorPlanFloorV2, fromMm: number, toMm: number) {
+  for (const structure of floor.structures) {
+    if ((structure.heightEvidence ?? "assumed") === "assumed" && structure.baseOffsetMm === 0 && structure.heightMm === fromMm) {
+      structure.heightMm = toMm;
+    }
+  }
 }

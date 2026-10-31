@@ -34,13 +34,16 @@ reference when the floor plan or brochure states no height; always check for, an
   step, visible, above the plan's details). Its choices are HDB flat, HDB top floor, Condo, Condo penthouse, Landed and
   Not sure (2.6 m, as before). A choice sets the wall and storey heights by the rules while they are still assumed, and
   says so in their provenance; a height the plan states, or the person typed or confirmed, is kept, and the review says
-  which. A storey that changes stands 200 mm over the walls, kept or not. A storey typed in the review keeps its
+  which. A storey that changes stands 200 mm over the walls, kept or not; a storey that stays and ends up less than
+  200 mm over the walls is pointed out. Assumed floor-standing structures as tall as the old walls (a core, a ledge, a
+  column) follow the walls. A storey typed in the review keeps its
   assumed evidence and is marked as typed in its provenance, so it is kept after a draft save or a resume too. A home
   type whose walls would be lower than a door or window on the plan changes nothing, and the review says so. The review
   starts on the home type the floor's assumed walls are (2.8 m reads Condo; 2.6 m reads Not sure).
 - **The server** (`lib/floor-plan-imports/review.ts`) keeps a home type's wall height assumed, with its own note, so
   choosing a home type doesn't count as confirming it; and a level's height (elevation, storey, slab) the client says
-  the plan states is stored as the person's unless the plan stated it already at that value. The choice itself isn't
+  the plan states is stored as the person's unless the plan stated it already at that value (then with the server's
+  own record of it). The choice itself isn't
   stored: the heights it gave are.
 - **Not yet:**
   - **A home type for an upload** isn't guessed from the plan, and the review doesn't remember it for the next upload.
