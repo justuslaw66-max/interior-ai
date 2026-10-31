@@ -19,6 +19,7 @@ import {
 import { snapshotToStored, storedToSnapshot } from "@/lib/room-persistence";
 import { buildHousePlan2D, type HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { assertSharedDesignInput, assertSharedDesignSnapshotPublic } from "@/lib/shared-design-projection-schema";
+import { PUBLIC_SHARE_PROJECTION_ERROR, projectSharedDesignForPublicPage } from "@/lib/public-share-projection";
 import { trimFaceEdge, wallFinishShellGeometry, wallSurfaceEdge } from "@/components/editor/renderers/canonical-floor-plan/geometry";
 import {
   getCanonicalFaceTrimsMm,
@@ -729,6 +730,16 @@ assert.deepEqual(buildHousePlan2D(jointImport.rooms, 8, 3).rooms.map(({ edgeWall
 const sharedDesign = { version: 3, rooms: snapshotToStored(jointImport).rooms, activeRoomId: "L", title: "t" };
 assert.doesNotThrow(() => assertSharedDesignInput(sharedDesign));
 assert.doesNotThrow(() => assertSharedDesignSnapshotPublic(sharedDesign));
+// The public share pages' projection keeps them; a design it refuses (an undeclared field beside them) shows the generic error.
+const shareRow = { id: "s", title: "t", roomWidth: 4, roomDepth: 3, items: [], zones: [], savedViews: [], style: null, budget: null,
+  mode: "homeowner", notes: null };
+const publicRooms = storedToSnapshot(projectSharedDesignForPublicPage({ ...shareRow, snapshot: sharedDesign } as never).snapshot).rooms;
+assert.deepEqual(publicRooms.map(({ planEdgeWallIds }) => planEdgeWallIds), jointIds);
+assert.deepEqual(publicRooms.map(({ planEdgeWallThicknessesMm }) => planEdgeWallThicknessesMm), jointImport.rooms.map(({ planEdgeWallThicknessesMm }) => planEdgeWallThicknessesMm));
+assert.ok(publicRooms.every(({ planEdgeWallThicknessesMm }) => planEdgeWallThicknessesMm?.length));
+assert.throws(() => projectSharedDesignForPublicPage({ ...shareRow,
+  snapshot: { ...sharedDesign, rooms: sharedDesign.rooms.map((room) => ({ ...room, ownerSecret: "private-room-sentinel" })) } } as never),
+(error: unknown) => error instanceof Error && error.message === PUBLIC_SHARE_PROJECTION_ERROR && !String(error.stack).includes("ownerSecret"));
 
 // A room's finish on a wall is the one saved under that wall's id, else its walls' default.
 const keyedRoom = buildHousePlan2D([{ ...jointImport.rooms[0], surfaces: { walls: { default: { paintColorHex: "#ffffff" },
