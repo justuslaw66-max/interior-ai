@@ -66,7 +66,7 @@ export default function FloorPlanReviewHomeType({
       </p>
       <div role="status" aria-live="polite" className="text-xs text-label-secondary">
         {refused ? (
-          <p className="mt-1">That home type's walls would be lower than a door or window on the plan, so the heights stay as they are.</p>
+          <p className="mt-1">That home type&apos;s walls would be lower than a door or window on the plan, so the heights stay as they are.</p>
         ) : kept.map((item) => (
           <p key={item} className="mt-1">The {item} height stays as it is ({words[item]}).</p>
         ))}
