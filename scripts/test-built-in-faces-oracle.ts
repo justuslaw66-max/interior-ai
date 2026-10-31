@@ -437,7 +437,7 @@ function checkMoves(region: Region, room: RoomSnapshot, run: Run, definition: Ca
       if (!contained(turned)) {
         counts.turnsRefused += 1;
         check(!fitsAt(inPlace, -0.001), () => `${what()} ${name}: a ${degrees}° turn is refused, though it fits where it stands`);
-        const nearest = bruteNearestFit(region, room, inPlace, bottom, reach, (at) => fitsAt(at, 0.0006));
+        const nearest = bruteNearestFit(room, inPlace, bottom, reach, (at) => fitsAt(at, 0.0006));
         check(nearest === null, () => `${what()} ${name}: a ${degrees}° turn is refused, though it fits ${((nearest ?? 0) * 1000).toFixed(0)} mm away (within ${(reach * 1000).toFixed(0)} mm)`);
         continue;
       }
@@ -463,7 +463,7 @@ function checkMoves(region: Region, room: RoomSnapshot, run: Run, definition: Ca
  * The distance to the nearest place within `reach` of the piece, on a grid (10 mm, or reach/60 for a long reach), where it fits
  * by the region code's own test and `fitsAt` (the 3D view's walls and baseboards), or null: what a refused move must not have.
  */
-function bruteNearestFit(region: Region, room: RoomSnapshot, piece: Run, bottom: number, reach: number, fitsAt: (at: Run) => boolean): number | null {
+function bruteNearestFit(room: RoomSnapshot, piece: Run, bottom: number, reach: number, fitsAt: (at: Run) => boolean): number | null {
   const faces = getRoomBuiltInFaces(room, undefined, plan.rooms), standOff = getBuiltInStandOff(room, bottom), step = Math.max(0.01, reach / 60);
   const offsets: Array<[number, number, number]> = [];
   for (let dx = -reach; dx <= reach + 1e-9; dx += step) for (let dz = -reach; dz <= reach + 1e-9; dz += step) {
@@ -475,7 +475,6 @@ function bruteNearestFit(region: Region, room: RoomSnapshot, piece: Run, bottom:
     const at: Run = { ...piece, x: piece.x + dx, z: piece.z + dz };
     if (builtInFootprintFits(faces, at.x, at.z, at.width, at.depth, at.rotationY, 0.00005, standOff) && fitsAt(at)) return distance;
   }
-  void region;
   return null;
 }
 
@@ -501,7 +500,7 @@ function checkPlacements(region: Region, room: RoomSnapshot, openings: RoomOpeni
     }
     counts.placementsRefused += 1;
     const size = Math.hypot(room.geometry.width, room.geometry.depth);
-    const nearest = bruteNearestFit(region, room, { ...at, x: 0, z: 0 }, placed.position[1], size, (place) => fitsAt(place, standOff));
+    const nearest = bruteNearestFit(room, { ...at, x: 0, z: 0 }, placed.position[1], size, (place) => fitsAt(place, standOff));
     check(nearest === null, () => `${what}: refused, though it fits ${((nearest ?? 0) * 1000).toFixed(0)} mm from the room's middle`);
   }
 }
