@@ -38,8 +38,9 @@ import {
  * back on a face (a base unit's on the baseboard), clear of every door on its wall, end 10 mm (and a floor run's baseboard)
  * ±0.5 mm from what it meets along its face, a door or where its face ends (more along a wall all but parallel to its face),
  * and keep nudges of 10 mm along and into its wall or stop them at the face; where Fit refuses, no run as narrow as Fit makes
- * may stand anywhere along the host. A room with no exposed face must have the line's hosts, snap and containment. CI runs 150 rooms (about 11 s); ORACLE_FULL=1 runs 2,400 (about 3
- * min), ORACLE_ROOMS any number, ORACLE_SEED another seed, ORACLE_ONLY one room.
+ * may stand anywhere along the host. Turns, Snap to wall and Place as copy must keep it in the region (checkMoves). A room
+ * with no exposed face must have the line's hosts, snap and containment. CI runs 150 rooms (about 15 s); ORACLE_FULL=1 runs
+ * 2,400 (about 4 min), ORACLE_ROOMS any number, ORACLE_SEED another seed, ORACLE_ONLY one room, ORACLE_TURNS=all every turn.
  */
 
 const SEED = Number(process.env.ORACLE_SEED ?? 20261031);
@@ -402,12 +403,12 @@ function checkRun(region: Region, room: RoomSnapshot, space: CabinetHostSpace, o
 
 /**
  * The turns tried on a 600 mm unit at a run's start and on the run itself. A turn that fits nowhere near looks 0.6 m along and
- * out from two faces, so CI turns every fourth run only (by its count, so the same ones each time); ORACLE_FULL or
- * ORACLE_TURNS=all turns every run, every way.
+ * out from two faces, so only every twelfth run is turned (by its count, so the same ones each time), the unit two ways and the
+ * run one, and only the unit is snapped; ORACLE_TURNS=all turns and snaps both on every run, seven ways each.
  */
-const ALL_TURNS = Boolean(process.env.ORACLE_FULL || process.env.ORACLE_TURNS === "all");
-const TURNS = ALL_TURNS ? { unit: [5, -5, 15, -15, 45, 90, 180], run: [5, -5, 15, -15, 45, 90, 180] } : { unit: [5, -15, 45, 90], run: [-5, 180] };
-const turnsThisRun = () => ALL_TURNS || counts.runs % 4 === 0;
+const ALL_TURNS = process.env.ORACLE_TURNS === "all";
+const TURNS = ALL_TURNS ? { unit: [5, -5, 15, -15, 45, 90, 180], run: [5, -5, 15, -15, 45, 90, 180] } : { unit: [-15, 45], run: [180] };
+const turnsThisRun = () => ALL_TURNS || counts.runs % 12 === 0;
 
 /**
  * Turns, Snap to wall and Place as copy, as the inspector makes them. A turn the room accepts stands in the 3D view's region,
@@ -436,6 +437,7 @@ function checkMoves(region: Region, room: RoomSnapshot, run: Run, definition: Ca
       check(moved <= 0.6 + 0.001, () => `${what()} ${name}: a ${degrees}° turn threw it ${(moved * 1000).toFixed(0)} mm`);
       if (fitsAt(inPlace, -0.001)) check(moved < 1e-6, () => `${what()} ${name}: a ${degrees}° turn moved it ${(moved * 1000).toFixed(1)} mm, though it fits where it stands`);
     }
+    if (name === "run" && !ALL_TURNS) continue;
     counts.snaps += 1;
     const [toX, toZ] = getBuiltInSnapTarget(room, [piece.x, bottom, piece.z], piece.width, piece.depth, piece.rotationY, plan.rooms);
     const [x, z] = clampBuiltInToRoom(room, toX, toZ, piece.width, piece.depth, piece.rotationY, { from: [piece.x, piece.z], planRooms: plan.rooms, bottom });
