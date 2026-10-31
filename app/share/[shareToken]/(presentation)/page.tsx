@@ -8,7 +8,7 @@ import { buildShareExportFidelitySummary } from "@/lib/share-export-fidelity";
 import { buildPublicProjectionContentIdentity } from "@/lib/public-design-projection-identity";
 import { buildSharePageModel } from "@/lib/public-share-page-model";
 import type { DesignSnapshot } from "@/lib/room-types";
-import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
+import { projectSharedDesignForPublicPage } from "@/lib/public-share-projection";
 import ShareFloorPlanPreview from "@/components/ShareFloorPlanPreview";
 import { PublicShareClientBoundary } from "@/components/public-share/PublicShareClientBoundary";
 import { PublicShareInvalidView } from "@/components/public-share/PublicShareRootLifecycle";
@@ -77,7 +77,7 @@ export default async function SharePage({ params }: { params: Promise<{ shareTok
   });
   if (!design) return <PublicShareInvalidView />;
 
-  const publicDesign = projectSharedDesignTransport(design);
+  const publicDesign = projectSharedDesignForPublicPage(design);
   const designSnapshot: DesignSnapshot = storedToSnapshot(publicDesign.snapshot);
   const fidelitySummary = buildShareExportFidelitySummary(designSnapshot, CATALOG_ITEMS);
   const page = buildSharePageModel(designSnapshot, publicDesign.style);

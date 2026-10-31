@@ -457,6 +457,13 @@ export async function addCatalogCardItemToRoom(
   await expect(selectedItemPanel).toBeVisible({ timeout: 30_000 });
 }
 
+/** Each finish swatch's name: its text, or for a colour swatch, which has none, its accessible name. */
+export async function variantSwatchLabels(swatches: Locator): Promise<string[]> {
+  return swatches.evaluateAll((nodes) =>
+    nodes.map((node) => node.textContent?.trim() || node.getAttribute("aria-label") || node.getAttribute("title") || ""),
+  );
+}
+
 export async function ensureItemSelectedForVariants(page: Page): Promise<boolean> {
   const swatches = page.locator('[data-testid^="variant-swatch-"]');
   if ((await swatches.count().catch(() => 0)) > 0) return true;

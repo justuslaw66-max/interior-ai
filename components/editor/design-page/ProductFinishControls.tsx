@@ -190,7 +190,7 @@ export function ProductFinishControls({
             {state.finish.options.map((option) =>
               state.finish?.layout === "swatches" ? (
                 <FinishSwatchButton
-                  key={option.key}
+                  key={option.key} data-testid={`variant-swatch-${option.key}`} data-active={String(option.active)}
                   colorHex={option.colorHex}
                   swatchTextureUrl={option.swatchTextureUrl}
                   selected={option.active}
@@ -415,7 +415,7 @@ export function ProductFinishControls({
                 <div className="flex flex-wrap gap-2">
                   {group.options.map((option) => (
                     <FinishSwatchButton
-                      key={option.variantId}
+                      key={option.variantId} data-testid={`variant-swatch-${option.variantId}`} data-active={String(option.active)}
                       colorHex={option.colorHex}
                       swatchTextureUrl={option.swatchTextureUrl}
                       selected={option.active}

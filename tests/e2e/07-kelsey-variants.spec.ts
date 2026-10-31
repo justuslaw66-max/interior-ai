@@ -7,6 +7,7 @@ import {
   getImportedProductSelect,
   selectImportedFamilyByHint,
   selectImportedProductById,
+  variantSwatchLabels,
   waitForCatalogReady,
 } from './variant-test-utils';
 
@@ -107,15 +108,15 @@ test.describe('7. Kelsey Marble Variant Integration', () => {
     const swatchCount = await swatches.count();
     expect(swatchCount, 'the selected Kelsey item must expose variant swatches').toBeGreaterThan(0);
 
-    // Verify label presence
-    const labels = await swatches.allTextContents();
+    // Verify label presence (a colour swatch is named by its aria-label)
+    const labels = await variantSwatchLabels(swatches);
     expect(labels.some(l => l.toLowerCase().includes('white'))).toBeTruthy();
     expect(labels.some(l => l.toLowerCase().includes('walnut') || l.toLowerCase().includes('dark'))).toBeTruthy();
 
     // Click Dark Walnut and verify it becomes active
     let darkWalnutSwatch: import('@playwright/test').Locator | null = null;
     for (let i = 0; i < swatchCount; i++) {
-      const text = await swatches.nth(i).textContent();
+      const text = labels[i];
       if (text?.toLowerCase().includes('walnut') || text?.toLowerCase().includes('dark')) {
         darkWalnutSwatch = swatches.nth(i);
         break;
