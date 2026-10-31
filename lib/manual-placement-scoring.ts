@@ -4,7 +4,8 @@ import { computeCirculationAnalysis } from "@/lib/circulation-analysis";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, RoomSnapshot, ZoneMin } from "@/lib/room-types";
-import { getRoomWallClearances } from "@/lib/room-finished-outline";
+import { getShapedRoomDoorPoints } from "@/lib/room-door-points";
+import { getRoomWallClearance } from "@/lib/room-finished-faces";
 
 export type ManualPlacementScoreKind =
   | "great"
@@ -106,6 +107,19 @@ function getOpeningCenter(opening: RoomOpening2D, room: RoomSnapshot): { x: numb
   return { x: width / 2, z: offset };
 }
 
+/** To the nearest of the room's doors: on its four sides for a rectangle, on the wall the plan puts it on for another shape. */
+function getNearestDoorDistance(room: RoomSnapshot, openings: RoomOpening2D[], center: { x: number; z: number }): number {
+  const shaped = getShapedRoomDoorPoints(room, openings);
+  if (shaped) return Math.min(Infinity, ...shaped.map((door) => distance2d(center, door.center)));
+  const matchingOpenings = openings.filter((opening) => !opening.roomId || opening.roomId === room.id);
+  return Math.min(
+    Infinity,
+    ...matchingOpenings
+      .filter((opening) => opening.kind === "door")
+      .map((opening) => distance2d(center, getOpeningCenter(opening, room)))
+  );
+}
+
 function countStyleMismatches(
   candidate: CatalogItemSchema | undefined,
   existingItems: DesignItem[],
@@ -161,8 +175,8 @@ export function scoreManualPlacement({
     dimsMm.d / 1000,
     item.rotationY ?? 0
   );
-  const clearance = getRoomWallClearances(room, center, { w: effectiveWidth, d: effectiveDepth }); // To the finished faces.
-  const nearestWallClearance = Math.min(clearance.x, clearance.z);
+  // To the nearest finished face: an L-shape's or a drawn shape's own, its notch's walls included.
+  const nearestWallClearance = getRoomWallClearance(room, center, { w: effectiveWidth, d: effectiveDepth });
   const warnings: string[] = [];
   const suggestions: string[] = [];
   const actions: ManualPlacementAction[] = [];
@@ -245,14 +259,7 @@ export function scoreManualPlacement({
     warnings.push("Clearance is tight.");
   }
 
-  const matchingOpenings = openings.filter((opening) => !opening.roomId || opening.roomId === room.id);
-  const nearestDoorDistance = Math.min(
-    Infinity,
-    ...matchingOpenings
-      .filter((opening) => opening.kind === "door")
-      .map((opening) => distance2d(center, getOpeningCenter(opening, room)))
-  );
-  if (nearestDoorDistance < 0.85) {
+  if (getNearestDoorDistance(room, openings, center) < 0.85) {
     score -= 24;
     warnings.push("Too close to a door or its swing.");
     suggestions.push("Move it at least 85 cm away from the door opening.");
