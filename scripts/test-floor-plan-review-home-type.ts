@@ -6,8 +6,12 @@ import {
   REVIEW_HOME_TYPES,
   applyReviewHomeType,
   isHomeTypeWallHeightMm,
+  markStoreyTypedAtReview,
+  reviewHomeTypeFor,
   reviewHomeTypeHeights,
+  storeyTypedAtReview,
 } from "@/lib/floor-plan-imports/review-home-type";
+import { validateFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import { applyConsumerFloorPlanCorrection } from "@/lib/floor-plan-imports/review";
 import { loadPingYiCourtV2ReviewSeedBundle } from "@/lib/floor-plan-seeds/ping-yi-court-review-intake";
 
@@ -67,7 +71,11 @@ confirmed.floors[0].defaults.wallHeight = { ...confirmed.floors[0].defaults.wall
 const keptWall = applyReviewHomeType(confirmed, { floorId, homeType: "landed", storeyTyped: false });
 assert.deepEqual(keptWall.kept, ["wall"]);
 assert.equal(keptWall.document.floors[0].defaults.wallHeight.valueMm, 2700);
-assert.equal(keptWall.document.floors[0].storeyHeightMm, 3200);
+assert.equal(keptWall.document.floors[0].storeyHeightMm, 2900, "the storey stands 200 mm over the walls that stay");
+const confirmedHigh = plan();
+confirmedHigh.floors[0].defaults.wallHeight = { ...confirmedHigh.floors[0].defaults.wallHeight, valueMm: 3000, evidence: "user_confirmed" };
+assert.equal(applyReviewHomeType(confirmedHigh, { floorId, homeType: "hdb", storeyTyped: false }).document.floors[0].storeyHeightMm, 3200,
+  "an HDB flat's rule doesn't put the storey under 3 m walls the person confirmed");
 
 // 4. A storey height typed in this review keeps its assumed evidence, so the review says so and it is kept.
 const typed = plan();
@@ -77,6 +85,14 @@ assert.deepEqual(keptStorey.kept, ["storey"]);
 assert.equal(keptStorey.document.floors[0].storeyHeightMm, 2900);
 assert.equal(keptStorey.document.floors[0].defaults.wallHeight.valueMm, 3200);
 
+// 4b. The typing is recorded in the document, so it holds after a draft save or a resume (the review's state is new then).
+const marked = plan();
+marked.floors[0].storeyHeightMm = 2900;
+markStoreyTypedAtReview(marked, marked.floors[0]);
+assert.ok(storeyTypedAtReview(marked.floors[0]));
+assert.equal(marked.floors[0].verticalEvidence?.storeyHeight.evidence, "assumed");
+assert.deepEqual(applyReviewHomeType(marked, { floorId, homeType: "condo", storeyTyped: false }).kept, ["storey"]);
+
 // 5. Heights the plan states are kept.
 const stated = plan();
 stated.floors[0].defaults.wallHeight = { ...stated.floors[0].defaults.wallHeight, evidence: "source_documented" };
@@ -84,6 +100,36 @@ const statedFloor = stated.floors[0];
 if (statedFloor.verticalEvidence) statedFloor.verticalEvidence.storeyHeight = { ...statedFloor.verticalEvidence.storeyHeight, evidence: "source_documented" };
 assert.deepEqual(applyReviewHomeType(stated, { floorId, homeType: "condo", storeyTyped: false }).kept, ["wall", "storey"]);
 assert.deepEqual(applyReviewHomeType(plan(), { floorId: "no-such-floor", homeType: "condo", storeyTyped: false }).kept, []);
+
+// 5b. What it writes is a valid plan: real source ids, also where a height's provenance had no evidence, or the floor
+// had no level evidence at all.
+const issues = (document: FloorPlanDocumentV2) => validateFloorPlanDocumentV2(document).filter((issue) => issue.severity === "error");
+assert.deepEqual(issues(condo.document), issues(original));
+const bare = plan();
+const bareFloor = bare.floors[0];
+if (bareFloor.verticalEvidence) bareFloor.verticalEvidence.storeyHeight.provenance.evidence = [];
+bareFloor.defaults.wallHeight.provenance.evidence = [];
+const bareCondo = applyReviewHomeType(bare, { floorId, homeType: "condo", storeyTyped: false }).document;
+assert.equal(bareCondo.floors[0].defaults.wallHeight.provenance.evidence[0].sourceId, bare.sources[0].id);
+assert.equal(bareCondo.floors[0].verticalEvidence?.storeyHeight.provenance.evidence[0].sourceId, bare.sources[0].id);
+assert.equal(issues(bareCondo).filter((issue) => issue.code === "UNKNOWN_SOURCE").length, 0);
+const levelless = plan();
+delete levelless.floors[0].verticalEvidence;
+const levellessCondo = applyReviewHomeType(levelless, { floorId, homeType: "condo", storeyTyped: false });
+assert.deepEqual([levellessCondo.document.floors[0].storeyHeightMm, levellessCondo.document.floors[0].verticalEvidence], [3000, undefined]);
+// A door standing higher than the home type's walls: nothing changes.
+const tall = plan();
+const tallFloor = tall.floors[0];
+tallFloor.defaults.wallHeight = { ...tallFloor.defaults.wallHeight, valueMm: 3000 };
+tallFloor.openings[0] = { ...tallFloor.openings[0], heightMm: 2700, sillHeightMm: 0 };
+assert.deepEqual(issues(tall).filter((issue) => issue.code === "OPENING_ABOVE_WALL"), []);
+const refused = applyReviewHomeType(tall, { floorId, homeType: "hdb", storeyTyped: false });
+assert.equal(refused.refused, true);
+assert.equal(refused.document, tall);
+// The review starts on the home type the floor's assumed walls are.
+assert.equal(reviewHomeTypeFor(original.floors[0]), "unknown");
+assert.equal(reviewHomeTypeFor(condo.document.floors[0]), "condo");
+assert.equal(reviewHomeTypeFor(confirmedHigh.floors[0]), "unknown");
 
 // 6. The server keeps a home type's wall height assumed, with its own note; any other changed value is the person's.
 const submit = (current: FloorPlanDocumentV2, next: FloorPlanDocumentV2) =>
@@ -98,6 +144,20 @@ assert.equal(reviewed.storeyHeightMm, 3000);
 const claimed = structuredClone(original);
 claimed.floors[0].defaults.wallHeight = { ...claimed.floors[0].defaults.wallHeight, valueMm: 2700 };
 assert.equal(submit(original, claimed).defaults.wallHeight.evidence, "user_confirmed", "2.7 m is no home type's: the person's value");
+assert.equal(reviewed.verticalEvidence?.storeyHeight.evidence, "assumed");
+// A typed storey's mark survives the save, so the next home type keeps it.
+const savedTyped = submit(original, marked);
+assert.ok(storeyTypedAtReview(savedTyped));
+// A storey the client says the plan states, when it didn't, is the person's.
+const forged = plan();
+const forgedFloor = forged.floors[0];
+forgedFloor.storeyHeightMm = 3400;
+if (forgedFloor.verticalEvidence) forgedFloor.verticalEvidence.storeyHeight = { ...forgedFloor.verticalEvidence.storeyHeight, evidence: "source_documented" };
+assert.equal(submit(original, forged).verticalEvidence?.storeyHeight.evidence, "user_confirmed");
+const stating = plan();
+if (stating.floors[0].verticalEvidence) stating.floors[0].verticalEvidence.storeyHeight.evidence = "source_documented";
+assert.equal(submit(stating, structuredClone(stating)).verticalEvidence?.storeyHeight.evidence, "source_documented",
+  "a height the plan stated stays the plan's");
 const untouched = submit(original, plan());
 assert.deepEqual(untouched.defaults.wallHeight, original.floors[0].defaults.wallHeight);
 
@@ -109,5 +169,7 @@ assert.match(panel, /useFloorPlanReviewHeights\(candidate, setCandidate\);[\s\S]
 assert.match(panel, /<FloorPlanReviewHomeType[\s\S]*?Optional plan details/);
 assert.match(field, /Home type[\s\S]*?REVIEW_HOME_TYPES\.map/);
 assert.match(field, /data-testid="floor-plan-import-home-type"/);
+assert.match(field, /role="status" aria-live="polite"/);
+assert.match(field, /toFixed\(3\)/, "heights to the millimetre");
 
 console.log("Floor-plan review home type checks passed: 6 home types, kept heights, the server's assumed walls.");

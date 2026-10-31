@@ -333,7 +333,7 @@ export default function FloorPlanImportReviewPanel({
         </details>
       ) : null}
       <FloorPlanReviewHomeType floor={floor} homeType={heights.homeType} kept={heights.kept}
-        disabled={disabled} onChange={heights.chooseHomeType} />
+        refused={heights.refused} disabled={disabled} onChange={heights.chooseHomeType} />
       <details className="mt-3 rounded-xl border border-separator bg-surface-floating p-3">
         <summary className="cursor-pointer text-xs font-semibold">
           Optional plan details

@@ -105,6 +105,26 @@ function sanitizeAnnotations(input: {
   });
 }
 
+const VERTICAL_VALUES = [["elevation", "elevationMm"], ["storeyHeight", "storeyHeightMm"], ["slabThickness", "slabThicknessMm"]] as const;
+
+/** A level's height the client says the plan states is the person's, unless the plan stated it already at that value. */
+function sanitizeVerticalEvidence(
+  current: FloorPlanFloorV2 | undefined,
+  next: FloorPlanFloorV2,
+  evidence: NonNullable<FloorPlanFloorV2["verticalEvidence"]>,
+  input: Parameters<typeof userConfirmedProvenance>[0]
+): NonNullable<FloorPlanFloorV2["verticalEvidence"]> {
+  const sanitized = { ...evidence };
+  for (const [key, field] of VERTICAL_VALUES) {
+    const before = current?.verticalEvidence?.[key];
+    const stated = before?.evidence === "source_documented" && current?.[field] === next[field];
+    if (evidence[key].evidence === "source_documented" && !stated) {
+      sanitized[key] = { evidence: "user_confirmed", provenance: userConfirmedProvenance(input) };
+    }
+  }
+  return sanitized;
+}
+
 function sanitizeFloor(input: {
   current: FloorPlanFloorV2 | undefined;
   next: FloorPlanFloorV2;
@@ -145,8 +165,10 @@ function sanitizeFloor(input: {
       provenance: userConfirmedProvenance(entityInput),
     };
   };
+  const vertical = input.next.verticalEvidence;
   return {
     ...input.next,
+    ...(vertical ? { verticalEvidence: sanitizeVerticalEvidence(current, input.next, vertical, entityInput) } : {}),
     defaults: {
       wallHeight: sanitizeMeasured("wallHeight"),
       doorHeight: sanitizeMeasured("doorHeight"),

@@ -3,6 +3,7 @@ import type {
   FloorPlanEntityProvenanceV2,
   FloorPlanFloorV2,
 } from "@/lib/floor-plan-document-v2";
+import { validateFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import {
   HOME_CEILING_HEIGHTS_MM,
   homeCeilingHeight,
@@ -28,6 +29,9 @@ export type ReviewHomeTypeId = (typeof REVIEW_HOME_TYPES)[number]["id"];
 
 export type ReviewHomeTypeHeights = { wallMm: number; storeyMm: number; rule: string; label: string };
 
+/** Marks a storey height typed in the review: its evidence stays assumed, so this is how a home type knows to keep it. */
+export const TYPED_STOREY_EXTRACTOR = "consumer-review-typed-1";
+
 export function reviewHomeTypeHeights(id: ReviewHomeTypeId): ReviewHomeTypeHeights {
   const type = REVIEW_HOME_TYPES.find((entry) => entry.id === id) ?? REVIEW_HOME_TYPES[0];
   const ceiling = homeCeilingHeight(type.home);
@@ -39,30 +43,52 @@ export function isHomeTypeWallHeightMm(valueMm: number) {
   return (Object.values(HOME_CEILING_HEIGHTS_MM) as number[]).includes(valueMm);
 }
 
-export function homeTypeRuleNote(heights: Pick<ReviewHomeTypeHeights, "label" | "rule">) {
-  return `Home type chosen at review: ${heights.label}. The rule for ${heights.rule}; not source-verified.`;
+/** The choice the review starts on: the home type whose walls the floor's assumed walls are (2.6 m reads "Not sure"). */
+export function reviewHomeTypeFor(floor: FloorPlanFloorV2 | undefined): ReviewHomeTypeId {
+  const wall = floor?.defaults.wallHeight;
+  if (!wall || wall.evidence !== "assumed") return "unknown";
+  return REVIEW_HOME_TYPES.find((type) => reviewHomeTypeHeights(type.id).wallMm === wall.valueMm)?.id ?? "unknown";
 }
 
-function ruleProvenance(previous: FloorPlanEntityProvenanceV2 | undefined, note: string): FloorPlanEntityProvenanceV2 {
+export function storeyTypedAtReview(floor: FloorPlanFloorV2) {
+  return Boolean(floor.verticalEvidence?.storeyHeight.provenance.evidence.some(
+    (entry) => entry.extractorVersion === TYPED_STOREY_EXTRACTOR));
+}
+
+function reviewProvenance(
+  previous: FloorPlanEntityProvenanceV2 | undefined, sourceId: string, extractorVersion: string, note: string
+): FloorPlanEntityProvenanceV2 {
   const first = previous?.evidence[0];
   return {
     confidence: 0,
     extractionVersion: previous?.extractionVersion ?? "consumer-review-1",
-    evidence: [{ sourceId: first?.sourceId ?? "consumer-review", basis: "inferred", confidence: 0,
-      extractorVersion: "consumer-review-home-type-1", ...(first?.pageNumber ? { pageNumber: first.pageNumber } : {}), note }],
+    evidence: [{ sourceId: first?.sourceId ?? sourceId, basis: "inferred", confidence: 0, extractorVersion,
+      ...(first?.pageNumber ? { pageNumber: first.pageNumber } : {}), note }],
     reviewHistory: previous?.reviewHistory ?? [],
   };
 }
 
+/** A storey height typed in the review, marked so a later home type (after a save or a resume too) keeps it. */
+export function markStoreyTypedAtReview(document: FloorPlanDocumentV2, floor: FloorPlanFloorV2) {
+  const vertical = floor.verticalEvidence;
+  const source = document.sources[0];
+  if (!vertical || vertical.storeyHeight.evidence !== "assumed" || !source) return;
+  vertical.storeyHeight = { evidence: "assumed", provenance: reviewProvenance(vertical.storeyHeight.provenance,
+    source.id, TYPED_STOREY_EXTRACTOR, "Typed at review; not yet confirmed.") };
+}
+
 export type ReviewHomeTypeResult = {
   document: FloorPlanDocumentV2;
-  /** A wall or storey height the person typed or confirmed, which the home type left as it was. */
+  /** A wall or storey height the home type left as it was: the plan states it, or the person set it. */
   kept: Array<"wall" | "storey">;
+  /** The home type's walls would be lower than an opening on the plan, so nothing changed. */
+  refused?: boolean;
 };
 
 /**
  * The document with the floor's wall and storey heights set by the home type. Only a height still assumed changes; a
- * storey height typed in this review (its evidence stays assumed while only its number changes) is kept too.
+ * storey height typed in this review (its evidence stays assumed while only its number changes) is kept too. A storey
+ * that changes stands 200 mm over the floor's walls, kept or not.
  */
 export function applyReviewHomeType(
   document: FloorPlanDocumentV2,
@@ -70,20 +96,26 @@ export function applyReviewHomeType(
 ): ReviewHomeTypeResult {
   const heights = reviewHomeTypeHeights(input.homeType);
   const next = structuredClone(document);
-  const floor: FloorPlanFloorV2 | undefined = next.floors.find((entry) => entry.id === input.floorId);
-  if (!floor) return { document, kept: [] };
-  const note = homeTypeRuleNote(heights);
+  const floor = next.floors.find((entry) => entry.id === input.floorId);
+  const sourceId = document.sources[0]?.id;
+  if (!floor || !sourceId) return { document, kept: [] };
+  const note = `Home type chosen at review: ${heights.label}. The rule for ${heights.rule}; not source-verified.`;
   const kept: ReviewHomeTypeResult["kept"] = [];
   const wall = floor.defaults.wallHeight;
   if (wall.evidence === "assumed") {
-    floor.defaults.wallHeight = { valueMm: heights.wallMm, evidence: "assumed", provenance: ruleProvenance(wall.provenance, note) };
+    floor.defaults.wallHeight = { valueMm: heights.wallMm, evidence: "assumed",
+      provenance: reviewProvenance(wall.provenance, sourceId, "consumer-review-home-type-1", note) };
   } else kept.push("wall");
-  const storeyEvidence = floor.verticalEvidence?.storeyHeight;
-  if ((storeyEvidence?.evidence ?? "assumed") === "assumed" && !input.storeyTyped) {
-    floor.storeyHeightMm = heights.storeyMm;
-    if (floor.verticalEvidence) {
-      floor.verticalEvidence.storeyHeight = { evidence: "assumed", provenance: ruleProvenance(storeyEvidence?.provenance, note) };
-    }
+  const storey = floor.verticalEvidence?.storeyHeight;
+  if ((storey?.evidence ?? "assumed") === "assumed" && !input.storeyTyped && !storeyTypedAtReview(floor)) {
+    floor.storeyHeightMm = storeyHeightForWallMm(floor.defaults.wallHeight.valueMm);
+    if (floor.verticalEvidence) floor.verticalEvidence.storeyHeight = { evidence: "assumed",
+      provenance: reviewProvenance(storey?.provenance, sourceId, "consumer-review-home-type-1", note) };
   } else kept.push("storey");
+  // A plan whose door or window stands higher than these walls stays as it is: the walls can't be lower than it.
+  const errors = (plan: FloorPlanDocumentV2) => validateFloorPlanDocumentV2(plan).filter((issue) => issue.severity === "error").length;
+  if (errors(next) > errors(document)) {
+    return { document, kept: [], refused: true };
+  }
   return { document: next, kept };
 }

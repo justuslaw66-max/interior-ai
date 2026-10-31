@@ -39,6 +39,8 @@ const assistant = [
   "components/editor/FloorPlanImportAssistant.tsx",
   "components/editor/useConsumerFloorPlanImportCreation.ts",
   "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx",
+  "components/editor/floor-plan-import-review/FloorPlanReviewHomeType.tsx",
+  "components/editor/floor-plan-import-review/useFloorPlanReviewHeights.ts",
   "components/editor/floor-plan-import-review/import-review-summary.ts",
   "components/editor/floor-plan-import-review/photo-review-action.ts",
   "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx",

@@ -6,6 +6,8 @@ import {
 } from "@/lib/floor-plan-measured-property-mutations";
 import {
   applyReviewHomeType,
+  markStoreyTypedAtReview,
+  reviewHomeTypeFor,
   type ReviewHomeTypeId,
   type ReviewHomeTypeResult,
 } from "@/lib/floor-plan-imports/review-home-type";
@@ -35,8 +37,10 @@ function withVerticalNumber(candidate: FloorPlanDocumentV2, property: VerticalPr
   const next = structuredClone(candidate);
   const nextFloor = next.floors[0];
   if (!nextFloor) return null;
-  if (property === "storeyHeight") nextFloor.storeyHeightMm = Math.max(100, Math.round(value));
-  else nextFloor.slabThicknessMm = Math.max(0, Math.round(value));
+  if (property === "storeyHeight") {
+    nextFloor.storeyHeightMm = Math.max(100, Math.round(value));
+    markStoreyTypedAtReview(next, nextFloor);
+  } else nextFloor.slabThicknessMm = Math.max(0, Math.round(value));
   // Editing the number alone deliberately preserves its current evidence.
   return next;
 }
@@ -93,16 +97,20 @@ export function useFloorPlanReviewHeights(
   setCandidate: Dispatch<SetStateAction<FloorPlanDocumentV2 | null>>
 ) {
   const floor = candidate.floors[0];
-  const [homeType, setHomeType] = useState<ReviewHomeTypeId>("unknown");
+  const [homeType, setHomeType] = useState<ReviewHomeTypeId>(() => reviewHomeTypeFor(floor));
   const [kept, setKept] = useState<ReviewHomeTypeResult["kept"]>([]);
+  const [refused, setRefused] = useState(false);
   const [storeyTyped, setStoreyTyped] = useState(false);
   const commit = (next: FloorPlanDocumentV2 | null) => { if (next) setCandidate(next); };
   return {
     homeType,
     kept,
+    refused,
     chooseHomeType: (next: ReviewHomeTypeId) => {
       if (!floor) return;
       const result = applyReviewHomeType(candidate, { floorId: floor.id, homeType: next, storeyTyped });
+      setRefused(Boolean(result.refused));
+      if (result.refused) return;
       setHomeType(next);
       setKept(result.kept);
       commit(result.document);
