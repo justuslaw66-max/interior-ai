@@ -641,6 +641,42 @@ for (const [finish, eastMm] of [[painted, -50], [laminated, -6]] as const) {
   assert.ok(!checks.some(({ message }) => message.includes("-")), "no negative gap");
 }
 
+// A wall in two pieces at a T, both thinner than the room's average (300 mm outer walls, 100 mm partitions): their signed depths
+// are negative, the panelled half's less so. The step at the T resolves to the panelled half's depth, the deeper into the room;
+// the painted half's would let the clamp lean into the panel by the T (3.8 mm into it with the plan turned 10°).
+for (const turnDeg of [0, 10, 30]) {
+  const turn = (turnDeg * Math.PI) / 180;
+  const turned = ([id, x, z]: [string, number, number]): [string, number, number] =>
+    [id, Math.round(x * Math.cos(turn) - z * Math.sin(turn)), Math.round(x * Math.sin(turn) + z * Math.cos(turn))];
+  const vertices = ([["a", 0, 0], ["b", 5000, 0], ["c", 5000, 4000], ["t", 2500, 4000], ["d", 0, 4000], ["f", 2500, 6000]] as const)
+    .map((vertex) => turned([...vertex]));
+  const tee = importedPlan(planOf(`tee-${turnDeg}`, vertices, [["n", "a", "b", 300], ["e1", "b", "c", 300], ["s-east", "c", "t", 100],
+    ["s-west", "t", "d", 100], ["w1", "d", "a", 300], ["stem", "t", "f", 100]], [["R", ["n", "e1", "s-east", "s-west", "w1"]]]),
+  (room) => ({ ...room, surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { "s-east": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } } } },
+    surfaceFinishes: undefined }));
+  const room = tee.rooms[0];
+  const depths = getRoomWallFinishDepths(room);
+  assert.ok(depths["wall-2"]! < 0 && depths["wall-3"]! < depths["wall-2"]!, JSON.stringify(depths));
+  const at = (id: string) => vertices.find(([vertexId]) => vertexId === id)!.slice(1).map((mm) => (mm as number) / 1000);
+  const [[cx, cz], [tx, tz]] = [at("c"), at("t")];
+  const length = Math.hypot(tx - cx, tz - cz);
+  const along = { x: (tx - cx) / length, z: (tz - cz) / length };
+  const inward = { x: -along.z, z: along.x }; // towards a and b
+  const o = room.planPosition!;
+  let nearestMm = Infinity;
+  for (let s = 0.005; s < 1; s += 0.01) {
+    const [w, d] = [1.6, 0.9];
+    const [x, z] = clampToRoomInsideFinishes(cx + (tx - cx) * s - inward.x - o.x, cz + (tz - cz) * s - inward.z - o.z, w, d,
+      room.geometry.width, room.geometry.depth, getFurnitureWallInset(room.geometry.wallThickness!), 0, "custom_polygon", room.planPolygon, undefined, depths);
+    for (const [i, j] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      const corner = { x: x + o.x + (i * w) / 2, z: z + o.z + (j * d) / 2 };
+      const u = (corner.x - cx) * along.x + (corner.z - cz) * along.z;
+      if (u >= 0 && u <= length) nearestMm = Math.min(nearestMm, ((corner.x - cx) * inward.x + (corner.z - cz) * inward.z) * 1000);
+    }
+  }
+  assert.ok(nearestMm >= 50 + 44 + 20 - 0.5, `turned ${turnDeg}°: an item ${(50 + 44 - nearestMm).toFixed(1)} mm past the T's panel face`);
+}
+
 // A slice wholly inside a corner's cut is dropped, not drawn as a sliver: a door 120 mm along w2 from its corner with w1,
 // whose panel w2 stops at (100 mm to w1's face, 44 mm of panel). Where w1 is cut away for the camera, w2 runs to the corner.
 const doorCorner = importedPlan(planOf("door-corner", rectangle, ring([200, 200, 200, 200]), [["R", ["w1", "w2", "w3", "w4"]]],
