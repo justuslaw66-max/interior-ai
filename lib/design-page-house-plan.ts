@@ -1567,7 +1567,7 @@ export type HousePlanRoom2D = {
   floorSlabThicknessMm?: number;
   shape: RoomPlanShape;
   polygon?: Array<{ x: number; z: number }>;
-  edgeWallIds?: string[]; edgeWallThicknessesMm?: number[]; // an imported room's: each edge's plan wall, its thickness
+  edgeWallIds?: readonly string[]; edgeWallThicknessesMm?: readonly number[]; // an imported room's: each edge's plan wall, its thickness
   holes?: Array<Array<{ x: number; z: number }>>;
   surfaces?: RoomSurfaceFinishes;
   surfaceFinishes?: RoomSurfaceFinishes;
