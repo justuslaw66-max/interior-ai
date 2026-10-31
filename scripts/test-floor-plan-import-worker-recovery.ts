@@ -471,9 +471,10 @@ async function testOwnerCancelStopsTheWorkerReadingIt() {
   assert.equal(purgeAt(new Date(leaseEnd.getTime() + 1)), "purge");
   // A worker that releases or claims the job between the cancel's read and its write changes the lease: the
   // cancel reads again and lands on the new state.
+  const lateLeaseEnd = new Date(leaseEnd.getTime() + 60_000);
   for (const [id, race] of [
     ["released", (row: MutableJob) => Object.assign(row, { leaseToken: null, leaseOwner: null, leaseExpiresAt: null })],
-    ["claimed", (row: MutableJob) => Object.assign(row, { leaseToken: "late-claim", leaseOwner: "late-worker", leaseExpiresAt: leaseEnd })],
+    ["claimed", (row: MutableJob) => Object.assign(row, { leaseToken: "late-claim", leaseOwner: "late-worker", leaseExpiresAt: lateLeaseEnd })],
   ] as const) {
     database.jobs.set(id, makeJob(id, { status: "rendered", leaseToken: "first", leaseOwner: "worker", leaseExpiresAt: leaseEnd }));
     const updateMany = database.floorPlanImportJob.updateMany;
@@ -491,8 +492,9 @@ async function testOwnerCancelStopsTheWorkerReadingIt() {
     const cancelled = database.jobs.get(id);
     assert.equal(cancelled?.status, "failed");
     assert.equal(cancelled?.leaseToken, null);
-    // Held for the lease that was live when the cancel landed, and none once the worker had let go.
-    assert.equal(cancelled?.leaseExpiresAt?.getTime() ?? null, id === "claimed" ? leaseEnd.getTime() : null);
+    // Held for the lease that was live when the cancel landed (the late claim's, not the one first read), and
+    // none once the worker had let go.
+    assert.equal(cancelled?.leaseExpiresAt?.getTime() ?? null, id === "claimed" ? lateLeaseEnd.getTime() : null);
   }
 
   // A queued upload (no lease) is cancelled with nothing held back.

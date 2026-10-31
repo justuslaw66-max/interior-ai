@@ -72,10 +72,31 @@ async function sendCancel(run: CancelRun, jobId: string, settle: (error: string 
   }
 }
 
+/** Waits before each try of a cancel sent in the background; the last is past the route's one-minute rate window. */
+const BACKGROUND_CANCEL_DELAYS_MS = [0, 2_000, 10_000, 65_000];
+
+/**
+ * Cancels `jobId` with nobody waiting on screen, trying again after a dropped connection, a server
+ * error or the rate limit, since a job left uncancelled would be read. A refusal (409: the plan is
+ * past cancelling) is final; a job already gone (404) counts as cancelled.
+ */
+export async function cancelFloorPlanImportInBackground(jobId: string, wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))) {
+  for (const delayMs of BACKGROUND_CANCEL_DELAYS_MS) {
+    if (delayMs) await wait(delayMs);
+    try {
+      await requestFloorPlanImportCancel(jobId);
+      return true;
+    } catch (cause) {
+      if (cause instanceof UserFacingError && cause.status === 409) return false;
+    }
+  }
+  return false;
+}
+
 /** A file still uploading when Cancel upload was pressed: its job is cancelled when it arrives. */
 function cancelOnArrival(file: File) {
   cancelFloorPlanUploadOnArrival(file, (jobId) => {
-    void requestFloorPlanImportCancel(jobId).catch(() => undefined);
+    void cancelFloorPlanImportInBackground(jobId);
   });
 }
 

@@ -18,7 +18,7 @@ import {
   ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY,
 } from "@/lib/floor-plan-import-client";
 import { inverseFloorPlanAddressTransform } from "@/lib/floor-plan-consumer-orientation";
-import { requestFloorPlanImportCancel } from "@/components/editor/useFloorPlanImportCancel";
+import { cancelFloorPlanImportInBackground, requestFloorPlanImportCancel } from "@/components/editor/useFloorPlanImportCancel";
 import { UserFacingError } from "@/lib/user-facing-error";
 import { floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import { sourceDrawingStroke } from "@/lib/floor-plan-source-drawing";
@@ -961,6 +961,34 @@ async function assertCancelRequestOutcomes() {
     requestFloorPlanImportCancel("broken", answer(500, "not json")),
     (cause) => cause instanceof UserFacingError && cause.message === "Unable to cancel this upload"
   );
+
+  // A cancel sent in the background (the file was still uploading) tries again after a server error, the rate
+  // limit or a dropped connection, since a job left uncancelled would be read; a 409 refusal is final.
+  const originalFetch = globalThis.fetch;
+  const backgroundCancel = async (answers: Array<number | "offline">) => {
+    let tries = 0;
+    const waited: number[] = [];
+    globalThis.fetch = (async () => {
+      const answer = answers[tries++];
+      if (answer === "offline") throw new TypeError("Failed to fetch");
+      return new Response("{}", { status: answer });
+    }) as typeof fetch;
+    const cancelled = await cancelFloorPlanImportInBackground("job", async (ms) => {
+      waited.push(ms);
+    });
+    return { cancelled, tries, waited };
+  };
+  try {
+    assert.deepEqual(await backgroundCancel([500, 429, 200]), { cancelled: true, tries: 3, waited: [2_000, 10_000] });
+    assert.deepEqual(await backgroundCancel(["offline", 404]), { cancelled: true, tries: 2, waited: [2_000] });
+    assert.deepEqual(await backgroundCancel([409]), { cancelled: false, tries: 1, waited: [] });
+    assert.deepEqual(
+      await backgroundCancel(["offline", "offline", "offline", "offline"]),
+      { cancelled: false, tries: 4, waited: [2_000, 10_000, 65_000] }
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 }
 
 Promise.all([

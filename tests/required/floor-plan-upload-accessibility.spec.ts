@@ -756,10 +756,13 @@ test("Choose file takes a dropped plan, and Cancel upload stops it while uploadi
   );
   failUpload();
   await uploadFailed;
-  await expect(page.getByText("Synthetic upload failure")).toHaveCount(0);
+  // A failed upload ends its cancel's wait: no job, so nothing to cancel, and the drop box stays.
+  await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
+  expect(cancels).toHaveLength(2);
   await page.getByTestId("floor-plan-import-secondary-options").locator("summary").first().click();
   await page.getByText("Your uploads", { exact: true }).click();
   await page.getByTestId("floor-plan-import-history-ch0015i-older-job").getByRole("button", { name: "Resume" }).click();
+  // A left-over cancel would have gone out as the resumed upload reported its job, before its review showed.
   await expect(page.getByTestId("floor-plan-import-review")).toBeVisible();
   expect(cancels).toHaveLength(2);
 });

@@ -2139,7 +2139,7 @@
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 21
+        "maximum": 20
       }
     },
     "components/GoogleAddressAutocomplete.tsx": {

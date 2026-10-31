@@ -70,9 +70,11 @@ assert.match(progressCard, /data-floor-plan-workspace-state="cancelling"[\s\S]*?
 // Cancelled while still uploading, the upload is left to finish (the window may move on or close) and its job is
 // cancelled on arrival, rather than abandoning the request, which could leave a job for a worker to read.
 const importSession = read("components/editor/useConsumerFloorPlanImportSession.ts");
-assert.match(importSession, /if \(!isFloorPlanUploadCancelPending\(file\)\) uploadController\.abort\(\);/);
-assert.match(importSession, /finally \{\s*if \(settleFloorPlanUploadCancel\(file, /);
-assert.match(importSession, /const created = await uploadFloorPlanFile\(file, trainingBenchmarkOptIn, uploadController\.signal\);\s*if \(!created\) return;/);
+// Each upload has its own ticket, so two uploads of one File never take each other's cancel.
+assert.match(importSession, /const upload = file \? startFloorPlanUpload\(file\) : null;/);
+assert.match(importSession, /if \(!isFloorPlanUploadCancelPending\(upload\)\) uploadController\.abort\(\);/);
+assert.match(importSession, /finally \{\s*if \(settleFloorPlanUploadCancel\(upload, [\s\S]*?\}\s*if \(!created\) throw new DOMException\("The upload was cancelled", "AbortError"\);/);
+assert.match(importSession, /const created = await uploadFloorPlanFile\(upload, trainingBenchmarkOptIn, uploadController\.signal\);/);
 assert.match(chooseStep, /data-editor-dialog-initial-focus/);
 assert.match(dialog, /data-testid="floor-plan-import-dialog"/);
 assert.match(dialog, /role="dialog"/);
