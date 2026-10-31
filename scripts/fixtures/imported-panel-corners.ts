@@ -214,6 +214,7 @@ export type CornerStats = {
  * meet to within these. A room with an arc: an arc is drawn as straight slices whose finish follows their mitred joints, but
  * a corner with an arc is found on the polylines of its faces, and where an arc meets another wall at a sharp angle the plan's
  * footprints there are joined slice by slice, so these allow the slices' slivers (the review's documented arc mitre slivers).
+ * Furniture is measured as how far short of 2 cm in front of a panel an item stops, so 20 mm there lets it touch, not enter.
  */
 export const CORNER_TOLERANCES = {
   straight: { overlapMm2: 2, pokeMm: 0.5, buriedMm: 0.5, coverMm: 2, furnitureMm: 0.5 },
@@ -222,16 +223,17 @@ export const CORNER_TOLERANCES = {
 type Tolerances = (typeof CORNER_TOLERANCES)["straight"];
 
 /**
- * Rooms that still fail a check in a run of this many plans, by check (31 Oct 2026, fourth review): known open cases, so a
+ * Rooms that still fail a check in a run of this many plans, by check (31 Oct 2026, fifth review): known open cases, so a
  * count can only come down. Wedges under about 15 degrees (their faces meet far up the wedge, where a door near the tip or the
- * plan's unjoined footprints leave slivers), arcs meeting a wall at a sharp angle (their slices' own mitres), junctions of
- * three walls (slivers of up to 10 mm² where the plan's footprints join), and slight bends between laminates of different
- * depths, where the clamp's outline keeps one point per corner (the step's deeper end, insetPolygonEdges) and a panel's
- * mitred end can come within 2 cm of an item.
+ * plan's unjoined footprints leave slivers), arcs meeting a wall at a sharp angle (their slices' own mitres), and junctions of
+ * three walls (slivers of up to 10 mm² where the plan's footprints join). The two furniture cases are arcs bowing into the
+ * room: its outline is the plan's chords of the arc, which can each span more of it than one of the wall's slices, and the
+ * clamp keeps to the outline, so an item comes nearer the arc by up to a chord's sagitta (4.7 mm into a panel in corners-341,
+ * 1.1 mm in corners-1709). The clamp is the same at a bare arc.
  */
 export const OPEN_CORNER_CASES: Record<number, Record<string, number>> = {
   100: { overlapMm2: 1, uncoveredMm: 1 },
-  2000: { overlapMm2: 22, uncoveredMm: 40, furnitureMm: 5, buriedMm: 20, pokeMm: 3 },
+  2000: { overlapMm2: 22, uncoveredMm: 40, furnitureMm: 2, buriedMm: 20, pokeMm: 3 },
 };
 
 type Panel = { wallId: string; quad: P[]; depth: number };
