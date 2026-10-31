@@ -5,6 +5,7 @@ import type {
   FloorPlanAnnotationV2,
 } from "@/lib/floor-plan-document-v2";
 import { hashCanonicalJson } from "./json";
+import { isHomeTypeWallHeightMm } from "./review-home-type";
 import {
   floorPlanMvpBlockingIssueIds,
   isFloorPlanMvpSuggestionIssue,
@@ -79,6 +80,13 @@ function sanitizeEntities<T extends ReviewableEntity>(input: {
   });
 }
 
+/** A wall height the review's home type set: still assumed, the server's own note (the client's isn't trusted). */
+function homeTypeWallProvenance(input: { sourceId: string; pageNumber?: number; valueMm: number }): FloorPlanEntityProvenanceV2 {
+  const note = `The height rules' wall height for the home type chosen at review: ${input.valueMm} mm; not source-verified.`;
+  return { confidence: 0, extractionVersion: "consumer-review-1", reviewHistory: [], evidence: [{ sourceId: input.sourceId,
+    basis: "inferred", confidence: 0, extractorVersion: "consumer-review-home-type-1", ...(input.pageNumber ? { pageNumber: input.pageNumber } : {}), note }] };
+}
+
 function sanitizeAnnotations(input: {
   current: FloorPlanAnnotationV2[]; next: FloorPlanAnnotationV2[];
   sourceId: string; userId: string; at: string; note: string; pageNumber?: number;
@@ -125,6 +133,11 @@ function sanitizeFloor(input: {
       previous.evidence === next.evidence
     ) {
       return { ...next, provenance: previous.provenance };
+    }
+    // The review's home type sets an assumed wall height by the height rules: it stays assumed, not user-confirmed.
+    if (key === "wallHeight" && next.evidence === "assumed" && (previous?.evidence ?? "assumed") === "assumed" &&
+      isHomeTypeWallHeightMm(next.valueMm)) {
+      return { ...next, provenance: homeTypeWallProvenance({ ...entityInput, valueMm: next.valueMm }) };
     }
     return {
       ...next,

@@ -1,6 +1,6 @@
 "use client";
 
-import { createImportReviewMutationMetadata,importReviewSummary,photoReviewRequired } from "./import-review-summary";
+import { importReviewSummary,photoReviewRequired } from "./import-review-summary";
 
 import { useState, type Dispatch, type SetStateAction } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
@@ -10,16 +10,14 @@ import {
   isFloorPlanMvpBlockingIssue,
   type FloorPlanReviewIssue,
 } from "@/lib/floor-plan-imports/types";
-import {
-  applyFloorPlanMeasuredPropertyMutationV2,
-  floorPlanPropertyEvidenceIsEditable,
-  type FloorPlanConsumerMeasurementEvidenceV2,
-} from "@/lib/floor-plan-measured-property-mutations";
+import { floorPlanPropertyEvidenceIsEditable } from "@/lib/floor-plan-measured-property-mutations";
 import { Button } from "@/components/ui/Button";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import FloorPlanPropertyEvidenceControl from "../FloorPlanPropertyEvidenceControl";
 import FloorPlanOptionalConfigurationPanel from "../FloorPlanOptionalConfigurationPanel";
 import FloorPlanVisualReviewTools from "./FloorPlanVisualReviewTools";
+import FloorPlanReviewHomeType from "./FloorPlanReviewHomeType";
+import { useFloorPlanReviewHeights } from "./useFloorPlanReviewHeights";
 import { FloorPlanIssueFocusButton } from "./FloorPlanIssueFocusButton";
 
 type FloorPlanImportReviewPanelProps = {
@@ -132,6 +130,8 @@ export default function FloorPlanImportReviewPanel({
     () => Object.fromEntries(issues.map((issue) => [issue.id, issue.resolution ?? ""]))
   );
   const [manualToolsOpen, setManualToolsOpen] = useState(false);
+  const heights = useFloorPlanReviewHeights(candidate, setCandidate);
+  const { changeHeight, changeVerticalValue, confirmVerticalValue, confirmDisplayedHeightDefaults } = heights;
   if (!floor) return null;
   const namedRooms = namedFloorPlanRooms(floor.rooms); // voids (ducts, shafts) keep their walls but are not rooms to count or name
   const subtle = "text-label-secondary";
@@ -152,112 +152,6 @@ export default function FloorPlanImportReviewPanel({
   const summary=importReviewSummary({needsRoomRecovery,needsScaleRecovery,unresolvedCritical,photo:floor.calibrations.some(c=>Boolean(c.photoCorrection))});
   const focusedIssueEntityIds =
     issues.find((issue) => issue.id === focusedIssueId)?.entityIds ?? [];
-
-  const changeHeight = (
-    key: keyof typeof floor.defaults,
-    value: number
-  ) => {
-    if (!Number.isFinite(value)) return;
-    try {
-      const result = applyFloorPlanMeasuredPropertyMutationV2(
-        candidate,
-        {
-          target: { kind: "floor_default", floorId: floor.id, property: key },
-          valueMm: Math.max(key === "windowSillHeight" ? 0 : 100, Math.round(value)),
-          evidence: "user_confirmed",
-        },
-        createImportReviewMutationMetadata(
-          floor.id,
-          key,
-          `Consumer edited and confirmed the displayed ${key}.`
-        )
-      );
-      setCandidate(result.document);
-    } catch {
-      // Locked or invalid values stay unchanged and remain reviewable.
-    }
-  };
-
-  const changeVerticalValue = (
-    property: "storeyHeight" | "slabThickness",
-    value: number
-  ) => {
-    if (!Number.isFinite(value)) return;
-    const next = structuredClone(candidate);
-    const nextFloor = next.floors[0];
-    if (!nextFloor) return;
-    if (property === "storeyHeight") {
-      nextFloor.storeyHeightMm = Math.max(100, Math.round(value));
-    } else {
-      nextFloor.slabThicknessMm = Math.max(0, Math.round(value));
-    }
-    // Editing the number alone deliberately preserves its current evidence.
-    setCandidate(next);
-  };
-
-  const confirmVerticalValue = (
-    property: "storeyHeight" | "slabThickness",
-    evidence: FloorPlanConsumerMeasurementEvidenceV2,
-    note?: string
-  ) => {
-    const target = property === "storeyHeight"
-      ? { kind: "floor_storey_height" as const, floorId: floor.id }
-      : { kind: "floor_slab_thickness" as const, floorId: floor.id };
-    try {
-      const result = applyFloorPlanMeasuredPropertyMutationV2(
-        candidate,
-        {
-          target,
-          valueMm:
-            property === "storeyHeight"
-              ? floor.storeyHeightMm
-              : floor.slabThicknessMm,
-          evidence,
-        },
-        createImportReviewMutationMetadata(
-          floor.id,
-          property,
-          note?.trim() ||
-            `Consumer explicitly confirmed the displayed ${property === "storeyHeight" ? "storey height" : "slab thickness"}.`
-        )
-      );
-      setCandidate(result.document);
-    } catch {
-      // The mutation engine remains the source of truth; invalid measurements
-      // are left unchanged and the review issue stays unresolved.
-    }
-  };
-
-  const confirmDisplayedHeightDefaults = () => {
-    let next = candidate;
-    const timestamp = Date.now().toString(36);
-    for (const [index, key] of (
-      Object.keys(floor.defaults) as Array<keyof typeof floor.defaults>
-    ).entries()) {
-      const property = next.floors[0]?.defaults[key];
-      if (!property || property.evidence !== "assumed") continue;
-      try {
-        next = applyFloorPlanMeasuredPropertyMutationV2(
-          next,
-          {
-            target: { kind: "floor_default", floorId: floor.id, property: key },
-            valueMm: property.valueMm,
-            evidence: "user_confirmed",
-          },
-          {
-            mutationId: `import-review:${floor.id}:${key}:${timestamp}:${index}`,
-            nextRevisionId: `import-review-revision:${timestamp}:${key}:${index}`,
-            actorId: "consumer-import-review",
-            mutatedAt: new Date().toISOString(),
-            note: `Consumer explicitly confirmed the displayed ${key}.`,
-          }
-        ).document;
-      } catch {
-        return;
-      }
-    }
-    setCandidate(next);
-  };
 
   const changeRoomName = (id: string, name: string) => {
     const next = structuredClone(candidate);
@@ -438,6 +332,8 @@ export default function FloorPlanImportReviewPanel({
           </div>
         </details>
       ) : null}
+      <FloorPlanReviewHomeType floor={floor} homeType={heights.homeType} kept={heights.kept}
+        disabled={disabled} onChange={heights.chooseHomeType} />
       <details className="mt-3 rounded-xl border border-separator bg-surface-floating p-3">
         <summary className="cursor-pointer text-xs font-semibold">
           Optional plan details
