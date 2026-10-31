@@ -670,7 +670,10 @@ assert.match(
   /deletedFromHistory: true[\s\S]*?designPreserved: true/,
   "Deleting import history must explicitly preserve the generated design."
 );
-assert.match(cancelRoute, /status: \{ in: \[\.\.\.CANCELLABLE_STATUSES\] \}[\s\S]*?leaseExpiresAt: \{ lte: now \}/);
+// The owner's cancel goes through owner-cancel.ts, which also stops a worker reading the plan
+// (scripts/test-floor-plan-import-worker-recovery.ts); it no longer waits for the lease to run out.
+assert.match(cancelRoute, /cancelOwnedFloorPlanImport\(\{ id, userId \}\)[\s\S]*?"not_found"[\s\S]*?404[\s\S]*?"too_late"[\s\S]*?409/);
+assert.doesNotMatch(cancelRoute, /leaseExpiresAt|being processed/);
 assert.match(retryRoute, /status: "failed"[\s\S]*?sourceRetentionExpiresAt[\s\S]*?repository\.create/);
 assert.match(
   retryDetectionRoute,
