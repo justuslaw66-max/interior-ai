@@ -23,7 +23,9 @@ import { compileCanonicalFloorPlanRenderModel } from "../lib/floor-plan-render-m
 import { builtInFootprintFits, clampBuiltInToRoom, getBuiltInSnapTarget, getRoomBuiltInFaces } from "../lib/room-built-in-faces";
 import { resizeCabinetToOverallWidth, setCabinetOverallWidthLocked } from "../features/cabinetry/automation";
 import { validateCabinetDefinition } from "../features/cabinetry/validation";
+import type { HousePlanRoom2D } from "../lib/design-page-house-plan";
 import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
+import { inRegion, regionOf } from "./built-in-faces-oracle-utils";
 import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
 
 const polygonSpaces = createCabinetPolygonWallSpaces({
@@ -668,6 +670,102 @@ for (const degrees of [15, 45, 90]) {
   const moved = { x: x - hexagonRun.fitX, z: z - hexagonRun.fitZ };
   assert.ok(Math.abs(moved.x * faceNormal.z - moved.z * faceNormal.x) < 1e-9, `turned ${degrees}°: moved along the wall's normal only`);
   assert.equal(isPlacementContainedInRoom({ room: hexagon, position: [x, 0, z], rotationY, dimensions: { w: 600, d: 580, h: 870 }, builtIn: true }), true, `turned ${degrees}°: contained`);
+}
+
+// A door of the room next door straddling the end of the shared part of a wall: a hallway 8 x 1.5 m north of A (x -2..2) and
+// C (x 2..6), its door centred at x 2.1, 900 mm wide. The 3D view cuts it into A's north wall too (from x 1.65), so A's run
+// stops there.
+for (const drawn of [false, true]) {
+  const a = { ...(drawn ? drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }])
+    : createRoom("A", "A", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 })), id: "A" } as RoomSnapshot;
+  const planRoom = (id: string, x: number, z: number, w: number, d: number): HousePlanRoom2D =>
+    ({ id, name: id, roomType: "living", shape: "rectangle", x, z, w, d, wallThickness: 0.12 });
+  const planRooms = new Map<string, HousePlanRoom2D>([["A", { ...planRoom("A", 0, 0, 4, 3), ...(drawn ? { shape: "custom_polygon" as const, polygon: a.planPolygon } : {}) }],
+    ["B", planRoom("B", 2, -2.25, 8, 1.5)], ["C", planRoom("C", 4, 0, 4, 3)]]);
+  const hallDoor = { id: "hall-door", roomId: "B", wall: "south" as const, kind: "door" as const, offsetMm: 100, widthMm: 900, heightMm: 2100, bottomMm: 0 };
+  const [north] = buildCabinetryAvailableSpaces({ activeRoom: a, activePlanRoom: null, planRoomCount: 3, planOpenings: [hallDoor], planRooms });
+  const run = placeFittedRun(a, north);
+  nearMm((run.x + run.width / 2) * 1000, 1650, `${drawn ? "drawn" : "rectangle"}: A's run stops where the hallway's door is cut into its wall`);
+}
+
+// A two-piece wall whose face a thicker wall next door deepens: the second piece still preselects the face over it.
+{
+  const twoPieceA = { ...drawnRoom([{ x: -2, z: -1.5 }, { x: 0.5, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]), id: "A" } as RoomSnapshot;
+  twoPieceA.geometry = { ...twoPieceA.geometry, wallThickness: 0.08 };
+  const planRooms = new Map([["A", { id: "A", name: "A", roomType: "kitchen" as const, shape: "custom_polygon" as const, polygon: twoPieceA.planPolygon, x: 0, z: 0, w: 4, d: 3, wallThickness: 0.08 }],
+    ["B", { id: "B", name: "B", roomType: "living" as const, shape: "rectangle" as const, x: 0, z: -3, w: 4, d: 3, wallThickness: 0.3 }]]);
+  const spaces = buildCabinetryAvailableSpaces({ activeRoom: twoPieceA, activePlanRoom: null, planRoomCount: 2, planOpenings: [], planRooms });
+  nearMm(spaces[0].wallSegment!.startZmm, -1350, "the north face is the 300 mm wall's");
+  assert.equal(findCabinetHostForWall(twoPieceA, spaces, "wall-1")?.wallId, "wall-0", "selecting the second piece preselects it");
+}
+
+// A turn beside a solid on the face, or in a corner under 90°, goes to the nearest place where the turned unit fits: along and
+// out from the face, touching what stops it (no place within 2 mm of where it stood fits, on a 2 mm grid), and it stands
+// where the 3D view leaves room for it (its own walls, panels and columns: scripts/built-in-faces-oracle-utils.ts).
+const inDrawnRoom = (room: RoomSnapshot, x: number, z: number, width: number, depth: number, rotationY: number) => {
+  const region = regionOf(room), [cos, sin] = [Math.cos(rotationY), Math.sin(rotationY)];
+  const at = (along: number, out: number) => ({ x: x + along * cos + out * sin, z: z - along * sin + out * cos });
+  const samples = Array.from({ length: 301 }, (_, step) => step / 300).flatMap((t) => [
+    at(-width / 2 + 0.0006 + (width - 0.0012) * t, -depth / 2 + 0.0006), at(-width / 2 + 0.0006 + (width - 0.0012) * t, depth / 2 - 0.0006),
+    at(-width / 2 + 0.0006, -depth / 2 + 0.0006 + (depth - 0.0012) * t), at(width / 2 - 0.0006, -depth / 2 + 0.0006 + (depth - 0.0012) * t),
+  ]);
+  return samples.every((point) => inRegion(region, point));
+};
+function checkTurn(room: RoomSnapshot, label: string, x0: number, z0: number, rotationY: number) {
+  const [width, depth] = [0.6, 0.58], faces = getRoomBuiltInFaces(room);
+  const [x, z] = clampBuiltInToRoom(room, x0, z0, width, depth, rotationY), moved = Math.hypot(x - x0, z - z0);
+  assert.ok(builtInFootprintFits(faces, x, z, width, depth, rotationY) && inDrawnRoom(room, x, z, width, depth, rotationY), `${label}: it fits where it goes`);
+  for (let dx = -moved; dx <= moved; dx += 0.002) for (let dz = -moved; dz <= moved; dz += 0.002) {
+    if (Math.hypot(dx, dz) < moved - 0.002) assert.ok(!builtInFootprintFits(faces, x0 + dx, z0 + dz, width, depth, rotationY, 0.00005), `${label}: moved ${(moved * 1000).toFixed(0)} mm, but it fits ${(Math.hypot(dx, dz) * 1000).toFixed(0)} mm away`);
+  }
+  return moved;
+}
+for (const drawn of [false, true]) {
+  // A 300 mm column against the north face at x 0.5–0.8; a 600 × 580 unit 10 mm west of it, against the face.
+  const base = drawn ? drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }])
+    : createRoom("column", "Column", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 });
+  const columnRoom = { ...base, planHoles: [[{ x: 0.5, z: -1.44 }, { x: 0.8, z: -1.44 }, { x: 0.8, z: -1.14 }, { x: 0.5, z: -1.14 }]] } as RoomSnapshot;
+  const name = drawn ? "drawn" : "rectangle";
+  const besideColumn = checkTurn(columnRoom, `${name}, by a column, turned -10°`, 0.19, -1.15, (-10 * Math.PI) / 180) * 1000;
+  assert.ok(Math.abs(besideColumn - 60) < 1, `${name}: ${besideColumn.toFixed(1)} mm to the nearest fit beside the column (it went 250 mm out)`);
+  checkTurn(columnRoom, `${name}, by a column, turned 10°`, 0.19, -1.15, (10 * Math.PI) / 180);
+}
+const acuteCorner = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2 - 3 / Math.tan(Math.PI / 3), z: 1.5 }, { x: -2, z: 1.5 }]);
+const [acuteCornerNorth] = buildCabinetryAvailableSpaces({ activeRoom: acuteCorner, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+const acuteUnit = placeFittedRun(acuteCorner, acuteCornerNorth);
+// A 600 mm unit moved along the north wall into the 60° corner, as far as it goes.
+const [cornerX, cornerZ] = clampBuiltInToRoom(acuteCorner, acuteUnit.fitX + 3, acuteUnit.fitZ, 0.6, 0.58, acuteUnit.rotationY, { from: [acuteUnit.fitX, acuteUnit.fitZ] });
+for (const [degrees, nearest] of [[10, 65], [45, 131], [90, 10]] as const) {
+  const moved = checkTurn(acuteCorner, `in a 60° corner, turned ${degrees}°`, cornerX, cornerZ, acuteUnit.rotationY + (degrees * Math.PI) / 180);
+  assert.ok(Math.abs(moved * 1000 - nearest) < 3, `turned ${degrees}° in a 60° corner: ${(moved * 1000).toFixed(1)} mm to the nearest fit (it went 532–643 mm)`);
+}
+
+// A recorded 15 mm baseboard: a floor-standing built-in keeps its back on it whatever moves it (the clamp, Snap to wall, a
+// turn) and containment holds it there; a wall cabinet (its bottom above the floor) hangs above it, its back on the face.
+for (const drawn of [false, true]) {
+  const room = { ...(drawn ? drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }])
+    : createRoom("baseboard", "Baseboard", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 })) } as RoomSnapshot;
+  room.geometry = { ...room.geometry, baseboardDepth: 0.015 };
+  const [north] = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+  const run = placeFittedRun(room, north), name = drawn ? "drawn" : "rectangle", backOff = (z: number, depth = run.depth) => (z - depth / 2 + 1.44) * 1000;
+  // A move stops within the clamp's 0.05 mm of where it would stop fitting.
+  const nearClamp = (actual: number, expected: number, message: string) => assert.ok(Math.abs(actual - expected) <= 0.051, `${message}: ${actual} ≠ ${expected}`);
+  nearMm(backOff(run.z), 15, `${name}: Fit stands the run's back on the baseboard`);
+  const [snapX, snapZ] = getBuiltInSnapTarget(room, [run.x, 0, run.z - 0.2], 0.6, run.depth, run.rotationY);
+  nearClamp(backOff(clampBuiltInToRoom(room, snapX, snapZ, 0.6, run.depth, run.rotationY, { from: [run.x, run.z - 0.2] })[1]), 15, `${name}: Snap to wall too`);
+  const [, nudgedZ] = clampBuiltInToRoom(room, run.x, run.z - 0.01, run.width, run.depth, run.rotationY, { from: [run.x, run.z] });
+  nearClamp(backOff(nudgedZ), 15, `${name}: a nudge into the wall stops on the baseboard`);
+  const dims = { w: 600, d: run.depth * 1000, h: 870 };
+  assert.equal(isPlacementContainedInRoom({ room, position: [0, 0, -1.44 + 0.005 + run.depth / 2], rotationY: 0, dimensions: dims, builtIn: true }), false, `${name}: 5 mm off the face is in the baseboard`);
+  assert.equal(isPlacementContainedInRoom({ room, position: [0, 0, -1.44 + 0.015 + run.depth / 2], rotationY: 0, dimensions: dims, builtIn: true }), true, `${name}: 15 mm off is on it`);
+  const [, hungZ] = clampBuiltInToRoom(room, 0, -1.44 - 0.005 + 0.175, 0.6, 0.35, 0, { from: [0, -1.44 + 0.015 + 0.175], bottom: 1.45 });
+  nearClamp(backOff(hungZ, 0.35), 0, `${name}: a wall cabinet hangs above it, its back on the face`);
+  assert.equal(isPlacementContainedInRoom({ room, position: [0, 1.45, -1.44 + 0.175], rotationY: 0, dimensions: { w: 600, d: 350, h: 720 }, builtIn: true }), true, `${name}: and is contained there`);
+  const turned = (10 * Math.PI) / 180, [turnX, turnZ] = clampBuiltInToRoom(room, 0, -1.44 + 0.015 + 0.29, 0.6, 0.58, turned);
+  const backCorners = [-0.3, 0.3].map((along) => turnZ - along * Math.sin(turned) - 0.29 * Math.cos(turned));
+  // Turned, its corner may reach the clamp's 0.05 mm in along each of its sides.
+  assert.ok(Math.abs((Math.min(...backCorners) + 1.44) * 1000 - 15) <= 0.05 * (Math.cos(turned) + Math.sin(turned)) + 0.001, `${name}: a turn keeps its nearest back corner on the baseboard`);
+  assert.ok(Math.abs(turnX) < 0.05, `${name}: and moves it out from the wall, not along it`);
 }
 
 console.log("Cabinet polygon host and placement tests passed.");
