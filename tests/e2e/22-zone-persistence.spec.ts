@@ -5,6 +5,7 @@ import {
   openCatalogPreview,
   selectEditorWorkspace,
   waitForCatalogReady,
+  waitForEditorHydration,
 } from "./variant-test-utils";
 
 const DESIGN_STORAGE_KEY = "interior-ai:v1:livingroom-design";
@@ -36,6 +37,9 @@ async function clickWithDomFallback(locator: Locator) {
 
 // Add one room is in the consumer palette's Templates (UX ST8), which starts collapsed.
 async function addOneBedroom(page: Page) {
+  // A click before React hydrates the editor is lost (31 Oct 2026: the line's traces show Templates
+  // clicked 0.13 s after /design started loading, and its list never opened).
+  await waitForEditorHydration(page);
   const planTab = page.getByTestId("editor-workflow-plan").first();
   if ((await planTab.getAttribute("data-active")) !== "true") {
     await selectEditorWorkspace(page, "editor-workflow-plan");
@@ -52,9 +56,12 @@ async function addOneBedroom(page: Page) {
 
   const templates = page.getByTestId("plan-tool-section-templates").getByRole("button", { name: "Templates", exact: true });
   await expect(templates).toBeVisible({ timeout: 30_000 });
-  if ((await templates.getAttribute("aria-expanded")) !== "true") await clickWithDomFallback(templates);
   const addBedroom = page.getByTestId("add-room-template-bedroom");
-  await expect(addBedroom).toBeVisible({ timeout: 30_000 });
+  // The dev server can reload the editor while a test runs, closing Templates again.
+  await expect(async () => {
+    if ((await templates.getAttribute("aria-expanded")) !== "true") await clickWithDomFallback(templates);
+    await expect(addBedroom).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 30_000 });
   await expect(addBedroom).toBeEnabled({ timeout: 30_000 });
   await addBedroom.click();
 }
