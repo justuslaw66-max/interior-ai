@@ -511,6 +511,22 @@ nearMm((hung.position[2] - hungDepth / 2 - (-1.5 + 0.06)) * 1000, 0, "wall cabin
 assert.ok(!hungFit.issues.some((issue) => issue.code === "baseboard_offset_applied"), "and Fit doesn't say it stands off for the baseboard");
 assert.ok(!validateCabinetDefinition(hungFit.definition).issues.some((issue) => issue.code === "fit.baseboard.clearance"), "nor does validation");
 
+// A baseboard recorded after Fit: when the Studio refreshes the run's saved host (CabinetryStudio), the run fills more than the
+// baseboard leaves it, so validation says to fit again rather than that a door is in the way; a run fitted with it says nothing.
+const bareRoom = createRoom("bare", "Bare", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 });
+const [bareNorth] = buildCabinetryAvailableSpaces({ activeRoom: bareRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+const bareFit = fitCabinetToSpace(createCabinetPreset("base", "bare"), bareNorth, { mode: "fit_width" });
+const laterRoom = { ...bareRoom, geometry: { ...bareRoom.geometry, baseboardDepth: 0.015 } } as RoomSnapshot;
+const refreshedHost = buildCabinetryAvailableSpaces({ activeRoom: laterRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] })
+  .find((space) => space.id === bareNorth.id)!;
+assert.ok(refreshedHost && refreshedHost.baseboardOffsetMm === 15, "the refreshed host has the baseboard");
+const refitCodes = (definition: CabinetDefinition) => validateCabinetDefinition(definition).issues.map((issue) => issue.code);
+const laterCodes = refitCodes({ ...bareFit.definition, fitState: { ...bareFit.definition.fitState!, host: { ...refreshedHost, mountingHeightMm: bareFit.definition.fitState!.host.mountingHeightMm } } });
+assert.ok(laterCodes.includes("fit.baseboard.refit"), `a baseboard recorded after Fit says to fit again: ${laterCodes.join(", ")}`);
+assert.ok(!laterCodes.includes("fit.opening_conflict"), "and not that a door is in the way");
+const withBaseboardFit = fitCabinetToSpace(createCabinetPreset("base", "with"), refreshedHost, { mode: "fit_width" });
+assert.ok(!refitCodes(withBaseboardFit.definition).includes("fit.baseboard.refit"), "a run fitted with the baseboard doesn't");
+
 // A run made deeper after Fit: flagged only where Fit put it at a corner under 90°, not for a run far along the wall, and only
 // once its front corner would cross the slanted wall (10 mm off it at a 60° corner: about 20 mm deeper, 10 mm over cos 60°,
 // plus the 1 mm holdsRun allows).
