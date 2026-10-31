@@ -1957,7 +1957,7 @@
     "components/editor/FloorPlanImportWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 95
+        "maximum": 93
       }
     },
     "components/editor/FloorPlanOptionalConfigurationPanel.tsx": {
@@ -2135,11 +2135,11 @@
     "components/editor/useConsumerFloorPlanImportSession.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 158
+        "maximum": 155
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 21
+        "maximum": 20
       }
     },
     "components/GoogleAddressAutocomplete.tsx": {

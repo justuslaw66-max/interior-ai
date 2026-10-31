@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, type DragEvent } from "react";
 import { FileUp } from "lucide-react";
 import type { FloorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import { requestFloorPlanUploadSignIn } from "@/lib/floor-plan-upload-request";
 import { Button } from "@/components/ui/Button";
 import type { FloorPlanImportHint } from "@/lib/floor-plan-import-client";
 import { FloorPlanLastUploadCard } from "./FloorPlanLastUploadCard";
+import { useFloorPlanFileDrop } from "./useFloorPlanFileDrop";
 
 /** Said before any file is chosen (audit finding ST5), where it used to come only at the end. */
 export const FLOOR_PLAN_UPLOAD_NEW_DESIGN_NOTE =
@@ -34,33 +34,6 @@ type FloorPlanUploadChooseStepProps = FloorPlanUploadChooseState & {
 const shellClass =
   "flex min-h-[420px] flex-col items-center justify-center gap-4 rounded-2xl border border-box-border bg-surface-elevated-secondary p-6 text-center shadow-sm";
 const subtleClass = "text-label-secondary";
-
-/** A file dragged from the desktop onto the step is chosen as if picked. */
-function useFileDrop(disabled: boolean, onFileDropped: (file: File) => void) {
-  const [dragging, setDragging] = useState(false);
-  const allowDrop = (event: DragEvent<HTMLElement>) => {
-    if (disabled || !Array.from(event.dataTransfer.types).includes("Files")) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "copy";
-    setDragging(true);
-  };
-  return {
-    dragging,
-    dropProps: {
-      onDragEnter: allowDrop,
-      onDragOver: allowDrop,
-      onDragLeave: (event: DragEvent<HTMLElement>) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false);
-      },
-      onDrop: (event: DragEvent<HTMLElement>) => {
-        event.preventDefault();
-        setDragging(false);
-        const file = event.dataTransfer.files[0];
-        if (file && !disabled) onFileDropped(file);
-      },
-    },
-  };
-}
 
 function GuestSignInStep({ formats }: Pick<FloorPlanUploadChooseStepProps, "formats">) {
   return (
@@ -93,7 +66,7 @@ function GuestSignInStep({ formats }: Pick<FloorPlanUploadChooseStepProps, "form
  */
 export function FloorPlanUploadChooseStep(props: FloorPlanUploadChooseStepProps) {
   const { disabled, formats, fileProblem } = props;
-  const { dragging, dropProps } = useFileDrop(disabled, props.onFileDropped);
+  const { dragging, dropProps } = useFloorPlanFileDrop(disabled, props.onFileDropped);
   if (!props.signedIn) return <GuestSignInStep formats={formats} />;
   return (
     <div {...dropProps} className={shellClass} data-surface="floating" data-testid="floor-plan-import-dialog-empty-state"
