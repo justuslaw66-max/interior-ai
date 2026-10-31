@@ -13,15 +13,37 @@ type PlanPoint = { x: number; z: number };
 export type Footprint = { points: PlanPoint[]; bottomMm: number; topMm: number };
 const metres = (point: { xMm: number; zMm: number }) => ({ x: point.xMm / 1000, z: point.zMm / 1000 });
 
+/**
+ * A cache of what was used lately: this generation's entries and the last one's, each generation up to `size` (as `weigh`
+ * counts an entry). One found in the last is carried into this one, so the entries in use stay while a drag's passing ones
+ * are let go, and the cache never holds more than two generations.
+ */
+export function recentCache<V>(size: number, weigh: (value: V) => number = () => 1) {
+  let recent = new Map<string, V>(), older = new Map<string, V>(), weight = 0;
+  const set = (key: string, value: V) => {
+    if (weight + weigh(value) > size && recent.size) [older, recent, weight] = [recent, new Map(), 0];
+    recent.set(key, value);
+    weight += weigh(value);
+  };
+  const get = (key: string): V | undefined => {
+    const kept = recent.get(key);
+    if (kept !== undefined) return kept;
+    const old = older.get(key);
+    if (old !== undefined) set(key, old);
+    return old;
+  };
+  return { get, set };
+}
+
 // Values by number, so a cache key names a wall or a slice by what it is rather than by which object holds it: a plan rebuilt
-// after an edit (or for the plan review) has new walls and slices, the same as before wherever the edit didn't reach.
-const valueIds = new Map<string, number>();
+// after an edit (or for the plan review) has new walls and slices, the same as before wherever the edit didn't reach. The
+// dense 100-wall test plan has about 400 values (its walls and their slices). Numbers are never reused, so forgetting a value
+// only costs a miss.
+const valueIds = recentCache<number>(1024);
 let nextValueId = 0;
 function valueId(value: string): number {
   let id = valueIds.get(value);
   if (id === undefined) {
-    // Numbers are never reused, so forgetting them only costs a miss.
-    if (valueIds.size >= 20000) valueIds.clear();
     id = nextValueId++;
     valueIds.set(value, id);
   }
@@ -69,19 +91,22 @@ export function facesValueKey(room: { id: string }, edges: readonly string[], ve
     }
   }
   const box = [minX, maxX, minZ, maxZ];
-  const near = new Set(planFootprints(walls).filter(({ points }) => inBox(points, box)).map(({ wall }) => wall));
-  const read = walls.filter((wall) => own.has(wall.id) || near.has(wall));
+  const near = new Set(planFootprints(walls).filter(({ points }) => inBox(points, box)).map(({ wallId }) => wallId));
+  const read = walls.filter((wall) => own.has(wall.id) || near.has(wall.id));
   return JSON.stringify([room.id, edges, vertices, depths, read.map(wallValueId)]);
 }
 
-/** Each wall's slices in plan, in the plan's order, read once per plan (every face of every room looks through them). */
-type PlanFootprint = Footprint & { wall: Wall };
+/**
+ * Each wall's slices in plan, in the plan's order, read once per plan (every face of every room looks through them) and
+ * shared by the faces that stop at them.
+ */
+export type PlanFootprint = Footprint & { wallId: string };
 const footprintsByWalls = new WeakMap<readonly Wall[], PlanFootprint[]>();
 export function planFootprints(walls: readonly Wall[]): PlanFootprint[] {
   let known = footprintsByWalls.get(walls);
   if (!known) {
     known = walls.flatMap((wall) => wall.solids.map((solid) => ({
-      wall, bottomMm: solid.bottomMm, topMm: solid.topMm,
+      wallId: wall.id, bottomMm: solid.bottomMm, topMm: solid.topMm,
       points: [solid.footprint.startLeft, solid.footprint.endLeft, solid.footprint.endRight, solid.footprint.startRight].map(metres),
     })));
     footprintsByWalls.set(walls, known);

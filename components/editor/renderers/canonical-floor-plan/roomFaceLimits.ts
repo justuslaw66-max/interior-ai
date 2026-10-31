@@ -1,7 +1,7 @@
 import type { CanonicalFloorPlanWallRenderModel, CanonicalFloorPlanWallSolid } from "@/lib/floor-plan-render-model";
 import { getRoomWallPanelDepths, readPlanEdgeWallIds, type RoomWallFinishDepths, type WallFinishRoom } from "@/lib/room-wall-finish-depths";
 import { NO_FACE_TRIMS, WALL_FINISH_SKIN_MM, wallSurfaceEdge, type FaceTrimsMm } from "./geometry";
-import { facesValueKey, inBox, planFootprints, solidValueId, type Footprint } from "./roomFaceKeys";
+import { facesValueKey, inBox, planFootprints, recentCache, solidValueId, type Footprint } from "./roomFaceKeys";
 
 /**
  * Where each of an imported room's faces starts and ends, so its finish stops exactly at the room's own corners.
@@ -193,8 +193,8 @@ type KnownFaces = {
   roomId: string; outline: unknown; x: number; z: number; walls: unknown; depths: unknown; faces: Map<string, Face>;
 };
 const facesByEdges = new WeakMap<readonly string[], KnownFaces>();
-const facesByValue = new Map<string, Map<string, Face>>();
-const FACES_BY_VALUE_LIMIT = 256;
+// By value, up to about 1,000 faces a generation (the dense 100-wall test plan's two rooms have about 100).
+const facesByValue = recentCache<Map<string, Face>>(1000, (faces) => Math.max(1, faces.size));
 
 function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string, Face> | null {
   const edges = readPlanEdgeWallIds(room);
@@ -209,8 +209,6 @@ function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string,
   const valueKey = facesValueKey(room, edges, vertices, depths, walls);
   const same = facesByValue.get(valueKey);
   if (same) {
-    facesByValue.delete(valueKey);
-    facesByValue.set(valueKey, same);
     facesByEdges.set(edges, { roomId: room.id, outline, x: origin.x, z: origin.z, walls, depths, faces: same });
     return same;
   }
@@ -240,8 +238,6 @@ function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string,
   });
   facesByEdges.set(edges, { roomId: room.id, outline, x: origin.x, z: origin.z, walls, depths, faces });
   facesByValue.set(valueKey, faces);
-  const oldest = facesByValue.size > FACES_BY_VALUE_LIMIT ? facesByValue.keys().next().value : undefined;
-  if (oldest !== undefined) facesByValue.delete(oldest);
   return faces;
 }
 
@@ -277,8 +273,7 @@ const HIDDEN: FaceTrimsMm = Object.freeze({ startMm: 0, endMm: 0, hidden: true }
 function footprintsNear(face: Face, walls: readonly Wall[]): Footprint[] {
   const xs = face.bare.map(({ x }) => x), zs = face.bare.map(({ z }) => z);
   const box = [Math.min(...xs) - 0.5, Math.max(...xs) + 0.5, Math.min(...zs) - 0.5, Math.max(...zs) + 0.5];
-  return planFootprints(walls).filter(({ wall, points }) => wall.id !== face.wall.id && inBox(points, box))
-    .map(({ points, bottomMm, topMm }) => ({ points, bottomMm, topMm }));
+  return planFootprints(walls).filter(({ wallId, points }) => wallId !== face.wall.id && inBox(points, box));
 }
 
 /**
