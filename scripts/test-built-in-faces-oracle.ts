@@ -260,7 +260,7 @@ function footprintInRegion(region: Region, run: Run, shrink: number): boolean {
 let plan: { neighbours: HousePlanRoom2D[]; rooms: Map<string, HousePlanRoom2D>; thickest: number; faces: Array<{ a: P; b: P; n: P }> } =
   { neighbours: [], rooms: new Map(), thickest: 0, faces: [] };
 const failures: string[] = [];
-const counts = { rooms: 0, nextDoor: 0, furnitureRule: 0, filled: 0, faces: 0, hosts: 0, runs: 0, refused: 0, cut: 0, filling: 0, nudges: 0, kept: 0, stopped: 0, furnitureOnly: 0 } as Record<string, number>;
+const counts = { rooms: 0, nextDoor: 0, furnitureRule: 0, filled: 0, faces: 0, hosts: 0, runs: 0, refused: 0, cut: 0, filling: 0, nudges: 0, kept: 0, stopped: 0, furnitureOnly: 0, turns: 0, turnsRefused: 0, snaps: 0, copies: 0 } as Record<string, number>;
 const families: Record<string, number> = {};
 function check(condition: boolean, message: () => string) {
   if (!condition && failures.length < 40) failures.push(message());
@@ -397,6 +397,56 @@ function checkRun(region: Region, room: RoomSnapshot, space: CabinetHostSpace, o
     }
   }
   checkNudges(region, room, run, preset, what);
+  checkMoves(region, room, run, definition, preset, what);
+}
+
+/**
+ * The turns tried on a 600 mm unit at a run's start and on the run itself. A turn that fits nowhere near looks 0.6 m along and
+ * out from two faces, so CI turns every fourth run only (by its count, so the same ones each time); ORACLE_FULL or
+ * ORACLE_TURNS=all turns every run, every way.
+ */
+const ALL_TURNS = Boolean(process.env.ORACLE_FULL || process.env.ORACLE_TURNS === "all");
+const TURNS = ALL_TURNS ? { unit: [5, -5, 15, -15, 45, 90, 180], run: [5, -5, 15, -15, 45, 90, 180] } : { unit: [5, -15, 45, 90], run: [-5, 180] };
+const turnsThisRun = () => ALL_TURNS || counts.runs % 4 === 0;
+
+/**
+ * Turns, Snap to wall and Place as copy, as the inspector makes them. A turn the room accepts stands in the 3D view's region,
+ * off its baseboards, within the 0.6 m a turn looks; one it refuses must not fit where it stands turned (the built-in stays
+ * put). A snap from where the piece stands is accepted and stands in the region, off its baseboards; so does a copy.
+ */
+function checkMoves(region: Region, room: RoomSnapshot, run: Run, definition: CabinetDefinition, preset: "base" | "wall", what: () => string) {
+  const bottom = preset === "wall" ? 1.45 : 0, standOff = preset === "wall" ? 0 : Math.round((room.geometry.baseboardDepth ?? 0) * 1000) / 1000;
+  const contained = (at: Run) => isPlacementContainedInRoom({ room, position: [at.x, bottom, at.z], rotationY: at.rotationY, dimensions: { w: at.width * 1000, d: at.depth * 1000, h: 870 }, builtIn: true, planRooms: plan.rooms });
+  const fitsAt = (at: Run, shrink: number) => footprintInRegion(region, at, shrink) && clearOfBaseboards(at, standOff, shrink);
+  const unitWidth = Math.min(0.6, run.width), along = { x: Math.cos(run.rotationY), z: -Math.sin(run.rotationY) };
+  const unit: Run = { ...run, width: unitWidth, x: run.x - (along.x * (run.width - unitWidth)) / 2, z: run.z - (along.z * (run.width - unitWidth)) / 2 };
+  const turning = turnsThisRun();
+  for (const [name, piece, turns] of [["unit", unit, TURNS.unit], ["run", run, TURNS.run]] as const) {
+    for (const degrees of turning ? turns : []) {
+      counts.turns += 1;
+      const rotationY = piece.rotationY + (degrees * Math.PI) / 180;
+      const [x, z] = clampBuiltInToRoom(room, piece.x, piece.z, piece.width, piece.depth, rotationY, { planRooms: plan.rooms, bottom });
+      const turned: Run = { ...piece, x, z, rotationY }, inPlace: Run = { ...piece, rotationY }, moved = Math.hypot(x - piece.x, z - piece.z);
+      if (!contained(turned)) {
+        counts.turnsRefused += 1;
+        check(!fitsAt(inPlace, -0.001), () => `${what()} ${name}: a ${degrees}° turn is refused, though it fits where it stands`);
+        continue;
+      }
+      check(fitsAt(turned, 0.0006), () => `${what()} ${name}: a ${degrees}° turn put it where the 3D view's walls cut it or on a baseboard (moved ${(moved * 1000).toFixed(0)} mm)`);
+      check(moved <= 0.6 + 0.001, () => `${what()} ${name}: a ${degrees}° turn threw it ${(moved * 1000).toFixed(0)} mm`);
+      if (fitsAt(inPlace, -0.001)) check(moved < 1e-6, () => `${what()} ${name}: a ${degrees}° turn moved it ${(moved * 1000).toFixed(1)} mm, though it fits where it stands`);
+    }
+    counts.snaps += 1;
+    const [toX, toZ] = getBuiltInSnapTarget(room, [piece.x, bottom, piece.z], piece.width, piece.depth, piece.rotationY, plan.rooms);
+    const [x, z] = clampBuiltInToRoom(room, toX, toZ, piece.width, piece.depth, piece.rotationY, { from: [piece.x, piece.z], planRooms: plan.rooms, bottom });
+    const snapped: Run = { ...piece, x, z };
+    check(contained(snapped), () => `${what()} ${name}: Snap to wall is refused`);
+    check(fitsAt(snapped, 0.0006), () => `${what()} ${name}: Snap to wall put it where the 3D view's walls cut it or on a baseboard`);
+  }
+  counts.copies += 1;
+  const copy = getCabinetPlacement(definition, room, true, plan.rooms);
+  const copied: Run = { ...run, x: copy.position[0], z: copy.position[2], rotationY: copy.rotationY };
+  check(fitsAt(copied, 0.0006), () => `${what()}: Place as copy put it where the 3D view's walls cut it or on a baseboard`);
 }
 
 /**
@@ -606,6 +656,6 @@ for (let index = 0; index < ROOMS; index += 1) {
 
 console.log(`Built-in faces oracle: ${counts.rooms} rooms (${Object.entries(families).map(([family, count]) => `${family} ${count}`).join(", ")}; ${counts.nextDoor} with rooms next door),`,
   `${counts.furnitureRule} on furniture's rule, ${counts.filled} whose 3D wall union came out without the room; ${counts.faces} exposed faces, ${counts.hosts} hosts; ${counts.runs} runs (${counts.cut} cut by the 3D view's walls, ${counts.filling} filling their stretch), ${counts.refused} refused, ${counts.nudges} nudges`,
-  `(${counts.kept} kept, ${counts.stopped} stopped at the face, ${counts.furnitureOnly} of them where furniture's samples would let it on); seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);
+  `(${counts.kept} kept, ${counts.stopped} stopped at the face, ${counts.furnitureOnly} of them where furniture's samples would let it on), ${counts.turns} turns (${counts.turnsRefused} refused), ${counts.snaps} snaps, ${counts.copies} copies; seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);
 assert.deepEqual(failures, [], `the oracle found ${failures.length}${failures.length >= 40 ? "+" : ""} failures`);
 console.log("Built-in faces oracle tests passed.");
