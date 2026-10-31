@@ -208,6 +208,8 @@ const convexSimple = (quad: readonly P[]) => {
 export type CornerStats = {
   plans: number; skipped: number; rooms: number; panels: number; kinds: Record<string, number>; worst: Record<string, number>;
   failing: Record<string, number>; failingByKind: Record<string, number>; failures: string[];
+  /** Where the clamp's own limit lets an item nearer a laminate than 2 cm (CLAMP_LIMIT_CASES), by kind of plan. */
+  clampLimit: Record<string, { rooms: number; worstMm: number }>;
 };
 /**
  * Tolerances, stated. Straight walls: the plan's points are whole millimetres and its footprint joins are rounded, so panels
@@ -396,6 +398,10 @@ function checkFurniture(room: HousePlanRoom2D, snapshot: RoomSnapshot, panels: P
   }
   note(stats, "furnitureMm", short * 1000, tolerance.furnitureMm, label);
   stats.worst.furnitureWhereClampMissesMm = Math.max(stats.worst.furnitureWhereClampMissesMm ?? 0, missed * 1000);
+  if (missed * 1000 <= tolerance.furnitureMm) return;
+  const kind = label.split(" ")[1] ?? "";
+  const known = stats.clampLimit[kind] ?? { rooms: 0, worstMm: 0 };
+  stats.clampLimit[kind] = { rooms: known.rooms + 1, worstMm: Math.max(known.worstMm, missed * 1000) };
 }
 
 const segmentsCross = (a: P, b: P, c: P, d: P) => {
@@ -494,7 +500,8 @@ function checkCoverage(
 /** `count` seeded plans across the shapes, each with an address transform, measured. */
 export function runImportedPanelCornerProperties(count: number, seed = 20261031): CornerStats {
   const random = seeded(seed);
-  const stats: CornerStats = { plans: 0, skipped: 0, rooms: 0, panels: 0, kinds: {}, worst: {}, failing: {}, failingByKind: {}, failures: [] };
+  const stats: CornerStats = { plans: 0, skipped: 0, rooms: 0, panels: 0, kinds: {}, worst: {}, failing: {}, failingByKind: {}, failures: [],
+    clampLimit: {} };
   const transforms = ["normal", "rotate_90", "mirror_x", "mirror_x_rotate_270"];
   for (let index = 0; index < count; index += 1) {
     const shape = SHAPES[SHAPE_KINDS[index % SHAPE_KINDS.length]](random);
