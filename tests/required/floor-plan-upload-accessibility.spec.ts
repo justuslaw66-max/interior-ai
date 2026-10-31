@@ -156,7 +156,7 @@ function pageSelectionEvidence() {
 }
 
 function importJob(
-  status: "selecting_page" | "needs_review" | "ready" | "failed",
+  status: "received" | "selecting_page" | "needs_review" | "ready" | "failed",
   candidateJson: unknown = null,
   reviewIssuesJson: unknown[] = []
 ) {
@@ -609,6 +609,122 @@ test("state transitions focus ready, failure, and image upload", async ({ page }
   await expect(page.getByTestId("floor-plan-import-progress")).toBeVisible();
   await expectFocusInside(page);
   releaseUpload();
+});
+
+// J, 31 Oct: Choose file takes a file dragged onto it, and the reading screen has Cancel upload, which
+// the server honours even while a worker reads the plan (scripts/test-floor-plan-import-worker-recovery.ts).
+test("Choose file takes a dropped plan, and Cancel upload stops it while uploading or waiting to be read", async ({ page }) => {
+  test.setTimeout(60_000);
+  const state = { job: null as ImportJob | null };
+  await installBoundaries(page, state);
+  await openEditor(page, "consumer");
+  await openWorkspace(page, "consumer", "pointer");
+  await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
+
+  const uploads: string[] = [];
+  let releaseUpload!: () => void;
+  const uploadMayFinish = new Promise<void>((resolve) => {
+    releaseUpload = resolve;
+  });
+  await page.route("**/api/floor-plan-imports", async (route) => {
+    if (route.request().method() !== "POST") return route.fallback();
+    uploads.push(route.request().postDataBuffer()?.toString("latin1") ?? "");
+    await uploadMayFinish;
+    state.job = importJob("received");
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify({
+        job: { id: state.job.id, status: state.job.status },
+        next: {
+          processUrl: `/api/floor-plan-imports/${state.job.id}/process`,
+          statusUrl: `/api/floor-plan-imports/${state.job.id}`,
+        },
+      }),
+    });
+  });
+  const cancels: string[] = [];
+  let cancelMayAnswer: Promise<void> | null = null;
+  await page.route("**/api/floor-plan-imports/*/cancel", async (route) => {
+    cancels.push(new URL(route.request().url()).pathname);
+    if (cancelMayAnswer) await cancelMayAnswer;
+    state.job = { ...importJob("failed"), errorMessage: "Cancelled by owner" };
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, job: { id: state.job.id, status: "failed", progress: 100, cancelled: true } }),
+    });
+  });
+
+  const dialogTitle = page.locator("#floor-plan-import-dialog-title");
+  const chooseFile = page.getByTestId("floor-plan-workspace-choose-file");
+  const plan = await page.evaluateHandle(() => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(["%PDF-1.4 synthetic"], "dropped-plan.pdf", { type: "application/pdf" }));
+    return transfer;
+  });
+  const dropPlan = async () => {
+    await chooseFile.dispatchEvent("dragenter", { dataTransfer: plan });
+    await chooseFile.dispatchEvent("dragover", { dataTransfer: plan });
+    await expect(chooseFile).toHaveAttribute("data-dragging", "true");
+    await chooseFile.dispatchEvent("drop", { dataTransfer: plan });
+    await expect(chooseFile).not.toHaveAttribute("data-dragging", "true");
+  };
+
+  // Letting go just off the targets is refused, so the browser doesn't open the file in place of the design.
+  const strayDrop = await dialogTitle.evaluate((title) => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(["stray"], "stray-plan.pdf", { type: "application/pdf" }));
+    const over = new DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer: transfer });
+    title.dispatchEvent(over);
+    const drop = new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer });
+    title.dispatchEvent(drop);
+    return { overRefused: over.defaultPrevented, dropHeld: drop.defaultPrevented };
+  });
+  expect(strayDrop).toEqual({ overRefused: true, dropHeld: true });
+  await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
+  expect(uploads).toHaveLength(0);
+
+  // Dropped on Choose file, the plan uploads as if picked. Cancel waits for the upload to arrive, then cancels it.
+  await dropPlan();
+  await expect(page.getByTestId("floor-plan-import-progress")).toBeVisible();
+  await expect.poll(() => uploads.length).toBe(1);
+  expect(uploads[0]).toContain('filename="dropped-plan.pdf"');
+  const cancelUpload = page.getByTestId("floor-plan-import-cancel");
+  await expect(cancelUpload).toHaveText("Cancel upload");
+  await expect(cancelUpload).not.toBeFocused();
+  await cancelUpload.click();
+  await expect(cancelUpload).toHaveText("Cancelling…");
+  await expect(cancelUpload).toBeDisabled();
+  expect(cancels).toHaveLength(0);
+  releaseUpload();
+  await expect.poll(() => cancels).toEqual(["/api/floor-plan-imports/ch0015i-job/cancel"]);
+  await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
+  await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), ACTIVE_IMPORT_KEY)).toBeNull();
+  await expectFocusInside(page);
+
+  // Waiting to be read: Cancel goes to the server at once, and a short card stands in until it answers.
+  let answerCancel!: () => void;
+  cancelMayAnswer = new Promise<void>((resolve) => {
+    answerCancel = resolve;
+  });
+  const processing = page.waitForRequest(
+    (request) => request.method() === "POST" && request.url().endsWith("/api/floor-plan-imports/ch0015i-job/process")
+  );
+  await dropPlan();
+  await processing;
+  await expect(cancelUpload).toBeEnabled();
+  await cancelUpload.click();
+  const cancelling = page.getByTestId("floor-plan-import-cancelling");
+  await expect(cancelling).toBeVisible();
+  await expect(cancelling.getByRole("status")).toHaveText("Cancelling your upload…");
+  await expect(page.getByTestId("floor-plan-import-progress")).toBeHidden();
+  await expect.poll(() => cancels).toHaveLength(2);
+  answerCancel();
+  await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
+  await expect(cancelling).toHaveCount(0);
+  await expectFocusInside(page);
+  expect(uploads).toHaveLength(2);
 });
 
 test("registered child supersedes, returns inside, and retains Strict Mode scroll ownership", async ({ page }) => {

@@ -1957,7 +1957,7 @@
     "components/editor/FloorPlanImportWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 95
+        "maximum": 93
       }
     },
     "components/editor/FloorPlanOptionalConfigurationPanel.tsx": {

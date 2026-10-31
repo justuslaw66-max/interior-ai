@@ -18,6 +18,8 @@ import {
   ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY,
 } from "@/lib/floor-plan-import-client";
 import { inverseFloorPlanAddressTransform } from "@/lib/floor-plan-consumer-orientation";
+import { requestFloorPlanImportCancel } from "@/components/editor/useFloorPlanImportCancel";
+import { UserFacingError } from "@/lib/user-facing-error";
 import { floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import { sourceDrawingStroke } from "@/lib/floor-plan-source-drawing";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
@@ -940,9 +942,31 @@ for (const view of ["FloorPlanSourceCompare.tsx", "FloorPlanSourceReviewOverlay.
   assert.doesNotMatch(source, /strokeWidth=\{[^}]*strokeWidthPx/, `${view} should not set a trace's line width by hand.`);
 }
 
+/** Cancel upload's request (J, 31 Oct): a cancelled or vanished upload is done; a refusal keeps the server's words. */
+async function assertCancelRequestOutcomes() {
+  const calls: string[] = [];
+  const answer = (status: number, body: unknown) =>
+    (async (input: string | URL | Request, init?: RequestInit) => {
+      calls.push(`${init?.method} ${String(input)}`);
+      return new Response(JSON.stringify(body), { status });
+    }) as typeof fetch;
+  await requestFloorPlanImportCancel("job 1", answer(200, { ok: true }));
+  assert.deepEqual(calls, ["POST /api/floor-plan-imports/job%201/cancel"]);
+  await requestFloorPlanImportCancel("gone", answer(404, { error: "Floor-plan import not found" }));
+  await assert.rejects(
+    requestFloorPlanImportCancel("ready", answer(409, { error: "This floor-plan import can no longer be cancelled" })),
+    (cause) => cause instanceof UserFacingError && cause.status === 409 && /can no longer be cancelled/.test(cause.message)
+  );
+  await assert.rejects(
+    requestFloorPlanImportCancel("broken", answer(500, "not json")),
+    (cause) => cause instanceof UserFacingError && cause.message === "Unable to cancel this upload"
+  );
+}
+
 Promise.all([
   assertBackgroundValidationKeepsPolling(),
   assertExactSearchRequestIdentityRaces(),
+  assertCancelRequestOutcomes(),
 ])
   .then(() => console.log("Floor-plan consumer flow guardrails passed."))
   .catch((cause) => {

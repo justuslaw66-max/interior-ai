@@ -54,6 +54,18 @@ assert.match(uploadLifecycle, /manageBackground:\s*true/);
 assert.match(uploadLifecycle, /lockBodyScroll:\s*true/);
 assert.match(uploadLifecycle, /cancelFocusRestorationOnUnmount:\s*true/);
 assert.match(workspace, /<FloorPlanUploadChooseStep \{\.\.\.choose\}/);
+// Choose file takes a dropped file too, as the drop box does, and a near miss doesn't open the file in the tab (J, 31 Oct).
+assert.match(dialog, /<ChooseFileButton disabled=\{disabled\} onChooseFile=\{onChooseFile\} onFileDropped=\{onFileDropped\} \/>/);
+assert.match(dialog, /onFileDropped=\{choose\.onFileDropped\}/);
+assert.match(dialog, /data-floor-plan-import-backdrop="true"\s*\{\.\.\.ignoreStrayFileDrop\}/);
+assert.match(chooseStep, /useFloorPlanFileDrop\(disabled, props\.onFileDropped\)/);
+// Cancel upload sits on the reading screen only, and is never the window's primary focus, so Enter can't cancel.
+assert.match(workspace, /<FloorPlanImportCancelScope cancel=\{cancelImport\.value\}><FloorPlanImportAssistant/);
+assert.match(workspace, /onActiveJobIdChange=\{cancelImport\.trackJobId\}\s*onJobUpdate=\{cancelImport\.trackJob\}/);
+const cancelAction = progressCard.match(/function CancelUploadAction\(\)[\s\S]*?\n\}\n/)?.[0] ?? "";
+assert.match(cancelAction, /data-testid="floor-plan-import-cancel"/);
+assert.doesNotMatch(cancelAction, /data-floor-plan-workspace-focus|data-editor-dialog-initial-focus/);
+assert.match(progressCard, /data-floor-plan-workspace-state="cancelling"[\s\S]*?<div hidden=\{cancel\.stopping\}>\{children\}<\/div>/);
 assert.match(chooseStep, /data-editor-dialog-initial-focus/);
 assert.match(dialog, /data-testid="floor-plan-import-dialog"/);
 assert.match(dialog, /role="dialog"/);
