@@ -186,8 +186,9 @@ function clampAsFurniture(room: RoomSnapshot, x: number, z: number, width: numbe
  * recorded baseboard: getBuiltInStandOff, by its `bottom`). Where it stands in the region it stays put, as Fit to Space places
  * it; furniture's own room (half the wall plus 2 cm in) lies inside the region. A move that would leave it stops where it
  * still stands, going from `from`. A turn (no `from`) that leaves it goes to the nearest place along and out from the face it
- * stands against where it fits (turnAgainstFace). Otherwise it is clamped with half the wall and the stand-off, by the box
- * test furniture uses; in a room on furniture's rule, as furniture is.
+ * stands against where it fits (turnAgainstFace). Where none does (nothing within TURN_REACH, or `from` doesn't fit either), it
+ * is left at the target, which containment refuses: furniture's box clamp threw it metres off, into walls the region knows. In
+ * a room on furniture's rule, it is clamped as furniture is.
  */
 export function clampBuiltInToRoom(
   room: RoomSnapshot, x: number, z: number, width: number, depth: number, rotationY = 0,
@@ -209,12 +210,8 @@ export function clampBuiltInToRoom(
     }
     return [from[0] + (x - from[0]) * reach, from[1] + (z - from[1]) * reach];
   }
-  const turned = from ? null : turnAgainstFace(faces, x, z, fits);
-  if (turned) return turned;
-  return clampToRoomInsideFinishes(
-    x, z, width, depth, room.geometry.width, room.geometry.depth, getBuiltInWallInset(room.geometry.wallThickness) + standOff,
-    rotationY, room.planShape ?? "rectangle", room.planPolygon, room.planHoles, getRoomWallFinishDepths(room)
-  );
+  // Nothing nearby fits: it stays at the target, which containment refuses (a turn is refused, the built-in where it was).
+  return (from ? null : turnAgainstFace(faces, x, z, fits)) ?? [x, z];
 }
 
 /** How far (metres) a turn looks for the nearest place a built-in fits, along and out from its face, before giving up. */

@@ -272,22 +272,27 @@ function isRunTooDeepForCorner(
   return !holdsRun(getCabinetAvailableSegments(touching, getCabinetOverallHeight(definition), mountingHeightMm, getCabinetOverallDepth(definition)));
 }
 
+/** True when one of the segments holds the fitted segment (to half a millimetre). */
+function holdsFitSegment(fit: NonNullable<CabinetDefinition["fitState"]>, segments: ReturnType<typeof getCabinetAvailableSegments>): boolean {
+  return segments.some((segment) => fit.segment.startMm >= segment.startMm - 0.5 && fit.segment.endMm <= segment.endMm + 0.5);
+}
+
+/** The host as it was before a baseboard was recorded: its face's ends and back not kept from one. */
+function withoutBaseboard(host: NonNullable<CabinetDefinition["fitState"]>["host"]): NonNullable<CabinetDefinition["fitState"]>["host"] {
+  const segment = host.wallSegment;
+  return { ...host, baseboardOffsetMm: 0, ...(segment ? { wallSegment: { ...segment, startBaseboardClearanceMm: 0, endBaseboardClearanceMm: 0 } } : {}) };
+}
+
 function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIssueDraft[] {
   const fit = definition.fitState;
   if (!fit) return [];
   const drafts: CabinetValidationIssueDraft[] = [];
-  const fitsWidth =
-    fit.mode === "fit_width" ||
-    fit.mode === "fit_both" ||
-    fit.mode === "between_boundaries";
+  const fitsWidth = fit.mode === "fit_width" || fit.mode === "fit_both" || fit.mode === "between_boundaries";
   const fitsHeight = fit.mode === "fit_height" || fit.mode === "fit_both";
   if (fitsWidth && getCabinetOverallWidth(definition) > fit.segment.widthMm + 0.5) {
     drafts.push({
-      code: "fit.width.exceeded",
-      severity: "error",
-      field: "fit.width",
+      code: "fit.width.exceeded", severity: "error", field: "fit.width", target: { scope: "fit", field: "width", hostId: fit.host.id },
       message: `The assembly is ${Math.round(getCabinetOverallWidth(definition) - fit.segment.widthMm)} mm wider than its fitted wall segment.`,
-      target: { scope: "fit", field: "width", hostId: fit.host.id },
     });
   }
   const mountingHeightMm = Math.max(0, fit.host.mountingHeightMm ?? 0);
@@ -297,24 +302,20 @@ function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIss
     mountingHeightMm;
   if (fitsHeight && getCabinetOverallHeight(definition) > usableHeight + 0.5) {
     drafts.push({
-      code: "fit.height.exceeded",
-      severity: "error",
-      field: "fit.height",
+      code: "fit.height.exceeded", severity: "error", field: "fit.height", target: { scope: "fit", field: "height", hostId: fit.host.id },
       message: `The assembly is ${Math.round(getCabinetOverallHeight(definition) - usableHeight)} mm taller than the recorded ceiling clearance.`,
-      target: { scope: "fit", field: "height", hostId: fit.host.id },
     });
   }
-  const availableSegments = getCabinetAvailableSegments(
-    fit.host,
-    getCabinetOverallHeight(definition),
-    mountingHeightMm
-  );
-  const segmentStillAvailable = availableSegments.some(
-    (segment) =>
-      fit.segment.startMm >= segment.startMm - 0.5 &&
-      fit.segment.endMm <= segment.endMm + 0.5
-  );
-  if (!segmentStillAvailable) {
+  const availableSegments = getCabinetAvailableSegments(fit.host, getCabinetOverallHeight(definition), mountingHeightMm);
+  const segmentStillAvailable = holdsFitSegment(fit, availableSegments);
+  if (!segmentStillAvailable && holdsFitSegment(fit, getCabinetAvailableSegments(withoutBaseboard(fit.host), getCabinetOverallHeight(definition), mountingHeightMm))) {
+    drafts.push({
+      code: "fit.baseboard.refit", severity: "warning", field: "fit.segment", target: { scope: "fit", field: "segment", hostId: fit.host.id },
+      title: "The baseboard leaves this run less room than it fills",
+      message: "A baseboard recorded since Fit to Space keeps a run on the floor further from the walls than where this one stands, so it can't be moved there.",
+      resolution: "Apply Fit to Space again to fit the run to the wall with the baseboard.",
+    });
+  } else if (!segmentStillAvailable) {
     drafts.push({
       code: "fit.opening_conflict",
       severity: "error",
