@@ -259,7 +259,7 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboa
   const widthMm = Math.hypot(face.end.x - face.start.x, face.end.z - face.start.z) * 1000;
   const length = space.availableWidthMm || 1;
   const dx = (outlineSegment.endXmm - outlineSegment.startXmm) / length, dz = (outlineSegment.endZmm - outlineSegment.startZmm) / length;
-  const pieces = spaces.filter(({ wallSegment: piece }) => piece && isOnLine(piece, outlineSegment, dx, dz));
+  const pieces = spaces.filter(({ wallSegment: piece }) => piece && isUnderFace(piece, outlineSegment, face, dx, dz));
   const openings = pieces.flatMap((piece) => {
     const segment = piece.wallSegment;
     if (!segment) return [];
@@ -281,11 +281,21 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboa
   };
 }
 
-/** True when the outline piece runs the same way along the same line as the segment (a straight wall drawn in pieces). */
-function isOnLine(piece: NonNullable<CabinetHostSpace["wallSegment"]>, segment: NonNullable<CabinetHostSpace["wallSegment"]>, dx: number, dz: number): boolean {
+/**
+ * True when the outline piece runs the same way as the segment and the face stands in front of its line, no further than
+ * twice as far as it stands in front of the segment's: a straight wall drawn in pieces, or a jogged wall whose pieces a
+ * thicker wall next door gives one face.
+ */
+function isUnderFace(
+  piece: NonNullable<CabinetHostSpace["wallSegment"]>, segment: NonNullable<CabinetHostSpace["wallSegment"]>, face: BuiltInFaceHost, dx: number, dz: number
+): boolean {
   const length = Math.hypot(piece.endXmm - piece.startXmm, piece.endZmm - piece.startZmm) || 1;
   const parallel = ((piece.endXmm - piece.startXmm) * dx + (piece.endZmm - piece.startZmm) * dz) / length > 1 - 1e-9;
-  return parallel && Math.abs((piece.startXmm - segment.startXmm) * dz - (piece.startZmm - segment.startZmm) * dx) < 0.001;
+  const normal = Math.hypot(segment.inwardNormalX, segment.inwardNormalZ) || 1;
+  const behind = (line: NonNullable<CabinetHostSpace["wallSegment"]>) =>
+    ((face.start.x * 1000 - line.startXmm) * segment.inwardNormalX + (face.start.z * 1000 - line.startZmm) * segment.inwardNormalZ) / normal;
+  const own = behind(segment), its = behind(piece);
+  return parallel && its > -0.001 && its <= 2 * own + 0.001;
 }
 
 /**
