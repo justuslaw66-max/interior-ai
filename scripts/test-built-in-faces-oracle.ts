@@ -40,7 +40,8 @@ import {
  * back on a face (a base unit's on the baseboard), clear of every door on its wall, end 10 mm (and a floor run's baseboard)
  * ±0.5 mm from what it meets along its face, a door or where its face ends (more along a wall all but parallel to its face),
  * and keep nudges of 10 mm along and into its wall or stop them at the face; where Fit refuses, no run as narrow as Fit makes
- * may stand anywhere along the host. Turns, Snap to wall and Place as copy must keep it in the region (checkMoves). A room
+ * may stand anywhere along the host. Turns, Snap to wall and Place as copy must keep it in the region (checkMoves), and so must
+ * Place of a run not fitted or fitted on the line (checkPlacements). A room
  * with no exposed face must have the line's hosts, snap and containment. CI runs 150 rooms (about 15 s); ORACLE_FULL=1 runs
  * 2,400 (about 4 min), ORACLE_ROOMS any number, ORACLE_SEED another seed, ORACLE_ONLY one room, ORACLE_TURNS=all every turn.
  */
@@ -414,8 +415,9 @@ const turnsThisRun = () => ALL_TURNS || counts.runs % 12 === 0;
 
 /**
  * Turns, Snap to wall and Place as copy, as the inspector makes them. A turn the room accepts stands in the 3D view's region,
- * off its baseboards, within the 0.6 m a turn looks; one it refuses must not fit where it stands turned (the built-in stays
- * put). A snap from where the piece stands is accepted and stands in the region, off its baseboards; so does a copy.
+ * off its baseboards, within how far its corners swing in the turn (0.6 m at least), and doesn't move a piece that fits where it
+ * stands; one it refuses must not fit where it stands turned, nor anywhere within that reach (bruteNearestFit). A snap from
+ * where the piece stands is accepted and stands in the region, off its baseboards; so does a copy.
  */
 function checkMoves(region: Region, room: RoomSnapshot, run: Run, definition: CabinetDefinition, preset: "base" | "wall", what: () => string) {
   const bottom = preset === "wall" ? 1.45 : 0, standOff = preset === "wall" ? 0 : Math.round((room.geometry.baseboardDepth ?? 0) * 1000) / 1000;
