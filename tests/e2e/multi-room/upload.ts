@@ -8,6 +8,9 @@ import { createSampleFloorPlanPdf } from "./helpers";
 export function registerUploadTests() {
   test("floor plan upload exposes pdf pages and calibration controls", async ({ page, baseURL }, testInfo) => {
     if (!baseURL) throw new Error("The import test requires its configured application URL");
+    // Its steps allow 20 s each, and under next dev processing the PDF alone takes about 13 s, so
+    // the default 30 s ran out just after the review showed (31 Oct 2026, the Mac's traces).
+    test.setTimeout(90_000);
     const seed = await createBetaSeedDesign();
     const failures: unknown[] = [];
     const renderWarnings: string[] = [];

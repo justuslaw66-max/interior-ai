@@ -3,6 +3,7 @@ import {
   addCatalogDrawerItemToRoom,
   openCatalogPreview,
   openShopPanel,
+  selectEditorWorkspace,
   shoppingListRow,
 } from "./variant-test-utils";
 
@@ -78,6 +79,9 @@ test.describe("100. Hugg Catalog Smoke", () => {
     await expect(huggRow).toBeVisible({ timeout: 10000 });
     await expect(huggRow.getByTestId("shopping-list-row-detail")).toContainText(/Black/i);
 
+    // The Shopping list is a page over the canvas, so the view toggles are back once you leave it.
+    await selectEditorWorkspace(page, "editor-workflow-furnish");
+    await expect(page.getByTestId("shopping-list-page")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "2D", exact: true }).first()).toBeVisible({ timeout: 10000 });
     await page.getByRole("button", { name: "2D", exact: true }).first().click({ force: true });
     await page.getByRole("button", { name: "3D", exact: true }).first().click({ force: true });
