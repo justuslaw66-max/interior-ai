@@ -286,6 +286,15 @@ assert.deepEqual(eastFace, [[1896, -1430], [1896, 1440]], "60 mm in from the cen
 assert.deepEqual(getRoomPanelStrips2D({ ...planRoom, surfaces: { walls: { default: { paintColorHex: "#fff" } } } }).strips, []);
 const draggedRoom = { ...planRoom, surfaces: tiledWithPanel.surfaces };
 assert.equal(getRoomPanelStrips2D({ ...draggedRoom, x: 0.5 }), getRoomPanelStrips2D({ ...draggedRoom, x: 0.6 }), "the same strips while a room is dragged");
+// A laminate swapped for another as deep leaves the room's depths the same object (equal depths are, getRoomWallFinishDepths),
+// and its strip takes the new laminate: it kept the old one's (31 Oct 2026, the sixth check of the imported plans' PR).
+const SAME_DEPTH_LAMINATE = "greenlam-abstracts-5577";
+const northIn = (materialId: string) => ({ ...planRoom, surfaces: { walls: { default: { paintColorHex: "#ffffff" },
+  faces: { north: { materialId, panelBacking: { board: "mdf" as const, boardThicknessMm: 18, fixing: "battens" as const } } } } } });
+assert.equal(getRoomWallFinishDepths(northIn(NORDIC_ACACIA)), getRoomWallFinishDepths(northIn(SAME_DEPTH_LAMINATE)), "as deep");
+assert.deepEqual([NORDIC_ACACIA, SAME_DEPTH_LAMINATE, NORDIC_ACACIA].map((materialId) =>
+  getRoomPanelStrips2D(northIn(materialId)).strips.map((strip) => strip.finish.materialId)),
+[[NORDIC_ACACIA], [SAME_DEPTH_LAMINATE], [NORDIC_ACACIA]], "the strip in the laminate the wall now has");
 
 // A strip stops at a doorway, where the 3D view's panel stops, and runs on under a window's sill (29 Oct 2026).
 const opening = (id: string, wall: PersistedPlanOpening["wall"], extra: Partial<PersistedPlanOpening> = {}): PersistedPlanOpening =>

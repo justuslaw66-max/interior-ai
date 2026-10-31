@@ -700,6 +700,13 @@ for (const turnDeg of [0, 10, 30]) {
   assert.deepEqual(trimsOf(first, refinished).map((trims, index) => trims === trimsOf(first)[index]), trimsOf(first).map(() => true), "equal finishes");
   const strips = getCanonicalPanelStrips2D(first.floor, first.planRooms);
   assert.deepEqual(getCanonicalPanelStrips2D(again.floor, again.planRooms).map((strip, index) => strip === strips[index]), strips.map(() => true));
+  // A laminate swapped for another as deep: the same depths and trims, but strips in the new laminate.
+  const relaminated = (materialId: string) => buildHousePlan2D(first.rooms.map((room) => ({ ...room,
+    surfaces: { walls: { default: { materialId, panelBacking: DEEPEST } } } })), 8, 6).rooms;
+  assert.deepEqual([NORDIC_ACACIA, "greenlam-abstracts-5577", NORDIC_ACACIA].map((materialId) => [...new Set(
+    getCanonicalPanelStrips2D(first.floor, relaminated(materialId)).map((strip) => strip.finish.materialId))]),
+  [[NORDIC_ACACIA], ["greenlam-abstracts-5577"], [NORDIC_ACACIA]]);
+  assert.equal(getRoomWallFinishDepths(relaminated(NORDIC_ACACIA)[0]), getRoomWallFinishDepths(relaminated("greenlam-abstracts-5577")[0]));
   const shared = first.rooms[0].surfaces!;
   const [one, two] = [{ ...first.rooms[0], surfaces: shared }, { ...first.rooms[0], id: "R2", surfaces: shared }];
   const depthsOne = getRoomWallFinishDepths(one);

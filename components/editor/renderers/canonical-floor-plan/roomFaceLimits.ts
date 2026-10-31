@@ -189,7 +189,10 @@ function drawnDepth(depths: RoomWallFinishDepths, run: Run, count: number): numb
 
 // A room's faces, kept while its edges, outline, walls and depths are the same objects (a re-render, a drag frame), and by
 // value (facesValueKey) for a plan rebuilt with new objects, so its trims and the meshes built on them are kept too.
-const facesByEdges = new WeakMap<readonly string[], { outline: unknown; walls: unknown; depths: unknown; faces: Map<string, Face> }>();
+type KnownFaces = {
+  roomId: string; outline: unknown; x: number; z: number; walls: unknown; depths: unknown; faces: Map<string, Face>;
+};
+const facesByEdges = new WeakMap<readonly string[], KnownFaces>();
 const facesByValue = new Map<string, Map<string, Face>>();
 const FACES_BY_VALUE_LIMIT = 256;
 
@@ -198,16 +201,17 @@ function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string,
   const outline = room.planPolygon ?? room.polygon;
   if (!edges || !outline || edges.length !== outline.length) return null;
   const depths = getRoomWallPanelDepths(room);
-  const known = facesByEdges.get(edges);
-  if (known && known.outline === outline && known.walls === walls && known.depths === depths) return known.faces;
   const origin = room.planPosition ?? { x: room.x ?? 0, z: room.z ?? 0 };
+  const known = facesByEdges.get(edges);
+  if (known && known.roomId === room.id && known.outline === outline && known.x === origin.x && known.z === origin.z &&
+    known.walls === walls && known.depths === depths) return known.faces;
   const vertices = outline.map(({ x, z }) => ({ x: x + origin.x, z: z + origin.z }));
   const valueKey = facesValueKey(room, edges, vertices, depths, walls);
   const same = facesByValue.get(valueKey);
   if (same) {
     facesByValue.delete(valueKey);
     facesByValue.set(valueKey, same);
-    facesByEdges.set(edges, { outline, walls, depths, faces: same });
+    facesByEdges.set(edges, { roomId: room.id, outline, x: origin.x, z: origin.z, walls, depths, faces: same });
     return same;
   }
   const area = vertices.reduce((sum, point, index) => sum + cross(point, vertices[(index + 1) % vertices.length]), 0);
@@ -234,7 +238,7 @@ function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string,
     face.others = footprintsNear(face, walls);
     faces.set(face.wall.id, face);
   });
-  facesByEdges.set(edges, { outline, walls, depths, faces });
+  facesByEdges.set(edges, { roomId: room.id, outline, x: origin.x, z: origin.z, walls, depths, faces });
   facesByValue.set(valueKey, faces);
   const oldest = facesByValue.size > FACES_BY_VALUE_LIMIT ? facesByValue.keys().next().value : undefined;
   if (oldest !== undefined) facesByValue.delete(oldest);
