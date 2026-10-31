@@ -90,8 +90,9 @@ type SharedSpaceInput = Omit<Parameters<typeof createCabinetRoomWallSpaces>[0], 
 
 /**
  * A drawn rectangle's hosts, each wall's face between the faces' corners: half the wall and its panel in from the outline
- * (north, east, south, west), or a thicker wall's next door. A door of the room next door on a wall they share is at the
- * rectangle's middle plus its offset, as the room's own are.
+ * (north, east, south, west). With rooms next door, each is its wall's exposed face (a thicker wall next door may move a
+ * face, or end the next one short of the corner), and a wall with none isn't offered. A door of the room next door on a wall
+ * they share is at the rectangle's middle plus its offset, as the room's own are.
  */
 function buildRectangleHosts(
   room: RoomSnapshot, size: { w: number; d: number }, shared: SharedSpaceInput, openings: ReturnType<typeof getRoomHostOpenings>,
@@ -100,22 +101,27 @@ function buildRectangleHosts(
   const faces = getRoomBuiltInFaces(room, size, planRooms), [inNorth, inEast, inSouth, inWest] = faces.insets;
   const northWest = { x: faces.outline[0].x + inWest, z: faces.outline[0].z + inNorth };
   const southEast = { x: faces.outline[2].x - inEast, z: faces.outline[2].z - inSouth };
-  // A column in the room, or a wall next door, stands in front of the faces: the hosts keep clear of it (and of the walls and
-  // the faces' ends).
+  // A column in the room stands in front of the faces: the hosts keep clear of it (and of the walls and the faces' ends).
   const corners = [northWest, { x: southEast.x, z: northWest.z }, southEast, { x: northWest.x, z: southEast.z }];
-  const obstaclesAlong = (index: number) => room.planHoles?.length || faces.neighbourCores.length
+  const obstaclesAlong = (index: number) => room.planHoles?.length
     ? getBuiltInFaceObstaclesAlong(faces, index, corners[index], corners[(index + 1) % 4]) : undefined;
   const onWalls = sharedOpenings.flatMap(({ opening, center, tangent }) => {
     const edge = findOutlineEdge(faces.outline, center, tangent), wall = edge && RECTANGLE_WALLS[edge.index];
     return wall ? [{ ...opening, wall, offsetMm: Number(((wall === "north" || wall === "south" ? center.x : center.z) * 1000).toFixed(3)) }] : [];
   });
-  const baseboardMm = shared.baseboardOffsetMm ?? 0;
+  const baseboardMm = shared.baseboardOffsetMm ?? 0, nextDoor = faces.neighbourCores.length > 0;
   return createCabinetRoomWallSpaces({
     ...shared,
     widthMm: Math.max(1, Math.round((southEast.x - northWest.x) * 1000)),
     depthMm: Math.max(1, Math.round((southEast.z - northWest.z) * 1000)),
     openings: [...openings, ...onWalls],
-  }).map((space) => withRectangleFaceSegment(space, northWest, southEast, baseboardMm, obstaclesAlong(RECTANGLE_WALLS.indexOf(space.wall ?? "north"))));
+  }).flatMap((space) => {
+    const index = RECTANGLE_WALLS.indexOf(space.wall ?? "north"), face = faces.exposed[index];
+    if (!nextDoor) return [withRectangleFaceSegment(space, northWest, southEast, baseboardMm, obstaclesAlong(index))];
+    if (!face) return [];
+    const along = index % 2 === 0 ? [face.start.x, face.end.x] : [face.start.z, face.end.z];
+    return [withRectangleFaceSegment(space, northWest, southEast, baseboardMm, face.obstacles, [Math.min(...along), Math.max(...along)])];
+  });
 }
 
 /**
@@ -253,11 +259,12 @@ const RECTANGLE_WALLS: ReadonlyArray<"north" | "east" | "south" | "west"> = ["no
 
 function withRectangleFaceSegment(
   space: CabinetHostSpace, northWest: { x: number; z: number }, southEast: { x: number; z: number }, baseboardMm: number,
-  faceObstacles?: Array<Array<[number, number]>>
+  faceObstacles?: Array<Array<[number, number]>>, extent?: [number, number]
 ): CabinetHostSpace {
   const alongX = space.wall === "north" || space.wall === "south";
   const line = space.wall === "north" ? northWest.z : space.wall === "south" ? southEast.z : space.wall === "west" ? northWest.x : southEast.x;
-  const [start, end] = alongX ? [northWest.x, southEast.x] : [northWest.z, southEast.z];
+  // Its face between the faces' corners, or `extent` (along x or z) where rooms next door end it elsewhere.
+  const [start, end] = extent ?? (alongX ? [northWest.x, southEast.x] : [northWest.z, southEast.z]);
   const middleMm = ((start + end) / 2) * 1000;
   const inward = space.wall === "north" || space.wall === "west" ? 1 : -1;
   // The face's frame runs along its outline edge (west along the south wall, north along the west); the host east or south.
@@ -266,6 +273,7 @@ function withRectangleFaceSegment(
   const baseboards = { startBaseboardClearanceMm: baseboardMm, endBaseboardClearanceMm: baseboardMm, ...(obstacles?.length ? { obstacles } : {}) };
   return {
     ...space,
+    ...(extent ? { availableWidthMm: (end - start) * 1000 } : {}),
     wallSegment: alongX
       ? { startXmm: start * 1000, startZmm: line * 1000, endXmm: end * 1000, endZmm: line * 1000, inwardNormalX: 0, inwardNormalZ: inward, ...baseboards }
       : { startXmm: line * 1000, startZmm: start * 1000, endXmm: line * 1000, endZmm: end * 1000, inwardNormalX: inward, inwardNormalZ: 0, ...baseboards },

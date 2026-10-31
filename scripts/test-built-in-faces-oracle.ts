@@ -474,8 +474,8 @@ function checkFurnitureRule(room: RoomSnapshot, openings: RoomOpening2D[], label
  * Is every face the 3D view draws offered as a host, and is every host a face it draws? For each outline edge, the stretches
  * of its face line exposed along it (exposedOnLine) must lie within one host on that line (its own, or a straight wall's first
  * piece's), and each host on the line must start and end where an exposed stretch does (±0.5 mm, more where the wall ending
- * it is all but parallel); a rectangle's hosts run corner to corner over a column or a wall next door, so their ends aren't
- * checked where it has one. The face line is half the wall and its panel in from the edge, or where a thicker wall of a room
+ * it is all but parallel); a rectangle's hosts run corner to corner over a column, so their ends aren't checked where it has
+ * one (with rooms next door, each is its exposed face). The face line is half the wall and its panel in from the edge, or where a thicker wall of a room
  * next door runs along it over that (parallel, its core reaching past it) that wall's face, whichever is exposed along more
  * of the edge (within a millimetre, either). No two hosts the same.
  */
@@ -538,7 +538,7 @@ function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHo
       check(onLine.some((host) => host.from <= first.from + 0.0005 + first.slackFrom && host.to >= last.to - 0.0005 - last.slackTo),
         () => `${what}: its face, exposed ${own.map((stretch) => `${(stretch.from * 1000).toFixed(1)}..${(stretch.to * 1000).toFixed(1)}`).join(", ")} mm along it, isn't within a host (${onLine.map((host) => `${(host.from * 1000).toFixed(1)}..${(host.to * 1000).toFixed(1)}`).join(", ") || "none"})`);
     }
-    if ((room.planShape ?? "rectangle") === "rectangle" && (room.planHoles?.length || plan.neighbours.length)) return;
+    if ((room.planShape ?? "rectangle") === "rectangle" && room.planHoles?.length && !plan.neighbours.length) return;
     onLine.forEach((host) => check(exposed.some((stretch) => Math.abs(stretch.from - host.from) <= 0.0005 + stretch.slackFrom) &&
       exposed.some((stretch) => Math.abs(stretch.to - host.to) <= 0.0005 + stretch.slackTo),
       () => `${what}: host ${host.space.wallId} ${(host.from * 1000).toFixed(1)}..${(host.to * 1000).toFixed(1)} mm isn't where an exposed face starts and ends (${exposed.map((stretch) => `${(stretch.from * 1000).toFixed(1)}..${(stretch.to * 1000).toFixed(1)}`).join(", ") || "none"})`));

@@ -245,9 +245,11 @@ function buildFaceHost(region: Omit<BuiltInRegion, "exposed">, index: number): B
 
 /**
  * What a run on a face's clear stretches keeps clear of: every solid and column standing in front of the face along them (and
- * 100 mm past their ends), cut to the room's side of it; and each stretch's ends, as lines across them (the face less 10 mm
- * each end, whatever ends it: a corner, a deeper panel, a panel's corner past a bend too low to meet a raised back). In the
- * face's frame, about the host's `middle`, to a hundredth of a mm.
+ * 100 mm past their ends), cut to the room's side of it; each stretch's ends, as lines across them (the face less 10 mm each
+ * end, whatever ends it: a corner, a deeper panel, a panel's corner past a bend too low to meet a raised back); and what lies
+ * between two stretches, where something stands on the face (however low: a wall next door a few mm proud of it, under a run
+ * raised on a baseboard), so a run doesn't stand there either. In the face's frame, about the host's `middle`, to a hundredth
+ * of a mm.
  */
 function getFaceObstacles(
   region: Omit<BuiltInRegion, "exposed">, toFrame: (point: Point) => FacePoint, stretches: ReadonlyArray<readonly [number, number]>, middle: number
@@ -258,26 +260,21 @@ function getFaceObstacles(
   const solids = [...region.solids, ...region.holes].map((points) => points.map(toFrame)).filter(inReach)
     .map((points) => clipToStrip(points, FACE_EDGE_MM, FACE_REACH_MM)).filter((points) => points.length >= 2 && inReach(points));
   const ends = stretches.flat().map((along): FacePoint[] => [[along, 0], [along, FACE_REACH_MM]]);
+  const between = stretches.slice(1).map(([next], index): FacePoint[] =>
+    [[stretches[index][1], 0], [next, 0], [next, FACE_REACH_MM], [stretches[index][1], FACE_REACH_MM]]);
   const round = (value: number) => Math.round(value * 100) / 100;
-  return [...solids, ...ends].map((points) => points.map(([along, into]): [number, number] => [round(along - middle), round(into)]));
+  return [...solids, ...ends, ...between].map((points) => points.map(([along, into]): [number, number] => [round(along - middle), round(into)]));
 }
 
 /**
  * What a run on wall `index`'s face between `start` and `end` (room-local metres, on its face line) keeps clear of, as an
- * exposed face's obstacles are given (about the stretch's middle): for a host the face's closed form gives. Its stretches are
- * where the face is exposed between them (a solid behind, as a wall next door may stand along part of it, and none in front).
+ * exposed face's obstacles are given (about the stretch's middle): for a host the face's closed form gives.
  */
 export function getBuiltInFaceObstaclesAlong(region: BuiltInRegion, index: number, start: Point, end: Point): Array<Array<[number, number]>> {
-  const { toFrame, solids, clearOf } = getFaceFrame(region, region.walls[index], region.exposed[index]?.inset);
+  const { toFrame, clearOf } = getFaceFrame(region, region.walls[index], region.exposed[index]?.inset);
   const [from, to] = [toFrame(start)[0], toFrame(end)[0]].sort((a, b) => a - b);
-  const covered = getCoveredBehind(solids).filter(([coverFrom, coverTo]) => coverTo > from && coverFrom < to)
-    .map(([coverFrom, coverTo]): [number, number] => [Math.max(coverFrom, from), Math.min(coverTo, to)]);
-  const clear = covered.flatMap(([coverFrom, coverTo]) => clearOf(coverFrom, coverTo));
-  // Where no solid stands behind it (past a wall next door that runs along part of it), the face is elsewhere: a run can't stand.
-  const middle = (from + to) / 2, round = (value: number) => Math.round((value - middle) * 100) / 100;
-  const gaps = [from, ...covered.flat(), to].flatMap((value, at, ends) => (at % 2 === 0 && ends[at + 1] - value > FACE_EDGE_MM ? [[value, ends[at + 1]]] : []))
-    .map(([gapFrom, gapTo]): Array<[number, number]> => [[round(gapFrom), 0], [round(gapTo), 0], [round(gapTo), FACE_REACH_MM], [round(gapFrom), FACE_REACH_MM]]);
-  return [...getFaceObstacles(region, toFrame, clear.length ? clear : [[from, to]], middle), ...(clear.length ? gaps : [])];
+  const clear = clearOf(from, to);
+  return getFaceObstacles(region, toFrame, clear.length ? clear : [[from, to]], (from + to) / 2);
 }
 
 /**

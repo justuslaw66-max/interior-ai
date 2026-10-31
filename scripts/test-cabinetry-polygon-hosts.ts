@@ -633,6 +633,18 @@ for (const shape of ["rectangle", "custom_polygon"] as const) {
   nearMm((0.1 - (halfRun.x + halfRun.width / 2)) * 1000, 10, `${shape}, half: 10 mm short of where it ends`);
 }
 
+// A wall next door only 10 mm proud of the face, over the middle of it, under a run raised on a 20 mm baseboard: the run doesn't
+// meet it, but doesn't stand over it either (it stops 30 mm short of each end of it).
+{
+  const { room, planRooms } = nextDoor(1.2, 0, "custom_polygon");
+  planRooms.set("B", { ...planRooms.get("B")!, wallThickness: 0.14 });
+  const raised = { ...room, geometry: { ...room.geometry, baseboardDepth: 0.02 } } as RoomSnapshot;
+  const [north] = buildCabinetryAvailableSpaces({ activeRoom: raised, activePlanRoom: null, planRoomCount: 2, planOpenings: [], planRooms });
+  nearMm(north.wallSegment!.startZmm, -1440, "a 140 mm wall next door over 1.34 m of it: the face is A's own");
+  const run = placeFittedRun(raised, north), [from, to] = [run.x - run.width / 2, run.x + run.width / 2];
+  assert.ok(to <= -0.67 - 0.03 + 1e-6 || from >= 0.67 + 0.03 - 1e-6, `the run (${from.toFixed(3)}..${to.toFixed(3)}) isn't over the wall next door`);
+}
+
 // A door centred exactly on a drawn rectangle's corner is on the wall it runs along (the plan's tangent), not the other.
 const cornerRoom = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
 const cornerDoor = { id: "corner", roomId: cornerRoom.id, wall: "east" as const, kind: "door" as const, offsetMm: -1500, widthMm: 800, heightMm: 2100, bottomMm: 0 };
