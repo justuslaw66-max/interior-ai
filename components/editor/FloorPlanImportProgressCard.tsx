@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, type ReactNode } from "react";
+import { useContext, useEffect, useMemo, type ReactNode } from "react";
 import { formatFloorPlanRemainingTime } from "@/lib/floor-plan-imports/progress-estimate";
 import { Button } from "@/components/ui/Button";
 import type { ConsumerFloorPlanImportState } from "./useConsumerFloorPlanImportSession";
@@ -48,17 +48,29 @@ function timingMessage(estimate: WorkingState["estimate"]) {
 
 /**
  * Cancel upload, when the upload window offers it. Not the window's primary focus, so Enter can't
- * cancel by accident; a refusal (the plan finished first, or no connection) is said under it.
+ * cancel by accident; a refusal (the plan finished first, or no connection) is said under it. Once
+ * pressed it is aria-disabled rather than disabled, so focus stays on it instead of falling to the
+ * window's next control (its close button: closing while the file uploads would drop the cancel).
  */
 function CancelUploadAction() {
   const cancel = useContext(FloorPlanImportCancelContext);
+  // While pressed and on screen, the window greys out Choose file: a new file would drop a cancel still
+  // waiting for its upload. An upload that fails meanwhile takes this screen, and that hold, with it.
+  const cancelling = Boolean(cancel?.cancelling);
+  const onCancellingChange = cancel?.onCancellingChange;
+  useEffect(() => {
+    if (!cancelling || !onCancellingChange) return;
+    onCancellingChange(true);
+    return () => onCancellingChange(false);
+  }, [cancelling, onCancellingChange]);
   if (!cancel) return null;
   return (
     <div className="mt-5 flex flex-col items-center gap-2">
       <Button
         data-testid="floor-plan-import-cancel"
         variant="secondary" size="touch"
-        disabled={cancel.cancelling}
+        aria-disabled={cancel.cancelling || undefined}
+        className={cancel.cancelling ? "cursor-not-allowed opacity-60" : ""}
         onClick={cancel.cancel}
       >
         {cancel.cancelling ? "Cancelling…" : "Cancel upload"}
@@ -79,9 +91,14 @@ function CancelUploadAction() {
  * focus follows it. While a file is still uploading, the reading screen stays, its button saying
  * Cancelling…, so an upload that fails meanwhile still shows its error.
  */
-export function FloorPlanImportCancelScope({ cancel, children }: { cancel: FloorPlanImportCancel; children: ReactNode }) {
+export function FloorPlanImportCancelScope({ cancel, onCancellingChange, children }: {
+  cancel: FloorPlanImportCancel;
+  onCancellingChange?: (cancelling: boolean) => void;
+  children: ReactNode;
+}) {
+  const value = useMemo(() => ({ ...cancel, onCancellingChange }), [cancel, onCancellingChange]);
   return (
-    <FloorPlanImportCancelContext.Provider value={cancel}>
+    <FloorPlanImportCancelContext.Provider value={value}>
       {cancel.stopping ? (
         <div
           className="flex min-h-[440px] flex-col items-center justify-center gap-1 rounded-xl border border-box-border bg-surface-elevated-secondary p-4 text-center shadow-sm sm:p-5"

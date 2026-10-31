@@ -17,6 +17,8 @@ export type FloorPlanImportCancel = {
   /** The cancel has gone to the server; the screen behind may change meanwhile, so it is hidden. */
   stopping: boolean;
   error: string | null;
+  /** The window's, told while a pressed Cancel upload is on screen (FloorPlanImportCancelScope). */
+  onCancellingChange?: (cancelling: boolean) => void;
 };
 
 export const FloorPlanImportCancelContext = createContext<FloorPlanImportCancel | null>(null);
@@ -101,12 +103,13 @@ export function useFloorPlanImportCancel(input: FloorPlanImportCancelInput) {
   useEffect(() => {
     onCancelledRef.current = onCancelled;
   });
-  // A new upload (or closing the window) retires the last one's cancel, so a late answer is ignored.
+  // A new upload (or closing the window) retires the last one's cancel, so a late answer is ignored. Cleanups all run
+  // before any effect, so a resumed upload reporting its job from its own effect never meets a cancel left waiting.
   useEffect(() => {
     const run = runRef.current;
-    Object.assign(run, { key: runKey, jobId: knownJobId, cancelling: false, waitingForJob: false });
+    Object.assign(run, { key: runKey, jobId: run.jobId ?? knownJobId });
     return () => {
-      run.generation += 1;
+      Object.assign(run, { generation: run.generation + 1, jobId: null, cancelling: false, waitingForJob: false });
     };
   }, [runKey, knownJobId]);
 
@@ -129,6 +132,8 @@ export function useFloorPlanImportCancel(input: FloorPlanImportCancelInput) {
 
   const trackJobId = useCallback((jobId: string | null) => {
     const run = runRef.current;
+    const { key } = run; // A refusal said for another job (a retry's fork, say) isn't this one's:
+    if (jobId !== run.jobId) setStatus((current) => (current.run === key && current.error ? IDLE : current));
     run.jobId = jobId;
     onActiveJobIdChange(jobId);
     if (!jobId || !run.waitingForJob) return;

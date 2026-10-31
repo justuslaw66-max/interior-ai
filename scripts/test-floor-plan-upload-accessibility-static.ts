@@ -60,11 +60,17 @@ assert.match(dialog, /onFileDropped=\{choose\.onFileDropped\}/);
 assert.match(dialog, /data-floor-plan-import-backdrop="true"\s*\{\.\.\.ignoreStrayFileDrop\}/);
 assert.match(chooseStep, /useFloorPlanFileDrop\(disabled, props\.onFileDropped\)/);
 // Cancel upload sits on the reading screen only, and is never the window's primary focus, so Enter can't cancel.
-assert.match(workspace, /<FloorPlanImportCancelScope cancel=\{cancelImport\.value\}><FloorPlanImportAssistant/);
+assert.match(workspace, /<FloorPlanImportCancelScope cancel=\{cancelImport\.value\} onCancellingChange=\{onImportCancellingChange\}><FloorPlanImportAssistant/);
+// While a cancel waits for its answer, Choose file is greyed out: a new file would drop a cancel still waiting for its upload.
+assert.match(dialog, /onImportCancellingChange=\{setImportCancelling\}/);
+assert.match(dialog, /<WorkspaceHeader disabled=\{disabled \|\| importCancelling\}/);
 assert.match(workspace, /onActiveJobIdChange=\{cancelImport\.trackJobId\}\s*onJobUpdate=\{cancelImport\.trackJob\}/);
 const cancelAction = progressCard.match(/function CancelUploadAction\(\)[\s\S]*?\n\}\n/)?.[0] ?? "";
 assert.match(cancelAction, /data-testid="floor-plan-import-cancel"/);
 assert.doesNotMatch(cancelAction, /data-floor-plan-workspace-focus|data-editor-dialog-initial-focus/);
+// Pressed, it stays focusable (aria-disabled), so focus doesn't fall to the window's close button.
+assert.match(cancelAction, /aria-disabled=\{cancel\.cancelling \|\| undefined\}/);
+assert.doesNotMatch(cancelAction, /\sdisabled=\{/);
 assert.match(progressCard, /data-floor-plan-workspace-state="cancelling"[\s\S]*?<div hidden=\{cancel\.stopping\}>\{children\}<\/div>/);
 assert.match(chooseStep, /data-editor-dialog-initial-focus/);
 assert.match(dialog, /data-testid="floor-plan-import-dialog"/);

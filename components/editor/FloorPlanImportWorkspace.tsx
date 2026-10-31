@@ -15,6 +15,8 @@ type FloorPlanImportWorkspaceProps = {
   disabled: boolean; proMode: boolean;
   onChooseFile: () => void; onHistoryConfirmationOpenChange: (open: boolean) => void;
   onTrainingBenchmarkOptInChange: (value: boolean) => void;
+  /** Cancel upload was pressed and hasn't been answered yet. */
+  onImportCancellingChange?: (cancelling: boolean) => void;
 };
 
 function useHistoryConfirmationGuard(onChange: (open: boolean) => void) {
@@ -29,7 +31,7 @@ function useHistoryConfirmationGuard(onChange: (open: boolean) => void) {
 
 export default function FloorPlanImportWorkspace({
   request, choose, trainingBenchmarkOptIn, disabled, proMode,
-  onChooseFile, onHistoryConfirmationOpenChange, onTrainingBenchmarkOptInChange,
+  onChooseFile, onHistoryConfirmationOpenChange, onTrainingBenchmarkOptInChange, onImportCancellingChange,
 }: FloorPlanImportWorkspaceProps) {
   const {
     activeRequest, resumeJobId, resumeFileName, lastUpload, activeImportJobId, historyRefreshKey,
@@ -52,7 +54,7 @@ export default function FloorPlanImportWorkspace({
           </p>
         ) : null}
         {hasActiveImport ? (
-          <FloorPlanImportCancelScope cancel={cancelImport.value}><FloorPlanImportAssistant
+          <FloorPlanImportCancelScope cancel={cancelImport.value} onCancellingChange={onImportCancellingChange}><FloorPlanImportAssistant
             key={reviewSession}
             file={activeRequest?.file ?? null}
             resumeJobId={activeRequest ? null : resumeJobId} resumeFileName={resumeFileName}
