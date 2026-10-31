@@ -63,6 +63,15 @@ the map with a re-export. 28 Oct 2026: every development has detailed 3D models,
   adds, so no clip layer can take them away (the label clip above was meant to, and didn't). They show from zoom 17,
   so the map turns Standard's place labels off from zoom 16.5 in (`hidePlaceLabelsWhenClose`) and on again further
   out, where area names help. Street and point-of-interest names stay at every zoom.
+- **Painted floors are drawn smooth** (J, 31 Oct 2026: beside a plan, a painted floor looked "rougher with small
+  sharp details"). The masters' unit outlines are traced off the brochure plans, and about a quarter of their edges
+  are under 15 cm: steps, slants, slits and spikes the tracing left, each a small sharp edge once painted 4 cm thick
+  and lit. `lib/condo-map/condo-map-outline.ts` closes slits and spikes narrower than 25 cm at their mouths, then keeps
+  only the corners standing more than 12 cm off their line (Douglas-Peucker), so recesses and columns stay. The edges
+  under 15 cm go from 3,698 to 124 across the nine developments. The painted floors and the chosen unit's box use
+  these outlines; map.json, the grey massing and the models keep the masters' own. An outline the smoothing would
+  spoil (crossing itself, or its area off by over 3 %) is drawn as traced; nine traced outlines already cross
+  themselves, and all but one come out mended.
 - **A chosen floor reads at a glance** (J, 28 Oct 2026). Its units are painted by bedroom count in the masters'
   viewers' unit-chart hues (their dark theme's, which hold up in the map's daylight; a studio or an unknown count
   stays cream), the chosen unit orange, with a key under the floor's units in the panel. The storeys above stay as a

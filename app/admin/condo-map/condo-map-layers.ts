@@ -1,4 +1,5 @@
 import { condoMapFileUrl, type CondoDevelopmentMap, type CondoUnitCard, type CondoUnitPlan, type LonLat } from "@/lib/condo-map/condo-map-data";
+import { smoothOutlines } from "@/lib/condo-map/condo-map-outline";
 import { unitPlanOn, unitStoreys, type CondoMapView } from "./condo-map-view";
 import type { MapboxJson, MapboxLayer } from "./mapbox-gl-types";
 
@@ -75,10 +76,12 @@ function geojson(data: MapboxJson): Record<string, MapboxJson> {
 }
 
 export function condoSources(dev: CondoDevelopmentMap): Array<[string, Record<string, MapboxJson>]> {
+  // the painted floors and the chosen unit's box drawn smooth, not as traced (condo-map-outline)
+  const lat = dev.centre[1];
   const sources: Array<[string, Record<string, MapboxJson>]> = [
     [sourceId(dev.slug, "mass"), geojson(dev.massing)],
-    [sourceId(dev.slug, "units"), geojson(dev.unitParts)],
-    [sourceId(dev.slug, "floors"), geojson(dev.floors)],
+    [sourceId(dev.slug, "units"), geojson(smoothOutlines(dev.unitParts, lat))],
+    [sourceId(dev.slug, "floors"), geojson(smoothOutlines(dev.floors, lat))],
     [sourceId(dev.slug, "balconies"), geojson(dev.balconies)],
     [sourceId(dev.slug, "clip"), geojson({ type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: dev.clip } })],
     [sourceId(dev.slug, "label-clip"), geojson({ type: "Feature", properties: {}, geometry: { type: "MultiPolygon", coordinates: dev.labelClip } })],

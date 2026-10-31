@@ -7,8 +7,10 @@ import {
   parseCondoDevelopmentMap,
   parseCondoMapIndex,
   type CondoDevelopmentMap,
+  type LonLat,
 } from "@/lib/condo-map/condo-map-data";
-import { outerRings, pointInRing, ringsMeet } from "@/lib/condo-map/condo-map-geometry";
+import { outerRings, pointInRing, ringsMeet, segmentsCross } from "@/lib/condo-map/condo-map-geometry";
+import { OUTLINE_AREA_SLACK, smoothOutlines, smoothRing } from "@/lib/condo-map/condo-map-outline";
 import { condoMapFilePath, isGitLfsPointer } from "@/lib/condo-map/condo-map-paths";
 import { mapboxPublicToken } from "@/lib/condo-map/mapbox-token";
 import {
@@ -207,6 +209,54 @@ assert.ok(ringsMeet(square, [[-1, 0.5], [3, 0.5], [3, 1.5], [-1, 1.5], [-1, 0.5]
 assert.ok(!ringsMeet(square, [[5, 5], [6, 5], [6, 6], [5, 6], [5, 5]]), "apart");
 assert.equal(outerRings({ type: "MultiPolygon", coordinates: [[square], [square]] }).length, 2);
 assert.deepEqual(outerRings({ type: "Point", coordinates: [0, 0] }), []);
+
+// ---------- the painted outlines, smoothed (J, 31 Oct 2026: the painted floor looked rough beside a plan)
+// made-up outlines on the equator, in metres: a degree is 111,320 m east and 110,574 m north
+const ring = (points: Array<[number, number]>): LonLat[] => [...points, points[0]].map(([x, y]) => [x / 111_320, y / 110_574]);
+const corners = (smoothed: LonLat[]) => smoothed.length - 1;
+assert.equal(corners(smoothRing(ring([[0, 0], [4, 0], [4, 2], [4.05, 2], [4.05, 4], [0, 4]]), 0)), 4, "a 5 cm step goes");
+assert.equal(corners(smoothRing(ring([[0, 0], [4, 0], [4, 1.5], [3.5, 1.5], [3.5, 2], [4, 2], [4, 4], [0, 4]]), 0)), 8, "a 50 cm recess stays");
+assert.equal(corners(smoothRing(ring([[0, 0], [2, 0], [2, -1], [2.1, -1], [2.1, 0], [4, 0], [4, 4], [0, 4]]), 0)), 4, "a 10 cm spike a metre long goes");
+assert.equal(corners(smoothRing(ring([[0, 0], [2, 0], [2, 1], [2.1, 1], [2.1, 0], [4, 0], [4, 4], [0, 4]]), 0)), 4, "a 10 cm slit a metre deep closes");
+assert.equal(corners(smoothRing(ring([[0, 0], [2, 0], [2, -1], [2.4, -1], [2.4, 0], [4, 0], [4, 4], [0, 4]]), 0)), 8, "a 40 cm ledge stays");
+const triangle = ring([[0, 0], [4, 0], [0, 3]]);
+assert.deepEqual(smoothRing(triangle, 0), triangle, "a ring of three corners stays");
+// every real outline: its own corners in order, closed, not crossing itself, its area within 3 %, the short edges gone
+const metresAt = (lat: number) => (point: LonLat): [number, number] => [point[0] * 111_320 * Math.cos((lat * Math.PI) / 180), point[1] * 110_574];
+const shoelace = (points: Array<[number, number]>) => Math.abs(points.reduce((sum, [x, y], i) => { const [nx, ny] = points[(i + 1) % points.length]; return sum + x * ny - nx * y; }, 0)) / 2;
+const crossesItself = (points: Array<[number, number]>) =>
+  points.some((_, i) => points.some((__, j) => j >= i + 2 && !(i === 0 && j === points.length - 1) &&
+    segmentsCross(points[i], points[(i + 1) % points.length], points[j], points[(j + 1) % points.length])));
+let shortBefore = 0;
+let shortAfter = 0;
+for (const dev of Object.values(maps)) {
+  const toMetres = metresAt(dev.centre[1]);
+  for (const feature of [...dev.floors.features, ...dev.unitParts.features]) {
+    const traced = feature.geometry.coordinates[0];
+    const smoothed = smoothRing(traced, dev.centre[1]);
+    const where = `${dev.slug} ${feature.properties.unit} storey ${feature.properties.f}`;
+    assert.deepEqual(smoothed[0], smoothed[smoothed.length - 1], `${where}: closed`);
+    let from = 0;
+    for (const corner of smoothed.slice(0, -1)) {
+      const at = traced.findIndex((point, index) => index >= from && point[0] === corner[0] && point[1] === corner[1]);
+      assert.ok(at >= 0, `${where}: only its own corners, in order`);
+      from = at + 1;
+    }
+    const before = traced.slice(0, -1).map(toMetres);
+    const after = smoothed.slice(0, -1).map(toMetres);
+    // nine traced outlines cross themselves; smoothing never makes one that does, and one it can't mend stays as traced
+    if (crossesItself(after)) assert.deepEqual(smoothed, traced, `${where}: crosses itself only as traced`);
+    assert.ok(Math.abs(shoelace(after) - shoelace(before)) <= OUTLINE_AREA_SLACK * shoelace(before) + 1e-9, `${where}: its area`);
+    const short = (points: Array<[number, number]>) => points.filter(([x, y], i) => { const [nx, ny] = points[(i + 1) % points.length]; return Math.hypot(nx - x, ny - y) < 0.15; }).length;
+    shortBefore += short(before);
+    shortAfter += short(after);
+  }
+  // the map draws the smoothed floors and boxes; the masters' outlines stay as they are in its data
+  const sources = new Map(condoSources(dev));
+  assert.deepEqual(sources.get(`condo-${dev.slug}-floors-source`)?.data, smoothOutlines(dev.floors, dev.centre[1]), `${dev.slug}: the floors drawn smooth`);
+  assert.deepEqual(sources.get(`condo-${dev.slug}-units-source`)?.data, smoothOutlines(dev.unitParts, dev.centre[1]), `${dev.slug}: the boxes too`);
+}
+assert.ok(shortBefore > 3000 && shortAfter < shortBefore * 0.05, `edges under 15 cm: ${shortBefore} traced, ${shortAfter} drawn`);
 
 // ---------- the layers: one id each, on sources that exist
 const ids = new Set<string>();
