@@ -193,6 +193,8 @@ type KnownFaces = {
   roomId: string; outline: unknown; x: number; z: number; walls: unknown; depths: unknown; faces: Map<string, Face>;
 };
 const facesByEdges = new WeakMap<readonly string[], KnownFaces>();
+const isSameFaces = (known: KnownFaces, now: Omit<KnownFaces, "faces">) => known.roomId === now.roomId &&
+  known.outline === now.outline && known.x === now.x && known.z === now.z && known.walls === now.walls && known.depths === now.depths;
 // By value, up to about 1,000 faces a generation (the dense 100-wall test plan's two rooms have about 100).
 const facesByValue = recentCache<Map<string, Face>>(1000, (faces) => Math.max(1, faces.size));
 
@@ -203,13 +205,13 @@ function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string,
   const depths = getRoomWallPanelDepths(room);
   const origin = room.planPosition ?? { x: room.x ?? 0, z: room.z ?? 0 };
   const known = facesByEdges.get(edges);
-  if (known && known.roomId === room.id && known.outline === outline && known.x === origin.x && known.z === origin.z &&
-    known.walls === walls && known.depths === depths) return known.faces;
+  const now: Omit<KnownFaces, "faces"> = { roomId: room.id, outline, x: origin.x, z: origin.z, walls, depths };
+  if (known && isSameFaces(known, now)) return known.faces;
   const vertices = outline.map(({ x, z }) => ({ x: x + origin.x, z: z + origin.z }));
   const valueKey = facesValueKey(room, edges, vertices, depths, walls);
   const same = facesByValue.get(valueKey);
   if (same) {
-    facesByEdges.set(edges, { roomId: room.id, outline, x: origin.x, z: origin.z, walls, depths, faces: same });
+    facesByEdges.set(edges, { ...now, faces: same });
     return same;
   }
   const area = vertices.reduce((sum, point, index) => sum + cross(point, vertices[(index + 1) % vertices.length]), 0);
@@ -236,7 +238,7 @@ function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string,
     face.others = footprintsNear(face, walls);
     faces.set(face.wall.id, face);
   });
-  facesByEdges.set(edges, { roomId: room.id, outline, x: origin.x, z: origin.z, walls, depths, faces });
+  facesByEdges.set(edges, { ...now, faces });
   facesByValue.set(valueKey, faces);
   return faces;
 }
