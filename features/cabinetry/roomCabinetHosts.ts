@@ -267,7 +267,8 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboa
       ((segment.startZmm + segment.endZmm) / 2 - (face.start.z + face.end.z) * 500) * dz;
     return piece.openings.map((opening) => ({ ...opening, offsetMm: Number((opening.offsetMm + shiftMm).toFixed(3)) }))
       .filter((opening) => Math.abs(opening.offsetMm) < widthMm / 2 + opening.widthMm / 2);
-  });
+  }).filter((opening, index, all) => all.findIndex((other) => other.id === opening.id // a door over a joint, once
+    && Math.abs(other.offsetMm - opening.offsetMm) < 1) === index);
   return {
     ...space,
     availableWidthMm: widthMm,
