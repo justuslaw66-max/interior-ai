@@ -362,3 +362,15 @@ export function getCabinetPlacement(
     rotationY, { from: at, planRooms, bottom: fitted?.position[1], nearestWithin: Number.POSITIVE_INFINITY });
   return { position: [x, fitted?.position[1] ?? 0, z], rotationY };
 }
+
+/**
+ * Whether Place refuses a built-in at `placement`. A room on furniture's rule (an imported plan's, until PR B) keeps the line's
+ * Place, which never refused: furniture's clamp puts it there. Elsewhere it is refused where `contains` finds it outside the room.
+ */
+export function isCabinetPlacementRefused(
+  room: RoomSnapshot, placement: { position: [number, number, number]; rotationY: number }, size: { w: number; d: number },
+  contains: (room: RoomSnapshot, position: [number, number, number], rotationY: number, size: { w: number; d: number }, builtIn: boolean) => boolean,
+  planRooms?: BuiltInPlanRooms
+): boolean {
+  return !usesFurnitureRuleForBuiltIns(room, undefined, planRooms) && !contains(room, placement.position, placement.rotationY, size, true);
+}

@@ -36,7 +36,7 @@ import {
   updateCabinetPlacementMetadata,
 } from "./designItemAdapters";
 import { getCabinetFitPlacement } from "./fitToSpace";
-import { buildCabinetryAvailableSpaces, findCabinetHostForWall, getCabinetPlacement } from "./roomCabinetHosts";
+import { buildCabinetryAvailableSpaces, findCabinetHostForWall, getCabinetPlacement, isCabinetPlacementRefused } from "./roomCabinetHosts";
 import { generateCabinetBOM } from "./generateCabinetBOM";
 import {
   buildCabinetProjectHandoffPackage,
@@ -660,7 +660,7 @@ export function useDesignPageCabinetry({
 
       // Where Fit put it (a copy 15 cm along its wall), or the nearest place in the room it fits; refused where it fits nowhere.
       const { position, rotationY: placementRotationY } = getCabinetPlacement(payload.definition, room, payload.placeAsCopy, planRoomById);
-      if (!isCatalogPlacementContainedInRoom(room, position, placementRotationY, { w: payload.definition.totalWidth, d: payload.definition.depth }, true)) {
+      if (isCabinetPlacementRefused(room, { position, rotationY: placementRotationY }, { w: payload.definition.totalWidth, d: payload.definition.depth }, isCatalogPlacementContainedInRoom, planRoomById)) {
         showToast(`No room for this built-in in ${room.name}`);
         return false;
       }

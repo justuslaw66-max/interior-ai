@@ -15,7 +15,9 @@ import {
 } from "../features/cabinetry/generateCabinetDocumentation";
 import { snapshotToStored, storedToSnapshot } from "../lib/room-persistence";
 import { createRoom, type DesignSnapshot, type RoomSnapshot } from "../lib/room-types";
-import { buildCabinetryAvailableSpaces, findCabinetHostForWall, getCabinetCopyOffset, getCabinetPlacement } from "../features/cabinetry/roomCabinetHosts";
+import {
+  buildCabinetryAvailableSpaces, findCabinetHostForWall, getCabinetCopyOffset, getCabinetPlacement, isCabinetPlacementRefused,
+} from "../features/cabinetry/roomCabinetHosts";
 import { getCabinetAvailableSegments } from "../features/cabinetry/fitSegments";
 import type { CabinetDefinition, CabinetHostSpace } from "../features/cabinetry/types";
 import { canonicalFloorPlanToDesignSnapshot } from "../lib/floor-plan-legacy-adapters";
@@ -432,6 +434,31 @@ lSpaces.forEach((space) => {
   nearMm(Math.hypot(dx, dz) * 1000, 150, `L ${space.wallId}: the copy moves 15 cm`);
   nearMm(Math.abs(dx * Math.cos(original.rotationY) - dz * Math.sin(original.rotationY)) * 1000, 150, `L ${space.wallId}: along its wall`);
 });
+
+// Place refuses a built-in only where it is outside the room, and never in an imported plan's room, which keeps the line's Place
+// until PR B. There furniture's clamp can leave a fitted run where furniture's own containment wouldn't (the eleventh review's
+// 4 x 3 m imported L with 200 mm walls: the base run on its notch wall), and Place had said "No room for this built-in".
+const contains = (room: RoomSnapshot, position: [number, number, number], rotationY: number, size: { w: number; d: number }, builtIn: boolean) =>
+  isPlacementContainedInRoom({ room, position, rotationY, dimensions: size, builtIn });
+const importedL: RoomSnapshot = {
+  ...createRoom("imported-l", "Kitchen", "kitchen", { width: 4, depth: 3, wallThickness: 0.2, height: 2.6, slabThickness: 0.1 }),
+  planShape: "l_shape", floorElevationMm: 0,
+};
+let importedOutside = 0;
+for (const space of buildCabinetryAvailableSpaces({ activeRoom: importedL, activePlanRoom: null, planRoomCount: 1, planOpenings: [] })) {
+  for (const preset of ["base", "wall"] as const) {
+    const fitted = fitCabinetToSpace(createCabinetPreset(preset, `imported-${preset}`), preset === "wall" ? { ...space, mountingHeightMm: 1450 } : space, { mode: "fit_width" });
+    if (!fitted.ok) continue;
+    const placement = getCabinetPlacement(fitted.definition, importedL);
+    const size = { w: fitted.definition.totalWidth, d: fitted.definition.depth };
+    if (!contains(importedL, placement.position, placement.rotationY, size, true)) importedOutside += 1;
+    assert.equal(isCabinetPlacementRefused(importedL, placement, size, contains), false, `imported L ${space.wallId} ${preset}: Place isn't refused`);
+  }
+}
+assert.ok(importedOutside > 0, "the imported L has a fitted run furniture's containment wouldn't accept where it's placed");
+assert.equal(isCabinetPlacementRefused(lShape, lNorth, { w: fullRun.totalWidth, d: fullRun.depth }, contains), false, "a drawn L's fitted run is placed");
+assert.equal(isCabinetPlacementRefused(lShape, { position: [0, 0, 2], rotationY: 0 }, { w: 600, d: 580 }, contains), true,
+  "a drawn L refuses a built-in outside it");
 
 // A tiny edge at a corner (a 10 mm chamfer, a 5 mm jog): its band lies inside its neighbours', so it has no exposed face, and
 // theirs meet past it. The north face ran 25 mm into the east wall, and its run 15 mm.
