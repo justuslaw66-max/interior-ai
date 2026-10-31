@@ -9,6 +9,7 @@ import {
   type RoomTag,
 } from "@/lib/catalog-schema";
 import { normalizeImportedVariants } from "@/lib/catalog/imported-variant-normalization";
+import { withDistinctPickerLabels } from "@/lib/catalog/imported-picker-labels";
 import {
   normalizeCatalogMediaPresentationMode,
   selectPreferredCatalogThumbnail,
@@ -885,10 +886,7 @@ export function buildImportedModelOptions({
 
   const options = Array.from(optionById.values());
   const configurationAssetIds = collectConfigurationAssetIds(options);
-  const normalizedOptions = options.filter((option) => {
-    if (option.catalog) return true;
-    return !configurationAssetIds.has(option.id);
-  });
+  const normalizedOptions = options.filter((option) => Boolean(option.catalog) || !configurationAssetIds.has(option.id));
 
   const modelUrlByAssetId: Record<string, string> = {};
   for (const option of options) {
@@ -898,7 +896,7 @@ export function buildImportedModelOptions({
   }
 
   return {
-    options: normalizedOptions,
+    options: withDistinctPickerLabels(normalizedOptions),
     modelUrlByAssetId,
   };
 }

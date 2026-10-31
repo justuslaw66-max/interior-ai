@@ -447,11 +447,14 @@ async function holdPublicShareProjectionRead() {
     reportLockAcquired = resolve;
     reportLockFailure = reject;
   });
+  // The lock is held while the page loads. Under next dev the first visit compiles the route for
+  // about 5 s, past Prisma's 5 s transaction default, so the commit failed and hid the real wait
+  // (31 Oct 2026, the Mac's traces).
   const transaction = prisma.$transaction(async (database) => {
     await database.$executeRaw`LOCK TABLE "Design" IN ACCESS EXCLUSIVE MODE`;
     reportLockAcquired();
     await lockReleased;
-  });
+  }, { maxWait: 10_000, timeout: 60_000 });
   transaction.catch(reportLockFailure);
   await lockAcquired;
   return async () => {
@@ -941,7 +944,7 @@ test.describe("ARCH-RC53-55 responsive public share", () => {
         waitUntil: "domcontentloaded",
       });
       try {
-        await expect(page.getByTestId("public-share-loading")).toHaveCount(1);
+        await expect(page.getByTestId("public-share-loading")).toHaveCount(1, { timeout: 30_000 });
         await expect(page.getByTestId("public-share-loading")).toBeVisible();
         await expect(page.getByRole("main")).toHaveCount(1);
         await expect(page.getByTestId("public-share-root")).toHaveCount(0);

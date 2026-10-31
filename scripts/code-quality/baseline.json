@@ -433,7 +433,7 @@
       "limit": 400
     },
     "lib/catalog/imported-model-assembly.ts": {
-      "lines": 1299,
+      "lines": 1297,
       "limit": 400
     },
     "lib/catalog/imported-variant-normalization.ts": {
