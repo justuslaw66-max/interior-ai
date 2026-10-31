@@ -499,6 +499,52 @@ class Straighten(unittest.TestCase):
             self.assertAlmostEqual(p, deg, delta=0.05, msg="the picture's long lines read: %s" % deg)
             self.assertAlmostEqual(l, 0.0, delta=0.05)
 
+    def test_unturned_upload_put_on_the_page(self):
+        # s037 (31 Oct window): the app turned the upload 0.375 degrees square, resampling it, and the trace drew its
+        # blurred lettering as grey blobs. Traced from the upload as it came (--trace) and put on the page by the turn's
+        # map (--to-page), the drawing lies on the turned page, its long lines exactly level and plumb
+        source = _plan()
+        h, w = source.shape
+        t = math.radians(0.375)
+        W, H = int(round(w * math.cos(t) + h * math.sin(t))), int(round(h * math.cos(t) + w * math.sin(t)))
+        M = cv2.getRotationMatrix2D((w / 2.0, h / 2.0), 0.375, 1.0)
+        M[0, 2] += (W - w) / 2.0
+        M[1, 2] += (H - h) / 2.0
+        page = cv2.warpAffine(source, M, (W, H), flags=cv2.INTER_LINEAR, borderValue=255)
+        to_page = (M[0, 0], M[1, 0], M[0, 1], M[1, 1], M[0, 2], M[1, 2])
+        with tempfile.TemporaryDirectory() as folder:
+            paths = {k: os.path.join(folder, k + ".png") for k in ("source", "page")}
+            cv2.imwrite(paths["source"], source)
+            cv2.imwrite(paths["page"], page)
+            def run(*extra, straighten=True):
+                out = os.path.join(folder, "out.json")
+                _switched_in(fd, "STRAIGHTEN", straighten, lambda: fd.main([paths["page"], out] + list(extra)))
+                with open(out) as f:
+                    return json.load(f)
+            arg = "--to-page=" + ",".join(repr(float(v)) for v in to_page)
+            put = run("--trace=" + paths["source"], arg)
+            exact = run("--trace=" + paths["source"], arg, straighten=False)
+            self.assertIn("skipped", run("--trace=" + paths["source"], "--to-page=1,0,0,1,0"))
+        traced = fd.drawing(fd.trace_at(source, 2))
+        self.assertEqual(exact, fd._mapped(traced, to_page), "straightening off: the trace put on the page exactly")
+        tol = math.tan(math.radians(fd.SNAP_DEG))
+        long_edges = leaning = 0
+        for it in put["items"]:
+            for i, j in fd._walk(it):
+                (x0, y0), (x1, y1) = it["points"][i], it["points"][j]
+                if max(abs(x1 - x0), abs(y1 - y0)) >= 100:
+                    long_edges += 1
+                    leaning += 0 < min(abs(x1 - x0), abs(y1 - y0)) <= tol * max(abs(x1 - x0), abs(y1 - y0))
+        self.assertGreater(long_edges, 10)
+        self.assertEqual(leaning, 0, "every long line exactly level or plumb on the page")
+        # on the page: the dimension line (x 40 in the upload) where the turn put it, within a pixel
+        a, b, c, d, e, f = to_page
+        want = a * 40.5 + c * 395.5 + e
+        xs = [(it["points"][i][0] + it["points"][j][0]) / 2.0 for it in put["items"] if not it.get("fill")
+              for i, j in fd._walk(it) if min(it["points"][i][1], it["points"][j][1]) < 395.5 < max(it["points"][i][1], it["points"][j][1])
+              and abs(it["points"][i][0] - want) < 3]
+        self.assertTrue(xs and min(abs(x - want) for x in xs) <= 1.0, "the dimension line on the page: %s vs %.2f" % (xs[:4], want))
+
     def test_straight_plan_untouched_and_leaning_plan_drawn_plumb(self):
         with tempfile.TemporaryDirectory() as folder:
             outs = {}

@@ -537,7 +537,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/raster-linework.ts": {
-      "lines": 1091,
+      "lines": 1084,
       "limit": 400
     },
     "lib/floor-plan-imports/retention-outbox-worker.ts": {

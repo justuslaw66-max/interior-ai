@@ -275,6 +275,12 @@ What it contributes, and how far it is trusted:
 - With `FLOOR_PLAN_FAITHFUL_TRACE=1` a clean page's `drawing` is the faithful trace instead (`faithful_drawing.py`,
   version `faithful-trace-r6`, each item's grey as `tone`): what is drawn, copied as clean vectors, drawn by the app as
   it is (`faithful-trace-v1`, see `scan-to-editable-plan-v1/SOURCE_VECTOR_TRACING.md`). It fails soft to stage 1's drawing.
+  - Where the raster deskew turned the page (`raster_deskew_v1` applied, at its own size), the faithful trace reads the
+    upload as it came instead (`orientRasterUpload`, `raster-orientation.ts`: EXIF orientation applied, on white): turning
+    resamples the page, and the trace drew its blurred small lettering and thin lines as grey blobs (s037, 31 Oct), or
+    left a page it no longer found crisp (s031). `vectorizer-pass.ts` hands it over as the page's `unturned`, with the
+    page's `sourceToRendered`; `faithful_drawing.py --trace=<upload> --to-page=a,b,c,d,e,f` puts the drawing on the page
+    by that map, by whole pixels, its lines set level and plumb. Other pages are traced exactly as before.
 - Everything stays `needs_review` with the usual confirmation issues.
 
 `npm run test:floor-plan-vectorizer-evidence` drives real exporter output for four drawing styles through `solveScale`, `buildTopology`, `validate`, the canonical validator and the compiler, and exercises the process boundary with stand-in programs.

@@ -1,5 +1,7 @@
-"""faithful_drawing.py <page image> <out.json> [--max-softness=1.4] [--max-pixels=4000000]: the faithful trace of a
-clean plan (faithful_trace.py) as the evidence's `drawing`, in the page's pixels.
+"""faithful_drawing.py <page image> <out.json> [--max-softness=1.4] [--max-pixels=4000000]
+[--trace=<picture> --to-page=a,b,c,d,e,f]: the faithful trace of a clean plan (faithful_trace.py) as the evidence's
+`drawing`, in the page's pixels. With --trace, that picture is traced instead and its drawing put on the page by the
+affine map --to-page (the upload as it came, where the app's raster deskew turned the page square and resampled it).
 
 The faithful trace copies what is drawn - solid fills as polygons, every line, arc and dot at its own width and tone,
 lettering and small marks by their outline - and reads nothing as a room, a door or a wall. The app draws it as the
@@ -523,8 +525,23 @@ def _whole_shapes(items, orig, amap, lean_t):
     return shift
 
 
-def straighten(d, W, H, plumb, level):
+def _mapped(d, base):
+    """a copy of the drawing d with every point through the affine map base (a, b, c, d, e, f: x' = a x + c y + e,
+    y' = b x + d y + f) and its lines' widths scaled with it"""
+    a, b, c, dd, e, f = base
+    k = math.sqrt(abs(a * dd - b * c))
+    return dict(d, items=[dict(it, points=[_p(a * x + c * y + e, b * x + dd * y + f) for x, y in it["points"]],
+                               strokeWidthPx=round(float(it.get("strokeWidthPx") or 0) * k, 3) if not it.get("fill")
+                               else it.get("strokeWidthPx", 0))
+                          for it in d["items"]])
+
+
+def straighten(d, W, H, plumb, level, base=None):
     """the drawing d straightened in place, and how many points were set level or plumb.
+
+    With base (an affine map, as _mapped takes it), the drawing was traced from another picture than the page's own: the
+    upload as it came, before the app turned it square (raster_deskew_v1). It is then put into the page's pixels by base
+    first, by the same rules, so it draws as crisp as traced rather than resampled.
 
     One affine map sets plumb lines plumb and level lines level about the page's middle. Each run of near-plumb
     (near-level) straight edges then takes one x (y): the map's mean along it, moved to where the run sat within its
@@ -536,13 +553,22 @@ def straighten(d, W, H, plumb, level):
     end."""
     tv, th = math.tan(math.radians(plumb)), math.tan(math.radians(level))
     cx, cy = W / 2.0, H / 2.0
-    amap = lambda x, y: (x - tv * (y - cy), y - th * (x - cx))
+    ba, bb, bc, bd, be, bf = base or (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
+    turn = abs(math.degrees(math.atan2(bb, ba)))
+    shear = lambda x, y: (x - tv * (y - cy), y - th * (x - cx))
+    amap = lambda x, y: shear(ba * x + bc * y + be, bb * x + bd * y + bf)
     items = d["items"]
     orig = [[(float(p[0]), float(p[1])) for p in it["points"]] for it in items]
-    shift = _whole_shapes(items, orig, amap, math.tan(math.radians(max(abs(plumb), abs(level)))))
-    # what the map turned: a piece the trace had already squared now leans by the whole lean, so each direction takes
-    # its lean as well as the snapping's own tolerance
-    tol_v, tol_h = math.tan(math.radians(abs(plumb) + SNAP_DEG)), math.tan(math.radians(abs(level) + SNAP_DEG))
+    if base:
+        k = math.sqrt(abs(ba * bd - bb * bc))
+        for it in items:
+            if not it.get("fill"):
+                it["strokeWidthPx"] = round(float(it.get("strokeWidthPx") or 0) * k, 3)
+    shift = _whole_shapes(items, orig, amap, math.tan(math.radians(max(abs(plumb), abs(level)) + turn)))
+    # what the map turned: a piece the trace had already squared now leans by the whole lean (and the turn), so each
+    # direction takes its lean as well as the snapping's own tolerance
+    tol_v = math.tan(math.radians(abs(plumb) + turn + SNAP_DEG))
+    tol_h = math.tan(math.radians(abs(level) + turn + SNAP_DEG))
     parent = {}
 
     def find(a):
@@ -690,6 +716,27 @@ def straighten(d, W, H, plumb, level):
     return moved
 
 
+def _onto_page(d, base, page):
+    """the drawing d, traced from the upload as it came, in the page's pixels (page: the page's own picture). base puts
+    it there; with straightening on, by straighten's rules (whole pixels, straight lines set level and plumb), after any
+    lean the page keeps is read from the drawing put there and from the page itself; with it off, exactly. It fails soft
+    to the exact map."""
+    if not STRAIGHTEN:
+        return _mapped(d, base)
+    H, W = page.shape
+    try:
+        plumb, level, _ = lean(_mapped(d, base), W, H, picture_lean(page))
+        s = dict(d, items=[dict(it, points=[list(p) for p in it["points"]]) for it in d["items"]])
+        n = straighten(s, W, H, plumb, level, base=base)
+        print("faithful drawing traced unturned and put on the page (turned %.2f deg): plumb lines leaned %.2f deg, "
+              "level lines %.2f deg; %d points set level or plumb" % (math.degrees(math.atan2(base[1], base[0])), plumb,
+                                                                       level, n))
+        return s
+    except Exception as cause:
+        print("faithful drawing put on the page exactly, not straightened: %s" % (str(cause)[:160] or type(cause).__name__))
+        return _mapped(d, base)
+
+
 ONE_X_SHARE = 3              # at its own size the trace needs about a third of the memory it needs at twice the size
 
 
@@ -712,7 +759,14 @@ def main(argv):
     max_soft = float(opt.get("max-softness", "1.4")); max_px = int(float(opt.get("max-pixels", "4000000")))
     result = None
     try:
-        g = read_gray(src)
+        page = read_gray(src)
+        # --trace=<picture> --to-page=a,b,c,d,e,f: the upload as it came, before the app turned it square, is traced
+        # instead of the page (turning resamples it: small lettering and thin lines blur, and the trace drew them as
+        # grey blobs, s037 in the 31 Oct window), and its drawing is put into the page's pixels by that map
+        base = tuple(float(v) for v in opt["to-page"].split(",")) if "trace" in opt else None
+        if base is not None and len(base) != 6:
+            raise ValueError("--to-page takes six numbers")
+        g = read_gray(opt["trace"]) if base else page
         H, W = g.shape
         reason = None
         # No upload gives nothing (beta step 2.1): with FV_INVERT_DARK=1 a plan drawn light on a dark ground is traced
@@ -732,7 +786,9 @@ def main(argv):
             # but it is drawn) rather than left to stage 1
             d = drawing(trace_at(g, 1 if H * W > max_px else 2))
             result = d if d else {"skipped": "faithful trace has too many shapes"}
-            if d and STRAIGHTEN:
+            if d and base:
+                result = _onto_page(d, base, page)
+            elif d and STRAIGHTEN:
                 try:                                             # fails soft: the drawing as traced
                     plumb, level, _ = lean(d, W, H, picture_lean(g))
                     if plumb or level:
