@@ -208,10 +208,6 @@
       "lines": 257,
       "limit": 250
     },
-    "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
-      "lines": 256,
-      "limit": 250
-    },
     "components/editor/FloorPlanImportAssistant.tsx": {
       "lines": 569,
       "limit": 250
@@ -1857,11 +1853,7 @@
     "components/editor/floor-plan-import-review/FloorPlanRoomTracePanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 166
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 17
+        "maximum": 152
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx": {
@@ -1899,7 +1891,7 @@
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 218
+        "maximum": 198
       },
       "complexFunctions": {
         "count": 1,

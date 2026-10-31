@@ -27,6 +27,8 @@ type FloorPlanOpeningTracePanelProps = {
   onChange: (value: FloorPlanDocumentV2) => void;
   onError: (message: string | null) => void;
   disabled: boolean;
+  /** The kind to start with: a door or window found on the plan and clicked fills in its own (openingSymbolClick). */
+  initialKind?: FloorPlanOpeningKindV2;
 };
 
 const OPENING_TYPES: ReadonlyArray<{
@@ -50,10 +52,10 @@ export default function FloorPlanOpeningTracePanel({
   onOpeningPointsChange,
   onChange,
   onError,
-  disabled,
+  disabled, initialKind = "door",
 }: FloorPlanOpeningTracePanelProps) {
   const floor = document.floors.find((entry) => entry.id === floorId);
-  const [kind, setKind] = useState<FloorPlanOpeningKindV2>("door");
+  const [kind, setKind] = useState<FloorPlanOpeningKindV2>(initialKind);
   const analysis = useMemo(
     () =>
       pageNumber === null
@@ -70,8 +72,7 @@ export default function FloorPlanOpeningTracePanel({
   );
   if (!floor) return null;
 
-  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs";
-  const subtle = "text-label-secondary";
+  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs", subtle = "text-label-secondary";
 
   return (
     <details
@@ -92,7 +93,8 @@ export default function FloorPlanOpeningTracePanel({
       <div className="mt-2 grid gap-2">
         <p className={`text-xs leading-4 ${subtle}`}>
           Choose the type, then select both ends of the opening directly on the
-          plan. The wall, position and width are calculated automatically.
+          plan. Where the plan's door or window was found, one click on it fills
+          in both ends. The wall, position and width are calculated automatically.
         </p>
         <label className={`text-xs ${subtle}`}>
           What are you adding?

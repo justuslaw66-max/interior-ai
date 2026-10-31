@@ -15,6 +15,10 @@ import FloorPlanRoomTracePanel from "./FloorPlanRoomTracePanel";
 import FloorPlanScaleReviewPanel from "./FloorPlanScaleReviewPanel";
 import FloorPlanSourceReviewCanvas from "./FloorPlanSourceReviewCanvas";
 import FloorPlanTopologyCorrectionPanel from "./FloorPlanTopologyCorrectionPanel";
+import FloorPlanRoomClickPanel from "./FloorPlanRoomClickPanel";
+import { roomCanvasProps, useRoomClick } from "./useRoomClick";
+import { openingSymbolClick } from "./openingSymbolClick";
+import type { FoundOpeningSymbol } from "@/lib/floor-plan-review-door-click";
 
 type FloorPlanVisualReviewToolsProps = {
   document: FloorPlanDocumentV2;
@@ -63,9 +67,11 @@ export default function FloorPlanVisualReviewTools({
   const [roomPoints, setRoomPoints] = useState<ReviewSourcePoint[]>([]);
   const [pickingOpening, setPickingOpening] = useState(false);
   const [openingPoints, setOpeningPoints] = useState<ReviewSourcePoint[]>([]);
+  const [openingSymbol, setOpeningSymbol] = useState<FoundOpeningSymbol | null>(null);
   const [focusedCorrectionIds, setFocusedCorrectionIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { page, sourceId, calibration } = floorPlanReviewPage(document, job.renderedPagesJson, pageNumber);
+  const roomClick = useRoomClick({ document, floorId: floor?.id, sourceId, page, jobId: job.id, assetRoutePrefix });
   const focusKey = `${focusedIssue?.id ?? ""}:${reviewTarget?.pageNumber ?? ""}`;
   const [previousFocus, setPreviousFocus] = useState(focusKey);
   if (previousFocus !== focusKey) {
@@ -73,12 +79,12 @@ export default function FloorPlanVisualReviewTools({
     setFocusedCorrectionIds([]);
     if (reviewTarget?.pageNumber) setPageNumber(reviewTarget.pageNumber);
     setScalePoints([]); setRoomPoints([]); setOpeningPoints([]);
-    setPickingScale(false); setPickingRoom(false); setPickingOpening(false);
+    setPickingScale(false); setPickingRoom(false); setPickingOpening(false); roomClick.choose(false);
   }
   if (!floor) return null;
 
-  const pick=(kind:"scale"|"room"|"opening",value=true)=> {
-    setPickingScale(kind==="scale"&&value);setPickingRoom(kind==="room"&&value);setPickingOpening(kind==="opening"&&value);
+  const pick=(kind:"scale"|"room"|"opening"|"click",value=true)=> {
+    setPickingScale(kind==="scale"&&value);setPickingRoom(kind==="room"&&value);setPickingOpening(kind==="opening"&&value);roomClick.choose(kind==="click"&&value);
   };
   const focusedEntityIds = expandFloorPlanReviewFocus(floor, focusedIssueEntityIds, focusedCorrectionIds);
 
@@ -94,7 +100,7 @@ export default function FloorPlanVisualReviewTools({
         pageNumber={page?.pageNumber ?? pageNumber}
         onPageNumberChange={(value) => {
           setPageNumber(value);
-          setScalePoints([]); setRoomPoints([]); setOpeningPoints([]);
+          setScalePoints([]); setRoomPoints([]); setOpeningPoints([]); roomClick.clear();
         }}
         focusedEntityIds={focusedEntityIds}
         pickingScale={pickingScale} scalePoints={scalePoints} onUseScaleEndpoints={setScalePoints}
@@ -103,15 +109,10 @@ export default function FloorPlanVisualReviewTools({
             current.length >= 2 ? [point] : [...current, point]
           )
         }
-        pickingRoom={pickingRoom} roomPoints={roomPoints}
-        onRoomPoint={(point) => setRoomPoints((current) => [...current, point])}
-        pickingOpening={pickingOpening}
-        openingPoints={openingPoints}
-        onOpeningPoint={(point) =>
-          setOpeningPoints((current) =>
-            current.length >= 2 ? [point] : [...current, point]
-          )
-        }
+        {...roomCanvasProps(roomClick, pickingRoom, roomPoints, (point) => setRoomPoints((current) => [...current, point]))}
+        pickingOpening={pickingOpening} openingPoints={openingPoints}
+        onOpeningPoint={openingSymbolClick({ document, floorId: floor.id, sourceId, pageNumber: page?.pageNumber, current: openingPoints,
+          setPoints: setOpeningPoints, setSymbol: setOpeningSymbol })}
         assetRoutePrefix={assetRoutePrefix}
       />
       {!previewOnly && <FloorPlanReviewIssueAction target={reviewTarget} root={root} disabled={disabled} />}
@@ -140,34 +141,17 @@ export default function FloorPlanVisualReviewTools({
         openByDefault={openScaleByDefault}
         disabled={disabled}
       />
-      <FloorPlanRoomTracePanel
-        calibration={calibration}
-        disabled={disabled}
-        document={document}
-        floorId={floor.id}
-        onChange={onChange}
-        onError={setError}
-        onPickingRoomChange={(value)=>pick("room",value)}
-        onRoomPointsChange={setRoomPoints}
-        pageNumber={page?.pageNumber ?? null}
-        pickingRoom={pickingRoom}
-        roomPoints={roomPoints}
-        sourceId={sourceId}
+      <FloorPlanRoomTracePanel calibration={calibration} disabled={disabled} document={document} floorId={floor.id} onChange={onChange}
+        onError={setError} onPickingRoomChange={(value)=>pick("room",value)} onRoomPointsChange={setRoomPoints}
+        pageNumber={page?.pageNumber ?? null} pickingRoom={pickingRoom} roomPoints={roomPoints} sourceId={sourceId} keepOpen={roomClick.picking}
+        clickFill={<FloorPlanRoomClickPanel roomClick={roomClick} document={document} floorId={floor.id} sourceId={sourceId}
+          pageNumber={page?.pageNumber} ready={Boolean(calibration)} onStart={() => pick("click")} onChange={onChange}
+          onError={setError} disabled={disabled} />}
       />
-      <FloorPlanOpeningTracePanel
-        calibration={calibration}
-        disabled={disabled}
-        document={document}
-        floorId={floor.id}
-        onChange={onChange}
-        onError={setError}
-        onOpeningPointsChange={setOpeningPoints}
-        onPickingOpeningChange={(value)=>pick("opening",value)}
-        openingPoints={openingPoints}
-        pageNumber={page?.pageNumber ?? null}
-        pickingOpening={pickingOpening}
-        sourceId={sourceId}
-      />
+      <FloorPlanOpeningTracePanel key={openingSymbol?.id} initialKind={openingSymbol?.kind} calibration={calibration} disabled={disabled}
+        document={document} floorId={floor.id} onChange={onChange} onError={setError} onOpeningPointsChange={setOpeningPoints}
+        onPickingOpeningChange={(value)=>pick("opening",value)} openingPoints={openingPoints}
+        pageNumber={page?.pageNumber ?? null} pickingOpening={pickingOpening} sourceId={sourceId} />
       <details className="mt-3 rounded-lg border border-separator bg-surface-floating p-3">
         <summary className="cursor-pointer text-xs font-semibold text-label-secondary">
           Advanced corrections (only if the outline is wrong)

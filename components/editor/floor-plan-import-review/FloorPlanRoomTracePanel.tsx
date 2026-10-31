@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type {
   FloorPlanDocumentV2,
   FloorPlanSourceCalibrationV2,
@@ -11,6 +11,7 @@ import {
 } from "@/lib/floor-plan-import-review-geometry";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { Button } from "@/components/ui/Button";
+import { ROOM_TYPE_OPTIONS } from "./roomTypeOptions";
 
 type FloorPlanRoomTracePanelProps = {
   document: FloorPlanDocumentV2;
@@ -25,7 +26,16 @@ type FloorPlanRoomTracePanelProps = {
   onChange: (value: FloorPlanDocumentV2) => void;
   onError: (message: string | null) => void;
   disabled: boolean;
+  /** The quicker way, shown first: one click inside a room finds it (FloorPlanRoomClickPanel). */
+  clickFill?: ReactNode;
+  /** Holds the step open while rooms are being clicked, as it is while corners are. */
+  keepOpen?: boolean;
 };
+
+/** Whether the traced corners can't be added yet. */
+function cannotAdd(disabled: boolean, ready: boolean, corners: number, wallThicknessMm: number) {
+  return disabled || !ready || corners < 3 || !Number.isFinite(wallThicknessMm);
+}
 
 export default function FloorPlanRoomTracePanel({
   document,
@@ -39,7 +49,7 @@ export default function FloorPlanRoomTracePanel({
   onRoomPointsChange,
   onChange,
   onError,
-  disabled,
+  disabled, clickFill, keepOpen,
 }: FloorPlanRoomTracePanelProps) {
   const floor = document.floors.find((entry) => entry.id === floorId);
   const [roomName, setRoomName] = useState("");
@@ -47,11 +57,10 @@ export default function FloorPlanRoomTracePanel({
   const [wallThicknessMm, setWallThicknessMm] = useState(120);
   if (!floor) return null;
 
-  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs";
-  const subtle = "text-label-secondary";
+  const control = "rounded-md border border-control-secondary-border bg-field px-2 py-1.5 text-xs", subtle = "text-label-secondary";
 
   return (
-    <details data-review-controls="room" className="mt-3 rounded-lg border border-success-tint-border bg-success-tint p-3" open={pickingRoom || !floor.rooms.length}>
+    <details data-review-controls="room" className="mt-3 rounded-lg border border-success-tint-border bg-success-tint p-3" open={pickingRoom || keepOpen || !floor.rooms.length}>
       <summary className="cursor-pointer text-sm font-semibold">
         <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-700 text-xs text-white">2</span>
         Outline each room
@@ -64,9 +73,10 @@ export default function FloorPlanRoomTracePanel({
         </span>
       </summary>
       <div className="mt-2 grid gap-2">
+        {clickFill}
         <p className={`text-xs leading-4 ${subtle}`}>
-          Start with one room. Click its inside corners in order around the room,
-          then add it. Repeat until every room is outlined.
+          To outline a room yourself, click its inside corners in order around
+          the room, then add it. Repeat until every room is outlined.
         </p>
         {!calibration ? (
           <div className="rounded-md border border-warning-tint-border bg-warning-tint p-2 text-xs font-medium text-on-warning-tint">
@@ -107,13 +117,7 @@ export default function FloorPlanRoomTracePanel({
         </div>
         <Button
           variant="primary" size="compact"
-          disabled={
-            disabled ||
-            !calibration ||
-            pageNumber === null ||
-            roomPoints.length < 3 ||
-            !Number.isFinite(wallThicknessMm)
-          }
+          disabled={cannotAdd(disabled, Boolean(calibration) && pageNumber !== null, roomPoints.length, wallThicknessMm)}
           onClick={() => {
             if (!calibration || pageNumber === null) return;
             try {
@@ -162,15 +166,7 @@ export default function FloorPlanRoomTracePanel({
                 onChange={(event) => setRoomType(event.target.value)}
                 value={roomType}
               >
-                <option value="other">Room</option>
-                <option value="living">Living room</option>
-                <option value="bedroom">Bedroom</option>
-                <option value="dining">Dining room</option>
-                <option value="kitchen">Kitchen</option>
-                <option value="toilet">Bathroom</option>
-                <option value="study">Study</option>
-                <option value="shelter">Household shelter</option>
-                <option value="service_yard">Service yard</option>
+                {ROOM_TYPE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
               </select>
             </label>
             <label className={`text-xs ${subtle}`}>
