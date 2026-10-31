@@ -1295,6 +1295,11 @@
           "title": "state transitions focus ready, failure, and image upload"
         },
         {
+          "id": "floor-plan-upload.drop-and-cancel",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "Choose file takes a dropped plan, and Cancel upload stops it while uploading or waiting to be read"
+        },
+        {
           "id": "floor-plan-upload.registered-child",
           "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
           "title": "registered child supersedes, returns inside, and retains Strict Mode scroll ownership"
