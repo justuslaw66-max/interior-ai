@@ -2,7 +2,7 @@ import * as THREE from "three";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { RoomRendererOpening } from "@/lib/design-page-plan-overlays";
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
-import { getRoomPlanOutlinePoints, insetPolygonEdges } from "@/lib/room-finished-outline";
+import { getInsetPolygonFaces, getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import {
   getDeepestWallFinish,
   getRoomWallFaceIds,
@@ -91,15 +91,17 @@ function buildRoomPanelStrips2D(
 ): Strips {
   if (!faceIds.some((faceId) => (depths[faceId] ?? 0) > 0)) return { strips: [] };
   const halfWall = (room.wallThickness ?? 0.12) / 2;
-  const bare = insetPolygonEdges(points, faceIds.map(() => halfWall));
-  const panel = insetPolygonEdges(points, faceIds.map((faceId) => halfWall + (depths[faceId] ?? 0)));
+  // Each face where it stands: a face meeting a deeper or shallower one in line steps at the corner, not leaning to it.
+  const bare = getInsetPolygonFaces(points, faceIds.map(() => halfWall));
+  const panel = getInsetPolygonFaces(points, faceIds.map((faceId) => halfWall + (depths[faceId] ?? 0)));
   const strips = faceIds.flatMap((faceId, index): PanelStrip2D[] => {
     if ((depths[faceId] ?? 0) <= 0) return [];
     const next = (index + 1) % points.length;
     const deepest = getDeepestWallFinish(room, faceId);
     const finish = { paintColorHex: deepest?.paintColorHex ?? null, materialId: deepest?.materialId ?? null };
     const edge = { start: points[index], end: points[next] };
-    return cutStripAtDoorways(edge, [bare[index], bare[next]], [panel[index], panel[next]], doorways[index])
+    const [bareFace, panelFace] = [bare[index], panel[index]];
+    return cutStripAtDoorways(edge, [bareFace.start, bareFace.end], [panelFace.start, panelFace.end], doorways[index])
       .map(({ bareLine, panelLine }, piece) => ({
         key: piece === 0 ? `${room.id}:${faceId}` : `${room.id}:${faceId}:${piece}`,
         faceId,

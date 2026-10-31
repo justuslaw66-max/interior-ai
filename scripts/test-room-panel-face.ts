@@ -10,11 +10,13 @@ import {
   getFurnitureRoomFrameInsideFinishes,
   getRoomClearInsideMetrics,
   getRoomOutlineInsideFinishes,
-  getRoomSideFinishDepths,
-  getRoomWallClearances,
+  getInsetPolygonFaces,
   insetPolygonEdges,
+  insetPolygonEdgesWithSteps,
   isBuiltInItem,
+  isInsetStep,
 } from "../lib/room-finished-outline";
+import { getRoomWallClearance } from "../lib/room-finished-faces";
 import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
 import { clampFloorPatternScale, normalizeFloorRotationDeg } from "../lib/floor-materials";
 import type { PersistedPlanOpening, RoomSnapshot } from "../lib/room-types";
@@ -98,6 +100,61 @@ assert.deepEqual(
     .map(({ x, z }) => [Math.round(x * 1000), Math.round(z * 1000)]),
   [[-2000, -1490], [1956, -1490], [1956, 1500], [-2000, 1500]]
 );
+// Two near-parallel edges moved in by different depths meet in a step, not metres away: a north wall drawn as two edges with
+// a 0.1 mm kink and a 44 mm laminate on its west half. The one-point outline (the clamp's and the cabinets') keeps the
+// step's deeper end at that corner.
+const kinked = [{ x: -2, z: -1.5 }, { x: 0, z: -1.5001 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }];
+const kinkInsets = [0.104, 0.06, 0.06, 0.06, 0.06];
+const mm = (point: { x: number; z: number }) => [Math.round(point.x * 1000) || 0, Math.round(point.z * 1000) || 0];
+assert.deepEqual(insetPolygonEdgesWithSteps(kinked, kinkInsets).map((corner) => isInsetStep(corner) ? corner.map(mm) : mm(corner)), [
+  [-1940, -1396], [[0, -1396], [0, -1440]], [1940, -1440], [1940, 1440], [-1940, 1440],
+]);
+assert.deepEqual(insetPolygonEdges(kinked, kinkInsets).map(mm), [[-1940, -1396], [0, -1396], [1940, -1440], [1940, 1440], [-1940, 1440]]);
+// An outline closed with its first point repeated (as a drawn arc room is) has an edge of no length: its corner still moves in.
+// Two edges in line moved in by different depths step at their corner too (a south wall drawn as two pieces, 200 and 100
+// mm walls): each piece's face stands at its own depth up to the corner, where the one-point outline leans the shallower.
+const splitSouth = [{ x: -2, z: -2 }, { x: 2, z: -2 }, { x: 2, z: 2 }, { x: 0, z: 2 }, { x: -2, z: 2 }];
+const splitInsets = [0.06, 0.06, 0.1, 0.05, 0.06];
+assert.deepEqual(getInsetPolygonFaces(splitSouth, splitInsets).slice(2, 4).map(({ start, end }) => [mm(start), mm(end)]),
+  [[[1940, 1900], [0, 1900]], [[0, 1950], [-1940, 1950]]]);
+assert.deepEqual(insetPolygonEdges(splitSouth, splitInsets).map(mm)[3], [0, 1900], "the one-point outline keeps the deeper end");
+// The 2D strips draw each piece at its own depth: a 44 mm laminate on one piece and a 10 mm one on the other.
+const splitStrips = getRoomPanelStrips2D({
+  id: "split", name: "Split", roomType: "living", shape: "custom_polygon", polygon: splitSouth, w: 4, d: 4, x: 0, z: 0, wallThickness: 0.12,
+  surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { "wall-2": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST }, "wall-3": { materialId: NORDIC_ACACIA } } } },
+}).strips;
+assert.deepEqual(splitStrips.map((strip) => [strip.faceId, strip.faceLine.map(([x, , z]) => mm({ x, z }))]), [
+  ["wall-2", [[1940, 1896], [0, 1896]]], ["wall-3", [[0, 1930], [-1940, 1930]]],
+]);
+// Every other corner is where the two moved lines cross, as before: a triangle's sharp corner beside a 44 mm panel ends the
+// panel's 2D strip at the other wall's finished face (it doesn't step through that wall), and the clamp's corner stays inside.
+for (const [degrees, faceEnd, clampCorner] of [[45, 1.811, 1.956], [40, 1.783, 1.948], [30, 1.7, 1.924], [20, 1.539, 1.879]]) {
+  const height = 4 * Math.tan((degrees * Math.PI) / 180);
+  const triangle = [{ x: -2, z: -1 }, { x: 2, z: -1 }, { x: -2, z: -1 + height }];
+  const triangleWalls = { default: { paintColorHex: "#ffffff" }, faces: { "wall-0": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } } };
+  const [triangleStrip] = getRoomPanelStrips2D({
+    id: "tri", name: "Tri", roomType: "living", shape: "custom_polygon", polygon: triangle, w: 4, d: height, x: 0, z: 0, wallThickness: 0.12,
+    surfaces: { walls: triangleWalls },
+  }).strips;
+  assert.equal(Math.round(triangleStrip.faceLine[1][0] * 1000), Math.round(faceEnd * 1000), `${degrees}°`);
+  const clampOutline = getRoomOutlineInsideFinishes({ shape: "custom_polygon", polygon: triangle, w: 4, d: height }, { "wall-0": 0.044 });
+  assert.equal(Math.round((clampOutline.polygon?.[1].x ?? 0) * 1000), Math.round(clampCorner * 1000), `${degrees}° clamp`);
+}
+// A face that would turn back on itself is passed over, and its neighbours meet past it: a 10 mm chamfer at a corner, and a
+// 5 mm jog in a wall beside a 44 mm panel (the two pieces' faces then step at the jog). An 8 cm jog keeps its own face.
+const chamfered = [{ x: -2, z: -1.5 }, { x: 1.99, z: -1.5 }, { x: 2, z: -1.49 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }];
+assert.deepEqual(insetPolygonEdges(chamfered, chamfered.map(() => 0.06)).map(mm).slice(1, 3), [[1940, -1440], [1940, -1440]]);
+const jogged = (rise: number) => [
+  { x: -2, z: -1.5 }, { x: 0, z: -1.5 }, { x: 0, z: -1.5 + rise }, { x: 2, z: -1.5 + rise }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 },
+];
+const jogInsets = [0.104, 0.06, 0.06, 0.06, 0.06, 0.06];
+assert.deepEqual(insetPolygonEdgesWithSteps(jogged(0.005), jogInsets).slice(1, 3).map((corner) => isInsetStep(corner) ? corner.map(mm) : mm(corner)),
+  [[[0, -1396], [0, -1435]], [[0, -1396], [0, -1435]]]);
+assert.deepEqual(insetPolygonEdgesWithSteps(jogged(0.08), jogInsets).slice(1, 3).map((corner) => isInsetStep(corner) ? corner.map(mm) : mm(corner)),
+  [[-60, -1396], [-60, -1360]]);
+const closedTwice = [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }, { x: -2, z: -1.5 }];
+assert.deepEqual(insetPolygonEdges(closedTwice, closedTwice.map(() => 0.06)).map(mm),
+  [[-1940, -1440], [1940, -1440], [1940, 1440], [-1940, 1440], [-1940, -1440]]);
 const lInside = getRoomOutlineInsideFinishes({ shape: "l_shape", w: 4, d: 3 }, { "wall-2": 0.02, "wall-3": 0.02 });
 assert.equal(lInside.shape, "custom_polygon");
 assert.deepEqual(lInside.polygon?.map(({ x, z }) => [Math.round(x * 1000), Math.round(z * 1000)]), [
@@ -159,24 +216,26 @@ const wide = getRectangleWallClearances({
   width: 4, depth: 3, wallThickness: 0.12, depths: { west: 0.044 }, center: { x: 0.005, z: 0 }, footprint: { w: 3.8, d: 0.5 },
 });
 near(wide.x, 0.001);
-near(getRoomWallClearances(tiledWithPanel, { x: 1.3, z: 0 }, { w: 1, d: 0.5 }).x, clear.x, "a room snapshot's clearances");
-// An L-shape's or drawn shape's checks measure its rectangle: each side stops at the deepest panel along it.
+near(getRoomWallClearance(tiledWithPanel, { x: 1.3, z: 0 }, { w: 1, d: 0.5 }), 2 - 0.06 - 0.044 - 0.5 - 1.3,
+  "a room snapshot's clearance: to the east panel's face, nearer than the north wall's");
+// An L-shape's or drawn shape's checks measure to its own walls (lib/room-finished-faces.ts), each in front of its own panel:
+// a console 2 cm off the built-in L's notch wall (wall-2, at z = 0.24 m) is against a wall, not 25 cm from the far one.
 const lRoom = room(
   { default: { paintColorHex: "#ffffff" }, faces: { "wall-1": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST }, "wall-2": { materialId: NORDIC_ACACIA } } },
   { planShape: "l_shape" }
 );
-assert.deepEqual(getRoomSideFinishDepths(lRoom, { w: 4, d: 3 }), { east: 0.044 }, "the notch's walls are inside the rectangle");
-assert.deepEqual(getRoomSideFinishDepths(tiledWithPanel, { w: 4, d: 3 }), { north: 0.01, east: 0.044 }, "a rectangle's walls are its sides");
-const lLaminate = room({ default: { materialId: NORDIC_ACACIA } }, { planShape: "l_shape" });
-assert.match(
-  evaluateConstraints({
-    design: { items: [{ instanceId: "c", productId: CONSOLE, position: [0, 0, -1.5 + inset + 0.01 + consoleDepth / 2], rotationY: 0 }] },
-    movedItemId: "c",
-    room: { width: 4, depth: 3, wallThickness: 0.12, wallFinishRoom: lLaminate },
-  }).find((result) => result.id === "wall-gap")?.message ?? "",
-  /\(2cm gap\)/,
-  "an L-shaped room's checks measure from its panels as a rectangle's do"
-);
+const notchConsoleZ = (gap: number) => 0.24 - 0.06 - gap - consoleDepth / 2;
+const lWallMessage = (lRoomWalls: RoomSnapshot, z: number) => evaluateConstraints({
+  design: { items: [{ instanceId: "c", productId: CONSOLE, position: [1.1, 0, z], rotationY: Math.PI }] },
+  movedItemId: "c",
+  room: { width: 4, depth: 3, wallThickness: 0.12, wallFinishRoom: lRoomWalls },
+}).find((result) => result.id === "wall-gap")?.message ?? "";
+assert.match(lWallMessage(lRoom, notchConsoleZ(0.01 + 0.02)), /Placed nicely against wall \(2cm gap\)/, "2 cm off the notch wall's panel");
+assert.match(lWallMessage(lRoom, notchConsoleZ(0.02)), /Too tight to wall \(1cm\)/, "2 cm off the bare notch wall is 1 cm off its panel");
+assert.match(lWallMessage(room({ default: { paintColorHex: "#ffffff" } }, { planShape: "l_shape" }), notchConsoleZ(-0.15)),
+  /Too tight to wall \(-15cm\)/, "15 cm into the notch's wall, which the bounding rectangle didn't see");
+near(getRoomWallClearance(lRoom, { x: 1.1, z: notchConsoleZ(0.05) }, { w: 1.5, d: consoleDepth }), 0.04,
+  "placement scoring's clearance: to the notch wall's panel, 10 mm in front of the wall");
 
 // Built-ins: a wall's host is its finished face, from the finished face of the wall at one end to the other's (half each wall
 // in, and its panel), and its back stands on the face (J, 29 Oct 2026: "Face, back flush"; features/cabinetry/roomCabinetHosts.ts).

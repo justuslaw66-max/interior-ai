@@ -33,6 +33,13 @@ the map with a re-export. 28 Oct 2026: every development has detailed 3D models,
   its floor) and `condo-map-layers.ts` (the sources, layers, filters and colours) don't touch Mapbox;
   `scripts/test-condo-map.ts` runs the filters against the real features. `condo-map-mapbox.ts` does the Mapbox work
   and the hooks call it from their effects.
+- **Storeys are as tall as the homes' ceilings say.** Each storey is floor to floor: the ceiling the brochure or a
+  listing states, with about 0.4 m for the slab, and where nothing is stated, the height rules J set on 30 Oct 2026
+  (a condo's ceilings 2.8 m, a penthouse's 3.2 m), so a 3.2 m storey, 3.6 m where the penthouses are. A 1st storey
+  over a car park or a lobby keeps its own height. 31 Oct 2026: 10 Evelyn, 1919 and 21 Richards went from 3.3 m to
+  3.2 m (10 Evelyn's and 21 Richards' 5th storeys, the penthouses, 3.6 m), and 32 Gilstead from 3.6 m to 3.4 m, from
+  the 2.8 m and 3.0 m ceilings a listing states. Each package's `heights_source` (in `geo/model-3d.json`) says where
+  its heights come from.
 - **A unit is on every storey it takes.** A duplex or a penthouse with its attic has a part on each of its storeys, so
   it is painted and can be picked on each; choosing it keeps the floor already chosen when that is one of its storeys,
   and its card names them ("1st–2nd storey"). An area with an attic void says so ("+ attic void"), and its square

@@ -36,6 +36,15 @@ class Names(unittest.TestCase):
             self.assertFalse(nr.is_room_name(s), s)
 
 
+class Sizes(unittest.TestCase):
+    def test_read_within_the_pixel_budget(self):
+        self.assertEqual(nr.read_scales(900, 700, budget=8_000_000), [1.0, 2.0], "a small page: its own size and twice it")
+        self.assertEqual(nr.read_scales(2774, 1786, budget=8_000_000), [1.0], "d12 (4.95 MP): twice it is over the budget")
+        (s,) = nr.read_scales(4985, 3210, budget=8_000_000)
+        self.assertAlmostEqual(4985 * 3210 * s * s, 8_000_000, delta=1000, msg="a 16 MP page is read shrunk to the budget")
+        self.assertEqual(nr.read_scales(1414, 1414, budget=8_000_000), [1.0, 2.0], "twice it just fits")
+
+
 class Coordinates(unittest.TestCase):
     def test_from_source_undoes_to_source(self):
         base = {"size": [1600, 1200], "work_scale": 2.0}
