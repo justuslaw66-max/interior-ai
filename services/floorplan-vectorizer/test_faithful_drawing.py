@@ -354,6 +354,178 @@ class DarkGround(unittest.TestCase):
                 os.environ["FV_INVERT_DARK"] = saved
 
 
+def _plan(W=640, H=800, shear_plumb=0.0, shear_level=0.0):
+    """a plain plan of walls and dimension lines, its plumb lines leaning by shear_plumb degrees and its level lines
+    falling by shear_level (about the page's middle)"""
+    g = np.full((H, W), 255, np.uint8)
+    for x in (80, 260, 420, 560):
+        cv2.line(g, (x, 90), (x, 700), 0, 3)
+    for y in (90, 330, 520, 700):
+        cv2.line(g, (80, y), (560, y), 0, 3)
+    cv2.line(g, (40, 90), (40, 700), 0, 1)                       # a dimension line and its ticks
+    for y in (90, 330, 520, 700):
+        cv2.line(g, (34, y), (46, y), 0, 1)
+    cv2.rectangle(g, (255, 300), (265, 360), 0, -1)              # a column
+    if shear_plumb or shear_level:
+        tv, th = math.tan(math.radians(shear_plumb)), math.tan(math.radians(shear_level))
+        M = np.float32([[1, tv, -tv * H / 2], [th, 1, -th * W / 2]])
+        g = cv2.warpAffine(g, M, (W, H), flags=cv2.INTER_LINEAR, borderValue=255)
+    return g
+
+
+class Straighten(unittest.TestCase):
+    """(31 Oct) a plan whose plumb or level lines lean a little is drawn straight: one affine map, then near-level and
+    near-plumb edges set exactly so; a straight plan is left exactly as traced"""
+
+    @staticmethod
+    def _lines(segments):
+        return {"version": fd.VERSION, "textBoxes": [], "items": [
+            {"kind": "line", "fill": False, "strokeWidthPx": 1, "tone": 0,
+             "commands": (["L"] + ["M", "L"] * (len(segments) - 1)),
+             "points": [list(map(float, p)) for seg in segments for p in seg]}]}
+
+    def test_lean_read(self):
+        W, H = 600, 800
+        tv = math.tan(math.radians(0.4))
+        plumb = [((x + tv * (100 - H / 2), 100), (x + tv * (700 - H / 2), 700)) for x in (80, 200, 320, 440, 520)]
+        level = [((60, y), (540, y)) for y in (100, 300, 500, 700)]
+        p, l, _ = fd.lean(self._lines(plumb + level), W, H)
+        self.assertAlmostEqual(p, 0.4, delta=0.03)
+        self.assertEqual(l, 0.0)
+        th = math.tan(math.radians(-0.3))
+        falling = [((60, y + th * (60 - W / 2)), (540, y + th * (540 - W / 2))) for y in (100, 300, 500, 700)]
+        p, l, _ = fd.lean(self._lines([((x, 100), (x, 700)) for x in (80, 200, 320, 440, 520)] + falling), W, H)
+        self.assertEqual(p, 0.0)
+        self.assertAlmostEqual(l, -0.3, delta=0.03)
+        # a wall the trace squared piece by piece: plumb pieces 100 px long, each a pixel further over
+        stairs = [((x + k, 100 + 100 * k), (x + k, 200 + 100 * k)) for x in (80, 300, 520) for k in range(6)]
+        p, l, _ = fd.lean(self._lines(stairs + level), W, H)
+        self.assertAlmostEqual(p, math.degrees(math.atan(0.01)), delta=0.05)
+        straight = [((x, 100), (x, 700)) for x in (80, 200, 320, 440, 520)] + level
+        self.assertEqual(fd.lean(self._lines(straight), W, H)[:2], (0.0, 0.0), "a straight drawing reads straight")
+        self.assertEqual(fd.lean(self._lines([((10, 10), (10, 60))]), W, H)[:2], (0.0, 0.0), "too little to say")
+
+    def test_snapping_keeps_joins(self):
+        # a leaning wall the trace squared piece by piece: three plumb pieces on pixel middles stepping sideways, a level
+        # line meeting its top in another item, and a door swing ending at its foot; for a lean within the snapping's
+        # own tolerance and for one beyond it. The wall keeps its place within the pixel as traced, so it draws at the
+        # weight and grey it was traced at (round 2 set lines where they draw crisp: grey lines drew black).
+        W, H = 200, 400
+        for step in (1.0, 3.0):                  # whole pixels, as the trace steps a squared wall (0.57 and 1.72 deg)
+            deg = math.degrees(math.atan(step / 100.0))
+            x = [100.5, 100.5 + step, 100.5 + 2 * step]
+            wall = {"kind": "line", "fill": False, "strokeWidthPx": 2, "tone": 0, "commands": ["L", "M", "L", "M", "L"],
+                    "points": [[x[0], 50.0], [x[0], 150.0], [x[1], 150.0], [x[1], 250.0], [x[2], 250.0], [x[2], 350.0]]}
+            top = {"kind": "line", "fill": False, "strokeWidthPx": 2, "tone": 0, "commands": ["L"],
+                   "points": [[20.0, 50.0], [x[0], 50.0]]}
+            swing = {"kind": "arc", "fill": False, "strokeWidthPx": 1, "tone": 0, "commands": ["C"],
+                     "points": [[x[2], 350.0], [x[2] + 28.0, 350.0], [x[2] + 48.0, 330.0], [x[2] + 48.0, 300.0]]}
+            d = {"version": fd.VERSION, "items": [wall, top, swing], "textBoxes": []}
+            fd.straighten(d, W, H, deg, 0.0)
+            xs = {p[0] for p in wall["points"]}
+            self.assertEqual(len(xs), 1, "%s deg: the three pieces share one x, one plumb wall: %s" % (deg, xs))
+            self.assertEqual(next(iter(xs)) % 1.0, 0.5, "%s deg: on a pixel's middle, as traced" % deg)
+            self.assertEqual(top["points"][1], wall["points"][0], "%s deg: the level line still meets the wall's top" % deg)
+            self.assertEqual(top["points"][0][1], top["points"][1][1], "%s deg: and is level" % deg)
+            self.assertEqual(swing["points"][0], wall["points"][-1], "%s deg: the swing still ends at the wall's foot" % deg)
+            self.assertAlmostEqual(swing["points"][1][1], swing["points"][0][1], places=2, msg="%s deg: its tangent kept" % deg)
+
+    def test_small_shapes_move_whole_pixels(self):
+        # a letter (a small fill) at fractions of a pixel, on a page leaning enough to move it by more than a pixel
+        W, H = 400, 800
+        letter = [[300.13, 700.12], [306.88, 700.12], [306.88, 712.87], [300.13, 712.87]]
+        d = {"version": fd.VERSION, "textBoxes": [], "items": [
+            {"kind": "fill", "fill": True, "strokeWidthPx": 0, "tone": 0, "commands": ["L", "L", "L", "Z"],
+             "points": [list(p) for p in letter]}]}
+        fd.straighten(d, W, H, 0.5, 0.0)
+        got = d["items"][0]["points"]
+        shift = got[0][0] - letter[0][0]
+        self.assertNotEqual(shift, 0.0, "the page's lean moves it")
+        self.assertEqual(shift, round(shift), "by whole pixels, so it draws as crisp as traced")
+        self.assertEqual([[round(x - shift, 2), y] for x, y in got], letter, "as one: its shape unchanged")
+
+    def test_lettering_moves_as_traced(self):
+        # s009's HOUSEHOLD read HCUSEHOLD: an O's outline and its hole each moved by its own whole pixels. And s039's
+        # title, its letters 40 px tall: a letter's sides were each set plumb by itself. A word moves as one, each
+        # letter (outline and holes) exactly as traced
+        W, H = 800, 800
+        def ring(x0, y0, x1, y1):
+            return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+        def shape(*rings):
+            return {"kind": "fill", "fill": True, "strokeWidthPx": 0, "tone": 0,
+                    "commands": [c for k in range(len(rings)) for c in (["M"] if k else []) + ["L", "L", "L", "Z"]],
+                    "points": [p for r in rings for p in r]}
+        # a word of three 12 px letters 2 px apart, the middle one an O whose hole sits to its right, where the page's
+        # level lines fall about half a pixel across the word (its letters' and the O's hole's own moves round apart)
+        letters = [shape(ring(442.4 + 14 * k, 700.3, 454.4 + 14 * k, 712.3), ring(465.0, 703.3, 467.4, 709.3))
+                   if k == 1 else shape(ring(442.4 + 14 * k, 700.3, 454.4 + 14 * k, 712.3)) for k in range(3)]
+        title = shape(ring(100.3, 100.2, 112.7, 140.6))         # a title's letter, 40 px tall
+        d = {"version": fd.VERSION, "textBoxes": [], "items": [dict(it, points=[list(p) for p in it["points"]])
+                                                              for it in letters + [title]]}
+        fd.straighten(d, W, H, 0.45, 0.45)
+        for before, after in zip(letters + [title], d["items"]):
+            dx = {round(a[0] - b[0], 6) for a, b in zip(after["points"], before["points"])}
+            dy = {round(a[1] - b[1], 6) for a, b in zip(after["points"], before["points"])}
+            self.assertEqual((len(dx), len(dy)), (1, 1), "each letter, its hole with it, moved as one")
+            self.assertEqual((next(iter(dx)) % 1.0, next(iter(dy)) % 1.0), (0.0, 0.0), "by whole pixels")
+        word = {(round(a[0] - b[0], 6), round(a[1] - b[1], 6))
+                for before, after in zip(letters, d["items"]) for a, b in zip(after["points"], before["points"])}
+        self.assertEqual(len(word), 1, "the word moved as one: %s" % word)
+
+    def test_like_lines_elsewhere_keep_their_place(self):
+        # s039: a line on a pixel's middle drew across two pixels, grey, after its run took the place of a longer line
+        # half a pixel from it at the far side of the page. Pieces end to end take one place; lines apart keep theirs
+        W, H = 800, 400
+        d = Straighten._lines([((50.0, 200.5), (300.0, 200.5)), ((500.0, 200.1), (760.0, 200.1))])
+        fd.straighten(d, W, H, 0.0, 0.05)
+        ys = [p[1] for p in d["items"][0]["points"]]
+        self.assertEqual({y % 1.0 for y in ys[:2]}, {0.5})
+        self.assertEqual({round(y % 1.0, 2) for y in ys[2:]}, {0.1})
+
+    def test_lean_needs_the_picture_to_lean_too(self):
+        # s065 and s064: straight pictures whose few short lines lined up best under a shear of 0.3-0.4 degrees, and
+        # were drawn tilted. A direction counts only where the picture's own long lines lean the same way
+        W, H = 600, 800
+        tv = math.tan(math.radians(0.4))
+        d = self._lines([((x + tv * (100 - H / 2), 100), (x + tv * (700 - H / 2), 700)) for x in (80, 200, 320, 440, 520)])
+        self.assertAlmostEqual(fd.lean(d, W, H)[0], 0.4, delta=0.03)
+        self.assertAlmostEqual(fd.lean(d, W, H, (0.35, None))[0], 0.4, delta=0.03, msg="the picture leans as far")
+        self.assertEqual(fd.lean(d, W, H, (0.0, None))[0], 0.0, "the picture is straight")
+        self.assertEqual(fd.lean(d, W, H, (None, None))[0], 0.0, "the picture says nothing")
+        self.assertEqual(fd.lean(d, W, H, (-0.4, None))[0], 0.0, "it leans the other way")
+        self.assertEqual(fd.lean(d, W, H, (0.1, None))[0], 0.0, "a quarter as far")
+        for deg in (0.0, 0.5, -0.3):
+            p, l = fd.picture_lean(_plan(shear_plumb=deg))
+            self.assertAlmostEqual(p, deg, delta=0.05, msg="the picture's long lines read: %s" % deg)
+            self.assertAlmostEqual(l, 0.0, delta=0.05)
+
+    def test_straight_plan_untouched_and_leaning_plan_drawn_plumb(self):
+        with tempfile.TemporaryDirectory() as folder:
+            outs = {}
+            for name, g in (("straight", _plan()), ("leaning", _plan(shear_plumb=0.5))):
+                src = os.path.join(folder, name + ".png")
+                cv2.imwrite(src, g)
+                for on in ("1", "0"):
+                    out = os.path.join(folder, "%s.%s.json" % (name, on))
+                    _switched_in(fd, "STRAIGHTEN", on == "1", lambda: fd.main([src, out]))
+                    with open(out) as f:
+                        outs[name, on] = json.load(f)
+            self.assertEqual(outs["straight", "1"], outs["straight", "0"], "a straight plan is left exactly as traced")
+            self.assertNotEqual(outs["leaning", "1"], outs["leaning", "0"])
+            tol = math.tan(math.radians(fd.SNAP_DEG))
+            for on, plumb_wanted in (("1", True), ("0", False)):
+                leaning_edges = 0
+                for it in outs["leaning", on]["items"]:
+                    for i, j in fd._walk(it):
+                        (x0, y0), (x1, y1) = it["points"][i], it["points"][j]
+                        if abs(y1 - y0) >= 100 and 0 < abs(x1 - x0) <= tol * abs(y1 - y0):
+                            leaning_edges += 1
+                if plumb_wanted:
+                    self.assertEqual(leaning_edges, 0, "straightened: every long near-plumb edge exactly plumb")
+                else:
+                    self.assertGreater(leaning_edges, 0, "as traced, the long lines lean")
+
+
 class Sharp(unittest.TestCase):
     """(r11) the trace as sharp and joined as the drawing it copies"""
 
