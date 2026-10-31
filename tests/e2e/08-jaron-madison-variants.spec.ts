@@ -6,6 +6,7 @@ import {
   ensureItemSelectedForVariants,
   selectImportedFamilyByHint,
   selectImportedProductById,
+  variantSwatchLabels,
   waitForCatalogReady,
 } from "./variant-test-utils";
 
@@ -111,14 +112,17 @@ test.describe("8. Jaron and Madison Variant Integration", () => {
       return;
     }
 
+    // A word from each colour the product comes in ("Select Marche Leather, Cocoa"). The panel shows
+    // the chosen material's colours (Fabric or Leather), so each swatch must be one of these, not all
+    // of them (31 Oct 2026: Madison's Stone is now Camille, Forest).
     const products = [
       {
         id: "sofa-real-castlery-jaron-3s",
-        expected: ["Marche Cocoa", "Marche Ivory", "Arvo Dune"],
+        colours: ["Cocoa", "Ivory", "Dune"],
       },
       {
         id: "sofa-real-castlery-madison-2s",
-        expected: ["Bisque", "Stone", "Caramel"],
+        colours: ["Bisque", "Camille", "Caramel"],
       },
     ];
 
@@ -160,22 +164,22 @@ test.describe("8. Jaron and Madison Variant Integration", () => {
         continue;
       }
 
-      const labels = (await swatches.allTextContents())
-        .map((text) => text.trim())
-        .filter(Boolean);
-
-      for (const token of product.expected) {
+      const labels = (await variantSwatchLabels(swatches)).filter(Boolean);
+      expect(labels.length, `${product.id} shows its colours`).toBeGreaterThan(0);
+      for (const label of labels) {
         expect(
-          labels.some((label) => label.toLowerCase().includes(token.toLowerCase())),
-          `Expected swatch labels for ${product.id} to include ${token}`,
+          product.colours.some((colour) => label.toLowerCase().includes(colour.toLowerCase())),
+          `${product.id}: "${label}" is one of its colours`,
         ).toBeTruthy();
       }
 
-      // Validate interactivity by toggling a non-active swatch when available.
-      const nonActive = swatches.locator('[data-active="false"]').first();
-      if ((await nonActive.count()) > 0) {
-        await nonActive.click();
-        await expect(nonActive).toHaveAttribute("data-active", "true");
+      // Picking another colour makes it the chosen one. (This had looked for an unchosen swatch
+      // inside the swatches, so it never ran.)
+      const unchosen = page.locator('[data-testid^="variant-swatch-"][data-active="false"]').first();
+      if ((await unchosen.count()) > 0) {
+        const unchosenTestId = await unchosen.getAttribute("data-testid");
+        await unchosen.click();
+        await expect(page.getByTestId(unchosenTestId ?? "")).toHaveAttribute("data-active", "true");
       }
     }
   });

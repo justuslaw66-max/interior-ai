@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { PUBLIC_SHARE_PROJECTION_ERROR, projectSharedDesignForPublicPage } from "@/lib/public-share-projection";
 import fs from "node:fs";
 import path from "node:path";
 import {
@@ -743,6 +744,23 @@ assert.throws(
   /undeclared field snapshot.secret/,
   "Unknown root fields must fail closed before a public projection is returned"
 );
+// The public pages throw a generic error for a refused design, with no cause, so the dev server
+// can't show the owner's field name to the visitor (30 Oct 2026).
+assert.throws(
+  () => projectSharedDesignForPublicPage({ ...rawOuterInput, snapshot: rootExtension } as unknown as typeof rawOuterInput),
+  (error: unknown) =>
+    error instanceof Error &&
+    error.message === PUBLIC_SHARE_PROJECTION_ERROR &&
+    error.cause === undefined &&
+    !String(error.stack).includes("secret") &&
+    !String(error.stack).includes("private-root-sentinel"),
+  "A public page's projection error must not name the refused field"
+);
+assert.equal(
+  projectSharedDesignForPublicPage(rawOuterInput).title,
+  projectSharedDesignTransport(rawOuterInput).title,
+  "A design the projection accepts is projected as before"
+);
 const invalidPublicTitle = structuredClone(sharedStoredDesign) as unknown as Record<
   string,
   unknown
@@ -1310,7 +1328,7 @@ for (const sharePath of [
   const shareSource = fs.readFileSync(path.join(process.cwd(), sharePath), "utf8");
   assert.match(
     shareSource,
-    /const publicDesign = projectSharedDesignTransport\(design\)/,
+    /const publicDesign = projectSharedDesignForPublicPage\(design\)/,
     `${sharePath} must create one canonical public transport before rendering or export`
   );
   assert.match(shareSource, /storedToSnapshot\(publicDesign\.snapshot\)/);

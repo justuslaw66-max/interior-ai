@@ -30,6 +30,14 @@ async function expectAngle(page: Page, expected: number) {
     .toBe(normalizeAngle(expected));
 }
 
+// A 2D item's name label is its keyboard target. A copy's label can sit over its original's (31 Oct
+// 2026: the trace shows the selected copy's label taking the click), so press it as a keyboard user
+// does; Shift+Enter adds it to the selection, as Shift+click does.
+async function pressPlanItem(target: Locator, addToSelection = false) {
+  await target.focus();
+  await target.page().keyboard.press(addToSelection ? "Shift+Enter" : "Enter");
+}
+
 async function readFingerprint(page: Page): Promise<string> {
   const marker = page.getByTestId("qa-editor-snapshot-fingerprint");
   await expect(marker).toHaveAttribute("data-fingerprint", /[a-f0-9]{8}/);
@@ -408,32 +416,32 @@ test.describe("11. Rotation Shortcuts And Presets", () => {
     });
     await expect(planItems).toHaveCount(2);
 
-    await planItems.nth(0).click();
+    await pressPlanItem(planItems.nth(0));
     await page.keyboard.press("R");
     await expectAngle(page, 90);
 
-    await planItems.nth(1).click();
+    await pressPlanItem(planItems.nth(1));
     await expectAngle(page, 0);
     await page.keyboard.press("Shift+R");
     await expectAngle(page, -90);
 
-    await planItems.nth(0).click();
+    await pressPlanItem(planItems.nth(0));
     await expectAngle(page, 90);
     await page.keyboard.press("0");
     await expectAngle(page, 0);
-    await planItems.nth(1).click();
+    await pressPlanItem(planItems.nth(1));
     await page.keyboard.press("0");
     await expectAngle(page, 0);
 
-    await planItems.nth(0).click();
-    await planItems.nth(1).click({ modifiers: ["Shift"] });
+    await pressPlanItem(planItems.nth(0));
+    await pressPlanItem(planItems.nth(1), true);
     await expect(planItems.nth(0)).toHaveAttribute("aria-pressed", "true");
     await expect(planItems.nth(1)).toHaveAttribute("aria-pressed", "true");
     await page.keyboard.press("R");
 
-    await planItems.nth(0).click();
+    await pressPlanItem(planItems.nth(0));
     await expectAngle(page, 90);
-    await planItems.nth(1).click();
+    await pressPlanItem(planItems.nth(1));
     await expectAngle(page, 90);
   });
 
