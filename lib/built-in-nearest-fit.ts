@@ -21,14 +21,18 @@ function cross(o: Point, a: Point, b: Point): number {
   return (a.x - o.x) * (b.z - o.z) - (a.z - o.z) * (b.x - o.x);
 }
 
-/** The convex hull of the points, counter-clockwise (x right, z up), without repeated or collinear points. */
+/**
+ * The convex hull of the points, counter-clockwise (x right, z up). A point is dropped only where the chain doesn't turn left at
+ * all: a footprint turned by a float's quarter turn has sides off square by 1e-16 m, and dropping such near-straight turns
+ * by a tolerance dropped a real corner of the grown shape with them.
+ */
 function convexHull(points: Point[]): Point[] {
   const sorted = [...points].sort((a, b) => a.x - b.x || a.z - b.z);
   if (sorted.length < 3) return sorted;
   const half = (input: Point[]) => {
     const chain: Point[] = [];
     for (const point of input) {
-      while (chain.length >= 2 && cross(chain[chain.length - 2], chain[chain.length - 1], point) <= 1e-15) chain.pop();
+      while (chain.length >= 2 && cross(chain[chain.length - 2], chain[chain.length - 1], point) <= 0) chain.pop();
       chain.push(point);
     }
     return chain;

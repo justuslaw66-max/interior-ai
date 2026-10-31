@@ -233,22 +233,24 @@ function getTurnReach(width: number, depth: number, rotationY: number, turnedFro
 }
 
 /**
- * What a built-in's footprint keeps clear of, for findNearestBuiltInFit: the region's outline and columns' edges and its
- * solids for the whole footprint, and the baseboard's bands in front of the exposed faces for its back (as builtInFootprintFits
- * tests it). The footprints are half the clamp's tolerance larger than its own, so the place found clears every edge by it.
+ * What a built-in's footprint keeps clear of, for findNearestBuiltInFit, as builtInFootprintFits tests it: the region's solids for
+ * the whole footprint, the baseboard's bands in front of the exposed faces for its back, and the outline's and columns' edges.
+ * A solid or a band may touch the footprint (builtInFootprintFits shrinks it by a tenth of the contact tolerance), so their
+ * footprints are that one, a nanometre larger, and a place found is just clear of them however narrow the gap it fits in. A
+ * corner exactly on the outline may count as outside it, so the edges keep a further twentieth of the tolerance in hand.
  */
 function getBuiltInFitObstacles(faces: BuiltInRoomFaces, width: number, depth: number, rotationY: number, standOff: number): BuiltInFitObstacles[] {
-  const tolerance = BUILT_IN_CONTACT_TOLERANCE / 20;
+  const touching = BUILT_IN_CONTACT_TOLERANCE / 10 - 1e-9, clear = BUILT_IN_CONTACT_TOLERANCE / 20;
   const ringEdges = (ring: readonly Point[]) => ring.map((point, index) => [point, ring[(index + 1) % ring.length]]);
-  const whole: BuiltInFitObstacles = {
-    footprint: footprintCorners(0, 0, width, depth, rotationY, tolerance),
-    obstacles: [...ringEdges(faces.outline), ...faces.holes.flatMap(ringEdges), ...faces.solids],
-  };
-  if (!(standOff > 0)) return [whole];
+  const families: BuiltInFitObstacles[] = [
+    { footprint: footprintCorners(0, 0, width, depth, rotationY, touching), obstacles: faces.solids },
+    { footprint: footprintCorners(0, 0, width, depth, rotationY, clear), obstacles: [...ringEdges(faces.outline), ...faces.holes.flatMap(ringEdges)] },
+  ];
+  if (!(standOff > 0)) return families;
   const back = Math.min(standOff, depth) / 2;
   const bands = faces.faces.map(({ start, end, nx, nz }) =>
     [start, end, { x: end.x + nx * standOff, z: end.z + nz * standOff }, { x: start.x + nx * standOff, z: start.z + nz * standOff }]);
-  return [whole, { footprint: footprintCorners(-Math.sin(rotationY) * back, -Math.cos(rotationY) * back, width, depth - 2 * back, rotationY, tolerance), obstacles: bands }];
+  return [...families, { footprint: footprintCorners(-Math.sin(rotationY) * back, -Math.cos(rotationY) * back, width, depth - 2 * back, rotationY, touching), obstacles: bands }];
 }
 
 /**
