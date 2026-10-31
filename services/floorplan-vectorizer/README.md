@@ -125,6 +125,25 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   Retyping confidently read lettering in clean type (`retype.py`, Liberation Sans outlines in `faithful_glyphs.json`,
   SIL Open Font License, `OFL.txt`, rebuilt by `make_glyphs.py`, which needs fontTools) is built but off
   (`FT_RETYPE=1` turns it on): in a blind check it set two fonts on one plan and misread a few figures.
+- Since 31 Oct a plan that leans a little is drawn straight (`FT_STRAIGHTEN`, on; `FT_STRAIGHTEN=0` draws it as
+  traced). A scan or a re-saved web plan often has its plumb lines all leaning one way by a few tenths of a degree,
+  and sometimes its level lines too (a shear or a slight turn; J on s038). The lean is read from the drawing's own
+  line work (points along its near-plumb, or near-level, edges sheared until their columns, or rows, are sharpest,
+  within 2 degrees), which also finds a wall the trace squared into plumb pieces a pixel apart. A direction counts
+  when it reads clearly sharper leaning (5 % or more, by 0.1 degree or more, adding up to 1.5 px or more across the
+  line work) and the picture's own long straight lines (80 px or longer, read with OpenCV's line segment detector)
+  lean the same way, between half and twice as far: a few short lines can line up by chance under a shear. It is put
+  right by one affine map of the whole drawing; then each run of near-plumb (or near-level) straight edges is set to
+  one x (or y), at the place within its pixel where most of it was traced, so it draws at its traced weight and grey,
+  with every corner, junction and door swing's end carried along. Everything else moves by whole pixels; a letter (its
+  holes with it) and the letters of a word move as one. The drawing then sits up to a few pixels off the picture
+  towards its edges (3.6 px at most on the test pages), which shows in the overlay views. On the 77 open test pages it
+  changes 17 (most of them small web plans) and leaves the rest exactly as traced. Stage 1's rooms and walls are
+  unchanged (on s038 they were already square: none of its 30 wall edges off level or plumb). In a blind check of the
+  17 (graders shown the picture and both drawings, unlabelled, told to set the squaring and its shift aside) 32 of 34
+  judgements were the same, one each way; they saw the squaring in 23. Two earlier versions lost such checks, with the
+  squaring counted against them, on faults since fixed: lines set where they draw crisp turned grey lines black,
+  letters' outlines and holes moved apart, and straight plans whose few lines lined up by chance were tilted.
 - Up to `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS` pixels (default 4,000,000) the trace works at twice the picture's size:
   about 350–400 MB of memory per million pixels of the picture (700–760 MB for a 1,400 px brochure page) and 30–50 s
   per page on one core. A larger page, up to three times that limit, is traced at its own size: about 110 MB per
