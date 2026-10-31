@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
 import {
+  floorPlanLeaseGuard,
   PrismaFloorPlanImportLeaseService,
   type FloorPlanImportLease,
 } from "@/lib/floor-plan-imports/lease";
+import { cancelOwnedFloorPlanImport } from "@/lib/floor-plan-imports/owner-cancel";
+import { assessFloorPlanRetentionPurge } from "@/lib/floor-plan-imports/privacy";
+import { PrismaFloorPlanImportJobRepository } from "@/lib/floor-plan-imports/prisma-repository";
+import { FLOOR_PLAN_IMPORT_PROGRESS } from "@/lib/floor-plan-imports/status";
 import type { FloorPlanImportStatus } from "@/lib/floor-plan-imports/types";
 
 type MutableJob = {
@@ -23,6 +28,8 @@ type MutableJob = {
   lastErrorAt: Date | null;
   lastRecoveredAt: Date | null;
   errorMessage: string | null;
+  appliedDesignId: string | null;
+  revision: { id: string } | null;
 };
 
 function makeJob(
@@ -47,6 +54,8 @@ function makeJob(
     lastErrorAt: null,
     lastRecoveredAt: null,
     errorMessage: null,
+    appliedDesignId: null,
+    revision: null,
     ...overrides,
   };
 }
@@ -124,6 +133,12 @@ class FakeLeasePrisma {
     findUnique: async (args: unknown) => {
       const where = (args as { where: { id: string } }).where;
       return this.jobs.get(where.id) ?? null;
+    },
+    findFirst: async (args: unknown) => {
+      const where = (args as { where: unknown }).where;
+      const row = [...this.jobs.values()].find((entry) => matches(entry, where));
+      // A copy, as a database read is: a later change to the row doesn't reach what was read.
+      return row ? { ...row } : null;
     },
     findMany: async (args: unknown) => {
       const input = args as { where: unknown; take?: number };
@@ -380,6 +395,122 @@ async function testFinishedJobLeaseIsCleared() {
   assert.equal(database.jobs.get("finished-active")?.leaseToken, "active-token");
 }
 
+/** The owner's Cancel while a worker reads the plan (J, 31 Oct): it used to wait for the read to finish. */
+async function testOwnerCancelStopsTheWorkerReadingIt() {
+  const database = new FakeLeasePrisma();
+  const now = new Date("2026-07-16T06:00:00.000Z");
+  database.jobs.set("reading", makeJob("reading"));
+  const service = new PrismaFloorPlanImportLeaseService(database);
+  const lease = claimedLease(
+    await service.claimById({ jobId: "reading", workerId: "worker", now })
+  );
+  const row = database.jobs.get("reading");
+  assert.ok(row);
+  row.status = "rendered";
+
+  // Another account's cancel is no different from a missing upload, and leaves the worker alone.
+  assert.equal(await cancelOwnedFloorPlanImport({ id: "reading", userId: "owner-2", now }, database), "not_found");
+  assert.equal(row.leaseToken, lease.token);
+
+  const leaseEnd = row.leaseExpiresAt;
+  assert.ok(leaseEnd && leaseEnd > now);
+  assert.equal(await cancelOwnedFloorPlanImport({ id: "reading", userId: "owner-1", now }, database), "cancelled");
+  assert.equal(row.status, "failed");
+  assert.equal(row.errorMessage, "Cancelled by owner");
+  assert.equal(row.progress, FLOOR_PLAN_IMPORT_PROGRESS.failed);
+  assert.equal(row.leaseToken, null);
+  assert.equal(row.leaseOwner, null);
+  // The lease's end stays, without its token: the worker can take until then to stop writing files.
+  assert.equal(row.leaseExpiresAt?.getTime(), leaseEnd.getTime());
+  // A repeated cancel (a lost answer, a second press) is answered as done.
+  assert.equal(await cancelOwnedFloorPlanImport({ id: "reading", userId: "owner-1", now }, database), "already_stopped");
+  assert.equal(row.errorMessage, "Cancelled by owner");
+
+  // The worker's next write is refused, so nothing more of the read lands.
+  const repository = new PrismaFloorPlanImportJobRepository(database);
+  await assert.rejects(
+    repository.transition("reading", "rendered", "extracted", {}, floorPlanLeaseGuard(lease)),
+    /changed while processing/
+  );
+  // Its heartbeat fails, which aborts the read and kills the vectorizer (worker.ts).
+  const heartbeatAt = new Date(now.getTime() + 30_000);
+  assert.equal((await service.renew({ lease, now: heartbeatAt })).renewed, false);
+  // Its failure release leaves the cancel as it is, with no retry scheduled.
+  const released = await service.releaseAfterFailure({
+    lease,
+    error: new Error("Floor-plan worker lease was lost"),
+    now: heartbeatAt,
+  });
+  assert.equal(released.outcome, "lease_lost");
+  assert.equal(row.status, "failed");
+  assert.equal(row.errorMessage, "Cancelled by owner");
+  assert.equal(row.nextAttemptAt, null);
+  // And no worker takes it up again.
+  assert.equal((await service.claimById({ jobId: "reading", workerId: "next", now: heartbeatAt })).outcome, "not_processable");
+  assert.notEqual((await service.claimNext({ workerId: "next", now: heartbeatAt })).outcome, "claimed");
+
+  // Deleting the upload's files waits for that lease's end, so nothing the worker writes meanwhile is left behind.
+  const purgeAt = (at: Date) =>
+    assessFloorPlanRetentionPurge({
+      asset: {
+        id: "asset-1",
+        ownerScope: "owner-1",
+        contentDeletedAt: null,
+        jobs: [{
+          id: "reading", userId: "owner-1", status: row.status,
+          sourceRetentionExpiresAt: new Date("2026-08-16T00:00:00.000Z"), sourceDeletionRequestedAt: null,
+          leaseToken: row.leaseToken, leaseExpiresAt: row.leaseExpiresAt, revision: null,
+        }],
+      },
+      targetJobId: "reading",
+      mode: "owner_requested",
+      ownerUserId: "owner-1",
+      now: at,
+    }).code;
+  assert.equal(purgeAt(heartbeatAt), "active_lease");
+  assert.equal(purgeAt(new Date(leaseEnd.getTime() + 1)), "purge");
+  // A worker that releases or claims the job between the cancel's read and its write changes the lease: the
+  // cancel reads again and lands on the new state.
+  const lateLeaseEnd = new Date(leaseEnd.getTime() + 60_000);
+  for (const [id, race] of [
+    ["released", (row: MutableJob) => Object.assign(row, { leaseToken: null, leaseOwner: null, leaseExpiresAt: null })],
+    ["claimed", (row: MutableJob) => Object.assign(row, { leaseToken: "late-claim", leaseOwner: "late-worker", leaseExpiresAt: lateLeaseEnd })],
+  ] as const) {
+    database.jobs.set(id, makeJob(id, { status: "rendered", leaseToken: "first", leaseOwner: "worker", leaseExpiresAt: leaseEnd }));
+    const updateMany = database.floorPlanImportJob.updateMany;
+    let raced = false;
+    database.floorPlanImportJob.updateMany = async (args: unknown) => {
+      const row = database.jobs.get(id);
+      if (!raced && row) {
+        raced = true;
+        race(row);
+      }
+      return updateMany(args);
+    };
+    assert.equal(await cancelOwnedFloorPlanImport({ id, userId: "owner-1", now }, database), "cancelled");
+    database.floorPlanImportJob.updateMany = updateMany;
+    const cancelled = database.jobs.get(id);
+    assert.equal(cancelled?.status, "failed");
+    assert.equal(cancelled?.leaseToken, null);
+    // Held for the lease that was live when the cancel landed (the late claim's, not the one first read), and
+    // none once the worker had let go.
+    assert.equal(cancelled?.leaseExpiresAt?.getTime() ?? null, id === "claimed" ? lateLeaseEnd.getTime() : null);
+  }
+
+  // A queued upload (no lease) is cancelled with nothing held back.
+  database.jobs.set("queued", makeJob("queued"));
+  assert.equal(await cancelOwnedFloorPlanImport({ id: "queued", userId: "owner-1", now }, database), "cancelled");
+  assert.equal(database.jobs.get("queued")?.leaseExpiresAt, null);
+
+  // A plan that finished reading, or made a design, is past cancelling.
+  database.jobs.set("finished", makeJob("finished", { status: "ready", progress: 100 }));
+  database.jobs.set("applied", makeJob("applied", { status: "needs_review", appliedDesignId: "design-1" }));
+  for (const id of ["finished", "applied"]) {
+    assert.equal(await cancelOwnedFloorPlanImport({ id, userId: "owner-1", now }, database), "too_late");
+    assert.notEqual(database.jobs.get(id)?.status, "failed");
+  }
+}
+
 async function main() {
   await testDuplicateClaims();
   await testExpiredLeaseClaimAndRecovery();
@@ -388,6 +519,7 @@ async function main() {
   await testHeartbeatReleaseAndRetry();
   await testReleaseAfterLateHeartbeat();
   await testFinishedJobLeaseIsCleared();
+  await testOwnerCancelStopsTheWorkerReadingIt();
   console.log("Floor-plan import worker recovery tests passed");
 }
 

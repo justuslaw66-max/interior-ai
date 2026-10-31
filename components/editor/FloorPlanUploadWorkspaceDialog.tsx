@@ -10,6 +10,7 @@ import {
   FLOOR_PLAN_WORKSPACE_HEADER_UPLOAD_ACTION_ID,
 } from "@/lib/floor-plan-upload-dialog-focus";
 import { Button } from "@/components/ui/Button";
+import { ignoreStrayFileDrop, useFloorPlanFileDrop } from "./useFloorPlanFileDrop";
 
 type FloorPlanUploadWorkspaceDialogProps = {
   open: boolean;
@@ -27,6 +28,26 @@ type FloorPlanUploadWorkspaceDialogProps = {
   onTrainingBenchmarkOptInChange: (value: boolean) => void;
 };
 
+/** Choose file, which also takes a file dragged onto it, the same as the drop box (J, 31 Oct). */
+function ChooseFileButton({ disabled, onChooseFile, onFileDropped }: {
+  disabled: boolean; onChooseFile: () => void; onFileDropped: (file: File) => void;
+}) {
+  const { dragging, dropProps } = useFloorPlanFileDrop(disabled, onFileDropped);
+  return (
+    <Button
+      id={FLOOR_PLAN_WORKSPACE_HEADER_UPLOAD_ACTION_ID}
+      data-floor-plan-workspace-focus="primary"
+      data-testid="floor-plan-workspace-choose-file"
+      data-dragging={dragging ? "true" : undefined}
+      variant="primary" size="touch"
+      className={dragging ? "ring-2 ring-focus ring-offset-2" : ""}
+      disabled={disabled}
+      onClick={onChooseFile}
+      {...dropProps}
+    >Choose file</Button>
+  );
+}
+
 function WorkspaceHeader({
   disabled,
   signedIn,
@@ -34,10 +55,11 @@ function WorkspaceHeader({
   historyConfirmationOpen,
   onClose,
   onChooseFile,
+  onFileDropped,
 }: Pick<
   FloorPlanUploadWorkspaceDialogProps,
   "disabled" | "closeButtonRef" | "historyConfirmationOpen" | "onClose" | "onChooseFile"
-> & { signedIn: boolean }) {
+> & { signedIn: boolean; onFileDropped: (file: File) => void }) {
   return (
     <header className="flex shrink-0 items-center justify-between gap-3 border-b border-separator bg-surface-elevated/95 px-4 py-3 sm:px-6 sm:py-4">
       <div className="min-w-0">
@@ -53,13 +75,7 @@ function WorkspaceHeader({
       </div>
       <div className="flex shrink-0 items-center gap-2">
         {signedIn ? (
-          <Button
-            id={FLOOR_PLAN_WORKSPACE_HEADER_UPLOAD_ACTION_ID}
-            data-floor-plan-workspace-focus="primary"
-            variant="primary" size="touch"
-            disabled={disabled}
-            onClick={onChooseFile}
-          >Choose file</Button>
+          <ChooseFileButton disabled={disabled} onChooseFile={onChooseFile} onFileDropped={onFileDropped} />
         ) : null}
         <button ref={closeButtonRef} id={FLOOR_PLAN_WORKSPACE_CLOSE_ACTION_ID}
           type="button" aria-label="Close floor plan upload"
@@ -95,6 +111,7 @@ export function FloorPlanUploadWorkspaceDialog(
       aria-modal="true" role="dialog" tabIndex={-1}
       className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-0 backdrop-blur-sm sm:p-4"
       data-testid="floor-plan-import-dialog" data-floor-plan-import-backdrop="true"
+      {...ignoreStrayFileDrop}
       onMouseDown={(event) => {
         if (!historyConfirmationOpen && event.target === event.currentTarget) onClose();
       }}>
@@ -102,7 +119,7 @@ export function FloorPlanUploadWorkspaceDialog(
         className="flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-surface-elevated text-label shadow-2xl outline-hidden sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-separator">
         <WorkspaceHeader disabled={disabled} signedIn={choose.signedIn} closeButtonRef={closeButtonRef}
           historyConfirmationOpen={historyConfirmationOpen} onClose={onClose}
-          onChooseFile={onChooseFile} />
+          onChooseFile={onChooseFile} onFileDropped={choose.onFileDropped} />
         <div className="min-h-0 flex-1 overflow-y-auto bg-surface-well p-3 sm:p-5 lg:p-6">
           <FloorPlanImportWorkspace request={request} choose={choose}
             trainingBenchmarkOptIn={trainingBenchmarkOptIn}

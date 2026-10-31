@@ -18,6 +18,8 @@ import {
   ACTIVE_FLOOR_PLAN_IMPORT_HINT_STORAGE_KEY,
 } from "@/lib/floor-plan-import-client";
 import { inverseFloorPlanAddressTransform } from "@/lib/floor-plan-consumer-orientation";
+import { cancelFloorPlanImportInBackground, requestFloorPlanImportCancel } from "@/components/editor/useFloorPlanImportCancel";
+import { UserFacingError } from "@/lib/user-facing-error";
 import { floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
 import { sourceDrawingStroke } from "@/lib/floor-plan-source-drawing";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
@@ -39,6 +41,8 @@ const assistant = [
   "components/editor/FloorPlanImportAssistant.tsx",
   "components/editor/useConsumerFloorPlanImportCreation.ts",
   "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx",
+  "components/editor/floor-plan-import-review/FloorPlanReviewHomeType.tsx",
+  "components/editor/floor-plan-import-review/useFloorPlanReviewHeights.ts",
   "components/editor/floor-plan-import-review/import-review-summary.ts",
   "components/editor/floor-plan-import-review/photo-review-action.ts",
   "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx",
@@ -670,7 +674,10 @@ assert.match(
   /deletedFromHistory: true[\s\S]*?designPreserved: true/,
   "Deleting import history must explicitly preserve the generated design."
 );
-assert.match(cancelRoute, /status: \{ in: \[\.\.\.CANCELLABLE_STATUSES\] \}[\s\S]*?leaseExpiresAt: \{ lte: now \}/);
+// The owner's cancel goes through owner-cancel.ts, which also stops a worker reading the plan
+// (scripts/test-floor-plan-import-worker-recovery.ts); it no longer waits for the lease to run out.
+assert.match(cancelRoute, /cancelOwnedFloorPlanImport\(\{ id, userId \}\)[\s\S]*?"not_found"[\s\S]*?404[\s\S]*?"too_late"[\s\S]*?409/);
+assert.doesNotMatch(cancelRoute, /leaseExpiresAt|being processed/);
 assert.match(retryRoute, /status: "failed"[\s\S]*?sourceRetentionExpiresAt[\s\S]*?repository\.create/);
 assert.match(
   retryDetectionRoute,
@@ -937,9 +944,59 @@ for (const view of ["FloorPlanSourceCompare.tsx", "FloorPlanSourceReviewOverlay.
   assert.doesNotMatch(source, /strokeWidth=\{[^}]*strokeWidthPx/, `${view} should not set a trace's line width by hand.`);
 }
 
+/** Cancel upload's request (J, 31 Oct): a cancelled or vanished upload is done; a refusal keeps the server's words. */
+async function assertCancelRequestOutcomes() {
+  const calls: string[] = [];
+  const answer = (status: number, body: unknown) =>
+    (async (input: string | URL | Request, init?: RequestInit) => {
+      calls.push(`${init?.method} ${String(input)}`);
+      return new Response(JSON.stringify(body), { status });
+    }) as typeof fetch;
+  await requestFloorPlanImportCancel("job 1", answer(200, { ok: true }));
+  assert.deepEqual(calls, ["POST /api/floor-plan-imports/job%201/cancel"]);
+  await requestFloorPlanImportCancel("gone", answer(404, { error: "Floor-plan import not found" }));
+  await assert.rejects(
+    requestFloorPlanImportCancel("ready", answer(409, { error: "This floor-plan import can no longer be cancelled" })),
+    (cause) => cause instanceof UserFacingError && cause.status === 409 && /can no longer be cancelled/.test(cause.message)
+  );
+  await assert.rejects(
+    requestFloorPlanImportCancel("broken", answer(500, "not json")),
+    (cause) => cause instanceof UserFacingError && cause.message === "Unable to cancel this upload"
+  );
+
+  // A cancel sent in the background (the file was still uploading) tries again after a server error, the rate
+  // limit or a dropped connection, since a job left uncancelled would be read; a 409 refusal is final.
+  const originalFetch = globalThis.fetch;
+  const backgroundCancel = async (answers: Array<number | "offline">) => {
+    let tries = 0;
+    const waited: number[] = [];
+    globalThis.fetch = (async () => {
+      const answer = answers[tries++];
+      if (answer === "offline") throw new TypeError("Failed to fetch");
+      return new Response("{}", { status: answer });
+    }) as typeof fetch;
+    const cancelled = await cancelFloorPlanImportInBackground("job", async (ms) => {
+      waited.push(ms);
+    });
+    return { cancelled, tries, waited };
+  };
+  try {
+    assert.deepEqual(await backgroundCancel([500, 429, 200]), { cancelled: true, tries: 3, waited: [2_000, 10_000] });
+    assert.deepEqual(await backgroundCancel(["offline", 404]), { cancelled: true, tries: 2, waited: [2_000] });
+    assert.deepEqual(await backgroundCancel([409]), { cancelled: false, tries: 1, waited: [] });
+    assert.deepEqual(
+      await backgroundCancel(["offline", "offline", "offline", "offline"]),
+      { cancelled: false, tries: 4, waited: [2_000, 10_000, 65_000] }
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+}
+
 Promise.all([
   assertBackgroundValidationKeepsPolling(),
   assertExactSearchRequestIdentityRaces(),
+  assertCancelRequestOutcomes(),
 ])
   .then(() => console.log("Floor-plan consumer flow guardrails passed."))
   .catch((cause) => {

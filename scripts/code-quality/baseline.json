@@ -197,7 +197,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
-      "lines": 672,
+      "lines": 568,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
@@ -537,7 +537,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/raster-linework.ts": {
-      "lines": 1091,
+      "lines": 1084,
       "limit": 400
     },
     "lib/floor-plan-imports/retention-outbox-worker.ts": {
@@ -1825,7 +1825,7 @@
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 560
+        "maximum": 458
       },
       "complexFunctions": {
         "count": 2,
@@ -1957,7 +1957,7 @@
     "components/editor/FloorPlanImportWorkspace.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 95
+        "maximum": 93
       }
     },
     "components/editor/FloorPlanOptionalConfigurationPanel.tsx": {
@@ -2135,11 +2135,11 @@
     "components/editor/useConsumerFloorPlanImportSession.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 158
+        "maximum": 155
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 21
+        "maximum": 20
       }
     },
     "components/GoogleAddressAutocomplete.tsx": {

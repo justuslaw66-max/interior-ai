@@ -6,8 +6,8 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 336,
-      "expectedPathSha256": "0095784e1a7b3a487f3047968a723fe9b54fe30c3da9dc55f8024a68f1a6398c"
+      "expectedFileCount": 337,
+      "expectedPathSha256": "8cbed1635850cae7b4b0f2aa93931c8d7a42d7143bf67258d1cb114837a78b4b"
     },
     {
       "id": "browser-specs",
@@ -506,7 +506,7 @@
       "blocking": true,
       "command": "npm run test:floor-plan-required",
       "packageScript": "test:floor-plan-required",
-      "packageClosure": { "expectedScriptCount": 64, "expectedSha256": "8990a9d4bfefd3106a051f523ca25cfd742c661aa765f2bf393525b11a2c9177" },
+      "packageClosure": { "expectedScriptCount": 65, "expectedSha256": "a868a9cfb4b31317fb5bc098a0978b3a47d2844db9c9702bf1dccd7cdf438acc" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-floor-plan-directory-privacy.ts",
@@ -1293,6 +1293,11 @@
           "id": "floor-plan-upload.ready-failure-upload",
           "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
           "title": "state transitions focus ready, failure, and image upload"
+        },
+        {
+          "id": "floor-plan-upload.drop-and-cancel",
+          "file": "tests/required/floor-plan-upload-accessibility.spec.ts",
+          "title": "Choose file takes a dropped plan, and Cancel upload stops it while uploading or waiting to be read"
         },
         {
           "id": "floor-plan-upload.registered-child",

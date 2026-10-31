@@ -15,6 +15,12 @@ import type {
   ConsumerFloorPlanImportProgressEstimate,
 } from "./floor-plan-import-ui-types";
 import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
+import {
+  isFloorPlanUploadCancelPending,
+  settleFloorPlanUploadCancel,
+  startFloorPlanUpload,
+  type FloorPlanUploadTicket,
+} from "./cancelledFloorPlanUploads";
 
 export type ConsumerFloorPlanImportState =
   | { kind: "idle" }
@@ -80,6 +86,26 @@ export async function loadConsumerFloorPlanImportJob(
   return job;
 }
 
+/**
+ * Uploads the ticket's file. If Cancel upload was pressed while it uploaded, the job it made is being
+ * cancelled (cancelledFloorPlanUploads.ts), and this ends the run as an abort would.
+ */
+async function uploadFloorPlanFile(upload: FloorPlanUploadTicket, trainingBenchmarkOptIn: boolean, signal: AbortSignal) {
+  const formData = new FormData();
+  formData.set("file", upload.file);
+  formData.set("trainingBenchmarkOptIn", trainingBenchmarkOptIn ? "true" : "false");
+  let created: Record<string, unknown> | null = null;
+  try {
+    created = await floorPlanImportResponseJson(
+      await fetch("/api/floor-plan-imports", { method: "POST", body: formData, signal })
+    );
+  } finally {
+    if (settleFloorPlanUploadCancel(upload, (created?.job as { id?: unknown } | undefined)?.id)) created = null;
+  }
+  if (!created) throw new DOMException("The upload was cancelled", "AbortError");
+  return created;
+}
+
 function progressMessage(status: FloorPlanImportStatus) {
   const messages: Partial<Record<FloorPlanImportStatus, string>> = {
     received: "Upload received",
@@ -120,6 +146,8 @@ export function useConsumerFloorPlanImportSession(input: {
     }
     const runId = ++runIdRef.current;
     const controller = new AbortController();
+    const uploadController = new AbortController();
+    const upload = file ? startFloorPlanUpload(file) : null;
     const isCurrent = () => !controller.signal.aborted && runIdRef.current === runId;
     setCandidate(null);
     setIssues([]);
@@ -138,18 +166,9 @@ export function useConsumerFloorPlanImportSession(input: {
       let recoveryJobId: string | null = resumeJobId;
       try {
         let next: { processUrl?: string; statusUrl?: string } | undefined;
-        if (file) {
+        if (upload) {
           setState({ kind: "working", message: "Uploading securely", progress: 2 });
-          const formData = new FormData();
-          formData.set("file", file);
-          formData.set("trainingBenchmarkOptIn", trainingBenchmarkOptIn ? "true" : "false");
-          const created = await floorPlanImportResponseJson(
-            await fetch("/api/floor-plan-imports", {
-              method: "POST",
-              body: formData,
-              signal: controller.signal,
-            })
-          );
+          const created = await uploadFloorPlanFile(upload, trainingBenchmarkOptIn, uploadController.signal);
           controller.signal.throwIfAborted();
           next = created.next as { processUrl?: string; statusUrl?: string } | undefined;
           const createdJob = created.job as { id?: unknown } | undefined;
@@ -231,7 +250,11 @@ export function useConsumerFloorPlanImportSession(input: {
     };
 
     void run();
-    return () => controller.abort();
+    return () => {
+      controller.abort();
+      // An upload whose Cancel upload was pressed is left to finish, so the job it makes is cancelled.
+      if (!isFloorPlanUploadCancelPending(upload)) uploadController.abort();
+    };
   }, [
     file,
     onActiveJobIdChange,

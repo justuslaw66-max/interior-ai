@@ -2178,7 +2178,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
     const vectorizerDiagnostics = await applyVectorizerEvidence({
       pages: this.vectorizerProvider ? vectorizerCandidatePages(pages, rasterEvidence?.pages ?? [],
         (page) => ownLineworkClosesRooms(page, registerSupportedPageTopology)) : [],
-      renderedPages, context, provider: this.vectorizerProvider,
+      renderedPages, source, context, provider: this.vectorizerProvider,
       pageLimit: boundedEnvironmentInteger("FLOOR_PLAN_VECTORIZER_MAX_PAGES", 1, 4),
       rankPages: rankFloorPlanSemanticPages,
       mergeSemantics: (deterministic, semantic, page) => mergeSemantics(deterministic, semantic, vectorizerReadingsLead(page)),

@@ -1,7 +1,10 @@
 "use client";
 
+import { useContext, type ReactNode } from "react";
 import { formatFloorPlanRemainingTime } from "@/lib/floor-plan-imports/progress-estimate";
+import { Button } from "@/components/ui/Button";
 import type { ConsumerFloorPlanImportState } from "./useConsumerFloorPlanImportSession";
+import { FloorPlanImportCancelContext, type FloorPlanImportCancel } from "./useFloorPlanImportCancel";
 
 type WorkingState = Extract<ConsumerFloorPlanImportState, { kind: "working" }>;
 
@@ -40,6 +43,50 @@ function timingMessage(estimate: WorkingState["estimate"]) {
   return formatFloorPlanRemainingTime(
     estimate?.remainingRangeMs ?? null,
     estimate?.confidence ?? null
+  );
+}
+
+/**
+ * Cancel upload, when the upload window offers it. Not the window's primary focus, so Enter can't
+ * cancel by accident; a refusal (the plan finished first, or no connection) is said under it.
+ */
+function CancelUploadAction() {
+  const cancel = useContext(FloorPlanImportCancelContext);
+  if (!cancel) return null;
+  return (
+    <div className="mt-5 flex flex-col items-center gap-2">
+      <Button data-testid="floor-plan-import-cancel" variant="secondary" size="touch" onClick={cancel.cancel}>
+        Cancel upload
+      </Button>
+      {cancel.error ? (
+        <p role="alert" className="max-w-lg text-xs text-on-danger-tint" data-testid="floor-plan-import-cancel-error">
+          {cancel.error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Gives the reading screen its Cancel. Once the cancel has gone to the server, a short card stands
+ * in for the upload, whose own screen may change meanwhile (a poll can see the cancelled job before
+ * the answer comes). The upload stays mounted, hidden, and the card comes first so the window's
+ * focus follows it. (A file still uploading doesn't wait here: the window goes back to the drop box.)
+ */
+export function FloorPlanImportCancelScope({ cancel, children }: { cancel: FloorPlanImportCancel; children: ReactNode }) {
+  return (
+    <FloorPlanImportCancelContext.Provider value={cancel}>
+      {cancel.stopping ? (
+        <div
+          className="flex min-h-[440px] flex-col items-center justify-center gap-1 rounded-xl border border-box-border bg-surface-elevated-secondary p-4 text-center shadow-sm sm:p-5"
+          data-testid="floor-plan-import-cancelling" data-floor-plan-workspace-state="cancelling" aria-busy="true"
+        >
+          <p className="text-sm font-semibold" role="status">Cancelling your upload…</p>
+          <p className={`text-sm ${subtle}`}>Stopping the AI and closing this upload.</p>
+        </div>
+      ) : null}
+      <div hidden={cancel.stopping}>{children}</div>
+    </FloorPlanImportCancelContext.Provider>
   );
 }
 
@@ -97,6 +144,7 @@ export function FloorPlanImportProgressCard({ state }: { state: WorkingState }) 
           Upload · Detection · Dimensions · Editable plan
         </div>
       </div>
+      <CancelUploadAction />
     </div>
   );
 }

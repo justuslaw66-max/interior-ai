@@ -144,6 +144,13 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   judgements were the same, one each way; they saw the squaring in 23. Two earlier versions lost such checks, with the
   squaring counted against them, on faults since fixed: lines set where they draw crisp turned grey lines black,
   letters' outlines and holes moved apart, and straight plans whose few lines lined up by chance were tilted.
+- `--trace=<picture> --to-page=a,b,c,d,e,f` traces another picture than the page and puts its drawing on the page by
+  that affine map (x' = a x + c y + e, y' = b x + d y + f), by straightening's rules: whole pixels, lettering moved
+  whole, straight lines set level and plumb after the lean the page keeps is read. The app passes the upload as it came
+  where its raster deskew turned the page square (31 Oct): turning resamples the page, and the trace drew its blurred
+  lettering and thin lines as grey blobs (s037 in the worker window), or found the page too soft to trace (s031). Of the
+  77 open test pages, the deskew turns those two (0.375 degrees each); the rest are traced exactly as before. Traced
+  from the upload, both draw clean, within a pixel of the turned page.
 - Up to `FLOOR_PLAN_FAITHFUL_TRACE_MAX_PIXELS` pixels (default 4,000,000) the trace works at twice the picture's size:
   about 350–400 MB of memory per million pixels of the picture (700–760 MB for a 1,400 px brochure page) and 30–50 s
   per page on one core. A larger page, up to three times that limit, is traced at its own size: about 110 MB per

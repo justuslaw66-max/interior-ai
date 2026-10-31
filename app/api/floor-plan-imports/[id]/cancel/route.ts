@@ -1,25 +1,18 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { FLOOR_PLAN_IMPORT_PROGRESS } from "@/lib/floor-plan-imports/status";
+import { rateLimit } from "@/lib/rateLimit";
+import { cancelOwnedFloorPlanImport } from "@/lib/floor-plan-imports/owner-cancel";
 
 export const runtime = "nodejs";
-
-const CANCELLABLE_STATUSES = [
-  "received",
-  "rendered",
-  "extracted",
-  "selecting_page",
-  "scale_solved",
-  "topology_built",
-  "validating",
-  "needs_review",
-] as const;
 
 function error(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
+/**
+ * The owner cancels an unfinished upload, which also stops a read under way (owner-cancel.ts). One
+ * that had already failed or been cancelled answers 200 too, so a repeated cancel is harmless.
+ */
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -27,43 +20,16 @@ export async function POST(
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return error("Unauthorized", 401);
+  const allowance = rateLimit(`floor-plan-cancel:${userId}`, 30, 60_000);
+  if (!allowance.ok) return error("Too many floor-plan cancellations", 429);
   const { id } = await params;
-  const now = new Date();
 
-  const cancelled = await prisma.floorPlanImportJob.updateMany({
-    where: {
-      id,
-      userId,
-      status: { in: [...CANCELLABLE_STATUSES] },
-      appliedDesignId: null,
-      revision: null,
-      OR: [{ leaseToken: null }, { leaseExpiresAt: { lte: now } }],
-    },
-    data: {
-      status: "failed",
-      statusChangedAt: now,
-      progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
-      errorMessage: "Cancelled by owner",
-      leaseToken: null,
-      leaseOwner: null,
-      leaseExpiresAt: null,
-      nextAttemptAt: null,
-    },
-  });
-  if (cancelled.count !== 1) {
-    const owned = await prisma.floorPlanImportJob.findFirst({
-      where: { id, userId },
-      select: { id: true, status: true, leaseToken: true, leaseExpiresAt: true },
-    });
-    if (!owned) return error("Floor-plan import not found", 404);
-    if (owned.leaseToken && owned.leaseExpiresAt && owned.leaseExpiresAt > now) {
-      return error("This import is being processed. Try cancelling after the current stage.", 409);
-    }
-    return error("This floor-plan import can no longer be cancelled", 409);
-  }
+  const outcome = await cancelOwnedFloorPlanImport({ id, userId });
+  if (outcome === "not_found") return error("Floor-plan import not found", 404);
+  if (outcome === "too_late") return error("This floor-plan import can no longer be cancelled", 409);
 
   return NextResponse.json(
-    { ok: true, job: { id, status: "failed", progress: 100, cancelled: true } },
+    { ok: true, job: { id, status: "failed", progress: 100, cancelled: outcome === "cancelled" } },
     { headers: { "Cache-Control": "private, no-store" } }
   );
 }

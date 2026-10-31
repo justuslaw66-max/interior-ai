@@ -326,11 +326,56 @@ function testFaceMillimetres() {
   assert.equal(vectorizerThicknessMm([[0, 0], [3, 10]], 113 / mm, mm), 115);
 }
 
+/** What the vectorizer pass hands the provider for one raster page the app turned (or not) on upload. */
+async function passedUpload(options: { applied: boolean; scale?: number; faithful?: boolean; source?: boolean }) {
+  const { default: sharp } = await import("sharp");
+  const upload = await sharp({ create: { width: 30, height: 20, channels: 3, background: "#ffffff" } }).png().toBuffer();
+  const t = (0.375 * Math.PI) / 180;
+  const k = options.scale ?? 1;
+  const toPage: [number, number, number, number, number, number] =
+    [Math.cos(t) * k, Math.sin(t) * k, -Math.sin(t) * k, Math.cos(t) * k, 0.1, -0.2];
+  const page: RegisteredPageEvidence = {
+    pageNumber: 1, widthPx: 30, heightPx: 20, vectorSegments: [], vectorPaths: [], text: [],
+    semantics: { roomLabels: [], dimensionLabels: [], openingSymbols: [], notes: [] },
+  };
+  const store = { readDerivative: async () => ({ id: "d", fileName: "page.png", mimeType: "image/png", byteLength: 1, sha256: "0".repeat(64), bytes: new Uint8Array([1]) }) };
+  const seen: Array<Parameters<PythonFloorPlanVectorizerProvider["analyzePage"]>[0]> = [];
+  await applyVectorizerEvidence({
+    pages: [page],
+    renderedPages: [{ pageNumber: 1, widthPx: 31, heightPx: 21, assetKey: "d", normalization: { kind: "raster_deskew_v1",
+      coordinateSpace: "exif_oriented_source_px_to_rendered_px", sourceWidthPx: 30, sourceHeightPx: 20, detectedSkewDegrees: 0.375,
+      appliedRotationDegrees: options.applied ? -0.375 : 0, confidence: 0.99, applied: options.applied, sourceToRendered: toPage } }],
+    source: options.source === false ? undefined : { bytes: new Uint8Array(upload) },
+    context: { ...context, store: store as unknown as FloorPlanAdapterContext["store"] },
+    provider: { id: "seen", drawsFaithfully: options.faithful ?? true, analyzePage: async (image) => { seen.push(image); throw new Error("stop"); } },
+    pageLimit: 1,
+    rankPages: (pages) => pages,
+    mergeSemantics: () => assert.fail("nothing to merge"),
+  });
+  assert.equal(seen.length, 1);
+  return { unturned: seen[0].unturned, toPage, sharp };
+}
+
+/** The upload as it came reaches the faithful trace only where the app turned the page at its own size, trace on. */
+async function testUnturnedUpload() {
+  const turned = await passedUpload({ applied: true });
+  assert.ok(turned.unturned, "a turned page: the upload goes with it");
+  assert.deepEqual(turned.unturned.toPage, turned.toPage, "with the turn's own map");
+  const meta = await turned.sharp(Buffer.from(turned.unturned.bytes)).metadata();
+  assert.deepEqual([meta.format, meta.width, meta.height], ["png", 30, 20], "oriented, as the app's normalization reads it");
+  assert.equal((await passedUpload({ applied: false })).unturned, undefined, "not turned: the page itself");
+  assert.equal((await passedUpload({ applied: true, scale: 0.5 })).unturned, undefined, "turned and reduced: the page");
+  assert.equal((await passedUpload({ applied: true, faithful: false })).unturned, undefined, "faithful trace off");
+  assert.equal((await passedUpload({ applied: true, source: false })).unturned, undefined, "no upload to hand");
+}
+
 async function main() {
   const summary: string[] = [];
   testStandaloneWalls();
   testStandaloneWallsLineUp();
   testFaceMillimetres();
+  await testUnturnedUpload();
+  summary.push("pass: the upload as it came goes to the faithful trace only where the app turned the page at its own size, trace on");
   for (const name of ["room4", "h1", "d12", "exec"]) {
     const { evidence, page, scale, document, issues } = await importFixture(name);
     assert.ok(scale, `${name}: the adapter's cross-checked solver accepts a scale from the vectorizer spans`);
@@ -594,10 +639,28 @@ async function main() {
       assert.equal(JSON.stringify(invalid.drawing), stage1Drawing, "a drawing outside the evidence's limits is not used");
       const slow = await faithfulRun("import time\ntime.sleep(30)\n", { ...faithfulConfig, faithfulTimeoutMs: 400 });
       assert.ok(slow.semantics.notes.some((note) => /^Faithful trace unavailable: .*exceeded 400 ms/.test(note)));
+      // Where the app turned the page square on upload, the faithful trace reads the upload as it came and puts its
+      // drawing into the page's pixels by the turn's map (turning resampled the page: s037's grey blobs, 31 Oct).
+      const turnMap = [0.999979, -0.006545, 0.006545, 0.999979, -0.107, 4.861];
+      const readsUpload = `import sys, json, os\nargs = dict(a[2:].split('=', 1) for a in sys.argv[3:])\n` +
+        `assert os.path.getsize(sys.argv[1]) == 3 and open(args['trace'], 'rb').read() == bytes([7, 7, 7, 7])\n` +
+        `assert args['to-page'] == '${turnMap.join(",")}'\n` +
+        `json.dump(json.loads(${JSON.stringify(JSON.stringify(faithfulDrawing))}), open(sys.argv[2], 'w'))\n`;
+      writeFileSync(path.join(directory, "faithful_drawing.py"), readsUpload);
+      const fromUpload = await new PythonFloorPlanVectorizerProvider(faithfulConfig).analyzePage(
+        { ...page, unturned: { bytes: new Uint8Array([7, 7, 7, 7]), toPage: turnMap } }, { timeoutMs: 30_000 });
+      assert.equal(fromUpload.drawing?.version, "faithful-trace-r6", "the upload as it came is traced, with the turn's map");
+      const pageOnly = `import sys, json\nassert not any(a.startswith(('--trace=', '--to-page=')) for a in sys.argv)\n` +
+        `json.dump(json.loads(${JSON.stringify(JSON.stringify(faithfulDrawing))}), open(sys.argv[2], 'w'))\n`;
+      writeFileSync(path.join(directory, "faithful_drawing.py"), pageOnly);
+      const badMap = await new PythonFloorPlanVectorizerProvider(faithfulConfig).analyzePage(
+        { ...page, unturned: { bytes: new Uint8Array([7]), toPage: [1, 0, 0] } }, { timeoutMs: 30_000 });
+      assert.equal(badMap.drawing?.version, "faithful-trace-r6", "a map that is not six numbers: the page is traced");
       const off = await faithfulRun("import sys\nsys.exit('must not run')\n", config);
       assert.equal(JSON.stringify(off.drawing), stage1Drawing);
       assert.ok(!off.semantics.notes.some((note) => note.startsWith("Faithful trace")), "off: not run");
       summary.push("provider: the faithful trace replaces stage 1's drawing when on; a page it leaves, a failure, an invalid drawing or a timeout keeps stage 1's, noted");
+      summary.push("provider: where the app turned the page square, the faithful trace reads the upload as it came, with the turn's map");
 
       // The page budget (FLOOR_PLAN_VECTORIZER_PAGE_BUDGET=1, beta step 2.1): the faithful trace runs inside the page's own
       // time limit. A page that reaches it with too little left comes back with stage 1's reading and drawing, noted; a
