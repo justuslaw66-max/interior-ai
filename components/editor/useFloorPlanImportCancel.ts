@@ -8,17 +8,14 @@ import {
 } from "@/lib/floor-plan-import-client";
 import { UserFacingError, userFacingErrorMessage } from "@/lib/user-facing-error";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
+import { cancelFloorPlanUploadOnArrival } from "./cancelledFloorPlanUploads";
 
 /** Cancel for the reading screen (J, 31 Oct). Only the upload window gives one, so only it shows the button. */
 export type FloorPlanImportCancel = {
   cancel: () => void;
-  /** Cancel was pressed: from then until the answer, or until a still-uploading file arrives. */
-  cancelling: boolean;
   /** The cancel has gone to the server; the screen behind may change meanwhile, so it is hidden. */
   stopping: boolean;
   error: string | null;
-  /** The window's, told while a pressed Cancel upload is on screen (FloorPlanImportCancelScope). */
-  onCancellingChange?: (cancelling: boolean) => void;
 };
 
 export const FloorPlanImportCancelContext = createContext<FloorPlanImportCancel | null>(null);
@@ -51,13 +48,12 @@ function forgetStoredImport(jobId: string) {
   }
 }
 
-type CancelPhase = "idle" | "waiting" | "sending";
 /** What the screen shows, for the upload it was shown for (`run`), so a new upload starts idle. */
-type CancelStatus = { run: unknown; phase: CancelPhase; error: string | null };
-const IDLE: CancelStatus = { run: null, phase: "idle", error: null };
+type CancelStatus = { run: unknown; stopping: boolean; error: string | null };
+const IDLE: CancelStatus = { run: null, stopping: false, error: null };
 
 /** The upload on screen and its cancel; `generation` moves on whenever the upload does. */
-type CancelRun = { key: unknown; jobId: string | null; generation: number; cancelling: boolean; waitingForJob: boolean };
+type CancelRun = { key: unknown; jobId: string | null; generation: number; cancelling: boolean };
 
 /**
  * Cancels `jobId`. `settle` hears how it went; `onCancelled` (back to the drop box) runs only if
@@ -76,11 +72,20 @@ async function sendCancel(run: CancelRun, jobId: string, settle: (error: string 
   }
 }
 
+/** A file still uploading when Cancel upload was pressed: its job is cancelled when it arrives. */
+function cancelOnArrival(file: File) {
+  cancelFloorPlanUploadOnArrival(file, (jobId) => {
+    void requestFloorPlanImportCancel(jobId).catch(() => undefined);
+  });
+}
+
 type FloorPlanImportCancelInput = {
   /** A new file being uploaded, whose job isn't known until the upload arrives. */
-  request: object | null;
+  request: { file: File } | null;
   /** The upload being resumed when there's no new file. */
   resumeJobId: string | null;
+  /** The window's count of uploads opened (its review session): opening the same one again is a new run. */
+  session: number;
   onActiveJobIdChange: (jobId: string | null) => void;
   onJobUpdate: (job: ConsumerFloorPlanImportJob) => void;
   /** Back to the drop box. */
@@ -89,46 +94,49 @@ type FloorPlanImportCancelInput = {
 
 /**
  * Cancel for the upload on screen. It learns the upload's job from the two callbacks it wraps (kept
- * stable, as the upload's effect depends on them), so a file still uploading is cancelled the
- * moment its job exists: cancelling the upload request itself could leave a job a worker would
- * still read.
+ * stable, as the upload's effect depends on them). With the job known, the cancel is sent and a card
+ * stands in until the answer. With the file still uploading, the window goes back to the drop box at
+ * once, and the upload, left to finish, has its job cancelled on arrival (cancelledFloorPlanUploads.ts).
  */
 export function useFloorPlanImportCancel(input: FloorPlanImportCancelInput) {
-  const { request, resumeJobId, onActiveJobIdChange, onJobUpdate, onCancelled } = input;
+  const { request, resumeJobId, session, onActiveJobIdChange, onJobUpdate, onCancelled } = input;
   const knownJobId = request ? null : resumeJobId;
-  const runKey = request ?? knownJobId;
-  const runRef = useRef<CancelRun>({ key: runKey, jobId: knownJobId, generation: 0, cancelling: false, waitingForJob: false });
+  const upload = request ?? knownJobId;
+  const runKey = useMemo(() => ({ upload, session }), [upload, session]);
+  const runRef = useRef<CancelRun>({ key: runKey, jobId: knownJobId, generation: 0, cancelling: false });
   const onCancelledRef = useRef(onCancelled);
   const [status, setStatus] = useState<CancelStatus>(IDLE);
   useEffect(() => {
     onCancelledRef.current = onCancelled;
   });
   // A new upload (or closing the window) retires the last one's cancel, so a late answer is ignored. Cleanups all run
-  // before any effect, so a resumed upload reporting its job from its own effect never meets a cancel left waiting.
+  // before any effect, so the next upload, reporting its job from its own effect, starts with a clean run.
   useEffect(() => {
     const run = runRef.current;
     Object.assign(run, { key: runKey, jobId: run.jobId ?? knownJobId });
     return () => {
-      Object.assign(run, { generation: run.generation + 1, jobId: null, cancelling: false, waitingForJob: false });
+      Object.assign(run, { generation: run.generation + 1, jobId: null, cancelling: false });
     };
   }, [runKey, knownJobId]);
 
-  const send = useCallback((jobId: string) => {
-    const key = runRef.current.key;
-    setStatus({ run: key, phase: "sending", error: null });
-    const settle = (error: string | null) =>
-      setStatus((current) => (current.run === key ? { run: key, phase: "idle", error } : current));
-    void sendCancel(runRef.current, jobId, settle, () => onCancelledRef.current());
-  }, []);
-
+  const file = request?.file ?? null;
   const cancel = useCallback(() => {
     const run = runRef.current;
+    const { jobId, key } = run;
     if (run.cancelling) return;
+    if (!jobId) {
+      // Still uploading: back to the drop box now; the job is cancelled when the upload arrives.
+      if (!file) return;
+      run.cancelling = true;
+      cancelOnArrival(file);
+      return onCancelledRef.current();
+    }
     run.cancelling = true;
-    if (run.jobId) return send(run.jobId);
-    run.waitingForJob = true;
-    setStatus({ run: run.key, phase: "waiting", error: null });
-  }, [send]);
+    setStatus({ run: key, stopping: true, error: null });
+    const settle = (error: string | null) =>
+      setStatus((current) => (current.run === key ? { run: key, stopping: false, error } : current));
+    void sendCancel(run, jobId, settle, () => onCancelledRef.current());
+  }, [file]);
 
   const trackJobId = useCallback((jobId: string | null) => {
     const run = runRef.current;
@@ -136,10 +144,7 @@ export function useFloorPlanImportCancel(input: FloorPlanImportCancelInput) {
     if (jobId !== run.jobId) setStatus((current) => (current.run === key && current.error ? IDLE : current));
     run.jobId = jobId;
     onActiveJobIdChange(jobId);
-    if (!jobId || !run.waitingForJob) return;
-    run.waitingForJob = false;
-    send(jobId);
-  }, [onActiveJobIdChange, send]);
+  }, [onActiveJobIdChange]);
 
   const trackJob = useCallback((job: ConsumerFloorPlanImportJob) => {
     runRef.current.jobId = job.id;
@@ -147,9 +152,6 @@ export function useFloorPlanImportCancel(input: FloorPlanImportCancelInput) {
   }, [onJobUpdate]);
 
   const shown = status.run === runKey ? status : IDLE;
-  const value = useMemo(
-    () => ({ cancel, cancelling: shown.phase !== "idle", stopping: shown.phase === "sending", error: shown.error }),
-    [cancel, shown]
-  );
+  const value = useMemo(() => ({ cancel, stopping: shown.stopping, error: shown.error }), [cancel, shown]);
   return { value, trackJobId, trackJob };
 }

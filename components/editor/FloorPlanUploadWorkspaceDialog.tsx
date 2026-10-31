@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useState, type RefObject } from "react";
+import type { RefObject } from "react";
 import { X } from "lucide-react";
 import FloorPlanImportWorkspace from "./FloorPlanImportWorkspace";
 import type { FloorPlanUploadChooseState } from "./FloorPlanUploadChooseStep";
@@ -105,8 +105,6 @@ export function FloorPlanUploadWorkspaceDialog(
     onTrainingBenchmarkOptInChange,
   }: FloorPlanUploadWorkspaceDialogProps
 ) {
-  // Choose file waits while Cancel upload is answered (FloorPlanImportCancelScope).
-  const [importCancelling, setImportCancelling] = useState(false);
   if (!open) return null;
   return createPortal(
     <div ref={dialogRef} aria-labelledby="floor-plan-import-dialog-title"
@@ -119,11 +117,11 @@ export function FloorPlanUploadWorkspaceDialog(
       }}>
       <section ref={panelRef} data-testid="floor-plan-import-dialog-panel" tabIndex={-1}
         className="flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden bg-surface-elevated text-label shadow-2xl outline-hidden sm:h-[calc(100dvh-2rem)] sm:max-w-[1600px] sm:rounded-2xl sm:border sm:border-separator">
-        <WorkspaceHeader disabled={disabled || importCancelling} signedIn={choose.signedIn} closeButtonRef={closeButtonRef}
+        <WorkspaceHeader disabled={disabled} signedIn={choose.signedIn} closeButtonRef={closeButtonRef}
           historyConfirmationOpen={historyConfirmationOpen} onClose={onClose}
           onChooseFile={onChooseFile} onFileDropped={choose.onFileDropped} />
         <div className="min-h-0 flex-1 overflow-y-auto bg-surface-well p-3 sm:p-5 lg:p-6">
-          <FloorPlanImportWorkspace request={request} choose={choose} onImportCancellingChange={setImportCancelling}
+          <FloorPlanImportWorkspace request={request} choose={choose}
             trainingBenchmarkOptIn={trainingBenchmarkOptIn}
             disabled={disabled} proMode={proMode} onChooseFile={onChooseFile}
             onHistoryConfirmationOpenChange={onConfirmationOpenChange}

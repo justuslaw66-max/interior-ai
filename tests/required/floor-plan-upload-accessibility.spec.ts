@@ -686,7 +686,8 @@ test("Choose file takes a dropped plan, and Cancel upload stops it while uploadi
   await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
   expect(uploads).toHaveLength(0);
 
-  // Dropped on Choose file, the plan uploads as if picked. Cancel waits for the upload to arrive, then cancels it.
+  // Dropped on Choose file, the plan uploads as if picked. Cancel while it uploads goes back to the drop box at
+  // once; the upload is left to finish, even with the window closed, and its job is cancelled when it arrives.
   await dropPlan();
   await expect(page.getByTestId("floor-plan-import-progress")).toBeVisible();
   await expect.poll(() => uploads.length).toBeGreaterThan(0);
@@ -695,17 +696,16 @@ test("Choose file takes a dropped plan, and Cancel upload stops it while uploadi
   await expect(cancelUpload).toHaveText("Cancel upload");
   await expect(cancelUpload).not.toBeFocused();
   await cancelUpload.click();
-  await expect(cancelUpload).toHaveText("Cancelling…");
-  await expect(cancelUpload).toHaveAttribute("aria-disabled", "true");
-  // A new file now would drop the cancel waiting for this upload, so Choose file waits too.
-  await expect(chooseFile).toBeDisabled();
+  await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
+  await expectFocusInside(page);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Upload floor plan" })).toHaveCount(0);
   expect(cancels).toHaveLength(0);
   releaseUpload();
   await expect.poll(() => cancels).toEqual(["/api/floor-plan-imports/ch0015i-job/cancel"]);
+  expect(await page.evaluate((key) => localStorage.getItem(key), ACTIVE_IMPORT_KEY)).toBeNull();
+  await openWorkspace(page, "consumer", "pointer");
   await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
-  await expect(chooseFile).toBeEnabled();
-  await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), ACTIVE_IMPORT_KEY)).toBeNull();
-  await expectFocusInside(page);
 
   // Waiting to be read: Cancel goes to the server at once, and a short card stands in until it answers.
   let answerCancel!: () => void;
@@ -718,7 +718,6 @@ test("Choose file takes a dropped plan, and Cancel upload stops it while uploadi
   const uploadsBefore = uploads.length;
   await dropPlan();
   await processing;
-  await expect(cancelUpload).toBeEnabled();
   await cancelUpload.click();
   const cancelling = page.getByTestId("floor-plan-import-cancelling");
   await expect(cancelling).toBeVisible();
@@ -731,8 +730,8 @@ test("Choose file takes a dropped plan, and Cancel upload stops it while uploadi
   await expectFocusInside(page);
   expect(uploads.length).toBeGreaterThan(uploadsBefore);
 
-  // Cancel pressed while uploading, and then the upload fails: that cancel goes with it, so an older upload
-  // opened next from the history is left alone (a review found it cancelled, 31 Oct).
+  // Cancelled while uploading, and the upload then fails: nothing shows, nothing is cancelled, and an older upload
+  // opened next from the history is left alone (a review found one cancelled, 31 Oct).
   let failUpload!: () => void;
   const uploadMayFail = new Promise<void>((resolve) => {
     failUpload = resolve;
@@ -743,14 +742,21 @@ test("Choose file takes a dropped plan, and Cancel upload stops it while uploadi
     await route.fulfill({ status: 500, contentType: "application/json", body: '{"error":"Synthetic upload failure"}' })
       .catch(() => undefined);
   });
-  state.job = { ...importJob("needs_review", minimalDocument(true)), id: "ch0015i-older-job" };
   await dropPlan();
-  await expect(cancelUpload).toHaveText("Cancel upload");
+  await expect(cancelUpload).toBeVisible();
+  state.job = { ...importJob("needs_review", minimalDocument(true)), id: "ch0015i-older-job" };
+  const historyListed = page.waitForResponse(
+    (response) => response.request().method() === "GET" && new URL(response.url()).pathname === "/api/floor-plan-imports"
+  );
   await cancelUpload.click();
-  await expect(cancelUpload).toHaveText("Cancelling…");
+  await expect(page.getByTestId("floor-plan-import-dialog-empty-state")).toBeVisible();
+  await historyListed;
+  const uploadFailed = page.waitForResponse(
+    (response) => response.request().method() === "POST" && new URL(response.url()).pathname === "/api/floor-plan-imports"
+  );
   failUpload();
-  await expect(page.getByText("Synthetic upload failure")).toBeVisible();
-  await expect(chooseFile).toBeEnabled();
+  await uploadFailed;
+  await expect(page.getByText("Synthetic upload failure")).toHaveCount(0);
   await page.getByTestId("floor-plan-import-secondary-options").locator("summary").first().click();
   await page.getByText("Your uploads", { exact: true }).click();
   await page.getByTestId("floor-plan-import-history-ch0015i-older-job").getByRole("button", { name: "Resume" }).click();

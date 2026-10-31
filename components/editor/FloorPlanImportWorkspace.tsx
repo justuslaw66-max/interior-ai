@@ -15,8 +15,6 @@ type FloorPlanImportWorkspaceProps = {
   disabled: boolean; proMode: boolean;
   onChooseFile: () => void; onHistoryConfirmationOpenChange: (open: boolean) => void;
   onTrainingBenchmarkOptInChange: (value: boolean) => void;
-  /** Cancel upload was pressed and hasn't been answered yet. */
-  onImportCancellingChange?: (cancelling: boolean) => void;
 };
 
 function useHistoryConfirmationGuard(onChange: (open: boolean) => void) {
@@ -31,14 +29,14 @@ function useHistoryConfirmationGuard(onChange: (open: boolean) => void) {
 
 export default function FloorPlanImportWorkspace({
   request, choose, trainingBenchmarkOptIn, disabled, proMode,
-  onChooseFile, onHistoryConfirmationOpenChange, onTrainingBenchmarkOptInChange, onImportCancellingChange,
+  onChooseFile, onHistoryConfirmationOpenChange, onTrainingBenchmarkOptInChange,
 }: FloorPlanImportWorkspaceProps) {
   const {
     activeRequest, resumeJobId, resumeFileName, lastUpload, activeImportJobId, historyRefreshKey,
     activeJobSnapshot, reviewSession, selectImportJob, recordActiveImportJob, recordJobUpdate,
   } = useFloorPlanImportSelection(request, choose.accountKey ?? "guest");
   const { secondaryOptionsOpen, setSecondaryOptionsOpen, setHistoryConfirmationOpen } = useHistoryConfirmationGuard(onHistoryConfirmationOpenChange);
-  const cancelImport = useFloorPlanImportCancel({ request: activeRequest, resumeJobId,
+  const cancelImport = useFloorPlanImportCancel({ request: activeRequest, resumeJobId, session: reviewSession,
     onActiveJobIdChange: recordActiveImportJob, onJobUpdate: recordJobUpdate, onCancelled: () => selectImportJob(null) });
   const subtle = "text-label-secondary";
   const hasActiveImport=Boolean(activeRequest||resumeJobId);
@@ -54,7 +52,7 @@ export default function FloorPlanImportWorkspace({
           </p>
         ) : null}
         {hasActiveImport ? (
-          <FloorPlanImportCancelScope cancel={cancelImport.value} onCancellingChange={onImportCancellingChange}><FloorPlanImportAssistant
+          <FloorPlanImportCancelScope cancel={cancelImport.value}><FloorPlanImportAssistant
             key={reviewSession}
             file={activeRequest?.file ?? null}
             resumeJobId={activeRequest ? null : resumeJobId} resumeFileName={resumeFileName}
