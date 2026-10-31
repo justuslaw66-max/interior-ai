@@ -145,9 +145,27 @@ def programs_directory():
     return HERE, "default (this folder)"
 
 
+def check_name_reader():
+    """the name reader (name_reader.py, RapidOCR on ONNX Runtime): with FLOOR_PLAN_NAME_READER=1 it must load from the
+    image alone (its model files ship inside its package; nothing is fetched at run time) and read a word, or FAIL;
+    otherwise a missing reader is a WARN"""
+    on = os.environ.get("FLOOR_PLAN_NAME_READER") == "1"
+    try:
+        import cv2
+        import numpy as np
+        from rapidocr_onnxruntime import RapidOCR
+        img = np.full((60, 260, 3), 255, np.uint8)
+        cv2.putText(img, "BEDROOM", (12, 42), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 0, 0), 2, cv2.LINE_AA)
+        result, _ = RapidOCR()(img)
+        words = " ".join(str(r[1]) for r in (result or []))
+        return check("name reader", "BEDROOM" in words.upper(), "RapidOCR read %r%s" % (words, "" if on else " (off)"), warn=not on)
+    except Exception as cause:
+        return check("name reader", False, "%s -- worker.Dockerfile installs rapidocr_onnxruntime with --no-deps" % cause, warn=not on)
+
+
 def check_programs(directory, note):
     ok = True
-    for name in ("floorplan_vectorize.py", "app_evidence.py", "faithful_drawing.py", "faithful_trace.py"):
+    for name in ("floorplan_vectorize.py", "app_evidence.py", "faithful_drawing.py", "faithful_trace.py", "name_reader.py"):
         path = os.path.join(directory, name)
         present = os.path.isfile(path)
         if present:
@@ -288,6 +306,7 @@ def main():
     programs = check_programs(directory, note)
     check_settings()
     check_seg_model()
+    check_name_reader()
     if run is not None:
         if modules and tesseract and programs:
             run_programs(directory, None if run is True else run)

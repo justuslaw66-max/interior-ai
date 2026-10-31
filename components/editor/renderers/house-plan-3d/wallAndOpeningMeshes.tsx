@@ -757,14 +757,8 @@ export function WallSurfacePanelMesh({
     wallThickness,
     { squareStart, squareEnd }
   );
-  const settings = getWallPanelSurfaceSettings(
-    surfaces,
-    panel.faceId,
-    selectionPanelId,
-    normalizeFloorRotationDeg,
-    clampFloorPatternScale,
-    [panel.panelId, ...panel.legacyPanelIds]
-  );
+  const settings = getWallPanelSurfaceSettings(surfaces, panel.faceId, selectionPanelId, normalizeFloorRotationDeg,
+    clampFloorPatternScale, [panel.panelId, ...panel.legacyPanelIds], panel.inheritsWholeWall !== false);
   const hasSharedSupport =
     getSharedWallRoomIds(room, rooms, segment, panel.part).length > 0;
   const pickEnabledRef = useRef(baseOpacity > 0.01);
@@ -885,6 +879,7 @@ export function OpeningThresholdMesh({
   threshold,
   segment,
   wallThickness,
+  panelDepth = 0,
   sourceOpening,
   floorWorldY,
   interactive,
@@ -900,6 +895,8 @@ export function OpeningThresholdMesh({
   threshold: OpeningThreshold3D;
   segment: WallSegment3D;
   wallThickness: number;
+  /** The host face's laminate panel depth, so the outline stands in front of the panel (lib/room-wall-finish-depths.ts). */
+  panelDepth?: number;
   sourceOpening?: RoomRendererOpening;
   floorWorldY: number;
   interactive: boolean;
@@ -926,7 +923,7 @@ export function OpeningThresholdMesh({
   const outlineStyle = getStructureOutlineStyle(targetKey, hoveredTargetKey, selectedTargetKey);
   const thresholdDepth = wallThickness * 1.35;
   const jambHalfWidth = threshold.length / 2;
-  const highlightDepth = thresholdDepth + 0.024;
+  const highlightDepth = Math.max(thresholdDepth + 0.024, wallThickness + 2 * (panelDepth + 0.003));
   const highlightThickness = 0.035;
   const jambBaseY = 0.024;
   const jambTopY = Math.max(jambBaseY + 0.2, threshold.height - 0.02);

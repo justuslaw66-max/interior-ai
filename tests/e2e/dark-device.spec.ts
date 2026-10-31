@@ -9,6 +9,7 @@ import { waitForEditorHydration } from "./variant-test-utils";
 test.use({ colorScheme: "dark" });
 
 const BLACK = "rgb(0, 0, 0)";
+const WHITE = "rgb(255, 255, 255)";
 const CANVAS_CARD_DARK = "rgb(28, 28, 30)";
 // The 3D view's light background (#F4F2ED), which exports keep from a dark page (dark mode PR 4).
 const EXPORT_BACKGROUND_LIGHT = "rgb(244, 242, 237)";
@@ -90,9 +91,10 @@ test.describe("a dark device", () => {
     expect(await cornerColour(page, await readFile(picturePath))).toBe(EXPORT_BACKGROUND_LIGHT);
   });
 
-  test("keeps Admin and the export page light", async ({ page }) => {
+  test("keeps Admin and the export page light, the window too", async ({ page }) => {
     await page.goto("/admin", { waitUntil: "domcontentloaded" });
-    expect((await documentScheme(page)).colorScheme).toBe("dark");
+    // A page held light holds the whole window light (J, 29 Oct): what shows past its ends is white.
+    await expect.poll(() => documentScheme(page)).toEqual({ attribute: null, colorScheme: "light", body: WHITE });
     // Admin's own colours (operations-dashboard.module.css): #F4F3EE behind, #1C211F words.
     expect(await heldLightColours(page, '[data-color-scheme="light"]')).toEqual({
       colorScheme: "light",
@@ -104,7 +106,7 @@ test.describe("a dark device", () => {
     try {
       const response = await page.goto(`/share/${seed.shareToken}/export`, { waitUntil: "domcontentloaded" });
       expect(response?.status()).toBe(200);
-      expect((await documentScheme(page)).colorScheme).toBe("dark");
+      await expect.poll(() => documentScheme(page)).toEqual({ attribute: null, colorScheme: "light", body: WHITE });
       // The export page and its PDF stay light (plan decision 6), its words dark (#0B0D12).
       expect(await heldLightColours(page, 'main[data-color-scheme="light"]')).toEqual({
         colorScheme: "light",

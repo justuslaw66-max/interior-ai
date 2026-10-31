@@ -15,6 +15,8 @@ import {
 } from "@/lib/api-boundary";
 import { logOperationalEvent } from "@/lib/observability";
 
+// Every link POST writes is a new token, and DELETE clears it, so a link turned off never works
+// again, even when the design is shared again later (CH-0010).
 function makeToken() {
   return crypto.randomBytes(24).toString("base64url");
 }
@@ -96,7 +98,7 @@ export async function POST(
     );
   }
 
-  let token = regenerate ? makeToken() : design.shareToken ?? makeToken();
+  let token = makeToken();
   let updatedToken: string | null = null;
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -186,7 +188,8 @@ export async function DELETE(
 
   const updated = await prisma.design.updateMany({
     where: { id, userId: session.user.id },
-    data: { shareEnabled: false },
+    // Clearing the token as well makes turning sharing off final for that link (CH-0010).
+    data: { shareEnabled: false, shareToken: null },
   });
   if (updated.count !== 1) throw new ApiBoundaryError(404, "NOT_FOUND", "Design not found.");
 

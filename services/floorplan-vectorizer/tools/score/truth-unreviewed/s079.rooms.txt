@@ -1,0 +1,98 @@
+# s079 - Executive Apartment (Atrium Block-End), scale 1:100. Typed from the plan image only.
+# Ignored: dimension strings, the title "EXECUTIVE APARTMENT (ATRIUM BLOCK-END) / SCALE 1:100", the dashed hollow fin pieces on top of
+# the black columns at the top edge (x 76-83 y 32-52, x 147-153 y 55-68, x 211-217 y 55-72, x 278-283 y 55-72).
+# Labels: line break = one blank ("BATH/" + "W.C." -> "BATH/ W.C."); "LIVING/DINING" is printed in one line, rotated.
+# Two spaces labelled BALCONY (top-left, beside MAIN BEDROOM, and the rotated one at the right of the STUDY), two BEDROOM, two
+# BATH/ W.C. - listed in this order: top-left balcony, left bedroom (x 152-209), right bedroom (x 213-280), left bath, right bath.
+# LIVING/DINING includes the lobby in front of the MAIN BEDROOM / left BEDROOM / right BEDROOM doors (x 153-213, y 183-200) and the
+# entrance foyer; they are open to the living floor at their full width.
+# MAIN BEDROOM includes the small lobby below it (x 82-152, y 183-200): no wall between it and the bedroom, the left bath door
+# opens off it.
+space: BALCONY
+space: MAIN BEDROOM
+space: BEDROOM
+space: BEDROOM
+space: BATH/ W.C.
+space: BATH/ W.C.
+space: SERVICE BALCONY
+space: KITCHEN
+space: STORE
+space: LIVING/DINING
+# STUDY: alcove closed by the BEDROOM wall above (y 181), the outer wall at the right (x 277) and the R1400 curved wall at the
+# lower left; open to the living floor through a 1.35 m opening with nothing drawn across (x 217-222, y 216-244) -> separate
+# space with a gap (UNCERTAIN: could equally be read as part of LIVING/DINING).
+space: STUDY
+space: BALCONY
+# Not spaces: the duct box and drying pieces around the STORE (x 196-220, y 378-402; x 222-236, y 368-391).
+
+# main entrance: door (arc inward, x 241-262, y 376-386) + gate (arc outward, x 222-246, y 392-421) in the diagonal wall
+# x 224-243, y 389-408 -> one line
+door: LIVING/DINING | OUTSIDE
+# main bedroom: arc hinged at (152,200), open leaf along the bath top wall, closed position across the 0.9 m opening x 152,
+# y 182-200 between the black column end and the bath corner
+door: MAIN BEDROOM | LIVING/DINING
+# left BEDROOM: arc x 193-210, y 162-181
+door: BEDROOM | LIVING/DINING
+# right BEDROOM: arc x 215-233, y 182-199, hinged at (215,199), swings into the bedroom bay; closes across x 215, y 182-199
+door: BEDROOM | LIVING/DINING
+# folding (V) door in the top wall of the left bath, x 83-98, y 202-208, from the main-bedroom lobby
+door: BATH/ W.C. | MAIN BEDROOM
+# right bath: only a triangle (folding-door symbol) at the bottom, x 136-147, y 250-256, over a hatched wall band -> door to the
+# service balcony (UNCERTAIN: could be the sash mark of a louvre window, but then this bath would have no door at all)
+door: BATH/ W.C. | SERVICE BALCONY
+# opening about 1 m wide with nothing drawn in it between the black column (x 120-126, y 295-303) and the black corner
+# (x 148-153, y 295-300)
+gap: KITCHEN | SERVICE BALCONY
+# store door: leaf hinged at about (205,378), arc x 194-219, y 361-382, opens into the kitchen
+door: STORE | KITCHEN
+# kitchen / living: the wall (x 170,318 -> 234,379) is a double line, but between x 207,y 352 and x 222,y 367 only ONE line is
+# drawn across an opening about 1.0 m wide (end cap of the second line at (206,352)) -> sliding door (rule of 4 Oct 2026)
+# (UNCERTAIN: could be plain wall)
+door: KITCHEN | LIVING/DINING
+# door of the STUDY to the right BALCONY: closed position x 277, y 237-254 between two black columns, arc x 257-277, y 237-254,
+# label "100 DROP"
+door: STUDY | BALCONY
+# opening to the STUDY alcove, see above
+gap: STUDY | LIVING/DINING
+# right BALCONY / LIVING/DINING: ONE line (x 281,y 262 -> x 338,y 318, about 3.8 m) between the black column and the black end wall,
+# with the "100 DROP" label along it -> sliding door (rule of 4 Oct 2026) (UNCERTAIN: very wide; could be a floor edge)
+door: BALCONY | LIVING/DINING
+# top-left BALCONY / MAIN BEDROOM: ONE line (y 95-97, x 82-146, about 3.1 m) with dark panel overlaps at x 125-139 and the
+# "100 DROP" label below it -> sliding door (rule of 4 Oct 2026)
+door: BALCONY | MAIN BEDROOM
+
+# windows (listed in the same order as the duplicated spaces above)
+# MAIN BEDROOM: left outer wall (x 76-83): long glazed slot y 105-137, then a black wall piece (y 137-150), then glazing
+# y 150-179 (small panel y 150-160 + panel y 160-178, no solid piece between) -> 2 (UNCERTAIN: y 150-179 might be two)
+windows: MAIN BEDROOM = 2
+# left BEDROOM: top wall, one casement pair (V sashes) x 177-200, y 76-89
+windows: BEDROOM = 1
+# right BEDROOM: top wall casement pair x 225-250, y 76-89, and a glazed opening with an outward sash arc in the right wall
+# (x 277-283, y 105-125)
+windows: BEDROOM = 2
+# baths: hatched bands in the bottom walls, left x 82-102 and right x 127-147, y 253-257, both facing the service balcony
+# (the right one also carries the triangle drawn as a door above - see the door note)
+windows: BATH/ W.C. = 1
+windows: BATH/ W.C. = 1
+# SERVICE BALCONY: three-line glazing band in its bottom wall x 82-120, y 294-301 (a post at x 96-100 does not split it)
+windows: SERVICE BALCONY = 1
+# KITCHEN: glazing with casement arcs in the west wall (x 119-126, y 302-335) + the long hatched glazing band in the
+# south-west diagonal wall (x 130-166, y 350-383)
+windows: KITCHEN = 2
+# STUDY: glazed opening with an outward sash arc in the outer wall x 277-283, y 208-230
+windows: STUDY = 1
+# LIVING/DINING: glazed slot in the wall shared with the SERVICE BALCONY (x 149-153, y 274-293), faces the balcony
+windows: LIVING/DINING = 1
+
+entrance: LIVING/DINING
+
+# UNCERTAIN (source px):
+# - STUDY alcove: separate space with gap (x 217-222, y 216-244) vs part of LIVING/DINING
+# - right bath door vs window: triangle x 136-147, y 250-256 over hatched band x 127-147
+# - KITCHEN | LIVING/DINING single line x 207-222, y 352-367 (sliding door vs plain wall); the kitchen has no other way out to
+#   the living floor
+# - right BALCONY single line (281,262)-(338,318) and top-left BALCONY single line y 95-97 x 82-146: sliding door vs floor edge
+# - MAIN BEDROOM window count on the left wall (x 76-83, y 105-179)
+# - small glazed slots with outward arcs (x 277-283, y 105-125 and y 208-230) counted as windows, not doors
+# - KITCHEN window count (x 119-126, y 302-335 and x 130-166, y 350-383); long band could be two
+# - LIVING/DINING window onto the service balcony (x 149-153, y 274-293)

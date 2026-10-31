@@ -1,0 +1,46 @@
+# s007 - small HDB flat (one bedroom, living/dining, kitchen, bath, shelter, A/C ledge). Typed from the plan image only
+# (dimension figures ignored; the picture has no caption).
+# Labels: a printed line break is one blank ("LIVING/" + "DINING", "BATH/" + "WC", "AIR-" "CON" "LEDGE", "HOUSE-" "HOLD" "SHELTER").
+# The entrance foyer (x 412-545, y 540-655) is open to LIVING/ DINING at its full width -> part of LIVING/ DINING.
+space: LIVING/ DINING
+space: BEDROOM
+# KITCHEN (x 207-410, y 567-757): its right side towards the foyer is a DASHED line (x 412, y 567-655), no wall, no leaf; the
+# rest of its right wall (x 400-412, y 655-757) is solid. Dashed = optional partition, read like s001's / s004's / s005's
+# dashed kitchen wall -> separate labelled space opening to LIVING/ DINING (uncertain).
+space: KITCHEN
+space: BATH/ WC
+space: AIR- CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Not typed: the unlabelled drying-rack recess with vertical poles west of the kitchen (x 150-193, y 582-757), outer side a
+# thin line only (same as the drying-rack recess left out in s001, s004, s005).
+
+# main entrance: unequal double leaf (inner arc swings north into the foyer, small side leaf) + gate arcing south, same opening
+# x 438-540, y 655-685 -> one line
+door: LIVING/ DINING | OUTSIDE
+# BEDROOM / LIVING/ DINING: three staggered sliding leaves (x 401-410, y 163-270) drawn stacked at the top of the opening, which
+# runs between the track box (x 395-412, y 150-163) and the stub box (x 395-412, y 378-400) -> triple sliding door, drawn open.
+# The rest of the east side of the bedroom (y 270-378) is open floor because the leaves are stacked away (uncertain: could be
+# read as an open-plan bedroom).
+door: BEDROOM | LIVING/ DINING
+# folding (V) door in the bath's right wall (x 376-402, y 497-548), from the foyer side
+door: BATH/ WC | LIVING/ DINING
+# household-shelter door: hinged leaf in the shelter's left wall (x 527-545, y 430-500), leaf drawn open along y 435 (x 462-528)
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# dashed line across the kitchen entrance (nothing built, see the KITCHEN note). Door-sized (about 1.1 m, jamb to jamb), so by
+# the 4 Oct rule for solid lines it would be a sliding door; read here as an unbuilt (dashed) partition line -> gap (uncertain)
+gap: KITCHEN | LIVING/ DINING
+
+# Top wall: windows are the framed boxes with a middle line; the pale thin double-line pieces between them (x 200-237, 333-372,
+# 453-477, 600-622, y 135-150) are wall panels, not glazing.
+# BEDROOM: top window x 238-333 + glazed panel (white box with inner slit) in the left wall x 165-190, y 185-345
+windows: BEDROOM = 2
+# LIVING/ DINING: top window x 478-599, y 137-148
+windows: LIVING/ DINING = 1
+# BATH/ WC: window (white box with inner bar) in its left wall x 250-257, y 472-540, faces the AIR- CON LEDGE. The pale double
+# line x 248-316, y 402-412 between the bath and the bedroom is a thin wall (no middle line), not a window.
+windows: BATH/ WC = 1
+# KITCHEN: framed glazed box in its left wall x 195-207, y 610-733, facing the drying-rack recess (counted as 1, as in s001;
+# uncertain)
+windows: KITCHEN = 1
+
+entrance: LIVING/ DINING

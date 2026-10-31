@@ -1,0 +1,66 @@
+# s077 - 4-ROOM NEW FLAT (CORRIDOR), drawn rotated about 45 degrees. Typed from the plan image only ("4-ROOM NEW FLAT (CORRIDOR)",
+# "SCALE 1:100", the 45 degree angle mark and dimension strings are captions; "100 DROP" is a floor-drop note, not a label).
+# ACCESS BALCONY (label at x 185-290, y 395, below the flat) is the shared corridor outside the flat = OUTSIDE, not a space.
+# Orientation used in the notes: the long outer wall with the black piers runs from the SW (x 50, y 225) to the NE (x 232, y 50)
+# and carries MAIN BEDROOM and BEDROOM 2; the wet core (baths) and the kitchen are at the top right; the living room is the large
+# area at the right/centre; BEDROOM 3 is at the bottom left.
+# The lobby in front of the MAIN BEDROOM, STORE, BEDROOM 2 and BEDROOM 3 doors (about x 175-230, y 200-250) has no wall to the living
+# room (it opens to it at its full width, the "1700" lobby) -> part of LIVING ROOM.
+# Not typed: the shaft with a cross (x 342-365, y 38-72), the drying-rack bars (x 340-352, y 78-118), the sink beside the kitchen
+# shaft, and a narrow unlabelled ledge/louvre strip outside the MAIN BEDROOM window (x 193-225, y 85-125: about 0.5 x 1.8 m, with a
+# small door-like arc and steps at its ends, open at its NE end to the outside) - uncertain, read as an outside ledge, not a room.
+space: MAIN BEDROOM
+space: BEDROOM 2
+space: BEDROOM 3
+space: STORE
+space: BATH/ W.C. 1
+space: BATH/ W.C. 2
+space: KITCHEN
+space: LIVING ROOM
+
+# main entrance in the black east wall of the living room (x 312-327, y 320-343): big leaf arc swinging into the living room and a
+# pair of small gate leaves swinging outward ("100 DROP") in the same opening -> one line
+door: LIVING ROOM | OUTSIDE
+# MAIN BEDROOM door at its south corner: arc drawn inside the bedroom, hinged near (174,212), closes the opening in its SE wall
+# between the wall end (188,199) and the end of the bedroom 2 partition (x 160-175, y 195-225)
+door: MAIN BEDROOM | LIVING ROOM
+# BEDROOM 2 door: large arc inside the bedroom (x 167-176, y 213-246), in its NE wall between the partition end (172,214) and the black
+# pier (178-194, 229-244)
+door: BEDROOM 2 | LIVING ROOM
+# BEDROOM 3 door: arc inside the bedroom below the black pier (x 178-208, y 247-259), between the pier and the start of its chamfered
+# NE wall at (208,249)
+door: BEDROOM 3 | LIVING ROOM
+# STORE door at its SW end: hatched leaf drawn along the store's NW wall (x 193-208, y 184-196) with its arc (x 190-222, y 196-204)
+door: STORE | LIVING ROOM
+# BATH/ W.C. 1 door: gap in the wall shared with MAIN BEDROOM (x 222-232, y 123-137, wall double line starts again at 232,137), arc
+# inside the bath (x 228-240, y 112-136) ("100 DROP")
+door: BATH/ W.C. 1 | MAIN BEDROOM
+# BATH/ W.C. 2 door: leaf drawn as a thin triangle with its arc inside the bath (x 272-294, y 85-114) in the wall facing the kitchen
+# (the wall at the bath's east corner, x 293, y 98-114, or the NE wall next to it)
+door: BATH/ W.C. 2 | KITCHEN
+# KITCHEN doorway in its SW wall: the double-line wall ends at (296,201) and only ONE thin line (the outer wall line) continues for
+# about 1.0 m (x 297-313, y 201-216) to the black corner at (313,216); "100 DROP" printed beside it -> sliding door
+# (rule of 4 Oct 2026). Uncertain: could equally be a plain doorway (gap).
+door: KITCHEN | LIVING ROOM
+
+# Window rule used here: only glazing symbols count (hatched / dotted grey band, mullion dots, casement arcs). Plain double thin
+# lines between the black piers (the NW wall of MAIN BEDROOM x 123-168, y 108-154 and of BEDROOM 2 x 60-107, y 169-217) are drawn
+# like the interior partitions and like the plain parts of the SW wall, so they are read as WALL (uncertain: if they are glazing,
+# MAIN BEDROOM and BEDROOM 2 would each have one more window).
+# MAIN BEDROOM: hatched band in its NE wall (x 192-217, y 95-121, "1300"), facing the outside ledge strip
+windows: MAIN BEDROOM = 1
+# BEDROOM 2: hatched band in the SW wall (x 94-128, y 258-293), facing the access balcony
+windows: BEDROOM 2 = 1
+# BEDROOM 3: hatched band in the SW wall (x 130-163, y 295-326); the south wall x 190-236, y 352-358 and the east wall x 236 are
+# plain double lines -> not counted
+windows: BEDROOM 3 = 1
+# The two baths share one dotted glazing band in their NW wall (x 222-268, y 78-125, on the line x+y = 347); it runs across the
+# partition between them without a solid piece, so it is counted once for each bath (uncertain: could be one window for both).
+windows: BATH/ W.C. 1 = 1
+windows: BATH/ W.C. 2 = 1
+# KITCHEN: triple casement (three leaf arcs) in the top wall, one frame (x 289-340, y 30-42, "2800"); the east wall x 352 is plain
+windows: KITCHEN = 1
+# LIVING ROOM: glazed three-line band in the south wall between the black piers (x 240-312, y 352-360, "3200")
+windows: LIVING ROOM = 1
+# STORE: no window.
+entrance: LIVING ROOM

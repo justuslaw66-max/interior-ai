@@ -1,0 +1,48 @@
+# s010 - 2 Room Apartment (Type 2), Type-1B(H) (HDB). Typed from the plan image only ("Page 1 of 2", the type caption, dimension
+# figures and the note "FOR UNIT NO. 110, 126, 182, 206 & 222 ONLY" with its arrow ignored). Labels: a printed line break is one
+# blank (LIVING/ + DINING, BATH/ + WC, HOUSE- + HOLD + SHELTER, AIR- + CON + LEDGE).
+# LIVING/ DINING: the foyer in front of the shelter door and the entrance (x 275-335, y 350-515) is open to it at its full width
+# -> part of LIVING/ DINING. BEDROOM's lower strip above the bath (x 338-455, y 300-357) belongs to BEDROOM.
+space: LIVING/ DINING
+space: BEDROOM
+space: KITCHEN
+space: BATH/ WC
+space: AIR- CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Drying-rack recess above the kitchen window (x 422-513, y 420-445): no label, enclosed by thin lines on its top (y 418), left
+# (x 422) and right (x 513) sides and the kitchen window wall below; separate from AIR- CON LEDGE (a line at y 418 between them).
+# Typed as an unlabelled space - uncertain. The dashed box at its east end (x 513-522, y 418-442) belongs to the note "FOR UNIT
+# NO. ... ONLY" (optional, some units) and is not typed.
+# consistency pass (decided readings): the drying-rack recess is not a space
+
+# Main entrance: unequal double leaf (small arc x 318-330, large arc x 278-322, inward) + gate (same arcs outward) in the opening
+# x 276-333, y 513-527 -> counted once.
+door: LIVING/ DINING | OUTSIDE
+# Shelter door: leaf drawn closed in its frame (x 263-272, y 445-477), arc swings east into the foyer.
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# BEDROOM west side (x 335-343): a thin wall-like panel (x 337-343, y 222-300) with a fainter leaf line (x 335, y 283-332) and the
+# opening below (y 300-347) -> sliding partition, one door line.
+door: BEDROOM | LIVING/ DINING
+# BATH/ WC has two folding (V) doors: one in its top wall (V with apex down, x 340-379, y 358-378) onto BEDROOM ...
+door: BATH/ WC | BEDROOM
+# ... and one in its bottom wall (V with apex up, x 358-398, y 430-447) onto KITCHEN.
+door: BATH/ WC | KITCHEN
+# KITCHEN west side (x 337, y 452-497, between the bath's bottom-left wall box and the black column): ONE line drawn across the
+# door-sized opening, jamb to jamb -> sliding door (rule of 4 Oct 2026). UNCERTAIN: the same line is the long dimension extension
+# line (x 335, from the bath wall at y 347 down to the 1500 | 4700 dimension tick at y 570); if read as that, the opening is a
+# doorway (gap).
+# consistency pass (decided readings): the line across the kitchen side is the dimension extension line, nothing else drawn -> doorway
+gap: KITCHEN | LIVING/ DINING
+
+# LIVING/ DINING: one window in the top wall (x 240-313, three sashes); the west wall (x 208-213) is solid black wall.
+windows: LIVING/ DINING = 1
+# BEDROOM: top-wall window (x 373-433) + window in its east wall (x 449-458, y 277-322, between black wall pieces), facing outside.
+windows: BEDROOM = 2
+# KITCHEN: window band in its top wall (x 430-502, y 445-452, mullions at x 454, 478) faces the drying-rack recess. The bottom wall
+# (x 353-513, y 520-523) is two thin plain lines between black columns: wall.
+windows: KITCHEN = 1
+# BATH/ WC: window in the wall shared with AIR- CON LEDGE (x 416-421, y 372-404, grey-filled strip)
+windows: BATH/ WC = 1
+# AIR- CON LEDGE: the grey strip on its east edge (x 450-454, y 363-410) is read as the ledge's louvre / railing, not a window.
+
+entrance: LIVING/ DINING

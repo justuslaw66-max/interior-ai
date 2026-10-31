@@ -4,6 +4,7 @@ import {
   type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
 import type { RoomRendererOpening } from "@/lib/design-page-plan-overlays";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import { GeneratedWindowFrame3D } from "../GeneratedWindowFrame3D";
 import { OpeningThresholdMesh } from "./wallAndOpeningMeshes";
 import {
@@ -25,6 +26,8 @@ export type LegacyPhysicalOpeningAssembly = {
   segment: WallSegment3D;
   threshold: OpeningThreshold3D;
   sourceOpening: RoomRendererOpening;
+  /** The deepest laminate panel on the wall's faces around the opening, both rooms' on a shared wall. */
+  panelDepth: number;
 };
 
 export type RenderableLegacyPhysicalOpeningAssembly =
@@ -102,9 +105,12 @@ export function buildLegacyPhysicalOpeningAssemblies({
     );
     const chosen = candidates[0];
     if (!chosen) return [];
+    const faceDepth = ({ room, segment }: (typeof candidates)[number]) =>
+      getRoomWallFinishDepths(room)[getWallSurfaceFaceId(room, segment)] ?? 0;
     return [{
       ...chosen,
       sourceOpening: opening,
+      panelDepth: Math.max(0, ...candidates.map(faceDepth)),
       stableKey: `${opening.physicalWallId ?? opening.hostPhysicalSegmentKey ?? "opening"}:${opening.id}`,
     }];
   });
@@ -226,6 +232,7 @@ function LegacyOpeningAssembly({ assembly, selectedOpeningId, ...thresholdProps 
         threshold={assembly.threshold}
         segment={assembly.segment}
         wallThickness={assembly.wallThickness}
+        panelDepth={assembly.panelDepth}
         sourceOpening={assembly.sourceOpening}
         floorWorldY={assembly.floorWorldY}
         {...thresholdProps}

@@ -1,8 +1,9 @@
 import { CONDO_FILE_NAME, CONDO_SLUG } from "./condo-map-data";
 
 /**
- * Which of the condo map's files the admin data route serves: `<slug>/map.json`, `<slug>/plans/<picture>` and
- * `<slug>/models/<model>.glb`, by plain names only, so a request can't reach anything else under the app.
+ * Which of the condo map's files the admin data route serves: `<slug>/map.json`, `<slug>/plans/<picture>`,
+ * `<slug>/overlays/<plan>.webp` (a unit's plan on its floor) and `<slug>/models/<model>.glb`, by plain names only, so a
+ * request can't reach anything else under the app.
  */
 const CONTENT_TYPES: Readonly<Record<string, string>> = {
   glb: "model/gltf-binary",
@@ -15,6 +16,7 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
 
 const FOLDER_TYPES: Readonly<Record<string, readonly string[]>> = {
   plans: ["png", "jpg", "jpeg", "webp"],
+  overlays: ["webp"],
   models: ["glb"],
 };
 

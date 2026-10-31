@@ -1,0 +1,50 @@
+# s041 - 3-ROOM MODEL 'A' (CORRIDOR), HDB 1982-89. Typed from the plan image only (title, scale, dimensions, "HDB 3-Room Model A..."
+# footer and banner ignored).
+# "ACCESS BALCONY" (printed below the plan, y 700) is the shared access corridor = OUTSIDE, not a space (as in room4). The REFUSE
+# CHUTE box (x 163-208, y 112-165, crossed) is a shaft, not a space; the small box beside it (x 210-220, y 128-148) is a fixture.
+# The entrance porch with "UP 400" steps (x 330-354, y 618-663) belongs to the entrance door (door + gate) and the corridor side.
+# LIVING ROOM takes in the lobby east of the STORE (x 262-320, y 373-430): it is open to the living area at its full width
+# (no wall or door), and the STORE, MAIN BEDROOM and BEDROOM doors open into it / its edge.
+space: KITCHEN/DINING
+space: LIVING ROOM
+space: STORE
+space: MAIN BEDROOM
+space: BEDROOM
+space: BATH/ WC 2
+space: BATH/ WC 1
+# Not typed: sink/hob (x 190-212, y 180-250), WC pans and basins (D-shapes at x 283-300 y 163-187, x 305-325 y 190-215).
+
+# main entrance: door (large quarter arc x 290-328, y 618-653) + gate (fan / lens arcs x 330-348, y 618-655) in the same opening of
+# the wall x 328-330 (y 618-655), counted once; leads from the porch / access balcony side into LIVING ROOM
+door: LIVING ROOM | OUTSIDE
+# KITCHEN/DINING bottom wall: opening x 258-296 (about 0.9 m) between the thick wall pieces, with ONE thin line across it at y 369
+# (the wall's upper edge continued, no leaf) -> one line across a door-sized opening -> sliding door by the rule of 4 Oct 2026.
+# UNCERTAIN: it could equally be read as a plain doorway (gap).
+door: KITCHEN/DINING | LIVING ROOM
+# STORE: hinged leaf in its right wall (hinge at x 255, y 375; arc x 255-290, y 375-408), swings out into the lobby (part of LIVING ROOM)
+door: STORE | LIVING ROOM
+# MAIN BEDROOM: leaf in its left wall (x 326, y 386-420; arc x 326-358), swings into the bedroom
+door: MAIN BEDROOM | LIVING ROOM
+# BEDROOM: leaf in its left wall (x 326, y 432-468; arc x 326-358), swings into the bedroom
+door: BEDROOM | LIVING ROOM
+# BATH/ WC 2: leaf in its left wall (x 300-305, y 122-157; arc x 305-337) with a "100 DROP" arrow, opens from the kitchen/dining
+door: BATH/ WC 2 | KITCHEN/DINING
+# BATH/ WC 1: leaf in its right wall at the bottom (x 372, y 222-258; arc x 345-372), opens into the upper-right part of MAIN BEDROOM
+door: BATH/ WC 1 | MAIN BEDROOM
+
+# KITCHEN/DINING: one continuous glazed frame x 205-296, y 92-117 in the top wall (gallery side): narrow light x 205-220, single
+# casement x 220-246, double casement x 246-296 (mullions at x 221 and x 245) -> ONE window (uncertain: could be two or three)
+windows: KITCHEN/DINING = 1
+# BATH/ WC 2: hatched window with dashed centre in its right wall, x 372-376, y 108-135; BATH/ WC 1: same, x 372-376, y 160-182
+# (both face the open area east of the baths)
+windows: BATH/ WC 2 = 1
+windows: BATH/ WC 1 = 1
+# MAIN BEDROOM: glazed band x 376-448, y 190-217 in the upper-right top wall: double casement x 377-423 and single casement x 424-448
+# in one frame -> ONE window (uncertain: could be two)
+windows: MAIN BEDROOM = 1
+# BEDROOM: glazing band x 337-432, y 612-618 in the bottom wall (access balcony side), between the black wall pieces
+windows: BEDROOM = 1
+# LIVING ROOM: glazing band x 213-306, y 657-663 in the bottom wall (access balcony side)
+windows: LIVING ROOM = 1
+# Right walls of MAIN BEDROOM / BEDROOM (x 450-460) and the left wall (x 183-190) are solid thick black: no windows.
+entrance: LIVING ROOM

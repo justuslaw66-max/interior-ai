@@ -1,0 +1,32 @@
+# c24 - typed from the plan image only (low-quality scan with watermarks; "Area 56 sqm" caption ignored)
+# LIVING, DINING and KITCHENETTE plus the entrance hall: no wall or door between them -> one space.
+space: LIVING + DINING + KITCHENETTE
+space: PES
+space: MASTER BEDROOM
+space: MASTER BATH
+space: A/C LEDGE
+space: CD SHELTER
+space: BEDROOM 1
+space: BATH 1
+# Not counted: "SH" (shower cubicle, fixture label) inside MASTER BATH and BATH 1; F, S fixture letters; crossed riser box.
+
+door: OUTSIDE | LIVING
+# shelter door drawn as a slanted heavy leaf, no arc
+door: CD SHELTER | LIVING
+door: MASTER BEDROOM | LIVING
+door: MASTER BATH | MASTER BEDROOM
+door: BEDROOM 1 | LIVING
+door: BATH 1 | LIVING
+# sliding door (heavy line with arrow)
+door: PES | LIVING
+
+# MASTER BEDROOM window faces the A/C LEDGE
+windows: MASTER BEDROOM = 1
+windows: MASTER BATH = 1
+windows: BEDROOM 1 = 1
+# Bottom wall under DINING: a stretch drawn as a thin double line between two thick wall blocks - read as a
+# window, but the scan is poor so this is uncertain.
+windows: LIVING = 1
+# A grey smudge on the outer wall beside the kitchenette sink might be a small window; too unclear, not counted.
+
+entrance: LIVING

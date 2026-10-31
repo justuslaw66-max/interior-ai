@@ -30,7 +30,8 @@ WORKDIR /app
 COPY services/floorplan-vectorizer/requirements.txt services/floorplan-vectorizer/requirements.txt
 RUN python3 -m venv services/floorplan-vectorizer/.venv \
  && services/floorplan-vectorizer/.venv/bin/pip install --no-cache-dir --upgrade pip \
- && services/floorplan-vectorizer/.venv/bin/pip install --no-cache-dir -r services/floorplan-vectorizer/requirements.txt
+ && services/floorplan-vectorizer/.venv/bin/pip install --no-cache-dir -r services/floorplan-vectorizer/requirements.txt \
+ && services/floorplan-vectorizer/.venv/bin/pip install --no-cache-dir --no-deps rapidocr_onnxruntime==1.3.24
 
 # The worker is `ts-node` over the repository, so devDependencies are needed: install before NODE_ENV=production.
 COPY package.json package-lock.json ./
@@ -48,7 +49,8 @@ ENV NODE_ENV=production \
     FLOOR_PLAN_VECTORIZER_TESSERACT=5.3
 
 # The runtime must be whole, or the image is not worth having.
-RUN services/floorplan-vectorizer/.venv/bin/python3 services/floorplan-vectorizer/doctor.py --run
+# (and the name reader whole, its models in the image, whether or not FLOOR_PLAN_NAME_READER is on for this worker)
+RUN FLOOR_PLAN_NAME_READER=1 services/floorplan-vectorizer/.venv/bin/python3 services/floorplan-vectorizer/doctor.py --run
 
 RUN chown -R node:node /app
 USER node

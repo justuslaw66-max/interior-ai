@@ -71,13 +71,11 @@ type SharedSaveInput = {
 type ManualSaveInput = SharedSaveInput & {
   state: SharedSaveInput["state"] & {
     isAuthenticated: boolean;
-    isDesigner: boolean;
     itemsCount: number;
   };
   actions: SharedSaveInput["actions"] & {
     setDesignId: (designId: string) => void;
     fetchShareStatus: (designId: string) => Promise<void>;
-    enableShare: (designId: string) => Promise<void>;
     showRuleToast: (message: string) => void;
   };
   refs: { firstSave: MutableRefObject<boolean> };
@@ -151,7 +149,6 @@ function commitManualSave(
   actions.setLastCloudSaveError(null);
   actions.setCloudSaveConflict(null);
   void actions.fetchShareStatus(saved.designId);
-  if (state.isDesigner) void actions.enableShare(saved.designId);
   if (!input.refs.firstSave.current) {
     track("design_saved_db", {
       design_id: saved.designId,

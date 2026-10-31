@@ -1,0 +1,76 @@
+# s044 - HDB Executive Maisonette (corridor), 146 sqm. Typed from the plan image only (title, scale, dimensions, teoalida
+# banner ignored).
+# two floors
+# LOWER FLOOR PLAN is the left drawing (x 72-410), UPPER FLOOR PLAN the right drawing (x 470-800).
+# LOWER FLOOR: LIVING ROOM and DINING ROOM are one long open space along the left side (x 77-243/290, y 165-585): no wall or
+# door anywhere between them; the staircase (UP 16R, x 77-135, y 345-480) is part of it. The nook in front of the entrance
+# door (x 252-291, y 583-625) is open to the dining room at its top -> part of it.
+# "ACCESS BALCONY" (printed under the dimensions) is the shared corridor = OUTSIDE, not a space.
+space: LIVING ROOM + DINING ROOM
+space: BALCONY
+space: KITCHEN
+space: W.C.3
+space: UTILITY
+# UPPER FLOOR: the VOID rectangles (x 477-595, y 320-350; x 545-595, y 405-478; below the bedrooms x 477-790, y 632-680)
+# are not spaces. The central landing (x 598-684, y 318-478, with the corridor to the BATH/ W.C.2 door, x 640-731,
+# y 400-436) has no label; the upper end of the staircase (x 478-590, y 355-400) opens into it at x 586 (no wall, the arrow
+# points into the landing) -> one unlabelled space.
+space: MAIN BEDROOM
+space: BATH/ W.C.1
+space: BATH/ W.C.2
+space: BEDROOM 3
+space: BEDROOM 2
+space: (unlabelled upper landing with staircase)
+# Not typed: the duct boxes with a cross (x 375-400 y 292-345 lower; x 770-805 y 297-348 upper), fixtures, kitchen counter.
+
+# LOWER FLOOR doors
+# main entrance: opening in the wall line y 625, x 252-291: big arc swings up into the dining room nook (x 253-290,
+# y 583-625, "100 DROP"), two small gate arcs swing out below (y 625-648) -> door + gate counted once
+door: LIVING ROOM | OUTSIDE
+# sliding glass door in the wall between balcony and living room (y 160-166, x 77-285, "100 DROP"), panels drawn
+door: BALCONY | LIVING ROOM
+# UTILITY: opening in its left wall (x 300, y 506-543), leaf hinged at the kitchen wall corner (303, 506), arc x 303-350,
+# swings into the utility
+door: UTILITY | LIVING ROOM
+# KITCHEN left wall: ONE line (the wall's kitchen-side line, x 247) is drawn across the 0.8 m opening between two jambs
+# (x 247, y 437-470, "100 DROP") -> sliding door (rule of 4 Oct 2026). Uncertain: the line may only be the 100 mm step
+# (threshold) line.
+door: KITCHEN | LIVING ROOM
+# W.C.3 door: opening in its right wall (x 292, y 305-343), leaf drawn open along its top wall, arc x 255-292, into W.C.3
+door: W.C.3 | KITCHEN
+
+# UPPER FLOOR doors (hinged leaves with swing arcs)
+# main bedroom: opening x 600-638 at its bottom-right corner (y 300-318), leaf hinged at x 631, arc swings into the bedroom
+door: MAIN BEDROOM | (unlabelled upper landing with staircase)
+# bath 1: opening in its top wall (x 643-682, y 300, "100 DROP"), arc inside the bath, opens up into the main bedroom
+door: BATH/ W.C.1 | MAIN BEDROOM
+# bath 2: opening in its left wall (x 731, y 398-434, "100 DROP"), arc inside the bath, opens to the landing corridor
+door: BATH/ W.C.2 | (unlabelled upper landing with staircase)
+# bedroom 3: opening in its top wall (x 597-630, y 478), arc inside the bedroom
+door: BEDROOM 3 | (unlabelled upper landing with staircase)
+# bedroom 2: opening in its top-left (x 648-686, y 478), arc inside the bedroom
+door: BEDROOM 2 | (unlabelled upper landing with staircase)
+
+# LOWER FLOOR windows
+# DINING part of the open space: glazed band in the bottom wall (x 100-240, y 618-625, multi-line, "3900"), a plain white
+# strip x 77-100 to its left; counted under LIVING ROOM (first label of the open-plan space). The living room walls
+# (x 77-80 and x 290-297) are plain double thin lines. The BALCONY top edge (y 90-97, "= =" dashes) is the parapet, same
+# drawing as the access-balcony railing at y 686-700: not counted.
+windows: LIVING ROOM = 1
+# KITCHEN: glazed top wall x 296-372 (1800) with three outward casement leaves (arcs x 296-321, 321-346, 346-372) -> one window
+windows: KITCHEN = 1
+# UTILITY: grey glazing in its bottom wall (x 326-370, y 618-625)
+windows: UTILITY = 1
+
+# UPPER FLOOR windows
+# MAIN BEDROOM: long glazed band in the top wall (x 497-652, y 158-165) in three sash sections -> one window
+windows: MAIN BEDROOM = 1
+# BATH/ W.C.1 and 2: dashed glazing in the top wall (x 690-712 and x 745-768, y 297-302), facing the ledge strip y 285-297
+windows: BATH/ W.C.1 = 1
+windows: BATH/ W.C.2 = 1
+# BEDROOM 3 and BEDROOM 2: one multi-line glazed band each in the bottom wall facing the void over the access balcony
+# (x 500-628 and x 642-760, y 618-632)
+windows: BEDROOM 3 = 1
+windows: BEDROOM 2 = 1
+
+entrance: LIVING ROOM

@@ -16,6 +16,7 @@ import {
   resolveTemplateFurnishingProduct,
 } from "@/lib/design-page-template-furnishings";
 import { metersToMm, type FixedElement2D, type RoomOpening2D } from "@/lib/editorScene";
+import { templateCeilingHeightM } from "@/lib/home-height-rules";
 import { createRoom, type DesignItem, type RoomSnapshot } from "@/lib/room-types";
 import { fitTemplateFurnishing, productFootprint, type PlacedFootprint } from "@/lib/template-furnishing-layout";
 
@@ -200,8 +201,10 @@ function furnishingItem(
  */
 export function buildPlanTemplateDocument(
   template: HousePlanTemplate,
-  options: PlanTemplateDocumentOptions
+  requested: PlanTemplateDocumentOptions
 ): PlanTemplateDocument {
+  // a condo or HDB template opens at that home's ceiling height (lib/home-height-rules.ts); any other, at the room's
+  const options = { ...requested, roomHeight: templateCeilingHeightM(template.tags) ?? requested.roomHeight };
   const roomIds = new Map<string, string>();
   const rooms = template.rooms.map((templateRoom, index) => {
     const room = templateRoomSnapshot(template, templateRoom, index, options);

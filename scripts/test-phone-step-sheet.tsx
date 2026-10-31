@@ -156,13 +156,19 @@ assert.match(half, /<div data-testid="phone-sheet-inspector" hidden=""><\/div><d
 const inspectorSource = read("components/editor/design-page/DesignPageSelectionInspector.tsx");
 const placementSource = read("components/editor/design-page/selectionInspectorPlacement.ts");
 assert.match(placementSource, /const takesOver = isPhoneSheetInspectorSelection\(state\);\s*const inSheet = !wide && Boolean\(sheet\.slot\) && takesOver;/);
-assert.match(placementSource, /if \(inSheet\) return \{ shown: true, inSheet, portalTarget: sheet\.slot \};/, "In the sheet, it goes into the slot.");
-assert.match(inspectorSource, /const placement = useInspectorPlacement\(state, configuration\);/);
+assert.match(placementSource, /if \(inSheet\) return \{ shown: true, inSheet, portalTarget: sheet\.slot, attach: setElement \};/, "In the sheet, it goes into the slot.");
+assert.match(inspectorSource, /const \{ attach, \.\.\.placement \} = useInspectorPlacement\(state, configuration, `\$\{state\.summary\.kind\}:\$\{state\.summary\.title\}`, roomSelectionActive\);/);
+// On a tablet, a room's inspector waits while the Plan panel's room card is open (30 Oct 2026).
+assert.match(placementSource, /const roomInPanel = tablet && roomCardShown && room;[\s\S]*?shown: wide && !roomInPanel,/);
+assert.match(inspectorSource, /<div ref=\{attach\} data-testid="selection-inspector"/);
+// Docked in the Plan rail, the inspector scrolls into view when the selection changes (30 Oct 2026).
+assert.match(placementSource, /useRevealDockedInspector\(element, docked && !inSheet && takesOver, selectionKey\);/);
+assert.match(placementSource, /if \(above < 0\) rail\.scrollTop \+= above;\s*else if \(below > 0\) rail\.scrollTop \+= Math\.min\(below, above\);/);
 assert.match(placementSource, /if \(placement\.inSheet\) return \{ className: surface, clearSize: "touch" as const,[\s\S]*?clearSize: "icon" as const, style \};/, "Done is a 44px target; × Deselect 36px, 44px on touch (UX 5n).");
 assert.match(inspectorSource, /<Button\s+size=\{frame\.clearSize\}\s+data-testid="selection-inspector-clear"/);
 assert.match(inspectorSource, /aria-label=\{placement\.inSheet \? undefined : `Deselect \$\{state\.summary\.title\}`\}[\s\S]*?\{placement\.inSheet \? "Done" : <X className="h-4 w-4" aria-hidden="true" \/>\}/, "Done deselects, in the sheet; elsewhere × Deselect <name> (UX 4f, ED7).");
 assert.match(inspectorSource, /if \(!placement\.shown\) return null;\s*return placement\.portalTarget \? createPortal\(inspector, placement\.portalTarget\) : inspector;/);
-assert.match(read("components/editor/design-page/SelectedPlanOpeningActions.tsx"), /absolute left-1\/2 top-bar-28 z-30 hidden [^"]*md:flex"/, "The phone's door and window bar goes.");
+assert.match(read("components/editor/design-page/SelectedPlanOpeningActions.tsx"), /absolute left-1\/2 md:left-\[var\(--canvas-centre-x,50%\)\] top-bar-28 z-30 hidden [^"]*md:flex"/, "The phone's door and window bar goes.");
 
 // Wiring: the frame is the sheet below md, the column from md, and the phone header has no
 // sidebar toggle; the plan model and the Plan tip read the sheet.

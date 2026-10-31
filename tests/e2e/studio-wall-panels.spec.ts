@@ -907,6 +907,9 @@ test.describe("Studio canonical wall panels", () => {
 
     const selectedInspector = page.locator(`[${PANEL_ATTRIBUTE}]`);
     await clickPanelAt(page, middleHits[0].x, middleHits[0].y);
+    // At 1280×720 the inspector is below the rail's fold; selecting a wall scrolls it into view
+    // (30 Oct 2026), so Change material shows without scrolling (click() would scroll for us).
+    await expect(page.getByRole("button", { name: "Change material" })).toBeInViewport();
     await page.getByRole("button", { name: "Change material" }).click();
     // A card names the model under its collection (Anima, then Beige); pick it by its full name.
     await page.locator('[data-material-name="Anima Beige"] button').first().click();

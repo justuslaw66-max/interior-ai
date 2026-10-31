@@ -10,6 +10,9 @@ from the floor-plan masters (`~/Developer/floor-plan-masters`); don't edit it by
   clears Mapbox's point-of-interest labels off it (`labelClip`: the development's land lot with its footprint, from
   28 Oct 2026), its credits and how it is placed.
 - `<slug>/plans/`: the pictures on the units' cards.
+- `<slug>/overlays/`: the units' brochure plans as they lie on their floors (WebP, named by their content; from
+  30 Oct 2026): `plans` in map.json gives each one's unit, storey, corners and height. Only the units whose plan's
+  turn and mirror on the building are sure, by their outline or their windows, have one.
 - `<slug>/models/`: each development's detailed 3D models (GLB, kept in Git LFS): every development has them since
   28 Oct 2026 (until then 33 Residences only, the others grey massing).
 
@@ -18,7 +21,8 @@ whole (every plan and model a card or a model list names is here).
 
 ## Regenerating
 
-From the masters, with Python 3, NumPy and OpenCV (as the importer uses):
+From the masters, with Python 3, NumPy and OpenCV (as the importer uses), and for the plans on the floors pdfplumber,
+SciPy, Poppler's `pdftocairo` and `tesseract`:
 
 ```sh
 python3 -I _tools/mapexport/export_condo_map.py . ~/Developer/interior-ai/catalog/condo-map \
@@ -39,8 +43,11 @@ took it off the directory and the map); remove its folder here when one is taken
 The models: 33 Residences' are those `_prototypes/build/build.sh` writes to `_prototypes/build/work/models` (its
 `models33.py` step); every other development's are those the masters' `_tools/models3d/build_models.py` writes to its
 package's `models3d/` (see that folder's README: each development's look and drawing convention are in its package's
-`geo/models3d-config.json`). The export is the same every time it runs on the same masters. It adds and replaces files but
-doesn't remove any, so delete the development folders first when a plan or model has been renamed or dropped.
+`geo/models3d-config.json`). The plans on the floors need each package's `geo/models3d-plans.json` and
+`geo/plan-orientation.json` (`_tools/mapexport/plan_overlays.py measure`), and `geo/plan-windows.json`
+(`_tools/mapexport/plan_windows.py`) for those whose windows settle it. The export is the same every time it runs on
+the same masters. It adds and replaces files but doesn't remove any (but `overlays/`, written afresh), so delete the
+development folders first when a plan or model has been renamed or dropped.
 
 ## Rights
 

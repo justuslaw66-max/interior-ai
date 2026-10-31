@@ -22,9 +22,11 @@ import { buildRoomSurfaceMaterialBomResult } from "@/lib/surface-material-bom-re
 import type { DesignSnapshot, PersistedPlanOpening, RoomSnapshot, SavedView } from "@/lib/room-types";
 import { getExportCapabilities, type UserPlan } from "@/lib/export-capabilities";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { ExportWatermark } from "@/components/ExportWatermark";
 import ExportTracking from "./ExportTracking";
 import { PdfDownloadLink } from "./PdfDownloadLink";
+import { PracticalCheckMark } from "./PracticalCheckMark";
 import PlanSvgDownload from "./PlanSvgDownload";
 import ShoppingList from "./ShoppingList";
 import ShoppingCsvDownload from "./ShoppingCsvDownload";
@@ -932,7 +934,7 @@ export default async function ExportPage({
 
   if (!design) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-surface p-8 text-foreground" data-color-scheme="light">
+      <main className="min-h-screen flex items-center justify-center bg-surface p-8 text-foreground" data-color-scheme="light" data-light-page>
         <PublicShareUnavailableCard />
       </main>
     );
@@ -1036,7 +1038,7 @@ export default async function ExportPage({
         }
       `}</style>
 
-      <main className="min-h-screen bg-white text-foreground" data-color-scheme="light">
+      <main className="min-h-screen bg-white text-foreground" data-color-scheme="light" data-light-page>
         {qaFidelitySummary ? (
           <div
             data-testid="qa-export-snapshot-fingerprint"
@@ -1053,16 +1055,15 @@ export default async function ExportPage({
         ) : null}
         {capabilities.watermark ? <ExportWatermark /> : null}
         <ExportTracking shareToken={shareToken} designId={design.id} />
-        
         {/* Header - No Print */}
         <div className="no-print sticky top-0 z-10 border-b bg-white px-6 py-4">
           <div className="mx-auto flex max-w-4xl items-center justify-between">
             <div>
               <Link
                 href={`/share/${shareToken}`}
-                className="text-sm text-blue-600 hover:text-blue-700"
+                className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
               >
-                ← Back to 3D view
+                <ArrowLeft className="h-4 w-4" aria-hidden="true" />Back to 3D view
               </Link>
             </div>
             <div className="flex flex-wrap items-start justify-end gap-2">
@@ -1266,7 +1267,6 @@ export default async function ExportPage({
                 return (
                   <>
               <h2 className="mb-4 text-2xl font-bold text-gray-900">{room.name}</h2>
-              
               {/* Room Details */}
               <div className="mb-4 text-sm text-gray-600">
                 <div>Dimensions: {room.geometry.width}m × {room.geometry.depth}m</div>
@@ -1351,7 +1351,7 @@ export default async function ExportPage({
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2">
                 <span className={totalAreaSqm > 0 ? "text-green-600" : "text-amber-600"}>
-                  {totalAreaSqm > 0 ? "✓" : "!"}
+                  <PracticalCheckMark state={totalAreaSqm > 0 ? "ok" : "review"} />
                 </span>
                 <span>
                   Measurements: {totalAreaSqm > 0 ? `${formatMeasurement(totalAreaSqm, "m2")} captured across ${rooms.length} room${rooms.length === 1 ? "" : "s"}` : "Add room dimensions before final export"}
@@ -1359,7 +1359,7 @@ export default async function ExportPage({
               </div>
               <div className="flex items-center gap-2">
                 <span className={denseRoomCount === 0 ? "text-green-600" : "text-amber-600"}>
-                  {denseRoomCount === 0 ? "✓" : "!"}
+                  <PracticalCheckMark state={denseRoomCount === 0 ? "ok" : "review"} />
                 </span>
                 <span>
                   Furniture fit: {denseRoomCount === 0 ? "No dense rooms flagged" : `${denseRoomCount} room${denseRoomCount === 1 ? "" : "s"} may need circulation review`}
@@ -1367,7 +1367,7 @@ export default async function ExportPage({
               </div>
               <div className="flex items-center gap-2">
                 <span className={totalOpenings > 0 ? "text-green-600" : "text-amber-600"}>
-                  {totalOpenings > 0 ? "✓" : "!"}
+                  <PracticalCheckMark state={totalOpenings > 0 ? "ok" : "review"} />
                 </span>
                 <span>
                   Doors and windows: {totalOpenings > 0 ? `${totalOpenings} included` : "Trace doors and windows for stronger installation and shopping notes"}
@@ -1375,7 +1375,7 @@ export default async function ExportPage({
               </div>
               <div className="flex items-center gap-2">
                 <span className={compactRoomCount === 0 ? "text-green-600" : "text-blue-600"}>
-                  {compactRoomCount === 0 ? "✓" : "i"}
+                  <PracticalCheckMark state={compactRoomCount === 0 ? "ok" : "note"} />
                 </span>
                 <span>Rug sizing: Review in 3D view for final placement</span>
               </div>

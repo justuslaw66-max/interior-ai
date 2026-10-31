@@ -84,10 +84,9 @@ async function dismissBlockingDialogs(page: import("@playwright/test").Page) {
 }
 
 async function openSurfacesPanelFromInspector(page: import("@playwright/test").Page) {
-  // Pro's Plan panel holds two copies of the browser (in the selected room's card and in Floor
-  // finish), as the file's first tests found; these tests run as Pro since 4f, so they take Floor
-  // finish's, like those.
-  const surfacesPanel = page.getByTestId("floor-finish-panel").getByTestId("room-surfaces-floor-panel");
+  // One Surfaces browser since 30 Oct 2026, in the selected room's card (Pro's Plan panel had a
+  // second in Floor finish).
+  const surfacesPanel = page.getByTestId("contextual-plan-inspector").getByTestId("room-surfaces-floor-panel");
   const modalOverlay = page.locator(".fixed.inset-0.z-50").first();
   const changeFinish = page.getByTestId("plan-change-floor-finish");
 
@@ -123,9 +122,10 @@ test.describe("Flooring surface materials", () => {
 
     await page.getByTestId("plan-change-floor-finish").click();
 
-    const surfacesPanel = page.getByTestId("floor-finish-panel");
+    const surfacesPanel = page.getByTestId("contextual-plan-inspector");
     const surfaceControls = surfacesPanel.getByTestId("room-surfaces-floor-panel");
     await expect(surfaceControls).toBeVisible({ timeout: 30000 });
+    await expect(page.getByTestId("room-surfaces-floor-panel")).toHaveCount(1);
     await surfaceControls.getByTestId("surfaces-filter-toggle").click();
     await surfaceControls.getByTestId("surfaces-filter-effect").selectOption("Marble");
     await surfaceControls.getByTestId("surfaces-filter-color").selectOption("White");
@@ -215,7 +215,7 @@ test.describe("Flooring surface materials", () => {
     await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "3d");
 
     await page.getByTestId("plan-change-floor-finish").click();
-    const surfacesPanel = page.getByTestId("floor-finish-panel");
+    const surfacesPanel = page.getByTestId("contextual-plan-inspector");
     const surfaceControls = surfacesPanel.getByTestId("room-surfaces-floor-panel");
     await expect(surfaceControls).toBeVisible({ timeout: 30000 });
     await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-view-mode", "3d");
@@ -271,7 +271,7 @@ test.describe("Flooring surface materials", () => {
     const floorPanel = page.getByTestId("selection-inspector-floor-settings");
     await expect(floorPanel).toBeVisible({ timeout: 30000 });
     await page.getByTestId("plan-change-floor-finish").click();
-    const surfaceControls = page.getByTestId("floor-finish-panel").getByTestId("room-surfaces-floor-panel");
+    const surfaceControls = page.getByTestId("contextual-plan-inspector").getByTestId("room-surfaces-floor-panel");
     await expect(surfaceControls).toBeVisible({ timeout: 30000 });
     await surfaceControls.getByTestId("surfaces-search").fill("Tabulae Chevron Sabbia");
 

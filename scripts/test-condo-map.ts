@@ -15,17 +15,20 @@ import {
   CONDO_GHOST_OPACITY,
   CONDO_MAP_BEDROOM_COLOURS,
   CONDO_MAP_COLOURS,
+  CONDO_PLAN_LIFT_M,
   bedroomColour,
   condoLayers,
   condoModelSlug,
   condoModels,
   condoPickTarget,
+  condoPlanImage,
+  condoPlanLayer,
   condoSources,
   condoViewUpdates,
   floorLegend,
 } from "@/app/admin/condo-map/condo-map-layers";
 import { CONDO_PLACE_LABELS_BELOW_ZOOM, hidePlaceLabelsWhenClose, placeLabelsShown } from "@/app/admin/condo-map/condo-map-basemap";
-import { keepUnitInView, loadError, mapProblem } from "@/app/admin/condo-map/condo-map-mapbox";
+import { keepUnitInView, loadError, mapProblem, showCondoPlan } from "@/app/admin/condo-map/condo-map-mapbox";
 import {
   NO_CONDO_VIEW,
   boundsAround,
@@ -41,6 +44,8 @@ import {
   unitLayout,
   unitOutOfView,
   unitPartOn,
+  unitPlanOn,
+  unitPlans,
   unitStoreys,
   unitsOnFloor,
   type CondoMapView,
@@ -55,6 +60,11 @@ import type { MapboxEvent, MapboxJson, MapboxMap } from "@/app/admin/condo-map/m
 const root = process.cwd();
 const dataRoot = path.join(root, "catalog", "condo-map");
 const readJson = (file: string): unknown => JSON.parse(fs.readFileSync(path.join(dataRoot, file), "utf8"));
+const raw = (file: string): Record<string, unknown> => {
+  const body = readJson(file);
+  assert.ok(body && typeof body === "object" && !Array.isArray(body), `${file}: an object`);
+  return { ...body };
+};
 
 // ---------- the data
 const index = parseCondoMapIndex(readJson("index.json"));
@@ -106,6 +116,43 @@ for (const summary of index) {
     assert.ok(head === "glTF" || head === "vers", `${dev.slug}: ${item.file} is a GLB (or its LFS pointer)`);
   }
 }
+// the brochure plans on their floors (J, 30 Oct 2026: the units whose plan's turn and mirror on the building are sure):
+// each a WebP in the development's overlays folder (and nothing else there), on a storey of its unit, over the unit's
+// outline there, at the top of its floor's paint
+let plannedUnits = 0;
+let plannedLevels = 0;
+for (const dev of Object.values(maps)) {
+  const folder = path.join(dataRoot, dev.slug, "overlays");
+  const used = new Set<string>();
+  for (const [unit, plans] of Object.entries(dev.plans)) {
+    const card = dev.units.find((candidate) => candidate.unit === unit);
+    assert.ok(card && plans.length > 0, `${dev.slug} ${unit}: a plan for a unit with a card`);
+    plannedUnits += 1;
+    for (const plan of plans) {
+      plannedLevels += 1;
+      used.add(plan.file);
+      assert.ok(unitStoreys(card).includes(plan.f), `${dev.slug} ${unit}: its plan on one of its storeys (${plan.f})`);
+      const bytes = fs.readFileSync(path.join(folder, plan.file));
+      assert.ok(bytes.subarray(0, 4).toString("latin1") === "RIFF" && bytes.subarray(8, 12).toString("latin1") === "WEBP", `${dev.slug} ${unit}: a WebP`);
+      const part = dev.unitParts.features.find((candidate) => candidate.properties.unit === unit && candidate.properties.f === plan.f);
+      assert.ok(part, `${dev.slug} ${unit}: a part on storey ${plan.f}`);
+      const ring = part.geometry.coordinates[0].slice(0, -1);
+      const middle: [number, number] = [ring.reduce((sum, point) => sum + point[0], 0) / ring.length, ring.reduce((sum, point) => sum + point[1], 0) / ring.length];
+      assert.ok(pointInRing(middle, [...plan.corners, plan.corners[0]]), `${dev.slug} ${unit}: its plan over its outline`);
+      const paint = dev.floors.features.filter((feature) => feature.properties.unit === unit && feature.properties.f === plan.f);
+      assert.ok(paint.length > 0 && paint.every((feature) => Math.abs(feature.properties.top - plan.z) < 0.01), `${dev.slug} ${unit}: on its floor's paint`);
+    }
+  }
+  const files = fs.existsSync(folder) ? fs.readdirSync(folder).sort() : [];
+  assert.deepEqual(files, [...used].sort(), `${dev.slug}: the overlays folder holds its plans' pictures and nothing else`);
+}
+assert.equal(plannedUnits, 350, "the units with a plan on the map (30 Oct 2026: 279 by their outline, 71 by their windows)");
+assert.equal(plannedLevels, 350, "one storey each: none of the two-level units' plans is sure yet");
+assert.throws(() => parseCondoDevelopmentMap({ ...(raw("1953/map.json")), plans: { "#03-01": [{ f: 3, file: "../x.webp", corners: [[0, 0], [0, 0], [0, 0], [0, 0]], z: 1 }] } }), CondoMapDataError);
+assert.throws(() => parseCondoDevelopmentMap({ ...(raw("1953/map.json")), plans: { "#03-01": [{ f: 3, file: "0123456789abcdef.webp", corners: [[0, 0], [0, 0], [0, 0]], z: 1 }] } }), CondoMapDataError);
+assert.deepEqual(parseCondoDevelopmentMap({ ...(raw("1953/map.json")), plans: undefined }).plans, {}, "a map without plans has none");
+assert.deepEqual(unitPlans(maps["1953"], "constructor"), [], "a unit's plans are the map's own (not Object's)");
+
 // the framing takes in the whole building (a ground storey's blocks too), not just the units
 for (const dev of Object.values(maps)) {
   const [[w, s], [e, n]] = dev.bounds;
@@ -134,6 +181,10 @@ assert.throws(() => parseCondoMapIndex({ schema: "interior-ai.condo-map.index.v1
 assert.deepEqual(condoMapFilePath(["33-residences", "map.json"]), { segments: ["33-residences", "map.json"], contentType: "application/json" });
 assert.equal(condoMapFilePath(["33-residences", "models", "c1.glb"])?.contentType, "model/gltf-binary");
 assert.equal(condoMapFilePath(["10-evelyn", "plans", "1bedroom1.jpg"])?.contentType, "image/jpeg");
+assert.equal(condoMapFilePath(["10-evelyn", "overlays", "0123456789abcdef.webp"])?.contentType, "image/webp");
+for (const refused of [["10-evelyn", "overlays", "a.png"], ["10-evelyn", "overlays", "a.glb"], ["10-evelyn", "overlays", "..webp"]]) {
+  assert.equal(condoMapFilePath(refused), null, `refused: ${refused.join("/")}`);
+}
 for (const refused of [[], ["..", "map.json"], ["33-residences"], ["33-residences", "index.json"], ["33-residences", "models", "x.json"],
   ["33-residences", "plans", "..jpg"], ["33-residences", "plans", "a/b.jpg"], ["33-residences", "secret", "a.jpg"], ["33-residences", "plans", "a.jpg", "b"]]) {
   assert.equal(condoMapFilePath(refused), null, `refused: ${refused.join("/")}`);
@@ -223,7 +274,10 @@ for (const dev of Object.values(maps)) {
   if (!detailed) assert.ok(shown(dev, chosen, "mass").every((properties) => "f" in properties && Number(properties.f) < floor), `${dev.slug}: below the floor`);
   assert.ok(shown(dev, chosen, "ghost").every((properties) => "f" in properties && Number(properties.f) > floor), `${dev.slug}: above it, a ghost`);
   assert.ok(shown(dev, chosen, "floor").length > 0, `${dev.slug}: the floor's rooms are painted`);
-  assert.ok(shown(dev, chosen, "unit").length > 0 && shown(dev, chosen, "unit").every((properties) => "unit" in properties && properties.unit === unit.unit));
+  // the chosen unit's orange box, unless its plan lies there instead (below)
+  const boxed = shown(dev, chosen, "unit");
+  if (unitPlanOn(dev, chosen)) assert.equal(boxed.length, 0, `${dev.slug}: no box over the plan`);
+  else assert.ok(boxed.length > 0 && boxed.every((properties) => "unit" in properties && properties.unit === unit.unit));
   const rooms = condoViewUpdates(dev, chosen).paint.find(([layerId, property]) => layerId === `condo-${dev.slug}-floor` && property === "fill-extrusion-color");
   assert.equal(evaluate(rooms?.[2] ?? null, { unit: unit.unit, kind: "room" }), CONDO_MAP_COLOURS.selectedUnit, `${dev.slug}: the chosen unit's rooms stand out`);
   // the floor's other units by their bedroom count; open parts (balconies, ledges) as they were
@@ -236,6 +290,70 @@ for (const dev of Object.values(maps)) {
   assert.equal(evaluate(noUnit?.[2] ?? null, { unit: "", kind: "room" }), CONDO_MAP_COLOURS.room, `${dev.slug}: a room of no unit isn't orange`);
   const elsewhere = condoViewUpdates(dev, { ...chosen, slug: "another" }).filters;
   assert.deepEqual(elsewhere, condoViewUpdates(dev, NO_CONDO_VIEW).filters, `${dev.slug}: whole while another development is chosen`);
+}
+
+// a chosen unit with its plan: the plan on its floor, and no orange box or ghost over it (Mapbox would draw them over
+// the picture); one without a plan keeps both; another storey of a unit, or no unit, shows no plan
+for (const dev of Object.values(maps)) {
+  const [planned] = Object.entries(dev.plans);
+  if (!planned) continue;
+  const [unit, [plan]] = planned;
+  const view: CondoMapView = { slug: dev.slug, floor: plan.f, unit };
+  assert.deepEqual(condoViewUpdates(dev, view).plan, plan, `${dev.slug} ${unit}: its plan shows`);
+  assert.equal(shown(dev, view, "unit").length + shown(dev, view, "ghost").length, 0, `${dev.slug} ${unit}: nothing over its plan`);
+  assert.ok(shown(dev, view, "floor").length > 0 && shown(dev, view, "pick").length > 0, `${dev.slug} ${unit}: the floor painted and clickable`);
+  assert.equal(condoViewUpdates(dev, { ...view, unit: null }).plan, null, `${dev.slug}: no unit, no plan`);
+  assert.equal(condoViewUpdates(dev, { ...view, slug: "another" }).plan, null, `${dev.slug}: another development chosen, no plan`);
+  const top = Math.max(...dev.massing.features.map((feature) => feature.properties.f));
+  const bare = dev.units.find((card) => unitPlans(dev, card.unit).length === 0 && card.floor < top);
+  if (bare) {
+    const plain: CondoMapView = { slug: dev.slug, floor: bare.floor, unit: bare.unit };
+    assert.equal(unitPlanOn(dev, plain), null);
+    assert.ok(shown(dev, plain, "unit").length > 0 && shown(dev, plain, "ghost").length > 0, `${dev.slug} ${bare.unit}: no plan, its box and the ghost`);
+  }
+  const image = condoPlanImage(dev.slug, plan, "https://x.app");
+  assert.deepEqual(image, { url: `https://x.app/api/admin/condo-map/${dev.slug}/overlays/${plan.file}`, coordinates: plan.corners });
+  const layer = condoPlanLayer(dev.slug, plan);
+  assert.ok(layer.type === "raster" && !ids.has(layer.id), `${dev.slug}: the plan's own raster layer`);
+  assert.equal(layer.paint?.["raster-elevation"], plan.z + CONDO_PLAN_LIFT_M, `${dev.slug}: just over its floor's paint`);
+}
+// a penthouse's attic plan isn't on the map, which doesn't offer the attic as a floor (183 LongHaus #04-07: its own
+// storey's plan only, mirrored with its words turned back)
+const longhaus = maps["183-longhaus"];
+assert.deepEqual(unitPlans(longhaus, "#04-07").map((plan) => plan.f), [4]);
+assert.equal(unitPlanOn(longhaus, { slug: longhaus.slug, floor: 4, unit: "#04-07" })?.f, 4);
+assert.equal(unitPlanOn(longhaus, { slug: longhaus.slug, floor: 5, unit: "#04-07" }), null);
+
+// the plan on the map: its picture and layer made when one first shows, pointed at the next, hidden for none
+{
+  const [first, second] = Object.values(maps["10-evelyn"].plans).flat().filter((plan, index, all) => all.findIndex((other) => other.file === plan.file) === index);
+  const calls: string[] = [];
+  const layers = new Set<string>();
+  let source: { updateImage: (options: { url: string }) => void } | undefined;
+  const map = {
+    getLayer: (id: string) => (layers.has(id) ? {} : undefined),
+    getSource: () => source,
+    addSource: (id: string, spec: { url: string }) => {
+      calls.push(`source ${id} ${spec.url.split("/").pop()}`);
+      source = { updateImage: (options) => calls.push(`image ${options.url.split("/").pop()}`) };
+    },
+    addLayer: (layer: { id: string }) => {
+      layers.add(layer.id);
+      calls.push(`layer ${layer.id}`);
+    },
+    setPaintProperty: (_id: string, name: string, value: MapboxJson) => calls.push(`${name} ${String(value)}`),
+    setLayoutProperty: (_id: string, name: string, value: MapboxJson) => calls.push(`${name} ${String(value)}`),
+  } as unknown as MapboxMap;
+  showCondoPlan(map, "10-evelyn", null, "https://x.app");
+  assert.deepEqual(calls, [], "no plan yet: nothing made");
+  showCondoPlan(map, "10-evelyn", first, "https://x.app");
+  assert.deepEqual(calls.splice(0), [`source condo-10-evelyn-plan-source ${first.file}`, "layer condo-10-evelyn-plan", "visibility visible"]);
+  showCondoPlan(map, "10-evelyn", first, "https://x.app");
+  assert.deepEqual(calls.splice(0), [`raster-elevation ${first.z + CONDO_PLAN_LIFT_M}`, "visibility visible"], "the same plan isn't loaded again");
+  showCondoPlan(map, "10-evelyn", second, "https://x.app");
+  assert.deepEqual(calls.splice(0), [`image ${second.file}`, `raster-elevation ${second.z + CONDO_PLAN_LIFT_M}`, "visibility visible"]);
+  showCondoPlan(map, "10-evelyn", null, "https://x.app");
+  assert.deepEqual(calls.splice(0), ["visibility none"]);
 }
 
 // the storeys above a chosen floor: a faint ghost of the outline; the labels' clip takes labels only

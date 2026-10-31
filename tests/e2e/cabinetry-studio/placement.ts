@@ -30,7 +30,7 @@ export function registerPlacementTests() {
       await expect(placedCabinet).toHaveAttribute("data-material-schedule-count", "4");
       await expect(placedCabinet).toHaveAttribute("data-hardware-schedule-count", "3");
       await expect(placedCabinet).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(placedCabinet).toHaveAttribute("data-edge-banding-total-m", "27.36");
+      await expect(placedCabinet).toHaveAttribute("data-edge-banding-total-m", "27.37");
       await expect(placedCabinet).toHaveAttribute("data-cut-list-count", "27");
       await expect(placedCabinet).toHaveAttribute("data-dimension-schedule-count", "4");
       await expect(placedCabinet).toHaveAttribute("data-drawing-view-schedule-count", "9");
@@ -94,7 +94,7 @@ export function registerPlacementTests() {
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-material-schedule-count", "4");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-hardware-schedule-count", "3");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-total-m", "27.36");
+      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-total-m", "27.37");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-cut-list-count", "27");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-dimension-schedule-count", "4");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-drawing-view-schedule-count", "9");
@@ -195,7 +195,7 @@ export function registerPlacementTests() {
       await expect(placedCabinet).toHaveAttribute("data-supplier-readiness-status", "ready_for_fabricator_review");
       await expect(placedCabinet).toHaveAttribute("data-supplier-sku-mapping-count", "10");
       await expect(placedCabinet).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(placedCabinet).toHaveAttribute("data-edge-banding-total-m", "30.96");
+      await expect(placedCabinet).toHaveAttribute("data-edge-banding-total-m", "30.97");
       await expect(placedCabinet).toHaveAttribute("data-fabrication-release-status", "needs_review");
       await expect(placedCabinet).toHaveAttribute("data-assembly-profile-schema", "custom_millwork.assembly_profile.v1");
       await expect(placedCabinet).toHaveAttribute("data-assembly-profile-placement-kind", "built_in_wall");
@@ -226,7 +226,7 @@ export function registerPlacementTests() {
       await expect(placedCabinet).toHaveAttribute("data-asset-manifest-transform-rotation-y", beforeRotation!);
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-cut-list-count", "27");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-total-m", "30.96");
+      await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-edge-banding-total-m", "30.97");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-supplier-readiness-status", "ready_for_fabricator_review");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-fabrication-release-status", "needs_review");
       await expect(page.getByTestId("selected-cabinet-documentation-summary")).toHaveAttribute("data-assembly-profile-schema", "custom_millwork.assembly_profile.v1");
@@ -354,7 +354,7 @@ export function registerPlacementTests() {
       await expect(restoredCabinet).toHaveAttribute("data-release-checklist-count", "7");
       await expect(restoredCabinet).toHaveAttribute("data-release-blocker-count", "0");
       await expect(restoredCabinet).toHaveAttribute("data-edge-banding-schedule-count", "4");
-      await expect(restoredCabinet).toHaveAttribute("data-edge-banding-total-m", "30.96");
+      await expect(restoredCabinet).toHaveAttribute("data-edge-banding-total-m", "30.97");
       await expect(restoredCabinet).toHaveAttribute("data-fabrication-release-status", "needs_review");
       await expect(restoredCabinet).toHaveAttribute("data-assembly-profile-schema", "custom_millwork.assembly_profile.v1");
       await expect(restoredCabinet).toHaveAttribute("data-assembly-profile-placement-kind", "built_in_wall");

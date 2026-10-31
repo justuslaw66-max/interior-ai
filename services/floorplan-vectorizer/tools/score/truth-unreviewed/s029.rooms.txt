@@ -1,0 +1,54 @@
+# s029 - HDB 4-ROOM IMPROVED (POINT BLK.). Typed from the plan image only. The outlined watermark "JON SIM 92220001", the
+# title, scale and dimension figures are not typed.
+# DINING and LIVING ROOM: no wall or door between them (the left wall carries only the entrance and columns) -> one space.
+# The L-shaped part under the kitchen (x 193-284, y 237-277) and the small lobby (x 297-326, y 238-277) with the BATH door and
+# the doors of the top-right and lower-right BEDROOMs are open to DINING at the width of the passage (no door, no wall
+# across) -> part of the same space (as in c22 and h1).
+space: DINING + LIVING ROOM
+# KITCHEN and BALCONY: the balcony's bottom edge is ONE line (x 193-243, y 137, about 1.5 m, no jambs) with "76.2 DROP"
+# beside it -> a floor edge, not a wall or a door -> open plan (RULES decided reading). The small alcove with the top
+# window (x 247-285, y 120-140) is open to the kitchen through a single line at y 140 -> part of the kitchen.
+space: KITCHEN + BALCONY
+space: W.C.
+space: BATH
+# three spaces printed BEDROOM: top right (x 297-392, y 120-237), middle bottom (x 193-284, y 278-400), lower right (x 297-392, y 278-400)
+space: BEDROOM
+space: BEDROOM
+space: BEDROOM
+# Not typed: SERVICE DUCT and REFUSE CHUTE (shaft boxes with crosses, top), the oval fixture on the dining top wall
+# (x 162-183, y 142-161), sink and drainer in the kitchen (x 196-212, y 140-175), the WC and BATH fixtures.
+
+# main entrance: opening in the left wall x 82-86, y 243-271 between two columns; gate arcs outward (left), door arcs inward
+# (right) -> one line
+door: DINING | OUTSIDE
+# kitchen door in the left wall of the kitchen (opening x 193, y 205-233), hinged at the bottom, arc into the kitchen
+door: KITCHEN | DINING
+# W.C. door in the wall between W.C. and the balcony part (x 193, y 113-137), arc into the W.C.
+door: W.C. | KITCHEN
+# BATH door in its left wall (x 328, y 243-277), arc into the bath, from the lobby
+door: BATH | DINING
+# top-right BEDROOM: door in its bottom wall x 297-326, y 238 (leaf drawn open along x 297, arc up into the bedroom)
+door: BEDROOM | DINING
+# middle BEDROOM: door in its top wall x 256-284, y 277 (hinged at x 284, arc down into the bedroom)
+door: BEDROOM | DINING
+# lower-right BEDROOM: door in its top wall x 297-326, y 277 (hinged at x 297, arc down into the bedroom)
+door: BEDROOM | DINING
+
+# KITCHEN + BALCONY: (1) hatched glazing band in the top wall of the alcove x 249-284, y 116-121; (2) hatched glazing in the
+# balcony's right wall x 243-247, y 80-114 with a casement pair (arcs outward to x 260) -> 2
+windows: KITCHEN = 2
+# DINING + LIVING ROOM: four casement leaves in the bottom wall x 93-182, y 391-413: two pairs (meeting at x 115 and x 160)
+# around a bold hinge post at x 137 -> 2 windows (uncertain: could be one 4-leaf window)
+windows: DINING = 2
+# BATH: thin glazed band with white dashes in the right wall x 391-396, y 241-277 (the thick black wall is interrupted) -> 1
+windows: BATH = 1
+# top-right BEDROOM: one casement pair (x 347-390, y 100-121) in the top wall; the plain white-centred band x 292-345 left of it is wall
+windows: BEDROOM = 1
+# middle BEDROOM: four leaves in the bottom wall x 193-285 (posts x 193 / 238 / 285; leaves meet at x 216 and x 262) -> 2
+windows: BEDROOM = 2
+# lower-right BEDROOM: four leaves in the bottom wall x 297-388 (posts x 297 / 340 / 387; leaves meet at x 319 and x 363) -> 2
+windows: BEDROOM = 2
+# W.C. has no window (thick black walls on three sides, the balcony partition on the fourth). The left wall of DINING and
+# LIVING ROOM (x 81-86) is a plain thin double line, no glazing -> wall.
+
+entrance: DINING

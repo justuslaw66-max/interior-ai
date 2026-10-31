@@ -1,0 +1,60 @@
+# s049 - HDB 4-Room Model 'A' (corridor), typed from the plan image only (title, "SCALE 1:100", the grey caption strip and the
+# teoalida.com banner ignored; ACCESS BALCONY is the shared corridor outside the flat = OUTSIDE, not a space; the long strip of
+# panels at y 645-695 is the far side of the corridor, not part of the dwelling).
+# Labels: a printed line break is one blank ("KITCHEN/" + "DINING" -> "KITCHEN/ DINING", "BATH/" + "W.C. 1" -> "BATH/ W.C. 1").
+#
+# LIVING ROOM / FUTURE ROOM / KITCHEN/ DINING - ONE space:
+#  * The short passage in front of the store, bedroom 2, bedroom 3 and main bedroom doors (x 228-430, y 365-440) is open to
+#    LIVING ROOM at its full width -> part of it.
+#  * FUTURE ROOM (x 422-580, y 438-598) is enclosed only by DASHED double lines (top x 422-580 at y 438-441, left x 422-428 at
+#    y 485-555; the dashed leaf + arc at x 422-460, y 448-483 sits in that dashed partition). Decided reading: dashed lines are not
+#    walls -> FUTURE ROOM is part of the same space as LIVING ROOM (uncertain). No door line is typed for its dashed door leaf.
+#  * KITCHEN/ DINING (x 433-583, y 165-377): its whole south side is ONE thin line (y 377, x 402-583, about 4 m, no jambs, it
+#    carries on past the right wall as a dimension line) -> floor edge, the kitchen is open plan to LIVING ROOM (decided reading).
+space: LIVING ROOM + FUTURE ROOM + KITCHEN/ DINING
+space: BEDROOM 2
+space: MAIN BEDROOM
+space: STORE
+space: BEDROOM 3
+space: BATH/ W.C. 1
+space: BATH/ W.C. 2
+# Not typed: the two small unlabelled boxes projecting from the facade below the FUTURE ROOM end (x 548-641, y 593-614, two
+# cells split at x 601, each about 1.0 m x 0.4 m, no door or window to them) - read as planter / ledge boxes, not rooms (uncertain).
+# Not typed: the sink counter under BATH/ W.C. 2 (x 433-500, y 232-252) and the toilet / basin fixtures.
+
+# main entrance: unequal double leaf (inward swing, "100 DROP") + gate (outward arcs) in the same opening x 280-322, y 557-615
+door: LIVING ROOM | OUTSIDE
+# BEDROOM 2: hinged leaf drawn dashed (hinge at (227,362), open along x 227 up to y 340, arc to (262,330)), opening x 228-265 in
+# the bottom wall of the bedroom (the 1900 wall x 145-226 is to its left)
+door: BEDROOM 2 | LIVING ROOM
+# STORE: dashed leaf hinged at (227,407) drawn open along y 405 to x 262, arc up to (227,372): the whole 1000 right side of the store
+door: STORE | LIVING ROOM
+# BEDROOM 3: dashed leaf hinged at (262,440), open along x 262 down to y 478, arc back to (227,440); opening in the top-right of
+# the bedroom between the wall stub at x 222-227 and the wall stub at x 262-278
+door: BEDROOM 3 | LIVING ROOM
+# MAIN BEDROOM: dashed leaf hinged at (402,372) open along x 402 up to y 335, arc to (368,360); opening x 368-402 in its bottom wall
+door: MAIN BEDROOM | LIVING ROOM
+# BATH/ W.C. 1: hinged leaf in the left wall of the bath (x 358-364, y 172-210), leaf drawn open along y 172, arc down to y 210;
+# it opens onto the MAIN BEDROOM
+door: BATH/ W.C. 1 | MAIN BEDROOM
+# BATH/ W.C. 2: hinged leaf in the right wall of the bath (x 497-500, y 172-208), leaf drawn open along y 208, arc up to y 172;
+# it opens onto the KITCHEN/ DINING part of the open plan space
+door: BATH/ W.C. 2 | LIVING ROOM
+
+# BEDROOM 2: one window in the top wall x 162-252, y 160-166 (double glazing line with dashed sash marks), between two columns
+windows: BEDROOM 2 = 1
+# MAIN BEDROOM: one window in the top wall x 281-357 (same type), between the column at x 258-280 and the bath 1 column at x 355-375
+windows: MAIN BEDROOM = 1
+# BATH/ W.C. 1 and BATH/ W.C. 2: each has one window in its top wall (white band with dashed line, x 378-420 and x 442-490, y 123-135)
+windows: BATH/ W.C. 1 = 1
+windows: BATH/ W.C. 2 = 1
+# BEDROOM 3: one window in the bottom (access balcony) wall x 162-265, y 590-596
+windows: BEDROOM 3 = 1
+# Open plan space, three windows:
+#  - LIVING ROOM window x 332-421, y 590-597 (right of the entrance column at x 322-330, up to the column at x 421-435)
+#  - FUTURE ROOM window x 433-523, y 590-597 (separated from the living one by the column x 421-435)
+#  - KITCHEN/ DINING top wall: one continuous band x 502-577, y 138-167 holding THREE casement leaves (arcs) between the bath 2
+#    column (x 495-500) and the end column (x 578-592); no solid piece between the leaves -> counted as ONE window (uncertain).
+windows: LIVING ROOM = 3
+
+entrance: LIVING ROOM

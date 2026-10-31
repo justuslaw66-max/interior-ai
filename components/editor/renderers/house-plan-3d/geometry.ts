@@ -47,6 +47,8 @@ export type WallSegment3D = {
   length: number;
   rotationY: number;
   axis: "x" | "z";
+  /** An outline edge's inside: the side of its local +Z normal the room is on (getWallSegments). */
+  interiorSide?: 1 | -1;
 };
 
 export type WallOpening3D = {
@@ -448,12 +450,14 @@ export function getWallSegments(room: HousePlanRoom2D): WallSegment3D[] {
   }
 
   const points = getRoomOutlinePoints(room);
+  const interiorSide = getOutlineInteriorSide(points);
   return points.slice(0, -1).map((point, index): WallSegment3D => {
     const next = points[index + 1];
     const dx = next[0] - point[0];
     const dz = next[1] - point[1];
     return {
       key: `${room.id}-${index}`,
+      interiorSide,
       x: (point[0] + next[0]) / 2,
       z: (point[1] + next[1]) / 2,
       length: Math.hypot(dx, dz),
@@ -471,37 +475,28 @@ export function getWallSurfaceFaceId(room: HousePlanRoom2D, segment: WallSegment
   return getDeterministicWallFaceId(suffix);
 }
 
+/**
+ * An outline edge's local +Z normal is (-dz, dx), its left: the room's side when the outline winds positively (29 Oct 2026;
+ * the direction to the room's centre, used before, picked the outside of a wall whose line runs through the centre, or past
+ * it in a concave shape). lib/room-finished-outline.ts's insetPolygonEdges takes the same rule.
+ */
+function getOutlineInteriorSide(outline: Array<[number, number]>): 1 | -1 {
+  return getSignedArea(outline) >= 0 ? 1 : -1;
+}
+
+/** The side of a wall its room's finish is on: by name for a rectangle's walls, by the outline's winding otherwise. */
 export function getWallInteriorSurfaceSide(segment: WallSegment3D): 1 | -1 {
   if (segment.wall === "north" || segment.wall === "east") return 1;
   if (segment.wall === "south" || segment.wall === "west") return -1;
-
-  const localPlusZNormal = {
-    x: Math.sin(segment.rotationY),
-    z: Math.cos(segment.rotationY),
-  };
-  const vectorToRoomCenter = {
-    x: -segment.x,
-    z: -segment.z,
-  };
-  return localPlusZNormal.x * vectorToRoomCenter.x + localPlusZNormal.z * vectorToRoomCenter.z >= 0
-    ? 1
-    : -1;
+  return segment.interiorSide ?? 1;
 }
 
 export function getWallInteriorSurfaceSideForTest(
-  _room: HousePlanRoom2D,
-  segment: {
-    wall?: "north" | "east" | "south" | "west";
-    x: number;
-    z: number;
-    rotationY: number;
-  }
+  room: HousePlanRoom2D, segment: { wall?: "north" | "east" | "south" | "west"; x: number; z: number; rotationY: number }
 ): 1 | -1 {
+  // The room's own winding, not a segment's saved side, so a test can check getWallSegments against it.
   return getWallInteriorSurfaceSide({
-    key: "test-wall-segment",
-    length: 1,
-    axis: "x",
-    ...segment,
+    key: "test-wall-segment", length: 1, axis: "x", ...segment, interiorSide: getOutlineInteriorSide(getRoomOutlinePoints(room)),
   });
 }
 

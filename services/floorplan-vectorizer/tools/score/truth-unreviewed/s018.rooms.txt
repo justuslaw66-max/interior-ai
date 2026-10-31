@@ -1,0 +1,48 @@
+# s018 - 5 Room Type-2(H), typed from the plan image only (dimensions and "5 Room / Type - 2(H)" caption ignored).
+# Labels: a printed line break is one blank ("LIVING/" + "DINING", "HOUSE-" "HOLD" "SHELTER").
+# LIVING/ DINING, KITCHEN and the SUGGESTED STUDY have no wall or door between them -> ONE open-plan space. The lobby in
+# front of BEDROOM 3 / BEDROOM 2 / BATH/WC 2 (x 340-570, y 244-293) is open to LIVING/ DINING at its full width -> part of it.
+# The SUGGESTED STUDY is outlined only by DASHED lines (x 243, y 98-243 and y 243, x 243-322) and its label says "suggested":
+# dashed = optional partition, not a wall, so it is read as part of the open space (UNCERTAIN: a reader who takes the dashed
+# outline as a wall would type it as its own space with `gap: SUGGESTED STUDY | LIVING/ DINING` and its window, x 250-305,
+# moved to it).
+space: LIVING/ DINING + KITCHEN + SUGGESTED STUDY
+space: BEDROOM 3
+space: BEDROOM 2
+space: MAIN BEDROOM
+space: BATH/WC 2
+space: BATH/WC 1
+space: AIR-CON LEDGE
+space: HOUSE- HOLD SHELTER
+# Not typed: the drying-rack box east of the kitchen (x 463-488, y 373-468, bars inside) - a fixture, no door (uncertain);
+# the small shoe-cabinet-like box beside the shelter (x 178-210, y 466-478); the black column (x 323-335, y 330-365).
+
+# main entrance in the bottom wall (x 210-265, y 470-490): unequal double leaf drawn inward + gate leaves outward -> one line
+door: LIVING/ DINING | OUTSIDE
+# shelter door in its east wall (x 170-178, y 395-435): closed leaf in its frame + open leaf arc swinging out into the living area
+door: HOUSE- HOLD SHELTER | LIVING/ DINING
+# bedroom 3 / bedroom 2 doors in their bottom walls (leaves drawn open at 90 degrees, arcs into the rooms)
+door: BEDROOM 3 | LIVING/ DINING
+door: BEDROOM 2 | LIVING/ DINING
+# main bedroom door: hinged at about (568, 293), arc x 568-608, y 250-293 into the main bedroom's south-west corner
+door: MAIN BEDROOM | LIVING/ DINING
+# folding (triangle) door in the top wall of BATH/WC 2 (x 517-557, y 293-313), from the lobby
+door: BATH/WC 2 | LIVING/ DINING
+# folding (triangle) door in the top wall of BATH/WC 1 (x 608-648, y 295-312), from the main bedroom
+door: BATH/WC 1 | MAIN BEDROOM
+
+# open-plan space: top-wall window A x 132-236 (one frame), top-wall window B x 250-305 (study part, separated from A by a
+# short wall piece x 237-250), and a glazed strip (grey infill) in the kitchen's east wall x 456-463, y 375-452 facing the
+# drying rack = 3. The left wall is solid black. The white outlined bands in the kitchen's bottom wall (x 266-300 and
+# x 354-413, y 479-489, the latter under the sink) have no sash drawn -> read as plain infill wall, no window (uncertain).
+windows: LIVING/ DINING = 3
+windows: BEDROOM 3 = 1
+windows: BEDROOM 2 = 1
+# MAIN BEDROOM: top window x 617-672 + long glazed bar in the right wall x 727-733, y 153-293
+windows: MAIN BEDROOM = 2
+# bath windows: small sash boxes on the bottom walls facing the AIR-CON LEDGE (BATH/WC 2 x 551-587; BATH/WC 1 x 647-675,
+# drawn partly dashed - uncertain)
+windows: BATH/WC 2 = 1
+windows: BATH/WC 1 = 1
+
+entrance: LIVING/ DINING
