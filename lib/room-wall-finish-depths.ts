@@ -286,10 +286,11 @@ export function hasWallFinishDepths(depths: RoomWallFinishDepths | null | undefi
 }
 
 /**
- * An item's clear gap to the nearer wall on each axis of a room's rectangle, measured to the finished face: half the wall in
- * from the centre-line outline, and in front of that side's panel (J, 29 Oct 2026: "Fix it, all from the face"). `depths`
- * are the sides' panels (getRoomSideFinishDepths, lib/room-finished-outline.ts). Each axis takes the nearer of its two
- * finished faces, which with different panels needn't be the wall on the item's side of the centre.
+ * An item's clear gap to the nearer wall on each axis of a rectangular room, measured to the finished face: half the wall in
+ * from the centre-line outline, and in front of that wall's panel (J, 29 Oct 2026: "Fix it, all from the face"). `depths` are
+ * the walls' panels (getRoomWallFinishDepths). Each axis takes the nearer of its two finished faces, which with different
+ * panels needn't be the wall on the item's side of the centre. Other shapes measure to their outline's faces instead
+ * (lib/room-finished-faces.ts).
  */
 export function getRectangleWallClearances({
   width,

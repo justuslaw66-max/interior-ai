@@ -417,7 +417,7 @@
       "limit": 400
     },
     "lib/catalog-placement-policy.ts": {
-      "lines": 887,
+      "lines": 886,
       "limit": 400
     },
     "lib/catalog-placement.ts": {
@@ -2866,16 +2866,6 @@
         "maximum": 43
       }
     },
-    "lib/circulation-analysis.ts": {
-      "overlongFunctions": {
-        "count": 1,
-        "maximum": 74
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 19
-      }
-    },
     "lib/constraints/evaluate.ts": {
       "overlongFunctions": {
         "count": 1,
@@ -3743,7 +3733,7 @@
     "lib/manual-placement-scoring.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 211
+        "maximum": 204
       },
       "complexFunctions": {
         "count": 1,

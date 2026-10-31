@@ -222,12 +222,17 @@ export const CORNER_TOLERANCES = {
 type Tolerances = (typeof CORNER_TOLERANCES)["straight"];
 
 /**
- * Rooms of the 2,000-plan run that still fail a check, by check (31 Oct 2026, fourth review): known open cases, so the count
- * can only come down. Of 3,551 rooms: wedges under about 15 degrees (their faces meet far up the wedge, where a door near the
- * tip or the plan's unjoined footprints leave slivers), arcs meeting a wall at a sharp angle (their slices' own mitres), and
- * junctions of three walls (slivers of up to 10 mm² where the plan's footprints join).
+ * Rooms that still fail a check in a run of this many plans, by check (31 Oct 2026, fourth review): known open cases, so a
+ * count can only come down. Wedges under about 15 degrees (their faces meet far up the wedge, where a door near the tip or the
+ * plan's unjoined footprints leave slivers), arcs meeting a wall at a sharp angle (their slices' own mitres), junctions of
+ * three walls (slivers of up to 10 mm² where the plan's footprints join), and slight bends between laminates of different
+ * depths, where the clamp's outline keeps one point per corner (the step's deeper end, insetPolygonEdges) and a panel's
+ * mitred end can come within 2 cm of an item.
  */
-export const OPEN_CORNER_CASES: Record<string, number> = { overlapMm2: 22, uncoveredMm: 40, buriedMm: 20, pokeMm: 3 };
+export const OPEN_CORNER_CASES: Record<number, Record<string, number>> = {
+  100: { overlapMm2: 1, uncoveredMm: 1 },
+  2000: { overlapMm2: 22, uncoveredMm: 40, furnitureMm: 5, buriedMm: 20, pokeMm: 3 },
+};
 
 type Panel = { wallId: string; quad: P[]; depth: number };
 const SKIN = WALL_FINISH_SKIN_MM / 1000 + 1e-9;

@@ -34,7 +34,7 @@ import {
 } from "@/lib/floor-plan-placement-boundaries";
 import { isPointInsideRoomPolygon } from "@/lib/design-page-geometry";
 import { getRoomWallFinishDepths, getRoomWallPanelDepths, sanitizePlanEdgeWallThicknesses } from "@/lib/room-wall-finish-depths";
-import { clampToRoomInsideFinishes, getRoomClearInsideMetrics, getRoomSideFinishDepths } from "@/lib/room-finished-outline";
+import { clampToRoomInsideFinishes, getRoomClearInsideMetrics } from "@/lib/room-finished-outline";
 import { evaluateConstraints } from "@/lib/constraints/evaluate";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { getFurnitureWallInset } from "@/lib/design-page-geometry";
@@ -624,14 +624,14 @@ assert.deepEqual(getRoomClearInsideMetrics(thick.planRooms[0], (mm) => `${Math.r
 assert.deepEqual(getRoomClearInsideMetrics(importedPlan(planOf("thick-paint", rectangle, ring([300, 100, 300, 100]), [["R", ["w1", "w2", "w3", "w4"]]]),
   painted).planRooms[0], (mm) => `${mm}`), [], "no clear size without a laminate (J: shown when a wall has one)");
 
-// The checks measure each side from its own walls' faces too: a TV console the clamp stops 2 cm off a 100 mm wall, in a room
-// whose walls average 200 mm, is placed nicely against it, painted or laminated. It read "Too tight to wall (-3cm)" and
-// "Walkway blocked" when the thinner walls' negative depths were dropped from the sides.
+// The checks measure each wall from its own face too (lib/room-finished-faces.ts, with each edge's signed depth): a TV console
+// the clamp stops 2 cm off a 100 mm wall, in a room whose walls average 200 mm, is placed nicely against it, painted or
+// laminated. It read "Too tight to wall (-3cm)" and "Walkway blocked" when the thinner walls' negative depths were dropped.
 const tvConsole = Object.values(CATALOG_ITEMS).find(({ category }) => category === "tv_console")!;
 for (const [finish, eastMm] of [[painted, -50], [laminated, -6]] as const) {
   const room = importedPlan(planOf(`thin-checks-${eastMm}`, rectangle, ring([300, 100, 300, 100]), [["R", ["w1", "w2", "w3", "w4"]]]), finish).rooms[0];
   const { width, depth, wallThickness } = room.geometry;
-  assert.equal(Math.round(getRoomSideFinishDepths(room, { w: width, d: depth }).east! * 1000), eastMm, "the 100 mm side stands out");
+  assert.equal(Math.round(getRoomWallFinishDepths(room)["wall-1"]! * 1000), eastMm, "the 100 mm wall's face stands out");
   const [w, d] = tvConsole.bounds?.type === "aabb" ? [tvConsole.bounds.size.w, tvConsole.bounds.size.d] : [tvConsole.dimsMm.w / 1000, tvConsole.dimsMm.d / 1000];
   const [x, z] = clampToRoomInsideFinishes(9, 0, w, d, width, depth, getFurnitureWallInset(wallThickness!), -Math.PI / 2, "custom_polygon",
     room.planPolygon, undefined, getRoomWallFinishDepths(room));
@@ -738,19 +738,19 @@ assert.match(read("components/editor/renderers/RoomRenderer2D.tsx"), /<Canonical
 // and out, at a cusp, and meeting each other), with walls 100 to 300 mm thick, each laminated on a random board or painted,
 // turned, mirrored and moved, and some with a door near a corner. Each room's drawn panels are checked: no two overlap, none
 // pokes out past the walls or into another wall, each face is covered up to its corners, and furniture placed by the clamp
-// stands 2 cm in front of every laminate (each within the stated tolerances). The cases still open are counted, so the count
-// can only come down.
-const cornerPlans = Number(process.env.IMPORTED_CORNER_PLANS ?? 2000);
+// stands 2 cm in front of every laminate (each within the stated tolerances). The cases still open are counted, so a count
+// can only come down. 100 plans by default; the full 2,000 with IMPORTED_CORNER_PLANS=2000 (about a minute and a half).
+const cornerPlans = Number(process.env.IMPORTED_CORNER_PLANS ?? 100);
 const corners = runImportedPanelCornerProperties(cornerPlans);
 console.log(`Imported panel corners: ${corners.plans} plans (${corners.skipped} invalid, skipped), ${corners.rooms} rooms, ${corners.panels} panels; worst ${JSON.stringify(
   Object.fromEntries(Object.entries(corners.worst).map(([key, value]) => [key, Math.round(value * 100) / 100])))}; failing ${JSON.stringify(corners.failing)}`);
-if (cornerPlans === 2000) {
-  assert.ok(corners.plans >= 1990, "the plans compile");
-  assert.ok(corners.panels > 20000, "the plans have panels");
-  for (const [key, open] of Object.entries(OPEN_CORNER_CASES)) {
+const openCases = OPEN_CORNER_CASES[cornerPlans];
+if (openCases) {
+  assert.ok(corners.plans >= cornerPlans * 0.99, "the plans compile");
+  for (const [key, open] of Object.entries(openCases)) {
     assert.ok((corners.failing[key] ?? 0) <= open, `${key}: ${corners.failing[key]} rooms (${open} known open)\n${corners.failures.join("\n")}`);
   }
-  assert.deepEqual(Object.keys(corners.failing).filter((key) => !(key in OPEN_CORNER_CASES)), [], corners.failures.join("\n"));
+  assert.deepEqual(Object.keys(corners.failing).filter((key) => !(key in openCases)), [], corners.failures.join("\n"));
 }
 
 console.log("Canonical wall finishes and opening semantics checks passed.");

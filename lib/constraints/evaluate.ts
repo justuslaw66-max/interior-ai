@@ -1,7 +1,7 @@
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema, ProductCategory } from "@/lib/catalog-schema";
-import { getRoomSideFinishDepths } from "@/lib/room-finished-outline";
-import type { WallFinishRoom } from "@/lib/room-wall-finish-depths";
+import { getBoxGapToFinishedOutline, getRoomFinishedOutline, type FinishedFacesRoom } from "@/lib/room-finished-faces";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 
 export type ConstraintLevel = "ok" | "warn" | "error";
 
@@ -30,8 +30,8 @@ type RoomSpec = {
   width: number;
   depth: number;
   wallThickness?: number;
-  /** The room whose laminate panels the gaps are measured in front of (lib/room-wall-finish-depths.ts), as a rectangle. */
-  wallFinishRoom?: WallFinishRoom | null;
+  /** The room whose walls and laminate panels the gaps are measured to: its outline's, or without it the rectangle's. */
+  wallFinishRoom?: FinishedFacesRoom | null;
 };
 
 type DesignLike = {
@@ -84,13 +84,16 @@ function aabbGap(a: AABB, b: AABB) {
 }
 
 /**
- * The item's gap to the nearest finished wall face of the room's rectangle: half the wall in from the centre-line outline,
- * and in front of that side's laminate panel (J, 29 Oct 2026: "Fix it, all from the face"; an L-shape's or drawn shape's side
- * takes the deepest panel along it). It took off a whole wall before, so an item snapped against a wall read as 4 cm into it.
+ * The item's gap to the nearest finished wall face: half the wall in from the centre-line outline, and in front of that wall's
+ * laminate panel (J, 29 Oct 2026: "Fix it, all from the face"). It took off a whole wall before, so an item snapped against a
+ * wall read as 4 cm into it. An L-shape or a drawn shape measures to its own outline's faces, its notch's walls included
+ * (lib/room-finished-faces.ts); it used to be measured as its bounding rectangle.
  */
 function nearestWallGap(aabb: AABB, room: RoomSpec) {
   const face = (room.wallThickness ?? 0) / 2;
-  const depths = getRoomSideFinishDepths(room.wallFinishRoom, { w: room.width, d: room.depth });
+  const outline = getRoomFinishedOutline(room.wallFinishRoom, { w: room.width, d: room.depth }, face);
+  if (outline) return getBoxGapToFinishedOutline(outline, aabb);
+  const depths = getRoomWallFinishDepths(room.wallFinishRoom);
   const panel = (faceId: string) => depths[faceId] ?? 0;
   const minX = -room.width / 2 + face + panel("west");
   const maxX = room.width / 2 - face - panel("east");

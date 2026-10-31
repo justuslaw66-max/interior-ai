@@ -4,7 +4,10 @@ by a learned reader, where stage 1 left them unread or misread (beta step 2.2, M
 
 The reader is RapidOCR (PP-OCR detection and recognition on ONNX Runtime, Apache-2.0). Its model files come inside its
 package, installed into the worker image; nothing is fetched at run time. It reads the page as it came, at its own size
-and at twice it, and only room names are kept. The model JSON is rewritten in place, before the exporter reads it (the
+and at twice it, and only room names are kept. Its memory grows with the pixels it reads (about 0.23 GB and 0.14 GB per
+million: d12 at twice its 4.95 MP took 3.0 GB), so it reads within a budget of FLOOR_PLAN_NAME_READER_MAX_PIXELS
+(default 8000000, about 1.35 GB): twice the page's size only while that fits, and a page larger than the budget shrunk
+to it. The model JSON is rewritten in place, before the exporter reads it (the
 round-41 plain reading beside it, <model>.plain.json, too):
 
 - the two sizes' readings together, one per place (the surer), score 0.8 or more, and a room name: a room type or room
@@ -18,8 +21,8 @@ round-41 plain reading beside it, <model>.plain.json, too):
   spelling (BEL200M -> BEDROOM, BATE -> BATH, ITCH: -> KITCHEN), stage 1's box and letter height kept (they join a
   name's lines); otherwise stage 1's reading stands.
 
---readings gives readings already made (a list of {"text", "score", "box": [[x, y] x 4], "scale": 1|2}, source px at
-that scale), so the merge can be run and tested without the reader. --dump writes the readings made. Fails soft: any
+--readings gives readings already made (a list of {"text", "score", "box": [[x, y] x 4] in source px, "scale": the size
+read at}), so the merge can be run and tested without the reader. --dump writes the readings made. Fails soft: any
 error leaves the model as stage 1 wrote it, and prints why. The model gains "name_reader": {"added", "replaced", ...}.
 """
 import json
@@ -35,6 +38,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from app_evidence import NOT_ROOM, ROOM_TYPES, ROOM_WORDS, ToSource  # noqa: E402
 
 MIN_SCORE = float(os.environ.get("FV_NAME_READER_MIN_SCORE", "0.8"))
+READ_PIXELS = int(os.environ.get("FLOOR_PLAN_NAME_READER_MAX_PIXELS", "") or 8_000_000)  # the most pixels read at once
 COLLIDE = 0.30                     # share of the smaller box two boxes must overlap by to be one place
 CAPTION_WORDS = ("BUILT", "BEAMS", "INCLUSIVE", "APARTMENT", "FLAT", "IMPROVED", "STANDARD", "APPROX", "AREA", "SQM",
                  "SQFT", "SQ.M", "SQ.FT", "SCALE", "TYPE", "MODEL", "BLK", "BLOCK", "STOREY", "STY", "LEVEL", "FLOOR PLAN")
@@ -106,16 +110,23 @@ class FromSource:
 
 
 # ----------------------------------------------------------------------------------------------- reading
+def read_scales(width, height, budget=READ_PIXELS):
+    """the sizes a page is read at: its own (shrunk to the budget when larger), and twice it while that fits"""
+    pixels = max(1, width * height)
+    return [min(1.0, math.sqrt(budget / pixels))] + ([2.0] if 4 * pixels <= budget else [])
+
+
 def read_page(path):
-    """RapidOCR at the page's own size and twice it: [{"text", "score", "box", "scale"}], boxes in source px"""
+    """RapidOCR at the sizes read_scales gives: [{"text", "score", "box", "scale"}], boxes in source px"""
     from rapidocr_onnxruntime import RapidOCR
     engine = RapidOCR()
     img = cv2.imread(path, cv2.IMREAD_COLOR)
     if img is None:
         raise ValueError("unreadable picture")
     out = []
-    for scale in (1, 2):
-        im = img if scale == 1 else cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
+    for scale in read_scales(img.shape[1], img.shape[0]):
+        im = img if scale == 1 else cv2.resize(img, None, fx=scale, fy=scale,
+                                               interpolation=cv2.INTER_CUBIC if scale > 1 else cv2.INTER_AREA)
         result, _ = engine(im)
         for box, text, score in result or []:
             out.append({"text": str(text), "score": float(score), "scale": scale,
