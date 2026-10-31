@@ -140,13 +140,23 @@ function footprintCorners(x: number, z: number, width: number, depth: number, ro
 
 /**
  * True when a built-in `width` × `depth` metres, centred at (x, z) and turned `rotationY`, stands in the room's finished
- * region by its real (turned) footprint. It may reach `tolerance` into a face.
+ * region by its real (turned) footprint, keeping `standOff` metres from every face (getBuiltInStandOff). It may reach
+ * `tolerance` into that.
  */
 export function builtInFootprintFits(
   faces: BuiltInRoomFaces, x: number, z: number, width: number, depth: number, rotationY: number,
-  tolerance = BUILT_IN_CONTACT_TOLERANCE
+  tolerance = BUILT_IN_CONTACT_TOLERANCE, standOff = 0
 ): boolean {
-  return isFootprintInBuiltInRegion(faces, footprintCorners(x, z, width, depth, rotationY, tolerance));
+  return isFootprintInBuiltInRegion(faces, footprintCorners(x, z, width + 2 * standOff, depth + 2 * standOff, rotationY, tolerance));
+}
+
+/**
+ * How far a built-in keeps from every face, metres, as Fit stands it off (getCabinetBackOffsetMm): one standing on the floor
+ * (its bottom `bottom` metres up: none) the recorded baseboard's depth, to the millimetre; a wall cabinet, hung above the
+ * baseboard, none. Moves, turns, snaps and containment keep it, as Fit does.
+ */
+export function getBuiltInStandOff(room: RoomSnapshot, bottom = 0): number {
+  return bottom > 0 ? 0 : Math.max(0, Math.round((room.geometry.baseboardDepth ?? 0) * 1000)) / 1000;
 }
 
 /** Furniture's clamp (half the wall plus 2 cm, inside each panel). */
@@ -158,20 +168,22 @@ function clampAsFurniture(room: RoomSnapshot, x: number, z: number, width: numbe
 }
 
 /**
- * A built-in kept in its room's finished region, its back allowed against a face. Where it stands in the region it stays put,
- * as Fit to Space places it; furniture's own room (half the wall plus 2 cm in) lies inside the region. A move that would leave
- * it stops where it still stands, going from `from`. A turn (no `from`) that leaves it moves it out from the face it stands
- * against, along that wall's normal, until it fits there, touching the face (pushOffFace). Otherwise it is clamped with half
- * the wall, by the box test furniture uses; in a room on furniture's rule, as furniture is.
+ * A built-in kept in its room's finished region, its back allowed against a face (or, standing on the floor, against the
+ * recorded baseboard: getBuiltInStandOff, by its `bottom`). Where it stands in the region it stays put, as Fit to Space places
+ * it; furniture's own room (half the wall plus 2 cm in) lies inside the region. A move that would leave it stops where it
+ * still stands, going from `from`. A turn (no `from`) that leaves it goes to the nearest place along and out from the face it
+ * stands against where it fits (turnAgainstFace). Otherwise it is clamped with half the wall and the stand-off, by the box
+ * test furniture uses; in a room on furniture's rule, as furniture is.
  */
 export function clampBuiltInToRoom(
   room: RoomSnapshot, x: number, z: number, width: number, depth: number, rotationY = 0,
-  options: { from?: readonly [number, number]; planRooms?: BuiltInPlanRooms } = {}
+  options: { from?: readonly [number, number]; planRooms?: BuiltInPlanRooms; bottom?: number } = {}
 ): [number, number] {
   if (usesFurnitureRuleForBuiltIns(room, undefined, options.planRooms)) return clampAsFurniture(room, x, z, width, depth, rotationY);
-  const faces = getRoomBuiltInFaces(room, undefined, options.planRooms);
+  const faces = getRoomBuiltInFaces(room, undefined, options.planRooms), standOff = getBuiltInStandOff(room, options.bottom);
   // A tenth of the contact tolerance: a move stops within 0.05 mm of a face, and containment (0.5 mm) keeps it.
-  const fits = (atX: number, atZ: number) => builtInFootprintFits(faces, atX, atZ, width, depth, rotationY, BUILT_IN_CONTACT_TOLERANCE / 10);
+  const fits = (atX: number, atZ: number) =>
+    builtInFootprintFits(faces, atX, atZ, width, depth, rotationY, BUILT_IN_CONTACT_TOLERANCE / 10, standOff);
   if (fits(x, z)) return [x, z];
   const from = options.from;
   if (from && fits(from[0], from[1])) {
@@ -183,54 +195,80 @@ export function clampBuiltInToRoom(
     }
     return [from[0] + (x - from[0]) * reach, from[1] + (z - from[1]) * reach];
   }
-  const pushed = from ? null : pushOffFace(faces, x, z, Math.hypot(width, depth), fits);
-  if (pushed) return pushed;
+  const turned = from ? null : turnAgainstFace(faces, x, z, fits);
+  if (turned) return turned;
   return clampToRoomInsideFinishes(
-    x, z, width, depth, room.geometry.width, room.geometry.depth, getBuiltInWallInset(room.geometry.wallThickness),
+    x, z, width, depth, room.geometry.width, room.geometry.depth, getBuiltInWallInset(room.geometry.wallThickness) + standOff,
     rotationY, room.planShape ?? "rectangle", room.planPolygon, room.planHoles, getRoomWallFinishDepths(room)
   );
 }
 
+/** How far (metres) a turn looks for the nearest place a built-in fits, along and out from its face, before giving up. */
+const TURN_REACH = 0.6;
+
 /**
- * A built-in at (x, z) that doesn't fit, moved out from an exposed face along its wall's normal as little as lets it fit (to
- * within the halving's thousandths of a mm, so touching it): from the face nearest it (the one it stands against) first, any
- * face within its `reach` (its footprint's diagonal) next. Null when none lets it fit within that reach.
+ * A turned built-in at (x, z) that doesn't fit, moved to the nearest place where it does, along and out from the faces it
+ * stands against (the two exposed faces nearest it: in a corner, either may be the one to slide along): the nearest of
+ * nearestFitAlong's for each. Null when there is no exposed face, or it fits nowhere within TURN_REACH.
  */
-function pushOffFace(
-  faces: BuiltInRoomFaces, x: number, z: number, reach: number, fits: (atX: number, atZ: number) => boolean
-): [number, number] | null {
+function turnAgainstFace(faces: BuiltInRoomFaces, x: number, z: number, fits: (atX: number, atZ: number) => boolean): [number, number] | null {
   const distanceTo = ({ start, end }: { start: Point; end: Point }) => {
     const dx = end.x - start.x, dz = end.z - start.z, length = dx * dx + dz * dz;
     const t = length > 0 ? Math.max(0, Math.min(1, ((x - start.x) * dx + (z - start.z) * dz) / length)) : 0;
     return Math.hypot(x - start.x - dx * t, z - start.z - dz * t);
   };
-  const nearby = faces.exposed.flatMap((face, index) => (face && distanceTo(face) <= reach ? [{ face, wall: faces.walls[index] }] : []))
-    .sort((first, second) => distanceTo(first.face) - distanceTo(second.face));
-  const step = 0.005;
-  for (const { wall } of nearby) {
-    const at = (distance: number): [number, number] => [x + wall.nx * distance, z + wall.nz * distance];
-    let outside = 0;
-    for (let distance = step; distance <= reach + step; distance += step) {
-      if (!fits(...at(distance))) {
-        outside = distance;
-        continue;
-      }
-      let inside = distance;
-      for (let halving = 0; halving < 24; halving += 1) {
-        const middle = (outside + inside) / 2;
-        if (fits(...at(middle))) inside = middle;
-        else outside = middle;
-      }
-      return at(inside);
-    }
-  }
-  return null;
+  const nearest = faces.exposed.flatMap((face, index) => (face ? [{ wall: faces.walls[index], distance: distanceTo(face) }] : []))
+    .sort((first, second) => first.distance - second.distance).slice(0, 2);
+  const found = nearest.flatMap(({ wall }) => nearestFitAlong(wall, x, z, fits) ?? []).sort((first, second) => first.distance - second.distance);
+  return found[0]?.at ?? null;
 }
 
 /**
- * Where Snap to wall sends a built-in: to the nearest side of its room's exposed faces along x or z (their middle, for one wider
- * than they stand apart). The move then takes it there if it fits there, without checking what stands between (as for
- * furniture), or else toward it as far as the clamp's halving search finds it fits. A room on furniture's rule snaps as the
+ * The nearest place to (x, z) where `fits` holds, along and out from `wall`'s face: for each distance along it, the least
+ * distance out from it that fits (to within the halving's thousandths of a mm, so touching what stops it: the face, or a solid
+ * on it). Distances along are tried 10 mm apart, nearest first, then a millimetre apart about the best; within TURN_REACH.
+ */
+function nearestFitAlong(
+  wall: BuiltInRoomFaces["walls"][number], x: number, z: number, fits: (atX: number, atZ: number) => boolean
+): { at: [number, number]; distance: number } | null {
+  const step = 0.01;
+  const at = (along: number, out: number): [number, number] => [x + wall.dx * along + wall.nx * out, z + wall.dz * along + wall.nz * out];
+  const found: { best: { along: number; out: number; distance: number } | null } = { best: null };
+  const consider = (along: number) => {
+    const limit = Math.sqrt(Math.max(0, (found.best?.distance ?? TURN_REACH) ** 2 - along ** 2));
+    let outside: number | null = null;
+    for (let out = 0; out <= limit + 1e-9; out += step) {
+      if (!fits(...at(along, out))) {
+        outside = out;
+        continue;
+      }
+      let inside = out;
+      for (let halving = 0; outside !== null && halving < 20; halving += 1) {
+        const middle = (outside + inside) / 2;
+        if (fits(...at(along, middle))) inside = middle;
+        else outside = middle;
+      }
+      const distance = Math.hypot(along, inside);
+      if (!found.best || distance < found.best.distance) found.best = { along, out: inside, distance };
+      return;
+    }
+  };
+  for (let k = 0; k * step <= TURN_REACH && k * step < (found.best?.distance ?? Number.POSITIVE_INFINITY); k += 1) {
+    consider(k * step);
+    if (k) consider(-k * step);
+  }
+  const coarse = found.best;
+  if (!coarse) return null;
+  for (let k = -9; k <= 9; k += 1) if (k) consider(coarse.along + k * 0.001);
+  const best = found.best ?? coarse;
+  return { at: at(best.along, best.out), distance: best.distance };
+}
+
+/**
+ * Where Snap to wall sends a built-in: to the nearest side of its room's exposed faces along x or z, a floor-standing one the
+ * baseboard's depth off it (their middle, for one wider than they stand apart). The move then takes it there if it fits
+ * there, without checking what stands between (as for furniture), or else toward it as far as the clamp's halving search
+ * finds it fits. A room on furniture's rule snaps as the
  * line did, half the wall plus 2 cm in from its rectangle, to its middle for one wider than that.
  */
 export function getBuiltInSnapTarget(
@@ -248,8 +286,10 @@ export function getBuiltInSnapTarget(
     return nearest([[-wallX, z], [wallX, z], [x, -wallZ], [x, wallZ]]);
   }
   const faces = getRoomBuiltInFaces(room, undefined, planRooms).polygon, xs = faces.map((point) => point.x), zs = faces.map((point) => point.z);
-  const sides = (low: number, high: number, size: number) =>
-    low + size / 2 <= high - size / 2 ? [low + size / 2, high - size / 2] : [(low + high) / 2, (low + high) / 2];
+  // Its back against a face, or a floor-standing one's against the baseboard (getBuiltInStandOff, by its bottom).
+  const standOff = getBuiltInStandOff(room, position[1]);
+  const sides = (low: number, high: number, size: number) => low + standOff + size / 2 <= high - standOff - size / 2
+    ? [low + standOff + size / 2, high - standOff - size / 2] : [(low + high) / 2, (low + high) / 2];
   const [west, east] = sides(Math.min(...xs), Math.max(...xs), effectiveWidth);
   const [north, south] = sides(Math.min(...zs), Math.max(...zs), effectiveDepth);
   return nearest([[west, z], [east, z], [x, north], [x, south]]);

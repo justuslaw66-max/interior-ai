@@ -21,6 +21,7 @@ import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
 import {
   builtInFootprintFits,
+  getBuiltInStandOff,
   getRoomBuiltInFaces,
   usesFurnitureRuleForBuiltIns,
   type BuiltInPlanRooms,
@@ -186,10 +187,10 @@ export function isPlacementContainedInRoom({
   /** The plan's rooms: the walls the 3D view draws around the room stand in its region (lib/room-built-in-faces.ts). */
   planRooms?: BuiltInPlanRooms;
 }): boolean {
-  // A built-in may stand against the finished face, by its real (turned) footprint, and anywhere furniture may; a room on
-  // furniture's rule for built-ins keeps that alone (lib/room-built-in-faces.ts).
+  // A built-in may stand against the finished face (one on the floor against the baseboard), by its real (turned) footprint,
+  // and anywhere furniture may; a room on furniture's rule for built-ins keeps that alone (lib/room-built-in-faces.ts).
   if (builtIn && !usesFurnitureRuleForBuiltIns(room, undefined, planRooms) && builtInFootprintFits(getRoomBuiltInFaces(room, undefined, planRooms),
-    position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY)) return true;
+    position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY, undefined, getBuiltInStandOff(room, position[1]))) return true;
   if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   // Inside the room's laminate panels (lib/room-finished-outline.ts).
   const outline = getRoomOutlineInsideFinishes({

@@ -509,7 +509,7 @@ export function useDesignPageCabinetry({
             const rotationY = fitPlacement?.rotationY ?? getCabinetRotationY(item);
             const [safeX, safeZ] = fitPlacement
               ? clampBuiltInToRoom(targetRoom, fitPlacement.position[0], fitPlacement.position[2], definition.totalWidth / 1000,
-                  definition.depth / 1000, rotationY, { planRooms: planRoomById })
+                  definition.depth / 1000, rotationY, { planRooms: planRoomById, bottom: fitPlacement.position[1] })
               : [item.position?.[0] ?? 0, item.position?.[2] ?? 0];
             const position: ItemPosition = fitPlacement
               ? [safeX, fitPlacement.position[1], safeZ]
@@ -789,7 +789,7 @@ export function useDesignPageCabinetry({
       if (!planningDimensionsMm) return;
       const rotationY = getCabinetRotationY(item);
       const [safeX, safeZ] = clampBuiltInToRoom(activeRoom, targetX, targetZ, planningDimensionsMm.w / 1000,
-        planningDimensionsMm.d / 1000, rotationY, { from: [item.position[0], item.position[2]], planRooms: planRoomById });
+        planningDimensionsMm.d / 1000, rotationY, { from: [item.position[0], item.position[2]], planRooms: planRoomById, bottom: item.position[1] });
       const nextPosition: ItemPosition = [safeX, item.position[1] ?? 0, safeZ];
 
       if (
@@ -876,9 +876,9 @@ export function useDesignPageCabinetry({
       const resolvedRotationY = rotationSnapEnabled
         ? snapRotationRadians(targetRotationY, rotationSnapStepRadians)
         : targetRotationY;
-      // Turned, it stays against the face it stands against: moved out along that wall's normal as far as it must.
+      // Turned, it stays against the face it stands against: moved to the nearest place along and out from it where it fits.
       const [safeX, safeZ] = clampBuiltInToRoom(activeRoom, selected.item.position[0], selected.item.position[2],
-        planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, resolvedRotationY, { planRooms: planRoomById });
+        planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, resolvedRotationY, { planRooms: planRoomById, bottom: selected.item.position[1] });
       const nextPosition: ItemPosition = [safeX, selected.item.position[1] ?? 0, safeZ];
 
       if (

@@ -378,6 +378,6 @@ export function getCabinetPlacement(
   const at: [number, number] = [fitted?.position[0] ?? 0, fitted?.position[2] ?? 0];
   const [offsetX, offsetZ] = placeAsCopy ? getCabinetCopyOffset(definition.fitState?.host, room, planRooms) : [0, 0];
   const [x, z] = clampBuiltInToRoom(room, at[0] + offsetX, at[1] + offsetZ, definition.totalWidth / 1000, definition.depth / 1000,
-    rotationY, { from: at, planRooms });
+    rotationY, { from: at, planRooms, bottom: fitted?.position[1] });
   return { position: [x, fitted?.position[1] ?? 0, z], rotationY };
 }
