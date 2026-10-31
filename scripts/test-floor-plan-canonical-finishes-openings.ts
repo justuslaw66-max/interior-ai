@@ -38,6 +38,7 @@ import { clampToRoomInsideFinishes, getRoomClearInsideMetrics } from "@/lib/room
 import { evaluateConstraints } from "@/lib/constraints/evaluate";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { getFurnitureWallInset } from "@/lib/design-page-geometry";
+import { isPlacementContainedInRoom } from "@/lib/useDesignPagePlacementRoomQueries";
 import { curvedApartment } from "./fixtures/scan-to-editable-plan/curved-apartment";
 import { OPEN_CORNER_CASES, runImportedPanelCornerProperties } from "./fixtures/imported-panel-corners";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
@@ -629,7 +630,8 @@ assert.deepEqual(getRoomClearInsideMetrics(importedPlan(planOf("thick-paint", re
 // laminated. It read "Too tight to wall (-3cm)" and "Walkway blocked" when the thinner walls' negative depths were dropped.
 const tvConsole = Object.values(CATALOG_ITEMS).find(({ category }) => category === "tv_console")!;
 for (const [finish, eastMm] of [[painted, -50], [laminated, -6]] as const) {
-  const room = importedPlan(planOf(`thin-checks-${eastMm}`, rectangle, ring([300, 100, 300, 100]), [["R", ["w1", "w2", "w3", "w4"]]]), finish).rooms[0];
+  const thin = importedPlan(planOf(`thin-checks-${eastMm}`, rectangle, ring([300, 100, 300, 100]), [["R", ["w1", "w2", "w3", "w4"]]]), finish);
+  const room = thin.rooms[0];
   const { width, depth, wallThickness } = room.geometry;
   assert.equal(Math.round(getRoomWallFinishDepths(room)["wall-1"]! * 1000), eastMm, "the 100 mm wall's face stands out");
   const [w, d] = tvConsole.bounds?.type === "aabb" ? [tvConsole.bounds.size.w, tvConsole.bounds.size.d] : [tvConsole.dimsMm.w / 1000, tvConsole.dimsMm.d / 1000];
@@ -639,6 +641,9 @@ for (const [finish, eastMm] of [[painted, -50], [laminated, -6]] as const) {
     movedItemId: "tv", room: { width, depth, wallThickness, wallFinishRoom: room } });
   assert.equal(checks.find(({ id }) => id === "wall-gap")?.message, "Placed nicely against wall (2cm gap)", `${eastMm}: ${JSON.stringify(checks)}`);
   assert.ok(!checks.some(({ message }) => message.includes("-")), "no negative gap");
+  // Moving it there from another room: it was refused ("Place fully inside R") by the room's rectangle less its average wall.
+  assert.ok(isPlacementContainedInRoom({ room, position: [x, 0, z], rotationY: -Math.PI / 2, dimensions: tvConsole.dimsMm, canonicalModel: thin.model }),
+    `${eastMm}: the clamp's own place is inside the room`);
 }
 
 // A wall in two pieces at a T, both thinner than the room's average (300 mm outer walls, 100 mm partitions): their signed depths
@@ -668,6 +673,8 @@ for (const turnDeg of [0, 10, 30]) {
     const [w, d] = [1.6, 0.9];
     const [x, z] = clampToRoomInsideFinishes(cx + (tx - cx) * s - inward.x - o.x, cz + (tz - cz) * s - inward.z - o.z, w, d,
       room.geometry.width, room.geometry.depth, getFurnitureWallInset(room.geometry.wallThickness!), 0, "custom_polygon", room.planPolygon, undefined, depths);
+    assert.ok(isPlacementContainedInRoom({ room, position: [x, 0, z], rotationY: 0, dimensions: { w: w * 1000, d: d * 1000, h: 800 }, canonicalModel: tee.model }),
+      `turned ${turnDeg}°: the clamp's own place at ${s.toFixed(3)} along the T's wall is inside the room`);
     for (const [i, j] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
       const corner = { x: x + o.x + (i * w) / 2, z: z + o.z + (j * d) / 2 };
       const u = (corner.x - cx) * along.x + (corner.z - cz) * along.z;
