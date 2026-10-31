@@ -329,6 +329,25 @@ function gapBetween(a: readonly P[], b: readonly P[]): number {
 }
 
 /**
+ * How far apart two convex outlines are: the gap between them, or where they overlap, minus how deep (the least distance one
+ * must move along an edge's normal to clear the other), so an item through a panel reads worse than one touching it.
+ */
+function separation(a: readonly P[], b: readonly P[]): number {
+  const gap = gapBetween(a, b);
+  if (gap > 0) return gap;
+  let depth = Infinity;
+  for (const outline of [a, b]) outline.forEach((from, index) => {
+    const to = outline[(index + 1) % outline.length];
+    const length = Math.hypot(to.x - from.x, to.z - from.z);
+    if (length < 1e-12) return;
+    const axis = { x: -(to.z - from.z) / length, z: (to.x - from.x) / length };
+    const [onA, onB] = [a, b].map((points) => points.map((point) => point.x * axis.x + point.z * axis.z));
+    depth = Math.min(depth, Math.min(Math.max(...onA) - Math.min(...onB), Math.max(...onB) - Math.min(...onA)));
+  });
+  return -Math.max(0, depth);
+}
+
+/**
  * Furniture stops 20 mm in front of every laminate the room is measured to: items dragged onto each panel (its ends and
  * middle) and onto each corner of the clamp's outline are placed by the room's clamp (clampToRoomInsideFinishes), and each one's gap to every laminate
  * panel is at least 20 mm. A skin (paint, tiles) isn't measured: the room stops at the bare wall there (J: what is drawn is what
@@ -368,7 +387,7 @@ function checkFurniture(room: HousePlanRoom2D, snapshot: RoomSnapshot, panels: P
     const nearOutside = outsideCorners.some(({ corner, reach }) => gapBetween(rectangle(x, z, w, d), [corner, corner, corner]) < reach);
     const item = rectangle(x + origin.x, z + origin.z, w, d);
     for (const panel of laminates) {
-      const miss = 0.02 - gapBetween(item, panel.quad);
+      const miss = 0.02 - separation(item, panel.quad);
       if (crosses || nearOutside) missed = Math.max(missed, miss);
       else short = Math.max(short, miss);
     }
