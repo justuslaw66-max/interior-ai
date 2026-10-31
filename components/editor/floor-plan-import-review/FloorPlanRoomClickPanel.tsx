@@ -14,7 +14,6 @@ type FloorPlanRoomClickPanelProps = {
   document: FloorPlanDocumentV2;
   floorId: string;
   sourceId: string;
-  pageNumber: number | undefined;
   ready: boolean;
   onStart: () => void;
   onChange: (value: FloorPlanDocumentV2) => void;
@@ -54,14 +53,14 @@ function FoundRoomFields({ room, onAdd, onClear, disabled }: {
 
 /** Step 2's quick way: click inside a room on the plan and its outline is found from the drawing. */
 export default function FloorPlanRoomClickPanel({
-  roomClick, document, floorId, sourceId, pageNumber, ready, onStart, onChange, onError, disabled,
+  roomClick, document, floorId, sourceId, ready, onStart, onChange, onError, disabled,
 }: FloorPlanRoomClickPanelProps) {
   const found = roomClick.found;
   const add = (name: string, type: string) => {
-    if (!found || pageNumber === undefined) return;
+    if (!found) return;
     try {
       onError(null);
-      onChange(addFoundRoom({ document, floorId, sourceId, pageNumber, corners: found.corners, roomName: name,
+      onChange(addFoundRoom({ document, floorId, sourceId, pageNumber: found.pageNumber, corners: found.corners, roomName: name,
         roomType: type, wallThicknessMm: found.wallThicknessMm ?? 120 }));
       roomClick.clear();
     } catch (cause) {

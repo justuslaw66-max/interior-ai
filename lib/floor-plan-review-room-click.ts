@@ -68,19 +68,25 @@ export function insidePolygon(point: ReviewSourcePoint, polygon: ReviewSourcePoi
 /** A room type from its printed name, as the room panel offers them. */
 export function roomTypeFromName(name: string) {
   const text = name.toLowerCase();
-  const rules: Array<[RegExp, string]> = [[/bed|master|main room/, "bedroom"], [/kitchen/, "kitchen"], [/bath|w\.?\s?c\b|toilet/, "toilet"],
+  const rules: Array<[RegExp, string]> = [[/bath|w\.?\s?c\b|toilet/, "toilet"], [/bed|master|main room/, "bedroom"], [/kitchen/, "kitchen"],
     [/service yard|utility/, "service_yard"], [/shelter|store/, "shelter"], [/study/, "study"], [/living/, "living"], [/dining/, "dining"]];
   return rules.find(([pattern]) => pattern.test(text))?.[1] ?? "other";
 }
 
-/** The page's printed words inside an outline, top to bottom, that read as a name (not a number). */
+/** Page text that reads as a room's name: at least two letters, and not only a unit ("mm", "12 sqm"). */
+function nameLike(text: string) {
+  const letters = text.replace(/[^a-z]/gi, "");
+  return letters.length >= 2 && !/^(mm|cm|sqm|sqft|ft)$/i.test(letters);
+}
+
+/** The page's printed words inside an outline, top to bottom, that read as a name (not a number or a unit). */
 function printedName(floor: FloorPlanFloorV2, sourceId: string, pageNumber: number, outline: ReviewSourcePoint[]) {
   const words = floor.annotations.flatMap((annotation) => {
     const geometry = annotation.geometry;
     if (geometry.kind !== "source_drawing" || geometry.command !== "text" || geometry.sourceId !== sourceId) return [];
     const at = geometry.points[0];
     const text = (annotation.text ?? "").trim();
-    return geometry.pageNumber === pageNumber && at && /[a-z]{2}/i.test(text) && insidePolygon(at, outline) ? [{ at, text }] : [];
+    return geometry.pageNumber === pageNumber && at && nameLike(text) && insidePolygon(at, outline) ? [{ at, text }] : [];
   });
   words.sort((a, b) => a.at.y - b.at.y || a.at.x - b.at.x);
   return words.map((word) => word.text).join(" ").replace(/\s+/g, " ").slice(0, 120);

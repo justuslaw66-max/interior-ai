@@ -15,7 +15,9 @@ import {
   type ReviewSourcePoint,
 } from "@/lib/floor-plan-import-review-geometry";
 
-type Corner = { at: Mm; vertexId?: string; split?: { wallId: string; offsetMm: number } };
+/** A corner of the room being added: where it goes, the saved corner it is, or the saved wall it splits; `found` is
+ * where the click found it. */
+type Corner = { at: Mm; found: Mm; vertexId?: string; split?: { wallId: string; offsetMm: number } };
 type Segment = { wallId: string; start: Mm; end: Mm; thicknessMm: number };
 
 /** How near a saved corner or wall a found corner snaps, before the wall's half thickness: at least 100 mm or 4 px. */
@@ -74,7 +76,7 @@ function snapToWall(at: Mm, segments: Segment[], tolerance: number): Corner | nu
     if (!best || off < best.off) best = { segment, s, off };
   }
   const split = best && exactSplit(best.segment, best.s);
-  return best && split ? { at: split.at, split: { wallId: best.segment.wallId, offsetMm: split.offsetMm } } : null;
+  return best && split ? { at: split.at, found: at, split: { wallId: best.segment.wallId, offsetMm: split.offsetMm } } : null;
 }
 
 /** A found corner snapped to a saved corner, else onto a saved wall, else left where it was found. */
@@ -86,8 +88,8 @@ function snapCorner(floor: FloorPlanFloorV2, segments: Segment[], at: Mm, tolera
       nearest = { id: vertex.id, at: { xMm: vertex.xMm, zMm: vertex.zMm }, distance };
     }
   }
-  if (nearest) return { at: nearest.at, vertexId: nearest.id };
-  return snapToWall(at, segments, tolerance) ?? { at };
+  if (nearest) return { at: nearest.at, found: at, vertexId: nearest.id };
+  return snapToWall(at, segments, tolerance) ?? { at, found: at };
 }
 
 /** Saved corners lying on the side from a to b (not its ends), in order from a. */
@@ -98,7 +100,7 @@ function cornersOnSide(floor: FloorPlanFloorV2, a: Corner, b: Corner): Corner[] 
     .map((vertex) => ({ vertex, ...along(vertex, side) }))
     .filter(({ s, off, length }) => off <= ON_SIDE_MM && s > ON_SIDE_MM && s < length - ON_SIDE_MM)
     .sort((first, second) => first.s - second.s)
-    .map(({ vertex }) => ({ at: { xMm: vertex.xMm, zMm: vertex.zMm }, vertexId: vertex.id }));
+    .map(({ vertex }) => ({ at: { xMm: vertex.xMm, zMm: vertex.zMm }, found: { xMm: vertex.xMm, zMm: vertex.zMm }, vertexId: vertex.id }));
 }
 
 function withoutRepeats(corners: Corner[]): Corner[] {
@@ -107,7 +109,10 @@ function withoutRepeats(corners: Corner[]): Corner[] {
   return kept.length ? kept : corners.slice(0, 1);
 }
 
-/** Splits the saved walls the corners landed on (each wall from its far end back, so earlier offsets still hold). */
+/**
+ * Splits the saved walls the corners landed on (each wall from its far end back, so earlier offsets still hold). A wall
+ * the plan won't split there (a door across the point, say) stays whole, and that corner stays where it was found.
+ */
 function splitWalls(document: FloorPlanDocumentV2, floorId: string, corners: Corner[], at: string) {
   let next = document;
   const splits = corners.filter((corner) => corner.split).sort((a, b) => b.split!.offsetMm - a.split!.offsetMm);
@@ -115,8 +120,13 @@ function splitWalls(document: FloorPlanDocumentV2, floorId: string, corners: Cor
     const newVertexId = nextOrdinalId(next, "vertex");
     const operation = { kind: "split_wall" as const, floorId, wallId: corner.split!.wallId, offsetMm: corner.split!.offsetMm,
       newVertexId, newWallId: nextOrdinalId(next, "wall") };
-    next = applyConsumerTopologyCorrection({ document: next, operation, mutationId: `room-click-split-${newVertexId}`, at });
-    corner.vertexId = newVertexId;
+    try {
+      next = applyConsumerTopologyCorrection({ document: next, operation, mutationId: `room-click-split-${newVertexId}`, at });
+      corner.vertexId = newVertexId;
+    } catch {
+      corner.at = corner.found;
+      delete corner.split;
+    }
   }
   return next;
 }
@@ -148,8 +158,8 @@ export function conformFoundRoom(input: {
 }
 
 /**
- * Adds a found room: fitted to the saved walls where it can be, else as found (its own walls). The fitted room is
- * tried first; if the plan refuses it (a split crossing a door, say), the room goes in as found.
+ * Adds a found room: fitted to the saved walls where it can be. If the plan refuses the fitted room, the room is tried
+ * as found (its own walls); if that is refused too, the fitted room's reason is the error.
  */
 export function addFoundRoom(input: {
   document: FloorPlanDocumentV2; floorId: string; sourceId: string; pageNumber: number; corners: ReviewSourcePoint[];

@@ -87,6 +87,8 @@ let document: FloorPlanDocumentV2 = registerEmptyPlanScaleCalibration({ document
 document.floors[0].annotations.push({ id: "page-text-a", kind: "label", scope: "reference", text: "BEDROOM 2",
   geometry: { kind: "source_drawing", sourceId, pageNumber: 1, widthPx: W, heightPx: H, command: "text", points: [{ x: 250, y: 226 }] },
   provenance: { confidence: 0, extractionVersion: "test", reviewHistory: [], evidence: [] } });
+document.floors[0].annotations.push({ ...structuredClone(document.floors[0].annotations[0]), id: "page-text-area", text: "28 sqm",
+  geometry: { kind: "source_drawing", sourceId, pageNumber: 1, widthPx: W, heightPx: H, command: "text", points: [{ x: 250, y: 300 }] } });
 const click = (x: number, y: number) => findRoomAtClick({ document, floorId: floor.id, sourceId, pageNumber: 1, mask, point: { x, y } });
 const add = (x: number, y: number) => {
   const found = click(x, y);
@@ -148,16 +150,33 @@ assert.deepEqual(symbolAt(425, 215), { id: "source-proposal:1:opening:0", kind: 
 assert.equal(symbolAt(200, 120)?.kind, "window");
 assert.equal(symbolAt(250, 300), null, "a click away from every symbol finds none");
 assert.equal(openingSymbolAt({ document, floorId: floor.id, sourceId, pageNumber: 2, point: { x: 425, y: 215 } }), null, "only this page's symbols");
-assert.deepEqual(["Unverified door span", "Unverified window span", "Unverified open_passage span", "Unverified sliding_door span"].map(openingKindFromNote),
-  ["door", "window", "open_passage", "door"]);
+assert.deepEqual(["Unverified door span", "Unverified window span", "Unverified open_passage span", "Unverified sliding_door span",
+  "Unverified vent span", "Pixel-supported window span; host and operation need review", "Manually corrected window proposal: x.",
+  "Manually marked boundary proposal: x.", "Reviewed interior item, not an opening: x."].map(openingKindFromNote),
+  ["door", "window", "open_passage", "door", "window", "window", "window", null, null]);
 // A first click on a symbol fills both ends; a click with one end placed, or away from symbols, places one end.
 let points: ReviewSourcePoint[] = [];
-let symbol: string | null = null;
+let symbol: string | undefined;
 const clickAt = (x: number, y: number) => openingSymbolClick({ document, floorId: floor.id, sourceId, pageNumber: 1, current: points,
-  setPoints: (value) => { points = value; }, setSymbol: (value) => { symbol = value.id; } })({ x, y });
+  lastSymbolId: symbol, setPoints: (value) => { points = value; }, setSymbol: (value) => { symbol = value.id; } })({ x, y });
 clickAt(425, 215);
 assert.deepEqual(points, [{ x: 400, y: 200 }, { x: 400, y: 240 }]);
 assert.equal(symbol, "source-proposal:1:opening:0");
+// With both ends in, a click starts over at that point; once cleared, the same symbol takes the person's own ends.
+clickAt(410, 210);
+assert.deepEqual(points, [{ x: 410, y: 210 }]);
+points = [];
+clickAt(425, 215);
+assert.deepEqual(points, [{ x: 425, y: 215 }]);
+points = [];
+symbol = undefined;
+clickAt(425, 215);
+assert.deepEqual(points, [{ x: 400, y: 200 }, { x: 400, y: 240 }]);
+// A span the reviewer marked as an interior item, not an opening, is never filled in.
+const reviewed = structuredClone(document);
+Object.assign(reviewed.floors[0].annotations.find((entry) => entry.id === "source-proposal:1:opening:0")!,
+  { configurationId: "consumer-source-interior-item-v1", text: "Reviewed interior item, not an opening: a wardrobe." });
+assert.equal(openingSymbolAt({ document: reviewed, floorId: floor.id, sourceId, pageNumber: 1, point: { x: 425, y: 215 } }), null);
 document = traceOpeningFromSourceSpan({ document, floorId: floor.id, sourceId, pageNumber: 1, first: points[0], second: points[1], kind: "door" });
 assert.equal(document.floors[0].openings.length, 1);
 assert.equal(document.floors[0].openings[0].widthMm, 800, "the door between A and B, 800 mm wide");
@@ -167,7 +186,7 @@ clickAt(425, 215);
 assert.deepEqual(points, [{ x: 250, y: 300 }, { x: 425, y: 215 }]);
 
 // 7. Room types from printed names, as the room panel offers them.
-assert.deepEqual(["MASTER BEDROOM", "BATH/ W.C. 1", "KITCHEN", "SERVICE YARD", "HOUSEHOLD SHELTER", "STUDY", "LIVING/ DINING", "BALCONY"].map(roomTypeFromName),
-  ["bedroom", "toilet", "kitchen", "service_yard", "shelter", "study", "living", "other"]);
+assert.deepEqual(["MASTER BEDROOM", "BATH/ W.C. 1", "MASTER BATH", "KITCHEN", "SERVICE YARD", "HOUSEHOLD SHELTER", "STUDY", "LIVING/ DINING", "BALCONY"].map(roomTypeFromName),
+  ["bedroom", "toilet", "toilet", "kitchen", "service_yard", "shelter", "study", "living", "other"]);
 
 console.log("floor plan review room click: ok");

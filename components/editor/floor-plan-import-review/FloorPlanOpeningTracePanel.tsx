@@ -93,7 +93,7 @@ export default function FloorPlanOpeningTracePanel({
       <div className="mt-2 grid gap-2">
         <p className={`text-xs leading-4 ${subtle}`}>
           Choose the type, then select both ends of the opening directly on the
-          plan. Where the plan's door or window was found, one click on it fills
+          plan. Where the plan&apos;s door or window was found, one click on it fills
           in both ends. The wall, position and width are calculated automatically.
         </p>
         <label className={`text-xs ${subtle}`}>

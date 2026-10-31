@@ -59,34 +59,34 @@ function canvas(widthPx: number, heightPx: number): Canvas2D {
   return element;
 }
 
-function paint(pageWidthPx: number, pageHeightPx: number, draw: (context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) => void): InkMask | null {
+type Context2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
+
+function paint(pageWidthPx: number, pageHeightPx: number, draw: (context: Context2D, scale: number) => void): InkMask | null {
   const size = roomMaskSize(pageWidthPx, pageHeightPx);
   const context = canvas(size.widthPx, size.heightPx).getContext("2d");
   if (!context) return null;
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, size.widthPx, size.heightPx);
   context.scale(size.scale, size.scale);
-  draw(context);
+  draw(context, size.scale);
   const pixels = context.getImageData(0, 0, size.widthPx, size.heightPx).data;
   return { ink: inkFromPixels(pixels, size.widthPx, size.heightPx), ...size };
 }
 
-/** The clean drawing's ink, drawn as the review draws it (filled shapes filled, lines at their own width and grey). */
+/**
+ * The clean drawing's ink, drawn as the review draws it (filled shapes filled, lines at their own width and grey). On a
+ * page drawn smaller than its own size every shape is also outlined a mask pixel wide, so no thin line fades out.
+ */
 export function drawingInk(annotations: FloorPlanAnnotationV2[], pageWidthPx: number, pageHeightPx: number): InkMask | null {
-  return paint(pageWidthPx, pageHeightPx, (context) => {
+  return paint(pageWidthPx, pageHeightPx, (context, scale) => {
     for (const annotation of annotations) {
       const geometry = annotation.geometry;
       if (geometry.kind !== "source_drawing" || geometry.command === "text") continue;
       const path = new Path2D(sourceDrawingSvgPath(geometry));
-      const colour = sourceDrawingInk(geometry, "#333333");
-      if (geometry.fill) {
-        context.fillStyle = colour;
-        context.fill(path);
-      } else {
-        context.strokeStyle = colour;
-        context.lineWidth = geometry.strokeWidthPx ?? 1;
-        context.stroke(path);
-      }
+      context.fillStyle = context.strokeStyle = sourceDrawingInk(geometry, "#333333");
+      if (geometry.fill) context.fill(path);
+      context.lineWidth = Math.max(geometry.fill ? 0 : geometry.strokeWidthPx ?? 1, 1 / scale);
+      if (!geometry.fill || scale < 1) context.stroke(path);
     }
   });
 }

@@ -112,7 +112,7 @@ export default function FloorPlanVisualReviewTools({
         {...roomCanvasProps(roomClick, pickingRoom, roomPoints, (point) => setRoomPoints((current) => [...current, point]))}
         pickingOpening={pickingOpening} openingPoints={openingPoints}
         onOpeningPoint={openingSymbolClick({ document, floorId: floor.id, sourceId, pageNumber: page?.pageNumber, current: openingPoints,
-          setPoints: setOpeningPoints, setSymbol: setOpeningSymbol })}
+          lastSymbolId: openingSymbol?.id, setPoints: setOpeningPoints, setSymbol: setOpeningSymbol })}
         assetRoutePrefix={assetRoutePrefix}
       />
       {!previewOnly && <FloorPlanReviewIssueAction target={reviewTarget} root={root} disabled={disabled} />}
@@ -145,7 +145,7 @@ export default function FloorPlanVisualReviewTools({
         onError={setError} onPickingRoomChange={(value)=>pick("room",value)} onRoomPointsChange={setRoomPoints}
         pageNumber={page?.pageNumber ?? null} pickingRoom={pickingRoom} roomPoints={roomPoints} sourceId={sourceId} keepOpen={roomClick.picking}
         clickFill={<FloorPlanRoomClickPanel roomClick={roomClick} document={document} floorId={floor.id} sourceId={sourceId}
-          pageNumber={page?.pageNumber} ready={Boolean(calibration)} onStart={() => pick("click")} onChange={onChange}
+          ready={Boolean(calibration)} onStart={() => { setRoomPoints([]); pick("click"); }} onChange={onChange}
           onError={setError} disabled={disabled} />}
       />
       <FloorPlanOpeningTracePanel key={openingSymbol?.id} initialKind={openingSymbol?.kind} calibration={calibration} disabled={disabled}
