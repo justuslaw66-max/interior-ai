@@ -1,5 +1,5 @@
 import { condoMapFileUrl, type CondoDevelopmentMap, type CondoUnitCard, type CondoUnitPlan, type LonLat } from "@/lib/condo-map/condo-map-data";
-import { unitPlanOn, type CondoMapView } from "./condo-map-view";
+import { unitPlanOn, unitStoreys, type CondoMapView } from "./condo-map-view";
 import type { MapboxJson, MapboxLayer } from "./mapbox-gl-types";
 
 /**
@@ -8,7 +8,8 @@ import type { MapboxJson, MapboxLayer } from "./mapbox-gl-types";
  *
  * The building is grey massing, storey by storey (or, for a development with detailed models, those models). With a
  * floor chosen: the storeys below stay, the chosen one is cut to its slab with its units painted on it by bedroom count
- * (the chosen unit orange, in a faint orange box), and the storeys above are a faint ghost of their outline. A chosen
+ * (the chosen unit orange, in a faint orange box), and the storeys above are a faint ghost of their outline. A two-level
+ * unit chosen on its lower storey stands up: its upper level's rooms in orange too, its box as tall as both. A chosen
  * unit whose brochure plan the map has (map.json's plans) shows that plan on its floor instead, with its orange edge
  * drawn into the picture: Mapbox draws a raised picture after the 3D layers and depth-tests it, so the box and the ghost
  * would hide it, and both go while it shows (J, 30 Oct 2026). Invisible blocks on every unit (opacity 0, still
@@ -195,11 +196,29 @@ function massingFilters(detailed: boolean, floor: number | null): Array<[string,
   return [["mass", below], ["cut", ["all", ["==", F, floor], ["==", ["get", "kind"], "block"]]], ["balconies", below]];
 }
 
-function floorFilters(floor: number | null, unit: string | null, planShown: boolean): Array<[string, MapboxJson]> {
-  // the chosen unit's part on its own floor (choosing a unit chooses its floor: condo-map-view)
-  const chosenUnit: MapboxJson = unit === null || floor === null || planShown ? NONE : ["all", ["==", ["get", "unit"], unit], ["==", F, floor]];
+function floorFilters(floor: number | null, unit: string | null, planShown: boolean, above: readonly number[]): Array<[string, MapboxJson]> {
+  // the chosen unit's part on its own floor (choosing a unit chooses its floor: condo-map-view), and a two-level unit's
+  // upper level over it, rooms and box (J, 31 Oct 2026: "Both levels, standing up"); not over its plan, which they'd hide
+  const isUnit: MapboxJson = ["==", ["get", "unit"], unit ?? ""];
+  const upper: MapboxJson | null = unit === null || planShown || above.length === 0 ? null : ["all", isUnit, ["any", ...above.map((f): MapboxJson => ["==", F, f])]];
+  const chosenUnit: MapboxJson = unit === null || floor === null || planShown ? NONE : ["all", isUnit, ["==", F, floor]];
   if (floor === null) return [["floor", NONE], ["unit", chosenUnit], ["pick", ALL], ["ghost", NONE]];
-  return [["floor", ["==", F, floor]], ["unit", chosenUnit], ["pick", ["<=", F, floor]], ["ghost", planShown ? NONE : [">", F, floor]]];
+  const onFloor: MapboxJson = ["==", F, floor];
+  return [
+    ["floor", upper ? ["any", onFloor, upper] : onFloor],
+    ["unit", upper ? ["any", chosenUnit, upper] : chosenUnit],
+    ["pick", ["<=", F, floor]],
+    ["ghost", planShown ? NONE : [">", F, floor]],
+  ];
+}
+
+/**
+ * The chosen unit's box: 1.2 m over each part, but a two-level unit's part with its own level above runs up to that
+ * level, so the box stands as tall as the unit's two storeys.
+ */
+function unitBoxHeight(unit: string | null, top: number | null): MapboxJson {
+  const box: MapboxJson = ["+", ["get", "base"], UNIT_BOX_M];
+  return unit === null || top === null ? box : ["case", ["all", ["==", ["get", "unit"], unit], ["<", F, top]], ["get", "top"], box];
 }
 
 /** Each unit's rooms in its bedroom count's colour: a match on the unit number, the units grouped by colour. */
@@ -216,10 +235,13 @@ export function bedroomRoomColour(dev: CondoDevelopmentMap): MapboxJson {
 
 // The chosen unit shows on its floor as its rooms in the accent and the accent box over them; a detailed development's
 // models stop below the chosen floor (modelFilter), so the unit's own model is never drawn and needs no colour of its own.
-function paintUpdates(dev: CondoDevelopmentMap, unit: string | null): CondoPaintUpdate[] {
+function paintUpdates(dev: CondoDevelopmentMap, unit: string | null, top: number | null): CondoPaintUpdate[] {
   const chosen: MapboxJson = unit === null ? false : ["==", ["get", "unit"], unit];
   const rooms: MapboxJson = ["case", chosen, CONDO_MAP_COLOURS.selectedUnit, ["==", ["get", "kind"], "room"], bedroomRoomColour(dev), CONDO_MAP_COLOURS.open];
-  return [[condoLayerId(dev.slug, "floor"), "fill-extrusion-color", rooms]];
+  return [
+    [condoLayerId(dev.slug, "floor"), "fill-extrusion-color", rooms],
+    [condoLayerId(dev.slug, "unit"), "fill-extrusion-height", unitBoxHeight(unit, top)],
+  ];
 }
 
 /**
@@ -233,10 +255,15 @@ export function condoViewUpdates(dev: CondoDevelopmentMap, view: CondoMapView, m
   const unit = here ? view.unit : null;
   const plan = unitPlanOn(dev, view);
   const detailed = Boolean(dev.models) && !modelsFailed;
-  const parts = [...massingFilters(detailed, floor), ...floorFilters(floor, unit, plan !== null)];
+  // a two-level unit chosen on its lower storey: its storeys over the chosen floor, and its top one
+  const card = unit === null ? undefined : dev.units.find((entry) => entry.unit === unit);
+  const storeys = card && floor !== null && unitStoreys(card).includes(floor) ? unitStoreys(card) : [];
+  const above = storeys.filter((storey) => floor !== null && storey > floor);
+  const parts = [...massingFilters(detailed, floor), ...floorFilters(floor, unit, plan !== null, above)];
   if (dev.models) parts.push(["models", detailed ? modelFilter(floor) : NONE]);
   const filters: CondoFilterUpdate[] = parts.map(([part, filter]) => [condoLayerId(dev.slug, part), filter]);
-  return { filters, paint: paintUpdates(dev, unit), plan };
+  const top = above.length > 0 && plan === null ? Math.max(...storeys) : null;
+  return { filters, paint: paintUpdates(dev, unit, top), plan };
 }
 
 // a plan stands this far over its floor's paint (its z), so the two never draw at one depth
