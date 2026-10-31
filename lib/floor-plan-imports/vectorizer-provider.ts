@@ -21,7 +21,14 @@ export type FloorPlanVectorizerPage = {
   heightPx: number;
   mimeType: string;
   bytes: Uint8Array;
+  /** The upload as it came (raster_deskew_v1's oriented source) where the app turned the page square on upload: the
+   * faithful trace reads it instead of the resampled page, and puts its drawing into the page's pixels by toPage
+   * (sourceToRendered: x' = a x + c y + e, y' = b x + d y + f). */
+  unturned?: { bytes: Uint8Array; toPage: readonly number[] };
 };
+
+/** The page's files in the private folder: the page, the programs' base path, and the faithful trace's extra arguments. */
+type PageFiles = { input: string; base: string; traceArgs: string[] };
 
 type FaithfulDrawing = NonNullable<FloorPlanVectorizerEvidence["drawing"]>;
 
@@ -138,7 +145,8 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
   ) {
     const workDirectory = await mkdtemp(`${tmpdir()}/vectorizer-run-`);
     try {
-      const { input, base } = await writePage(workDirectory, page);
+      const files = await writePage(workDirectory, page);
+      const { input, base } = files;
       const started = Date.now();
       // The programs run in the server's own working directory (the repository), where the
       // relative default directory resolves; every file they read or write is passed absolute.
@@ -161,12 +169,12 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
       );
       const evidence = readerNote ? withNote(parsed, readerNote) : parsed;
       if (!this.config.faithfulTrace) return evidence;
-      if (!this.config.pageBudget) return await this.withFaithfulDrawing(evidence, input, base, options.signal);
+      if (!this.config.pageBudget) return await this.withFaithfulDrawing(evidence, files, options.signal);
       const leftMs = options.timeoutMs - (Date.now() - started);
       if (leftMs < this.config.faithfulMinMs) {
         return withNote(evidence, `Faithful trace not used: the page's time limit was nearly spent (${Math.round((Date.now() - started) / 1000)} s)`);
       }
-      return await this.withFaithfulDrawing(evidence, input, base, options.signal, Math.min(this.config.faithfulTimeoutMs, leftMs));
+      return await this.withFaithfulDrawing(evidence, files, options.signal, Math.min(this.config.faithfulTimeoutMs, leftMs));
     } finally {
       await rm(workDirectory, { recursive: true, force: true });
     }
@@ -191,8 +199,7 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
     if (!this.config.faithfulTrace) return { note: "Faithful trace not used: it is off" };
     const workDirectory = await mkdtemp(`${tmpdir()}/vectorizer-run-`);
     try {
-      const { input, base } = await writePage(workDirectory, page);
-      return await this.faithfulDrawing(input, base, options.signal);
+      return await this.faithfulDrawing(await writePage(workDirectory, page), options.signal);
     } finally {
       await rm(workDirectory, { recursive: true, force: true });
     }
@@ -200,23 +207,24 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
 
   /** The faithful trace of a clean page as its drawing (J, 22 Oct: "clean sharp vectors"). It fails soft: a picture
    * that is not crisp or is too large, a failure or a timeout leaves stage 1's drawing, and the notes say why. */
-  private async withFaithfulDrawing(evidence: FloorPlanVectorizerEvidence, input: string, base: string, signal?: AbortSignal,
+  private async withFaithfulDrawing(evidence: FloorPlanVectorizerEvidence, files: PageFiles, signal?: AbortSignal,
     timeoutMs = this.config.faithfulTimeoutMs) {
-    const result = await this.faithfulDrawing(input, base, signal, timeoutMs);
+    const result = await this.faithfulDrawing(files, signal, timeoutMs);
     return "drawing" in result ? { ...evidence, drawing: result.drawing } : withNote(evidence, result.note);
   }
 
   /** Runs faithful_drawing.py on the page; a page it leaves, a failure or a timeout comes back as a note. Cancelling the
    * import still cancels it. */
-  private async faithfulDrawing(input: string, base: string, signal?: AbortSignal,
+  private async faithfulDrawing(files: PageFiles, signal?: AbortSignal,
     timeoutMs = this.config.faithfulTimeoutMs): Promise<FaithfulDrawingResult> {
     try {
       await runProcess(
         this.config.pythonPath,
-        [`${this.config.directory}/faithful_drawing.py`, input, `${base}.faithful.json`, `--max-pixels=${this.config.faithfulMaxPixels}`],
+        [`${this.config.directory}/faithful_drawing.py`, files.input, `${files.base}.faithful.json`,
+          `--max-pixels=${this.config.faithfulMaxPixels}`, ...files.traceArgs],
         { timeoutMs, signal }
       );
-      const result: unknown = JSON.parse(await readFile(`${base}.faithful.json`, "utf8"));
+      const result: unknown = JSON.parse(await readFile(`${files.base}.faithful.json`, "utf8"));
       if (result && typeof result === "object" && "skipped" in result) {
         return { note: `Faithful trace not used: ${String(result.skipped)}` };
       }
@@ -230,11 +238,18 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
 
 /** The page in a private folder, as the programs read it. Plain string paths, not path.join(): a join of an unknowable
  * temporary directory with a literal tail makes the output file tracer glob the repository for that tail. */
-async function writePage(workDirectory: string, page: FloorPlanVectorizerPage) {
+async function writePage(workDirectory: string, page: FloorPlanVectorizerPage): Promise<PageFiles> {
   const extension = page.mimeType === "image/webp" ? "webp" : "png";
   const input = `${workDirectory}/page.${extension}`;
   await writeFile(input, page.bytes, { mode: 0o600 });
-  return { input, base: `${workDirectory}/page` };
+  const traceArgs: string[] = [];
+  const unturned = page.unturned;
+  if (unturned && unturned.toPage.length === 6 && unturned.toPage.every(Number.isFinite)) {
+    const trace = `${workDirectory}/unturned.png`;
+    await writeFile(trace, unturned.bytes, { mode: 0o600 });
+    traceArgs.push(`--trace=${trace}`, `--to-page=${unturned.toPage.join(",")}`);
+  }
+  return { input, base: `${workDirectory}/page`, traceArgs };
 }
 
 function withNote(evidence: FloorPlanVectorizerEvidence, note: string): FloorPlanVectorizerEvidence {
