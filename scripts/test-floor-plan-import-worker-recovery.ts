@@ -5,6 +5,7 @@ import {
   type FloorPlanImportLease,
 } from "@/lib/floor-plan-imports/lease";
 import { cancelOwnedFloorPlanImport } from "@/lib/floor-plan-imports/owner-cancel";
+import { assessFloorPlanRetentionPurge } from "@/lib/floor-plan-imports/privacy";
 import { PrismaFloorPlanImportJobRepository } from "@/lib/floor-plan-imports/prisma-repository";
 import { FLOOR_PLAN_IMPORT_PROGRESS } from "@/lib/floor-plan-imports/status";
 import type { FloorPlanImportStatus } from "@/lib/floor-plan-imports/types";
@@ -409,12 +410,19 @@ async function testOwnerCancelStopsTheWorkerReadingIt() {
   assert.equal(await cancelOwnedFloorPlanImport({ id: "reading", userId: "owner-2", now }, database), "not_found");
   assert.equal(row.leaseToken, lease.token);
 
+  const leaseEnd = row.leaseExpiresAt;
+  assert.ok(leaseEnd && leaseEnd > now);
   assert.equal(await cancelOwnedFloorPlanImport({ id: "reading", userId: "owner-1", now }, database), "cancelled");
   assert.equal(row.status, "failed");
   assert.equal(row.errorMessage, "Cancelled by owner");
   assert.equal(row.progress, FLOOR_PLAN_IMPORT_PROGRESS.failed);
   assert.equal(row.leaseToken, null);
-  assert.equal(row.leaseExpiresAt, null);
+  assert.equal(row.leaseOwner, null);
+  // The lease's end stays, without its token: the worker can take until then to stop writing files.
+  assert.equal(row.leaseExpiresAt?.getTime(), leaseEnd.getTime());
+  // A repeated cancel (a lost answer, a second press) is answered as done.
+  assert.equal(await cancelOwnedFloorPlanImport({ id: "reading", userId: "owner-1", now }, database), "already_stopped");
+  assert.equal(row.errorMessage, "Cancelled by owner");
 
   // The worker's next write is refused, so nothing more of the read lands.
   const repository = new PrismaFloorPlanImportJobRepository(database);
@@ -438,6 +446,31 @@ async function testOwnerCancelStopsTheWorkerReadingIt() {
   // And no worker takes it up again.
   assert.equal((await service.claimById({ jobId: "reading", workerId: "next", now: heartbeatAt })).outcome, "not_processable");
   assert.notEqual((await service.claimNext({ workerId: "next", now: heartbeatAt })).outcome, "claimed");
+
+  // Deleting the upload's files waits for that lease's end, so nothing the worker writes meanwhile is left behind.
+  const purgeAt = (at: Date) =>
+    assessFloorPlanRetentionPurge({
+      asset: {
+        id: "asset-1",
+        ownerScope: "owner-1",
+        contentDeletedAt: null,
+        jobs: [{
+          id: "reading", userId: "owner-1", status: row.status,
+          sourceRetentionExpiresAt: new Date("2026-08-16T00:00:00.000Z"), sourceDeletionRequestedAt: null,
+          leaseToken: row.leaseToken, leaseExpiresAt: row.leaseExpiresAt, revision: null,
+        }],
+      },
+      targetJobId: "reading",
+      mode: "owner_requested",
+      ownerUserId: "owner-1",
+      now: at,
+    }).code;
+  assert.equal(purgeAt(heartbeatAt), "active_lease");
+  assert.equal(purgeAt(new Date(leaseEnd.getTime() + 1)), "purge");
+  // A queued upload (no lease) is cancelled with nothing held back.
+  database.jobs.set("queued", makeJob("queued"));
+  assert.equal(await cancelOwnedFloorPlanImport({ id: "queued", userId: "owner-1", now }, database), "cancelled");
+  assert.equal(database.jobs.get("queued")?.leaseExpiresAt, null);
 
   // A plan that finished reading, or made a design, is past cancelling.
   database.jobs.set("finished", makeJob("finished", { status: "ready", progress: 100 }));

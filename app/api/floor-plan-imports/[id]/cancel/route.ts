@@ -8,7 +8,10 @@ function error(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
-/** The owner cancels an unfinished upload, which also stops a read under way (owner-cancel.ts). */
+/**
+ * The owner cancels an unfinished upload, which also stops a read under way (owner-cancel.ts). One
+ * that had already failed or been cancelled answers 200 too, so a repeated cancel is harmless.
+ */
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -23,7 +26,7 @@ export async function POST(
   if (outcome === "too_late") return error("This floor-plan import can no longer be cancelled", 409);
 
   return NextResponse.json(
-    { ok: true, job: { id, status: "failed", progress: 100, cancelled: true } },
+    { ok: true, job: { id, status: "failed", progress: 100, cancelled: outcome === "cancelled" } },
     { headers: { "Cache-Control": "private, no-store" } }
   );
 }
