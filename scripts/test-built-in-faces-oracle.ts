@@ -15,7 +15,9 @@ import type { HousePlanRoom2D } from "../lib/design-page-house-plan";
 import { validateDesignPageOpeningPlacement } from "../lib/design-page-opening-placement";
 import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
 import type { RoomOpening2D } from "../lib/editorScene";
-import { clampBuiltInToRoom, getBuiltInSnapTarget, usesFurnitureRuleForBuiltIns } from "../lib/room-built-in-faces";
+import {
+  builtInFootprintFits, clampBuiltInToRoom, getBuiltInSnapTarget, getBuiltInStandOff, getRoomBuiltInFaces, usesFurnitureRuleForBuiltIns,
+} from "../lib/room-built-in-faces";
 import { getRoomOutlineInsideFinishes, getRoomPlanOutlinePoints } from "../lib/room-finished-outline";
 import { createRoom, type RoomSnapshot } from "../lib/room-types";
 import { getRoomWallFaceIds, getRoomWallFinishDepths } from "../lib/room-wall-finish-depths";
@@ -261,7 +263,7 @@ function footprintInRegion(region: Region, run: Run, shrink: number): boolean {
 let plan: { neighbours: HousePlanRoom2D[]; rooms: Map<string, HousePlanRoom2D>; thickest: number; faces: Array<{ a: P; b: P; n: P }> } =
   { neighbours: [], rooms: new Map(), thickest: 0, faces: [] };
 const failures: string[] = [];
-const counts = { rooms: 0, nextDoor: 0, furnitureRule: 0, filled: 0, faces: 0, hosts: 0, runs: 0, refused: 0, cut: 0, filling: 0, nudges: 0, kept: 0, stopped: 0, furnitureOnly: 0, turns: 0, turnsRefused: 0, snaps: 0, copies: 0 } as Record<string, number>;
+const counts = { rooms: 0, nextDoor: 0, furnitureRule: 0, filled: 0, faces: 0, hosts: 0, runs: 0, refused: 0, cut: 0, filling: 0, nudges: 0, kept: 0, stopped: 0, furnitureOnly: 0, turns: 0, turnsRefused: 0, snaps: 0, copies: 0, placements: 0, placementsRefused: 0 } as Record<string, number>;
 const families: Record<string, number> = {};
 function check(condition: boolean, message: () => string) {
   if (!condition && failures.length < 40) failures.push(message());
@@ -407,7 +409,7 @@ function checkRun(region: Region, room: RoomSnapshot, space: CabinetHostSpace, o
  * run one, and only the unit is snapped; ORACLE_TURNS=all turns and snaps both on every run, seven ways each.
  */
 const ALL_TURNS = process.env.ORACLE_TURNS === "all";
-const TURNS = ALL_TURNS ? { unit: [5, -5, 15, -15, 45, 90, 180], run: [5, -5, 15, -15, 45, 90, 180] } : { unit: [-15, 45], run: [180] };
+const TURNS = ALL_TURNS ? { unit: [5, -5, 15, -15, 45, 90, 180], run: [5, -5, 15, -15, 45, 90, 180] } : { unit: [-15, 45], run: [90, 180] };
 const turnsThisRun = () => ALL_TURNS || counts.runs % 12 === 0;
 
 /**
@@ -426,15 +428,19 @@ function checkMoves(region: Region, room: RoomSnapshot, run: Run, definition: Ca
     for (const degrees of turning ? turns : []) {
       counts.turns += 1;
       const rotationY = piece.rotationY + (degrees * Math.PI) / 180;
-      const [x, z] = clampBuiltInToRoom(room, piece.x, piece.z, piece.width, piece.depth, rotationY, { planRooms: plan.rooms, bottom });
+      const [x, z] = clampBuiltInToRoom(room, piece.x, piece.z, piece.width, piece.depth, rotationY, { planRooms: plan.rooms, bottom, turnedFrom: piece.rotationY });
       const turned: Run = { ...piece, x, z, rotationY }, inPlace: Run = { ...piece, rotationY }, moved = Math.hypot(x - piece.x, z - piece.z);
+      // As far as its corners swing in the turn, 0.6 m at least (lib/room-built-in-faces.ts getTurnReach, restated).
+      const reach = Math.max(0.6, Math.hypot(piece.width, piece.depth) * Math.sin(Math.abs(degrees * Math.PI / 180) / 2));
       if (!contained(turned)) {
         counts.turnsRefused += 1;
         check(!fitsAt(inPlace, -0.001), () => `${what()} ${name}: a ${degrees}° turn is refused, though it fits where it stands`);
+        const nearest = bruteNearestFit(region, room, inPlace, bottom, reach, (at) => fitsAt(at, 0.0006));
+        check(nearest === null, () => `${what()} ${name}: a ${degrees}° turn is refused, though it fits ${((nearest ?? 0) * 1000).toFixed(0)} mm away (within ${(reach * 1000).toFixed(0)} mm)`);
         continue;
       }
       check(fitsAt(turned, 0.0006), () => `${what()} ${name}: a ${degrees}° turn put it where the 3D view's walls cut it or on a baseboard (moved ${(moved * 1000).toFixed(0)} mm)`);
-      check(moved <= 0.6 + 0.001, () => `${what()} ${name}: a ${degrees}° turn threw it ${(moved * 1000).toFixed(0)} mm`);
+      check(moved <= reach + 0.001, () => `${what()} ${name}: a ${degrees}° turn threw it ${(moved * 1000).toFixed(0)} mm (within ${(reach * 1000).toFixed(0)} mm)`);
       if (fitsAt(inPlace, -0.001)) check(moved < 1e-6, () => `${what()} ${name}: a ${degrees}° turn moved it ${(moved * 1000).toFixed(1)} mm, though it fits where it stands`);
     }
     if (name === "run" && !ALL_TURNS) continue;
@@ -449,6 +455,53 @@ function checkMoves(region: Region, room: RoomSnapshot, run: Run, definition: Ca
   const copy = getCabinetPlacement(definition, room, true, plan.rooms);
   const copied: Run = { ...run, x: copy.position[0], z: copy.position[2], rotationY: copy.rotationY };
   check(fitsAt(copied, 0.0006), () => `${what()}: Place as copy put it where the 3D view's walls cut it or on a baseboard`);
+}
+
+/**
+ * The distance to the nearest place within `reach` of the piece, on a grid (10 mm, or reach/60 for a long reach), where it fits
+ * by the region code's own test and `fitsAt` (the 3D view's walls and baseboards), or null: what a refused move must not have.
+ */
+function bruteNearestFit(region: Region, room: RoomSnapshot, piece: Run, bottom: number, reach: number, fitsAt: (at: Run) => boolean): number | null {
+  const faces = getRoomBuiltInFaces(room, undefined, plan.rooms), standOff = getBuiltInStandOff(room, bottom), step = Math.max(0.01, reach / 60);
+  const offsets: Array<[number, number, number]> = [];
+  for (let dx = -reach; dx <= reach + 1e-9; dx += step) for (let dz = -reach; dz <= reach + 1e-9; dz += step) {
+    const distance = Math.hypot(dx, dz);
+    if (distance <= reach) offsets.push([dx, dz, distance]);
+  }
+  offsets.sort((first, second) => first[2] - second[2]);
+  for (const [dx, dz, distance] of offsets) {
+    const at: Run = { ...piece, x: piece.x + dx, z: piece.z + dz };
+    if (builtInFootprintFits(faces, at.x, at.z, at.width, at.depth, at.rotationY, 0.00005, standOff) && fitsAt(at)) return distance;
+  }
+  void region;
+  return null;
+}
+
+/**
+ * Place and Save as copy of a run that wasn't fitted (it starts at the room's middle) and of one fitted on the line to the line's
+ * host for a wall (useDesignPageCabinetry.ts on 0197c5c4, restated: lineHostsOf), which this room may no longer offer: placed
+ * where the 3D view's walls don't cut it, off its baseboards; or refused only where no place in the room fits it.
+ */
+function checkPlacements(region: Region, room: RoomSnapshot, openings: RoomOpening2D[], label: string) {
+  const fitsAt = (at: Run, standOff: number) => footprintInRegion(region, at, 0.0006) && clearOfBaseboards(at, standOff, 0.0006);
+  const lineHost = lineHostsOf(room, openings).find((host) => host.availableWidthMm >= 700);
+  const lineFit = lineHost ? fitCabinetToSpace(createCabinetPreset("base", `line-${room.id}`), lineHost, { mode: "fit_width" }) : null;
+  const unfitted = { ...createCabinetPreset("base", `unfitted-${room.id}`), fitState: undefined } as CabinetDefinition;
+  const cases: Array<[string, CabinetDefinition]> = [["a run not fitted", unfitted], ...(lineFit?.ok ? [["a run fitted on the line", lineFit.definition] as [string, CabinetDefinition]] : [])];
+  for (const [name, definition] of cases) for (const asCopy of [false, true]) {
+    counts.placements += 1;
+    const placed = getCabinetPlacement(definition, room, asCopy, plan.rooms);
+    const at: Run = { x: placed.position[0], z: placed.position[2], width: definition.totalWidth / 1000, depth: definition.depth / 1000, rotationY: placed.rotationY };
+    const standOff = getBuiltInStandOff(room, placed.position[1]), what = `${label}: ${asCopy ? "Save as copy" : "Place"} of ${name} (${definition.totalWidth} mm)`;
+    if (isPlacementContainedInRoom({ room, position: placed.position, rotationY: at.rotationY, dimensions: { w: definition.totalWidth, d: definition.depth, h: 870 }, builtIn: true, planRooms: plan.rooms })) {
+      check(fitsAt(at, standOff), () => `${what}: placed at (${at.x.toFixed(3)}, ${at.z.toFixed(3)}), where the 3D view's walls cut it or on a baseboard`);
+      continue;
+    }
+    counts.placementsRefused += 1;
+    const size = Math.hypot(room.geometry.width, room.geometry.depth);
+    const nearest = bruteNearestFit(region, room, { ...at, x: 0, z: 0 }, placed.position[1], size, (place) => fitsAt(place, standOff));
+    check(nearest === null, () => `${what}: refused, though it fits ${((nearest ?? 0) * 1000).toFixed(0)} mm from the room's middle`);
+  }
 }
 
 /**
@@ -654,10 +707,11 @@ for (let index = 0; index < ROOMS; index += 1) {
   const spaces = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: plan.rooms.size, planOpenings: openings, planRooms: plan.rooms });
   checkHostsOffered(region, room, spaces, label);
   spaces.forEach((space) => (["base", "wall"] as const).forEach((preset) => checkRun(region, room, space, openings, preset, label)));
+  if (ALL_TURNS || process.env.ORACLE_FULL || index % 5 === 0) checkPlacements(region, room, openings, label);
 }
 
 console.log(`Built-in faces oracle: ${counts.rooms} rooms (${Object.entries(families).map(([family, count]) => `${family} ${count}`).join(", ")}; ${counts.nextDoor} with rooms next door),`,
   `${counts.furnitureRule} on furniture's rule, ${counts.filled} whose 3D wall union came out without the room; ${counts.faces} exposed faces, ${counts.hosts} hosts; ${counts.runs} runs (${counts.cut} cut by the 3D view's walls, ${counts.filling} filling their stretch), ${counts.refused} refused, ${counts.nudges} nudges`,
-  `(${counts.kept} kept, ${counts.stopped} stopped at the face, ${counts.furnitureOnly} of them where furniture's samples would let it on), ${counts.turns} turns (${counts.turnsRefused} refused), ${counts.snaps} snaps, ${counts.copies} copies; seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);
+  `(${counts.kept} kept, ${counts.stopped} stopped at the face, ${counts.furnitureOnly} of them where furniture's samples would let it on), ${counts.turns} turns (${counts.turnsRefused} refused), ${counts.snaps} snaps, ${counts.copies} copies, ${counts.placements} placements of runs not fitted or fitted on the line (${counts.placementsRefused} refused); seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);
 assert.deepEqual(failures, [], `the oracle found ${failures.length}${failures.length >= 40 ? "+" : ""} failures`);
 console.log("Built-in faces oracle tests passed.");

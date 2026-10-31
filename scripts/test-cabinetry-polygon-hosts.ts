@@ -811,4 +811,57 @@ for (const drawn of [false, true]) {
   assert.ok(Math.abs(turnX) < 0.05, `${name}: and moves it out from the wall, not along it`);
 }
 
+// Long runs turned 90° on their wall turn, as on the line, to the nearest place they fit (how far a turn may go is how far its
+// corners swing in it): in a 4 × 3 m room, 1.8 and 2.4 m runs move 610 and 910 mm out (the line's clamp 630 and 930), and a
+// 3.0 m one, which fits nowhere turned, is refused.
+for (const drawn of [false, true]) {
+  const room = drawn ? drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }])
+    : createRoom("long-turn", "Long turn", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 });
+  for (const [width, moves] of [[1.8, 610], [2.4, 910], [3.0, null]] as const) {
+    const z0 = -1.44 + 0.29, turned = Math.PI / 2;
+    const [x, z] = clampBuiltInToRoom(room, 0, z0, width, 0.58, turned, { turnedFrom: 0 });
+    const accepted = isPlacementContainedInRoom({ room, position: [x, 0, z], rotationY: turned, dimensions: { w: width * 1000, d: 580, h: 870 }, builtIn: true });
+    if (moves === null) {
+      assert.equal(accepted, false, `${drawn ? "drawn" : "rectangle"}: a ${width} m run turned 90° fits nowhere and is refused`);
+      continue;
+    }
+    assert.ok(accepted && inDrawnRoom(room, x, z, width, 0.58, turned), `${drawn ? "drawn" : "rectangle"}: a ${width} m run turned 90° turns`);
+    // Within the 0.05 mm the clamp keeps in hand at what stops it.
+    const moved = Math.hypot(x, z - z0) * 1000;
+    assert.ok(Math.abs(moved - moves) <= 0.05, `${drawn ? "drawn" : "rectangle"}: and moves ${moves} mm, to the nearest place it fits: ${moved}`);
+  }
+}
+
+// Place and Save as copy of a run that was never fitted start at the room's middle; where that doesn't fit (an L's notch, a
+// U's gap, a thin L's corner) they go to the nearest place it does, as the line's clamp kept them inside, never through a wall.
+const notFitted = (widthMm: number) => ({ ...createCabinetPreset("base", `not-fitted-${widthMm}`), totalWidth: widthMm, fitState: undefined }) as CabinetDefinition;
+for (const [name, room, widthMm] of [
+  ["the built-in L", { ...createRoom("placed-l", "Placed L", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }), planShape: "l_shape" } as RoomSnapshot, 2400],
+  ["a drawn U", drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: 0.8, z: 1.5 }, { x: 0.8, z: -0.3 }, { x: -0.8, z: -0.3 }, { x: -0.8, z: 1.5 }, { x: -2, z: 1.5 }]), 900],
+  ["a drawn thin L", drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: -0.7 }, { x: -1.2, z: -0.7 }, { x: -1.2, z: 1.5 }, { x: -2, z: 1.5 }]), 900],
+] as const) {
+  for (const copy of [false, true]) {
+    const { position, rotationY } = getCabinetPlacement(notFitted(widthMm), room as RoomSnapshot, copy);
+    if (!copy) assert.ok(Math.hypot(position[0], position[2]) > 0.05, `${name}: the room's middle doesn't fit a run not fitted, so it moves`);
+    const placed = isPlacementContainedInRoom({ room: room as RoomSnapshot, position, rotationY, dimensions: { w: widthMm, d: 580, h: 870 }, builtIn: true });
+    assert.ok(placed && inDrawnRoom(room as RoomSnapshot, position[0], position[2], widthMm / 1000, 0.58, rotationY),
+      `${name}: ${copy ? "Save as copy" : "Place"} of a run not fitted stands inside, at (${position[0].toFixed(3)}, ${position[2].toFixed(3)})`);
+  }
+}
+
+// A run fitted on the line to the second piece of a wall drawn in two pieces keeps that saved host, which this branch no
+// longer offers (the wall is one host): Place and Save as copy put its back on the wall's face, not 60 mm into the wall.
+const twoPieceRoom = drawnRoom([{ x: -2, z: -1.5 }, { x: 0.3, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
+const [twoPieceHost] = buildCabinetryAvailableSpaces({ activeRoom: twoPieceRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+const oldFit = fitCabinetToSpace(createCabinetPreset("base", "old-piece"), {
+  ...twoPieceHost, id: `${twoPieceRoom.id}:wall-1`, wallId: "wall-1", availableWidthMm: 1580,
+  wallSegment: { ...twoPieceHost.wallSegment!, startXmm: 300, endXmm: 1940 },
+}, { mode: "fit_width" });
+for (const copy of [false, true]) {
+  const { position, rotationY } = getCabinetPlacement(oldFit.definition, twoPieceRoom, copy);
+  const width = oldFit.definition.totalWidth / 1000, depth = oldFit.definition.depth / 1000;
+  assert.ok(inDrawnRoom(twoPieceRoom, position[0], position[2], width, depth, rotationY), `an old fit's ${copy ? "copy" : "placement"} stands inside`);
+  assert.ok((position[2] - depth / 2 + 1.44) * 1000 > -0.06, `and its back isn't into the wall (${((position[2] - depth / 2 + 1.44) * 1000).toFixed(2)} mm off the face)`);
+}
+
 console.log("Cabinet polygon host and placement tests passed.");
