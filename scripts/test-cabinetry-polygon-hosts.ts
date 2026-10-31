@@ -635,6 +635,22 @@ for (const shape of ["rectangle", "custom_polygon"] as const) {
   nearMm((0.1 - (halfRun.x + halfRun.width / 2)) * 1000, 10, `${shape}, half: 10 mm short of where it ends`);
 }
 
+// Fit's hosts are kept while only the room's items change (a group drag's frames, which rebuild the plan's rooms and their
+// surfaces too), and rebuilt when a wall, a door or the room's baseboard does.
+{
+  const { room, planRooms } = nextDoor(4, 0, "custom_polygon");
+  const hosts = (activeRoom: RoomSnapshot, rooms = planRooms, planOpenings: typeof bDoor[] = []) =>
+    buildCabinetryAvailableSpaces({ activeRoom, activePlanRoom: null, planRoomCount: 2, planOpenings, planRooms: rooms });
+  const kept = hosts(room), replanned = new Map([...planRooms].map(([id, other]) => [id, { ...other, surfaces: {} }]));
+  assert.equal(hosts({ ...room, items: [...room.items] }, replanned), kept, "a new snapshot with new items keeps Fit's hosts");
+  assert.notEqual(hosts(room, planRooms, [bDoor]), kept, "a door next door rebuilds them");
+  const thicker = new Map(planRooms).set("B", { ...planRooms.get("B")!, wallThickness: 0.24 });
+  assert.notEqual(hosts(room, thicker), kept, "a thicker wall next door rebuilds them");
+  const before = hosts(room);
+  room.geometry.baseboardDepth = 0.02;
+  assert.notEqual(hosts(room), before, "a baseboard recorded on the same geometry rebuilds them");
+}
+
 // A wall next door only 10 mm proud of the face, over the middle of it, under a run raised on a 20 mm baseboard: the run doesn't
 // meet it, but doesn't stand over it either (it stops 30 mm short of each end of it).
 {

@@ -43,14 +43,46 @@ export type CabinetryAvailableSpacesInput = {
   planRooms?: BuiltInPlanRooms;
 };
 
-export function buildCabinetryAvailableSpaces({
-  activeRoom,
-  activePlanRoom,
-  planRoomCount,
-  planOpenings,
-  planRooms,
-}: CabinetryAvailableSpacesInput): CabinetHostSpace[] {
+export function buildCabinetryAvailableSpaces(input: CabinetryAvailableSpacesInput): CabinetHostSpace[] {
+  const { activeRoom } = input;
   if (!activeRoom) return [];
+  const key = getHostsKey(activeRoom, input), known = hostsByGeometry.get(activeRoom.geometry);
+  if (known && isSameHostsKey(known.key, key)) return known.spaces;
+  const spaces = buildHosts(activeRoom, input);
+  hostsByGeometry.set(activeRoom.geometry, { key, spaces });
+  return spaces;
+}
+
+// Fit's hosts per room, kept while all but its items stay: a group drag gives the room and the plan's rooms new snapshots on
+// every frame of a 3D drag (a single item's drag previews without one), but keeps their outlines, walls and doors.
+type HostsKey = {
+  room: Record<string, unknown>; geometry: Record<string, unknown>; size: unknown[]; planRoomCount: number; planOpenings: readonly RoomOpening2D[];
+  planRooms: Record<string, unknown>[] | null;
+};
+const hostsByGeometry = new WeakMap<RoomSnapshot["geometry"], { key: HostsKey; spaces: CabinetHostSpace[] }>();
+
+function getHostsKey(room: RoomSnapshot, input: CabinetryAvailableSpacesInput): HostsKey {
+  return {
+    room: { ...room, items: undefined }, geometry: { ...room.geometry },
+    size: [input.activePlanRoom?.w, input.activePlanRoom?.d], planRoomCount: input.planRoomCount, planOpenings: [...input.planOpenings],
+    // Fit reads no plan room's surfaces (its own come from the room), which the plan rebuilds with every snapshot.
+    planRooms: input.planRooms ? [...input.planRooms.values()].map((other) => ({ ...other, surfaces: undefined, surfaceFinishes: undefined })) : null,
+  };
+}
+
+function isSameFields(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((key) => Object.is(a[key], b[key]));
+}
+
+function isSameHostsKey(a: HostsKey, b: HostsKey): boolean {
+  const sameList = <T>(x: readonly T[], y: readonly T[], same: (p: T, q: T) => boolean) => x.length === y.length && x.every((p, i) => same(p, y[i]));
+  return isSameFields(a.room, b.room) && isSameFields(a.geometry, b.geometry) && sameList(a.size, b.size, Object.is) &&
+    a.planRoomCount === b.planRoomCount && sameList(a.planOpenings, b.planOpenings, Object.is) &&
+    (a.planRooms === null || b.planRooms === null ? a.planRooms === b.planRooms : sameList(a.planRooms, b.planRooms, isSameFields));
+}
+
+function buildHosts(activeRoom: RoomSnapshot, { activePlanRoom, planRoomCount, planOpenings, planRooms }: CabinetryAvailableSpacesInput) {
   const isRectangle = (activeRoom.planShape ?? "rectangle") === "rectangle";
   const size = { w: activePlanRoom?.w ?? activeRoom.geometry.width, d: activePlanRoom?.d ?? activeRoom.geometry.depth };
   const baseboardOffsetMm = Math.max(0, Math.round((activeRoom.geometry.baseboardDepth ?? 0) * 1000));
