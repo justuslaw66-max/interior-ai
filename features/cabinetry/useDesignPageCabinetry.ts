@@ -658,13 +658,17 @@ export function useDesignPageCabinetry({
         : getActiveRoom(snapshot);
       if (!room) return false;
 
+      // Where Fit put it (a copy 15 cm along its wall), or the nearest place in the room it fits; refused where it fits nowhere.
+      const { position, rotationY: placementRotationY } = getCabinetPlacement(payload.definition, room, payload.placeAsCopy, planRoomById);
+      if (!isCatalogPlacementContainedInRoom(room, position, placementRotationY, { w: payload.definition.totalWidth, d: payload.definition.depth }, true)) {
+        showToast(`No room for this built-in in ${room.name}`);
+        return false;
+      }
       const instanceId = createInstanceId();
       const { glbAssetUrl } = await assetStorage.saveGeneratedGlb({
         cabinetId: instanceId,
         blob: payload.glbBlob,
       });
-      // Where Fit put it (a copy 15 cm along its wall), kept inside the room.
-      const { position, rotationY: placementRotationY } = getCabinetPlacement(payload.definition, room, payload.placeAsCopy, planRoomById);
       const now = new Date().toISOString();
       const documentationSnapshot = generateCabinetDocumentation(payload.definition);
       const item: DesignItem = {
@@ -748,6 +752,7 @@ export function useDesignPageCabinetry({
       commitItemsToRoom,
       createInstanceId,
       getDesignSnapshot,
+      isCatalogPlacementContainedInRoom,
       planRoomById,
       showToast,
       studio,
@@ -792,15 +797,8 @@ export function useDesignPageCabinetry({
         planningDimensionsMm.d / 1000, rotationY, { from: [item.position[0], item.position[2]], planRooms: planRoomById, bottom: item.position[1] });
       const nextPosition: ItemPosition = [safeX, item.position[1] ?? 0, safeZ];
 
-      if (
-        !isCatalogPlacementContainedInRoom(
-          activeRoom,
-          nextPosition,
-          rotationY,
-          planningDimensionsMm,
-          true // A built-in may stand against the finished face.
-        )
-      ) {
+      // A built-in may stand against the finished face.
+      if (!isCatalogPlacementContainedInRoom(activeRoom, nextPosition, rotationY, planningDimensionsMm, true)) {
         showToast(`Place fully inside ${activeRoom.name}`);
         return;
       }
@@ -876,21 +874,14 @@ export function useDesignPageCabinetry({
       const resolvedRotationY = rotationSnapEnabled
         ? snapRotationRadians(targetRotationY, rotationSnapStepRadians)
         : targetRotationY;
-      // Turned, it stays against the face it stands against: moved to the nearest place along and out from it where it fits.
+      // Turned, it goes to the nearest place it fits, within how far its corners swing in the turn; refused where none is.
       const [safeX, safeZ] = clampBuiltInToRoom(activeRoom, selected.item.position[0], selected.item.position[2],
-        planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, resolvedRotationY, { planRooms: planRoomById, bottom: selected.item.position[1] });
+        planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, resolvedRotationY, { planRooms: planRoomById, bottom: selected.item.position[1], turnedFrom: getCabinetRotationY(selected.item) });
       const nextPosition: ItemPosition = [safeX, selected.item.position[1] ?? 0, safeZ];
 
-      if (
-        !isCatalogPlacementContainedInRoom(
-          activeRoom,
-          nextPosition,
-          resolvedRotationY,
-          planningDimensionsMm,
-          true // A built-in may stand against the finished face.
-        )
-      ) {
-        showToast(`Place fully inside ${activeRoom.name}`);
+      // A built-in may stand against the finished face; a turn with nowhere near to go is refused, the built-in where it was.
+      if (!isCatalogPlacementContainedInRoom(activeRoom, nextPosition, resolvedRotationY, planningDimensionsMm, true)) {
+        showToast(`No room to turn this built-in here in ${activeRoom.name}`);
         return;
       }
 
