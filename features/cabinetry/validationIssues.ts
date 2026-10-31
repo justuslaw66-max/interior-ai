@@ -1,4 +1,4 @@
-import { getCabinetAvailableSegments } from "./fitSegments";
+import { getCabinetAvailableSegments, getCabinetBackOffsetMm } from "./fitSegments";
 import {
   getCabinetOverallDepth,
   getCabinetOverallHeight,
@@ -350,7 +350,7 @@ function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIss
       target: { scope: "fit", field: "outlets", hostId: fit.host.id },
     });
   }
-  if ((fit.host.baseboardOffsetMm ?? 0) > 0) {
+  if (getCabinetBackOffsetMm(fit.host, mountingHeightMm) > 0) { // A wall cabinet hangs above the baseboard.
     drafts.push({
       code: "fit.baseboard.clearance",
       severity: "info",

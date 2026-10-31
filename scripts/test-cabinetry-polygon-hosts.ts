@@ -499,11 +499,15 @@ const [baseboardRun] = runsOf(baseboardRoom);
 nearMm((baseboardRun.x - baseboardRun.width / 2 - (-2 + 0.06)) * 1000, 15 + 10, "10 mm from the west wall's baseboard");
 nearMm(((2 - 0.06) - (baseboardRun.x + baseboardRun.width / 2)) * 1000, 15 + 10, "10 mm from the east wall's baseboard");
 nearMm((backMiddle(baseboardRun).z - (-1.5 + 0.06)) * 1000, 15, "its back against the north wall's baseboard");
-// Wall cabinets hang above the baseboards: their ends keep the 10 mm from the end walls' faces (their back still stands off).
+// Wall cabinets hang above the baseboards: their ends keep the 10 mm from the end walls' faces, and their back is on the face.
 const [baseboardNorth] = buildCabinetryAvailableSpaces({ activeRoom: baseboardRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
-const hung = getCabinetPlacement(fitCabinetToSpace(createCabinetPreset("wall", "hung"), { ...baseboardNorth, mountingHeightMm: 1450 }, { mode: "fit_width" }).definition, baseboardRoom);
-const hungWidth = fitCabinetToSpace(createCabinetPreset("wall", "hung"), { ...baseboardNorth, mountingHeightMm: 1450 }, { mode: "fit_width" }).definition.totalWidth / 1000;
+const hungFit = fitCabinetToSpace(createCabinetPreset("wall", "hung"), { ...baseboardNorth, mountingHeightMm: 1450 }, { mode: "fit_width" });
+const hung = getCabinetPlacement(hungFit.definition, baseboardRoom);
+const hungWidth = hungFit.definition.totalWidth / 1000, hungDepth = hungFit.definition.depth / 1000;
 nearMm((hung.position[0] - hungWidth / 2 - (-2 + 0.06)) * 1000, 10, "wall cabinets: 10 mm from the west wall's face");
+nearMm((hung.position[2] - hungDepth / 2 - (-1.5 + 0.06)) * 1000, 0, "wall cabinets: the back on the north wall's face, not the baseboard");
+assert.ok(!hungFit.issues.some((issue) => issue.code === "baseboard_offset_applied"), "and Fit doesn't say it stands off for the baseboard");
+assert.ok(!validateCabinetDefinition(hungFit.definition).issues.some((issue) => issue.code === "fit.baseboard.clearance"), "nor does validation");
 
 // A run made deeper after Fit: flagged only where Fit put it at a corner under 90°, not for a run far along the wall, and only
 // once its front corner would cross the slanted wall (10 mm off it at a 60° corner: about 20 mm deeper, 10 mm over cos 60°,
@@ -596,5 +600,62 @@ livingSpaces.map((space) => placeFittedRun(living, space)).forEach((run) => {
   assert.equal(check(nudgedX, nudgedZ, true), true, `living ${run.space.wallId}: still inside after a 10 mm nudge`);
   assert.deepEqual(getCabinetCopyOffset(run.space, living), [0.15, 0.15], `living ${run.space.wallId}: a copy moves 15 cm in x and z, as on the line`);
 });
+
+// Rooms next door (the plan's rooms): the 3D view draws every room's walls, each at its own thickness, so a thicker wall next
+// door moves the face. Room A, 4 x 3 m with 120 mm walls; B to its north with 200 mm walls, sharing A's north wall.
+const nextDoor = (bWidth: number, bX: number, shape: "rectangle" | "custom_polygon") => {
+  const a = shape === "rectangle" ? createRoom("A", "A", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 })
+    : drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
+  const room = { ...a, id: "A" } as RoomSnapshot;
+  const planRooms = new Map([
+    ["A", { id: "A", name: "A", roomType: "kitchen" as const, shape, ...(shape === "rectangle" ? {} : { polygon: room.planPolygon }), x: 0, z: 0, w: 4, d: 3, wallThickness: 0.12 }],
+    ["B", { id: "B", name: "B", roomType: "living" as const, shape: "rectangle" as const, x: bX, z: -3, w: bWidth, d: 3, wallThickness: 0.2 }],
+  ]);
+  return { room, planRooms };
+};
+const bDoor = { id: "b-door", roomId: "B", wall: "south" as const, kind: "door" as const, offsetMm: 500, widthMm: 900, heightMm: 2100, bottomMm: 0 };
+for (const shape of ["rectangle", "custom_polygon"] as const) {
+  const { room, planRooms } = nextDoor(4, 0, shape);
+  const hostsNextDoor = (planOpenings: typeof bDoor[] = []) =>
+    buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 2, planOpenings, planRooms });
+  const north = hostsNextDoor()[0], run = placeFittedRun(room, north);
+  nearMm(north.wallSegment!.startZmm, -1400, `${shape}: A's north face is B's wall's, 100 mm off the line (it was A's own, 60 mm)`);
+  nearMm((backMiddle(run).z + 1.4) * 1000, 0, `${shape}: the run's back is on it`);
+  const atOwnFace = { ...run, z: -1.44 + run.depth / 2 };
+  assert.equal(isPlacementContainedInRoom({ room, position: [atOwnFace.x, 0, atOwnFace.z], rotationY: 0, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 }, builtIn: true, planRooms }),
+    false, `${shape}: one at A's own face stands 40 mm in B's wall`);
+  assert.deepEqual(hostsNextDoor([bDoor])[0].openings.map((opening) => opening.offsetMm), [500], `${shape}: B's door on the shared wall cuts A's host where it is drawn`);
+  const [westOfDoor] = getCabinetAvailableSegments(hostsNextDoor([bDoor])[0], 870, 0, 580);
+  nearMm(westOfDoor.endMm, 500 - 450, `${shape}: a run stops at it`);
+  // B half as wide, west of the middle: A's face is B's wall's as far as B's wall runs (to x = 0.1 m), then nothing behind it.
+  const half = nextDoor(2, -1, shape), halfRun = placeFittedRun(half.room, buildCabinetryAvailableSpaces({ activeRoom: half.room, activePlanRoom: null, planRoomCount: 2, planOpenings: [], planRooms: half.planRooms })[0]);
+  nearMm((backMiddle(halfRun).z + 1.4) * 1000, 0, `${shape}, half: the run's back on B's wall's face`);
+  nearMm((0.1 - (halfRun.x + halfRun.width / 2)) * 1000, 10, `${shape}, half: 10 mm short of where it ends`);
+}
+
+// A door centred exactly on a drawn rectangle's corner is on the wall it runs along (the plan's tangent), not the other.
+const cornerRoom = drawnRoom([{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
+const cornerDoor = { id: "corner", roomId: cornerRoom.id, wall: "east" as const, kind: "door" as const, offsetMm: -1500, widthMm: 800, heightMm: 2100, bottomMm: 0 };
+assert.deepEqual(buildCabinetryAvailableSpaces({ activeRoom: cornerRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [cornerDoor] })
+  .map((space) => [space.wallId, space.openings.map((opening) => opening.offsetMm)]), [["wall-0", []], ["wall-1", [-1500]], ["wall-2", []], ["wall-3", []]],
+  "a door at the east wall's north end is on the east wall");
+
+// Turned on an angled wall, a built-in stays against it: moved out along the wall's normal as little as it must, touching.
+const hexagon = drawnRoom(Array.from({ length: 6 }, (_, index) => ({ x: 2 * Math.cos((index * Math.PI) / 3), z: 2 * Math.sin((index * Math.PI) / 3) })));
+const hexagonRun = placeFittedRun(hexagon, buildCabinetryAvailableSpaces({ activeRoom: hexagon, activePlanRoom: null, planRoomCount: 1, planOpenings: [] })[0]);
+const hexagonFace = { start: { x: 2 - 0.06 * Math.cos(Math.PI / 6), z: -0.06 * Math.sin(Math.PI / 6) } };
+const faceNormal = { x: -Math.cos(Math.PI / 6), z: -Math.sin(Math.PI / 6) }; // wall-0, from (2, 0) to (1, 1.732), into the room
+const fromFace = (point: { x: number; z: number }) => (point.x - hexagonFace.start.x) * faceNormal.x + (point.z - hexagonFace.start.z) * faceNormal.z;
+for (const degrees of [15, 45, 90]) {
+  const rotationY = hexagonRun.rotationY + (degrees * Math.PI) / 180, [width, depth] = [0.6, 0.58];
+  const [x, z] = clampBuiltInToRoom(hexagon, hexagonRun.fitX, hexagonRun.fitZ, width, depth, rotationY);
+  const corners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([along, out]) => ({
+    x: x + (along * width / 2) * Math.cos(rotationY) + (out * depth / 2) * Math.sin(rotationY), z: z - (along * width / 2) * Math.sin(rotationY) + (out * depth / 2) * Math.cos(rotationY),
+  }));
+  assert.ok(Math.abs(Math.min(...corners.map(fromFace))) < 0.0001, `turned ${degrees}°: a corner touches wall-0's face (${(Math.min(...corners.map(fromFace)) * 1000).toFixed(3)} mm)`);
+  const moved = { x: x - hexagonRun.fitX, z: z - hexagonRun.fitZ };
+  assert.ok(Math.abs(moved.x * faceNormal.z - moved.z * faceNormal.x) < 1e-9, `turned ${degrees}°: moved along the wall's normal only`);
+  assert.equal(isPlacementContainedInRoom({ room: hexagon, position: [x, 0, z], rotationY, dimensions: { w: 600, d: 580, h: 870 }, builtIn: true }), true, `turned ${degrees}°: contained`);
+}
 
 console.log("Cabinet polygon host and placement tests passed.");

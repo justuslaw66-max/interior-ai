@@ -14,9 +14,10 @@ import { getRoomWallFinishDepths } from "../lib/room-wall-finish-depths";
 
 /**
  * Where a built-in may stand, as the 3D view draws the room, for scripts/test-built-in-faces-oracle.ts: inside the room's
- * outline, outside its columns, outside its walls (the 3D view's own wall bands, buildLegacyWallBandsForTest: each wall's
- * core with its ends run on) and outside its laminate panels (each the box the 3D view draws, joinedLegacyWallSurfacePart).
- * Nothing here reads lib/room-built-in-region.ts. Point tests by crossings; distances by brute force over the solids' edges.
+ * outline, outside its columns, outside its walls and those of the rooms around it (the 3D view's own wall bands for them all,
+ * buildLegacyWallBandsForTest: each room's walls' cores at its own thickness, their ends run on) and outside its laminate
+ * panels (each the box the 3D view draws, joinedLegacyWallSurfacePart). Nothing here reads lib/room-built-in-region.ts. Point
+ * tests by crossings; distances by brute force over the solids' edges.
  */
 
 export type P = { x: number; z: number };
@@ -56,11 +57,13 @@ function panelBoxes(room: RoomSnapshot, plan: HousePlanRoom2D, thickness: number
   });
 }
 
-export function regionOf(room: RoomSnapshot): Region {
+/** The room's region, it standing at the plan's origin among `neighbours` (the plan's other rooms, where they stand). */
+export function regionOf(room: RoomSnapshot, neighbours: readonly HousePlanRoom2D[] = []): Region {
   const plan = toPlanRoom(room), thickness = room.geometry.wallThickness ?? 0.12;
   const outline = getRoomPlanOutlinePoints({ shape: room.planShape ?? "rectangle", polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth });
-  const bands = buildLegacyWallBandsForTest({ rooms: [plan], openings: [], defaultWallHeight: 2.6, stackedFloors: false })
+  const bandsOf = (rooms: HousePlanRoom2D[]) => buildLegacyWallBandsForTest({ rooms, openings: [], defaultWallHeight: 2.6, stackedFloors: false })
     .filter((band) => band.bottomMeters <= 0.1 && band.topMeters >= 0.1).flatMap((band) => band.polygons);
+  const bands = bandsOf([plan, ...neighbours]);
   const toMetres = (ring: ReadonlyArray<{ xMm: number; zMm: number }>) => ring.map((point) => ({ x: point.xMm / 1000, z: point.zMm / 1000 }));
   const walls = bands.map((band) => ({ outer: toMetres(band.outer), holes: band.holes.map(toMetres) }));
   const others = [...panelBoxes(room, plan, thickness), ...(room.planHoles ?? [])];
@@ -69,8 +72,17 @@ export function regionOf(room: RoomSnapshot): Region {
     const b = ring[(index + 1) % ring.length];
     return { a, b, bounds: [Math.min(a.x, b.x), Math.max(a.x, b.x), Math.min(a.z, b.z), Math.max(a.z, b.z)] as [number, number, number, number] };
   }));
-  // The walls' union always leaves the room as a hole in it, unless it fails to (filled: then it can't be the reference).
-  return { outline, bands: walls, others, vertices: [...outline, ...rings.flat()], edges, thickness, filled: !walls.some((band) => band.holes.length) };
+  // The walls' union always leaves the room as a hole in it, unless it fails to (filled: then it can't be the reference). With
+  // rooms next door, it must leave the room's floor where its own walls' union does (a point in it, inside its edges' middles).
+  const own = neighbours.length ? bandsOf([plan]).map((band) => ({ outer: toMetres(band.outer), holes: band.holes.map(toMetres) })) : walls;
+  const inBands = (point: P, of: Band[]) => of.some((band) => insideRing(point, band.outer) && !band.holes.some((hole) => insideRing(point, hole)));
+  const sign = outline.reduce((sum, point, index) => sum + point.x * outline[(index + 1) % outline.length].z - outline[(index + 1) % outline.length].x * point.z, 0) >= 0 ? 1 : -1;
+  const floor = outline.map((a, index) => {
+    const b = outline[(index + 1) % outline.length], length = Math.hypot(b.x - a.x, b.z - a.z) || 1, inward = thickness / 2 + 0.1;
+    return { x: (a.x + b.x) / 2 - ((b.z - a.z) / length) * sign * inward, z: (a.z + b.z) / 2 + ((b.x - a.x) / length) * sign * inward };
+  }).find((point) => insideRing(point, outline) && !inBands(point, own) && !others.some((ring) => insideRing(point, ring)));
+  const filled = !own.some((band) => band.holes.length) || (floor !== undefined && neighbours.length > 0 && inBands(floor, walls));
+  return { outline, bands: walls, others, vertices: [...outline, ...rings.flat()], edges, thickness, filled };
 }
 
 /** True when the point is in the room and in no solid: no wall band (inside its outline, not in a hole of it), panel or column. */
@@ -145,34 +157,26 @@ export type Stretch = { from: number; to: number; slackFrom: number; slackTo: nu
 const PROBE = 0.000005;
 
 /**
- * Where a line is a face as the 3D view draws it, from `from` to `to` along it: a solid just behind it (0.005 mm, as the 3D view's
- * bands are drawn to 0.001 mm and their union leaves corners a few thousandths off), none just in front, none standing on it
- * (within 0.002 mm, however low: a panel's corner past a bend), inside the room. Exact: tested between each place a solid's
- * edge crosses those lines or comes onto the line; gaps under 0.01 mm (where solids meet) are passed over, and stretches
- * under 1 mm aren't faces. Where
- * a wall ending a stretch is all but parallel to the line, its end is known only to 0.006 mm over that wall's slope, `slack`.
+ * Where a line is a face as the 3D view draws it, from `from` to `to` along it: a solid 0.005 mm behind it, none 0.005 mm in
+ * front, inside the room (the 3D view's bands are drawn to 0.001 mm and their union leaves corners a few thousandths off; the
+ * region tests the same two lines, lib/room-built-in-region.ts). A solid nearer the face that doesn't reach that far in front
+ * (a panel's end a few thousandths proud at a bend of hundredths of a degree) doesn't end it. Exact: tested between each
+ * place a solid's edge crosses those lines; gaps under 0.01 mm (where solids meet) are passed over, and stretches under 1 mm
+ * aren't faces. Where a wall ending a stretch is all but parallel to the line, its end is known only to 0.006 mm over that
+ * wall's slope, `slack` (the bands' rounding to 0.001 mm, a few times over).
  */
 export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number): Stretch[] {
   const rings = [region.outline, ...region.bands.flatMap((band) => [band.outer, ...band.holes]), ...region.others];
   const cuts: Array<{ along: number; slope: number }> = [];
-  const standing: Array<[number, number]> = [];
-  rings.forEach((ring, ringIndex) => ring.forEach((point, index) => {
+  rings.forEach((ring) => ring.forEach((point, index) => {
     const [p, q] = [frame(point), frame(ring[(index + 1) % ring.length])];
     const slope = Math.abs(q[1] - p[1]) / Math.max(1e-12, Math.abs(q[0] - p[0]));
     for (const level of [-PROBE, PROBE]) {
       if ((p[1] - level) * (q[1] - level) > 0 || p[1] === q[1]) continue;
       cuts.push({ along: p[0] + ((q[0] - p[0]) * (level - p[1])) / (q[1] - p[1]), slope });
     }
-    // A solid's edge that comes onto the line from in front: its part within 0.002 mm of it (not the face itself, nor a corner
-    // a few thousandths off it, which reach no further out).
-    if (ringIndex === 0 || Math.max(p[1], q[1]) < PROBE || Math.min(p[1], q[1]) > 0.000002) return;
-    const [low, high] = [(-PROBE - p[1]) / (q[1] - p[1]), (0.000002 - p[1]) / (q[1] - p[1])].sort((a, b) => a - b);
-    const ends = [Math.max(0, low), Math.min(1, high)].map((value) => p[0] + (q[0] - p[0]) * value);
-    standing.push([Math.min(...ends) - 0.000002, Math.max(...ends) + 0.000002]);
-    standing[standing.length - 1].forEach((along) => cuts.push({ along, slope }));
   }));
-  const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) &&
-    inRegion(region, at(along, PROBE)) && !standing.some(([low, high]) => along >= low && along <= high);
+  const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) && inRegion(region, at(along, PROBE));
   const stops = [from, ...cuts.map(({ along }) => along).filter((along) => along > from && along < to).sort((a, b) => a - b), to];
   const slackAt = (along: number) => Math.min(0.005, Math.max(0, ...cuts.filter((cut) => Math.abs(cut.along - along) < 0.00005).map(({ slope }) => 0.000006 / Math.max(1e-9, slope))));
   const merged: Array<[number, number]> = [];

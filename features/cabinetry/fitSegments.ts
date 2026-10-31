@@ -47,6 +47,14 @@ function segmentsBetweenOpenings(startMm: number, endMm: number, blocked: Array<
   return segments;
 }
 
+/**
+ * How far a run's back stands off its host's face (J, 29 Oct 2026: "Face, back flush"): a run standing on the floor by the
+ * recorded baseboard's depth; a wall cabinet (its bottom above the floor) hangs above the baseboard, its back against the face.
+ */
+export function getCabinetBackOffsetMm(space: Pick<CabinetHostSpace, "baseboardOffsetMm">, assemblyBottomMm: number): number {
+  return assemblyBottomMm > 0 ? 0 : Math.max(0, space.baseboardOffsetMm ?? 0);
+}
+
 /** The allowance at each end of a run: a run standing on the floor also keeps clear of the end walls' baseboards; a wall
  * cabinet hangs above them. */
 function getEndClearancesMm(space: CabinetHostSpace, assemblyBottomMm: number): [number, number] {
@@ -80,7 +88,8 @@ export function getCabinetAvailableSegments(
   const startBoundaryMm = -halfWidthMm + (obstacles.length ? 0 : startClearanceMm);
   const endBoundaryMm = halfWidthMm - (obstacles.length ? 0 : endClearanceMm);
   if (endBoundaryMm <= startBoundaryMm) return [];
-  const backMm = Math.max(0, space.baseboardOffsetMm ?? 0);
+  // Its back stands off the face by the baseboard on the floor; a wall cabinet hangs above it, its back against the face.
+  const backMm = getCabinetBackOffsetMm(space, assemblyBottomMm);
   const spans = obstacles.length
     ? getObstacleFreeSpans(obstacles, backMm, backMm + depthMm, Math.max(startClearanceMm, endClearanceMm), startBoundaryMm, endBoundaryMm)
     : [[startBoundaryMm, endBoundaryMm] as [number, number]];

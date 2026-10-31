@@ -13,7 +13,7 @@ import { track } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
 import { snapRotationRadians } from "@/lib/design-page-utils";
-import { clampBuiltInToRoom, getBuiltInSnapTarget } from "@/lib/room-built-in-faces";
+import { clampBuiltInToRoom, getBuiltInSnapTarget, type BuiltInPlanRooms } from "@/lib/room-built-in-faces";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { getActiveRoom } from "@/lib/room-types";
 import type {
@@ -164,6 +164,8 @@ export type UseDesignPageCabinetryInput = {
   state: {
     activeRoom: RoomSnapshot | null;
     activePlanRoom: { w: number; d: number } | null;
+    /** The plan's rooms (the walls the 3D view draws around a room, and the doors on walls it shares). */
+    planRoomById: BuiltInPlanRooms;
     planRoomCount: number;
     planOpenings: RoomOpening2D[];
     preferredWallFaceId: string | null;
@@ -289,6 +291,7 @@ export function useDesignPageCabinetry({
   const {
     activeRoom,
     activePlanRoom,
+    planRoomById,
     planRoomCount,
     planOpenings,
     preferredWallFaceId,
@@ -396,8 +399,8 @@ export function useDesignPageCabinetry({
   }, [assetStorage, designSnapshot.rooms, replaceActiveItemsSnapshot, setDesignSnapshot]);
 
   const availableSpaces = useMemo(
-    () => buildCabinetryAvailableSpaces({ activeRoom, activePlanRoom, planRoomCount, planOpenings }),
-    [activePlanRoom, activeRoom, planOpenings, planRoomCount]
+    () => buildCabinetryAvailableSpaces({ activeRoom, activePlanRoom, planRoomCount, planOpenings, planRooms: planRoomById }),
+    [activePlanRoom, activeRoom, planOpenings, planRoomById, planRoomCount]
   );
   // The selected wall's host: its own, or the one whose face runs over it (a straight wall's later piece).
   const preferredSpaceId = activeRoom && preferredWallFaceId
@@ -506,7 +509,7 @@ export function useDesignPageCabinetry({
             const rotationY = fitPlacement?.rotationY ?? getCabinetRotationY(item);
             const [safeX, safeZ] = fitPlacement
               ? clampBuiltInToRoom(targetRoom, fitPlacement.position[0], fitPlacement.position[2], definition.totalWidth / 1000,
-                  definition.depth / 1000, rotationY)
+                  definition.depth / 1000, rotationY, { planRooms: planRoomById })
               : [item.position?.[0] ?? 0, item.position?.[2] ?? 0];
             const position: ItemPosition = fitPlacement
               ? [safeX, fitPlacement.position[1], safeZ]
@@ -584,6 +587,7 @@ export function useDesignPageCabinetry({
       canUseStudio,
       commitItemsToRoom,
       getDesignSnapshot,
+      planRoomById,
       showToast,
       updateSelection,
     ]
@@ -660,7 +664,7 @@ export function useDesignPageCabinetry({
         blob: payload.glbBlob,
       });
       // Where Fit put it (a copy 15 cm along its wall), kept inside the room.
-      const { position, rotationY: placementRotationY } = getCabinetPlacement(payload.definition, room, payload.placeAsCopy);
+      const { position, rotationY: placementRotationY } = getCabinetPlacement(payload.definition, room, payload.placeAsCopy, planRoomById);
       const now = new Date().toISOString();
       const documentationSnapshot = generateCabinetDocumentation(payload.definition);
       const item: DesignItem = {
@@ -744,6 +748,7 @@ export function useDesignPageCabinetry({
       commitItemsToRoom,
       createInstanceId,
       getDesignSnapshot,
+      planRoomById,
       showToast,
       studio,
       updateCabinetItemDefinition,
@@ -784,12 +789,8 @@ export function useDesignPageCabinetry({
       if (!planningDimensionsMm) return;
       const rotationY = getCabinetRotationY(item);
       const [safeX, safeZ] = clampBuiltInToRoom(activeRoom, targetX, targetZ, planningDimensionsMm.w / 1000,
-        planningDimensionsMm.d / 1000, rotationY, { from: [item.position[0], item.position[2]] });
-      const nextPosition: ItemPosition = [
-        safeX,
-        item.position[1] ?? 0,
-        safeZ,
-      ];
+        planningDimensionsMm.d / 1000, rotationY, { from: [item.position[0], item.position[2]], planRooms: planRoomById });
+      const nextPosition: ItemPosition = [safeX, item.position[1] ?? 0, safeZ];
 
       if (
         !isCatalogPlacementContainedInRoom(
@@ -804,11 +805,7 @@ export function useDesignPageCabinetry({
         return;
       }
 
-      const blocker = findSelectedPlacementBlocker(
-        item,
-        nextPosition,
-        rotationY
-      );
+      const blocker = findSelectedPlacementBlocker(item, nextPosition, rotationY);
       if (blocker) {
         showToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
         return;
@@ -837,6 +834,7 @@ export function useDesignPageCabinetry({
       getItemDisplayName,
       isCatalogPlacementContainedInRoom,
       isDesigner,
+      planRoomById,
       selected,
       showToast,
     ]
@@ -865,9 +863,9 @@ export function useDesignPageCabinetry({
     if (!planningDimensionsMm) return;
     // The nearest side of the room's finished faces: there if it fits there (the way isn't checked), else toward it.
     const [targetX, targetZ] = getBuiltInSnapTarget(activeRoom, selected.item.position,
-      planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, getCabinetRotationY(selected.item));
+      planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, getCabinetRotationY(selected.item), planRoomById);
     moveSelectedToPosition(targetX, targetZ, "Snap built-in to wall");
-  }, [activeRoom, canEdit, isDesigner, moveSelectedToPosition, selected]);
+  }, [activeRoom, canEdit, isDesigner, moveSelectedToPosition, planRoomById, selected]);
 
   const setSelectedRotation = useCallback(
     (targetRotationY: number, actionLabel = "Rotate built-in") => {
@@ -878,13 +876,10 @@ export function useDesignPageCabinetry({
       const resolvedRotationY = rotationSnapEnabled
         ? snapRotationRadians(targetRotationY, rotationSnapStepRadians)
         : targetRotationY;
+      // Turned, it stays against the face it stands against: moved out along that wall's normal as far as it must.
       const [safeX, safeZ] = clampBuiltInToRoom(activeRoom, selected.item.position[0], selected.item.position[2],
-        planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, resolvedRotationY);
-      const nextPosition: ItemPosition = [
-        safeX,
-        selected.item.position[1] ?? 0,
-        safeZ,
-      ];
+        planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, resolvedRotationY, { planRooms: planRoomById });
+      const nextPosition: ItemPosition = [safeX, selected.item.position[1] ?? 0, safeZ];
 
       if (
         !isCatalogPlacementContainedInRoom(
@@ -899,11 +894,7 @@ export function useDesignPageCabinetry({
         return;
       }
 
-      const blocker = findSelectedPlacementBlocker(
-        selected.item,
-        nextPosition,
-        resolvedRotationY
-      );
+      const blocker = findSelectedPlacementBlocker(selected.item, nextPosition, resolvedRotationY);
       if (blocker) {
         showToast(`Blocked by ${getItemDisplayName(blocker) ?? "another item"}`);
         return;
@@ -932,6 +923,7 @@ export function useDesignPageCabinetry({
       getItemDisplayName,
       isCatalogPlacementContainedInRoom,
       isDesigner,
+      planRoomById,
       rotationSnapEnabled,
       rotationSnapStepRadians,
       selected,

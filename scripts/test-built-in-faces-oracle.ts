@@ -7,10 +7,11 @@ import {
   getCabinetFitPlacement,
   mapCabinetCardinalOpeningsToPolygonWalls,
 } from "../features/cabinetry/fitToSpace";
-import { getCabinetOverallDepth, getCabinetOverallWidth } from "../features/cabinetry/layout";
+import { getCabinetOverallDepth, getCabinetOverallHeight, getCabinetOverallWidth } from "../features/cabinetry/layout";
 import { createCabinetPreset } from "../features/cabinetry/presets";
 import { buildCabinetryAvailableSpaces, getCabinetPlacement } from "../features/cabinetry/roomCabinetHosts";
 import type { CabinetDefinition, CabinetHostSpace } from "../features/cabinetry/types";
+import type { HousePlanRoom2D } from "../lib/design-page-house-plan";
 import { validateDesignPageOpeningPlacement } from "../lib/design-page-opening-placement";
 import { mapPlanOpeningsToRoomRenderer } from "../lib/design-page-plan-overlays";
 import type { RoomOpening2D } from "../lib/editorScene";
@@ -28,13 +29,16 @@ import {
  * Random drawn rooms — rectangles, L's, bends 0–20° both ways, 32-segment arcs with a panelled segment, overshoots and double
  * overshoots, spikes and stubs in and out, thin wedges, tiny chamfers and jogs, straight walls drawn in two pieces with a door,
  * rooms their walls fill, both windings — with random walls, panels, baseboards, doors the plan would place, and
- * columns free, against a drawn edge or a rectangle's wall, or in a corner, are checked against the room as the 3D view draws
- * it (scripts/built-in-faces-oracle-utils.ts): its own wall bands and panel boxes, and its doors where the plan draws them.
- * Every exposed face must be offered as a host, and every host be an exposed face. On every host, a base and a wall cabinet,
- * fitted and placed, must stand clear of the walls with its back on a face, clear of every door on its wall, end 10 mm (and a
- * floor run's baseboard) ±0.5 mm from what it meets along its face, a door or where its face ends (more along a wall all but
- * parallel to its face), and keep nudges of 10 mm along and into its wall or stop them at the face. A room with no exposed
- * face must have the line's hosts, snap and containment. CI runs 150 rooms (about 11 s); ORACLE_FULL=1 runs 2,400 (about 3
+ * columns free, against a drawn edge or a rectangle's wall, or in a corner, and in a quarter of them rooms next door along one
+ * or two edges (walls of another thickness, sharing all, part or more of the edge or standing just off it, with a door of their
+ * own on the shared wall), are checked against the room as the 3D view draws it (scripts/built-in-faces-oracle-utils.ts): the
+ * wall bands of it and the rooms next door, its panel boxes, and the doors where the plan draws them. Every exposed face must
+ * be offered as a host (along a wall a thicker one next door runs along, at the depth exposed along more of it), and every
+ * host be an exposed face. On every host, a base and a wall cabinet, fitted and placed, must stand clear of the walls with its
+ * back on a face (a base unit's on the baseboard), clear of every door on its wall, end 10 mm (and a floor run's baseboard)
+ * ±0.5 mm from what it meets along its face, a door or where its face ends (more along a wall all but parallel to its face),
+ * and keep nudges of 10 mm along and into its wall or stop them at the face; where Fit refuses, no run as narrow as Fit makes
+ * may stand anywhere along the host. A room with no exposed face must have the line's hosts, snap and containment. CI runs 150 rooms (about 11 s); ORACLE_FULL=1 runs 2,400 (about 3
  * min), ORACLE_ROOMS any number, ORACLE_SEED another seed, ORACLE_ONLY one room.
  */
 
@@ -134,7 +138,7 @@ function columnOnEdge(points: P[], thickness: number): P[] | null {
   return [at(along, off), at(along + size, off), at(along + size, off + size), at(along, off + size)];
 }
 
-function makeRoom(index: number): { room: RoomSnapshot; family: string; openings: RoomOpening2D[] } {
+function makeRoom(index: number): { room: RoomSnapshot; family: string; openings: RoomOpening2D[]; neighbours: HousePlanRoom2D[] } {
   const shape = pick(Object.values(SHAPES))(between(1.2, 6), between(1.2, 5));
   const thickness = pick([0.08, 0.1, 0.12, 0.15, 0.2, 0.25]);
   const unturned = shape.points ?? box(shape.w, shape.d);
@@ -163,12 +167,54 @@ function makeRoom(index: number): { room: RoomSnapshot; family: string; openings
     const piece = chance(0.5) ? [-width / 2, split] : [split, width / 2];
     return door("north", "door", 1000 * Math.max(0, (piece[1] - piece[0]) / 2 - 0.5) * between(-1, 1));
   }) : chance(0.25) ? [door(pick(["north", "east", "south", "west"] as const), pick(["door", "window"] as const), between(-800, 800))] : [];
-  return { room, family: shape.family, openings: tries.filter((opening) => placeable(room, opening)).slice(0, 1) };
+  const openings = tries.filter((opening) => placeable([toPlanRoom(room)], opening)).slice(0, 1);
+  const next = makeNeighbours(room, index);
+  return { room, family: shape.family, openings: [...openings, ...next.openings], neighbours: next.neighbours };
 }
 
 /** Would the plan place the door (validateDesignPageOpeningPlacement: on one wall, 180 mm from its corners)? Else bad input. */
-function placeable(room: RoomSnapshot, opening: RoomOpening2D): boolean {
-  return validateDesignPageOpeningPlacement(opening, [], undefined, { rooms: [toPlanRoom(room)], planWidthMeters: 0, planDepthMeters: 0 }).valid;
+function placeable(rooms: HousePlanRoom2D[], opening: RoomOpening2D): boolean {
+  return validateDesignPageOpeningPlacement(opening, [], undefined, { rooms, planWidthMeters: 0, planDepthMeters: 0 }).valid;
+}
+
+/**
+ * Rooms next door, in a quarter of the rooms: along one or two of its edges a metre or more long and running along x or z, a
+ * room on the outside with walls of any thickness, sharing all of the edge, part of it or more, or standing up to 30 mm off
+ * it; a rectangle half the time, and then half the time with a door of its own on the shared wall the plan would place. Not
+ * along an angled edge: the 3D view splits a shared wall's parts along x or z only (splitWallPartsAtSharedBoundaries), so an
+ * angled shared wall loses the half-thickness its ends run on (a 3D bug, not the region's to copy).
+ */
+function makeNeighbours(room: RoomSnapshot, index: number): { neighbours: HousePlanRoom2D[]; openings: RoomOpening2D[] } {
+  if (!chance(0.25)) return { neighbours: [], openings: [] };
+  const outline = getRoomPlanOutlinePoints({ shape: room.planShape ?? "rectangle", polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth });
+  const sign = outline.reduce((sum, point, at) => sum + point.x * outline[(at + 1) % outline.length].z - outline[(at + 1) % outline.length].x * point.z, 0) >= 0 ? 1 : -1;
+  const edges = outline.map((a, at) => ({ a, b: outline[(at + 1) % outline.length] }))
+    .filter(({ a, b }) => Math.hypot(b.x - a.x, b.z - a.z) >= 1 && (Math.abs(b.x - a.x) < 1e-9 || Math.abs(b.z - a.z) < 1e-9));
+  const neighbours: HousePlanRoom2D[] = [], openings: RoomOpening2D[] = [];
+  for (let count = chance(0.5) ? 2 : 1; count > 0 && edges.length; count -= 1) {
+    const { a, b } = edges.splice(Math.floor(random() * edges.length), 1)[0], length = Math.hypot(b.x - a.x, b.z - a.z);
+    const [dx, dz] = [(b.x - a.x) / length, (b.z - a.z) / length], [ox, oz] = [dz * sign, -dx * sign]; // out of the room
+    const [from, to] = pick([[0, length], [between(0, 0.4) * length, between(0.6, 1) * length], [-between(0, 0.5), length + between(0, 0.5)]]);
+    const off = chance(0.2) ? between(0.001, 0.03) : 0, deep = between(1, 3);
+    const at = (along: number, out: number) => ({ x: a.x + dx * along + ox * (off + out), z: a.z + dz * along + oz * (off + out) });
+    const points = [at(from, 0), at(to, 0), at(to, deep), at(from, deep)];
+    const xs = points.map((point) => point.x), zs = points.map((point) => point.z);
+    const [x, z] = [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...zs) + Math.max(...zs)) / 2];
+    const rectangle = chance(0.5);
+    const next: HousePlanRoom2D = {
+      id: `oracle-${index}-next-${count}`, name: `Next door ${count}`, roomType: "living", x, z,
+      w: Math.max(...xs) - Math.min(...xs), d: Math.max(...zs) - Math.min(...zs), height: 2.6, wallThickness: pick([0.08, 0.1, 0.12, 0.15, 0.2, 0.25, 0.3]),
+      ...(rectangle ? { shape: "rectangle" as const } : { shape: "custom_polygon" as const, polygon: points.map((point) => ({ x: point.x - x, z: point.z - z })) }),
+    };
+    neighbours.push(next);
+    // Its own door on the wall it shares (not one standing off it), on the side facing the room, about that wall's middle.
+    if (!rectangle || off > 0 || to - from < 1.4 || !chance(0.5)) continue;
+    const wall = oz < -0.5 ? "south" : oz > 0.5 ? "north" : ox < -0.5 ? "east" : "west";
+    const offsetMm = 1000 * between(-1, 1) * ((to - from) / 2 - 0.5);
+    openings.push({ id: `door-${index}-next-${count}`, roomId: next.id, wall, kind: "door", offsetMm, widthMm: between(600, 900), heightMm: 2100, bottomMm: 0 });
+  }
+  const rooms = [toPlanRoom(room), ...neighbours];
+  return { neighbours, openings: openings.filter((opening) => placeable(rooms, opening)) };
 }
 
 /**
@@ -176,7 +222,7 @@ function placeable(room: RoomSnapshot, opening: RoomOpening2D): boolean {
  * centre line, about its centre), not where Fit maps them (mapCabinetCardinalOpeningsToPolygonWalls).
  */
 function doorsOf(room: RoomSnapshot, openings: RoomOpening2D[]): Array<{ a: P; b: P; bottomMm: number; topMm: number }> {
-  const drawn = mapPlanOpeningsToRoomRenderer(openings, [toPlanRoom(room)]);
+  const drawn = mapPlanOpeningsToRoomRenderer(openings, [toPlanRoom(room), ...plan.neighbours]);
   return drawn.flatMap((opening, index) => {
     const center = opening.hostWorldCenter, tangent = opening.hostTangent, source = openings[index];
     if (opening.hostResolution?.status !== "resolved" || !center || !tangent) return [];
@@ -208,8 +254,10 @@ function footprintInRegion(region: Region, run: Run, shrink: number): boolean {
 }
 
 // --- The checks -------------------------------------------------------------------------------------------------------------
+/** The room's plan: it at the origin, and the rooms next door (set for each room). */
+let plan: { neighbours: HousePlanRoom2D[]; rooms: Map<string, HousePlanRoom2D>; thickest: number } = { neighbours: [], rooms: new Map(), thickest: 0 };
 const failures: string[] = [];
-const counts = { rooms: 0, furnitureRule: 0, filled: 0, faces: 0, hosts: 0, runs: 0, cut: 0, filling: 0, nudges: 0, kept: 0, stopped: 0, furnitureOnly: 0 } as Record<string, number>;
+const counts = { rooms: 0, nextDoor: 0, furnitureRule: 0, filled: 0, faces: 0, hosts: 0, runs: 0, refused: 0, cut: 0, filling: 0, nudges: 0, kept: 0, stopped: 0, furnitureOnly: 0 } as Record<string, number>;
 const families: Record<string, number> = {};
 function check(condition: boolean, message: () => string) {
   if (!condition && failures.length < 40) failures.push(message());
@@ -255,18 +303,64 @@ function doorsOnRunWall(room: RoomSnapshot, openings: RoomOpening2D[], run: Run,
   return doorsOf(room, openings).flatMap((door) => {
     const [a, b] = [toRun(run, back, door.a), toRun(run, back, door.b)];
     // Along the wall within the drawing's rounding (its centre to a thousandth of a mm).
-    const onWall = Math.abs(a[1] - b[1]) < 0.0001 && a[1] < 0 && a[1] > -(back + (room.geometry.wallThickness ?? 0.12) / 2 + 0.05);
+    const onWall = Math.abs(a[1] - b[1]) < 0.0001 && a[1] < 0 && a[1] > -(back + Math.max(room.geometry.wallThickness ?? 0.12, plan.thickest) / 2 + 0.05);
     return onWall && door.bottomMm < topMm && door.topMm > bottomMm ? [[Math.min(a[0], b[0]), Math.max(a[0], b[0])] as [number, number]] : [];
   });
 }
 
+/**
+ * The narrowest run Fit makes of a preset (fitting it to ever narrower walls of a plain room until it refuses), in metres, with
+ * its depth and height.
+ */
+const narrowest = new Map<"base" | "wall", { width: number; depth: number; heightMm: number }>();
+function narrowestRun(preset: "base" | "wall") {
+  const known = narrowest.get(preset);
+  if (known) return known;
+  let found = { width: Number.POSITIVE_INFINITY, depth: 0, heightMm: 0 };
+  for (let widthMm = 1500; widthMm >= 100; widthMm -= 5) {
+    const room = createRoom("narrowest", "Narrowest", "kitchen", { width: widthMm / 1000, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 });
+    const [north] = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+    const fitted = fitRun(north, preset);
+    if (!fitted) break;
+    found = { width: fitted.definition.totalWidth / 1000, depth: fitted.definition.depth / 1000, heightMm: getCabinetOverallHeight(fitted.definition) };
+  }
+  narrowest.set(preset, found);
+  return found;
+}
+
+/**
+ * Where Fit refuses a host, is it right to? A run as narrow as Fit makes, as deep, its back on the host's line (a base unit's
+ * on the baseboard), slid along the host 5 mm at a time, must not stand anywhere: in the region (0.6 mm in from its sides),
+ * its allowance (10 mm, and a floor run's baseboard, plus 0.5 mm) from every solid it would meet and from where its face
+ * ends, and clear of the doors on its wall.
+ */
+function checkRefusal(region: Region, room: RoomSnapshot, space: CabinetHostSpace, openings: RoomOpening2D[], preset: "base" | "wall", label: string) {
+  counts.refused += 1;
+  const segment = space.wallSegment, smallest = narrowestRun(preset);
+  if (!segment || !Number.isFinite(smallest.width)) return;
+  const [ax, az, bx, bz] = [segment.startXmm, segment.startZmm, segment.endXmm, segment.endZmm].map((value) => value / 1000);
+  const length = Math.hypot(bx - ax, bz - az), normal = Math.hypot(segment.inwardNormalX, segment.inwardNormalZ) || 1;
+  const [nx, nz] = [segment.inwardNormalX / normal, segment.inwardNormalZ / normal], [ux, uz] = [(bx - ax) / (length || 1), (bz - az) / (length || 1)];
+  const floor = preset === "base", back = floor ? Math.max(0, space.baseboardOffsetMm ?? 0) / 1000 : 0;
+  const gap = (10 + (floor ? Math.max(0, segment.startBaseboardClearanceMm ?? 0) : 0)) / 1000 + 0.0005;
+  const bottomMm = floor ? 0 : 1450, width = smallest.width + 0.0005, depth = smallest.depth;
+  for (let along = width / 2; along <= length - width / 2 + 1e-9; along += 0.005) {
+    const run: Run = { x: ax + ux * along + nx * (back + depth / 2), z: az + uz * along + nz * (back + depth / 2), width, depth, rotationY: Math.atan2(nx, nz) };
+    const doors = doorsOnRunWall(room, openings, run, back, bottomMm, bottomMm + smallest.heightMm);
+    if (doors.some(([from, to]) => to > -width / 2 && from < width / 2)) continue;
+    if (distanceToBox(edgesItMeets(region, run, back), [-width / 2, width / 2, back, back + depth]) < gap) continue;
+    if (faceBreaks(region, run, back, -width / 2 - gap, width / 2 + gap) || !footprintInRegion(region, run, 0.0006)) continue;
+    return check(false, () => `${label} ${space.wallId} ${preset}: Fit refuses it, but a ${(width * 1000).toFixed(1)} mm run stands ${(along * 1000).toFixed(0)} mm along it`);
+  }
+}
+
 function checkRun(region: Region, room: RoomSnapshot, space: CabinetHostSpace, openings: RoomOpening2D[], preset: "base" | "wall", label: string) {
   const fitted = fitRun(space, preset);
-  if (!fitted) return;
+  if (!fitted) return checkRefusal(region, room, space, openings, preset, label);
   counts.runs += 1;
   const { definition } = fitted;
   const at = getCabinetFitPlacement(definition, room.geometry.width, room.geometry.depth);
-  const placed = getCabinetPlacement(definition, room);
+  const placed = getCabinetPlacement(definition, room, false, plan.rooms);
   if (!at) return check(false, () => `${label}: no placement`);
   const run: Run = { x: placed.position[0], z: placed.position[2], width: definition.totalWidth / 1000, depth: definition.depth / 1000, rotationY: placed.rotationY };
   const what = () => `${label} ${space.wallId} ${preset} (${run.width.toFixed(3)} × ${run.depth.toFixed(3)})`;
@@ -275,11 +369,12 @@ function checkRun(region: Region, room: RoomSnapshot, space: CabinetHostSpace, o
   const inside = footprintInRegion(region, run, 0.0006);
   if (!inside) counts.cut += 1;
   check(inside, () => `${what()}: the 3D view's walls cut into it`);
-  const back = Math.max(0, space.baseboardOffsetMm ?? 0) / 1000, floor = preset === "base";
+  // A base unit's back on the baseboard; a wall cabinet's on the face (it hangs above the baseboard).
+  const floor = preset === "base", back = floor ? Math.max(0, space.baseboardOffsetMm ?? 0) / 1000 : 0;
   const gap = (10 + (floor ? Math.max(0, space.wallSegment?.startBaseboardClearanceMm ?? 0) : 0)) / 1000;
   const backs = Array.from({ length: 21 }, (_, index) => -run.width / 2 + 0.002 + ((run.width - 0.004) * index) / 20);
   check(backs.every((along) => !inRegion(region, toWorld(run, along, -run.depth / 2 - back - 0.0003))), () => `${what()}: its back isn't on a face`);
-  check(isPlacementContainedInRoom({ room, position: placed.position, rotationY: run.rotationY, dimensions: { w: definition.totalWidth, d: definition.depth, h: 870 }, builtIn: true }), () => `${what()}: not contained`);
+  check(isPlacementContainedInRoom({ room, position: placed.position, rotationY: run.rotationY, dimensions: { w: definition.totalWidth, d: definition.depth, h: 870 }, builtIn: true, planRooms: plan.rooms }), () => `${what()}: not contained`);
   const edges = edgesItMeets(region, run, back);
   const clearance = distanceToBox(edges, [-run.width / 2, run.width / 2, back, back + run.depth]);
   // 0.5 mm, and more where a wall it meets is all but parallel to its face (a bend of hundredths of a degree): the 3D view draws
@@ -306,7 +401,7 @@ function checkNudges(region: Region, room: RoomSnapshot, run: Run, what: () => s
   for (const [name, dx, dz] of [["along", along.x, along.z], ["back along", -along.x, -along.z], ["into the wall", -out.x, -out.z], ["out", out.x, out.z]] as const) {
     counts.nudges += 1;
     const target = { ...run, x: run.x + dx * 0.01, z: run.z + dz * 0.01 };
-    const [x, z] = clampBuiltInToRoom(room, target.x, target.z, run.width, run.depth, run.rotationY, { from: [run.x, run.z] });
+    const [x, z] = clampBuiltInToRoom(room, target.x, target.z, run.width, run.depth, run.rotationY, { from: [run.x, run.z], planRooms: plan.rooms });
     // Furniture of its size may stand there (inside furniture's room, half the wall plus 2 cm in, by its own samples).
     const furnitureFits = isPlacementContainedInRoom({ room, position: [target.x, 0, target.z], rotationY: run.rotationY, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 } });
     const moved = (x - run.x) * dx + (z - run.z) * dz, sideways = Math.abs((x - run.x) * dz - (z - run.z) * dx);
@@ -324,7 +419,7 @@ function checkNudges(region: Region, room: RoomSnapshot, run: Run, what: () => s
     check(moved >= -1e-9 && moved <= 0.01 + 1e-9 && sideways < 1e-9, () => `${what()}: a nudge ${name} went off its line`);
     // Short of the face if it would fit 0.2 mm on even 0.04 mm in (along an edge it slides past, 0.06 mm in may not tell).
     check(!footprintInRegion(region, further, 0.00004), () => `${what()}: a nudge ${name} stopped ${(moved * 1000).toFixed(3)} mm, short of the face`);
-      check(isPlacementContainedInRoom({ room, position: [x, 0, z], rotationY: run.rotationY, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 }, builtIn: true }), () => `${what()}: a nudge ${name} stopped where it isn't contained (moved ${(moved * 1000).toFixed(4)} mm, region ${footprintInRegion(region, { ...run, x, z }, 0.0005)})`);
+      check(isPlacementContainedInRoom({ room, position: [x, 0, z], rotationY: run.rotationY, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 }, builtIn: true, planRooms: plan.rooms }), () => `${what()}: a nudge ${name} stopped where it isn't contained (moved ${(moved * 1000).toFixed(4)} mm, region ${footprintInRegion(region, { ...run, x, z }, 0.0005)})`);
   }
 }
 
@@ -365,12 +460,12 @@ function lineSnapTarget(room: RoomSnapshot, x: number, z: number, width: number,
  */
 function checkFurnitureRule(room: RoomSnapshot, openings: RoomOpening2D[], label: string) {
   counts.furnitureRule += 1;
-  const hosts = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: openings });
+  const hosts = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: plan.rooms.size, planOpenings: openings, planRooms: plan.rooms });
   check(JSON.stringify(hosts) === JSON.stringify(lineHostsOf(room, openings)), () => `${label}: hosts differ from the line's`);
   for (let sample = 0; sample < 4; sample += 1) {
     const [x, z, width, depth, rotationY] = [between(-1, 1) * room.geometry.width, between(-1, 1) * room.geometry.depth, between(0.2, 1.2), between(0.2, 0.7), between(0, 6.3)];
-    check(JSON.stringify(getBuiltInSnapTarget(room, [x, 0, z], width, depth, rotationY)) === JSON.stringify(lineSnapTarget(room, x, z, width, depth, rotationY)), () => `${label}: snap differs from the line's`);
-    const contained = (builtIn: boolean) => isPlacementContainedInRoom({ room, position: [x, 0, z], rotationY, dimensions: { w: width * 1000, d: depth * 1000, h: 870 }, builtIn });
+    check(JSON.stringify(getBuiltInSnapTarget(room, [x, 0, z], width, depth, rotationY, plan.rooms)) === JSON.stringify(lineSnapTarget(room, x, z, width, depth, rotationY)), () => `${label}: snap differs from the line's`);
+    const contained = (builtIn: boolean) => isPlacementContainedInRoom({ room, position: [x, 0, z], rotationY, dimensions: { w: width * 1000, d: depth * 1000, h: 870 }, builtIn, planRooms: plan.rooms });
     check(contained(true) === contained(false), () => `${label}: containment differs from furniture's`);
   }
 }
@@ -379,9 +474,28 @@ function checkFurnitureRule(room: RoomSnapshot, openings: RoomOpening2D[], label
  * Is every face the 3D view draws offered as a host, and is every host a face it draws? For each outline edge, the stretches
  * of its face line exposed along it (exposedOnLine) must lie within one host on that line (its own, or a straight wall's first
  * piece's), and each host on the line must start and end where an exposed stretch does (±0.5 mm, more where the wall ending
- * it is all but parallel); a rectangle's hosts run corner to corner over a column, so their ends aren't checked where it has
- * one. No two hosts the same.
+ * it is all but parallel); a rectangle's hosts run corner to corner over a column or a wall next door, so their ends aren't
+ * checked where it has one. The face line is half the wall and its panel in from the edge, or where a thicker wall of a room
+ * next door runs along it over that (parallel, its core reaching past it) that wall's face, whichever is exposed along more
+ * of the edge (within a millimetre, either). No two hosts the same.
  */
+function faceDepths(edge: { start: P; dx: number; dz: number; nx: number; nz: number; length: number }, own: number): number[] {
+  const depths = [own];
+  plan.neighbours.forEach((next) => {
+    const thickness = Math.max(0.01, next.wallThickness ?? 0.12);
+    const points = getRoomPlanOutlinePoints({ shape: next.shape, polygon: next.polygon, w: next.w, d: next.d }).map((point) => ({ x: point.x + next.x, z: point.z + next.z }));
+    points.forEach((a, index) => {
+      const b = points[(index + 1) % points.length], length = Math.hypot(b.x - a.x, b.z - a.z);
+      if (!(length > 0.002) || Math.abs(((b.x - a.x) * edge.dz - (b.z - a.z) * edge.dx) / length) > 1e-6) return;
+      const across = (a.x - edge.start.x) * edge.nx + (a.z - edge.start.z) * edge.nz;
+      const along = [a, b].map((point) => (point.x - edge.start.x) * edge.dx + (point.z - edge.start.z) * edge.dz);
+      const reaches = Math.max(...along) + thickness / 2 > 0 && Math.min(...along) - thickness / 2 < edge.length;
+      if (reaches && across - thickness / 2 < own && across + thickness / 2 > own + 0.000005) depths.push(across + thickness / 2);
+    });
+  });
+  return depths;
+}
+
 function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHostSpace[], label: string) {
   const outline = region.outline, faceIds = getRoomWallFaceIds({ shape: room.planShape ?? "rectangle", polygon: room.planPolygon });
   const depths = getRoomWallFinishDepths(room), thickness = room.geometry.wallThickness ?? 0.12, reach = room.geometry.width + room.geometry.depth;
@@ -392,15 +506,20 @@ function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHo
     const end = outline[(index + 1) % outline.length], length = Math.hypot(end.x - start.x, end.z - start.z);
     if (!(length > 1e-9)) return;
     const [dx, dz] = [(end.x - start.x) / length, (end.z - start.z) / length], [nx, nz] = [-dz * sign, dx * sign];
-    const face = thickness / 2 + (depths[faceIds[index]] ?? 0), origin = { x: start.x + nx * face, z: start.z + nz * face };
-    const line: LineFrame = {
-      frame: (point) => [(point.x - origin.x) * dx + (point.z - origin.z) * dz, (point.x - origin.x) * nx + (point.z - origin.z) * nz],
-      at: (along, across) => ({ x: origin.x + dx * along + nx * across, z: origin.z + dz * along + nz * across }),
+    const lineAt = (face: number) => {
+      const origin = { x: start.x + nx * face, z: start.z + nz * face };
+      const line: LineFrame = {
+        frame: (point) => [(point.x - origin.x) * dx + (point.z - origin.z) * dz, (point.x - origin.x) * nx + (point.z - origin.z) * nz],
+        at: (along, across) => ({ x: origin.x + dx * along + nx * across, z: origin.z + dz * along + nz * across }),
+      };
+      const exposed = exposedOnLine(region, line, -reach, length + reach);
+      // Its own: 20 mm of it or more along the edge (less holds nothing, the allowance at each end).
+      const own = exposed.filter((stretch) => Math.min(stretch.to, length) - Math.max(stretch.from, 0) >= 0.02);
+      return { line, exposed, own, along: own.reduce((sum, stretch) => sum + Math.min(stretch.to, length) - Math.max(stretch.from, 0), 0) };
     };
-    const exposed = exposedOnLine(region, line, -reach, length + reach);
-    // Its own: 20 mm of it or more along the edge (less holds nothing, the allowance at each end).
-    const own = exposed.filter((stretch) => Math.min(stretch.to, length) - Math.max(stretch.from, 0) >= 0.02);
-    const onLine = spaces.flatMap((space) => {
+    const faces = faceDepths({ start, dx, dz, nx, nz, length }, thickness / 2 + (depths[faceIds[index]] ?? 0)).map(lineAt);
+    const most = Math.max(...faces.map((face) => face.along));
+    const hostsOn = ({ line }: (typeof faces)[number]) => spaces.flatMap((space) => {
       const segment = space.wallSegment;
       if (!segment) return [];
       const [a, b] = [line.frame({ x: segment.startXmm / 1000, z: segment.startZmm / 1000 }), line.frame({ x: segment.endXmm / 1000, z: segment.endZmm / 1000 })];
@@ -408,6 +527,9 @@ function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHo
       const along = Math.abs(b[0] - a[0]) >= 0.001 ? Math.abs(b[1] - a[1]) / Math.abs(b[0] - a[0]) < 1e-6 : space.wallId === faceIds[index] || space.wallId === `wall-${index}`;
       return along && Math.abs(a[1]) < 0.00001 && Math.abs(b[1]) < 0.00001 ? [{ space, from: Math.min(a[0], b[0]), to: Math.max(a[0], b[0]) }] : [];
     });
+    // The face exposed along most of the edge, or one within a millimetre of it with a host on it.
+    const best = faces.filter((face) => face.along >= most - 0.001);
+    const { exposed, own } = best.find((face) => hostsOn(face).length) ?? best[0], onLine = hostsOn(best.find((face) => hostsOn(face).length) ?? best[0]);
     const what = `${label} edge ${index} (${faceIds[index]})`;
     counts.hosts += onLine.filter((host) => host.space.wallId === faceIds[index] || host.space.wallId === `wall-${index}`).length;
     if (own.length) {
@@ -416,7 +538,7 @@ function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHo
       check(onLine.some((host) => host.from <= first.from + 0.0005 + first.slackFrom && host.to >= last.to - 0.0005 - last.slackTo),
         () => `${what}: its face, exposed ${own.map((stretch) => `${(stretch.from * 1000).toFixed(1)}..${(stretch.to * 1000).toFixed(1)}`).join(", ")} mm along it, isn't within a host (${onLine.map((host) => `${(host.from * 1000).toFixed(1)}..${(host.to * 1000).toFixed(1)}`).join(", ") || "none"})`);
     }
-    if ((room.planShape ?? "rectangle") === "rectangle" && room.planHoles?.length) return;
+    if ((room.planShape ?? "rectangle") === "rectangle" && (room.planHoles?.length || plan.neighbours.length)) return;
     onLine.forEach((host) => check(exposed.some((stretch) => Math.abs(stretch.from - host.from) <= 0.0005 + stretch.slackFrom) &&
       exposed.some((stretch) => Math.abs(stretch.to - host.to) <= 0.0005 + stretch.slackTo),
       () => `${what}: host ${host.space.wallId} ${(host.from * 1000).toFixed(1)}..${(host.to * 1000).toFixed(1)} mm isn't where an exposed face starts and ends (${exposed.map((stretch) => `${(stretch.from * 1000).toFixed(1)}..${(stretch.to * 1000).toFixed(1)}`).join(", ") || "none"})`));
@@ -427,27 +549,30 @@ const started = Date.now();
 for (let index = 0; index < ROOMS; index += 1) {
   if (process.env.ORACLE_ONLY && Number(process.env.ORACLE_ONLY) !== index) continue;
   state = (SEED ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0; // Each room from its own seed, so one can be rerun alone.
-  const { room, family, openings } = makeRoom(index);
+  const { room, family, openings, neighbours } = makeRoom(index);
+  const own = toPlanRoom(room);
+  plan = { neighbours, rooms: new Map([own, ...neighbours].map((entry) => [entry.id, entry])), thickest: Math.max(0, ...neighbours.map((next) => next.wallThickness ?? 0)) };
   counts.rooms += 1;
+  if (neighbours.length) counts.nextDoor += 1;
   families[family] = (families[family] ?? 0) + 1;
-  const label = `room ${index} (${family}, seed ${SEED})`;
-  if (process.env.ORACLE_ONLY) console.log(JSON.stringify({ shape: room.planShape, polygon: room.planPolygon, geometry: room.geometry, faces: room.surfaces?.walls?.faces, holes: room.planHoles, openings }));
-  if (usesFurnitureRuleForBuiltIns(room)) {
+  const label = `room ${index} (${family}${neighbours.length ? `, ${neighbours.length} next door` : ""}, seed ${SEED})`;
+  if (process.env.ORACLE_ONLY) console.log(JSON.stringify({ shape: room.planShape, polygon: room.planPolygon, geometry: room.geometry, faces: room.surfaces?.walls?.faces, holes: room.planHoles, openings, neighbours }));
+  if (usesFurnitureRuleForBuiltIns(room, undefined, plan.rooms)) {
     checkFurnitureRule(room, openings, label);
     continue;
   }
-  const region = regionOf(room);
+  const region = regionOf(room, neighbours);
   if (region.filled) {
     counts.filled += 1; // The 3D view's wall union came out without the room in it: nothing to check against.
     continue;
   }
-  const spaces = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: openings });
+  const spaces = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: plan.rooms.size, planOpenings: openings, planRooms: plan.rooms });
   checkHostsOffered(region, room, spaces, label);
   spaces.forEach((space) => (["base", "wall"] as const).forEach((preset) => checkRun(region, room, space, openings, preset, label)));
 }
 
-console.log(`Built-in faces oracle: ${counts.rooms} rooms (${Object.entries(families).map(([family, count]) => `${family} ${count}`).join(", ")}),`,
-  `${counts.furnitureRule} on furniture's rule, ${counts.filled} whose 3D wall union came out without the room; ${counts.faces} exposed faces, ${counts.hosts} hosts; ${counts.runs} runs (${counts.cut} cut by the 3D view's walls, ${counts.filling} filling their stretch), ${counts.nudges} nudges`,
+console.log(`Built-in faces oracle: ${counts.rooms} rooms (${Object.entries(families).map(([family, count]) => `${family} ${count}`).join(", ")}; ${counts.nextDoor} with rooms next door),`,
+  `${counts.furnitureRule} on furniture's rule, ${counts.filled} whose 3D wall union came out without the room; ${counts.faces} exposed faces, ${counts.hosts} hosts; ${counts.runs} runs (${counts.cut} cut by the 3D view's walls, ${counts.filling} filling their stretch), ${counts.refused} refused, ${counts.nudges} nudges`,
   `(${counts.kept} kept, ${counts.stopped} stopped at the face, ${counts.furnitureOnly} of them where furniture's samples would let it on); seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);
 assert.deepEqual(failures, [], `the oracle found ${failures.length}${failures.length >= 40 ? "+" : ""} failures`);
 console.log("Built-in faces oracle tests passed.");
