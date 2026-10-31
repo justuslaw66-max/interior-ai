@@ -767,8 +767,19 @@ for (const drawn of [false, true]) {
   // A move stops within the clamp's 0.05 mm of where it would stop fitting.
   const nearClamp = (actual: number, expected: number, message: string) => assert.ok(Math.abs(actual - expected) <= 0.051, `${message}: ${actual} ≠ ${expected}`);
   nearMm(backOff(run.z), 15, `${name}: Fit stands the run's back on the baseboard`);
-  const [snapX, snapZ] = getBuiltInSnapTarget(room, [run.x, 0, run.z - 0.2], 0.6, run.depth, run.rotationY);
-  nearClamp(backOff(clampBuiltInToRoom(room, snapX, snapZ, 0.6, run.depth, run.rotationY, { from: [run.x, run.z - 0.2] })[1]), 15, `${name}: Snap to wall too`);
+  // Snap to wall from half a metre out: its target is on the baseboard and fits as it is.
+  const [snapX, snapZ] = getBuiltInSnapTarget(room, [run.x, 0, run.z + 0.5], 0.6, run.depth, run.rotationY);
+  nearClamp(backOff(clampBuiltInToRoom(room, snapX, snapZ, 0.6, run.depth, run.rotationY, { from: [run.x, run.z + 0.5] })[1]), 15, `${name}: Snap to wall too`);
+  // With a 300 mm column against the north face in its way, the target doesn't fit, so the snap goes from where the unit
+  // stands towards it and stops with its back on the column (the baseboard runs along the walls, not round a column).
+  const columnRoom = { ...room, planHoles: [[{ x: 0.5, z: -1.44 }, { x: 0.8, z: -1.44 }, { x: 0.8, z: -1.14 }, { x: 0.5, z: -1.14 }]] } as RoomSnapshot;
+  const columnFaces = getRoomBuiltInFaces(columnRoom), outFrom: [number, number] = [0.65, -1.14 + 0.29 + 0.5];
+  const [towardX, towardZ] = getBuiltInSnapTarget(columnRoom, [outFrom[0], 0, outFrom[1]], 0.6, 0.58, 0);
+  assert.equal(builtInFootprintFits(columnFaces, towardX, towardZ, 0.6, 0.58, 0, undefined, 0.015), false, `${name}: the snap's target is behind the column`);
+  const [byColumnX, byColumnZ] = clampBuiltInToRoom(columnRoom, towardX, towardZ, 0.6, 0.58, 0, { from: outFrom });
+  nearClamp((byColumnZ - 0.29 + 1.14) * 1000, 0, `${name}: Snap to wall stops with its back on the column`);
+  assert.ok(Math.abs(byColumnX - 0.65) < 1e-9, `${name}: and doesn't move along the wall`);
+  assert.equal(isPlacementContainedInRoom({ room: columnRoom, position: [byColumnX, 0, byColumnZ], rotationY: 0, dimensions: { w: 600, d: 580, h: 870 }, builtIn: true }), true, `${name}: and is contained there`);
   const [, nudgedZ] = clampBuiltInToRoom(room, run.x, run.z - 0.01, run.width, run.depth, run.rotationY, { from: [run.x, run.z] });
   nearClamp(backOff(nudgedZ), 15, `${name}: a nudge into the wall stops on the baseboard`);
   const dims = { w: 600, d: run.depth * 1000, h: 870 };
