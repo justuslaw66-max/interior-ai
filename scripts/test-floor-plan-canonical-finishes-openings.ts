@@ -41,7 +41,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { getFurnitureWallInset } from "@/lib/design-page-geometry";
 import { isPlacementContainedInRoom } from "@/lib/useDesignPagePlacementRoomQueries";
 import { curvedApartment } from "./fixtures/scan-to-editable-plan/curved-apartment";
-import { OPEN_CORNER_CASES, runImportedPanelCornerProperties } from "./fixtures/imported-panel-corners";
+import { CLAMP_LIMIT_CASES, OPEN_CORNER_CASES, runImportedPanelCornerProperties } from "./fixtures/imported-panel-corners";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
 
 const wall = (
@@ -834,6 +834,15 @@ if (openCases) {
     assert.ok((corners.failing[key] ?? 0) <= open, `${key}: ${corners.failing[key]} rooms (${open} known open)\n${corners.failures.join("\n")}`);
   }
   assert.deepEqual(Object.keys(corners.failing).filter((key) => !(key in openCases)), [], corners.failures.join("\n"));
+}
+// The clamp's own limit at outside corners and thin spikes, ratcheted by kind: counts and the worst may only come down.
+const clampLimit = CLAMP_LIMIT_CASES[cornerPlans];
+if (clampLimit) {
+  for (const [kind, { rooms, intoPanel, worstMm }] of Object.entries(corners.clampLimit)) {
+    const known = clampLimit[kind];
+    assert.ok(known && rooms <= known.rooms && intoPanel <= known.intoPanel && worstMm <= known.worstMm,
+      `the clamp's limit in ${kind} plans: ${rooms} rooms, ${intoPanel} into a laminate, ${worstMm.toFixed(2)} mm (${JSON.stringify(known)} known)`);
+  }
 }
 
 console.log("Canonical wall finishes and opening semantics checks passed.");

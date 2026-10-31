@@ -205,11 +205,15 @@ const convexSimple = (quad: readonly P[]) => {
   return turns.every((turn) => turn >= -1e-9) || turns.every((turn) => turn <= 1e-9);
 };
 
+export type ClampLimit = { rooms: number; intoPanel: number; worstMm: number };
 export type CornerStats = {
   plans: number; skipped: number; rooms: number; panels: number; kinds: Record<string, number>; worst: Record<string, number>;
   failing: Record<string, number>; failingByKind: Record<string, number>; failures: string[];
-  /** Where the clamp's own limit lets an item nearer a laminate than 2 cm (CLAMP_LIMIT_CASES), by kind of plan. */
-  clampLimit: Record<string, { rooms: number; worstMm: number }>;
+  /**
+   * Where the clamp's own limit lets an item nearer a laminate than 2 cm (CLAMP_LIMIT_CASES), by kind of plan: the rooms, those
+   * where it goes into the laminate, and how far short of 2 cm in front it stops at worst.
+   */
+  clampLimit: Record<string, ClampLimit>;
 };
 /**
  * Tolerances, stated. Straight walls: the plan's points are whole millimetres and its footprint joins are rounded, so panels
@@ -236,6 +240,25 @@ type Tolerances = (typeof CORNER_TOLERANCES)["straight"];
 export const OPEN_CORNER_CASES: Record<number, Record<string, number>> = {
   100: { overlapMm2: 1, uncoveredMm: 1 },
   2000: { overlapMm2: 22, uncoveredMm: 40, furnitureMm: 2, buriedMm: 20, pokeMm: 3 },
+};
+
+/**
+ * The furniture clamp's own limit, measured apart (31 Oct 2026; it is shared with drawn rooms, and fixing it is J's call): at
+ * an outside corner of a turned room it keeps a square inset, and its nine points can let an item's box straddle a thin
+ * spike. By kind of plan, in a run of this many: the rooms where an item comes nearer a laminate than 2 cm (beyond the kind's
+ * tolerance), those where it goes into one, and the most it stops short of 2 cm in front (less 20 mm, how deep it goes). A
+ * count or the worst may only come down; a kind not listed fails.
+ */
+export const CLAMP_LIMIT_CASES: Record<number, Record<string, ClampLimit>> = {
+  100: {
+    spike: { rooms: 11, intoPanel: 11, worstMm: 534.44 }, l: { rooms: 10, intoPanel: 8, worstMm: 52.74 },
+    "arc-in": { rooms: 2, intoPanel: 2, worstMm: 23.82 },
+  },
+  2000: {
+    spike: { rooms: 208, intoPanel: 207, worstMm: 583.03 }, l: { rooms: 210, intoPanel: 142, worstMm: 328.3 },
+    "arc-in": { rooms: 9, intoPanel: 9, worstMm: 24.24 }, bend: { rooms: 10, intoPanel: 0, worstMm: 2.41 },
+    arcs: { rooms: 3, intoPanel: 3, worstMm: 25.1 }, "arc-cusp": { rooms: 2, intoPanel: 2, worstMm: 23.99 },
+  },
 };
 
 type Panel = { wallId: string; quad: P[]; depth: number };
@@ -400,8 +423,10 @@ function checkFurniture(room: HousePlanRoom2D, snapshot: RoomSnapshot, panels: P
   stats.worst.furnitureWhereClampMissesMm = Math.max(stats.worst.furnitureWhereClampMissesMm ?? 0, missed * 1000);
   if (missed * 1000 <= tolerance.furnitureMm) return;
   const kind = label.split(" ")[1] ?? "";
-  const known = stats.clampLimit[kind] ?? { rooms: 0, worstMm: 0 };
-  stats.clampLimit[kind] = { rooms: known.rooms + 1, worstMm: Math.max(known.worstMm, missed * 1000) };
+  const known = stats.clampLimit[kind] ?? { rooms: 0, intoPanel: 0, worstMm: 0 };
+  stats.clampLimit[kind] = {
+    rooms: known.rooms + 1, intoPanel: known.intoPanel + (missed > 0.02 ? 1 : 0), worstMm: Math.max(known.worstMm, missed * 1000),
+  };
 }
 
 const segmentsCross = (a: P, b: P, c: P, d: P) => {
