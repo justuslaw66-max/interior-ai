@@ -34,7 +34,7 @@ export function insideRing(point: P, ring: readonly P[]): boolean {
   return inside;
 }
 
-function toPlanRoom(room: RoomSnapshot): HousePlanRoom2D {
+export function toPlanRoom(room: RoomSnapshot): HousePlanRoom2D {
   return {
     id: room.id, name: room.name, roomType: room.roomType, x: 0, z: 0, w: room.geometry.width, d: room.geometry.depth, height: room.geometry.height,
     wallThickness: room.geometry.wallThickness, shape: room.planShape ?? "rectangle", polygon: room.planPolygon, holes: room.planHoles, surfaces: room.surfaces,
@@ -134,4 +134,56 @@ export function distanceToBox(edges: Array<[[number, number], [number, number]]>
     if (inside(p) || inside(q) || sides.some(([c, d]) => segmentsCross(p, q, c, d))) return 0;
     return Math.min(...sides.flatMap(([c, d]) => [pointToSegment(p, c, d), pointToSegment(q, c, d)]), ...corners.map((corner) => pointToSegment(corner, p, q)));
   }));
+}
+
+// --- Where the 3D view draws a face ------------------------------------------------------------------------------------------
+/** A line's frame: a point in the plan as [along it, out from it to the room's side], and back. */
+export type LineFrame = { frame: (point: P) => [number, number]; at: (along: number, across: number) => P };
+/** An exposed stretch along a line, and how much less exactly each end is known (where a wall ending it is all but parallel). */
+export type Stretch = { from: number; to: number; slackFrom: number; slackTo: number };
+
+const PROBE = 0.000005;
+
+/**
+ * Where a line is a face as the 3D view draws it, from `from` to `to` along it: a solid just behind it (0.005 mm, as the 3D view's
+ * bands are drawn to 0.001 mm and their union leaves corners a few thousandths off), none just in front, none standing on it
+ * (within 0.002 mm, however low: a panel's corner past a bend), inside the room. Exact: tested between each place a solid's
+ * edge crosses those lines or comes onto the line; gaps under 0.01 mm (where solids meet) are passed over, and stretches
+ * under 1 mm aren't faces. Where
+ * a wall ending a stretch is all but parallel to the line, its end is known only to 0.006 mm over that wall's slope, `slack`.
+ */
+export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number): Stretch[] {
+  const rings = [region.outline, ...region.bands.flatMap((band) => [band.outer, ...band.holes]), ...region.others];
+  const cuts: Array<{ along: number; slope: number }> = [];
+  const standing: Array<[number, number]> = [];
+  rings.forEach((ring, ringIndex) => ring.forEach((point, index) => {
+    const [p, q] = [frame(point), frame(ring[(index + 1) % ring.length])];
+    const slope = Math.abs(q[1] - p[1]) / Math.max(1e-12, Math.abs(q[0] - p[0]));
+    for (const level of [-PROBE, PROBE]) {
+      if ((p[1] - level) * (q[1] - level) > 0 || p[1] === q[1]) continue;
+      cuts.push({ along: p[0] + ((q[0] - p[0]) * (level - p[1])) / (q[1] - p[1]), slope });
+    }
+    // A solid's edge that comes onto the line from in front: its part within 0.002 mm of it (not the face itself, nor a corner
+    // a few thousandths off it, which reach no further out).
+    if (ringIndex === 0 || Math.max(p[1], q[1]) < PROBE || Math.min(p[1], q[1]) > 0.000002) return;
+    const [low, high] = [(-PROBE - p[1]) / (q[1] - p[1]), (0.000002 - p[1]) / (q[1] - p[1])].sort((a, b) => a - b);
+    const ends = [Math.max(0, low), Math.min(1, high)].map((value) => p[0] + (q[0] - p[0]) * value);
+    standing.push([Math.min(...ends) - 0.000002, Math.max(...ends) + 0.000002]);
+    standing[standing.length - 1].forEach((along) => cuts.push({ along, slope }));
+  }));
+  const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) &&
+    inRegion(region, at(along, PROBE)) && !standing.some(([low, high]) => along >= low && along <= high);
+  const stops = [from, ...cuts.map(({ along }) => along).filter((along) => along > from && along < to).sort((a, b) => a - b), to];
+  const slackAt = (along: number) => Math.min(0.005, Math.max(0, ...cuts.filter((cut) => Math.abs(cut.along - along) < 0.00005).map(({ slope }) => 0.000006 / Math.max(1e-9, slope))));
+  const merged: Array<[number, number]> = [];
+  stops.slice(1).forEach((stop, index) => {
+    const start = stops[index];
+    if (!(stop > start) || !exposed((start + stop) / 2)) return;
+    const last = merged[merged.length - 1];
+    if (last && start - last[1] < 0.00001) last[1] = stop;
+    else merged.push([start, stop]);
+  });
+  // Under 1 mm it holds nothing, and lies where solids meet a few thousandths apart (lib/room-built-in-region.ts's rule too).
+  return merged.filter(([start, stop]) => stop - start >= 0.001)
+    .map(([start, stop]) => ({ from: start, to: stop, slackFrom: slackAt(start), slackTo: slackAt(stop) }));
 }

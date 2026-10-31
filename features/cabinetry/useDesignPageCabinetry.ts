@@ -36,7 +36,7 @@ import {
   updateCabinetPlacementMetadata,
 } from "./designItemAdapters";
 import { getCabinetFitPlacement } from "./fitToSpace";
-import { buildCabinetryAvailableSpaces, getCabinetPlacement } from "./roomCabinetHosts";
+import { buildCabinetryAvailableSpaces, findCabinetHostForWall, getCabinetPlacement } from "./roomCabinetHosts";
 import { generateCabinetBOM } from "./generateCabinetBOM";
 import {
   buildCabinetProjectHandoffPackage,
@@ -399,12 +399,9 @@ export function useDesignPageCabinetry({
     () => buildCabinetryAvailableSpaces({ activeRoom, activePlanRoom, planRoomCount, planOpenings }),
     [activePlanRoom, activeRoom, planOpenings, planRoomCount]
   );
-  const preferredSpaceId =
-    activeRoom &&
-    preferredWallFaceId &&
-    availableSpaces.some((space) => space.wallId === preferredWallFaceId)
-      ? `${activeRoom.id}:${preferredWallFaceId}`
-      : null;
+  // The selected wall's host: its own, or the one whose face runs over it (a straight wall's later piece).
+  const preferredSpaceId = activeRoom && preferredWallFaceId
+    ? findCabinetHostForWall(activeRoom, availableSpaces, preferredWallFaceId)?.id ?? null : null;
 
   const selectedCabinetItem =
     selectedItem && isParametricCabinetItem(selectedItem) ? selectedItem : null;

@@ -360,6 +360,22 @@ assert.deepEqual([sharedDoor.room.id, sharedDoor.panelDepth], ["a", 0.044]);
 // The wiring: the active room's clamp, the checks' callers, the 3D window outline and the inside corners.
 const read = (path: string) => readFileSync(path, "utf8");
 assert.match(read("lib/useDesignPageHousePlanState.ts"), /clampToRoomInsideFinishes\([\s\S]*?getRoomWallFinishDepths\(activeRoom\)\s*\)/);
+// An item dragged into another room is clamped to that room's own shape, columns and panels (clampToPlacementRoom(targetRoom),
+// as the line's clampToRoomInsideFinishes call there was): in a drawn L with a 44 mm east panel and a column, a sofa pushed
+// past the east wall stops half the wall plus 2 cm off the panel, and one dropped on the column is moved off it.
+assert.match(read("lib/useDesignPageSceneItemDrag.ts"), /: clampToPlacementRoom\(targetRoom, \/\/ The target room's own shape and panels/,
+  "an item dragged into another room is clamped to that room's own shape and panels");
+const dragTarget: RoomSnapshot = {
+  ...tiledWithPanel, planShape: "custom_polygon",
+  surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { "wall-1": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } } } },
+  planPolygon: [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 0.5 }, { x: 0, z: 0.5 }, { x: 0, z: 1.5 }, { x: -2, z: 1.5 }],
+  planHoles: [[{ x: -1.2, z: 0.6 }, { x: -0.8, z: 0.6 }, { x: -0.8, z: 1 }, { x: -1.2, z: 1 }]],
+};
+const [intoEastX] = clampToPlacementRoom(dragTarget, 5, -1, 1, 0.5);
+near(intoEastX, 2 - 0.06 - 0.044 - 0.02 - 0.5, "dragged past the target room's panelled east wall");
+const offColumn = clampToPlacementRoom(dragTarget, -1, 0.8, 0.3, 0.3);
+assert.ok(isPlacementContainedInRoom({ room: dragTarget, position: [offColumn[0], 0, offColumn[1]], rotationY: 0, dimensions: { w: 300, d: 300, h: 800 } }),
+  `dropped on the target room's column, moved off it (${offColumn})`);
 for (const file of ["lib/useDesignPageSceneItemDrag.ts", "lib/useDesignPageSelectionTransforms.ts"]) {
   assert.match(read(file), /room: \{ width: roomWidth, depth: roomDepth, wallThickness, wallFinishRoom: activeRoom \}/, file);
 }

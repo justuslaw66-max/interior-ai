@@ -145,24 +145,28 @@ export function clampBuiltInToRoom(
 }
 
 /**
- * Where Snap to wall sends a built-in: to the nearest side of its room's exposed faces along x or z. The move then takes it
- * there if it fits there, without checking what stands between (as for furniture), or else toward it as far as the clamp's
- * halving search finds it fits. A room on furniture's rule snaps as furniture does, half the wall plus 2 cm in from its rectangle.
+ * Where Snap to wall sends a built-in: to the nearest side of its room's exposed faces along x or z (their middle, for one wider
+ * than they stand apart). The move then takes it there if it fits there, without checking what stands between (as for
+ * furniture), or else toward it as far as the clamp's halving search finds it fits. A room on furniture's rule snaps as the
+ * line did, half the wall plus 2 cm in from its rectangle, to its middle for one wider than that.
  */
 export function getBuiltInSnapTarget(
   room: RoomSnapshot, position: readonly [number, number, number], width: number, depth: number, rotationY: number
 ): [number, number] {
   const [effectiveWidth, effectiveDepth] = getRotatedFootprint(width, depth, rotationY);
-  const faces = usesFurnitureRuleForBuiltIns(room) ? [] : getRoomBuiltInFaces(room).polygon;
-  const inset = getFurnitureWallInset(room.geometry.wallThickness ?? 0.12);
-  const points = faces.length ? faces
-    : [{ x: -room.geometry.width / 2 + inset, z: -room.geometry.depth / 2 + inset }, { x: room.geometry.width / 2 - inset, z: room.geometry.depth / 2 - inset }];
-  const xs = points.map((point) => point.x), zs = points.map((point) => point.z);
   const [x, , z] = position;
-  const candidates: Array<[number, number]> = [
-    [Math.min(...xs) + effectiveWidth / 2, z], [Math.max(...xs) - effectiveWidth / 2, z],
-    [x, Math.min(...zs) + effectiveDepth / 2], [x, Math.max(...zs) - effectiveDepth / 2],
-  ];
-  return candidates.reduce((best, candidate) =>
+  const nearest = (candidates: Array<[number, number]>) => candidates.reduce((best, candidate) =>
     Math.hypot(candidate[0] - x, candidate[1] - z) < Math.hypot(best[0] - x, best[1] - z) ? candidate : best);
+  if (usesFurnitureRuleForBuiltIns(room)) {
+    const inset = getFurnitureWallInset(room.geometry.wallThickness ?? 0.12);
+    const wallX = Math.max(0, room.geometry.width / 2 - inset - effectiveWidth / 2);
+    const wallZ = Math.max(0, room.geometry.depth / 2 - inset - effectiveDepth / 2);
+    return nearest([[-wallX, z], [wallX, z], [x, -wallZ], [x, wallZ]]);
+  }
+  const faces = getRoomBuiltInFaces(room).polygon, xs = faces.map((point) => point.x), zs = faces.map((point) => point.z);
+  const sides = (low: number, high: number, size: number) =>
+    low + size / 2 <= high - size / 2 ? [low + size / 2, high - size / 2] : [(low + high) / 2, (low + high) / 2];
+  const [west, east] = sides(Math.min(...xs), Math.max(...xs), effectiveWidth);
+  const [north, south] = sides(Math.min(...zs), Math.max(...zs), effectiveDepth);
+  return nearest([[west, z], [east, z], [x, north], [x, south]]);
 }

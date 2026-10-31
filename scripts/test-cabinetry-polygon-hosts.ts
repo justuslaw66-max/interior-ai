@@ -15,7 +15,7 @@ import {
 } from "../features/cabinetry/generateCabinetDocumentation";
 import { snapshotToStored, storedToSnapshot } from "../lib/room-persistence";
 import { createRoom, type DesignSnapshot, type RoomSnapshot } from "../lib/room-types";
-import { buildCabinetryAvailableSpaces, getCabinetCopyOffset, getCabinetPlacement } from "../features/cabinetry/roomCabinetHosts";
+import { buildCabinetryAvailableSpaces, findCabinetHostForWall, getCabinetCopyOffset, getCabinetPlacement } from "../features/cabinetry/roomCabinetHosts";
 import { getCabinetAvailableSegments } from "../features/cabinetry/fitSegments";
 import type { CabinetDefinition, CabinetHostSpace } from "../features/cabinetry/types";
 import { canonicalFloorPlanToDesignSnapshot } from "../lib/floor-plan-legacy-adapters";
@@ -521,18 +521,26 @@ assert.equal(tooDeep(deeperBy(shortRun, 40)), false, "a run fitted by height onl
 const narrowed = resizeCabinetToOverallWidth(setCabinetOverallWidthLocked(cornerRun, false), cornerRun.totalWidth - 600).definition;
 assert.equal(tooDeep(deeperBy(narrowed, 40)), false, "nor is a full run narrowed by 60 cm and then deepened");
 
-// A straight wall drawn in two pieces is one face, listed once, with the doors of both pieces on it.
-const twoPiece = drawnRoom([{ x: -2, z: -1.5 }, { x: 0, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
-for (const doorX of [-1, 1]) {
-  const door = { id: "door", roomId: twoPiece.id, wall: "north" as const, kind: "door" as const, offsetMm: doorX * 1000, widthMm: 800, heightMm: 2100, bottomMm: 0 };
-  const hosts = buildCabinetryAvailableSpaces({ activeRoom: twoPiece, activePlanRoom: null, planRoomCount: 1, planOpenings: [door] });
-  const north = hosts.filter((space) => space.wallId === "wall-0" || space.wallId === "wall-1");
-  assert.equal(north.length, 1, `door at x ${doorX} m: the north face is listed once`);
-  assert.deepEqual(north[0].openings.map((opening) => [Math.round(opening.offsetMm), opening.widthMm]), [[doorX * 1000, 800]], `door at x ${doorX} m: on its host`);
-  const run = placeFittedRun(twoPiece, north[0]);
-  assert.ok(run.x + run.width / 2 <= doorX - 0.4 + 1e-9 || run.x - run.width / 2 >= doorX + 0.4 - 1e-9, `door at x ${doorX} m: the run stays off it`);
-  nearMm(run.width * 1000, 2530, `door at x ${doorX} m: and fills the longer side`);
-}
+// A straight wall drawn in two pieces is one face, listed once, with the doors the plan draws on it: a cardinal door stands at
+// the middle of the piece that holds it, plus its offset (one about the short piece would fall on the long one too, so the plan
+// can't place it). Measured from the room's middle, as the line did, this door stood 0.5 m off where it is drawn.
+const twoPiece = drawnRoom([{ x: -2, z: -1.5 }, { x: 1, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
+const pieceDoor = { id: "door", roomId: twoPiece.id, wall: "north" as const, kind: "door" as const, offsetMm: -600, widthMm: 600, heightMm: 2100, bottomMm: 0 };
+const twoPieceNorth = buildCabinetryAvailableSpaces({ activeRoom: twoPiece, activePlanRoom: null, planRoomCount: 1, planOpenings: [pieceDoor] })
+  .filter((space) => space.wallId === "wall-0" || space.wallId === "wall-1");
+assert.equal(twoPieceNorth.length, 1, "the north face is listed once");
+assert.deepEqual(twoPieceNorth[0].openings.map((opening) => [Math.round(opening.offsetMm), opening.widthMm]), [[-1100, 600]], "with the door where it is drawn, 1.1 m west of the face's middle");
+const pieceRun = placeFittedRun(twoPiece, twoPieceNorth[0]);
+assert.ok(pieceRun.x - pieceRun.width / 2 >= -0.8 - 1e-9, "the run stays off it");
+nearMm(pieceRun.width * 1000, 2730, "and fills the longer side");
+
+// The Studio preselects a selected wall's host: its own, or the one whose face runs over it.
+const twoPieceHosts = buildCabinetryAvailableSpaces({ activeRoom: twoPiece, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+assert.deepEqual(["wall-0", "wall-1", "wall-2"].map((wall) => findCabinetHostForWall(twoPiece, twoPieceHosts, wall)?.wallId ?? null), ["wall-0", "wall-0", "wall-2"],
+  "a straight wall's later piece preselects the whole wall's host");
+const nibHosts = buildCabinetryAvailableSpaces({ activeRoom: nibRoom, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+assert.deepEqual(["wall-3", "wall-4", "wall-5", "wall-6"].map((wall) => findCabinetHostForWall(nibRoom, nibHosts, wall)?.wallId ?? null), [null, "wall-2", null, "wall-2"],
+  "a nib's tip, and the south wall's other piece, preselect the south face its walls run over; the nib's sides none");
 
 // A rectangle's hosts are its faces' lines, whatever a column in a corner does to the faces' outline; runs keep 10 mm off it.
 const square = (x: number, z: number) => [{ x, z }, { x: x + 0.3, z }, { x: x + 0.3, z: z + 0.3 }, { x, z: z + 0.3 }];

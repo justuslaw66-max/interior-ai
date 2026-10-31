@@ -1,5 +1,6 @@
 import { PLAN_OPENING_DEFAULT_HEIGHT_METERS } from "@/lib/design-page-plan-overlays";
-import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
+import { ROOM_DIMENSION_DEFAULTS, type HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { resolveDesignPageOpeningHosts } from "@/lib/design-page-opening-host";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import { clampBuiltInToRoom, getRoomBuiltInFaces, usesFurnitureRuleForBuiltIns } from "@/lib/room-built-in-faces";
 import { getBuiltInFaceObstaclesAlong, type BuiltInFaceHost } from "@/lib/room-built-in-region";
@@ -83,10 +84,41 @@ export function buildCabinetryAvailableSpaces({
   const outlineSpaces = createCabinetPolygonWallSpaces({
     ...sharedSpaceInput,
     polygon: outline,
-    openings: mapCabinetCardinalOpeningsToPolygonWalls({ polygon: outline, openings }),
+    openings: getDrawnOutlineOpenings(activeRoom, outline, planOpenings, openings),
     installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM,
   });
   return placeOnFaces(outlineSpaces, getRoomBuiltInFaces(activeRoom).exposed, baseboardOffsetMm);
+}
+
+/**
+ * A drawn room's doors and windows on its outline's walls where the plan and 3D view draw them (resolveDesignPageOpeningHosts:
+ * a cardinal one at the middle of the room's wall facing that way that holds it, plus its offset), measured from each wall's
+ * middle; one the plan doesn't draw doesn't cut its wall. Taken from the room's middle instead (as the line's
+ * mapCabinetCardinalOpeningsToPolygonWalls does), one stood off where it is drawn wherever that wall's middle isn't the
+ * room's: a straight wall in two pieces, an L's notch, a chamfered corner.
+ */
+function getDrawnOutlineOpenings(
+  room: RoomSnapshot, outline: ReadonlyArray<{ x: number; z: number }>, planOpenings: RoomOpening2D[], openings: ReturnType<typeof getRoomHostOpenings>
+) {
+  const plan: HousePlanRoom2D = {
+    id: room.id, name: room.name, roomType: room.roomType, shape: room.planShape ?? "rectangle", polygon: room.planPolygon, holes: room.planHoles,
+    x: 0, z: 0, w: room.geometry.width, d: room.geometry.depth, wallThickness: room.geometry.wallThickness,
+  };
+  const byId = new Map(planOpenings.map((opening) => [opening.id, opening]));
+  const drawn = resolveDesignPageOpeningHosts(openings.flatMap((opening) => byId.get(opening.id) ?? []), [plan]);
+  return openings.flatMap((opening) => {
+    const resolution = drawn.find((entry) => entry.opening.id === opening.id)?.resolution;
+    if (resolution?.status !== "resolved") return [];
+    const center = resolution.host.worldCenter;
+    const edges = outline.map((start, index) => {
+      const end = outline[(index + 1) % outline.length], length = Math.hypot(end.x - start.x, end.z - start.z);
+      const along = ((center.x - start.x) * (end.x - start.x) + (center.z - start.z) * (end.z - start.z)) / (length || 1);
+      const across = Math.abs((center.x - start.x) * (end.z - start.z) - (center.z - start.z) * (end.x - start.x)) / (length || 1);
+      return { index, along, across, length };
+    }).filter(({ along, across, length }) => length > 1e-9 && across < 0.001 && along >= -0.001 && along <= length + 0.001);
+    const edge = edges.reduce<(typeof edges)[number] | null>((best, candidate) => (best === null || candidate.across < best.across ? candidate : best), null);
+    return edge ? [{ ...opening, wallId: `wall-${edge.index}`, offsetMm: Number(((edge.along - edge.length / 2) * 1000).toFixed(3)) }] : [];
+  });
 }
 
 /**
@@ -178,6 +210,34 @@ function withRectangleFaceSegment(
 
 function wallIndex(wallId: string): number {
   return Number(wallId.replace("wall-", ""));
+}
+
+/**
+ * The host a wall of `room` is fitted on: its own, or the one whose face runs over it (a straight wall's later piece, listed
+ * as its first, or a nib's tip its neighbours' face covers): parallel to it, over its middle, within a wall's thickness of
+ * where its face would stand. None for a wall no host runs over (a spike's sides).
+ */
+export function findCabinetHostForWall(room: RoomSnapshot, spaces: readonly CabinetHostSpace[], wallId: string): CabinetHostSpace | null {
+  const own = spaces.find((space) => space.wallId === wallId);
+  if (own || (room.planShape ?? "rectangle") === "rectangle") return own ?? null;
+  const outline = getRoomPlanOutlinePoints({ shape: room.planShape ?? "rectangle", polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth });
+  const index = wallIndex(wallId), start = outline[index], end = outline[(index + 1) % outline.length];
+  const length = start && end ? Math.hypot(end.x - start.x, end.z - start.z) : 0;
+  if (!start || !end || !(length > 0)) return null;
+  const area = outline.reduce((sum, point, at) => sum + point.x * outline[(at + 1) % outline.length].z - outline[(at + 1) % outline.length].x * point.z, 0);
+  const [dx, dz] = [(end.x - start.x) / length, (end.z - start.z) / length], inward = area >= 0 ? 1 : -1;
+  const thickness = room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness;
+  const face = { x: (start.x + end.x) / 2 - dz * inward * thickness / 2, z: (start.z + end.z) / 2 + dx * inward * thickness / 2 };
+  const distance = (space: CabinetHostSpace) => {
+    const segment = space.wallSegment;
+    if (!segment) return Number.POSITIVE_INFINITY;
+    const [ax, az, bx, bz] = [segment.startXmm, segment.startZmm, segment.endXmm, segment.endZmm].map((value) => value / 1000);
+    const span = Math.hypot(bx - ax, bz - az), [ux, uz] = [(bx - ax) / (span || 1), (bz - az) / (span || 1)];
+    const along = (face.x - ax) * ux + (face.z - az) * uz, across = Math.abs((face.x - ax) * uz - (face.z - az) * ux);
+    return Math.abs(ux * dx + uz * dz) > 1 - 1e-6 && along >= 0 && along <= span && across <= thickness + 1e-6 ? across : Number.POSITIVE_INFINITY;
+  };
+  const nearest = spaces.reduce<CabinetHostSpace | null>((best, space) => (best === null || distance(space) < distance(best) ? space : best), null);
+  return nearest && Number.isFinite(distance(nearest)) ? nearest : null;
 }
 
 /**
