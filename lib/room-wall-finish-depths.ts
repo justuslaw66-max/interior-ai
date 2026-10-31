@@ -163,8 +163,16 @@ function roomWallThickness(room: WallFinishRoom): number {
 type MeasuredDepths = { roomId: string; faces: string; depths: RoomWallFinishDepths; panels: RoomWallFinishDepths };
 // Surfaces are replaced, not changed, when edited, so a room's depths are kept while its surfaces are the same object (or, for
 // an imported room without surfaces, its edges) and it has the same faces: the 3D view asks once per item, and the 2D plan
-// copies a room on every frame of a room drag.
-const depthsByOwner = new WeakMap<object, MeasuredDepths>();
+// copies a room on every frame of a room drag. Rooms may share one surfaces object, so they're kept by room.
+const depthsByOwner = new WeakMap<object, Map<string, MeasuredDepths>>();
+// And a room measured again to the same depths (every plan rebuild merges its finishes into new surfaces, as an item edit
+// does) gets the same depths back, so what is kept by them (the outline inside the panels, the 3D panels' faces) is kept too.
+const lastByRoom = new Map<string, MeasuredDepths>();
+const LAST_BY_ROOM_LIMIT = 512;
+const sameValues = (a: RoomWallFinishDepths, b: RoomWallFinishDepths) => {
+  const keys = Object.keys(a);
+  return keys.length === Object.keys(b).length && keys.every((key) => a[key] === b[key]);
+};
 const edgeKeys = new WeakMap<readonly unknown[], string>();
 const joined = (list: readonly unknown[] | undefined) => {
   if (!list) return "";
@@ -189,10 +197,18 @@ function readRoomDepths(room: WallFinishRoom | null | undefined): MeasuredDepths
   const owner: object | undefined = surfaces?.walls ? surfaces : imported ? readPlanEdgeWallThicknesses(room) : undefined;
   if (!room || !owner) return null;
   const faces = faceListKey(room);
-  const known = depthsByOwner.get(owner);
-  if (known && known.roomId === room.id && known.faces === faces) return known;
-  const measured = { roomId: room.id, faces, ...measureRoomWallFinishDepths(room, surfaces?.walls ? surfaces : undefined) };
-  depthsByOwner.set(owner, measured);
+  const byRoom = depthsByOwner.get(owner) ?? new Map<string, MeasuredDepths>();
+  depthsByOwner.set(owner, byRoom);
+  const known = byRoom.get(room.id);
+  if (known?.faces === faces) return known;
+  const fresh = { roomId: room.id, faces, ...measureRoomWallFinishDepths(room, surfaces?.walls ? surfaces : undefined) };
+  const last = lastByRoom.get(room.id);
+  const measured = last?.faces === faces && sameValues(last.depths, fresh.depths) && sameValues(last.panels, fresh.panels) ? last : fresh;
+  byRoom.set(room.id, measured);
+  lastByRoom.delete(room.id);
+  lastByRoom.set(room.id, measured);
+  const oldest = lastByRoom.size > LAST_BY_ROOM_LIMIT ? lastByRoom.keys().next().value : undefined;
+  if (oldest !== undefined) lastByRoom.delete(oldest);
   return measured;
 }
 

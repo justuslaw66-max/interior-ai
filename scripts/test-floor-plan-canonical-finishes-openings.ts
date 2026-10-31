@@ -684,6 +684,28 @@ for (const turnDeg of [0, 10, 30]) {
   assert.ok(nearestMm >= 50 + 44 + 20 - 0.5, `turned ${turnDeg}°: an item ${(50 + 44 - nearestMm).toFixed(1)} mm past the T's panel face`);
 }
 
+// The panels' faces, trims and strips are kept by value: a plan rebuilt after an edit elsewhere (or an item edit, which merges
+// each room's finishes into new surfaces) hands the 3D meshes the same trims, so they keep their geometry, and the 2D plan the
+// same strips. Rooms sharing one surfaces object each keep their own depths.
+{
+  const plan = planOf("kept", rectangle, ring([300, 100, 300, 100]), [["R", ["w1", "w2", "w3", "w4"]]]);
+  const [first, again] = [importedPlan(plan), importedPlan(plan)];
+  const trimsOf = (built: ReturnType<typeof importedPlan>, room = built.planRooms[0]) => built.floor.walls.flatMap((wall) =>
+    wall.solids.map((solid) => getCanonicalFaceTrimsMm(room, built.floor.walls, wall, solid, wall.roomSides[0].side)));
+  assert.notEqual(first.floor.walls, again.floor.walls);
+  assert.ok(trimsOf(first).some((trims) => trims.front), "the corners trim the panels");
+  assert.deepEqual(trimsOf(again).map((trims, index) => trims === trimsOf(first)[index]), trimsOf(first).map(() => true), "a plan rebuilt the same");
+  const refinished = buildHousePlan2D(first.rooms.map((room) => ({ ...room, surfaces: structuredClone(room.surfaces) })), 8, 6).rooms[0];
+  assert.deepEqual(trimsOf(first, refinished).map((trims, index) => trims === trimsOf(first)[index]), trimsOf(first).map(() => true), "equal finishes");
+  const strips = getCanonicalPanelStrips2D(first.floor, first.planRooms);
+  assert.deepEqual(getCanonicalPanelStrips2D(again.floor, again.planRooms).map((strip, index) => strip === strips[index]), strips.map(() => true));
+  const shared = first.rooms[0].surfaces!;
+  const [one, two] = [{ ...first.rooms[0], surfaces: shared }, { ...first.rooms[0], id: "R2", surfaces: shared }];
+  const depthsOne = getRoomWallFinishDepths(one);
+  getRoomWallFinishDepths(two);
+  assert.equal(getRoomWallFinishDepths(one), depthsOne, "two rooms on one surfaces object");
+}
+
 // A slice wholly inside a corner's cut is dropped, not drawn as a sliver: a door 120 mm along w2 from its corner with w1,
 // whose panel w2 stops at (100 mm to w1's face, 44 mm of panel). Where w1 is cut away for the camera, w2 runs to the corner.
 const doorCorner = importedPlan(planOf("door-corner", rectangle, ring([200, 200, 200, 200]), [["R", ["w1", "w2", "w3", "w4"]]],

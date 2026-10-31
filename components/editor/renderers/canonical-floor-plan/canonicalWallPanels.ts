@@ -11,7 +11,7 @@ import { getRoomMeasuredWallIds, type WallFinishRoom } from "@/lib/room-wall-fin
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
 import { trimmedFaceEdge, type FaceTrimsMm } from "./geometry";
-import { getCanonicalFaceTrimsMm } from "./roomFaceLimits";
+import { getCanonicalFaceTrimsMm, solidValueId } from "./roomFaceLimits";
 
 export { getCanonicalFaceTrimsMm } from "./roomFaceLimits";
 import { resolveRoomSurfaceAssignments } from "./surfaceMaterials";
@@ -68,9 +68,11 @@ export function getCanonicalOpeningHighlightDepth(wallThicknessMm: number, panel
   return Math.max(0.08, (wallThicknessMm + (panelDepthMm > 0 ? 2 * (panelDepthMm + 3) : 0)) / 1000);
 }
 
-// One strip per slice and finish, kept while both are the same (the floor's walls are kept with the plan; a room's finish is
-// read again on each plan rebuild, such as every frame of an item drag, but its strip's shape needn't be).
-const stripsBySolid = new WeakMap<CanonicalFloorPlanWallSolid, Map<string, { value: string; strip: CanonicalPanelStrip2D }>>();
+// One strip per slice and finish, kept while both have the same values: a room's finish is read again on each plan rebuild,
+// such as every frame of an item drag, and an edit rebuilds the floor's walls, but a strip's shape needn't change. Each call
+// keeps the floor's strips it drew, so the cache holds one plan's.
+const stripsByFloor = new Map<string, Map<string, CanonicalPanelStrip2D>>();
+const STRIP_FLOORS_LIMIT = 64;
 
 function buildStrip(
   key: string, wallId: string, roomId: string, solid: CanonicalFloorPlanWallSolid, side: 1 | -1, depthMm: number,
@@ -99,7 +101,9 @@ export function getCanonicalPanelStrips2D(
   rooms: readonly CanonicalFinishRoom[]
 ): CanonicalPanelStrip2D[] {
   const roomById = new Map(rooms.map((room) => [room.id, room]));
-  return floor.walls.flatMap((wall) => wall.roomSides.flatMap(({ roomId, side }) => {
+  const known = stripsByFloor.get(floor.id);
+  const drawn = new Map<string, CanonicalPanelStrip2D>();
+  const strips = floor.walls.flatMap((wall) => wall.roomSides.flatMap(({ roomId, side }) => {
     const room = roomById.get(roomId);
     if (!room) return [];
     const { settings, depthMm } = getCanonicalRoomWallFinish(room, wall.id);
@@ -110,14 +114,15 @@ export function getCanonicalPanelStrips2D(
       if (trims.hidden) return [];
       const key = `${floor.id}:${solid.id}:${roomId}:panel`;
       const front = trims.front ? `${trims.front.offsetMm}|${trims.front.startMm}|${trims.front.endMm}` : "";
-      const value = `${side}|${depthMm}|${trims.startMm}|${trims.endMm}|${front}|${finish.paintColorHex}|${finish.materialId}`;
-      const known = stripsBySolid.get(solid) ?? new Map<string, { value: string; strip: CanonicalPanelStrip2D }>();
-      stripsBySolid.set(solid, known);
-      const kept = known.get(roomId);
-      if (kept?.value === value) return [kept.strip];
-      const strip = buildStrip(key, wall.id, roomId, solid, side, depthMm, trims, finish);
-      known.set(roomId, { value, strip });
+      const value = `${solidValueId(solid)}|${wall.id}|${roomId}|${side}|${depthMm}|${trims.startMm}|${trims.endMm}|${front}|${finish.paintColorHex}|${finish.materialId}`;
+      const strip = known?.get(value) ?? buildStrip(key, wall.id, roomId, solid, side, depthMm, trims, finish);
+      drawn.set(value, strip);
       return [strip];
     });
   }));
+  stripsByFloor.delete(floor.id);
+  stripsByFloor.set(floor.id, drawn);
+  const oldest = stripsByFloor.size > STRIP_FLOORS_LIMIT ? stripsByFloor.keys().next().value : undefined;
+  if (oldest !== undefined) stripsByFloor.delete(oldest);
+  return strips;
 }

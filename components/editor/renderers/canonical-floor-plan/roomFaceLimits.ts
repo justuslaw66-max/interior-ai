@@ -188,7 +188,72 @@ function drawnDepth(depths: RoomWallFinishDepths, run: Run, count: number): numb
   return deepest > 0 ? deepest : WALL_FINISH_SKIN_MM / 1000;
 }
 
+// Values by number, so a cache key names a wall or a slice by what it is rather than by which object holds it: a plan rebuilt
+// after an edit (or for the plan review) has new walls and slices, the same as before wherever the edit didn't reach.
+const valueIds = new Map<string, number>();
+let nextValueId = 0;
+function valueId(value: string): number {
+  let id = valueIds.get(value);
+  if (id === undefined) {
+    // Numbers are never reused, so forgetting them only costs a miss.
+    if (valueIds.size >= 20000) valueIds.clear();
+    id = nextValueId++;
+    valueIds.set(value, id);
+  }
+  return id;
+}
+const wallIds = new WeakMap<Wall, number>();
+const solidIds = new WeakMap<Solid, number>();
+
+/** A wall by what a room's faces read of it. */
+function wallValueId(wall: Wall): number {
+  let id = wallIds.get(wall);
+  if (id === undefined) {
+    const { id: wallId, path, thicknessMm, baseOffsetMm, roomSides, centerlineSegments, solids } = wall;
+    id = valueId(JSON.stringify([wallId, path, thicknessMm, baseOffsetMm, roomSides, centerlineSegments, solids.map(solidValueId)]));
+    wallIds.set(wall, id);
+  }
+  return id;
+}
+
+/** A slice by its value: two slices with the same number are the same shape. */
+export function solidValueId(solid: Solid): number {
+  let id = solidIds.get(solid);
+  if (id === undefined) {
+    id = valueId(JSON.stringify(solid));
+    solidIds.set(solid, id);
+  }
+  return id;
+}
+
+/**
+ * What a room's faces are built from: its id, edges and outline where it stands, its panel depths, and its own walls and
+ * those near them (any slice within a metre and a wall's thickness of its walls' centre lines, more than footprintsNear
+ * reads), in the plan's order.
+ */
+function facesValueKey(room: FaceLimitsRoom, edges: readonly string[], vertices: readonly PlanPoint[], depths: RoomWallFinishDepths,
+  walls: readonly Wall[]): string {
+  const own = new Set(edges);
+  let [minX, maxX, minZ, maxZ] = [Infinity, -Infinity, Infinity, -Infinity];
+  for (const wall of walls) {
+    if (!own.has(wall.id)) continue;
+    const reach = wall.thicknessMm / 1000 + 1;
+    for (const segment of wall.centerlineSegments) for (const point of [segment.start, segment.end]) {
+      const { x, z } = metres(point);
+      [minX, maxX, minZ, maxZ] = [Math.min(minX, x - reach), Math.max(maxX, x + reach), Math.min(minZ, z - reach), Math.max(maxZ, z + reach)];
+    }
+  }
+  const box = [minX, maxX, minZ, maxZ];
+  const near = new Set(planFootprints(walls).filter(({ points }) => inBox(points, box)).map(({ wall }) => wall));
+  const read = walls.filter((wall) => own.has(wall.id) || near.has(wall));
+  return JSON.stringify([room.id, edges, vertices, depths, read.map(wallValueId)]);
+}
+
+// A room's faces, kept while its edges, outline, walls and depths are the same objects (a re-render, a drag frame), and by
+// value (facesValueKey) for a plan rebuilt with new objects, so its trims and the meshes built on them are kept too.
 const facesByEdges = new WeakMap<readonly string[], { outline: unknown; walls: unknown; depths: unknown; faces: Map<string, Face> }>();
+const facesByValue = new Map<string, Map<string, Face>>();
+const FACES_BY_VALUE_LIMIT = 256;
 
 function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string, Face> | null {
   const edges = readPlanEdgeWallIds(room);
@@ -199,6 +264,14 @@ function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string,
   if (known && known.outline === outline && known.walls === walls && known.depths === depths) return known.faces;
   const origin = room.planPosition ?? { x: room.x ?? 0, z: room.z ?? 0 };
   const vertices = outline.map(({ x, z }) => ({ x: x + origin.x, z: z + origin.z }));
+  const valueKey = facesValueKey(room, edges, vertices, depths, walls);
+  const same = facesByValue.get(valueKey);
+  if (same) {
+    facesByValue.delete(valueKey);
+    facesByValue.set(valueKey, same);
+    facesByEdges.set(edges, { outline, walls, depths, faces: same });
+    return same;
+  }
   const area = vertices.reduce((sum, point, index) => sum + cross(point, vertices[(index + 1) % vertices.length]), 0);
   const wallById = new Map(walls.map((wall) => [wall.id, wall]));
   const runs = faceRuns(edges);
@@ -224,6 +297,9 @@ function getRoomFaces(room: FaceLimitsRoom, walls: readonly Wall[]): Map<string,
     faces.set(face.wall.id, face);
   });
   facesByEdges.set(edges, { outline, walls, depths, faces });
+  facesByValue.set(valueKey, faces);
+  const oldest = facesByValue.size > FACES_BY_VALUE_LIMIT ? facesByValue.keys().next().value : undefined;
+  if (oldest !== undefined) facesByValue.delete(oldest);
   return faces;
 }
 
@@ -240,28 +316,44 @@ export function getCanonicalFaceTrimsMm(
   const face = getRoomFaces(room, walls)?.get(wall.id);
   if (!face || face.side !== side) return NO_FACE_TRIMS;
   const cutAway = face.ends.map((end) => Boolean(end.by && end.cutAway && isCutAway?.(end.by)));
-  // Kept per slice while the room's faces are the same object, so a re-render or a drag frame measures nothing again.
-  const key = `${room.id}:${side}:${cutAway.join(",")}`;
-  const known = trimsBySolid.get(solid) ?? new Map<string, { face: Face; trims: FaceTrimsMm }>();
-  trimsBySolid.set(solid, known);
+  // Kept by the face (kept by value, above) and the slice's value, so a re-render, a drag frame or a plan rebuilt the same
+  // measures nothing again, and hands the meshes the same trims.
+  const key = `${solidValueId(solid)}:${cutAway.join(",")}`;
+  const known = trimsByFace.get(face) ?? new Map<string, FaceTrimsMm>();
+  trimsByFace.set(face, known);
   const kept = known.get(key);
-  if (kept?.face === face) return kept.trims;
+  if (kept) return kept;
   const trims = sliceTrims(face, solid, cutAway);
-  known.set(key, { face, trims });
+  known.set(key, trims);
   return trims;
 }
 
-const trimsBySolid = new WeakMap<Solid, Map<string, { face: Face; trims: FaceTrimsMm }>>();
+const trimsByFace = new WeakMap<Face, Map<string, FaceTrimsMm>>();
 const HIDDEN: FaceTrimsMm = Object.freeze({ startMm: 0, endMm: 0, hidden: true });
+
+/** Each wall's slices in plan, in the plan's order, read once per plan (every face of every room looks through them). */
+type PlanFootprint = Footprint & { wall: Wall };
+const footprintsByWalls = new WeakMap<readonly Wall[], PlanFootprint[]>();
+function planFootprints(walls: readonly Wall[]): PlanFootprint[] {
+  let known = footprintsByWalls.get(walls);
+  if (!known) {
+    known = walls.flatMap((wall) => wall.solids.map((solid) => ({
+      wall, bottomMm: solid.bottomMm, topMm: solid.topMm,
+      points: [solid.footprint.startLeft, solid.footprint.endLeft, solid.footprint.endRight, solid.footprint.startRight].map(metres),
+    })));
+    footprintsByWalls.set(walls, known);
+  }
+  return known;
+}
+const inBox = (points: readonly PlanPoint[], [minX, maxX, minZ, maxZ]: readonly number[]) =>
+  points.some(({ x, z }) => x >= minX && x <= maxX && z >= minZ && z <= maxZ);
 
 /** Other walls' slices near the face (within half a metre of its line's box), which it may run into. */
 function footprintsNear(face: Face, walls: readonly Wall[]): Footprint[] {
   const xs = face.bare.map(({ x }) => x), zs = face.bare.map(({ z }) => z);
-  const [minX, maxX, minZ, maxZ] = [Math.min(...xs) - 0.5, Math.max(...xs) + 0.5, Math.min(...zs) - 0.5, Math.max(...zs) + 0.5];
-  return walls.filter((wall) => wall.id !== face.wall.id).flatMap((wall) => wall.solids.map((solid) => ({
-    points: [solid.footprint.startLeft, solid.footprint.endLeft, solid.footprint.endRight, solid.footprint.startRight].map(metres),
-    bottomMm: solid.bottomMm, topMm: solid.topMm,
-  }))).filter(({ points }) => points.some(({ x, z }) => x >= minX && x <= maxX && z >= minZ && z <= maxZ));
+  const box = [Math.min(...xs) - 0.5, Math.max(...xs) + 0.5, Math.min(...zs) - 0.5, Math.max(...zs) + 0.5];
+  return planFootprints(walls).filter(({ wall, points }) => wall.id !== face.wall.id && inBox(points, box))
+    .map(({ points, bottomMm, topMm }) => ({ points, bottomMm, topMm }));
 }
 
 /**
