@@ -11,7 +11,8 @@ import { getRoomMeasuredWallIds, type WallFinishRoom } from "@/lib/room-wall-fin
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
 import { trimmedFaceEdge, type FaceTrimsMm } from "./geometry";
-import { getCanonicalFaceTrimsMm, solidValueId } from "./roomFaceLimits";
+import { solidValueId } from "./roomFaceKeys";
+import { getCanonicalFaceTrimsMm } from "./roomFaceLimits";
 
 export { getCanonicalFaceTrimsMm } from "./roomFaceLimits";
 import { resolveRoomSurfaceAssignments } from "./surfaceMaterials";
