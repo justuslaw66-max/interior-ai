@@ -557,31 +557,45 @@ const roomColour = (view: CondoMapView, properties: Readonly<Record<string, unkn
 const lower = chooseUnit({ slug: one.slug, floor: null, unit: null }, maps, { slug: one.slug, unit: "#01-05" });
 assert.deepEqual(lower, { slug: one.slug, floor: 1, unit: "#01-05" }, "a duplex chosen from the whole building opens on its lower storey");
 assert.equal(unitPlanOn(one, lower), null, "#01-05's plan isn't placed: its floor is painted");
-const lowerRooms = shown(one, lower, "floor");
+// what a view draws of 24 One's painted rooms and unit boxes, with their own property types
+const drawnBy = (view: CondoMapView, part: string) => {
+  const update = condoViewUpdates(one, view).filters.find(([layerId]) => layerId === `condo-${one.slug}-${part}`);
+  assert.ok(update, `the view sets ${part}`);
+  return update[1];
+};
+const roomsDrawn = (view: CondoMapView) => one.floors.features.map((feature) => feature.properties).filter((properties) => evaluate(drawnBy(view, "floor"), properties) === true);
+const boxesDrawn = (view: CondoMapView) => one.unitParts.features.map((feature) => feature.properties).filter((properties) => evaluate(drawnBy(view, "unit"), properties) === true);
+const lowerRooms = roomsDrawn(lower);
 const upperRooms = lowerRooms.filter((properties) => properties.f === 2);
 assert.ok(upperRooms.length > 0 && upperRooms.every((properties) => properties.unit === "#01-05"), "its upper level's rooms, and no other unit's on storey 2");
 assert.equal(lowerRooms.length - upperRooms.length, one.floors.features.filter((feature) => feature.properties.f === 1).length, "the whole cut floor, as before");
 assert.ok(upperRooms.every((properties) => roomColour(lower, properties) === CONDO_MAP_COLOURS.selectedUnit), "its upper rooms in the accent");
-const lowerBox = shown(one, lower, "unit");
+const lowerBox = boxesDrawn(lower);
 assert.deepEqual(lowerBox.map((properties) => properties.f).sort(), [1, 2], "its box on both of its storeys");
-const [part1, part2] = [1, 2].map((f) => lowerBox.find((properties) => properties.f === f) ?? {});
+const partOn = (f: number) => {
+  const found = lowerBox.find((properties) => properties.f === f);
+  assert.ok(found, `its part on storey ${f}`);
+  return found;
+};
+const [part1, part2] = [partOn(1), partOn(2)];
 assert.equal(boxHeight(lower, part1), part1.top, "the lower part's box runs up to its upper level");
-assert.equal(boxHeight(lower, part2), Number(part2.base) + 1.2, "the upper part's box: 1.2 m over its upper level");
-assert.ok(shown(one, lower, "ghost").every((properties) => Number(properties.f) > 1), "the storeys above still a ghost");
+assert.equal(boxHeight(lower, part2), part2.base + 1.2, "the upper part's box: 1.2 m over its upper level");
+assert.ok(shown(one, lower, "ghost").every((properties) => "f" in properties && Number(properties.f) > 1), "the storeys above still a ghost");
 // on its upper storey: as before, that storey's rooms and the upper part's 1.2 m box
-assert.ok(shown(one, upper, "floor").every((properties) => properties.f === 2), "chosen on storey 2: storey 2's rooms only");
-assert.equal(boxHeight(upper, part2), Number(part2.base) + 1.2);
+assert.ok(roomsDrawn(upper).every((properties) => properties.f === 2), "chosen on storey 2: storey 2's rooms only");
+assert.equal(boxHeight(upper, part2), part2.base + 1.2);
 // a single-level unit on the same floor, and no unit: one storey, a 1.2 m box
 const flat = chooseUnit({ slug: one.slug, floor: 2, unit: null }, maps, { slug: one.slug, unit: "#02-01" });
-assert.ok(shown(one, flat, "floor").every((properties) => properties.f === 2) && shown(one, flat, "unit").every((properties) => properties.f === 2));
-const flatPart = shown(one, flat, "unit")[0] ?? {};
-assert.equal(boxHeight(flat, flatPart), Number(flatPart.base) + 1.2, "a single-level unit's box: 1.2 m");
-assert.equal(boxHeight({ ...lower, unit: null }, part1), Number(part1.base) + 1.2, "no unit chosen: the box's height as it was");
+assert.ok(roomsDrawn(flat).every((properties) => properties.f === 2) && boxesDrawn(flat).every((properties) => properties.f === 2));
+const [flatPart] = boxesDrawn(flat);
+assert.ok(flatPart, "#02-01's box");
+assert.equal(boxHeight(flat, flatPart), flatPart.base + 1.2, "a single-level unit's box: 1.2 m");
+assert.equal(boxHeight({ ...lower, unit: null }, part1), part1.base + 1.2, "no unit chosen: the box's height as it was");
 // #01-06's lower-level plan is placed: the plan shows alone (its upper level would stand over the picture and hide it)
 const planned06 = { slug: one.slug, floor: 1, unit: "#01-06" };
 assert.ok(unitPlanOn(one, planned06), "#01-06's plan lies on storey 1");
-assert.equal(shown(one, planned06, "unit").length, 0, "no box over its plan");
-assert.ok(shown(one, planned06, "floor").every((properties) => properties.f === 1), "and no upper level over it");
+assert.equal(boxesDrawn(planned06).length, 0, "no box over its plan");
+assert.ok(roomsDrawn(planned06).every((properties) => properties.f === 1), "and no upper level over it");
 const duplex = one.units.find((unit) => unit.unit === "#01-05") ?? card;
 assert.equal(unitFloorName(duplex), "1st–2nd storey");
 assert.equal(unitFloorName({ ...duplex, floor: 4 }), "Levels 4–5");
