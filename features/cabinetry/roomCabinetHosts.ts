@@ -80,7 +80,7 @@ export function buildCabinetryAvailableSpaces({
   const outlineSpaces = createCabinetPolygonWallSpaces({
     ...sharedSpaceInput,
     polygon: outline,
-    openings: [...getDrawnOutlineOpenings(activeRoom, outline, planOpenings, openings), ...sharedOnOutline],
+    openings: [...getDrawnOutlineOpenings(activeRoom, outline, planOpenings, openings, planRooms), ...sharedOnOutline],
     installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM,
   });
   return placeOnFaces(outlineSpaces, getRoomBuiltInFaces(activeRoom, undefined, planRooms).exposed, baseboardOffsetMm);
@@ -123,20 +123,24 @@ function buildRectangleHosts(
  * a cardinal one at the middle of the room's wall facing that way that holds it, plus its offset), measured from each wall's
  * middle; one the plan doesn't draw doesn't cut its wall. Taken from the room's middle instead (as the line's
  * mapCabinetCardinalOpeningsToPolygonWalls does), one stood off where it is drawn wherever that wall's middle isn't the
- * room's: a straight wall in two pieces, an L's notch, a chamfered corner.
+ * room's: a straight wall in two pieces, an L's notch, a chamfered corner. Resolved over the plan's rooms, as the plan does.
  */
 function getDrawnOutlineOpenings(
-  room: RoomSnapshot, outline: ReadonlyArray<{ x: number; z: number }>, planOpenings: RoomOpening2D[], openings: ReturnType<typeof getRoomHostOpenings>
+  room: RoomSnapshot, outline: ReadonlyArray<{ x: number; z: number }>, planOpenings: RoomOpening2D[], openings: ReturnType<typeof getRoomHostOpenings>,
+  planRooms: BuiltInPlanRooms | undefined
 ) {
   const plan: HousePlanRoom2D = {
     id: room.id, name: room.name, roomType: room.roomType, shape: room.planShape ?? "rectangle", polygon: room.planPolygon, holes: room.planHoles,
     x: 0, z: 0, w: room.geometry.width, d: room.geometry.depth, wallThickness: room.geometry.wallThickness,
   };
+  const own = planRooms?.get(room.id), origin = own ?? plan;
   const byId = new Map(planOpenings.map((opening) => [opening.id, opening]));
-  const drawn = resolveDesignPageOpeningHosts(openings.flatMap((opening) => byId.get(opening.id) ?? []), [plan]);
+  const drawn = resolveDesignPageOpeningHosts(openings.flatMap((opening) => byId.get(opening.id) ?? []), own && planRooms ? [...planRooms.values()] : [plan]);
   return openings.flatMap((opening) => {
     const resolution = drawn.find((entry) => entry.opening.id === opening.id)?.resolution;
-    return resolution?.status === "resolved" ? toOutlineOpening(outline, opening, resolution.host.worldCenter, resolution.host.tangent) : [];
+    if (resolution?.status !== "resolved") return [];
+    const { worldCenter, tangent } = resolution.host;
+    return toOutlineOpening(outline, opening, { x: worldCenter.x - origin.x, z: worldCenter.z - origin.z }, tangent);
   });
 }
 

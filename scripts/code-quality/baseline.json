@@ -361,7 +361,7 @@
       "limit": 400
     },
     "features/cabinetry/fitToSpace.ts": {
-      "lines": 857,
+      "lines": 854,
       "limit": 400
     },
     "features/cabinetry/generateCabinetDocumentation.ts": {
@@ -393,7 +393,7 @@
       "limit": 400
     },
     "features/cabinetry/useDesignPageCabinetry.ts": {
-      "lines": 1122,
+      "lines": 1114,
       "limit": 400
     },
     "features/cabinetry/validation.ts": {
@@ -2481,7 +2481,7 @@
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 56
+        "maximum": 55
       }
     },
     "features/cabinetry/generateCabinetBOM.ts": {
@@ -2595,7 +2595,7 @@
     "features/cabinetry/useDesignPageCabinetry.ts": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 844
+        "maximum": 834
       },
       "complexFunctions": {
         "count": 2,
