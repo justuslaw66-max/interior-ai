@@ -297,6 +297,22 @@ const floorPlanLibraryAnnotationSchema = z
     }
   });
 
+const floorPlanLibraryStatedHeightSchema = z.object({
+  value_mm: z.number().int().min(2000).max(8000),
+  source_page: z.number().int().positive(),
+  quote: z.string().min(1),
+});
+
+const floorPlanLibrarySourceDocumentSchema = z.object({
+  source_url: z.string().url(),
+  source_title: z.string().min(1),
+  publisher: z.string().min(1),
+  sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  page_count: z.number().int().positive().optional(),
+  pdf_pages: z.array(z.number().int().positive()).optional(),
+  brochure_pages: z.array(z.number().int().positive()).optional(),
+});
+
 const floorPlanLibraryConfigurationSchema = z.object({
   group_id: floorPlanLibraryIdSchema,
   option_id: floorPlanLibraryIdSchema,
@@ -313,6 +329,8 @@ const floorPlanLibraryLayoutSchema = z
     flat_type: z.string().min(1),
     bedroom_count: z.number().int().nonnegative().max(12),
     floor_area_sqm: z.number().positive().nullable(),
+    penthouse: z.boolean().optional(),
+    ceiling_height: floorPlanLibraryStatedHeightSchema.optional(),
     applies_to_building_ids: z.array(z.string().min(1)).min(1),
     preview_url: z.string().regex(/^\/assets\/floor-plans\//),
     fidelity: z.literal("approximate_editable"),
@@ -397,6 +415,7 @@ export const floorPlanLibraryCatalogSchema = z
       title: z.string().min(1),
       country_code: z.string().length(2),
       property_type: z.string().min(1),
+      ceiling_height: floorPlanLibraryStatedHeightSchema.optional(),
     }),
     address: z.object({
       street_name: z.string().min(1),
@@ -420,29 +439,9 @@ export const floorPlanLibraryCatalogSchema = z
       retrieved_at: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       sha256: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
       license_status: z.enum(["unknown", "permission_granted", "public_domain"]),
-      corroborating_sources: z.array(
-        z.object({
-          source_url: z.string().url(),
-          source_title: z.string().min(1),
-          publisher: z.string().min(1),
-          sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
-          page_count: z.number().int().positive().optional(),
-          pdf_pages: z.array(z.number().int().positive()).optional(),
-          brochure_pages: z.array(z.number().int().positive()).optional(),
-        })
-      ),
+      corroborating_sources: z.array(floorPlanLibrarySourceDocumentSchema),
     }),
-    unit_distribution_source: z
-      .object({
-        source_url: z.string().url(),
-        source_title: z.string().min(1),
-        publisher: z.string().min(1),
-        sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
-        page_count: z.number().int().positive().optional(),
-        pdf_pages: z.array(z.number().int().positive()).optional(),
-        brochure_pages: z.array(z.number().int().positive()).optional(),
-      })
-      .optional(),
+    unit_distribution_source: floorPlanLibrarySourceDocumentSchema.optional(),
     // Schema-v1 YAML catalogs are compatibility and regression inputs only.
     // Consumer publication is reserved for immutable canonical DB revisions,
     // where the licence, source overlay, reviewer and address-binding gates are
