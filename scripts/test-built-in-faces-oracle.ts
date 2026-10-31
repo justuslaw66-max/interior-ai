@@ -472,12 +472,12 @@ function checkFurnitureRule(room: RoomSnapshot, openings: RoomOpening2D[], label
 
 /**
  * Is every face the 3D view draws offered as a host, and is every host a face it draws? For each outline edge, the stretches
- * of its face line exposed along it (exposedOnLine) must lie within one host on that line (its own, or a straight wall's first
- * piece's), and each host on the line must start and end where an exposed stretch does (±0.5 mm, more where the wall ending
- * it is all but parallel); a rectangle's hosts run corner to corner over a column, so their ends aren't checked where it has
- * one (with rooms next door, each is its exposed face). The face line is half the wall and its panel in from the edge, or where a thicker wall of a room
- * next door runs along it over that (parallel, its core reaching past it) that wall's face, whichever is exposed along more
- * of the edge (within a millimetre, either). No two hosts the same.
+ * of its face line exposed along it (exposedOnLine) for 21 mm or more must lie within one host on that line (its own, or a
+ * straight wall's first piece's), and each host on the line must start and end where an exposed stretch does (±0.5 mm, more
+ * where the wall ending it is all but parallel); a rectangle's hosts run corner to corner over a column, so their ends aren't
+ * checked where it has one (with rooms next door, each is its exposed face). The face line is half the wall and its panel in
+ * from the edge, or where a thicker wall of a room next door runs along it over that (parallel, its core reaching past it)
+ * that wall's face, whichever is exposed along more of the edge (within a millimetre, either). No two hosts the same.
  */
 function faceDepths(edge: { start: P; dx: number; dz: number; nx: number; nz: number; length: number }, own: number): number[] {
   const depths = [own];
@@ -513,8 +513,9 @@ function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHo
         at: (along, across) => ({ x: origin.x + dx * along + nx * across, z: origin.z + dz * along + nz * across }),
       };
       const exposed = exposedOnLine(region, line, -reach, length + reach);
-      // Its own: 20 mm of it or more along the edge (less holds nothing, the allowance at each end).
-      const own = exposed.filter((stretch) => Math.min(stretch.to, length) - Math.max(stretch.from, 0) >= 0.02);
+      // Its own: 20 mm of it or more along the edge (less holds nothing, the allowance at each end), its ends known to 0.5 mm
+      // (and their slack) as the hosts' are: one within that of 20 mm may be offered or not.
+      const own = exposed.filter((stretch) => Math.min(stretch.to, length) - Math.max(stretch.from, 0) >= 0.02 + 0.001 + stretch.slackFrom + stretch.slackTo);
       return { line, exposed, own, along: own.reduce((sum, stretch) => sum + Math.min(stretch.to, length) - Math.max(stretch.from, 0), 0) };
     };
     const faces = faceDepths({ start, dx, dz, nx, nz, length }, thickness / 2 + (depths[faceIds[index]] ?? 0)).map(lineAt);
