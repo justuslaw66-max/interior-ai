@@ -54,16 +54,23 @@ const NO_NEIGHBOURS: BuiltInNeighbourWalls = [];
  */
 export function getBuiltInNeighbourWalls(roomId: string, planRooms?: BuiltInPlanRooms): BuiltInNeighbourWalls {
   const own = planRooms?.get(roomId);
-  if (!planRooms || !own) return NO_NEIGHBOURS;
-  const level = (room: HousePlanRoom2D) => (typeof room.floorLevel === "number" && Number.isFinite(room.floorLevel) ? room.floorLevel : 1);
-  return [...planRooms.values()]
-    .filter((other) => other.id !== roomId && level(other) === level(own) && other.floorElevationMm === own.floorElevationMm)
+  if (!own) return NO_NEIGHBOURS;
+  return getBuiltInNeighbourRooms(roomId, planRooms)
     .map((other) => ({
       outline: getRoomPlanOutlinePoints({ shape: other.shape, polygon: other.polygon, w: other.w, d: other.d })
         .map((point) => ({ x: point.x + other.x - own.x, z: point.z + other.z - own.z })),
       // As the 3D view draws it (buildLegacyWallBandsForTest).
       thickness: Math.max(0.01, other.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness),
     }));
+}
+
+/** The plan's other rooms on a room's floor (the same level and floor elevation, which the 3D view joins its walls with). */
+export function getBuiltInNeighbourRooms(roomId: string, planRooms?: BuiltInPlanRooms): HousePlanRoom2D[] {
+  const own = planRooms?.get(roomId);
+  if (!planRooms || !own) return [];
+  const level = (room: HousePlanRoom2D) => (typeof room.floorLevel === "number" && Number.isFinite(room.floorLevel) ? room.floorLevel : 1);
+  return [...planRooms.values()]
+    .filter((other) => other.id !== roomId && level(other) === level(own) && other.floorElevationMm === own.floorElevationMm);
 }
 
 function isSameNeighbours(a: BuiltInNeighbourWalls, b: BuiltInNeighbourWalls): boolean {
