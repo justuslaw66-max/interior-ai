@@ -3,6 +3,7 @@ import type {
   SourceVectorSegment,
 } from "./deterministic-evidence";
 import type { FloorPlanRenderedPage } from "./types";
+import { orientRasterUpload } from "./raster-orientation";
 
 const DEFAULT_TILE_SIZE_PX = 96;
 const MAX_CYCLE_AXIS_LINES = 240;
@@ -11,7 +12,6 @@ const MAX_CYCLE_CANDIDATE_CHECKS = 300_000;
 const MAX_DESKEW_DEGREES = 5;
 const DESKEW_ANGLE_STEP_DEGREES = 0.25;
 const MAX_DESKEW_SAMPLE_POINTS = 150_000;
-const MAX_RASTER_INPUT_PIXELS = 40_000_000;
 
 type RasterNormalization = NonNullable<FloorPlanRenderedPage["normalization"]>;
 
@@ -408,14 +408,7 @@ export async function normalizeRasterForLinework(
   bytes: Uint8Array
 ): Promise<NormalizedRasterForLinework> {
   const { default: sharp } = await import("sharp");
-  const oriented = await sharp(bytes, {
-    limitInputPixels: MAX_RASTER_INPUT_PIXELS,
-    sequentialRead: true,
-  })
-    .rotate()
-    .flatten({ background: "#ffffff" })
-    .png()
-    .toBuffer({ resolveWithObject: true });
+  const oriented = await orientRasterUpload(bytes);
   const estimate = await estimateRasterDeskew(new Uint8Array(oriented.data));
   const intermediate = estimate.applied
     ? await sharp(oriented.data)
