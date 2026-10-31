@@ -106,6 +106,14 @@ assert.deepEqual(
   [["notched", 11], ["stale", 16]],
   "Room graph areas must come from lib/room-floor-area: holes subtracted, stale polygons ignored."
 );
+// Furniture fit measures a drawn room's own outline, its notch's and courtyard's walls included, not its bounding rectangle.
+const fitIssues = (position: [number, number, number], rotationY = 0) => buildFloorPlanQualityReport({
+  rooms: [notchedCourtyardRoom], openings: [], activeRoomId: "notched",
+  items: [{ instanceId: "console", productId: "tv-real-castlery-sloane-tv-console-150", variantId: "", position, rotationY } as QualityPlanItem],
+}).issues.filter((issue) => issue.category === "furnitureFit").map((issue) => issue.id);
+assert.deepEqual(fitIssues([1, 0, 1]), ["furniture-outside-console"], "in the notch");
+assert.deepEqual(fitIssues([-1, 0, -1]), ["furniture-outside-console"], "over the courtyard");
+assert.deepEqual(fitIssues([-1.2, 0, 1.2], Math.PI / 2), [], "along the west arm's wall");
 
 const bedroomTemplate = HOUSE_PLAN_TEMPLATES.find((template) =>
   template.rooms.some((room) => room.roomType === "bedroom")
