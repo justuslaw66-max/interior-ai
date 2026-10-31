@@ -673,9 +673,21 @@ function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHo
     counts.hosts += onLine.filter((host) => host.space.wallId === faceIds[index] || host.space.wallId === `wall-${index}`).length;
     if (own.length) {
       counts.faces += 1;
-      const first = own[0], last = own[own.length - 1];
-      check(onLine.some((host) => host.from <= first.from + 0.0005 + first.slackFrom && host.to >= last.to - 0.0005 - last.slackTo),
-        () => `${what}: its face, exposed ${own.map((stretch) => `${(stretch.from * 1000).toFixed(1)}..${(stretch.to * 1000).toFixed(1)}`).join(", ")} mm along it, isn't within a host (${onLine.map((host) => `${(host.from * 1000).toFixed(1)}..${(host.to * 1000).toFixed(1)}`).join(", ") || "none"})`);
+      // Stretches apart only where something stands in front of the face are one face, in one host. Where the face isn't backed
+      // (open space behind it: the mouth of a recess its walls all but fill), the face ends, as Fit's hosts end there too.
+      const backedBetween = (from: number, to: number) => Array.from({ length: 9 }, (_, step) => from + ((to - from) * (step + 1)) / 10)
+        .every((along) => !inRegion(region, chosen.line.at(along, -0.000005)));
+      const groups = own.reduce<Array<typeof own>>((all, stretch) => {
+        const group = all[all.length - 1];
+        if (group && backedBetween(group[group.length - 1].to, stretch.from)) group.push(stretch);
+        else all.push([stretch]);
+        return all;
+      }, []);
+      groups.forEach((group) => {
+        const first = group[0], last = group[group.length - 1];
+        check(onLine.some((host) => host.from <= first.from + 0.0005 + first.slackFrom && host.to >= last.to - 0.0005 - last.slackTo),
+          () => `${what}: its face, exposed ${group.map((stretch) => `${(stretch.from * 1000).toFixed(1)}..${(stretch.to * 1000).toFixed(1)}`).join(", ")} mm along it, isn't within a host (${onLine.map((host) => `${(host.from * 1000).toFixed(1)}..${(host.to * 1000).toFixed(1)}`).join(", ") || "none"})`);
+      });
     }
     if ((room.planShape ?? "rectangle") === "rectangle" && room.planHoles?.length && !plan.neighbours.length) return;
     onLine.forEach((host) => check(exposed.some((stretch) => Math.abs(stretch.from - host.from) <= 0.0005 + stretch.slackFrom) &&
