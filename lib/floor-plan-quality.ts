@@ -1,7 +1,8 @@
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { ProductCategory } from "@/lib/catalog-schema";
 import { getFurnitureWallInset } from "@/lib/design-page-geometry";
-import { getRoomSideFinishDepths } from "@/lib/room-finished-outline";
+import { getBoxGapToFinishedOutline, getRoomFinishedOutline } from "@/lib/room-finished-faces";
+import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import { AGAINST_WALL_TOLERANCE_METERS } from "@/lib/template-furnishing-layout";
 import { narrowRoomIssues } from "@/lib/floor-plan-narrow-rooms";
 import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
@@ -212,20 +213,19 @@ function getItemBounds(item: QualityPlanItem): ItemBounds | null {
   const footprint = getItemFootprint(item);
   if (!footprint) return null;
   const [x, , z] = item.position;
-  return {
-    minX: x - footprint.width / 2,
-    maxX: x + footprint.width / 2,
-    minZ: z - footprint.depth / 2,
-    maxZ: z + footprint.depth / 2,
-  };
+  const halfWidth = footprint.width / 2, halfDepth = footprint.depth / 2;
+  return { minX: x - halfWidth, maxX: x + halfWidth, minZ: z - halfDepth, maxZ: z + halfDepth };
 }
 
 function boundsIntersect(a: ItemBounds, b: ItemBounds) {
   return a.minX <= b.maxX && a.maxX >= b.minX && a.minZ <= b.maxZ && a.maxZ >= b.minZ;
 }
 
+// To the centre line less the panel (the rules allow half the wall plus 2 cm, 29 Oct 2026); an L-shape's notch walls too.
 function minGapToRoom(bounds: ItemBounds, room: HousePlanRoom2D) {
-  const panels = getRoomSideFinishDepths(room, room); // Less each side's panel; the rules allow half the wall plus 2 cm (29 Oct 2026).
+  const outline = getRoomFinishedOutline(room, room, 0);
+  if (outline) return getBoxGapToFinishedOutline(outline, bounds);
+  const panels = getRoomWallFinishDepths(room);
   return Math.min(
     bounds.minX + room.w / 2 - (panels.west ?? 0), room.w / 2 - bounds.maxX - (panels.east ?? 0),
     bounds.minZ + room.d / 2 - (panels.north ?? 0), room.d / 2 - bounds.maxZ - (panels.south ?? 0)

@@ -155,10 +155,11 @@ default 60000): `name_reader.py` reads the page's room names a second time with 
 Apache-2.0) at its own size and twice it, between stage 1 and the exporter, and merges them into stage 1's model: a
 room name stage 1 left unread is added, and a misreading that is no room name (BEL200M, ITCH:) is replaced, keeping
 stage 1's box (it joins a name's lines). Notes, captions, flat types, service labels, bracketed labels and garbled
-words of two to four letters are left out. It fails soft (`Name reader unavailable: …`). Its model files ship inside
-its package, installed by `worker.Dockerfile` with `--no-deps` (its own `opencv-python` would clash with
-`opencv-python-headless`); the doctor checks it reads a word from the image alone. For a local venv: `pip install -r
-requirements.txt && pip install --no-deps rapidocr_onnxruntime==1.3.24`.
+words of two to four letters are left out. It reads within `FLOOR_PLAN_NAME_READER_MAX_PIXELS` (default 8000000, about
+1.4 GB at most): twice the page's size only while that fits, and a larger page shrunk to it. It fails soft (`Name
+reader unavailable: …`). Its model files ship inside its package, installed by `worker.Dockerfile` with `--no-deps`
+(its own `opencv-python` would clash with `opencv-python-headless`); the doctor checks it reads a word from the image
+alone. For a local venv: `pip install -r requirements.txt && pip install --no-deps rapidocr_onnxruntime==1.3.24`.
 
 Everything runs on the worker; page bytes are written to a private temporary folder that is removed afterwards.
 Development history, scoring tools, truth files and test plans live in the main checkout's copy of this folder
