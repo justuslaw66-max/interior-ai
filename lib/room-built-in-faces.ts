@@ -8,6 +8,7 @@ import {
 } from "@/lib/room-finished-outline";
 import {
   buildBuiltInRegion,
+  isFootprintClearOfFaces,
   isFootprintInBuiltInRegion,
   type BuiltInNeighbourWalls,
   type BuiltInRegion,
@@ -147,20 +148,26 @@ function footprintCorners(x: number, z: number, width: number, depth: number, ro
 
 /**
  * True when a built-in `width` × `depth` metres, centred at (x, z) and turned `rotationY`, stands in the room's finished
- * region by its real (turned) footprint, keeping `standOff` metres from every face (getBuiltInStandOff). It may reach
- * `tolerance` into that.
+ * region by its real (turned) footprint, and keeps `standOff` metres (getBuiltInStandOff) off every exposed face, where a
+ * recorded baseboard stands, as Fit stands a run's back off its face and keeps its ends from the end walls' baseboards. Its
+ * front may stand over a baseboard, as Fit keeps nothing there (a run's front may stand up to a wall across). It may reach
+ * `tolerance` into either.
  */
 export function builtInFootprintFits(
   faces: BuiltInRoomFaces, x: number, z: number, width: number, depth: number, rotationY: number,
   tolerance = BUILT_IN_CONTACT_TOLERANCE, standOff = 0
 ): boolean {
-  return isFootprintInBuiltInRegion(faces, footprintCorners(x, z, width + 2 * standOff, depth + 2 * standOff, rotationY, tolerance));
+  if (!isFootprintInBuiltInRegion(faces, footprintCorners(x, z, width, depth, rotationY, tolerance))) return false;
+  if (!(standOff > 0)) return true;
+  // Less a baseboard's depth at its front (+z when unturned): the back stays where it is.
+  const back = Math.min(standOff, depth) / 2, [backX, backZ] = [-Math.sin(rotationY) * back, -Math.cos(rotationY) * back];
+  return isFootprintClearOfFaces(faces, footprintCorners(x + backX, z + backZ, width, depth - 2 * back, rotationY, tolerance), standOff);
 }
 
 /**
- * How far a built-in keeps from every face, metres, as Fit stands it off (getCabinetBackOffsetMm): one standing on the floor
- * (its bottom `bottom` metres up: none) the recorded baseboard's depth, to the millimetre; a wall cabinet, hung above the
- * baseboard, none. Moves, turns, snaps and containment keep it, as Fit does.
+ * How far a built-in keeps off the exposed faces, metres, as Fit stands it off (getCabinetBackOffsetMm): one standing on the
+ * floor (its bottom `bottom` metres up: none) the recorded baseboard's depth, to the millimetre; a wall cabinet, hung above
+ * the baseboard, none. Moves, turns, snaps and containment keep it, as Fit does.
  */
 export function getBuiltInStandOff(room: RoomSnapshot, bottom = 0): number {
   return bottom > 0 ? 0 : Math.max(0, Math.round((room.geometry.baseboardDepth ?? 0) * 1000)) / 1000;

@@ -207,14 +207,16 @@ function makeNeighbours(room: RoomSnapshot, index: number): { neighbours: HouseP
       ...(rectangle ? { shape: "rectangle" as const } : { shape: "custom_polygon" as const, polygon: points.map((point) => ({ x: point.x - x, z: point.z - z })) }),
     };
     neighbours.push(next);
-    // Its own door on the wall it shares (not one standing off it), on the side facing the room, about that wall's middle.
+    // Its own door on the wall it shares (not one standing off it), on the side facing the room, about that wall's middle,
+    // anywhere the plan would place it: half the time as if that room were drawn first (alone), so it may straddle the end
+    // of the shared part, where the 3D view cuts it into this room's wall too.
     if (!rectangle || off > 0 || to - from < 1.4 || !chance(0.5)) continue;
-    const wall = oz < -0.5 ? "south" : oz > 0.5 ? "north" : ox < -0.5 ? "east" : "west";
-    const offsetMm = 1000 * between(-1, 1) * ((to - from) / 2 - 0.5);
-    openings.push({ id: `door-${index}-next-${count}`, roomId: next.id, wall, kind: "door", offsetMm, widthMm: between(600, 900), heightMm: 2100, bottomMm: 0 });
+    const wall = oz < -0.5 ? "south" : oz > 0.5 ? "north" : ox < -0.5 ? "east" : "west", widthMm = between(600, 900);
+    const offsetMm = 1000 * between(-1, 1) * ((to - from) / 2 - 0.18 - widthMm / 2000);
+    const door: RoomOpening2D = { id: `door-${index}-next-${count}`, roomId: next.id, wall, kind: "door", offsetMm, widthMm, heightMm: 2100, bottomMm: 0 };
+    if (placeable(chance(0.5) ? [next] : [toPlanRoom(room), ...neighbours], door)) openings.push(door);
   }
-  const rooms = [toPlanRoom(room), ...neighbours];
-  return { neighbours, openings: openings.filter((opening) => placeable(rooms, opening)) };
+  return { neighbours, openings };
 }
 
 /**
@@ -255,7 +257,8 @@ function footprintInRegion(region: Region, run: Run, shrink: number): boolean {
 
 // --- The checks -------------------------------------------------------------------------------------------------------------
 /** The room's plan: it at the origin, and the rooms next door (set for each room). */
-let plan: { neighbours: HousePlanRoom2D[]; rooms: Map<string, HousePlanRoom2D>; thickest: number } = { neighbours: [], rooms: new Map(), thickest: 0 };
+let plan: { neighbours: HousePlanRoom2D[]; rooms: Map<string, HousePlanRoom2D>; thickest: number; faces: Array<{ a: P; b: P; n: P }> } =
+  { neighbours: [], rooms: new Map(), thickest: 0, faces: [] };
 const failures: string[] = [];
 const counts = { rooms: 0, nextDoor: 0, furnitureRule: 0, filled: 0, faces: 0, hosts: 0, runs: 0, refused: 0, cut: 0, filling: 0, nudges: 0, kept: 0, stopped: 0, furnitureOnly: 0 } as Record<string, number>;
 const families: Record<string, number> = {};
@@ -393,21 +396,46 @@ function checkRun(region: Region, room: RoomSnapshot, space: CabinetHostSpace, o
       check(endsRight(region, edges, run, back, gap, side, atDoor, tolerance), () => `${what()}: its ${side < 0 ? "start" : "end"} is more than ${((gap + tolerance) * 1000).toFixed(2)} mm from what it meets`);
     }
   }
-  checkNudges(region, room, run, what);
+  checkNudges(region, room, run, preset, what);
 }
 
-function checkNudges(region: Region, room: RoomSnapshot, run: Run, what: () => string) {
+/**
+ * True when the run, `shrink` in from its sides and less `depth` at its front, keeps `depth` off every face the 3D view draws
+ * exposed (plan.faces: the band in front of it where a recorded baseboard stands). Separating axes over the band and the run.
+ */
+function clearOfBaseboards(run: Run, depth: number, shrink: number): boolean {
+  if (!(depth > 0)) return true;
+  const half = run.width / 2 - shrink, from = -run.depth / 2 + shrink, to = run.depth / 2 - Math.min(depth, run.depth) - shrink;
+  const box = [[-half, from], [half, from], [half, to], [-half, to]].map(([along, across]) => toWorld(run, along, across));
+  const apart = (first: P[], second: P[]) => [first, second].some((shape) => shape.some((point, index) => {
+    const next = shape[(index + 1) % shape.length], [ax, az] = [-(next.z - point.z), next.x - point.x];
+    const project = (points: P[]) => points.map((value) => value.x * ax + value.z * az);
+    return Math.max(...project(first)) <= Math.min(...project(second)) || Math.max(...project(second)) <= Math.min(...project(first));
+  }));
+  return plan.faces.every(({ a, b, n }) => apart(box, [a, b, { x: b.x + n.x * depth, z: b.z + n.z * depth }, { x: a.x + n.x * depth, z: a.z + n.z * depth }]));
+}
+
+/**
+ * Nudges of 10 mm along the run's wall both ways, into it and out, as the inspector makes them: kept where the run fits (a
+ * floor run the recorded baseboard's depth off every exposed face but at its front, as Fit stands it off and keeps its ends; a
+ * wall cabinet hangs above it), else stopped on its line where it would stop fitting, and contained; and a floor run never
+ * nearer a face than that.
+ */
+function checkNudges(region: Region, room: RoomSnapshot, run: Run, preset: "base" | "wall", what: () => string) {
   const along = { x: Math.cos(run.rotationY), z: -Math.sin(run.rotationY) }, out = { x: Math.sin(run.rotationY), z: Math.cos(run.rotationY) };
+  const bottom = preset === "wall" ? 1.45 : 0, standOff = preset === "wall" ? 0 : Math.round((room.geometry.baseboardDepth ?? 0) * 1000) / 1000;
+  const fitsAt = (at: Run, shrink: number) => footprintInRegion(region, at, shrink) && clearOfBaseboards(at, standOff, shrink);
   for (const [name, dx, dz] of [["along", along.x, along.z], ["back along", -along.x, -along.z], ["into the wall", -out.x, -out.z], ["out", out.x, out.z]] as const) {
     counts.nudges += 1;
     const target = { ...run, x: run.x + dx * 0.01, z: run.z + dz * 0.01 };
-    const [x, z] = clampBuiltInToRoom(room, target.x, target.z, run.width, run.depth, run.rotationY, { from: [run.x, run.z], planRooms: plan.rooms });
+    const [x, z] = clampBuiltInToRoom(room, target.x, target.z, run.width, run.depth, run.rotationY, { from: [run.x, run.z], planRooms: plan.rooms, bottom });
+    check(clearOfBaseboards({ ...run, x, z }, standOff, 0.00006), () => `${what()}: a nudge ${name} put it within the baseboard's ${(standOff * 1000).toFixed(0)} mm of a face`);
     // Furniture of its size may stand there (inside furniture's room, half the wall plus 2 cm in, by its own samples).
-    const furnitureFits = isPlacementContainedInRoom({ room, position: [target.x, 0, target.z], rotationY: run.rotationY, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 } });
+    const furnitureFits = isPlacementContainedInRoom({ room, position: [target.x, bottom, target.z], rotationY: run.rotationY, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 } });
     const moved = (x - run.x) * dx + (z - run.z) * dz, sideways = Math.abs((x - run.x) * dz - (z - run.z) * dx);
     // The clamp lets a run reach 0.05 mm into a face: kept when it fits 0.04 mm in, stopped when not even 0.06 mm in.
-    const fits = footprintInRegion(region, target, 0.00004);
-    if (!fits && footprintInRegion(region, target, 0.00006)) continue;
+    const fits = fitsAt(target, 0.00004);
+    if (!fits && fitsAt(target, 0.00006)) continue;
     if (fits) {
       counts.kept += 1;
       check(Math.abs(x - target.x) < 1e-9 && Math.abs(z - target.z) < 1e-9, () => `${what()}: a 10 mm nudge ${name} is refused or cut short (moved ${(moved * 1000).toFixed(3)} mm)`);
@@ -418,8 +446,8 @@ function checkNudges(region: Region, room: RoomSnapshot, run: Run, what: () => s
     const further = { ...run, x: x + dx * 0.0002, z: z + dz * 0.0002 };
     check(moved >= -1e-9 && moved <= 0.01 + 1e-9 && sideways < 1e-9, () => `${what()}: a nudge ${name} went off its line`);
     // Short of the face if it would fit 0.2 mm on even 0.04 mm in (along an edge it slides past, 0.06 mm in may not tell).
-    check(!footprintInRegion(region, further, 0.00004), () => `${what()}: a nudge ${name} stopped ${(moved * 1000).toFixed(3)} mm, short of the face`);
-      check(isPlacementContainedInRoom({ room, position: [x, 0, z], rotationY: run.rotationY, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 }, builtIn: true, planRooms: plan.rooms }), () => `${what()}: a nudge ${name} stopped where it isn't contained (moved ${(moved * 1000).toFixed(4)} mm, region ${footprintInRegion(region, { ...run, x, z }, 0.0005)})`);
+    check(!fitsAt(further, 0.00004), () => `${what()}: a nudge ${name} stopped ${(moved * 1000).toFixed(3)} mm, short of the face`);
+    check(isPlacementContainedInRoom({ room, position: [x, bottom, z], rotationY: run.rotationY, dimensions: { w: run.width * 1000, d: run.depth * 1000, h: 870 }, builtIn: true, planRooms: plan.rooms }), () => `${what()}: a nudge ${name} stopped where it isn't contained (moved ${(moved * 1000).toFixed(4)} mm, region ${fitsAt({ ...run, x, z }, 0.0005)})`);
   }
 }
 
@@ -530,7 +558,11 @@ function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHo
     });
     // The face exposed along most of the edge, or one within a millimetre of it with a host on it.
     const best = faces.filter((face) => face.along >= most - 0.001);
-    const { exposed, own } = best.find((face) => hostsOn(face).length) ?? best[0], onLine = hostsOn(best.find((face) => hostsOn(face).length) ?? best[0]);
+    const chosen = best.find((face) => hostsOn(face).length) ?? best[0], { exposed, own } = chosen, onLine = hostsOn(chosen);
+    // Every face the 3D view draws along the edge's line, at each depth a face may stand there (20 mm or more: less is none),
+    // where a recorded baseboard stands (checkNudges).
+    faces.forEach((face) => face.exposed.filter((stretch) => stretch.to - stretch.from >= 0.02)
+      .forEach((stretch) => plan.faces.push({ a: face.line.at(stretch.from, 0), b: face.line.at(stretch.to, 0), n: { x: nx, z: nz } })));
     const what = `${label} edge ${index} (${faceIds[index]})`;
     counts.hosts += onLine.filter((host) => host.space.wallId === faceIds[index] || host.space.wallId === `wall-${index}`).length;
     if (own.length) {
@@ -552,7 +584,7 @@ for (let index = 0; index < ROOMS; index += 1) {
   state = (SEED ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0; // Each room from its own seed, so one can be rerun alone.
   const { room, family, openings, neighbours } = makeRoom(index);
   const own = toPlanRoom(room);
-  plan = { neighbours, rooms: new Map([own, ...neighbours].map((entry) => [entry.id, entry])), thickest: Math.max(0, ...neighbours.map((next) => next.wallThickness ?? 0)) };
+  plan = { neighbours, rooms: new Map([own, ...neighbours].map((entry) => [entry.id, entry])), thickest: Math.max(0, ...neighbours.map((next) => next.wallThickness ?? 0)), faces: [] };
   counts.rooms += 1;
   if (neighbours.length) counts.nextDoor += 1;
   families[family] = (families[family] ?? 0) + 1;
