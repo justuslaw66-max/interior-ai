@@ -136,7 +136,9 @@ class FakeLeasePrisma {
     },
     findFirst: async (args: unknown) => {
       const where = (args as { where: unknown }).where;
-      return [...this.jobs.values()].find((row) => matches(row, where)) ?? null;
+      const row = [...this.jobs.values()].find((entry) => matches(entry, where));
+      // A copy, as a database read is: a later change to the row doesn't reach what was read.
+      return row ? { ...row } : null;
     },
     findMany: async (args: unknown) => {
       const input = args as { where: unknown; take?: number };
@@ -467,6 +469,32 @@ async function testOwnerCancelStopsTheWorkerReadingIt() {
     }).code;
   assert.equal(purgeAt(heartbeatAt), "active_lease");
   assert.equal(purgeAt(new Date(leaseEnd.getTime() + 1)), "purge");
+  // A worker that releases or claims the job between the cancel's read and its write changes the lease: the
+  // cancel reads again and lands on the new state.
+  for (const [id, race] of [
+    ["released", (row: MutableJob) => Object.assign(row, { leaseToken: null, leaseOwner: null, leaseExpiresAt: null })],
+    ["claimed", (row: MutableJob) => Object.assign(row, { leaseToken: "late-claim", leaseOwner: "late-worker", leaseExpiresAt: leaseEnd })],
+  ] as const) {
+    database.jobs.set(id, makeJob(id, { status: "rendered", leaseToken: "first", leaseOwner: "worker", leaseExpiresAt: leaseEnd }));
+    const updateMany = database.floorPlanImportJob.updateMany;
+    let raced = false;
+    database.floorPlanImportJob.updateMany = async (args: unknown) => {
+      const row = database.jobs.get(id);
+      if (!raced && row) {
+        raced = true;
+        race(row);
+      }
+      return updateMany(args);
+    };
+    assert.equal(await cancelOwnedFloorPlanImport({ id, userId: "owner-1", now }, database), "cancelled");
+    database.floorPlanImportJob.updateMany = updateMany;
+    const cancelled = database.jobs.get(id);
+    assert.equal(cancelled?.status, "failed");
+    assert.equal(cancelled?.leaseToken, null);
+    // Held for the lease that was live when the cancel landed, and none once the worker had let go.
+    assert.equal(cancelled?.leaseExpiresAt?.getTime() ?? null, id === "claimed" ? leaseEnd.getTime() : null);
+  }
+
   // A queued upload (no lease) is cancelled with nothing held back.
   database.jobs.set("queued", makeJob("queued"));
   assert.equal(await cancelOwnedFloorPlanImport({ id: "queued", userId: "owner-1", now }, database), "cancelled");

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { rateLimit } from "@/lib/rateLimit";
 import { cancelOwnedFloorPlanImport } from "@/lib/floor-plan-imports/owner-cancel";
 
 export const runtime = "nodejs";
@@ -19,6 +20,8 @@ export async function POST(
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return error("Unauthorized", 401);
+  const allowance = rateLimit(`floor-plan-cancel:${userId}`, 30, 60_000);
+  if (!allowance.ok) return error("Too many floor-plan cancellations", 429);
   const { id } = await params;
 
   const outcome = await cancelOwnedFloorPlanImport({ id, userId });
