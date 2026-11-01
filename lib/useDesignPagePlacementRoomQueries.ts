@@ -21,6 +21,7 @@ import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
 import {
   builtInFootprintFits,
+  getBuiltInDragPlace,
   getBuiltInStandOff,
   getRoomBuiltInFaces,
   type BuiltInPlanRooms,
@@ -65,6 +66,11 @@ export type IsPlacementContainedInRoom = (
   /** A built-in cabinet, which may stand against the finished face; furniture keeps 2 cm off it. */
   builtIn?: boolean
 ) => boolean;
+
+/** Where a built-in dragged from `from` to `position` goes (getBuiltInDragPlace): there, or out of a place it doesn't fit. */
+export type PlaceBuiltInDragInRoom = (
+  room: RoomSnapshot, from: [number, number, number], position: [number, number, number], rotationY: number, dimensions: PlacementDimensions
+) => [number, number, number];
 
 type UseDesignPagePlacementRoomQueriesInput = {
   configuration: {
@@ -273,10 +279,17 @@ export function useDesignPagePlacementRoomQueries({
       [houseRoomById, canonicalModel]
     );
 
+  const placeBuiltInDragInRoom = useCallback<PlaceBuiltInDragInRoom>((room, from, position, rotationY, dimensions) => {
+    const [x, z] = getBuiltInDragPlace(room, [from[0], from[2]], position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY,
+      { planRooms: houseRoomById, canonical: canonicalModel, bottom: position[1] });
+    return [x, position[1], z];
+  }, [houseRoomById, canonicalModel]);
+
   return {
     /** The imported plan's canonical model, compiled once here: built-ins' moves read it too (features/cabinetry). */
     canonicalModel,
     queries: {
+      placeBuiltInDragInRoom,
       clampToCatalogPlacementRoom: clampToPlacementRoom,
       catalogPlacementCollidesInRoom,
       findCatalogPlacementBlockerInRoom,

@@ -214,16 +214,16 @@ function clampAsFurniture(room: RoomSnapshot, x: number, z: number, width: numbe
  * recorded baseboard: getBuiltInStandOff, by its `bottom`). Where it stands in the region it stays put, as Fit to Space places
  * it. A move that would leave it stops where it still stands, going from `from`. A turn (no `from`; `turnedFrom` its rotation
  * before) that leaves it goes to the nearest place where it fits, within how far its corners swing in the turn (TURN_REACH at
- * least): touching what stops it, a face or a solid on it (findNearestBuiltInFit). `nearestWithin` lets a placement whose start
- * doesn't fit (Place, or Save as copy, of a run with no fit or an old one) go to the nearest place it fits within that reach.
- * Where nothing does, it is left at the target, which containment refuses (the built-in stays where it was; a placement is
+ * least): touching what stops it, a face or a solid on it (findNearestBuiltInFit). From a place where it doesn't fit (a run
+ * saved before its room's rule, overlapping its wall; Place of a run with no fit or an old one), a move, a turn or a placement
+ * goes to the nearest place it fits anywhere in the room (J, 1 Nov 2026), so a stuck built-in comes free on its first move.
+ * Where nothing fits, it is left at the target, which containment refuses (the built-in stays where it was; a placement is
  * refused). In a room on furniture's rule, it is clamped as furniture is.
  */
 export function clampBuiltInToRoom(
   room: RoomSnapshot, x: number, z: number, width: number, depth: number, rotationY = 0,
   options: {
     from?: readonly [number, number]; planRooms?: BuiltInPlanRooms; canonical?: CanonicalFloorPlanRenderModel; bottom?: number; turnedFrom?: number;
-    nearestWithin?: number;
   } = {}
 ): [number, number] {
   const faces = getRoomBuiltInFaces(room, undefined, options.planRooms, options.canonical);
@@ -243,10 +243,26 @@ export function clampBuiltInToRoom(
     }
     return [from[0] + (x - from[0]) * reach, from[1] + (z - from[1]) * reach];
   }
-  const reach = from ? options.nearestWithin ?? 0 : Math.max(options.nearestWithin ?? 0, getTurnReach(width, depth, rotationY, options.turnedFrom));
-  if (!(reach > 0)) return [x, z];
-  // Nothing nearby fits: it stays at the target, which containment refuses (a turn is refused, the built-in where it was).
+  // A turn from where it stood turned before (`turnedFrom`, at the same centre) looks as far as its corners swing; one from where
+  // it didn't fit, or a move from such a place, anywhere in the room.
+  const turnedFrom = options.turnedFrom, stood = typeof turnedFrom === "number" &&
+    builtInFootprintFits(faces, x, z, width, depth, turnedFrom, BUILT_IN_CONTACT_TOLERANCE / 10, standOff);
+  const reach = from || (typeof turnedFrom === "number" && !stood) ? Number.POSITIVE_INFINITY : getTurnReach(width, depth, rotationY, turnedFrom);
+  // Nothing fits: it stays at the target, which containment refuses (a turn is refused, the built-in where it was).
   return findNearestBuiltInFit(getBuiltInFitObstacles(faces, width, depth, rotationY, standOff), { x, z }, reach, fits, faces.outline) ?? [x, z];
+}
+
+/**
+ * Where a built-in dragged from `from` to (x, z) goes: there, which containment then checks, as a drag isn't clamped; but from a
+ * place it doesn't fit (a run saved before its room's rule, overlapping its wall), to the nearest place it fits (clampBuiltInToRoom).
+ */
+export function getBuiltInDragPlace(
+  room: RoomSnapshot, from: readonly [number, number], x: number, z: number, width: number, depth: number, rotationY: number,
+  options: { planRooms?: BuiltInPlanRooms; canonical?: CanonicalFloorPlanRenderModel; bottom?: number } = {}
+): [number, number] {
+  const faces = getRoomBuiltInFaces(room, undefined, options.planRooms, options.canonical), standOff = getBuiltInStandOff(room, options.bottom);
+  if (faces.furnitureRule || builtInFootprintFits(faces, from[0], from[1], width, depth, rotationY, BUILT_IN_CONTACT_TOLERANCE / 10, standOff)) return [x, z];
+  return clampBuiltInToRoom(room, x, z, width, depth, rotationY, { ...options, from });
 }
 
 /** How far (metres) a turn looks for the nearest place a built-in fits, at least: a unit's turn by a column or in a corner. */
@@ -286,10 +302,12 @@ function getBuiltInFitObstacles(faces: BuiltInRoomFaces, width: number, depth: n
 
 /**
  * Where Snap to wall sends a built-in: to the nearest side of its room's exposed faces along x or z, a floor-standing one the
- * baseboard's depth off it (their middle, for one wider than they stand apart). The move then takes it there if it fits
- * there, without checking what stands between (as for furniture), or else toward it as far as the clamp's halving search
- * finds it fits. A room on furniture's rule snaps as the
- * line did, half the wall plus 2 cm in from its rectangle, to its middle for one wider than that.
+ * baseboard's depth off it (their middle, for one wider than they stand apart). In a room with a face off the plan's axes (a
+ * turned room, or one with an angled wall), straight back to its nearest face instead, along that face's normal
+ * (snapToNearestFace; J's delegate, 1 Nov 2026), where it slid along x or z. The move then takes it there if it fits there,
+ * without checking what stands between (as for furniture), or else toward it as far as the clamp's halving search finds it
+ * fits. A room on furniture's rule snaps as the line did, half the wall plus 2 cm in from its rectangle, to its middle for one
+ * wider than that.
  */
 export function getBuiltInSnapTarget(
   room: RoomSnapshot, position: readonly [number, number, number], width: number, depth: number, rotationY: number,
@@ -306,12 +324,35 @@ export function getBuiltInSnapTarget(
     const wallZ = Math.max(0, room.geometry.depth / 2 - inset - effectiveDepth / 2);
     return nearest([[-wallX, z], [wallX, z], [x, -wallZ], [x, wallZ]]);
   }
-  const faces = built.polygon, xs = faces.map((point) => point.x), zs = faces.map((point) => point.z);
   // Its back against a face, or a floor-standing one's against the baseboard (getBuiltInStandOff, by its bottom).
   const standOff = getBuiltInStandOff(room, position[1]);
+  const offAxes = built.exposed.some((face, index) => face && Math.abs(built.walls[index].nx) > 1e-12 && Math.abs(built.walls[index].nz) > 1e-12);
+  if (offAxes) return snapToNearestFace(built, x, z, width, depth, rotationY, standOff);
+  const faces = built.polygon, xs = faces.map((point) => point.x), zs = faces.map((point) => point.z);
   const sides = (low: number, high: number, size: number) => low + standOff + size / 2 <= high - standOff - size / 2
     ? [low + standOff + size / 2, high - standOff - size / 2] : [(low + high) / 2, (low + high) / 2];
   const [west, east] = sides(Math.min(...xs), Math.max(...xs), effectiveWidth);
   const [north, south] = sides(Math.min(...zs), Math.max(...zs), effectiveDepth);
   return nearest([[west, z], [east, z], [x, north], [x, south]]);
+}
+
+/**
+ * A built-in at (x, z) moved straight back to the nearest exposed face it stands in front of (its centre over the face, give or
+ * take its own reach along it), along that face's normal, until its footprint (turned `rotationY`) stands `standOff` off it:
+ * the face it would meet first, or leave least far (one it overlaps). Where it stands in front of none, it stays.
+ */
+function snapToNearestFace(faces: BuiltInRoomFaces, x: number, z: number, width: number, depth: number, rotationY: number, standOff: number): [number, number] {
+  const [ax, az, bx, bz] = [Math.cos(rotationY), -Math.sin(rotationY), Math.sin(rotationY), Math.cos(rotationY)];
+  // How far its footprint reaches from its centre along a direction.
+  const reach = (ux: number, uz: number) => Math.abs((width / 2) * (ax * ux + az * uz)) + Math.abs((depth / 2) * (bx * ux + bz * uz));
+  const gaps = faces.exposed.flatMap((face, index) => {
+    const { nx, nz } = faces.walls[index], length = face ? Math.hypot(face.end.x - face.start.x, face.end.z - face.start.z) : 0;
+    if (!face || !(length > 0)) return [];
+    const [tx, tz] = [(face.end.x - face.start.x) / length, (face.end.z - face.start.z) / length];
+    const along = (x - face.start.x) * tx + (z - face.start.z) * tz, out = (x - face.start.x) * nx + (z - face.start.z) * nz;
+    return out < 0 || along < -reach(tx, tz) || along > length + reach(tx, tz) ? [] : [{ gap: out - reach(nx, nz) - standOff, nx, nz }];
+  });
+  if (!gaps.length) return [x, z];
+  const nearest = gaps.reduce((best, entry) => (Math.abs(entry.gap) < Math.abs(best.gap) ? entry : best));
+  return [x - nearest.nx * nearest.gap, z - nearest.nz * nearest.gap];
 }

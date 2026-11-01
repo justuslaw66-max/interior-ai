@@ -8,7 +8,7 @@ import {
 } from "../features/cabinetry/roomCabinetHosts";
 import type { CabinetDefinition, CabinetHostSpace } from "../features/cabinetry/types";
 import { snapshotToStored, storedToSnapshot } from "../lib/room-persistence";
-import { clampBuiltInToRoom, getBuiltInSnapTarget, usesFurnitureRuleForBuiltIns } from "../lib/room-built-in-faces";
+import { builtInFootprintFits, clampBuiltInToRoom, getBuiltInDragPlace, getBuiltInSnapTarget, getRoomBuiltInFaces, usesFurnitureRuleForBuiltIns } from "../lib/room-built-in-faces";
 import { createRoom, type DesignSnapshot, type RoomSnapshot } from "../lib/room-types";
 import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
 import { inRegion, toWorld, type Run } from "./built-in-faces-oracle-utils";
@@ -113,6 +113,29 @@ const kitchen = (turnDeg: number, baseboardDepth?: number) => importedCaseOf(imp
   }
 }
 
+// Snap to wall in a turned room goes straight back to the nearest face, along its normal (J's delegate, 1 Nov 2026): a unit 0.4 m
+// out from the middle of each wall of the 20°-turned kitchen, and of a drawn 4 × 3 m room turned 20°, lands back on that wall. It went along
+// the plan's x or z to the faces' bounding box and stopped where it first touched a face, slid along it.
+{
+  const c = kitchen(20, 0.015), turn = (20 * Math.PI) / 180;
+  const drawn = { ...createRoom("turned", "Turned", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }), planShape: "custom_polygon",
+    planPolygon: [[-2, -1.5], [2, -1.5], [2, 1.5], [-2, 1.5]].map(([x, z]) => ({ x: x * Math.cos(turn) - z * Math.sin(turn), z: x * Math.sin(turn) + z * Math.cos(turn) })) } as RoomSnapshot;
+  const noPlan: Case = { ...c, planRooms: new Map(), model: undefined as never };
+  for (const [label, at, room] of [["turned kitchen", c, c.rooms[0]], ["turned drawn room", noPlan, drawn]] as const) {
+    const withModel = label === "turned kitchen";
+    for (const space of hostsOf(at, room, withModel)) for (const preset of ["base", "wall"] as const) {
+      // The unit at its wall's middle, where its own face is the nearest (at a corner, the end wall is).
+      const fitted = fitAndPlace(at, room, space, preset, withModel, "fit_height"), segment = space.wallSegment!;
+      const shift = ((segment.startXmm + segment.endXmm) / 2000 - fitted.x) * Math.cos(fitted.rotationY) - ((segment.startZmm + segment.endZmm) / 2000 - fitted.z) * Math.sin(fitted.rotationY);
+      const run = along(fitted, shift), start = outFrom(run, 0.4);
+      const o = { planRooms: at.planRooms, canonical: at.model, bottom: run.bottom };
+      const [toX, toZ] = getBuiltInSnapTarget(room, [start.x, run.bottom, start.z], run.width, run.depth, run.rotationY, at.planRooms, at.model);
+      const [x, z] = clampBuiltInToRoom(room, toX, toZ, run.width, run.depth, run.rotationY, { ...o, from: [start.x, start.z] });
+      assert.ok(Math.hypot(x - run.x, z - run.z) < 1e-6, `${label} ${space.wallId} ${preset}: Snap to wall from 0.4 m out lands where Fit put it (${(Math.hypot(x - run.x, z - run.z) * 1000).toFixed(2)} mm off)`);
+    }
+  }
+}
+
 // 3. A baseboard deeper than 20 mm: a built-in could be dragged up to the baseboard less 20 mm into it, where furniture's rule
 // let furniture of its size stand. No built-in is accepted 1–10 mm into a 30 mm one now, in a drawn room or an imported one.
 {
@@ -198,6 +221,39 @@ const kitchen = (turnDeg: number, baseboardDepth?: number) => importedCaseOf(imp
   }
   const run = fitAndPlace(c, room, hostsOf(c, room)[0], "base"), offset = getCabinetCopyOffset(run.space, room, c.planRooms, c.model);
   assert.ok(Math.abs(Math.hypot(...offset) - 0.15) < 1e-9 && Math.abs(offset[0] * -Math.sin(run.rotationY) - offset[1] * Math.cos(run.rotationY)) < 1e-9, "a copy moves 15 cm along its wall");
+}
+
+// A move from a place that doesn't fit goes to the nearest place that does (J's delegate, 1 Nov 2026), in every room: a run saved
+// before its room's rule, overlapping its wall, comes free on its first nudge, turn, snap or drag, where it was stuck before
+// (each move went from where it stood, and containment refused it). From a place that fits, moves are as before.
+{
+  const c = kitchen(20), room = c.rooms[0], opts = { planRooms: c.planRooms, canonical: c.model, bottom: 0 };
+  const drawn = { ...createRoom("stuck", "Stuck", "kitchen", { width: 4, depth: 3, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }), planShape: "custom_polygon",
+    planPolygon: [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 1.6, z: 1.5 }, { x: -2, z: 1.5 }] } as RoomSnapshot;
+  const noPlan: Case = { ...c, planRooms: new Map(), model: undefined as never };
+  for (const [label, at, target] of [["the turned kitchen", c, room], ["a drawn room", noPlan, drawn]] as const) {
+    const fitted = fitAndPlace(at, target, hostsOf(at, target, label !== "a drawn room").find((space) => space.availableWidthMm > 2000)!, "base", label !== "a drawn room", "fit_height");
+    const stuck = { ...fitted, ...outFrom(fitted, -0.03) }, faces = getRoomBuiltInFaces(target, undefined, at.planRooms, at.model);
+    const o = { ...opts, planRooms: at.planRooms, canonical: at.model };
+    assert.equal(builtInFootprintFits(faces, stuck.x, stuck.z, stuck.width, stuck.depth, stuck.rotationY), false, `${label}: 30 mm into its wall, it doesn't fit`);
+    const moves: Array<[string, [number, number], number]> = [
+      ["a 10 mm nudge along", clampBuiltInToRoom(target, along(stuck, 0.01).x, along(stuck, 0.01).z, stuck.width, stuck.depth, stuck.rotationY, { ...o, from: [stuck.x, stuck.z] }), stuck.rotationY],
+      ["a turn of 5°", clampBuiltInToRoom(target, stuck.x, stuck.z, stuck.width, stuck.depth, stuck.rotationY + 0.087, { ...o, turnedFrom: stuck.rotationY }), stuck.rotationY + 0.087],
+      ["Snap to wall", clampBuiltInToRoom(target, ...getBuiltInSnapTarget(target, [stuck.x, 0, stuck.z], stuck.width, stuck.depth, stuck.rotationY, at.planRooms, at.model), stuck.width, stuck.depth, stuck.rotationY, { ...o, from: [stuck.x, stuck.z] }), stuck.rotationY],
+      ["a drag 20 mm along", getBuiltInDragPlace(target, [stuck.x, stuck.z], along(stuck, 0.02).x, along(stuck, 0.02).z, stuck.width, stuck.depth, stuck.rotationY, o), stuck.rotationY],
+    ];
+    for (const [move, [x, z], rotationY] of moves) {
+      assert.equal(contains(at, target, { ...stuck, x, z, rotationY }), true, `${label}: ${move} frees it`);
+      // Out of the wall (30 mm and its 10 mm nudge or 20 mm drag), or as far as a 5° turn swings its corners.
+      const near = move.includes("turn") ? Math.hypot(stuck.width, stuck.depth) * Math.sin(0.0435) + 0.03 : 0.06;
+      assert.ok(Math.hypot(x - stuck.x, z - stuck.z) < near, `${label}: ${move} moves it to a place nearby (${(Math.hypot(x - stuck.x, z - stuck.z) * 1000).toFixed(1)} mm)`);
+    }
+    // From where Fit put it, a nudge into the wall stops at the face, and a drag into it is left where dropped (and refused).
+    const [nx, nz] = clampBuiltInToRoom(target, outFrom(fitted, -0.01).x, outFrom(fitted, -0.01).z, fitted.width, fitted.depth, fitted.rotationY, { ...o, from: [fitted.x, fitted.z] });
+    assert.ok(Math.hypot(nx - fitted.x, nz - fitted.z) < 0.0001, `${label}: from where it fits, a nudge into the wall stops at the face`);
+    assert.deepEqual(getBuiltInDragPlace(target, [fitted.x, fitted.z], outFrom(fitted, -0.01).x, outFrom(fitted, -0.01).z, fitted.width, fitted.depth, fitted.rotationY, o),
+      [outFrom(fitted, -0.01).x, outFrom(fitted, -0.01).z], `${label}: from where it fits, a drag isn't moved (containment refuses it)`);
+  }
 }
 
 // The repo's test apartment (#256's): its living room's walls are 200 mm and, to the bedroom, 100 mm, averaging 175 mm. Its hosts

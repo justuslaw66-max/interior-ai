@@ -382,7 +382,7 @@ export function getCabinetPlacement(
   // From where Fit put it (a run with no fit, from the room's middle). Where that doesn't fit (a run never fitted, or fitted on
   // the line to a host this room no longer offers), the nearest place it does; where none does, the target, which Place refuses.
   const [x, z] = clampBuiltInToRoom(room, at[0] + offsetX, at[1] + offsetZ, definition.totalWidth / 1000, definition.depth / 1000,
-    rotationY, { from: at, planRooms, canonical, bottom: fitted?.position[1], nearestWithin: Number.POSITIVE_INFINITY });
+    rotationY, { from: at, planRooms, canonical, bottom: fitted?.position[1] });
   return { position: [x, fitted?.position[1] ?? 0, z], rotationY };
 }
 
