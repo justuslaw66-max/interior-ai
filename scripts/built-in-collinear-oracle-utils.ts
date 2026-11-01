@@ -25,14 +25,14 @@ const MEET_ACROSS = 0.00005, MEET_ALONG = 0.0005;
  * whether a solid stands just behind the line all the way between two places along it.
  */
 export type EdgeFace = { dx: number; dz: number; nx: number; nz: number; line: LineFrame; groups: Stretch[][]; backed: (from: number, to: number) => boolean };
-type End = { point: P; slack: number };
+type End = { point: P; slack: number; runOn: number };
 /** Edges whose faces are one host, and their face stretches' ends. */
 export type CollinearChain = { edges: number[]; ends: End[] };
 /** A chain's host, where it starts and ends (where the chain's faces do, chainHost), and how far behind its line the faces stand at most. */
 export type ChainHost = { space: CabinetHostSpace; from: P; to: P; bow: number };
 
 const endsOf = (face: EdgeFace): End[] => face.groups.flat().flatMap((stretch) =>
-  [{ point: face.line.at(stretch.from, 0), slack: stretch.slackFrom }, { point: face.line.at(stretch.to, 0), slack: stretch.slackTo }]);
+  [{ point: face.line.at(stretch.from, 0), slack: stretch.slackFrom, runOn: stretch.runOnFrom }, { point: face.line.at(stretch.to, 0), slack: stretch.slackTo, runOn: stretch.runOnTo }]);
 
 function joinsNext(faces: ReadonlyArray<EdgeFace | null>, index: number): boolean {
   const face = faces[index], next = faces[(index + 1) % faces.length];
@@ -78,7 +78,7 @@ export function chainHost(chain: CollinearChain, faces: ReadonlyArray<EdgeFace |
     const [nx, nz] = [-uz * side, ux * side], normal = Math.hypot(segment.inwardNormalX, segment.inwardNormalZ) || 1;
     if (!chain.edges.every((edge) => ux * (faces[edge] as EdgeFace).dx + uz * (faces[edge] as EdgeFace).dz >= COLLINEAR_COS)) continue;
     if (Math.abs(segment.inwardNormalX * ux + segment.inwardNormalZ * uz) / normal > 1e-9) continue;
-    const at = chain.ends.map(({ point, slack }) => ({ along: (point.x - from.x) * ux + (point.z - from.z) * uz, across: (point.x - from.x) * nx + (point.z - from.z) * nz, slack }));
+    const at = chain.ends.map(({ point, slack, runOn }) => ({ along: (point.x - from.x) * ux + (point.z - from.z) * uz, across: (point.x - from.x) * nx + (point.z - from.z) * nz, slack, runOn }));
     const bow = -Math.min(...at.map(({ across }) => across));
     // The deepest end on its line, or behind it no further than the faces could bow across a gap between stretches (where
     // something stands on the face, and the bend may lie).
@@ -89,8 +89,9 @@ export function chainHost(chain: CollinearChain, faces: ReadonlyArray<EdgeFace |
     const start = at.reduce((least, end) => (end.along < least.along ? end : least)), end = at.reduce((most, entry) => (entry.along > most.along ? entry : most));
     // Where the wall ending a face is all but parallel to it (its slack at the most, 5 mm), it ends where that wall rises past a
     // line known only to its slope: the host's line, a few ten-thousandths of a degree off the piece's, may meet it 20 mm away.
-    const within = (slack: number) => 0.0005 + (slack >= 0.005 - 1e-12 ? 0.02 : slack);
-    if (Math.abs(start.along) <= within(start.slack) && Math.abs(end.along - length) <= within(end.slack)) return { space, from, to, bow };
+    // Or as far as the face may run on under that wall (a panel's end square to a wall 0.013° off the piece's: 22 mm).
+    const within = ({ slack, runOn }: { slack: number; runOn: number }) => 0.0005 + (slack >= 0.005 - 1e-12 ? Math.max(0.02, runOn) : slack);
+    if (Math.abs(start.along) <= within(start) && Math.abs(end.along - length) <= within(end)) return { space, from, to, bow };
   }
   return null;
 }

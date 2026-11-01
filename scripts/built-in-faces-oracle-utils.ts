@@ -174,8 +174,12 @@ export function distanceToBox(edges: Array<[[number, number], [number, number]]>
 // --- Where the 3D view draws a face ------------------------------------------------------------------------------------------
 /** A line's frame: a point in the plan as [along it, out from it to the room's side], and back. */
 export type LineFrame = { frame: (point: P) => [number, number]; at: (along: number, across: number) => P };
-/** An exposed stretch along a line, and how much less exactly each end is known (where a wall ending it is all but parallel). */
-export type Stretch = { from: number; to: number; slackFrom: number; slackTo: number };
+/**
+ * An exposed stretch along a line, and how much less exactly each end is known (where a wall ending it is all but parallel):
+ * its slack (to 5 mm), and how far it may run on under that wall (`runOn`: no further than the wall's edge runs along the line,
+ * nor than that edge takes to rise 0.006 mm off it).
+ */
+export type Stretch = { from: number; to: number; slackFrom: number; slackTo: number; runOnFrom: number; runOnTo: number };
 
 const PROBE = 0.000005;
 
@@ -192,18 +196,20 @@ const PROBE = 0.000005;
  */
 export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number, front = PROBE): Stretch[] {
   const rings = [region.outline, ...region.bands.flatMap((band) => [band.outer, ...band.holes]), ...region.others];
-  const cuts: Array<{ along: number; slope: number }> = [];
+  const cuts: Array<{ along: number; slope: number; extent: number }> = [];
   rings.forEach((ring) => ring.forEach((point, index) => {
     const [p, q] = [frame(point), frame(ring[(index + 1) % ring.length])];
     const slope = Math.abs(q[1] - p[1]) / Math.max(1e-12, Math.abs(q[0] - p[0]));
     for (const level of [-PROBE, front]) {
       if ((p[1] - level) * (q[1] - level) > 0 || p[1] === q[1]) continue;
-      cuts.push({ along: p[0] + ((q[0] - p[0]) * (level - p[1])) / (q[1] - p[1]), slope });
+      cuts.push({ along: p[0] + ((q[0] - p[0]) * (level - p[1])) / (q[1] - p[1]), slope, extent: Math.abs(q[0] - p[0]) });
     }
   }));
   const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) && inRegion(region, at(along, front));
   const stops = [from, ...cuts.map(({ along }) => along).filter((along) => along > from && along < to).sort((a, b) => a - b), to];
-  const slackAt = (along: number) => Math.min(0.005, Math.max(0, ...cuts.filter((cut) => Math.abs(cut.along - along) < 0.00005).map(({ slope }) => 0.000006 / Math.max(1e-9, slope))));
+  const near = (along: number) => cuts.filter((cut) => Math.abs(cut.along - along) < 0.00005);
+  const slackAt = (along: number) => Math.min(0.005, Math.max(0, ...near(along).map(({ slope }) => 0.000006 / Math.max(1e-9, slope))));
+  const runOnAt = (along: number) => Math.max(0, ...near(along).map(({ slope, extent }) => Math.min(extent, 0.000006 / Math.max(1e-9, slope))));
   const merged: Array<[number, number]> = [];
   stops.slice(1).forEach((stop, index) => {
     const start = stops[index];
@@ -214,7 +220,7 @@ export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: nu
   });
   // Under 1 mm it holds nothing, and lies where solids meet a few thousandths apart (lib/room-built-in-region.ts's rule too).
   return merged.filter(([start, stop]) => stop - start >= 0.001)
-    .map(([start, stop]) => ({ from: start, to: stop, slackFrom: slackAt(start), slackTo: slackAt(stop) }));
+    .map(([start, stop]) => ({ from: start, to: stop, slackFrom: slackAt(start), slackTo: slackAt(stop), runOnFrom: runOnAt(start), runOnTo: runOnAt(stop) }));
 }
 
 // --- Snap to wall in a turned room -------------------------------------------------------------------------------------------
