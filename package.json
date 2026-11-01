@@ -332,6 +332,7 @@
     "test:cabinetry-preview-renderer": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-cabinetry-preview-renderer.ts",
     "test:cabinetry-polygon-hosts": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-cabinetry-polygon-hosts.ts",
     "test:built-in-faces-oracle": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-built-in-faces-oracle.ts",
+    "test:furniture-room-fit": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-furniture-room-fit.ts",
     "test:cabinetry-wardrobe-arrangements": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-cabinetry-wardrobe-arrangements.ts",
     "test:cabinetry-template-recommendations": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-cabinetry-template-recommendations.ts",
     "test:cabinetry-template-catalog": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-cabinetry-template-catalog.ts",
