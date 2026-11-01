@@ -16,7 +16,7 @@ import { createRoom, type RoomSnapshot } from "../lib/room-types";
 import { getRoomWallFinishDepths } from "../lib/room-wall-finish-depths";
 import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
 import {
-  distanceToBox, edgesItMeets, EPS, exposedOnLine, inRegion, snapAlongNormal, toRun, toWorld, type LineFrame, type P, type Region, type Run, type Stretch,
+  distanceToBox, edgesItMeets, EPS, exposedOnLine, inRegion, snapAlongNormal, snapGaps, toRun, toWorld, type LineFrame, type P, type Region, type Run, type Stretch,
 } from "./built-in-faces-oracle-utils";
 import { chainFaceBreaks, chainHost, collinearChains, type ChainHost, type EdgeFace } from "./built-in-collinear-oracle-utils";
 import { IMPORTED_SHAPES, importedRegionOf, makeImportedCase, type ImportedCase, type ImportedRegion } from "./built-in-imported-oracle-utils";
@@ -52,7 +52,7 @@ type Context = {
   room: RoomSnapshot; planRoom: HousePlanRoom2D; region: ImportedRegion; drawn: ImportedRegion; label: string;
   planRooms: Map<string, HousePlanRoom2D>; model: CanonicalFloorPlanRenderModel; faces: Array<{ a: P; b: P; n: P }>;
   /** The hosts over pieces all but collinear, and the faces the hosts are on, each with its normal (checkHostsOffered). */
-  chainHosts: Map<CabinetHostSpace, ChainHost>; hostFaces: Array<{ a: P; b: P; n: P }>;
+  chainHosts: Map<CabinetHostSpace, ChainHost>; hostFaces: Array<{ a: P; b: P; n: P; borderline: boolean }>;
 };
 const failures: string[] = [];
 const counts: Record<string, number> = { plans: 0, rooms: 0, furnitureRule: 0, faces: 0, hosts: 0, chains: 0, runs: 0, refused: 0, filling: 0, doorRuns: 0,
@@ -404,8 +404,12 @@ function checkSnapAlongNormal(context: Context, piece: Run, bottom: number, what
   counts.normalSnaps += 1;
   const standOff = getBuiltInStandOff(context.room, bottom), out: Run = { ...piece, x: piece.x + Math.sin(piece.rotationY) * 0.3, z: piece.z + Math.cos(piece.rotationY) * 0.3 };
   const [toX, toZ] = getBuiltInSnapTarget(context.room, [out.x, bottom, out.z], out.width, out.depth, out.rotationY, context.planRooms, context.model);
-  const expected = snapAlongNormal(context.hostFaces, out, standOff);
-  check(expected.some(([x, z]) => Math.hypot(x - toX, z - toZ) < 1e-6), () => `${what()}: Snap to wall from 0.3 m out went to (${toX.toFixed(4)}, ${toZ.toFixed(4)}), not straight back to the nearest face (${expected.map(([x, z]) => `${x.toFixed(4)}, ${z.toFixed(4)}`).join("; ")})`);
+  // As the faces give it, or as they give it without the borderline ones.
+  const expected = [...snapAlongNormal(context.hostFaces, out, standOff), ...snapAlongNormal(context.hostFaces.filter(({ borderline }) => !borderline), out, standOff)];
+  // Or straight back to another face the 3D view exposes (a short one on an arc, at one end of its edge), no further than those.
+  const nearest = Math.min(Number.POSITIVE_INFINITY, ...snapGaps(context.hostFaces, out, standOff).map(({ gap }) => Math.abs(gap)));
+  const another = snapGaps(context.faces, out, standOff).some(({ gap, n }) => Math.abs(gap) <= nearest + 1e-6 && Math.hypot(out.x - n.x * gap - toX, out.z - n.z * gap - toZ) < 1e-6);
+  check(another || expected.some(([x, z]) => Math.hypot(x - toX, z - toZ) < 1e-6), () => `${what()}: Snap to wall from 0.3 m out went to (${toX.toFixed(4)}, ${toZ.toFixed(4)}), not straight back to the nearest face (${expected.map(([x, z]) => `${x.toFixed(4)}, ${z.toFixed(4)}`).join("; ")})`);
   const [x, z] = clampBuiltInToRoom(context.room, toX, toZ, out.width, out.depth, out.rotationY, { from: [out.x, out.z], planRooms: context.planRooms, canonical: context.model, bottom });
   if (contained(context, { ...out, x, z }, bottom)) check(fitsAt(context, { ...out, x, z }, standOff), () => `${what()}: Snap to wall from 0.3 m out put it where it doesn't fit`);
 }
@@ -559,7 +563,10 @@ function checkHostsOffered(context: Context, spaces: CabinetHostSpace[], case_: 
     }, []);
     const alongEdge = (group: typeof reaching) => group.reduce((sum, stretch) => sum + Math.max(0, Math.min(stretch.to, length) - Math.max(stretch.from, 0)), 0);
     const snapFace = faceGroups.reduce<typeof reaching | null>((most, group) => (!most || alongEdge(group) > alongEdge(most) ? group : most), null);
-    if (snapFace) context.hostFaces.push({ a: chosen.line.at(snapFace[0].from, 0), b: chosen.line.at(snapFace[snapFace.length - 1].to, 0), n: { x: nx, z: nz } });
+    // One reaching its edge by under a millimetre, or within a millimetre of 20 mm long, may be a face or not (borderline).
+    const [first, last] = snapFace ? [snapFace[0], snapFace[snapFace.length - 1]] : [];
+    if (first && last) context.hostFaces.push({ a: chosen.line.at(first.from, 0), b: chosen.line.at(last.to, 0), n: { x: nx, z: nz },
+      borderline: last.to < 0.001 || first.from > length - 0.001 || Math.min(...snapFace!.map((stretch) => stretch.to - stretch.from)) < 0.021 });
     return { index, what: `${label} edge ${index} (${wall.id})`, chosen, onLine: hostsOn(chosen), groups, face: { dx, dz, nx, nz, line: chosen.line, groups, backed: backedBetween } };
   });
   checkEdgeHosts(context, spaces, edges);

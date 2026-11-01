@@ -200,14 +200,19 @@ export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: nu
  * along that face's normal until it stands there. Every place as near as the nearest (ties), or where it stands if none.
  */
 export function snapAlongNormal(faces: ReadonlyArray<{ a: P; b: P; n: P }>, run: Run, standOff: number): Array<[number, number]> {
+  const gaps = snapGaps(faces, run, standOff);
+  if (!gaps.length) return [[run.x, run.z]];
+  const nearest = Math.min(...gaps.map(({ gap }) => Math.abs(gap)));
+  return gaps.filter(({ gap }) => Math.abs(gap) <= nearest + 1e-7).map(({ gap, n }) => [run.x - n.x * gap, run.z - n.z * gap]);
+}
+
+/** Of the faces its centre stands in front of and its footprint reaches along, how far it stands from each, along its normal. */
+export function snapGaps(faces: ReadonlyArray<{ a: P; b: P; n: P }>, run: Run, standOff: number): Array<{ gap: number; n: P }> {
   const [ax, az, bx, bz] = [Math.cos(run.rotationY), -Math.sin(run.rotationY), Math.sin(run.rotationY), Math.cos(run.rotationY)];
   const reach = (ux: number, uz: number) => Math.abs((run.width / 2) * (ax * ux + az * uz)) + Math.abs((run.depth / 2) * (bx * ux + bz * uz));
-  const gaps = faces.flatMap(({ a, b, n }) => {
+  return faces.flatMap(({ a, b, n }) => {
     const length = Math.hypot(b.x - a.x, b.z - a.z), [tx, tz] = [(b.x - a.x) / (length || 1), (b.z - a.z) / (length || 1)];
     const out = (run.x - a.x) * n.x + (run.z - a.z) * n.z, along = (run.x - a.x) * tx + (run.z - a.z) * tz, sideways = reach(tx, tz);
     return out > 0 && along >= -sideways && along <= length + sideways ? [{ gap: out - reach(n.x, n.z) - standOff, n }] : [];
   });
-  if (!gaps.length) return [[run.x, run.z]];
-  const nearest = Math.min(...gaps.map(({ gap }) => Math.abs(gap)));
-  return gaps.filter(({ gap }) => Math.abs(gap) <= nearest + 1e-7).map(({ gap, n }) => [run.x - n.x * gap, run.z - n.z * gap]);
 }
