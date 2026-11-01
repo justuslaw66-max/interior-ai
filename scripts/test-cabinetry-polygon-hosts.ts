@@ -435,9 +435,11 @@ lSpaces.forEach((space) => {
   nearMm(Math.abs(dx * Math.cos(original.rotationY) - dz * Math.sin(original.rotationY)) * 1000, 150, `L ${space.wallId}: along its wall`);
 });
 
-// Place refuses a built-in only where it is outside the room, and never in an imported plan's room, which keeps the line's Place
-// until PR B. There furniture's clamp can leave a fitted run where furniture's own containment wouldn't (the eleventh review's
-// 4 x 3 m imported L with 200 mm walls: the base run on its notch wall), and Place had said "No room for this built-in".
+// Place refuses a built-in only where it is outside the room, and never in an imported plan's room on furniture's rule (one its
+// plan's model doesn't hold: this L has no plan), which keeps the line's Place. There furniture's clamp can leave a fitted run
+// where furniture's own containment wouldn't (the eleventh review's 4 x 3 m imported L with 200 mm walls: the base run on its
+// notch wall), and Place had said "No room for this built-in". With its plan's model, an imported room's built-ins stand on
+// its walls' faces (scripts/test-cabinetry-imported-faces.ts).
 const contains = (room: RoomSnapshot, position: [number, number, number], rotationY: number, size: { w: number; d: number }, builtIn: boolean) =>
   isPlacementContainedInRoom({ room, position, rotationY, dimensions: size, builtIn });
 const importedL: RoomSnapshot = {
@@ -624,7 +626,7 @@ for (const [preset, allowanceMm] of [["wall", 10], ["base", 30]] as const) {
   assert.equal(run.inside, true, `${preset} run at the bend: inside`);
 }
 
-// An imported plan's rooms keep the line's rule for now: their walls each have their own thickness (the apartment's are 200 mm,
+// An imported plan's rooms without their plan's model keep the line's rule: their walls each have their own thickness (the apartment's are 200 mm,
 // 100 mm between its rooms), which the room doesn't carry (175 mm, their average), and they can be angled or curved. Hosts on
 // the outline a whole average wall plus 10 mm off each end, and furniture's clamp and containment; moves are kept. Since the
 // panels' PR (#256) the outline is moved in by each edge's own wall (getRoomWallFinishDepths: 12.5 mm in on a 200 mm wall,

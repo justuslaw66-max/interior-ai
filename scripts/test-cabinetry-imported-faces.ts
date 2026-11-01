@@ -13,6 +13,7 @@ import { createRoom, type DesignSnapshot, type RoomSnapshot } from "../lib/room-
 import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
 import { inRegion, toWorld, type Run } from "./built-in-faces-oracle-utils";
 import { importedCaseOf, importedDocument, importedRegionOf, laminate } from "./built-in-imported-oracle-utils";
+import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
 
 /**
  * Worked examples for built-ins in imported plans on the finished-face rule (J, 1 Nov 2026), one for each of the three bugs the
@@ -197,6 +198,20 @@ const kitchen = (turnDeg: number, baseboardDepth?: number) => importedCaseOf(imp
   }
   const run = fitAndPlace(c, room, hostsOf(c, room)[0], "base"), offset = getCabinetCopyOffset(run.space, room, c.planRooms, c.model);
   assert.ok(Math.abs(Math.hypot(...offset) - 0.15) < 1e-9 && Math.abs(offset[0] * -Math.sin(run.rotationY) - offset[1] * Math.cos(run.rotationY)) < 1e-9, "a copy moves 15 cm along its wall");
+}
+
+// The repo's test apartment (#256's): its living room's walls are 200 mm and, to the bedroom, 100 mm, averaging 175 mm. Its hosts
+// run face to face, 3850 and 5800 mm, where the line's outline gave 4025 and 5975 mm (a whole average wall plus 10 mm off each
+// end), and the door to the bedroom cuts the shared wall's host.
+{
+  const c = importedCaseOf(authoredApartment()), living = c.rooms.find(({ id }) => id === "living")!;
+  assert.deepEqual(hostsOf(c, living).map((space) => [space.wallId, Math.round(space.availableWidthMm * 10) / 10, space.openings.length]),
+    [["wall-0", 3850, 0], ["wall-1", 5800, 1], ["wall-2", 3850, 0], ["wall-3", 5800, 0]], "the living room's faces, and the door on the shared wall");
+  assert.deepEqual(hostsOf(c, living, false).map((space) => Math.round(space.availableWidthMm)), [4025, 5975, 4025, 5975], "without its plan's model, the line's hosts");
+  for (const space of hostsOf(c, living)) for (const preset of ["base", "wall"] as const) {
+    const run = fitAndPlace(c, living, space, preset);
+    assert.equal(contains(c, living, run) && inDrawnRoom(c, living, run), true, `living ${space.wallId} ${preset}: inside the 3D view's walls`);
+  }
 }
 
 // A room its plan's model doesn't hold (no model, or edges not named) keeps furniture's rule, as on the line.
