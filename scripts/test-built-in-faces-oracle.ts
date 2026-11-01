@@ -740,7 +740,18 @@ function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHo
       else all.push([stretch]);
       return all;
     }, []);
-    groups.forEach((group) => plan.hostFaces.push({ a: chosen.line.at(group[0].from, 0), b: chosen.line.at(group[group.length - 1].to, 0), n: { x: nx, z: nz } }));
+    // The face Snap to wall measures from: the stretches 20 mm or more on the chosen line that reach the edge, backed between,
+    // the group of them most along it (a face runs on past its edge's end over its own wall's core), a host's or not.
+    const reaching = chosen.exposed.filter((stretch) => stretch.to > 0 && stretch.from < length && stretch.to - stretch.from >= 0.02);
+    const faceGroups = reaching.reduce<Array<typeof reaching>>((all, stretch) => {
+      const group = all[all.length - 1];
+      if (group && backedBetween(group[group.length - 1].to, stretch.from)) group.push(stretch);
+      else all.push([stretch]);
+      return all;
+    }, []);
+    const alongEdge = (group: typeof reaching) => group.reduce((sum, stretch) => sum + Math.max(0, Math.min(stretch.to, length) - Math.max(stretch.from, 0)), 0);
+    const snapFace = faceGroups.reduce<typeof reaching | null>((most, group) => (!most || alongEdge(group) > alongEdge(most) ? group : most), null);
+    if (snapFace) plan.hostFaces.push({ a: chosen.line.at(snapFace[0].from, 0), b: chosen.line.at(snapFace[snapFace.length - 1].to, 0), n: { x: nx, z: nz } });
     const wallIds = [faceIds[index], `wall-${index}`];
     return { index, what: `${label} edge ${index} (${faceIds[index]})`, wallIds, chosen, onLine: hostsOn(chosen), groups, face: { dx, dz, nx, nz, line: chosen.line, groups, backed: backedBetween } };
   });

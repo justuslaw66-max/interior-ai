@@ -15,7 +15,8 @@ const COLLINEAR_COS = Math.cos((COLLINEAR_DEGREES * Math.PI) / 180);
 /**
  * Faces meet where one runs on to the next one's start (0.5 mm, along, or further over face backed all the way: something
  * stands in front of it there, as a T's stem joined to the wall's far face does, a few thousandths of a mm proud) and ends within
- * 0.05 mm of the next one's line (across), and as much more as the lines part over the stretch where the faces overlap.
+ * 0.05 mm of the next one's line (across), and as much more as the lines part over the stretch where the faces overlap or the
+ * gap between them (at a bend out of the room, each wall's core run on past it stands proud of the other's face).
  */
 const MEET_ACROSS = 0.00005, MEET_ALONG = 0.0005;
 
@@ -40,7 +41,7 @@ function joinsNext(faces: ReadonlyArray<EdgeFace | null>, index: number): boolea
   const first = next.groups.flat().reduce((least, stretch) => (stretch.from < least.from ? stretch : least));
   const [end, start] = [face.line.at(last.to, 0), next.line.at(first.from, 0)], gap = face.line.frame(start)[0] - last.to;
   if (gap > MEET_ALONG && !face.backed(last.to, last.to + gap)) return false;
-  const within = MEET_ACROSS + Math.max(0, -gap) * Math.abs(face.dx * next.dz - face.dz * next.dx);
+  const within = MEET_ACROSS + Math.abs(gap) * Math.abs(face.dx * next.dz - face.dz * next.dx);
   return Math.abs(next.line.frame(end)[1]) <= within && Math.abs(face.line.frame(start)[1]) <= within;
 }
 
