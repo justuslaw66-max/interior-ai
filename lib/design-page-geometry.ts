@@ -16,6 +16,7 @@ import { clampToCustomPolygonRoom } from "@/lib/room-polygon-fit";
 
 export {
   isFootprintInsideRoomPolygon,
+  isPlacedItemInsideRoomPolygon,
   isPointInsideRoomPolygon,
   isPointInsideRoomPolygonWithHoles,
   polygonIntersectsFootprint,
@@ -121,12 +122,9 @@ export function clampToRoom(
   const maxZ = roomD / 2 - wall - effD / 2;
 
   if (planShape === "custom_polygon" && planPolygon?.length) {
-    return clampToCustomPolygonRoom(x, z, effW, effD, wall, planPolygon, planHoles, {
-      minX,
-      maxX,
-      minZ,
-      maxZ,
-    });
+    // Kept inside by its real footprint too, 2 cm (or the inset, if less) off every face (lib/furniture-room-fit.ts).
+    return clampToCustomPolygonRoom(x, z, effW, effD, wall, planPolygon, planHoles, { minX, maxX, minZ, maxZ },
+      { width: itemWidth, depth: itemDepth, rotationY, clearance: FURNITURE_WALL_CLEARANCE_METERS });
   }
 
   if (planShape === "l_shape") {

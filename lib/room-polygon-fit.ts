@@ -1,5 +1,6 @@
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
+import { findNearestFurnitureFit, getFurnitureFaces, isFurnitureFootprintClear } from "@/lib/furniture-room-fit";
 
 /**
  * Placement in a drawn or imported room's outline (a custom polygon): whether a point or an item's box stands inside it, and
@@ -275,12 +276,66 @@ export function nearestFittingCandidate(
   return null;
 }
 
+/** The item as it stands: its own size (metres) and turn, and how far it keeps off the room's faces. */
+export type ClampedItem = { width: number; depth: number; rotationY: number; clearance: number };
+
+/**
+ * Placement containment's test in a drawn or imported room: the item's box (`effectiveWidth` × `effectiveDepth`, grown by
+ * `wall`) passes the clamp's own test, and its real footprint keeps clear of the room's faces (lib/furniture-room-fit.ts).
+ */
+export function isPlacedItemInsideRoomPolygon(
+  x: number, z: number, effectiveWidth: number, effectiveDepth: number, wall: number,
+  polygon: RoomPlanPolygonPoint[], holes: RoomPlanPolygonPoint[][], item: ClampedItem
+): boolean {
+  return isFootprintInsideRoomPolygon(x, z, effectiveWidth / 2 + wall, effectiveDepth / 2 + wall, polygon, holes) &&
+    isFurnitureFootprintClear(getFurnitureFaces(polygon, holes, wall, item.clearance), x, z, item.width, item.depth, item.rotationY);
+}
+
 /**
  * An item's centre kept inside a drawn or imported room's outline: its box, `effectiveWidth` × `effectiveDepth` and grown by
  * `wall`, inside the outline and out of its holes (isFootprintInsideRoomPolygon): where it is, else the nearest of the
- * candidate places, else `fallbackBounds`.
+ * candidate places, else `fallbackBounds`. Given the `item`, that place also has to keep its real footprint clear of the
+ * room's faces (lib/furniture-room-fit.ts); where it doesn't, the item goes to the nearest place that does.
  */
 export function clampToCustomPolygonRoom(
+  x: number,
+  z: number,
+  effectiveWidth: number,
+  effectiveDepth: number,
+  wall: number,
+  polygon: RoomPlanPolygonPoint[],
+  holes: RoomPlanPolygonPoint[][],
+  fallbackBounds: Bounds,
+  item?: ClampedItem
+): [number, number] {
+  const sampled = clampAsSampled(x, z, effectiveWidth, effectiveDepth, wall, polygon, holes, fallbackBounds);
+  return item && polygon.length >= 3 ? keepClearOfFaces(sampled, x, z, effectiveWidth, effectiveDepth, wall, polygon, holes, item) : sampled;
+}
+
+/**
+ * Where the clamp's place leaves the item's footprint nearer a face than its clearance (an outside corner, a thin spike or a
+ * column's corner between the box's nine sample points), the nearest place to the target where it keeps clear and the box
+ * test still passes, searched out from the target as far as the outline reaches; where none does, the clamp's place, as
+ * the line does for an item that can't fit (containment then refuses it).
+ */
+function keepClearOfFaces(
+  sampled: [number, number], x: number, z: number, effectiveWidth: number, effectiveDepth: number, wall: number,
+  polygon: RoomPlanPolygonPoint[], holes: RoomPlanPolygonPoint[][], item: ClampedItem
+): [number, number] {
+  const faces = getFurnitureFaces(polygon, holes, wall, item.clearance);
+  if (isFurnitureFootprintClear(faces, sampled[0], sampled[1], item.width, item.depth, item.rotationY)) return sampled;
+  const halfWidth = effectiveWidth / 2 + wall, halfDepth = effectiveDepth / 2 + wall;
+  const boxFits = (atX: number, atZ: number) => isFootprintInsideRoomPolygon(atX, atZ, halfWidth, halfDepth, polygon, holes);
+  const xs = polygon.map((point) => point.x), zs = polygon.map((point) => point.z);
+  const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) + Math.hypot(halfWidth, halfDepth);
+  for (let reach = Math.max(0.25, Math.hypot(sampled[0] - x, sampled[1] - z)); ; reach *= 2) {
+    const found = findNearestFurnitureFit(faces, polygon, holes, wall, x, z, item.width, item.depth, item.rotationY, reach, boxFits);
+    if (found) return found;
+    if (reach > span + Math.hypot(x - sampled[0], z - sampled[1])) return sampled;
+  }
+}
+
+function clampAsSampled(
   x: number,
   z: number,
   effectiveWidth: number,

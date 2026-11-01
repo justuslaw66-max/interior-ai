@@ -2955,7 +2955,7 @@
     "lib/design-page-geometry.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 67
+        "maximum": 64
       }
     },
     "lib/design-page-house-plan.ts": {
