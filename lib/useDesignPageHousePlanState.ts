@@ -13,6 +13,7 @@ import {
   switchRoom,
   type DesignSnapshot,
   type RoomPlanShape,
+  type RoomSnapshot,
   type RoomType,
 } from "@/lib/room-types";
 import { track, trackProductEvent } from "@/lib/analytics";
@@ -31,7 +32,13 @@ import {
   ROOM_DIMENSION_DEFAULTS,
   ROOM_SIZE_PRESETS,
   roundPlanCoordinate,
+  type HousePlanRoom2D,
 } from "@/lib/design-page-house-plan";
+
+/** Furniture's room for the active room's clamp: 2 cm off its walls as the 3D view draws them (lib/furniture-room-context.ts). */
+function furnitureRoomOf(room: RoomSnapshot | null, planRooms: HousePlanRoom2D[], snapshot: DesignSnapshot) {
+  return room ? getFurnitureRoomContext(room, planRooms, getCompiledPlanFloors(snapshot.floorPlan?.canonicalDocument)) : undefined;
+}
 
 type Params = {
   designSnapshot: DesignSnapshot;
@@ -83,8 +90,7 @@ export function useDesignPageHousePlanState({
       ? activeRoomWallThickness
       : ROOM_DIMENSION_DEFAULTS.wallThickness;
   const activeRoomPlanShape = activeRoom?.planShape ?? "rectangle";
-  const activeRoomPlanPolygon = activeRoom?.planPolygon;
-  const activeRoomPlanHoles = activeRoom?.planHoles;
+  const activeRoomPlanPolygon = activeRoom?.planPolygon, activeRoomPlanHoles = activeRoom?.planHoles;
   const activeFloorLevel =
     typeof activeRoom?.floorLevel === "number" && Number.isFinite(activeRoom.floorLevel)
       ? activeRoom.floorLevel
@@ -165,9 +171,9 @@ export function useDesignPageHousePlanState({
         x, z, itemWidth, itemDepth, targetRoomWidth, targetRoomDepth,
         getFurnitureWallInset(targetWallThickness),
         rotationY,
-        // Stops at each wall's laminate panel (J, 29 Oct 2026), 2 cm off the walls as the 3D view draws them (furniture-room-fit).
-        activeRoomPlanShape, activeRoomPlanPolygon, activeRoomPlanHoles, getRoomWallFinishDepths(activeRoom), activeRoom
-          ? getFurnitureRoomContext(activeRoom, placedPlan.rooms, getCompiledPlanFloors(designSnapshot.floorPlan?.canonicalDocument)) : undefined
+        // Stops at each wall's laminate panel (J, 29 Oct 2026); read when called: React's compiler can't memoize it in render.
+        activeRoomPlanShape, activeRoomPlanPolygon, activeRoomPlanHoles, getRoomWallFinishDepths(activeRoom),
+        furnitureRoomOf(activeRoom, placedPlan.rooms, designSnapshot)
       ),
     [activeRoom, activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape, designSnapshot.floorPlan, placedPlan]
   );
