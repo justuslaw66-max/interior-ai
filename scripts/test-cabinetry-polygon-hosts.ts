@@ -626,12 +626,15 @@ for (const [preset, allowanceMm] of [["wall", 10], ["base", 30]] as const) {
 
 // An imported plan's rooms keep the line's rule for now: their walls each have their own thickness (the apartment's are 200 mm,
 // 100 mm between its rooms), which the room doesn't carry (175 mm, their average), and they can be angled or curved. Hosts on
-// the outline a whole average wall plus 10 mm off each end, and furniture's clamp and containment; moves are kept.
+// the outline a whole average wall plus 10 mm off each end, and furniture's clamp and containment; moves are kept. Since the
+// panels' PR (#256) the outline is moved in by each edge's own wall (getRoomWallFinishDepths: 12.5 mm in on a 200 mm wall,
+// 37.5 mm out on the 100 mm one), so a run ends 97.5 mm from each end wall's face, where on the line it was 85 mm from a
+// 200 mm wall's and 135 mm from the 100 mm wall's.
 const living = canonicalFloorPlanToDesignSnapshot(authoredApartment()).snapshot.rooms.find((room) => room.id === "living")!;
 assert.equal(living.geometry.wallThickness, 0.175, "the fixture's living room carries its walls' average");
 const livingSpaces = buildCabinetryAvailableSpaces({ activeRoom: living, activePlanRoom: null, planRoomCount: 2, planOpenings: [] });
 assert.deepEqual(livingSpaces.map((space) => [Math.round(space.availableWidthMm), space.installationClearanceLeftMm]),
-  [[4000, 185], [6000, 185], [4000, 185], [6000, 185]], "the line's hosts");
+  [[4025, 185], [5975, 185], [4025, 185], [5975, 185]], "the line's hosts, from each wall's own face");
 const livingModel = compileCanonicalFloorPlanRenderModel(authoredApartment());
 livingSpaces.map((space) => placeFittedRun(living, space)).forEach((run) => {
   const dims = { w: run.width * 1000, d: run.depth * 1000, h: 870 };

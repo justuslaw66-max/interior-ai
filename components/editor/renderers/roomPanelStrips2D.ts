@@ -50,11 +50,35 @@ const NO_OPENINGS: PanelStripOpenings2D = { rooms: [], openings: [] };
 const DOORWAY_TOLERANCE = 0.002;
 const DEFAULT_WALL_HEIGHT = 2.6;
 
-// One list per room's depths while its outline and its doorways are the same, so the plan keeps its shapes and lines
-// across re-renders, edits elsewhere, and the copy of the room it draws on every frame of a room drag (only x and z change).
-// While the plan's rooms and openings are the same lists, the doorways aren't measured again.
-type KnownStrips = { room: PanelFaceRoom2D; context: PanelStripOpenings2D; doorways: string; strips: Strips };
+// One list per room's depths while its outline, its doorways and the finishes it is drawn in are the same, so the plan
+// keeps its shapes and lines across re-renders, edits elsewhere, and the copy of the room it draws on every frame of a room
+// drag (only x and z change). While the plan's rooms and openings are the same lists, the doorways aren't measured again. A
+// room's depths are the same object whenever their values are (getRoomWallFinishDepths), so the finishes are read too: a
+// laminate swapped for another as deep has the same depths.
+type KnownStrips = {
+  room: PanelFaceRoom2D; context: PanelStripOpenings2D; doorways: string; finishes: string; strips: Strips;
+};
 const stripsByDepths = new WeakMap<RoomWallFinishDepths, KnownStrips>();
+// Each room's strip finishes by its surfaces object, so a re-render or a drag frame reads none again.
+type KnownFinishes = Map<string, { depths: RoomWallFinishDepths; finishes: string }>;
+const finishesBySurfaces = new WeakMap<object, KnownFinishes>();
+
+/** The finish each laminate face's strip is drawn in (getDeepestWallFinish), as one key. */
+function stripFinishesKey(room: PanelFaceRoom2D, depths: RoomWallFinishDepths): string {
+  const surfaces = room.surfaces ?? room.surfaceFinishes;
+  const byRoom: KnownFinishes | undefined = surfaces ? finishesBySurfaces.get(surfaces) ?? new Map() : undefined;
+  const known = byRoom?.get(room.id);
+  if (known?.depths === depths) return known.finishes;
+  const finishes = Object.keys(depths).filter((faceId) => (depths[faceId] ?? 0) > 0).map((faceId) => {
+    const deepest = getDeepestWallFinish(room, faceId);
+    return `${faceId}:${deepest?.paintColorHex ?? ""}:${deepest?.materialId ?? ""}`;
+  }).join("|");
+  if (surfaces && byRoom) {
+    byRoom.set(room.id, { depths, finishes });
+    finishesBySurfaces.set(surfaces, byRoom);
+  }
+  return finishes;
+}
 
 function isSameRoomOutline(a: PanelFaceRoom2D, b: PanelFaceRoom2D): boolean {
   return a.id === b.id && a.shape === b.shape && a.polygon === b.polygon && a.w === b.w && a.d === b.d &&
@@ -70,7 +94,8 @@ export function getRoomPanelStrips2D(room: PanelFaceRoom2D, openings: PanelStrip
   const depths = getRoomWallFinishDepths(room);
   if (!hasWallFinishDepths(depths)) return NO_STRIPS;
   const known = stripsByDepths.get(depths);
-  const sameOutline = Boolean(known && isSameRoomOutline(known.room, room));
+  const finishes = stripFinishesKey(room, depths);
+  const sameOutline = Boolean(known && isSameRoomOutline(known.room, room) && known.finishes === finishes);
   if (known && sameOutline && known.context.rooms === openings.rooms && known.context.openings === openings.openings) {
     return known.strips;
   }
@@ -81,7 +106,7 @@ export function getRoomPanelStrips2D(room: PanelFaceRoom2D, openings: PanelStrip
   const doorwaysKey = doorways.map((ranges) => ranges.map((range) => range.map((at) => at.toFixed(4)).join("~")).join(",")).join("|");
   const strips = known && sameOutline && known.doorways === doorwaysKey
     ? known.strips : buildRoomPanelStrips2D(room, depths, faceIds, points, doorways);
-  stripsByDepths.set(depths, { room, context: openings, doorways: doorwaysKey, strips });
+  stripsByDepths.set(depths, { room, context: openings, doorways: doorwaysKey, finishes, strips });
   return strips;
 }
 
