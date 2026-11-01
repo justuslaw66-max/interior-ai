@@ -59,7 +59,32 @@ type Context = {
   planRooms: Map<string, HousePlanRoom2D>; model: CanonicalFloorPlanRenderModel; faces: Array<{ a: P; b: P; n: P }>;
   /** The hosts over pieces all but collinear, and the faces the hosts are on, each with its normal (checkHostsOffered). */
   chainHosts: Map<CabinetHostSpace, ChainHost>; hostFaces: Array<{ a: P; b: P; n: P; borderline: boolean }>;
+  /** The plan's doors and windows, room-local, each from its start to its end on its wall's centre line (planOpenings). */
+  openings: Array<{ a: P; b: P }>;
 };
+
+/** The plan's doors and windows from its document (each `offsetMm` from its wall's start, `widthMm` along it), room-local metres. */
+function planOpenings(case_: ImportedCase, room: RoomSnapshot): Array<{ a: P; b: P }> {
+  type Entry = { id: string; path: { startVertexId: string; endVertexId: string } };
+  const floor = case_.document.floors[0] as unknown as { vertices: Array<{ id: string; xMm: number; zMm: number }>; walls: Entry[]; openings: Array<{ wallId: string; offsetMm: number; widthMm: number }> };
+  const at = new Map(floor.vertices.map((vertex) => [vertex.id, vertex])), origin = room.planPosition ?? { x: 0, z: 0 };
+  return floor.openings.flatMap(({ wallId, offsetMm, widthMm }) => {
+    const wall = floor.walls.find(({ id }) => id === wallId), [from, to] = wall ? [at.get(wall.path.startVertexId), at.get(wall.path.endVertexId)] : [];
+    if (!from || !to) return [];
+    const length = Math.hypot(to.xMm - from.xMm, to.zMm - from.zMm), point = (alongMm: number) => ({
+      x: (from.xMm + ((to.xMm - from.xMm) * alongMm) / length) / 1000 - origin.x, z: (from.zMm + ((to.zMm - from.zMm) * alongMm) / length) / 1000 - origin.z,
+    });
+    return [{ a: point(offsetMm), b: point(offsetMm + widthMm) }];
+  });
+}
+
+/** True when the run's end `end` (its frame) is within 3 mm of an edge of a door or window on the wall behind its back. */
+function endsAtOpening(context: Context, run: Run, back: number, end: number): boolean {
+  return context.openings.some(({ a, b }) => {
+    const [p, q] = [toRun(run, back, a), toRun(run, back, b)];
+    return p[1] < 0.01 && q[1] < 0.01 && p[1] > -0.45 && q[1] > -0.45 && (Math.abs(p[0] - end) < 0.003 || Math.abs(q[0] - end) < 0.003);
+  });
+}
 const failures: string[] = [];
 const counts: Record<string, number> = { plans: 0, rooms: 0, furnitureRule: 0, faces: 0, hosts: 0, chains: 0, runs: 0, refused: 0, filling: 0, doorRuns: 0,
   nudges: 0, kept: 0, stopped: 0, turns: 0, turnsRefused: 0, snaps: 0, normalSnaps: 0, stuck: 0, stuckRefused: 0, stuckTurnsRefused: 0, tooLong: 0, tooLongRefused: 0, copies: 0, placements: 0, placementsRefused: 0 };
@@ -156,8 +181,7 @@ function gapsBehind(context: Context, run: Run, back: number, bottomMm: number, 
     const spans = hits.filter(({ into }) => into <= first + 0.002).map(({ slice }) => [slice.bottomMm, slice.topMm] as const).sort((a, b) => a[0] - b[0]);
     let reach = bottomMm;
     for (const [low, high] of spans) if (low <= reach + 0.5) reach = Math.max(reach, high);
-    // No slice at all: an opening to the wall's top (or past the face's end, where only a run's end can be near it).
-    return hits.length === 0 || reach < topMm - 0.5;
+    return hits.length > 0 && reach < topMm - 0.5;
   };
   const refine = (from: number, to: number) => {
     const opens = gapAt(to);
@@ -306,7 +330,7 @@ function checkRun(context: Context, space: CabinetHostSpace, preset: "base" | "w
   if (segment && Math.abs(segment.widthMm - definition.totalWidth) <= 1) {
     counts.filling += 1;
     for (const side of [-1, 1] as const) {
-      const end = (side * run.width) / 2, atDoor = gaps.some(([from, to]) => Math.abs(from - end) < 0.003 || Math.abs(to - end) < 0.003);
+      const end = (side * run.width) / 2, atDoor = gaps.some(([from, to]) => Math.abs(from - end) < 0.003 || Math.abs(to - end) < 0.003) || endsAtOpening(context, run, back, end);
       check(endsRight(context.region, edges, run, back, gap, side, atDoor, tolerance, chain), () => `${what()}: its ${side < 0 ? "start" : "end"} is more than ${((gap + tolerance) * 1000).toFixed(2)} mm from what it meets`);
     }
   }
@@ -650,7 +674,7 @@ for (let index = 0; index < PLANS; index += 1) {
       continue;
     }
     const context: Context = {
-      room, planRoom, label, planRooms: case_.planRooms, model: case_.model, faces: [], chainHosts: new Map(), hostFaces: [],
+      room, planRoom, label, planRooms: case_.planRooms, model: case_.model, faces: [], chainHosts: new Map(), hostFaces: [], openings: planOpenings(case_, room),
       region: importedRegionOf(room, planRoom, case_.floor), drawn: importedRegionOf(room, planRoom, case_.floor, true),
     };
     const spaces = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: case_.rooms.length, planOpenings: [], planRooms: case_.planRooms, canonicalModel: case_.model });
