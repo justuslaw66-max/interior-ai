@@ -28,7 +28,7 @@ export type EdgeFace = { dx: number; dz: number; nx: number; nz: number; line: L
 type End = { point: P; slack: number };
 /** Edges whose faces are one host, and their face stretches' ends. */
 export type CollinearChain = { edges: number[]; ends: End[] };
-/** A chain's host, where its face starts and ends (on its line), and how far behind its line the faces stand at most. */
+/** A chain's host, where it starts and ends (where the chain's faces do, chainHost), and how far behind its line the faces stand at most. */
 export type ChainHost = { space: CabinetHostSpace; from: P; to: P; bow: number };
 
 const endsOf = (face: EdgeFace): End[] => face.groups.flat().flatMap((stretch) =>
@@ -87,8 +87,10 @@ export function chainHost(chain: CollinearChain, faces: ReadonlyArray<EdgeFace |
     const deepest = Math.max(...at.map(({ across }) => across));
     if (bow > length * COLLINEAR_SIN || deepest > 0.00001 || deepest < -0.00001 - gap * COLLINEAR_SIN) continue;
     const start = at.reduce((least, end) => (end.along < least.along ? end : least)), end = at.reduce((most, entry) => (entry.along > most.along ? entry : most));
-    const on = (along: number) => ({ x: from.x + ux * along, z: from.z + uz * along });
-    if (Math.abs(start.along) <= 0.0005 + start.slack && Math.abs(end.along - length) <= 0.0005 + end.slack) return { space, from: on(start.along), to: on(end.along), bow };
+    // Where the wall ending a face is all but parallel to it (its slack at the most, 5 mm), it ends where that wall rises past a
+    // line known only to its slope: the host's line, a few ten-thousandths of a degree off the piece's, may meet it 20 mm away.
+    const within = (slack: number) => 0.0005 + (slack >= 0.005 - 1e-12 ? 0.02 : slack);
+    if (Math.abs(start.along) <= within(start.slack) && Math.abs(end.along - length) <= within(end.slack)) return { space, from, to, bow };
   }
   return null;
 }
