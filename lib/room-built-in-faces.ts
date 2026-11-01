@@ -146,7 +146,8 @@ export function getRoomBuiltInFaces(
   const inputs: FacesInputs = {
     planShape: room.planShape, planPolygon: room.planPolygon, planHoles: room.planHoles, surfaces: room.surfaces,
     surfaceFinishes: room.surfaceFinishes, w: size.w, d: size.d, wall: room.geometry.wallThickness,
-    neighbours: getBuiltInNeighbourWalls(room.id, planRooms),
+    // An imported room's region has its plan's walls from its model, not the rooms around it.
+    neighbours: imported ? NO_NEIGHBOURS : getBuiltInNeighbourWalls(room.id, planRooms),
     ...(imported ? { planEdgeWallIds: room.planEdgeWallIds, at: `${room.planPosition?.x},${room.planPosition?.z}`, canonical } : {}),
   };
   const known = facesByGeometry.get(room.geometry);

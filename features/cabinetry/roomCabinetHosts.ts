@@ -32,7 +32,7 @@ import type { CabinetDefinition, CabinetHostSpace } from "./types";
  * (`planRooms`, the plan's rooms), and a door or window of theirs on a wall it shares cuts the host as its own do. Its back
  * stands against the face (a run on the floor against the baseboard): the host's segment is the face, which
  * getCabinetFitPlacement puts the back on. An imported plan's room's faces are its plan's own 3D walls and panels (`canonicalModel`),
- * and its doors and windows the plan's (importedCabinetHostOpenings.ts). A room on furniture's rule for built-ins (one with no
+ * and its doors and windows the plan's (importedCabinetHosts.ts). A room on furniture's rule for built-ins (one with no
  * exposed face, or an imported room without its plan's model) keeps the hosts it had on the line: its outline, a whole wall plus
  * 10 mm off each end.
  */
