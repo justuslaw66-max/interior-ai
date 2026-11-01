@@ -371,6 +371,37 @@ for (const heightMm of [2100, 2600]) {
   const placed = getCabinetPlacement(fitted.definition, panelled, false);
   assert.equal(inside([placed.position[0], placed.position[2]]), true, "Place takes it to the nearest place it fits in the room");
 }
+// Snap to wall from a place a run doesn't fit aims back onto the face it stands against. In an axis-aligned room Snap goes to
+// its faces' outline: from a run stuck on a stub's end that is 0.2 m out, where it fits, off its wall (the drawn oracle's full
+// set at seed 123457, room 1123).
+{
+  const stub = [{ x: -2.8, z: 0.64 }, { x: 2.8, z: 0.64 }, { x: 2.8, z: -0.64 }, { x: -1.09, z: -0.64 }, { x: -1.09, z: -0.35 }, { x: -1.31, z: -0.35 }, { x: -1.31, z: -0.64 }, { x: -2.8, z: -0.64 }];
+  const room = { ...createRoom("s", "Kitchen", "kitchen", { width: 5.6, depth: 1.28, wallThickness: 0.2, height: 2.6, slabThickness: 0.1 }), planShape: "custom_polygon" as const, planPolygon: stub } as RoomSnapshot;
+  const end = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).find((space) => space.wallId === "wall-4")!;
+  const fitted = fitCabinetToSpace(createCabinetPreset("base", "stub"), end, { mode: "fit_width" });
+  if (!fitted.ok) throw new Error("a base run fits the stub's end");
+  const at = getCabinetFitPlacement(fitted.definition, 5.6, 1.28)!, [w, d, r] = [fitted.definition.totalWidth / 1000, fitted.definition.depth / 1000, at.rotationY];
+  const run = { x: at.position[0], z: at.position[2], width: w, depth: d, rotationY: r }, stuck = outFrom(run, -0.03);
+  assert.equal(builtInFootprintFits(getRoomBuiltInFaces(room), stuck.x, stuck.z, w, d, r), false, "stub: 30 mm into its wall it doesn't fit");
+  const aim = getBuiltInSnapTarget(room, [stuck.x, 0, stuck.z], w, d, r), [x, z] = clampBuiltInToRoom(room, aim[0], aim[1], w, d, r, { from: [stuck.x, stuck.z], bottom: 0 });
+  assert.ok(Math.hypot(x - run.x, z - run.z) < 1e-6, `stub: Snap to wall puts it back where Fit put it (${(Math.hypot(x - run.x, z - run.z) * 1000).toFixed(0)} mm off)`);
+}
+// The face a stuck run stands against is the one where it stands: a run stuck in a panelled piece of a two-piece wall, dragged
+// toward the bare piece 13 mm behind it, stays on its own face's line (the drawn oracle's full set at seed 20261102, room 2285).
+{
+  const twoPiece = [{ x: -0.9, z: -0.7 }, { x: -0.38, z: -0.7 }, { x: 0.9, z: -0.7 }, { x: 0.9, z: 0.7 }, { x: -0.9, z: 0.7 }];
+  const room = { ...createRoom("t", "Kitchen", "kitchen", { width: 1.8, depth: 1.4, wallThickness: 0.25, height: 2.6, slabThickness: 0.1 }), planShape: "custom_polygon" as const, planPolygon: twoPiece,
+    geometry: { width: 1.8, depth: 1.4, wallThickness: 0.25, height: 2.6, slabThickness: 0.1, baseboardDepth: 0.015 },
+    surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { "wall-0": laminate(12) } } } } as RoomSnapshot;
+  const panelled = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).find((space) => space.wallId === "wall-0")!;
+  const fitted = fitCabinetToSpace(createCabinetPreset("base", "piece"), panelled, { mode: "fit_width" });
+  if (!fitted.ok) throw new Error("a base run fits the panelled piece");
+  const at = getCabinetFitPlacement(fitted.definition, 1.8, 1.4)!, [w, d, r] = [fitted.definition.totalWidth / 1000, fitted.definition.depth / 1000, at.rotationY];
+  const run = { x: at.position[0], z: at.position[2], width: w, depth: d, rotationY: r }, stuck = outFrom(run, -0.03), aim = along(stuck, 0.2);
+  const [x, z] = getBuiltInDragPlace(room, [stuck.x, stuck.z], aim.x, aim.z, w, d, r, { bottom: 0 });
+  const across = (x - run.x) * Math.sin(r) + (z - run.z) * Math.cos(r);
+  assert.ok(Math.abs(across) < 0.001, `two-piece wall: a drag from the stuck run keeps it on its own face (${(across * 1000).toFixed(1)} mm off)`);
+}
 for (const turnDeg of [0, 20]) {
   const document = importedDocument(`l-${turnDeg}`, { vertices: { a: [0, 0], b: [6000, 0], c: [6000, 2000], d: [4000, 2000], e: [4000, 4000], f: [0, 4000] }, rooms: { K: ["a", "b", "c", "d", "e", "f"] }, thicknessMm: 200 }, { turnDeg });
   const plain = importedCaseOf(document), panelled = importedCaseOf(document, (room) => ({ ...room, surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { "w-f-a": { materialId: "greenlam-woodgrains-5394", panelBacking: { board: "mdf", boardThicknessMm: 18, fixing: "battens" } } } } } }) as RoomSnapshot);
