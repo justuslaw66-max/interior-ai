@@ -9,8 +9,8 @@ import {
   isCatalogPlacementLocalFootprintInsideRoom,
 } from "@/lib/catalog-placement";
 import { getFurnitureWallInset, type AABB } from "@/lib/design-page-geometry";
-import { clampToRoomInsideFinishes, getRoomOutlineInsideFinishes } from "@/lib/room-finished-outline";
-import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
+import { clampToRoomInsideFinishes, getRoomOutlineInsideFinishes, type RoomPlanOutline } from "@/lib/room-finished-outline";
+import { getRoomWallFinishDepths, type RoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import {
   ROOM_DIMENSION_DEFAULTS,
   type HousePlanRoom2D,
@@ -167,6 +167,18 @@ export function findPlacementBlockerInRoom({
   });
 }
 
+/**
+ * The footprint is also tested inside the room's bounding rectangle less the furniture inset, which is the room's one wall
+ * thickness. An imported room's edge on a thinner wall stands out past that (a negative depth, getRoomWallFinishDepths), and
+ * the clamp stops an item 2 cm off it: the rectangle grows to hold the outline, so the outline decides there, as in the clamp.
+ */
+function boundsHolding(outline: RoomPlanOutline, depths: RoomWallFinishDepths): { w: number; d: number } {
+  const { w, d, polygon } = outline;
+  if (!polygon?.length || !Object.values(depths).some((depth) => (depth ?? 0) < 0)) return { w, d };
+  const reach = (axis: "x" | "z") => 2 * Math.max(...polygon.map((point) => Math.abs(point[axis])));
+  return { w: Math.max(w, reach("x")), d: Math.max(d, reach("z")) };
+}
+
 export function isPlacementContainedInRoom({
   room,
   position,
@@ -197,15 +209,16 @@ export function isPlacementContainedInRoom({
   }
   if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   // Inside the room's laminate panels (lib/room-finished-outline.ts).
+  const depths = getRoomWallFinishDepths(room);
   const outline = getRoomOutlineInsideFinishes({
     shape: room.planShape ?? houseRoom?.shape ?? "rectangle",
     polygon: room.planPolygon ?? houseRoom?.polygon,
     holes: room.planHoles ?? houseRoom?.holes,
     w: room.geometry.width,
     d: room.geometry.depth,
-  }, getRoomWallFinishDepths(room));
+  }, depths);
   return isCatalogPlacementLocalFootprintInsideRoom({
-    room: { id: room.id, name: room.name, ...outline, x: 0, z: 0 },
+    room: { id: room.id, name: room.name, ...outline, ...boundsHolding(outline, depths), x: 0, z: 0 },
     position,
     rotationY,
     dimsMm: dimensions,

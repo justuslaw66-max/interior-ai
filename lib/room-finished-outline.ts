@@ -4,6 +4,7 @@ import type { RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 import {
   getRoomWallFaceIds,
   getRoomWallFinishDepths,
+  hasRoomWallPanels,
   hasWallFinishDepths,
   NO_WALL_FINISH_DEPTHS,
   type RoomWallFinishDepths,
@@ -11,7 +12,8 @@ import {
 } from "@/lib/room-wall-finish-depths";
 
 /**
- * A drawn room's plan outline inside its laminate panels (J, 29 Oct 2026: the room measured to the panel face). Placement
+ * A room's plan outline inside its laminate panels, a drawn room's or an imported plan's (J, 29 Oct 2026: the room measured to
+ * the panel face; an imported room's edges are named by their plan walls, lib/room-wall-finish-depths.ts). Placement
  * keeps its own inset from the bare wall (half the wall plus 2 cm, getFurnitureWallInset); each wall's panel depth
  * (lib/room-wall-finish-depths.ts) moves that wall's edge of the outline in, so the same clamps and containment checks stop
  * furniture at the panel. A room with no panels keeps its outline exactly.
@@ -107,19 +109,22 @@ function insetCorner(point: RoomPlanPolygonPoint, before: OffsetLine, after: Off
   return before.inset === after.inset ? start : [footOn(before, point), start];
 }
 
+/** The moved outline's corners, each with the moved edges either side of it that meet there. */
+type MovedCorners = { corners: InsetCorner[]; meeting: (readonly [OffsetLine, OffsetLine])[] };
+
 /** Each corner, from the nearest edges either side of it still in the outline: one an edge passed over doesn't stop. */
-function cornersBetween(points: readonly RoomPlanPolygonPoint[], lines: readonly OffsetLine[], kept: readonly boolean[]): InsetCorner[] {
+function cornersBetween(points: readonly RoomPlanPolygonPoint[], lines: readonly OffsetLine[], kept: readonly boolean[]): MovedCorners {
   const count = points.length;
   const nearest = (from: number, by: number) => {
     let index = (from + count) % count;
     while (!kept[index]) index = (index + by + count) % count;
     return index;
   };
-  return points.map((_, index) => {
-    const before = nearest(index - 1, -1);
-    // A corner past passed-over edges takes the first of their points, so they all meet at the same place.
-    return insetCorner(points[(before + 1) % count], lines[before], lines[nearest(index, 1)]);
-  });
+  const sides = points.map((_, index) => [nearest(index - 1, -1), nearest(index, 1)] as const);
+  const meeting = sides.map(([before, after]) => [lines[before], lines[after]] as const);
+  // A corner past passed-over edges takes the first of their points, so they all meet at the same place.
+  const corners = sides.map(([before, after]) => insetCorner(points[(before + 1) % count], lines[before], lines[after]));
+  return { corners, meeting };
 }
 
 const cornerOut = (corner: InsetCorner) => (isInsetStep(corner) ? corner[1] : corner);
@@ -135,11 +140,18 @@ const cornerIn = (corner: InsetCorner) => (isInsetStep(corner) ? corner[0] : cor
 export function insetPolygonEdgesWithSteps(
   points: readonly RoomPlanPolygonPoint[], insets: readonly number[], inwardSign: 1 | -1 = getOutlineInwardSign(points)
 ): InsetCorner[] {
-  const lines = points.map((_, index) => offsetEdge(points, index, Math.max(0, insets[index] ?? 0), inwardSign));
+  return moveEdges(points, insets, inwardSign).corners;
+}
+
+function moveEdges(points: readonly RoomPlanPolygonPoint[], insets: readonly number[], inwardSign: 1 | -1): MovedCorners {
+  // An inset may be negative: an imported room's edge on a wall thinner than its average stands that much nearer its centre
+  // line (getRoomWallFinishDepths). A drawn room's are never.
+  const lines = points.map((_, index) => offsetEdge(points, index, insets[index] ?? 0, inwardSign));
   const kept = lines.map((line) => line.length > ZERO_EDGE_METERS);
-  if (!kept.some(Boolean)) return points.map(({ x, z }) => ({ x, z }));
-  let corners = cornersBetween(points, lines, kept);
+  if (!kept.some(Boolean)) return { corners: points.map(({ x, z }) => ({ x, z })), meeting: [] };
+  let moved = cornersBetween(points, lines, kept);
   for (let round = 0; round < points.length; round += 1) {
+    const { corners } = moved;
     const reversed = lines.map((line, index) => {
       const from = cornerOut(corners[index]), to = cornerIn(corners[(index + 1) % corners.length]);
       return kept[index] && (to.x - from.x) * line.dx + (to.z - from.z) * line.dz < -1e-9;
@@ -147,9 +159,9 @@ export function insetPolygonEdgesWithSteps(
     // An outline that would keep fewer than three edges is narrower than its walls: it is left turned inside out.
     if (!reversed.some(Boolean) || kept.filter((keep, index) => keep && !reversed[index]).length < 3) break;
     reversed.forEach((turned, index) => { if (turned) kept[index] = false; });
-    corners = cornersBetween(points, lines, kept);
+    moved = cornersBetween(points, lines, kept);
   }
-  return corners;
+  return moved;
 }
 
 /**
@@ -168,18 +180,20 @@ export function getInsetPolygonFaces(
 
 /**
  * `insetPolygonEdgesWithSteps` with one point per corner, for a closed outline whose corners keep their indices (the
- * furniture clamp, and the cabinets, which name each edge's wall `wall-N`): a step's deeper end, so the shallower face
- * leans from the deeper depth at that corner to its own at the next. Two edges that run straight on move in by the deeper
- * of the two, as before. Read a face where it stands with getInsetPolygonFaces.
+ * furniture clamp, and the cabinets, which name each edge's wall `wall-N`): a step's end on the edge moved in further, so
+ * the other face leans from the deeper depth at that corner to its own at the next. Two edges that run straight on move in
+ * by the deeper of the two, as before. Read a face where it stands with getInsetPolygonFaces.
  */
 export function insetPolygonEdges(
   points: readonly RoomPlanPolygonPoint[], insets: readonly number[], inwardSign: 1 | -1 = getOutlineInwardSign(points)
 ): RoomPlanPolygonPoint[] {
-  return insetPolygonEdgesWithSteps(points, insets, inwardSign).map((corner, index) => {
+  const { corners, meeting } = moveEdges(points, insets, inwardSign);
+  return corners.map((corner, index) => {
     if (!isInsetStep(corner)) return corner;
-    const point = points[index];
-    const [end, start] = corner;
-    return Math.hypot(end.x - point.x, end.z - point.z) > Math.hypot(start.x - point.x, start.z - point.z) ? end : start;
+    // The end of the edge moved in further. With insets never negative, as a drawn room's, that is the end farther from the
+    // corner; an imported room's edge on a thinner wall moves out (a negative inset), and its end would stand out of the room.
+    const [before, after] = meeting[index];
+    return before.inset > after.inset ? corner[0] : corner[1];
   });
 }
 
@@ -296,8 +310,10 @@ export function getRoomClearInsideMetrics(
   room: WallFinishRoom & { shape: RoomPlanShape; w: number; d: number; wallThickness?: number },
   formatLengthMm: (valueMm: number) => string
 ): string[] {
+  // Shown when a wall has a laminate (J: "Add a clear size"), measured to each wall's own face: an imported room's depths also
+  // carry each wall's thickness, so they are there without a laminate.
+  if (!hasRoomWallPanels(room)) return [];
   const depths = getRoomWallFinishDepths(room);
-  if (!hasWallFinishDepths(depths)) return [];
   const halfWall = (room.wallThickness ?? 0.12) / 2;
   const outline = { shape: room.shape, polygon: room.polygon ? [...room.polygon] : undefined, w: room.w, d: room.d };
   const faceIds = getRoomWallFaceIds(outline);
