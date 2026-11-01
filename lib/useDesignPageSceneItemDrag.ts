@@ -20,7 +20,7 @@ import {
   type DesignItemTransformPatch,
 } from "@/lib/design-page-item-commands";
 import type { HistoryCommand, HistoryStatus } from "@/lib/historyManager";
-import { clampToPlacementRoom } from "@/lib/useDesignPagePlacementRoomQueries";
+import type { ClampToPlacementRoom } from "@/lib/useDesignPagePlacementRoomQueries";
 import { getCrossRoomItemDragTarget } from "@/lib/useDesignPageCrossRoomItemTransfer";
 import { isBuiltInItem } from "@/lib/room-finished-outline";
 import type {
@@ -91,6 +91,7 @@ type SceneItemDragOptions = {
       rotationY: number,
       dimensions: PlanningDimensions, builtIn?: boolean
     ) => boolean;
+    clampToPlacementRoom: ClampToPlacementRoom; // The placement queries': the plan's rooms and an imported plan's walls too.
     clampToRoom: (
       x: number,
       z: number,
@@ -148,7 +149,7 @@ export function useDesignPageSceneItemDrag({
     setCrossRoomDragTarget,
     findPlacementBlocker,
     isPlacementContained,
-    clampToRoom,
+    clampToRoom, clampToPlacementRoom,
     getItemBounds,
     getItemDisplayName,
     previewItems,
@@ -387,8 +388,7 @@ export function useDesignPageSceneItemDrag({
           const [safeX, safeZ] = surfacePlacement
             ? [surfacePlacement.position[0], surfacePlacement.position[2]]
             : clampToPlacementRoom(targetRoom, // The target room's own shape and panels; clampToRoom is the active room's.
-                targetLocalPosition[0], targetLocalPosition[2],
-                configuredPlanningDims.w / 1000, configuredPlanningDims.d / 1000, mover.rotationY ?? 0);
+                targetLocalPosition[0], targetLocalPosition[2], configuredPlanningDims.w / 1000, configuredPlanningDims.d / 1000, mover.rotationY ?? 0);
           const targetPosition: [number, number, number] = surfacePlacement
             ? surfacePlacement.position
             : [

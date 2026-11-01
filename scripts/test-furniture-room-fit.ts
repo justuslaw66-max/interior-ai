@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { WALL_FINISH_SKIN_MM } from "../components/editor/renderers/canonical-floor-plan/geometry";
 import { buildHousePlan2D } from "../lib/design-page-house-plan";
 import { getFurnitureWallInset } from "../lib/design-page-geometry";
@@ -147,8 +149,10 @@ const turned = (place: P, width: number, depth: number, rotationY: number) => ge
 }
 
 // --- Imported plans: an arc bowing in, a spike, and the painted half of a T --------------------------------------------------
-function importedRooms(spec: ShapeSpec, seed: number, finish: (wallId: string) => object) {
+function importedRooms(spec: ShapeSpec, seed: number, finish: (wallId: string) => object, openings: object[] = []) {
   const document = planFromShape(`example-${spec.kind}`, spec, seeded(seed)) as FloorPlanDocumentV2;
+  const provenance = document.floors[0].walls[0].provenance;
+  document.floors[0].openings = openings.map((opening) => ({ hinge: "none", handing: "none", operation: "fixed", provenance, ...opening })) as never;
   const { snapshot, scene } = canonicalFloorPlanToDesignSnapshot(document);
   const rooms = snapshot.rooms.map((room) => ({ ...room, surfaceFinishes: undefined, surfaces: { walls: { default: PAINT,
     faces: Object.fromEntries((room.planEdgeWallIds ?? []).map((wallId) => [wallId, finish(wallId)])) } } }) as RoomSnapshot);
@@ -207,6 +211,34 @@ function importedGap(setup: ReturnType<typeof importedRooms>, room: RoomSnapshot
   const gap = importedGap(setup, room, footprint);
   assert.ok(placed && gap >= CLEAR, `the painted half of a T: ${(gap * 1000).toFixed(1)} mm off`);
   console.log(`The painted half of a T: the item stands ${(gap * 1000).toFixed(1)} mm off, where the line puts it.`);
+}
+
+{
+  // An imported room with a door and a window (J, 2 Nov 2026: furniture never stands in a wall's thickness, a reveal included).
+  // Pushed into either opening, a sideboard stops 2 cm off the wall's face line there, as the line's box clamp does, and one with
+  // its back in the reveal is refused (a floor with only the slices standing on it let it in, up to the centre line).
+  const spec: ShapeSpec = { kind: "rect", vertices: { a: [0, 0], b: [5000, 0], c: [5000, 4000], e: [0, 4000] }, rooms: { R: ["a", "b", "c", "e"] } };
+  const setup = importedRooms(spec, 1951, () => PAINT, [
+    { id: "door", wallId: "w-a-b", kind: "door", operation: "swing", offsetMm: 1500, widthMm: 800, hinge: "start", handing: "left" },
+    { id: "window", wallId: "w-b-c", kind: "window", offsetMm: 1200, widthMm: 1000, heightMm: 1200, sillHeightMm: 900 },
+  ]);
+  const room = setup.rooms[0], origin = room.planPosition ?? { x: 0, z: 0 }, floorPlan = setup.document.floors[0];
+  const vertex = (id: string) => floorPlan.vertices.find((entry) => entry.id === id)!;
+  for (const [wallId, alongMm] of [["w-a-b", 1900], ["w-b-c", 1700]] as const) {
+    const wall = floorPlan.walls.find(({ id }) => id === wallId)!, path = wall.path as { startVertexId: string; endVertexId: string };
+    const [a, b] = [vertex(path.startVertexId), vertex(path.endVertexId)], length = Math.hypot(b.xMm - a.xMm, b.zMm - a.zMm);
+    const [dx, dz] = [(b.xMm - a.xMm) / length, (b.zMm - a.zMm) / length];
+    const middle = { x: (a.xMm + dx * alongMm) / 1000 - origin.x, z: (a.zMm + dz * alongMm) / 1000 - origin.z };
+    const side = insideRing({ x: middle.x - dz * 0.5, z: middle.z + dx * 0.5 }, room.planPolygon!) ? 1 : -1, [nx, nz] = [-dz * side, dx * side];
+    const rotationY = Math.atan2(-nx, -nz), at = (off: number) => ({ x: middle.x + nx * off, z: middle.z + nz * off });
+    const { line, placed, footprint, contained } = clampBoth(room, at(-0.3), 1.2, 0.4, rotationY, undefined, [setup.floor]);
+    const gap = importedGap(setup, room, footprint), lineGap = importedGap(setup, room, turned({ x: line[0], z: line[1] }, 1.2, 0.4, rotationY));
+    assert.ok(lineGap >= CLEAR - 0.0005, `the line's clamp keeps it 2 cm off the ${wallId} wall's face line (${lineGap})`);
+    assert.ok(placed && gap >= CLEAR - 0.0005 && gap <= CLEAR + 0.001, `pushed into the ${wallId} opening: 2 cm off its reveal (${gap})`);
+    // Its back 50 mm into the reveal (its face half the wall in from the centre line).
+    assert.equal(contained(at(wall.thicknessMm / 2000 - 0.05 + 0.2)), false, `a sideboard with its back in the ${wallId} reveal is refused`);
+    assert.ok(contained(at(wall.thicknessMm / 2000 + 0.021 + 0.2)), `one 21 mm off the ${wallId} wall's face is accepted`);
+  }
 }
 
 // --- The edges follow the room, whatever was read before -------------------------------------------------------------------
@@ -276,6 +308,25 @@ for (const angle of [10, 20, 40]) {
   assert.ok(differ > 0, "where furniture's own clamp moves off the line's place");
 }
 
+
+// --- Every furniture clamp is handed the room: the plan's rooms and an imported plan's walls ---------------------------------
+{
+  const read = (path: string) => readFileSync(join(__dirname, "..", path), "utf8");
+  // A drop into another room: the placement queries' clamp (bound with the plan's rooms and the compiled plan), as its
+  // containment is; a bare clampToPlacementRoom(targetRoom, ...) had neither (an imported room got the line's box clamp).
+  const drag = read("lib/useDesignPageSceneItemDrag.ts");
+  assert.doesNotMatch(drag, /import \{[^}]*\bclampToPlacementRoom\b[^}]*\} from "@\/lib\/useDesignPagePlacementRoomQueries"/, "the drop's clamp is handed in");
+  assert.match(drag, /clampToPlacementRoom: ClampToPlacementRoom;/);
+  assert.match(read("lib/useDesignPageSceneItemDragRegistration.ts"), /clampToPlacementRoom: placement\.actions\.catalog\.clampToCatalogPlacementRoom/);
+  assert.match(read("lib/useDesignPagePlacementRoomQueries.ts"), /clampToPlacementRoom\(room, x, z, itemWidth, itemDepth, rotationY, houseRoomById, canonicalModel\?\.floors\)/);
+  // Nothing else calls the placement clamp, or the inside-finishes clamp without furniture's room, but built-ins.
+  const sources = (dir: string): string[] => readdirSync(join(__dirname, "..", dir)).flatMap((name) => {
+    const path = `${dir}/${name}`;
+    return statSync(join(__dirname, "..", path)).isDirectory() ? sources(path) : /\.tsx?$/.test(name) ? [path] : [];
+  });
+  const callers = ["lib", "components", "features", "app"].flatMap(sources).filter((path) => /\bclampToPlacementRoom\(/.test(read(path)));
+  assert.deepEqual(callers.sort(), ["lib/useDesignPagePlacementRoomQueries.ts", "lib/useDesignPageSceneItemDrag.ts"], "the placement clamp's callers");
+}
 
 // --- Drawn rooms against their 3D view ----------------------------------------------------------------------------------------
 let state = Number(process.env.FURNITURE_ORACLE_SEED ?? 20261101) >>> 0;

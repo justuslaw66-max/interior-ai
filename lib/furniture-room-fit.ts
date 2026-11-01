@@ -152,12 +152,6 @@ function segmentGap(a: Point, b: Point, footprint: readonly Point[]): number {
   return gap;
 }
 
-/** True when two outlines overlap: a corner of either inside the other, or an edge of each crossing. */
-export function doShapesMeet(a: readonly Point[], b: readonly Point[]): boolean {
-  if (a.some((point) => isInside(point, b)) || b.some((point) => isInside(point, a))) return true;
-  return a.some((from, i) => b.some((to, j) => segmentsCross(from, a[(i + 1) % a.length], to, b[(j + 1) % b.length])));
-}
-
 /**
  * True when the footprint `width` × `depth` at (x, z), turned `rotationY`, stands in the room and at least the clearance
  * (FURNITURE_FACE_TOLERANCE less) off every wall, panel and column the 3D view draws.

@@ -328,7 +328,23 @@ function checkRoom(room: HousePlanRoom2D, snapshot: RoomSnapshot, floor: Paramet
     note(stats, "buriedMm", buried * 1000, tolerance.buriedMm, `${label} ${panel.wallId}`);
   }
   checkCoverage(room, snapshot, floor, footprints, outline, panels, label, stats, tolerance);
-  checkFurniture(room, snapshot, floor, panels, footprints, label, stats, tolerance);
+  checkFurniture(room, snapshot, floor, panels, wallBands(floor), label, stats, tolerance);
+}
+
+/**
+ * What furniture keeps off (J, 2 Nov 2026: furniture never stands in a wall's thickness): every wall's slices, whatever their
+ * height, and each door's or window's reveal, its stretch of the wall's centre line the wall's thickness wide.
+ */
+function wallBands(floor: Parameters<typeof roomPanels>[0]): Footprint[] {
+  return floor.walls.flatMap((wall) => [
+    ...wall.solids.map((solid) => ({ wallId: wall.id, quad: [solid.footprint.startLeft, solid.footprint.endLeft, solid.footprint.endRight, solid.footprint.startRight]
+      .map(({ xMm, zMm }) => ({ x: xMm / 1000, z: zMm / 1000 })) })),
+    ...wall.openingPaths.flatMap(({ segments }) => segments.map(({ start, end }) => {
+      const [a, b] = [{ x: start.xMm / 1000, z: start.zMm / 1000 }, { x: end.xMm / 1000, z: end.zMm / 1000 }], length = Math.hypot(b.x - a.x, b.z - a.z) || 1;
+      const n = { x: (-(b.z - a.z) / length) * (wall.thicknessMm / 2000), z: ((b.x - a.x) / length) * (wall.thicknessMm / 2000) };
+      return { wallId: wall.id, quad: [{ x: a.x + n.x, z: a.z + n.z }, { x: b.x + n.x, z: b.z + n.z }, { x: b.x - n.x, z: b.z - n.z }, { x: a.x - n.x, z: a.z - n.z }] };
+    })),
+  ]);
 }
 
 const ITEMS = [[0.4, 0.4], [1, 0.5], [0.5, 1]] as const;
@@ -377,7 +393,7 @@ function separation(a: readonly P[], b: readonly P[]): number {
  * of three sizes, at four turns, dragged onto each panel (its ends and middle) and onto each corner of the clamp's outline,
  * are placed by the room's furniture clamp (clampToRoomInsideFinishes with the room's context), and each one containment
  * accepts (isPlacementContainedInRoom) must stand inside the room with its real footprint at least 20 mm from every laminate
- * panel and every wall's footprint. A skin (paint, tiles) isn't measured: the room stops at the bare wall there (J: what is
+ * panel and every wall's footprint, a door's reveal and the wall over it included (wallBands). A skin (paint, tiles) isn't measured: the room stops at the bare wall there (J: what is
  * drawn is what is measured). And it is no stricter than the 3D view: where the line's clamp (the same, without the context)
  * leaves it clear of every laminate and wall by 2 cm and a millimetre, it stays there (furniturePushedOffClearMm: how far it is
  * moved), and containment accepts that place and the target, where they are as clear (furnitureRefusedClear).
@@ -406,7 +422,7 @@ function checkFurniture(
     const local = { x: target.x - origin.x, z: target.z - origin.z }, [width, depth] = [snapshot.geometry.width, snapshot.geometry.depth];
     const clampArgs = [w, d, width, depth, inset, rotationY, "custom_polygon", snapshot.planPolygon, snapshot.planHoles, depths] as const;
     const [x, z] = clampToRoomInsideFinishes(local.x, local.z, ...clampArgs, context), line = clampToRoomInsideFinishes(local.x, local.z, ...clampArgs);
-    // An item 800 mm tall, under a door's or a window's head: those walls above the floor aren't measured here.
+    // An item 800 mm tall: a door's or a window's reveal, and the wall over it, count as wall whatever its height.
     const contained = (at: P) => isPlacementContainedInRoom({ room: snapshot, position: [at.x, 0, at.z], rotationY, dimensions: { w: w * 1000, d: d * 1000, h: 800 }, canonicalModel });
     for (const at of [local, { x: line[0], z: line[1] }]) if (clear(at, w, d, rotationY) && !contained(at)) refused += 1;
     if (clear({ x: line[0], z: line[1] }, w, d, rotationY)) pushed = Math.max(pushed, Math.hypot(x - line[0], z - line[1]));

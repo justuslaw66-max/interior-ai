@@ -4,23 +4,25 @@ import {
   type CanonicalFinishRoom,
 } from "@/components/editor/renderers/canonical-floor-plan/canonicalWallPanels";
 import { trimmedFaceEdge, WALL_FINISH_SKIN_MM } from "@/components/editor/renderers/canonical-floor-plan/geometry";
-import type { CanonicalFloorPlanFloorRenderModel, CanonicalFloorPlanWallRenderModel } from "@/lib/floor-plan-render-model";
+import type {
+  CanonicalFloorPlanFloorRenderModel, CanonicalFloorPlanLineSegment, CanonicalFloorPlanWallRenderModel,
+} from "@/lib/floor-plan-render-model";
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
 
 /**
  * An imported plan's room as its 3D view draws it (components/editor/renderers/canonical-floor-plan/), for its furniture to
- * keep 2 cm off (lib/furniture-room-fit.ts): the footprints of the plan's walls standing on the floor near it, each slice as
- * drawn (mitred, run on square or ended square where the plan leaves it so, an arc in its slices), and the room's laminate
- * strips on them, cut to its corners as drawn (getCanonicalFaceTrimsMm). A painted or tiled face is drawn as a 1.5 mm skin,
- * which isn't measured: the room stops at the bare wall there (J: what is drawn is what is measured). In the room's own
- * coordinates (its plan position subtracted). Walls standing above the floor (over a door or a window) are apart: furniture
- * keeps clear of those only where it reaches up to them (`raised`, with their heights).
+ * keep 2 cm off (lib/furniture-room-fit.ts): the footprints of the plan's walls near it, each slice as drawn (mitred, run on
+ * square or ended square where the plan leaves it so, an arc in its slices), and the room's laminate strips on them, cut to its
+ * corners as drawn (getCanonicalFaceTrimsMm). Furniture never stands in a wall's thickness (J, 2 Nov 2026), so a door's or a
+ * window's reveal counts as wall, as it does for built-ins (#245): each opening's stretch of its wall, the wall's thickness
+ * wide, and every slice above or below it, whatever its height. A painted or tiled face is drawn as a 1.5 mm skin, which isn't
+ * measured: the room stops at the bare wall there (J: what is drawn is what is measured). In the room's own coordinates (its
+ * plan position subtracted).
  */
 
 type Point = RoomPlanPolygonPoint;
 
-export type RaisedWall = { quad: Point[]; bottomMm: number; topMm: number };
-export type CanonicalRoomWalls = { walls: Point[][]; panels: Point[][]; raised: RaisedWall[] };
+export type CanonicalRoomWalls = { walls: Point[][]; panels: Point[][] };
 type Room = CanonicalFinishRoom & { id: string; planPolygon?: readonly Point[] };
 
 /** Walls this far past the room's outline (metres) can't be within 2 cm of furniture in it. */
@@ -50,11 +52,16 @@ function buildRoomWalls(floor: CanonicalFloorPlanFloorRenderModel, room: Room): 
   const near = (quad: Point[]) => quad.some(({ x }) => x >= minX) && quad.some(({ x }) => x <= maxX) && quad.some(({ z }) => z >= minZ) && quad.some(({ z }) => z <= maxZ);
   const footprintOf = ({ footprint: { startLeft, endLeft, endRight, startRight } }: CanonicalFloorPlanWallRenderModel["solids"][number]) =>
     [startLeft, endLeft, endRight, startRight].map(fromMm);
-  const standing = new Set(floor.walls.flatMap(onFloor));
-  const walls = floor.walls.flatMap((wall) => onFloor(wall).map(footprintOf)).filter(near);
-  const raised = floor.walls.flatMap((wall) => wall.solids.filter((solid) => !standing.has(solid)).map((solid) => ({
-    quad: footprintOf(solid), bottomMm: solid.bottomMm, topMm: solid.topMm,
-  }))).filter(({ quad }) => near(quad));
+  // Every slice of every wall, and each opening's reveal: its stretch of the wall, the wall's thickness wide.
+  const reveal = (wall: CanonicalFloorPlanWallRenderModel, { start, end }: CanonicalFloorPlanLineSegment) => {
+    const length = Math.hypot(end.xMm - start.xMm, end.zMm - start.zMm), half = wall.thicknessMm / 2;
+    if (!(length > 0)) return [];
+    const [nx, nz] = [(-(end.zMm - start.zMm) / length) * half, ((end.xMm - start.xMm) / length) * half];
+    return [[{ xMm: start.xMm + nx, zMm: start.zMm + nz }, { xMm: end.xMm + nx, zMm: end.zMm + nz }, { xMm: end.xMm - nx, zMm: end.zMm - nz },
+      { xMm: start.xMm - nx, zMm: start.zMm - nz }].map(fromMm)];
+  };
+  const walls = floor.walls.flatMap((wall) => [...wall.solids.map(footprintOf),
+    ...wall.openingPaths.flatMap(({ segments }) => segments.flatMap((part) => reveal(wall, part)))]).filter(near);
   const panels = floor.walls.flatMap((wall) => wall.roomSides.filter(({ roomId }) => roomId === room.id).flatMap(({ side }) => {
     const { depthMm } = getCanonicalRoomWallFinish(room, wall.id);
     if (!(depthMm > WALL_FINISH_SKIN_MM + 1e-6)) return [];
@@ -65,5 +72,5 @@ function buildRoomWalls(floor: CanonicalFloorPlanFloorRenderModel, room: Room): 
       return [[bare.start, bare.end, front.end, front.start].map(local)];
     });
   }));
-  return { walls, panels, raised };
+  return { walls, panels };
 }

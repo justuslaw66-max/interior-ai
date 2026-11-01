@@ -20,9 +20,7 @@ import { compileCanonicalFloorPlanRenderModel, type CanonicalFloorPlanRenderMode
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
 import { getFurnitureRoomContext } from "@/lib/furniture-room-context";
-import {
-  doShapesMeet, getFurnitureFaces, getTurnedFootprint, isFurnitureFootprintClear, type FurnitureRoomContext,
-} from "@/lib/furniture-room-fit";
+import { getFurnitureFaces, isFurnitureFootprintClear, type FurnitureRoomContext } from "@/lib/furniture-room-fit";
 import {
   builtInFootprintFits,
   getBuiltInStandOff,
@@ -197,12 +195,7 @@ function isFurnitureClearInRoom(
 ): boolean | null {
   if (outline.shape !== "custom_polygon" || !outline.polygon?.length) return null;
   const faces = getFurnitureFaces(outline.polygon, outline.holes ?? [], FURNITURE_WALL_CLEARANCE_METERS, context);
-  if (!faces) return null;
-  const [width, depth] = [dimensions.w / 1000, dimensions.d / 1000];
-  if (!isFurnitureFootprintClear(faces, position[0], position[2], width, depth, rotationY)) return false;
-  const [bottom, top] = [position[1] * 1000, position[1] * 1000 + (dimensions.h ?? Infinity)];
-  const footprint = getTurnedFootprint(position[0], position[2], width, depth, rotationY);
-  return !(context.canonical?.raised ?? []).some((wall) => top > wall.bottomMm && bottom < wall.topMm && doShapesMeet(wall.quad, footprint));
+  return faces && isFurnitureFootprintClear(faces, position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY);
 }
 
 export function isPlacementContainedInRoom({
@@ -242,8 +235,8 @@ export function isPlacementContainedInRoom({
     w: room.geometry.width,
     d: room.geometry.depth,
   }, depths);
-  // Furniture in a drawn or imported room: its real footprint 2 cm off the walls as the 3D view draws them (and out of a wall
-  // over a door or a window it reaches up to), and nothing else.
+  // Furniture in a drawn or imported room: its real footprint 2 cm off the walls as the 3D view draws them (a door's or a
+  // window's reveal and the wall over it counted as wall), and nothing else: the clamp keeps to the same shapes.
   const context = builtIn ? null : getFurnitureRoomContext(room, planRooms, canonicalModel?.floors);
   const exact = context && isFurnitureClearInRoom(outline, position, rotationY, dimensions, context);
   if (typeof exact === "boolean") return exact;
