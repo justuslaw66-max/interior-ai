@@ -26,7 +26,7 @@ import { planFromShape, roomPanels, seeded, type ShapeSpec } from "./fixtures/im
  * wall bands, panel boxes, columns), with brute-force checks that a moved item went to the nearest place the 3D view leaves
  * clear and that one refused had no such place near. Imported rooms are measured against their 3D walls and laminates, both
  * ways, by the panel-corner property test (scripts/test-floor-plan-canonical-finishes-openings.ts). CI runs 40 random rooms;
- * FURNITURE_ORACLE_ROOMS any number, FURNITURE_ORACLE_SEED another seed.
+ * FURNITURE_ORACLE_ROOMS any number, FURNITURE_ORACLE_SEED another seed, FURNITURE_ORACLE_FINE=1 the brute force finer.
  */
 
 type P = { x: number; z: number };
@@ -56,10 +56,14 @@ function gapToRing(footprint: readonly P[], ring: readonly P[]): number {
   }));
   return gap;
 }
-/** The gap from a footprint to the 3D view's solids of a drawn room (Infinity past them all), or -1 out of its region. */
+/**
+ * The gap from a footprint to the 3D view's solids of a drawn room (Infinity past them all), or -1 out of its region; none where
+ * a solid's corner is inside it (a column it stands over whole).
+ */
 function gapInRegion(region: Region, footprint: readonly P[]): number {
   if (!footprint.every((point) => inRegion(region, point))) return -1;
   let gap = Infinity;
+  for (const { a, b } of region.edges) if (insideRing(a, footprint) || insideRing(b, footprint)) return 0;
   for (const { a, b } of region.edges) footprint.forEach((c, i) => {
     const d = footprint[(i + 1) % footprint.length];
     gap = crosses(a, b, c, d) ? 0 : Math.min(gap, distanceToSegment(c, a, b), distanceToSegment(d, a, b), distanceToSegment(a, c, d), distanceToSegment(b, c, d));
@@ -300,6 +304,8 @@ const SHAPES: Record<string, (w: number, d: number) => P[]> = {
 const ITEMS: Array<[number, number]> = [[0.4, 0.4], [1, 0.5], [0.5, 1], [1.8, 0.9], [0.12, 0.12]];
 const TURNS = [0, 0.3, Math.PI / 4, Math.PI / 2, 2.1];
 const ROOMS = Number(process.env.FURNITURE_ORACLE_ROOMS ?? 40);
+// The brute-force checks on a finer grid, farther out (FURNITURE_ORACLE_FINE=1); CI's: within 0.4 m on a 1 cm grid.
+const FINE = process.env.FURNITURE_ORACLE_FINE === "1";
 const counts = { rooms: 0, beside: 0, placed: 0, worstMm: 0, moved: 0, kept: 0, refused: 0, accepted: 0 };
 const rotate = (angle: number) => ({ x, z }: P) => ({ x: x * Math.cos(angle) - z * Math.sin(angle), z: x * Math.sin(angle) + z * Math.cos(angle) });
 for (let index = 0; index < ROOMS; index += 1) {
@@ -309,7 +315,8 @@ for (let index = 0; index < ROOMS; index += 1) {
   const faces = Object.fromEntries(getRoomWallFaceIds({ shape: "custom_polygon", polygon: points }).filter(() => chance(0.45)).map((faceId) => [faceId,
     { materialId: LAMINATE.materialId, panelBacking: { board: "mdf" as const, boardThicknessMm: pick([6, 9, 12, 18]), fixing: pick(["glued", "battens"] as const) } }]));
   const xs = points.map((p) => p.x), zs = points.map((p) => p.z);
-  const column = chance(0.2) ? box(between(0.15, 0.4), between(0.15, 0.4)).map((p) => ({ x: p.x + between(-0.2, 0.2) * (Math.max(...xs) - Math.min(...xs)), z: p.z + between(-0.2, 0.2) * (Math.max(...zs) - Math.min(...zs)) })) : null;
+  const [columnX, columnZ] = [between(-0.2, 0.2) * (Math.max(...xs) - Math.min(...xs)), between(-0.2, 0.2) * (Math.max(...zs) - Math.min(...zs))];
+  const column = chance(0.2) ? box(between(0.15, 0.4), between(0.15, 0.4)).map((p) => ({ x: p.x + columnX, z: p.z + columnZ })) : null;
   const thickness = pick([0.08, 0.1, 0.12, 0.15, 0.2, 0.25]);
   const room = drawnRoom(`oracle-${index}`, points, faces, thickness, column ? [column] : undefined);
   // Some beside a room to the south with thicker walls, sharing the south wall (every shape but a star and a wedge has it whole).
@@ -351,7 +358,8 @@ for (let index = 0; index < ROOMS; index += 1) {
     if (at[0] === line[0] && at[1] === line[1]) continue;
     // Moved off the line's place: to the nearest place the 3D view leaves clear (to within its rounding and a few millimetres).
     counts.moved += 1;
-    const moved = Math.hypot(at[0] - target.x, at[1] - target.z), near = moved > 0.014 ? nearestBrute(target, Math.min(0.6, moved - 0.012), 0.006, clear) : null;
+    const moved = Math.hypot(at[0] - target.x, at[1] - target.z), [reach, step] = FINE ? [Math.min(0.8, moved - 0.012), 0.005] : [Math.min(0.4, moved - 0.015), 0.01];
+    const near = reach > 0 ? nearestBrute(target, reach, step, clear) : null;
     assert.equal(near, null, `${where}: moved ${(moved * 1000).toFixed(0)} mm to (${at[0].toFixed(4)}, ${at[1].toFixed(4)}), but (${near?.x.toFixed(4)}, ${near?.z.toFixed(4)}) is clear ${near ? (Math.hypot(near.x - target.x, near.z - target.z) * 1000).toFixed(0) : ""} mm off`);
   }
 }

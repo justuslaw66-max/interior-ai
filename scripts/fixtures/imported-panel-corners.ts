@@ -406,7 +406,8 @@ function checkFurniture(
     const local = { x: target.x - origin.x, z: target.z - origin.z }, [width, depth] = [snapshot.geometry.width, snapshot.geometry.depth];
     const clampArgs = [w, d, width, depth, inset, rotationY, "custom_polygon", snapshot.planPolygon, snapshot.planHoles, depths] as const;
     const [x, z] = clampToRoomInsideFinishes(local.x, local.z, ...clampArgs, context), line = clampToRoomInsideFinishes(local.x, local.z, ...clampArgs);
-    const contained = (at: P) => isPlacementContainedInRoom({ room: snapshot, position: [at.x, 0, at.z], rotationY, dimensions: { w: w * 1000, d: d * 1000 }, canonicalModel });
+    // An item 800 mm tall, under a door's or a window's head: those walls above the floor aren't measured here.
+    const contained = (at: P) => isPlacementContainedInRoom({ room: snapshot, position: [at.x, 0, at.z], rotationY, dimensions: { w: w * 1000, d: d * 1000, h: 800 }, canonicalModel });
     for (const at of [local, { x: line[0], z: line[1] }]) if (clear(at, w, d, rotationY) && !contained(at)) refused += 1;
     if (clear({ x: line[0], z: line[1] }, w, d, rotationY)) pushed = Math.max(pushed, Math.hypot(x - line[0], z - line[1]));
     // Where the clamp finds no place for it (an item too big for a sharp corner), it keeps it in the room's box: not placed.

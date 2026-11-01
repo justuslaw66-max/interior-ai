@@ -335,8 +335,9 @@ function keepClearOfWalls(
   if (isFurnitureFootprintClear(faces, placed[0], placed[1], item.width, item.depth, item.rotationY)) return placed;
   const xs = polygon.map((point) => point.x), zs = polygon.map((point) => point.z);
   const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) + Math.hypot(item.width, item.depth);
-  // The nearest place within a reach is the nearest of all once one is found: the reach grows from how far the line moved it.
-  for (let reach = Math.max(0.02, Math.hypot(placed[0] - x, placed[1] - z)); ; reach *= 2) {
+  // The nearest place within a reach is the nearest of all once one is found: the reach grows from a little past how far the
+  // line moved it (the nearest clear place is most often just past the line's).
+  for (let reach = Math.max(0.02, Math.hypot(placed[0] - x, placed[1] - z)) * 1.1 + 0.03; ; reach *= 1.6) {
     const found = findNearestFurnitureFit(faces, x, z, item.width, item.depth, item.rotationY, reach);
     if (found) return found;
     if (reach > span + Math.hypot(x - placed[0], z - placed[1])) return placed;

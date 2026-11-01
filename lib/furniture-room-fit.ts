@@ -1,5 +1,5 @@
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
-import { findNearestBuiltInFit } from "@/lib/built-in-nearest-fit";
+import { findNearestClearPlace } from "@/lib/furniture-nearest-fit";
 import { buildBuiltInRegion, type BuiltInNeighbourWalls } from "@/lib/room-built-in-region";
 import type { CanonicalRoomWalls } from "@/lib/furniture-canonical-walls";
 import { isOutlineOf, type OutlineEdges } from "@/lib/room-outline-edges";
@@ -20,8 +20,8 @@ import { isOutlineOf, type OutlineEdges } from "@/lib/room-outline-edges";
  * The room's walls are read from its own outline and edges, handed in with the furniture's context (FurnitureRoomContext,
  * lib/furniture-room-context.ts), with the walls of the rooms next door; the clamp's outline (the room's, or inside its panels,
  * lib/room-finished-outline.ts) is checked to be the room's. Without them (a built-in on furniture's rule, a room not known)
- * there are no faces here, and the line's box test stands. The nearest place that fits is found by the built-ins' exact search
- * (lib/built-in-nearest-fit.ts), reused as it is, on the same shapes the test keeps off.
+ * there are no faces here, and the line's box test stands. The nearest place that fits is found exactly, as #245's search finds
+ * a built-in's (lib/furniture-nearest-fit.ts), on the same shapes the test keeps off.
  */
 
 type Point = RoomPlanPolygonPoint;
@@ -211,6 +211,6 @@ export function findNearestFurnitureFit(
     return other.maxX >= bounds.minX - near && other.minX <= bounds.maxX + near && other.maxZ >= bounds.minZ - near &&
       other.minZ <= bounds.maxZ + near && obstacleGap(obstacle, here) <= near;
   });
-  return findNearestBuiltInFit([{ footprint: grownFootprint(width, depth, rotationY, faces.clearance), obstacles }], { x, z }, reach,
+  return findNearestClearPlace(grownFootprint(width, depth, rotationY, faces.clearance), obstacles, { x, z }, reach,
     (atX, atZ) => isFurnitureFootprintClear(faces, atX, atZ, width, depth, rotationY), faces.floor);
 }
