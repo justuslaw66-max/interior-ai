@@ -176,8 +176,8 @@ export function distanceToBox(edges: Array<[[number, number], [number, number]]>
 export type LineFrame = { frame: (point: P) => [number, number]; at: (along: number, across: number) => P };
 /**
  * An exposed stretch along a line, and how much less exactly each end is known (where a wall ending it is all but parallel):
- * its slack (to 5 mm), and how far it may run on under that wall (`runOn`: no further than the wall's edge runs along the line,
- * nor than that edge takes to rise 0.006 mm off it).
+ * its slack (to 5 mm), and how far past it the end may lie (`runOn`: as far as that wall's edge runs along the line, where a
+ * few thousandths of a mm of rounding move it).
  */
 export type Stretch = { from: number; to: number; slackFrom: number; slackTo: number; runOnFrom: number; runOnTo: number };
 
@@ -209,7 +209,7 @@ export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: nu
   const stops = [from, ...cuts.map(({ along }) => along).filter((along) => along > from && along < to).sort((a, b) => a - b), to];
   const near = (along: number) => cuts.filter((cut) => Math.abs(cut.along - along) < 0.00005);
   const slackAt = (along: number) => Math.min(0.005, Math.max(0, ...near(along).map(({ slope }) => 0.000006 / Math.max(1e-9, slope))));
-  const runOnAt = (along: number) => Math.max(0, ...near(along).map(({ slope, extent }) => Math.min(extent, 0.000006 / Math.max(1e-9, slope))));
+  const runOnAt = (along: number) => Math.max(0, ...near(along).map(({ extent }) => extent));
   const merged: Array<[number, number]> = [];
   stops.slice(1).forEach((stop, index) => {
     const start = stops[index];

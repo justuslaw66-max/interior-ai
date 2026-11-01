@@ -64,9 +64,14 @@ export function getPlaceOnFaceStoodAgainst(stuck: StandingBuiltIn, x: number, z:
   return on ? [on.x, on.z] : null;
 }
 
-/** Where a built-in moved to (x, z) from a place it doesn't fit goes (above), or null where nothing near fits. */
-export function findStuckBuiltInPlace(stuck: StuckBuiltIn, x: number, z: number, minimumReach: number): [number, number] | null {
-  const { families, fits, outline, width, depth } = stuck, face = getFaceStoodAgainst(stuck, x, z);
+/**
+ * Where a built-in moved to (x, z) from a place it doesn't fit (`from`, where it stands) goes (above), or null where nothing
+ * near fits: against the face it stands against there, as far along it as (x, z).
+ */
+export function findStuckBuiltInPlace(
+  stuck: StuckBuiltIn, x: number, z: number, minimumReach: number, from: readonly [number, number] = [x, z]
+): [number, number] | null {
+  const { families, fits, outline, width, depth } = stuck, face = getFaceStoodAgainst(stuck, from[0], from[1]);
   if (!face) return findNearestBuiltInFit(families, { x, z }, Math.max(minimumReach, width, depth), fits, outline);
   // From the target's place along its face, sliding no further than its own length.
   return findNearestBuiltInFitAlong(families, onFace(face, stuck, x, z), face.along, width, fits, outline);

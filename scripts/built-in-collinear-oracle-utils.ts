@@ -89,7 +89,7 @@ export function chainHost(chain: CollinearChain, faces: ReadonlyArray<EdgeFace |
     const start = at.reduce((least, end) => (end.along < least.along ? end : least)), end = at.reduce((most, entry) => (entry.along > most.along ? entry : most));
     // Where the wall ending a face is all but parallel to it (its slack at the most, 5 mm), it ends where that wall rises past a
     // line known only to its slope: the host's line, a few ten-thousandths of a degree off the piece's, may meet it 20 mm away.
-    // Or as far as the face may run on under that wall (a panel's end square to a wall 0.013° off the piece's: 22 mm).
+    // Or anywhere along that wall's edge (a panel's end square to a wall 0.013-0.02° off the piece's: 22-30 mm of a 44 mm edge).
     const within = ({ slack, runOn }: { slack: number; runOn: number }) => 0.0005 + (slack >= 0.005 - 1e-12 ? Math.max(0.02, runOn) : slack);
     if (Math.abs(start.along) <= within(start) && Math.abs(end.along - length) <= within(end)) return { space, from, to, bow };
   }

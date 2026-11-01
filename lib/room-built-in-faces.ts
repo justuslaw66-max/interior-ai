@@ -245,7 +245,7 @@ export function clampBuiltInToRoom(
   const families = getBuiltInFitObstacles(faces, width, depth, rotationY, standOff);
   if (from && !options.anywhere) {
     const stuck = { hosts: getBuiltInHostFaces(faces), walls: faces.walls, families, fits, outline: faces.outline, width, depth, rotationY, standOff };
-    return findStuckBuiltInPlace(stuck, x, z, TURN_REACH) ?? [x, z];
+    return findStuckBuiltInPlace(stuck, x, z, TURN_REACH, from) ?? [x, z];
   }
   const reach = options.anywhere ? Number.POSITIVE_INFINITY : getTurnReach(width, depth, rotationY, options.turnedFrom);
   return findNearestBuiltInFit(families, { x, z }, reach, fits, faces.outline) ?? [x, z];
