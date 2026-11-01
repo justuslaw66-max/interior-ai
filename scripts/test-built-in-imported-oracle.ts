@@ -19,6 +19,7 @@ import {
   distanceToBox, edgesItMeets, EPS, exposedOnLine, inRegion, snapAlongNormal, snapGaps, toRun, toWorld, type LineFrame, type P, type Region, type Run, type Stretch,
 } from "./built-in-faces-oracle-utils";
 import { chainFaceBreaks, chainHost, collinearChains, type ChainHost, type EdgeFace } from "./built-in-collinear-oracle-utils";
+import { checkMovesFromStuck, type StuckMoves } from "./built-in-stuck-oracle-utils";
 import { IMPORTED_SHAPES, importedRegionOf, makeImportedCase, type ImportedCase, type ImportedRegion } from "./built-in-imported-oracle-utils";
 
 /**
@@ -45,6 +46,11 @@ import { IMPORTED_SHAPES, importedRegionOf, makeImportedCase, type ImportedCase,
 const SEED = Number(process.env.ORACLE_SEED ?? 20261101);
 const PLANS = Number(process.env.ORACLE_PLANS ?? (process.env.ORACLE_FULL ? 480 : 36));
 const ALL_TURNS = process.env.ORACLE_TURNS === "all";
+/**
+ * A solid no further than this (metres) in front of a face is flush with it: the plan's 3D walls stand true to it (a turned T's
+ * stem 0.006-0.02 mm proud of the through wall's face; review, 2 Nov 2026). It neither ends a face nor stands in a run's way.
+ */
+const PLAN_FLUSH = 0.00005;
 /** How far a run may reach into a slice exactly as drawn: the plan's rounding of a turned wall's openings' ends (0.71 mm). */
 const AS_DRAWN_TOLERANCE = 0.00075;
 
@@ -56,7 +62,7 @@ type Context = {
 };
 const failures: string[] = [];
 const counts: Record<string, number> = { plans: 0, rooms: 0, furnitureRule: 0, faces: 0, hosts: 0, chains: 0, runs: 0, refused: 0, filling: 0, doorRuns: 0,
-  nudges: 0, kept: 0, stopped: 0, turns: 0, turnsRefused: 0, snaps: 0, normalSnaps: 0, stuck: 0, stuckRefused: 0, copies: 0, placements: 0, placementsRefused: 0 };
+  nudges: 0, kept: 0, stopped: 0, turns: 0, turnsRefused: 0, snaps: 0, normalSnaps: 0, stuck: 0, stuckRefused: 0, stuckTurnsRefused: 0, tooLong: 0, tooLongRefused: 0, copies: 0, placements: 0, placementsRefused: 0 };
 const kinds: Record<string, number> = {};
 function check(condition: boolean, message: () => string) {
   if (!condition && failures.length < 40) failures.push(message());
@@ -197,7 +203,7 @@ const runFrame = (run: Run, back: number): LineFrame => ({
 function faceBreaks(region: Region, run: Run, back: number, from: number, to: number, chain?: ChainHost): boolean {
   if (chain) return chainFaceBreaks(chain, run, back, from, to);
   const [low, high] = [Math.min(from, to), Math.max(from, to)];
-  return !exposedOnLine(region, runFrame(run, back), low - 0.00002, high + 0.00002).some((stretch) => stretch.from <= low && stretch.to >= high);
+  return !exposedOnLine(region, runFrame(run, back), low - 0.00002, high + 0.00002, PLAN_FLUSH).some((stretch) => stretch.from <= low && stretch.to >= high);
 }
 
 /**
@@ -232,8 +238,17 @@ function endsRight(
   const end = (side * run.width) / 2, box: [number, number, number, number] = [end, end, back, back + run.depth];
   const nearest = meetDistances(edges, box);
   const faceEndsBy = (reach: number) => faceBreaks(region, run, back, end, end + side * reach, chain);
-  if (nearest.met < gap - tolerance || faceEndsBy(gap - tolerance)) return false;
-  return atOpening || nearest.flush <= gap + tolerance || faceEndsBy(gap + tolerance) || meetDistances(edgesItMeets(region, run, back, true), box).flush <= gap + tolerance;
+  // Where the wall ending the face is all but parallel to it, the face's end is known only to its slack (exposedOnLine).
+  const slack = chain ? 0 : faceEndSlack(region, run, back, end, side, gap + tolerance + 0.006);
+  if (nearest.met < gap - tolerance || faceEndsBy(gap - tolerance - slack)) return false;
+  return atOpening || nearest.flush <= gap + tolerance || faceEndsBy(gap + tolerance + slack) || meetDistances(edgesItMeets(region, run, back, true, back, PLAN_FLUSH), box).flush <= gap + tolerance;
+}
+
+/** How well the end of the face the run's `side` end stands on is known (its slack), looking `reach` past the run's end. */
+function faceEndSlack(region: Region, run: Run, back: number, end: number, side: -1 | 1, reach: number): number {
+  const [low, high] = [Math.min(end, end + side * reach), Math.max(end, end + side * reach)];
+  const on = exposedOnLine(region, runFrame(run, back), low - 0.00002, high + 0.00002, PLAN_FLUSH).find((stretch) => stretch.from <= end + 1e-9 && stretch.to >= end - 1e-9);
+  return on ? (side > 0 ? on.slackTo : on.slackFrom) : 0;
 }
 
 function fitRun(space: CabinetHostSpace, preset: "base" | "wall"): CabinetDefinition | null {
@@ -265,7 +280,7 @@ function checkRun(context: Context, space: CabinetHostSpace, preset: "base" | "w
   const chain = context.chainHosts.get(space), backs = Array.from({ length: 21 }, (_, index) => -run.width / 2 + 0.002 + ((run.width - 0.004) * index) / 20);
   check(backs.every((along) => !inRegion(context.region, toWorld(run, along, -run.depth / 2 - back - 0.0003 - (chain?.bow ?? 0)))), () => `${what()}: its back isn't on a face`);
   check(contained(context, run, floor ? 0 : 1.45), () => `${what()}: not contained`);
-  const edges = edgesItMeets(context.region, run, back);
+  const edges = edgesItMeets(context.region, run, back, false, back, PLAN_FLUSH);
   const clearance = meetDistances(edges, [-run.width / 2, run.width / 2, back, back + run.depth]).met;
   const slopes = edges.filter(([p, q]) => Math.min(Math.abs(p[0]), Math.abs(q[0])) < run.width / 2 + 0.03)
     .map(([p, q]) => Math.abs(q[1] - p[1]) / Math.max(1e-12, Math.abs(q[0] - p[0])));
@@ -315,7 +330,7 @@ function checkRefusal(context: Context, space: CabinetHostSpace, preset: "base" 
   const bottomMm = floor ? 0 : 1450, width = smallest.width + 0.0005, depth = smallest.depth;
   for (let along = width / 2; along <= length - width / 2 + 1e-9; along += 0.005) {
     const run: Run = { x: ax + ux * along + nx * (back + depth / 2), z: az + uz * along + nz * (back + depth / 2), width, depth, rotationY: Math.atan2(nx, nz) };
-    if (meetDistances(edgesItMeets(context.region, run, back), [-width / 2, width / 2, back, back + depth]).flush < gap) continue;
+    if (meetDistances(edgesItMeets(context.region, run, back, false, back, PLAN_FLUSH), [-width / 2, width / 2, back, back + depth]).flush < gap) continue;
     if (faceBreaks(context.region, run, back, -width / 2 - gap, width / 2 + gap, context.chainHosts.get(space)) || !standsIn(context, run)) continue;
     if (gapsBehind(context, run, back, bottomMm, bottomMm + smallest.heightMm).some(([from, to]) => to > -width / 2 && from < width / 2)) continue;
     return check(false, () => `${context.label} ${space.wallId} ${preset}: Fit refuses it, but a ${(width * 1000).toFixed(1)} mm run stands ${(along * 1000).toFixed(0)} mm along it`);
@@ -389,7 +404,7 @@ function checkMoves(context: Context, run: Run, definition: CabinetDefinition, p
     check(fitsAt(context, { ...piece, x, z }, standOff), () => `${what()} ${name}: Snap to wall put it where the 3D view's walls cut it or on a baseboard`);
     checkSnapAlongNormal(context, piece, bottom, () => `${what()} ${name}`);
   }
-  if (turning) checkStuck(context, run, preset, what);
+  if (turning) checkStuck(context, run, definition, preset, what);
   counts.copies += 1;
   const copy = getCabinetPlacement(definition, room, true, context.planRooms, context.model);
   check(fitsAt(context, { ...run, x: copy.position[0], z: copy.position[2], rotationY: copy.rotationY }, standOff), () => `${what()}: Place as copy put it where the 3D view's walls cut it or on a baseboard`);
@@ -415,33 +430,40 @@ function checkSnapAlongNormal(context: Context, piece: Run, bottom: number, what
 }
 
 /**
- * A run saved where it doesn't fit, 30 mm into its wall (as one saved before its room's rule may stand), comes free on its first
- * move (J's delegate, 1 Nov 2026): a 10 mm nudge along it, Snap to wall and a drag's drop 0.2 m along each end where it fits,
- * contained, the nudge no further from its target than the run's fitted place is (the nearest place it fits is no further);
- * a 5° turn there ends where it fits or is refused only where nothing fits within 0.6 m.
+ * Moves from a place where a run doesn't fit (scripts/built-in-stuck-oracle-utils.ts): pushed 30 mm into its wall (as one
+ * saved before its room's rule stands), it comes free along its face; made 30 mm longer than its face (as a panel added on an
+ * end wall leaves one fitted before), nothing along its face fits, and its moves are refused, never thrown off its wall. A 5°
+ * turn of the pushed one ends where it fits, or is refused only where nothing fits within 0.6 m (by brute force).
  */
-function checkStuck(context: Context, run: Run, preset: "base" | "wall", what: () => string) {
+function checkStuck(context: Context, run: Run, definition: CabinetDefinition, preset: "base" | "wall", what: () => string) {
   const { room } = context, bottom = preset === "wall" ? 1.45 : 0, standOff = getBuiltInStandOff(room, bottom);
-  const out = { x: Math.sin(run.rotationY), z: Math.cos(run.rotationY) }, along = { x: Math.cos(run.rotationY), z: -Math.sin(run.rotationY) };
+  const out = { x: Math.sin(run.rotationY), z: Math.cos(run.rotationY) }, options = { planRooms: context.planRooms, canonical: context.model, bottom };
+  const moves: StuckMoves = {
+    contained: (at) => contained(context, at, bottom), fits: (at) => fitsAt(context, at, standOff),
+    clearlyFits: (at) => fitsAt(context, { ...at, width: at.width + 0.002 }, standOff),
+    move: (piece, x, z) => clampBuiltInToRoom(room, x, z, piece.width, piece.depth, piece.rotationY, { ...options, from: [piece.x, piece.z] }),
+    drag: (piece, x, z) => getBuiltInDragPlace(room, [piece.x, piece.z], x, z, piece.width, piece.depth, piece.rotationY, options),
+    snapAim: (piece) => getBuiltInSnapTarget(room, [piece.x, bottom, piece.z], piece.width, piece.depth, piece.rotationY, context.planRooms, context.model),
+  };
   const stuck: Run = { ...run, x: run.x - out.x * 0.03, z: run.z - out.z * 0.03 };
-  if (fitsAt(context, stuck, standOff, -0.001)) return;
-  counts.stuck += 1;
-  const options = { planRooms: context.planRooms, canonical: context.model, bottom }, from: [number, number] = [stuck.x, stuck.z];
-  const frees = (move: string, [x, z]: [number, number], rotationY = run.rotationY) =>
-    check(contained(context, { ...stuck, x, z, rotationY }, bottom) && fitsAt(context, { ...stuck, x, z, rotationY }, standOff), () => `${what()}: stuck 30 mm in its wall, ${move} left it where it doesn't fit`);
-  const target = { x: stuck.x + along.x * 0.01, z: stuck.z + along.z * 0.01 };
-  const nudged = clampBuiltInToRoom(room, target.x, target.z, run.width, run.depth, run.rotationY, { ...options, from });
-  frees("a nudge along", nudged);
-  check(Math.hypot(nudged[0] - target.x, nudged[1] - target.z) <= Math.hypot(run.x - target.x, run.z - target.z) + 1e-6, () => `${what()}: stuck, a nudge along went further than its fitted place`);
-  const [toX, toZ] = getBuiltInSnapTarget(room, [stuck.x, bottom, stuck.z], run.width, run.depth, run.rotationY, context.planRooms, context.model);
-  frees("Snap to wall", clampBuiltInToRoom(room, toX, toZ, run.width, run.depth, run.rotationY, { ...options, from }));
-  frees("a drag", getBuiltInDragPlace(room, from, stuck.x + along.x * 0.2, stuck.z + along.z * 0.2, run.width, run.depth, run.rotationY, options));
-  const rotationY = run.rotationY + (5 * Math.PI) / 180;
-  const turned = clampBuiltInToRoom(room, stuck.x, stuck.z, run.width, run.depth, rotationY, { ...options, turnedFrom: run.rotationY });
-  if (contained(context, { ...stuck, x: turned[0], z: turned[1], rotationY }, bottom)) return frees("a 5° turn", turned, rotationY);
-  counts.stuckRefused += 1;
-  const nearest = bruteNearestFit(context, { ...stuck, rotationY }, bottom, 0.6, (place) => fitsAt(context, place, standOff));
-  check(nearest === null, () => `${what()}: stuck, a 5° turn is refused, though it fits ${((nearest ?? 0) * 1000).toFixed(0)} mm away`);
+  if (!fitsAt(context, stuck, standOff, -0.001)) {
+    counts.stuck += 1;
+    counts.stuckRefused += checkMovesFromStuck(run, stuck, moves, check, () => `${what()} (30 mm into its wall)`);
+    const rotationY = run.rotationY + (5 * Math.PI) / 180;
+    const turned = clampBuiltInToRoom(room, stuck.x, stuck.z, run.width, run.depth, rotationY, { ...options, turnedFrom: run.rotationY });
+    if (contained(context, { ...stuck, x: turned[0], z: turned[1], rotationY }, bottom)) {
+      check(fitsAt(context, { ...stuck, x: turned[0], z: turned[1], rotationY }, standOff), () => `${what()}: stuck, a 5° turn left it where it doesn't fit`);
+    } else {
+      counts.stuckTurnsRefused += 1;
+      const nearest = bruteNearestFit(context, { ...stuck, rotationY }, bottom, 0.6, (place) => fitsAt(context, place, standOff));
+      check(nearest === null, () => `${what()}: stuck, a 5° turn is refused, though it fits ${((nearest ?? 0) * 1000).toFixed(0)} mm away`);
+    }
+  }
+  const longer: Run = { ...run, width: (definition.fitState?.host.availableWidthMm ?? 0) / 1000 + 0.03 };
+  if (longer.width > run.width && !fitsAt(context, longer, standOff, -0.001)) {
+    counts.tooLong += 1;
+    counts.tooLongRefused += checkMovesFromStuck(run, longer, moves, check, () => `${what()} (made longer than its face)`);
+  }
 }
 
 /** The distance to the nearest place within `reach` (a 10 mm grid, or reach/60) where it fits by the region's test and `fits`. */
@@ -520,7 +542,7 @@ function checkHostsOffered(context: Context, spaces: CabinetHostSpace[], case_: 
         frame: (point) => [(point.x - origin.x) * dx + (point.z - origin.z) * dz, (point.x - origin.x) * nx + (point.z - origin.z) * nz],
         at: (along, across) => ({ x: origin.x + dx * along + nx * across, z: origin.z + dz * along + nz * across }),
       };
-      const exposed = exposedOnLine(region, line, -reach, length + reach);
+      const exposed = exposedOnLine(region, line, -reach, length + reach, PLAN_FLUSH);
       const own = exposed.filter((stretch) => Math.min(stretch.to, length) - Math.max(stretch.from, 0) >= 0.02 + 0.001 + stretch.slackFrom + stretch.slackTo);
       return { line, exposed, own, along: own.reduce((sum, stretch) => sum + Math.min(stretch.to, length) - Math.max(stretch.from, 0), 0) };
     };
@@ -636,7 +658,7 @@ for (let index = 0; index < PLANS; index += 1) {
 console.log(`Built-in imported oracle: ${counts.plans} plans (${IMPORTED_SHAPES.map((kind) => `${kind} ${kinds[kind] ?? 0}`).join(", ")}), ${counts.rooms} rooms,`,
   `${counts.furnitureRule} on furniture's rule; ${counts.faces} exposed faces, ${counts.hosts} hosts (${counts.chains} over pieces all but collinear); ${counts.runs} runs (${counts.filling} filling their stretch, ${counts.doorRuns} beside a door or window), ${counts.refused} refused,`,
   `${counts.nudges} nudges (${counts.kept} kept, ${counts.stopped} stopped at the face), ${counts.turns} turns (${counts.turnsRefused} refused), ${counts.snaps} snaps (${counts.normalSnaps} along a face's normal), ${counts.copies} copies,`,
-  `${counts.stuck} runs stuck in their wall moved free (${counts.stuckRefused} turns refused),`,
+  `${counts.stuck} runs stuck in their wall moved (${counts.stuckRefused} moves and ${counts.stuckTurnsRefused} turns refused), ${counts.tooLong} made longer than their face moved (${counts.tooLongRefused} of ${counts.tooLong * 3} moves refused),`,
   `${counts.placements} placements of runs not fitted or fitted under the old rule (${counts.placementsRefused} refused); seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);
 assert.deepEqual(failures, [], `the oracle found ${failures.length}${failures.length >= 40 ? "+" : ""} failures`);
 console.log("Built-in imported oracle tests passed.");

@@ -12,7 +12,8 @@ import { builtInFootprintFits, clampBuiltInToRoom, getBuiltInDragPlace, getBuilt
 import { createRoom, type DesignSnapshot, type RoomSnapshot } from "../lib/room-types";
 import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
 import { inRegion, toWorld, type Run } from "./built-in-faces-oracle-utils";
-import { importedCaseOf, importedDocument, importedRegionOf, laminate } from "./built-in-imported-oracle-utils";
+import { importedCaseOf, importedDocument, importedRegionOf, laminate, makeImportedCase } from "./built-in-imported-oracle-utils";
+import { getBuiltInRefusalNote } from "../lib/built-in-move-notes";
 import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
 
 /**
@@ -300,6 +301,81 @@ const kitchen = (turnDeg: number, baseboardDepth?: number) => importedCaseOf(imp
   assert.equal(usesFurnitureRuleForBuiltIns(room, undefined, c.planRooms), true, "without the plan's model");
   assert.equal(usesFurnitureRuleForBuiltIns({ ...room, planEdgeWallIds: undefined }, undefined, c.planRooms, c.model), true, "with its edges unnamed");
   assert.equal(usesFurnitureRuleForBuiltIns(room, undefined, c.planRooms, c.model), false, "with both, the faces' rule");
+}
+
+// Review, 2 Nov 2026: in a turned T the stem, joined to the through wall's far face, stands 0.01-0.02 mm proud of the room's
+// face. That split the one host over the through wall at the stem (a full-depth obstacle there), so a run filled one side
+// only (2454 mm of a 4749 mm host; the line's two hosts gave 2143 and 1972). An imported plan's walls stand true to 0.05 mm
+// (PLAN_FLUSH_MM): the stem is flush, and one run spans the wall.
+{
+  const c = makeImportedCase(4, 4242, { kind: "t", placement: { turnDeg: 149.2 } }) as unknown as Case, north = c.rooms.find(({ id }) => id === "N")!;
+  const through = hostsOf(c, north).find((space) => space.wallId === `wall-${north.planEdgeWallIds!.indexOf("w-p3-j")}`)!;
+  assert.ok(Math.abs(through.availableWidthMm - 4749) < 1, `one host over the through wall (${through.availableWidthMm.toFixed(1)} mm)`);
+  assert.equal(through.wallSegment!.obstacles!.some((points) => points.every(([along]) => Math.abs(along) < through.availableWidthMm / 2 - 300)), false, "nothing stands on it at the stem");
+  const run = fitAndPlace(c, north, through, "base"), baseboard = through.wallSegment!.startBaseboardClearanceMm ?? 0;
+  assert.ok(Math.abs(run.width * 1000 - (through.availableWidthMm - 20 - 2 * baseboard)) < 1, `a base run fills it, over the stem (${(run.width * 1000).toFixed(0)} mm)`);
+  assert.equal(contains(c, north, run), true, "contained");
+  assert.equal(inDrawnRoom(c, north, run), true, "inside the 3D view's walls");
+}
+
+// An opening up to its wall's top leaves no slice over it, so the wall's face is two stretches with nothing behind between:
+// the host was the longer side only (1700 of 4000 mm). It spans both sides now, carrying the opening, as a door's does.
+for (const heightMm of [2100, 2600]) {
+  const document = importedDocument(`opening-${heightMm}`, { vertices: { a: [0, 0], b: [4200, 0], c: [4200, 3000], e: [0, 3000] }, rooms: { K: ["a", "b", "c", "e"] }, thicknessMm: 200,
+    openings: [{ edge: "a>b", kind: "door", offsetMm: 1800, widthMm: 900 }] });
+  Object.assign((document.floors[0].openings as unknown as Array<Record<string, unknown>>)[0], { heightMm, heightEvidence: "assumed" });
+  const c = importedCaseOf(document), room = c.rooms[0], wall = `wall-${room.planEdgeWallIds!.indexOf("w-a-b")}`;
+  const host = hostsOf(c, room).find((space) => space.wallId === wall)!;
+  assert.deepEqual([Math.round(host.availableWidthMm), host.openings.length], [4000, 1], `${heightMm} mm opening: one 4000 mm host carrying it`);
+  assert.equal(getCabinetAvailableSegments(host, 870, 0, 580).length, 2, `${heightMm} mm opening: a base run fits either side`);
+}
+
+// A move from a place a run doesn't fit stays near it, its back on its face (J's delegate, 2 Nov 2026): a 3.86 m run fitted on
+// a drawn L kitchen's 4 m top wall, then cut into by a laminate on its end wall, fits nowhere along that wall. Its nudge, Snap
+// and drag are refused, where round 2 threw it 2 m off the wall into the middle of the L, and the refusal says to fit it again.
+// The same in an imported L kitchen. Place still takes it to the nearest place anywhere in the room.
+{
+  const L = [{ x: -3, z: -2 }, { x: 3, z: -2 }, { x: 3, z: 0 }, { x: 1, z: 0 }, { x: 1, z: 2 }, { x: -3, z: 2 }];
+  const kitchenL = (faces: RoomSnapshot["surfaces"]) => ({ ...createRoom("l", "Kitchen", "kitchen", { width: 6, depth: 4, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }),
+    planShape: "custom_polygon" as const, planPolygon: L, surfaces: faces }) as RoomSnapshot;
+  const bare = kitchenL(undefined), panelled = kitchenL({ walls: { default: { paintColorHex: "#ffffff" }, faces: { "wall-5": { materialId: "greenlam-woodgrains-5394", panelBacking: { board: "mdf", boardThicknessMm: 18, fixing: "battens" } } } } } as RoomSnapshot["surfaces"]);
+  const top = buildCabinetryAvailableSpaces({ activeRoom: bare, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).find((space) => space.wallId === "wall-4")!;
+  const fitted = fitCabinetToSpace(createCabinetPreset("base", "top"), top, { mode: "fit_width" });
+  assert.ok(fitted.ok && fitted.definition.totalWidth === 3860, "a 3.86 m run fills the top wall");
+  if (!fitted.ok) throw new Error("unreachable");
+  const at = getCabinetFitPlacement(fitted.definition, 6, 4)!, [w, d, r] = [3.86, fitted.definition.depth / 1000, at.rotationY];
+  const from: [number, number] = [at.position[0], at.position[2]];
+  const inside = ([x, z]: [number, number]) => isPlacementContainedInRoom({ room: panelled, position: [x, 0, z], rotationY: r, dimensions: { w: 3860, d: d * 1000, h: 870 }, builtIn: true });
+  assert.equal(inside(from), false, "the panel cuts into it where it stands");
+  const snap = getBuiltInSnapTarget(panelled, [from[0], 0, from[1]], w, d, r);
+  for (const [move, [x, z]] of [
+    ["a 10 mm nudge", clampBuiltInToRoom(panelled, from[0] + 0.01, from[1], w, d, r, { from, bottom: 0 })],
+    ["Snap to wall", clampBuiltInToRoom(panelled, snap[0], snap[1], w, d, r, { from, bottom: 0 })],
+    ["a 0.2 m drag", getBuiltInDragPlace(panelled, from, from[0] + 0.2, from[1], w, d, r, { bottom: 0 })],
+  ] as const) {
+    assert.equal(inside([x, z]), false, `drawn L: ${move} is refused`);
+    assert.ok(Math.abs(z - from[1]) < 1e-9, `drawn L: ${move} doesn't take it off its wall`);
+  }
+  assert.match(getBuiltInRefusalNote(true, "Kitchen", "Place fully inside Kitchen"), /Fit to Space again/, "the refusal says to use Fit to Space again");
+  const placed = getCabinetPlacement(fitted.definition, panelled, false);
+  assert.equal(inside([placed.position[0], placed.position[2]]), true, "Place takes it to the nearest place it fits in the room");
+}
+for (const turnDeg of [0, 20]) {
+  const document = importedDocument(`l-${turnDeg}`, { vertices: { a: [0, 0], b: [6000, 0], c: [6000, 2000], d: [4000, 2000], e: [4000, 4000], f: [0, 4000] }, rooms: { K: ["a", "b", "c", "d", "e", "f"] }, thicknessMm: 200 }, { turnDeg });
+  const plain = importedCaseOf(document), panelled = importedCaseOf(document, (room) => ({ ...room, surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { "w-f-a": { materialId: "greenlam-woodgrains-5394", panelBacking: { board: "mdf", boardThicknessMm: 18, fixing: "battens" } } } } } }) as RoomSnapshot);
+  const before = plain.rooms[0], after = panelled.rooms[0];
+  const run = fitAndPlace(plain, before, hostsOf(plain, before).find((space) => space.wallId === `wall-${before.planEdgeWallIds!.indexOf("w-e-f")}`)!, "base");
+  const opts = { planRooms: panelled.planRooms, canonical: panelled.model, bottom: 0 }, from: [number, number] = [run.x, run.z];
+  const [ax, az] = [Math.cos(run.rotationY), -Math.sin(run.rotationY)], snap = getBuiltInSnapTarget(after, [run.x, 0, run.z], run.width, run.depth, run.rotationY, opts.planRooms, opts.canonical);
+  assert.equal(contains(panelled, after, run), false, `imported L ${turnDeg}°: the panel cuts into it where it stands`);
+  for (const [move, [x, z]] of [
+    ["a 10 mm nudge", clampBuiltInToRoom(after, run.x + ax * 0.01, run.z + az * 0.01, run.width, run.depth, run.rotationY, { ...opts, from })],
+    ["Snap to wall", clampBuiltInToRoom(after, snap[0], snap[1], run.width, run.depth, run.rotationY, { ...opts, from })],
+    ["a 0.2 m drag", getBuiltInDragPlace(after, from, run.x + ax * 0.2, run.z + az * 0.2, run.width, run.depth, run.rotationY, opts)],
+  ] as const) {
+    assert.equal(contains(panelled, after, { ...run, x, z }), false, `imported L ${turnDeg}°: ${move} is refused`);
+    assert.ok(Math.abs((x - run.x) * Math.sin(run.rotationY) + (z - run.z) * Math.cos(run.rotationY)) < 1e-9, `imported L ${turnDeg}°: ${move} doesn't take it off its wall`);
+  }
 }
 
 console.log("Cabinetry imported faces tests passed.");

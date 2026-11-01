@@ -27,6 +27,7 @@ import {
   type Run, type Stretch,
 } from "./built-in-faces-oracle-utils";
 import { chainFaceBreaks, chainHost, collinearChains, COLLINEAR_SIN, type ChainHost, type EdgeFace } from "./built-in-collinear-oracle-utils";
+import { checkMovesFromStuck, type StuckMoves } from "./built-in-stuck-oracle-utils";
 
 /**
  * A seeded randomized oracle for where built-ins stand (lib/room-built-in-region.ts; J, 29 Oct 2026: "Face, back flush").
@@ -274,7 +275,7 @@ let plan: {
   hostFaces: Array<{ a: P; b: P; n: P; borderline: boolean }>;
 } = { neighbours: [], rooms: new Map(), thickest: 0, faces: [], hostFaces: [] };
 const failures: string[] = [];
-const counts = { rooms: 0, nextDoor: 0, furnitureRule: 0, filled: 0, faces: 0, hosts: 0, chains: 0, runs: 0, refused: 0, cut: 0, filling: 0, nudges: 0, kept: 0, stopped: 0, furnitureOnly: 0, turns: 0, turnsRefused: 0, snaps: 0, normalSnaps: 0, stuck: 0, stuckRefused: 0, copies: 0, placements: 0, placementsRefused: 0 } as Record<string, number>;
+const counts = { rooms: 0, nextDoor: 0, furnitureRule: 0, filled: 0, faces: 0, hosts: 0, chains: 0, runs: 0, refused: 0, cut: 0, filling: 0, nudges: 0, kept: 0, stopped: 0, furnitureOnly: 0, turns: 0, turnsRefused: 0, snaps: 0, normalSnaps: 0, stuck: 0, stuckRefused: 0, stuckTurnsRefused: 0, tooLong: 0, tooLongRefused: 0, copies: 0, placements: 0, placementsRefused: 0 } as Record<string, number>;
 const families: Record<string, number> = {};
 function check(condition: boolean, message: () => string) {
   if (!condition && failures.length < 40) failures.push(message());
@@ -318,11 +319,20 @@ function endsRight(
   const end = (side * run.width) / 2, box: [number, number, number, number] = [end, end, back, back + run.depth];
   const nearest = distanceToBox(edges, box);
   const faceEndsBy = (reach: number) => faceBreaks(region, run, back, end, end + side * reach, chain);
-  const [short, long] = [gap - tolerance, gap + tolerance];
+  // Where the wall ending the face is all but parallel to it, the face's end is known only to its slack (exposedOnLine).
+  const slack = chain ? 0 : faceEndSlack(region, run, back, end, side, gap + tolerance + 0.006);
+  const [short, long] = [gap - tolerance - slack, gap + tolerance + slack];
   if (process.env.ORACLE_ONLY) console.log(`  end ${side}: nearest ${(nearest * 1000).toFixed(3)} mm, face ends by ${(short * 1000).toFixed(2)}: ${faceEndsBy(short)}, by ${(long * 1000).toFixed(2)}: ${faceEndsBy(long)}, opening ${atOpening}`);
   if (nearest < short || faceEndsBy(short)) return false;
   // It keeps its allowance from all of a solid it meets, so it may end that far from a corner of it just past its front.
   return atOpening || nearest <= long || faceEndsBy(long) || distanceToBox(edgesItMeets(region, run, back, true).filter((edge) => !isChainFace(chain, edge, back)), box) <= long;
+}
+
+/** How well the end of the face the run's `side` end stands on is known (its slack), looking `reach` past the run's end. */
+function faceEndSlack(region: Region, run: Run, back: number, end: number, side: -1 | 1, reach: number): number {
+  const [low, high] = [Math.min(end, end + side * reach), Math.max(end, end + side * reach)];
+  const on = exposedOnLine(region, runFrame(run, back), low - 0.00002, high + 0.00002).find((stretch) => stretch.from <= end + 1e-9 && stretch.to >= end - 1e-9);
+  return on ? (side > 0 ? on.slackTo : on.slackFrom) : 0;
 }
 
 /** The doors and windows on the run's wall (behind its back, along it) that block its height, as stretches along the run. */
@@ -475,7 +485,7 @@ function checkMoves(region: Region, room: RoomSnapshot, run: Run, definition: Ca
     check(fitsAt(snapped, 0.0006), () => `${what()} ${name}: Snap to wall put it where the 3D view's walls cut it or on a baseboard`);
     checkSnapAlongNormal(room, piece, bottom, standOff, { contained, fitsAt }, () => `${what()} ${name}`);
   }
-  if (turning) checkStuck(room, run, bottom, { contained, fitsAt }, what);
+  if (turning) checkStuck(room, run, definition, bottom, { contained, fitsAt }, what);
   counts.copies += 1;
   const copy = getCabinetPlacement(definition, room, true, plan.rooms);
   const copied: Run = { ...run, x: copy.position[0], z: copy.position[2], rotationY: copy.rotationY };
@@ -504,32 +514,38 @@ function checkSnapAlongNormal(room: RoomSnapshot, piece: Run, bottom: number, st
 }
 
 /**
- * A run saved where it doesn't fit, 30 mm into its wall (as one saved before its room's rule may stand), comes free on its first
- * move (J's delegate, 1 Nov 2026): a 10 mm nudge along it, Snap to wall and a drag's drop 0.2 m along each end where it fits,
- * contained, the nudge no further from its target than the run's fitted place is (the nearest place it fits is no further);
- * a 5° turn there ends where it fits or is refused only where nothing fits within 0.6 m.
+ * Moves from a place where a run doesn't fit (scripts/built-in-stuck-oracle-utils.ts): pushed 30 mm into its wall (as one
+ * saved before its room's rule stands), it comes free along its face; made 30 mm longer than its face (as a panel added on an
+ * end wall leaves one fitted before), nothing along its face fits, and its moves are refused, never thrown off its wall. A 5°
+ * turn of the pushed one ends where it fits, or is refused only where nothing fits within 0.6 m (by brute force).
  */
-function checkStuck(room: RoomSnapshot, run: Run, bottom: number, { contained, fitsAt }: Tests, what: () => string) {
-  const out = { x: Math.sin(run.rotationY), z: Math.cos(run.rotationY) }, along = { x: Math.cos(run.rotationY), z: -Math.sin(run.rotationY) };
+function checkStuck(room: RoomSnapshot, run: Run, definition: CabinetDefinition, bottom: number, { contained, fitsAt }: Tests, what: () => string) {
+  const out = { x: Math.sin(run.rotationY), z: Math.cos(run.rotationY) }, options = { planRooms: plan.rooms, bottom };
+  const moves: StuckMoves = {
+    contained, fits: (at) => fitsAt(at, 0.0006), clearlyFits: (at) => fitsAt({ ...at, width: at.width + 0.002 }, 0.0006),
+    move: (piece, x, z) => clampBuiltInToRoom(room, x, z, piece.width, piece.depth, piece.rotationY, { ...options, from: [piece.x, piece.z] }),
+    drag: (piece, x, z) => getBuiltInDragPlace(room, [piece.x, piece.z], x, z, piece.width, piece.depth, piece.rotationY, options),
+    snapAim: (piece) => getBuiltInSnapTarget(room, [piece.x, bottom, piece.z], piece.width, piece.depth, piece.rotationY, plan.rooms),
+  };
   const stuck: Run = { ...run, x: run.x - out.x * 0.03, z: run.z - out.z * 0.03 };
-  if (fitsAt(stuck, -0.001)) return;
-  counts.stuck += 1;
-  const options = { planRooms: plan.rooms, bottom }, from: [number, number] = [stuck.x, stuck.z];
-  const frees = (move: string, [x, z]: [number, number], rotationY = run.rotationY) =>
-    check(contained({ ...stuck, x, z, rotationY }) && fitsAt({ ...stuck, x, z, rotationY }, 0.0006), () => `${what()}: stuck 30 mm in its wall, ${move} left it where it doesn't fit`);
-  const target = { x: stuck.x + along.x * 0.01, z: stuck.z + along.z * 0.01 };
-  const nudged = clampBuiltInToRoom(room, target.x, target.z, run.width, run.depth, run.rotationY, { ...options, from });
-  frees("a nudge along", nudged);
-  check(Math.hypot(nudged[0] - target.x, nudged[1] - target.z) <= Math.hypot(run.x - target.x, run.z - target.z) + 1e-6, () => `${what()}: stuck, a nudge along went further than its fitted place`);
-  const [toX, toZ] = getBuiltInSnapTarget(room, [stuck.x, bottom, stuck.z], run.width, run.depth, run.rotationY, plan.rooms);
-  frees("Snap to wall", clampBuiltInToRoom(room, toX, toZ, run.width, run.depth, run.rotationY, { ...options, from }));
-  frees("a drag", getBuiltInDragPlace(room, from, stuck.x + along.x * 0.2, stuck.z + along.z * 0.2, run.width, run.depth, run.rotationY, options));
-  const rotationY = run.rotationY + (5 * Math.PI) / 180;
-  const turned = clampBuiltInToRoom(room, stuck.x, stuck.z, run.width, run.depth, rotationY, { ...options, turnedFrom: run.rotationY });
-  if (contained({ ...stuck, x: turned[0], z: turned[1], rotationY })) return frees("a 5° turn", turned, rotationY);
-  counts.stuckRefused += 1;
-  const nearest = bruteNearestFit(room, { ...stuck, rotationY }, bottom, 0.6, (at) => fitsAt(at, 0.0006));
-  check(nearest === null, () => `${what()}: stuck, a 5° turn is refused, though it fits ${((nearest ?? 0) * 1000).toFixed(0)} mm away`);
+  if (!fitsAt(stuck, -0.001)) {
+    counts.stuck += 1;
+    counts.stuckRefused += checkMovesFromStuck(run, stuck, moves, check, () => `${what()} (30 mm into its wall)`);
+    const rotationY = run.rotationY + (5 * Math.PI) / 180;
+    const turned = clampBuiltInToRoom(room, stuck.x, stuck.z, run.width, run.depth, rotationY, { ...options, turnedFrom: run.rotationY });
+    if (contained({ ...stuck, x: turned[0], z: turned[1], rotationY })) {
+      check(fitsAt({ ...stuck, x: turned[0], z: turned[1], rotationY }, 0.0006), () => `${what()}: stuck, a 5° turn left it where it doesn't fit`);
+    } else {
+      counts.stuckTurnsRefused += 1;
+      const nearest = bruteNearestFit(room, { ...stuck, rotationY }, bottom, 0.6, (at) => fitsAt(at, 0.0006));
+      check(nearest === null, () => `${what()}: stuck, a 5° turn is refused, though it fits ${((nearest ?? 0) * 1000).toFixed(0)} mm away`);
+    }
+  }
+  const longer: Run = { ...run, width: (definition.fitState?.host.availableWidthMm ?? 0) / 1000 + 0.03 };
+  if (longer.width > run.width && !fitsAt(longer, -0.001)) {
+    counts.tooLong += 1;
+    counts.tooLongRefused += checkMovesFromStuck(run, longer, moves, check, () => `${what()} (made longer than its face)`);
+  }
 }
 
 /**
@@ -838,6 +854,6 @@ for (let index = 0; index < ROOMS; index += 1) {
 
 console.log(`Built-in faces oracle: ${counts.rooms} rooms (${Object.entries(families).map(([family, count]) => `${family} ${count}`).join(", ")}; ${counts.nextDoor} with rooms next door),`,
   `${counts.furnitureRule} on furniture's rule, ${counts.filled} whose 3D wall union came out without the room; ${counts.faces} exposed faces, ${counts.hosts} hosts (${counts.chains} over pieces all but collinear); ${counts.runs} runs (${counts.cut} cut by the 3D view's walls, ${counts.filling} filling their stretch), ${counts.refused} refused, ${counts.nudges} nudges`,
-  `(${counts.kept} kept, ${counts.stopped} stopped at the face, ${counts.furnitureOnly} of them where furniture's samples would let it on), ${counts.turns} turns (${counts.turnsRefused} refused), ${counts.snaps} snaps (${counts.normalSnaps} along a face's normal), ${counts.stuck} runs stuck in their wall moved free (${counts.stuckRefused} turns refused), ${counts.copies} copies, ${counts.placements} placements of runs not fitted or fitted on the line (${counts.placementsRefused} refused); seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);
+  `(${counts.kept} kept, ${counts.stopped} stopped at the face, ${counts.furnitureOnly} of them where furniture's samples would let it on), ${counts.turns} turns (${counts.turnsRefused} refused), ${counts.snaps} snaps (${counts.normalSnaps} along a face's normal), ${counts.stuck} runs stuck in their wall moved (${counts.stuckRefused} moves and ${counts.stuckTurnsRefused} turns refused), ${counts.tooLong} made longer than their face moved (${counts.tooLongRefused} of ${counts.tooLong * 3} moves refused), ${counts.copies} copies, ${counts.placements} placements of runs not fitted or fitted on the line (${counts.placementsRefused} refused); seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);
 assert.deepEqual(failures, [], `the oracle found ${failures.length}${failures.length >= 40 ? "+" : ""} failures`);
 console.log("Built-in faces oracle tests passed.");

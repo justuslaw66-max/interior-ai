@@ -46,14 +46,15 @@ export function getImportedOutlineOpenings(room: RoomSnapshot, outline: readonly
 }
 
 /**
- * A host without the obstacles that stand nowhere in front of its face to the hundredth of a mm it keeps them at: the plan joins
+ * A host without the obstacles that stand nowhere in front of its face to the hundredth of a mm it keeps them at (or, in an
+ * imported plan, further than PLAN_FLUSH_MM, lib/room-built-in-region.ts, which its obstacles are already cut to): the plan joins
  * a T-junction's stem through the wall it meets to that wall's far face, to a thousandth of a mm (its footprints' rounding), so
  * a few thousandths of it stand proud of the room's face there; a drawn wall's core, run on past a bend of a thousandth of a
  * degree, lies along the next piece's face as close. Fit never meets one (it is met only a thousandth of a mm into a run's
  * depth), but its validation, which measures a run's segment with no depth, would, and refuse the fit.
  */
-export function withoutFlushObstacles(space: CabinetHostSpace): CabinetHostSpace {
-  const segment = space.wallSegment, obstacles = segment?.obstacles?.filter((points) => points.some(([, into]) => into > 0));
+export function withoutFlushObstacles(space: CabinetHostSpace, flushMm = 0): CabinetHostSpace {
+  const segment = space.wallSegment, obstacles = segment?.obstacles?.filter((points) => points.some(([, into]) => into > flushMm));
   if (!segment?.obstacles || !obstacles || obstacles.length === segment.obstacles.length) return space;
   const { obstacles: _flush, ...rest } = segment;
   return { ...space, wallSegment: { ...rest, ...(obstacles.length ? { obstacles } : {}) } };

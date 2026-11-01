@@ -142,7 +142,10 @@ const openingOf = (id: string, wallId: string, kind: "door" | "window", offsetMm
   hinge: kind === "door" ? "start" : "none", handing: kind === "door" ? "left" : "none", provenance: prov(),
 });
 
-/** Up to three doors and windows on walls long enough for them, 200 mm or more from each end; none two on one wall. */
+/**
+ * Up to three doors and windows on walls long enough for them, 200 mm or more from each end; none two on one wall. A quarter of
+ * the doors (those a multiple of 4 mm wide) go up to the wall's top, 2600 mm: the 3D view draws no slice over them.
+ */
 function openingsOf(walls: WallEntry[], at: Map<string, { xMm: number; zMm: number }>, r: Random) {
   const count = r.pick([0, 1, 1, 2, 3]), used = new Set<string>(), openings: unknown[] = [];
   for (let index = 0; index < count; index += 1) {
@@ -151,7 +154,8 @@ function openingsOf(walls: WallEntry[], at: Map<string, { xMm: number; zMm: numb
     const kind = r.next() < 0.5 ? "door" : "window", widthMm = Math.round(kind === "door" ? r.between(700, 900) : r.between(600, 1500));
     if (used.has(wall.id) || length < widthMm + 400) continue;
     used.add(wall.id);
-    openings.push(openingOf(`${kind}-${index}`, wall.id, kind, Math.round(r.between(200, length - widthMm - 200)), widthMm));
+    const opening = openingOf(`${kind}-${index}`, wall.id, kind, Math.round(r.between(200, length - widthMm - 200)), widthMm);
+    openings.push(kind === "door" && widthMm % 4 === 0 ? { ...opening, heightMm: 2600, heightEvidence: "assumed" } : opening);
   }
   return openings;
 }

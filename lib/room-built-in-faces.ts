@@ -6,13 +6,8 @@ import {
   getBuiltInWallInset,
   getRoomPlanOutlinePoints,
 } from "@/lib/room-finished-outline";
-import {
-  buildBuiltInRegion,
-  isFootprintClearOfFaces,
-  isFootprintInBuiltInRegion,
-  type BuiltInNeighbourWalls,
-  type BuiltInRegion,
-} from "@/lib/room-built-in-region";
+import { buildBuiltInRegion, type BuiltInNeighbourWalls, type BuiltInRegion } from "@/lib/room-built-in-region";
+import { isFootprintClearOfFaces, isFootprintInBuiltInRegion } from "@/lib/room-built-in-footprint";
 import { findNearestBuiltInFit, type BuiltInFitObstacles } from "@/lib/built-in-nearest-fit";
 import { findStuckBuiltInPlace } from "@/lib/built-in-stuck-move";
 import { getBuiltInHostFaces } from "@/lib/room-built-in-host-faces";

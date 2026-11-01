@@ -135,9 +135,9 @@ type SharedSpaceInput = Omit<Parameters<typeof createCabinetRoomWallSpaces>[0], 
 
 /** An imported room's outline's walls with its plan's doors and windows, each on its exposed face, as a drawn shape's are. */
 function buildImportedHosts(room: RoomSnapshot, shared: SharedSpaceInput, canonical: Canonical | undefined): CabinetHostSpace[] {
-  const polygon = room.planPolygon ?? [], openings = getImportedOutlineOpenings(room, polygon, canonical);
+  const polygon = room.planPolygon ?? [], openings = getImportedOutlineOpenings(room, polygon, canonical), faces = getRoomBuiltInFaces(room, undefined, undefined, canonical);
   const outlineSpaces = createCabinetPolygonWallSpaces({ ...shared, polygon, openings, installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM });
-  return placeOnFaces(outlineSpaces, getBuiltInHostFaces(getRoomBuiltInFaces(room, undefined, undefined, canonical)), shared.baseboardOffsetMm ?? 0);
+  return placeOnFaces(outlineSpaces, getBuiltInHostFaces(faces), shared.baseboardOffsetMm ?? 0, faces.flush);
 }
 
 /**
@@ -180,14 +180,14 @@ function buildRectangleHosts(
  * pieces, or in pieces all but collinear, has one face over them all (getBuiltInHostFaces): listed once, as its first piece,
  * with every piece's doors and windows.
  */
-function placeOnFaces(spaces: CabinetHostSpace[], exposed: ReadonlyArray<BuiltInHostFace | null>, baseboardMm: number): CabinetHostSpace[] {
+function placeOnFaces(spaces: CabinetHostSpace[], exposed: ReadonlyArray<BuiltInHostFace | null>, baseboardMm: number, flushMm = 0): CabinetHostSpace[] {
   const listed = new Set<string>();
   return spaces.flatMap((space) => {
     const face = exposed[wallIndex(space.wallId ?? "")];
     const key = face && [face.start.x, face.start.z, face.end.x, face.end.z].map((value) => value.toFixed(6)).join();
     if (!face || !key || listed.has(key)) return [];
     listed.add(key);
-    return [withoutFlushObstacles(withFaceSegment(space, face, baseboardMm, spaces))];
+    return [withoutFlushObstacles(withFaceSegment(space, face, baseboardMm, spaces), flushMm)];
   });
 }
 

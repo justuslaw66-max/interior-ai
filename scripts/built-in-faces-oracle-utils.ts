@@ -109,8 +109,9 @@ export function toRun(run: Run, back: number, point: P): [number, number] {
  * `from` 0. Cut 0.005 mm behind it, as the 3D view's bands are drawn to 0.001 mm: cut at it, the next wall's face at a bend of
  * a few hundredths of a degree would start half a millimetre off. In the run's frame.
  */
-export function edgesItMeets(region: Region, run: Run, back: number, pastFront = false, from = back): Array<[[number, number], [number, number]]> {
-  const edge = from - 0.000005, low = from + 0.000001;
+export function edgesItMeets(region: Region, run: Run, back: number, pastFront = false, from = back, flush = 0): Array<[[number, number], [number, number]]> {
+  // In an imported plan, what stands no further than `flush` in front of the back is flush with the face: cut there.
+  const edge = flush > 0 ? from + flush : from - 0.000005, low = from + Math.max(0.000001, flush);
   const high = pastFront ? Number.POSITIVE_INFINITY : back + run.depth - 0.000001;
   return region.edges.flatMap(({ a, b }) => {
     let [p, q] = [toRun(run, back, a), toRun(run, back, b)];
@@ -121,7 +122,7 @@ export function edgesItMeets(region: Region, run: Run, back: number, pastFront =
     }
     // The run's own face isn't in front of it: the 3D view's bands are rounded to a thousandth of a mm, and their union leaves
     // corners up to a few thousandths off the face.
-    if (Math.max(p[1], q[1]) < 0.000005) return [];
+    if (Math.max(p[1], q[1]) < Math.max(0.000005, flush)) return [];
     return Math.min(p[1], q[1]) <= high && Math.max(p[1], q[1]) >= low ? [[p, q]] : [];
   });
 }
@@ -163,20 +164,21 @@ const PROBE = 0.000005;
  * (a panel's end a few thousandths proud at a bend of hundredths of a degree) doesn't end it. Exact: tested between each
  * place a solid's edge crosses those lines; gaps under 0.01 mm (where solids meet) are passed over, and stretches under 1 mm
  * aren't faces. Where a wall ending a stretch is all but parallel to the line, its end is known only to 0.006 mm over that
- * wall's slope, `slack` (the bands' rounding to 0.001 mm, a few times over).
+ * wall's slope, `slack` (the bands' rounding to 0.001 mm, a few times over). In an imported plan, a solid no further than
+ * `front` in front of the line is flush with it (its walls stand true to 0.05 mm: scripts/test-built-in-imported-oracle.ts).
  */
-export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number): Stretch[] {
+export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number, front = PROBE): Stretch[] {
   const rings = [region.outline, ...region.bands.flatMap((band) => [band.outer, ...band.holes]), ...region.others];
   const cuts: Array<{ along: number; slope: number }> = [];
   rings.forEach((ring) => ring.forEach((point, index) => {
     const [p, q] = [frame(point), frame(ring[(index + 1) % ring.length])];
     const slope = Math.abs(q[1] - p[1]) / Math.max(1e-12, Math.abs(q[0] - p[0]));
-    for (const level of [-PROBE, PROBE]) {
+    for (const level of [-PROBE, front]) {
       if ((p[1] - level) * (q[1] - level) > 0 || p[1] === q[1]) continue;
       cuts.push({ along: p[0] + ((q[0] - p[0]) * (level - p[1])) / (q[1] - p[1]), slope });
     }
   }));
-  const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) && inRegion(region, at(along, PROBE));
+  const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) && inRegion(region, at(along, front));
   const stops = [from, ...cuts.map(({ along }) => along).filter((along) => along > from && along < to).sort((a, b) => a - b), to];
   const slackAt = (along: number) => Math.min(0.005, Math.max(0, ...cuts.filter((cut) => Math.abs(cut.along - along) < 0.00005).map(({ slope }) => 0.000006 / Math.max(1e-9, slope))));
   const merged: Array<[number, number]> = [];

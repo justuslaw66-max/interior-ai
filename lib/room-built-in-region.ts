@@ -59,6 +59,12 @@ export type BuiltInRegion = {
    * those no host takes, past a wall's own edge or where a wall next door covers part of it): where a baseboard stands.
    */
   faces: Array<{ start: Point; end: Point; nx: number; nz: number }>;
+  /**
+   * How far (mm) a solid may stand in front of a face and be flush with it, an imported plan's (PLAN_FLUSH_MM): neither ending
+   * nor splitting the face, nor an obstacle on it. A drawn room's face ends where a solid stands FACE_PROBE_MM in front, and
+   * anything at all in front is an obstacle.
+   */
+  flush?: number;
 };
 
 /** How near two wall ends meet to join, as the 3D view joins them (LEGACY_WALL_JOIN_TOLERANCE_METERS). */
@@ -74,13 +80,20 @@ const FACE_EDGE_MM = 0.0001;
  * proud at a bend of a few hundredths of a degree) doesn't end it: a run keeps clear of it all the same (its obstacles).
  */
 const FACE_PROBE_MM = 0.005;
+/**
+ * An imported plan's 3D walls stand true to this (mm): at a T-junction in a turned plan the stem, joined through the wall it
+ * meets to that wall's far face, stands 0.006-0.02 mm proud of the room's face (the review's turned T's), a sliver no one can
+ * see that split the through wall's host and stopped every run at the stem. It is the 0.05 mm a move may already stand into a
+ * face (a tenth of the contact tolerance, lib/room-built-in-faces.ts), so a run on the face fits where its host says.
+ */
+export const PLAN_FLUSH_MM = 0.05;
 /** A clear stretch of face shorter than this (mm) is none: it holds nothing (the allowance at each end takes it). */
 const FACE_SLIVER_MM = 20;
 /** How far into the room (mm) a face keeps its obstacles: deeper than any run. */
 const FACE_REACH_MM = 3000;
 
 /** True when the point is inside the ring, by crossings (no tolerance: a point on an edge may fall either way). */
-function isInsideRing(point: Point, ring: readonly Point[]): boolean {
+export function isInsideRing(point: Point, ring: readonly Point[]): boolean {
   let inside = false;
   ring.forEach((current, index) => {
     const previous = ring[(index + ring.length - 1) % ring.length];
@@ -90,7 +103,7 @@ function isInsideRing(point: Point, ring: readonly Point[]): boolean {
   return inside;
 }
 
-function signedArea(points: readonly Point[]): number {
+export function signedArea(points: readonly Point[]): number {
   return points.reduce((sum, point, index) => {
     const next = points[(index + 1) % points.length];
     return sum + point.x * next.z - next.x * point.z;
@@ -184,15 +197,15 @@ function getFaceFrame(region: Omit<BuiltInRegion, "exposed" | "faces">, wall: Re
       low = Math.min(low, across);
       high = Math.max(high, across);
     }
-    return low < FACE_PROBE_MM && high > -FACE_PROBE_MM;
+    return low < Math.max(FACE_PROBE_MM, region.flush ?? 0) && high > -FACE_PROBE_MM;
   };
   const solids = region.solids.filter(nearLine).map((points) => points.map(toFrame));
   const standing = [...solids, ...region.holes.filter(nearLine).map((hole) => hole.map(toFrame))]
-    .map((points) => clipToStrip(points, FACE_EDGE_MM, FACE_REACH_MM))
+    .map((points) => clipToStrip(points, region.flush ?? FACE_EDGE_MM, FACE_REACH_MM))
     .filter((points) => points.length >= 2);
-  /** The stretches of [from, to] with nothing standing the probe's depth in front of the face (a panel's corner past a bend). */
-  const clearOf = (from: number, to: number) =>
-    getObstacleFreeSpans(standing, FACE_PROBE_MM, FACE_PROBE_MM, 0, from, to).filter(([start, stop]) => stop - start >= FACE_SLIVER_MM);
+  /** The stretches of [from, to] with nothing standing the probe's depth (or `flush`) in front of the face (a panel's corner past a bend). */
+  const probe = region.flush ?? FACE_PROBE_MM, clearOf = (from: number, to: number) =>
+    getObstacleFreeSpans(standing, probe, probe, 0, from, to).filter(([start, stop]) => stop - start >= FACE_SLIVER_MM);
   return { toFrame, fromFrame, solids, clearOf };
 }
 
@@ -218,7 +231,8 @@ function getFaceDepths(region: Omit<BuiltInRegion, "exposed" | "faces">, wall: R
  * Wall `index`'s exposed face: where its face line has a solid just behind it and nothing just in front, inside the room,
  * over the stretches that meet its own edge. A face runs on over the next wall's where they stand flush (a straight wall
  * drawn in two pieces), and ends where a solid stands in front of it or none behind (a corner, a deeper or shallower panel).
- * Its host spans its clear stretches of one stretch of face behind them; what stands between them stops a run (below). Where
+ * Its host spans its clear stretches of one stretch of face behind them (an imported plan's, of every one along its edge: an
+ * opening to the wall's top leaves none behind); what stands between them stops a run (below). Where
  * a thicker wall next door stands in front of its own face, its face is at whichever depth meets more of its edge.
  */
 function buildFaceHost(region: Omit<BuiltInRegion, "exposed" | "faces">, index: number, faces: BuiltInRegion["faces"]): BuiltInFaceHost | null {
@@ -237,7 +251,9 @@ function buildFaceHost(region: Omit<BuiltInRegion, "exposed" | "faces">, index: 
       .filter(([from, to]) => inRoom(frame.fromFrame((from + to) / 2, FACE_PROBE_MM / 2))));
     all.flat().forEach(([from, to]) => faces.push({ start: frame.fromFrame(from, 0), end: frame.fromFrame(to, 0), nx: wall.nx, nz: wall.nz }));
     const pieces = all.map((stretches) => stretches.filter(([from, to]) => to > 0 && from < lengthMm));
-    const exposed = pieces.reduce((most, stretch) => (alongEdge(stretch) > alongEdge(most) ? stretch : most), pieces[0] ?? []);
+    // An imported plan's wall may have an opening to its top, behind which nothing stands: the host spans both sides of it.
+    const exposed = region.flush ? pieces.flat().sort((first, second) => first[0] - second[0])
+      : pieces.reduce((most, stretch) => (alongEdge(stretch) > alongEdge(most) ? stretch : most), pieces[0] ?? []);
     if (exposed.length && (!best || alongEdge(exposed) > alongEdge(best.exposed))) best = { inset, frame, exposed };
   }
   return best && faceHostOf(region, best.frame, best.exposed, best.inset);
@@ -270,10 +286,11 @@ function getFaceObstacles(
   region: Omit<BuiltInRegion, "exposed" | "faces">, toFrame: (point: Point) => FacePoint, stretches: ReadonlyArray<readonly [number, number]>, middle: number
 ): Array<Array<[number, number]>> {
   const from = stretches[0][0], to = stretches[stretches.length - 1][1];
+  const edge = region.flush ?? FACE_EDGE_MM;
   const inReach = (points: readonly FacePoint[]) => points.some(([along]) => along > from - 100) && points.some(([along]) => along < to + 100) &&
-    points.some(([, into]) => into > FACE_EDGE_MM) && points.some(([, into]) => into < FACE_REACH_MM);
+    points.some(([, into]) => into > edge) && points.some(([, into]) => into < FACE_REACH_MM);
   const solids = [...region.solids, ...region.holes].map((points) => points.map(toFrame)).filter(inReach)
-    .map((points) => clipToStrip(points, FACE_EDGE_MM, FACE_REACH_MM)).filter((points) => points.length >= 2 && inReach(points));
+    .map((points) => clipToStrip(points, edge, FACE_REACH_MM)).filter((points) => points.length >= 2 && inReach(points));
   const ends = stretches.flat().map((along): FacePoint[] => [[along, 0], [along, FACE_REACH_MM]]);
   const between = stretches.slice(1).map(([next], index): FacePoint[] =>
     [[stretches[index][1], 0], [next, 0], [next, FACE_REACH_MM], [stretches[index][1], FACE_REACH_MM]]);
@@ -316,7 +333,7 @@ export function buildBuiltInRegionFromSolids(
   solids: Point[][], cores: Point[][]
 ): BuiltInRegion {
   const walls = buildWalls(outline, faceIds, panels, thicknesses);
-  return withExposedFaces({ outline, holes: holes.filter((hole) => hole.length >= 3), walls, solids, neighbourCores: cores });
+  return withExposedFaces({ outline, holes: holes.filter((hole) => hole.length >= 3), walls, solids, neighbourCores: cores, flush: PLAN_FLUSH_MM });
 }
 
 function withExposedFaces(base: Omit<BuiltInRegion, "exposed" | "faces">): BuiltInRegion {
@@ -335,65 +352,7 @@ function buildNeighbourCores(outline: readonly Point[], neighbours: BuiltInNeigh
     });
 }
 
-/** True when the convex outlines overlap by more than a touch (separating axes). */
-function convexOverlap(first: readonly Point[], second: readonly Point[]): boolean {
-  for (const shape of [first, second]) {
-    for (let index = 0; index < shape.length; index += 1) {
-      const start = shape[index], end = shape[(index + 1) % shape.length];
-      const ax = -(end.z - start.z), az = end.x - start.x;
-      if (ax === 0 && az === 0) continue;
-      const project = (points: readonly Point[]) => points.map((point) => point.x * ax + point.z * az);
-      const a = project(first), b = project(second);
-      if (Math.max(...a) <= Math.min(...b) || Math.max(...b) <= Math.min(...a)) return false;
-    }
-  }
-  return true;
-}
-
 function boundsOf(points: readonly Point[]) {
   const xs = points.map((point) => point.x), zs = points.map((point) => point.z);
   return { minX: Math.min(...xs), maxX: Math.max(...xs), minZ: Math.min(...zs), maxZ: Math.max(...zs) };
-}
-
-/** True when the segments cross at a point inside both (touching ends don't count). */
-function segmentsCross(a: Point, b: Point, c: Point, d: Point): boolean {
-  const side = (p: Point, q: Point, r: Point) => (q.x - p.x) * (r.z - p.z) - (q.z - p.z) * (r.x - p.x);
-  return side(a, b, c) * side(a, b, d) < 0 && side(c, d, a) * side(c, d, b) < 0;
-}
-
-/** True when the ring (an outline or a column) cuts into the convex footprint `corners`. */
-function ringCutsInto(ring: readonly Point[], corners: readonly Point[]): boolean {
-  const inside = (point: Point) => corners.every((corner, index) => {
-    const next = corners[(index + 1) % corners.length];
-    return ((next.x - corner.x) * (point.z - corner.z) - (next.z - corner.z) * (point.x - corner.x)) * Math.sign(signedArea(corners)) > 0;
-  });
-  return ring.some(inside) || ring.some((start, index) => corners.some((corner, cornerIndex) =>
-    segmentsCross(start, ring[(index + 1) % ring.length], corner, corners[(cornerIndex + 1) % corners.length])));
-}
-
-/**
- * True when the convex footprint `corners` (room-local metres) keeps `depth` metres off every exposed face (region.faces),
- * along its stretch (the band in front of it where a recorded baseboard stands), touching that band at most.
- */
-export function isFootprintClearOfFaces(region: BuiltInRegion, corners: readonly Point[], depth: number): boolean {
-  if (!(depth > 0)) return true;
-  const bounds = boundsOf(corners);
-  return !region.faces.some((face) => {
-    const off = (point: Point) => ({ x: point.x + face.nx * depth, z: point.z + face.nz * depth });
-    const band = [face.start, face.end, off(face.end), off(face.start)], other = boundsOf(band);
-    return other.maxX > bounds.minX && other.minX < bounds.maxX && other.maxZ > bounds.minZ && other.minZ < bounds.maxZ && convexOverlap(band, corners);
-  });
-}
-
-/** True when the convex footprint `corners` (room-local metres) stands in the region, touching its edges at most. */
-export function isFootprintInBuiltInRegion(region: BuiltInRegion, corners: readonly Point[]): boolean {
-  if (!corners.every((corner) => isInsideRing(corner, region.outline)) || ringCutsInto(region.outline, corners)) return false;
-  const bounds = boundsOf(corners);
-  const near = (points: readonly Point[]) => {
-    const other = boundsOf(points);
-    return other.maxX > bounds.minX && other.minX < bounds.maxX && other.maxZ > bounds.minZ && other.minZ < bounds.maxZ;
-  };
-  if (region.solids.some((solid) => near(solid) && convexOverlap(solid, corners))) return false;
-  return !region.holes.some((hole) => near(hole) &&
-    (ringCutsInto(hole, corners) || corners.some((corner) => isInsideRing(corner, hole))));
 }
