@@ -82,24 +82,31 @@ function boxedRings(region: Region): Boxed[] {
   return boxed;
 }
 
-/** inRegion (scripts/built-in-faces-oracle-utils.ts), testing only the rings whose bounds hold the point. */
-function inRegionNear(region: Region, point: P): boolean {
+/** inRegion (scripts/built-in-faces-oracle-utils.ts), testing only the rings (of `rings`) whose bounds hold the point. */
+function inRegionNear(region: Region, point: P, rings = boxedRings(region)): boolean {
   if (!insideQuad(point, region.outline)) return false;
-  return !boxedRings(region).some((box) => point.x >= box.minX && point.x <= box.maxX && point.z >= box.minZ && point.z <= box.maxZ && insideQuad(point, box.ring));
+  return !rings.some((box) => point.x >= box.minX && point.x <= box.maxX && point.z >= box.minZ && point.z <= box.maxZ && insideQuad(point, box.ring));
 }
 
-/** True when the footprint, `shrink` in from its sides, stands in the region: its outline every 2 mm, its middle every 50 mm. */
+/**
+ * True when the footprint, `shrink` in from its sides, stands in the region: its outline every 5 mm, its middle every 50 mm,
+ * and no corner of a solid or the outline inside it. A solid crossing it with no corner inside is at least a panel's 6 mm
+ * board across, so the outline's samples meet it.
+ */
 function footprintInRegion(region: Region, run: Run, shrink: number): boolean {
   const halfWidth = run.width / 2 - shrink, halfDepth = run.depth / 2 - shrink, samples: P[] = [];
   for (const [from, to] of [[[-1, -1], [1, -1]], [[1, -1], [1, 1]], [[1, 1], [-1, 1]], [[-1, 1], [-1, -1]]]) {
-    const length = Math.hypot((to[0] - from[0]) * halfWidth, (to[1] - from[1]) * halfDepth), steps = Math.max(1, Math.ceil(length / 0.002));
+    const length = Math.hypot((to[0] - from[0]) * halfWidth, (to[1] - from[1]) * halfDepth), steps = Math.max(1, Math.ceil(length / 0.005));
     for (let step = 0; step <= steps; step += 1) {
       const t = step / steps;
       samples.push(toWorld(run, (from[0] + (to[0] - from[0]) * t) * halfWidth, (from[1] + (to[1] - from[1]) * t) * halfDepth));
     }
   }
   for (let a = -halfWidth; a <= halfWidth; a += 0.05) for (let b = -halfDepth; b <= halfDepth; b += 0.05) samples.push(toWorld(run, a, b));
-  if (!samples.every((sample) => inRegionNear(region, sample))) return false;
+  // Only the rings whose bounds meet the samples' can hold one.
+  const [xs, zs] = [samples.map(({ x }) => x), samples.map(({ z }) => z)], [minX, maxX, minZ, maxZ] = [Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)];
+  const rings = boxedRings(region).filter((box) => box.minX <= maxX && box.maxX >= minX && box.minZ <= maxZ && box.maxZ >= minZ);
+  if (!samples.every((sample) => inRegionNear(region, sample, rings))) return false;
   return !region.vertices.some((point) => {
     const [a, b] = toRun(run, 0, point);
     return Math.abs(a) < halfWidth - EPS && Math.abs(b - run.depth / 2) < halfDepth - EPS;
@@ -292,7 +299,8 @@ function checkRun(context: Context, space: CabinetHostSpace, preset: "base" | "w
   const tolerance = 0.0005 + Math.min(0.005, Math.max(0, ...slopes.map((slope) => 0.000002 / Math.max(1e-9, slope) - 0.0005)));
   check(clearance >= gap - tolerance, () => `${what()}: ${(clearance * 1000).toFixed(3)} mm from a wall it meets along its face, under ${((gap - tolerance) * 1000).toFixed(2)} mm`);
   const bottomMm = floor ? 0 : 1450, gaps = gapsBehind(context, run, back, bottomMm, bottomMm + getCabinetOverallHeight(definition));
-  if (gaps.length) counts.doorRuns += 1;
+  // At one: a gap behind it, or within 3 mm of an end (past a face's end there is no slice behind either).
+  if (gaps.some(([from, to]) => to > -run.width / 2 - 0.003 && from < run.width / 2 + 0.003)) counts.doorRuns += 1;
   check(gaps.every(([from, to]) => to <= -run.width / 2 + 0.001 || from >= run.width / 2 - 0.001), () => `${what()}: it stands in front of a door or window (${gaps.map(([from, to]) => `${(from * 1000).toFixed(0)}..${(to * 1000).toFixed(0)}`).join(", ")} mm)`);
   const segment = definition.fitState?.segment;
   if (segment && Math.abs(segment.widthMm - definition.totalWidth) <= 1) {
@@ -653,7 +661,7 @@ for (let index = 0; index < PLANS; index += 1) {
 }
 
 console.log(`Built-in imported oracle: ${counts.plans} plans (${IMPORTED_SHAPES.map((kind) => `${kind} ${kinds[kind] ?? 0}`).join(", ")}), ${counts.rooms} rooms,`,
-  `${counts.furnitureRule} on furniture's rule; ${counts.faces} exposed faces, ${counts.hosts} hosts (${counts.chains} over pieces all but collinear); ${counts.runs} runs (${counts.filling} filling their stretch, ${counts.doorRuns} beside a door or window), ${counts.refused} refused,`,
+  `${counts.furnitureRule} on furniture's rule; ${counts.faces} exposed faces, ${counts.hosts} hosts (${counts.chains} over pieces all but collinear); ${counts.runs} runs (${counts.filling} filling their stretch, ${counts.doorRuns} at a door or window), ${counts.refused} refused,`,
   `${counts.nudges} nudges (${counts.kept} kept, ${counts.stopped} stopped at the face), ${counts.turns} turns (${counts.turnsRefused} refused), ${counts.snaps} snaps (${counts.normalSnaps} along a face's normal), ${counts.copies} copies,`,
   `${counts.stuck} runs stuck in their wall moved (${counts.stuckRefused} moves and ${counts.stuckTurnsRefused} turns refused), ${counts.tooLong} made longer than their face moved (${counts.tooLongRefused} of ${counts.tooLong * 3} moves refused),`,
   `${counts.placements} placements of runs not fitted or fitted under the old rule (${counts.placementsRefused} refused); seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);

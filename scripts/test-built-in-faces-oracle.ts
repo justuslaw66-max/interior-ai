@@ -23,7 +23,7 @@ import { createRoom, type RoomSnapshot } from "../lib/room-types";
 import { getRoomWallFaceIds, getRoomWallFinishDepths } from "../lib/room-wall-finish-depths";
 import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
 import {
-  distanceToBox, edgesItMeets, EPS, exposedOnLine, inRegion, regionOf, snapAlongNormal, snapGaps, toPlanRoom, toRun, toWorld, type LineFrame, type P, type Region,
+  distanceToBox, edgesItMeets, EPS, exposedOnLine, inRegion, regionAround, regionOf, snapAlongNormal, snapGaps, toPlanRoom, toRun, toWorld, type LineFrame, type P, type Region,
   type Run, type Stretch,
 } from "./built-in-faces-oracle-utils";
 import { chainFaceBreaks, chainHost, collinearChains, COLLINEAR_SIN, type ChainHost, type EdgeFace } from "./built-in-collinear-oracle-utils";
@@ -245,19 +245,24 @@ function doorsOf(room: RoomSnapshot, openings: RoomOpening2D[]): Array<{ a: P; b
 }
 
 // --- A run's frame and brute-force checks ------------------------------------------------------------------------------------
-/** True when the footprint, `shrink` in from its sides, stands in the region: its outline every 2 mm, its middle every 50 mm. */
+/**
+ * True when the footprint, `shrink` in from its sides, stands in the region: its outline every 5 mm, its middle every 50 mm,
+ * and no corner of a solid or the outline inside it. A solid crossing it with no corner inside is at least a panel's 6 mm
+ * board across, so the outline's samples meet it.
+ */
 function footprintInRegion(region: Region, run: Run, shrink: number): boolean {
   const halfWidth = run.width / 2 - shrink, halfDepth = run.depth / 2 - shrink;
   const samples: P[] = [];
   for (const [from, to] of [[[-1, -1], [1, -1]], [[1, -1], [1, 1]], [[1, 1], [-1, 1]], [[-1, 1], [-1, -1]]]) {
-    const length = Math.hypot((to[0] - from[0]) * halfWidth, (to[1] - from[1]) * halfDepth), steps = Math.max(1, Math.ceil(length / 0.002));
+    const length = Math.hypot((to[0] - from[0]) * halfWidth, (to[1] - from[1]) * halfDepth), steps = Math.max(1, Math.ceil(length / 0.005));
     for (let step = 0; step <= steps; step += 1) {
       const t = step / steps;
       samples.push(toWorld(run, (from[0] + (to[0] - from[0]) * t) * halfWidth, (from[1] + (to[1] - from[1]) * t) * halfDepth));
     }
   }
   for (let a = -halfWidth; a <= halfWidth; a += 0.05) for (let b = -halfDepth; b <= halfDepth; b += 0.05) samples.push(toWorld(run, a, b));
-  if (!samples.every((sample) => inRegion(region, sample))) return false;
+  const near = regionAround(region, samples);
+  if (!samples.every((sample) => inRegion(near, sample))) return false;
   // Every corner of the outline, a wall band, a panel or a column stays out of it.
   return !region.vertices.some((point) => {
     const [a, b] = toRun(run, 0, point);

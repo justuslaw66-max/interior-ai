@@ -85,6 +85,28 @@ export function regionOf(room: RoomSnapshot, neighbours: readonly HousePlanRoom2
   return { outline, bands: walls, others, vertices: [...outline, ...rings.flat()], edges, thickness, filled };
 }
 
+/** Each ring's bounds [minX, maxX, minZ, maxZ], kept per ring. */
+const boundsByRing = new WeakMap<readonly P[], [number, number, number, number]>();
+function ringBounds(ring: readonly P[]): [number, number, number, number] {
+  let bounds = boundsByRing.get(ring);
+  if (!bounds) {
+    bounds = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
+    for (const { x, z } of ring) bounds = [Math.min(bounds[0], x), Math.max(bounds[1], x), Math.min(bounds[2], z), Math.max(bounds[3], z)];
+    boundsByRing.set(ring, bounds);
+  }
+  return bounds;
+}
+
+/**
+ * The region with only the solids whose bounds meet those of `points`: inRegion gives the same answer for each of them, and a
+ * footprint's samples test only the rings around them.
+ */
+export function regionAround<R extends Region>(region: R, points: readonly P[]): R {
+  const [minX, maxX, minZ, maxZ] = ringBounds(points);
+  const meets = (ring: readonly P[]) => { const [a, b, c, d] = ringBounds(ring); return a <= maxX && b >= minX && c <= maxZ && d >= minZ; };
+  return { ...region, bands: region.bands.filter(({ outer }) => meets(outer)), others: region.others.filter(meets) };
+}
+
 /** True when the point is in the room and in no solid: no wall band (inside its outline, not in a hole of it), panel or column. */
 export function inRegion(region: Region, point: P): boolean {
   if (!insideRing(point, region.outline)) return false;
