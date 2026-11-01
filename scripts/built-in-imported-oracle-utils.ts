@@ -86,8 +86,16 @@ const assumed = (valueMm: number) => ({ valueMm, evidence: "assumed" as const, p
 /** How a plan is laid: turned (degrees), mirrored, moved. */
 export type Placement = { turnDeg: number; mirror: boolean; dx: number; dz: number };
 
-/** The spec as a canonical document: turned, mirrored and moved to whole millimetres, a wall per edge, and its doors and windows. */
-function documentOf(id: string, spec: Spec, placement: Placement, r: Random): FloorPlanDocumentV2 {
+type WallEntry = { id: string; path: { startVertexId: string; endVertexId: string } };
+
+/**
+ * The spec as a canonical document: turned, mirrored and moved to whole millimetres, a wall per edge (`thicknessOf` its key,
+ * "from>to", and the spec's group it is in), and its doors and windows (`openingsFor` its walls and their vertices).
+ */
+function documentOf(
+  id: string, spec: Spec, placement: Placement, thicknessOf: (key: string, group: number) => number,
+  openingsFor: (walls: WallEntry[], at: Map<string, { xMm: number; zMm: number }>) => unknown[]
+): FloorPlanDocumentV2 {
   const turn = (placement.turnDeg * Math.PI) / 180, flip = placement.mirror ? -1 : 1;
   const place = ([x, z]: [number, number]) => ({
     xMm: Math.round(flip * (x * Math.cos(turn) - z * Math.sin(turn)) + placement.dx), zMm: Math.round(x * Math.sin(turn) + z * Math.cos(turn) + placement.dz),
@@ -100,12 +108,9 @@ function documentOf(id: string, spec: Spec, placement: Placement, r: Random): Fl
     walls.set(`${from}>${to}`, { id: `w-${from}-${to}`, from, to, rooms: [roomId] });
     return { wallId: `w-${from}-${to}`, direction: "forward" as const };
   }) }));
-  const groups = (spec.sameWall ?? []).map(() => r.pick(OUTER));
-  const same = (key: string, entry: string) => entry === key || entry.split(">").reverse().join(">") === key;
   const wallList = [...walls.entries()].map(([key, wall]) => {
-    const group = (spec.sameWall ?? []).findIndex((edges) => edges.some((entry) => same(key, entry)));
-    const own = Object.entries(spec.thickness ?? {}).find(([entry]) => same(key, entry))?.[1];
-    return { id: wall.id, thicknessMm: own ?? (group >= 0 ? groups[group] : r.pick(ANY)), adjacentRoomIds: wall.rooms,
+    const group = (spec.sameWall ?? []).findIndex((edges) => edges.some((entry) => sameEdge(key, entry)));
+    return { id: wall.id, thicknessMm: thicknessOf(key, group), adjacentRoomIds: wall.rooms,
       path: { kind: "line" as const, startVertexId: wall.from, endVertexId: wall.to },
       classification: wall.rooms.length > 1 ? "interior" as const : "exterior" as const, provenance: prov() };
   });
@@ -118,14 +123,27 @@ function documentOf(id: string, spec: Spec, placement: Placement, r: Random): Fl
       defaults: { wallHeight: assumed(2600), doorHeight: assumed(2100), windowHeight: assumed(1200), windowSillHeight: assumed(900) },
       vertices, walls: wallList,
       rooms: loops.map(({ roomId, walls: loop }) => ({ id: roomId, name: roomId, roomType: "kitchen", provenance: prov(), wallLoops: [{ kind: "outer" as const, walls: loop }] })),
-      openings: openingsOf(wallList, new Map(vertices.map((vertex) => [vertex.id, vertex])), r) as unknown as FloorPlanFloorV2["openings"],
+      openings: openingsFor(wallList, new Map(vertices.map((vertex) => [vertex.id, vertex]))) as unknown as FloorPlanFloorV2["openings"],
       structures: [], annotations: [], dimensions: [],
     }],
   } as unknown as FloorPlanDocumentV2;
 }
 
+const sameEdge = (key: string, entry: string) => entry === key || entry.split(">").reverse().join(">") === key;
+
+/** A random spec's walls' thicknesses: each group's, a wall's own, or any. */
+function randomThickness(spec: Spec, r: Random) {
+  const groups = (spec.sameWall ?? []).map(() => r.pick(OUTER));
+  return (key: string, group: number) => Object.entries(spec.thickness ?? {}).find(([entry]) => sameEdge(key, entry))?.[1] ?? (group >= 0 ? groups[group] : r.pick(ANY));
+}
+
+const openingOf = (id: string, wallId: string, kind: "door" | "window", offsetMm: number, widthMm: number) => ({
+  id, wallId, kind, operation: kind === "door" ? "swing" : "fixed", offsetMm, widthMm,
+  hinge: kind === "door" ? "start" : "none", handing: kind === "door" ? "left" : "none", provenance: prov(),
+});
+
 /** Up to three doors and windows on walls long enough for them, 200 mm or more from each end; none two on one wall. */
-function openingsOf(walls: Array<{ id: string; path: { startVertexId: string; endVertexId: string } }>, at: Map<string, { xMm: number; zMm: number }>, r: Random) {
+function openingsOf(walls: WallEntry[], at: Map<string, { xMm: number; zMm: number }>, r: Random) {
   const count = r.pick([0, 1, 1, 2, 3]), used = new Set<string>(), openings: unknown[] = [];
   for (let index = 0; index < count; index += 1) {
     const wall = r.pick(walls);
@@ -133,9 +151,7 @@ function openingsOf(walls: Array<{ id: string; path: { startVertexId: string; en
     const kind = r.next() < 0.5 ? "door" : "window", widthMm = Math.round(kind === "door" ? r.between(700, 900) : r.between(600, 1500));
     if (used.has(wall.id) || length < widthMm + 400) continue;
     used.add(wall.id);
-    const offsetMm = Math.round(r.between(200, length - widthMm - 200));
-    openings.push({ id: `${kind}-${index}`, wallId: wall.id, kind, operation: kind === "door" ? "swing" : "fixed", offsetMm, widthMm,
-      hinge: kind === "door" ? "start" : "none", handing: kind === "door" ? "left" : "none", provenance: prov() });
+    openings.push(openingOf(`${kind}-${index}`, wall.id, kind, Math.round(r.between(200, length - widthMm - 200)), widthMm));
   }
   return openings;
 }
@@ -166,7 +182,7 @@ export function makeImportedCase(index: number, seed: number, options: { kind?: 
   const roll = r.next();
   const turnDeg = roll < 0.4 ? 0 : roll < 0.5 ? r.pick([90, 180, 270]) : roll < 0.7 ? r.pick([20, -20]) : r.between(0, 360);
   const placement: Placement = { turnDeg, mirror: r.next() < 0.5, dx: Math.round(r.between(-4000, 4000)), dz: Math.round(r.between(-4000, 4000)), ...options.placement };
-  const document = documentOf(`imported-${seed}-${index}`, spec, placement, r);
+  const document = documentOf(`imported-${seed}-${index}`, spec, placement, randomThickness(spec, r), (walls, at) => openingsOf(walls, at, r));
   const { snapshot } = canonicalFloorPlanToDesignSnapshot(document);
   const rooms = snapshot.rooms.map((room) => finished(room, r, options.laminates ?? 0.35, options.baseboards ?? [0.01, 0.015, 0.02, 0.03]));
   const planRooms = new Map(buildHousePlan2D(rooms, 8, 6).rooms.map((room) => [room.id, room]));
@@ -261,3 +277,31 @@ export function importedRegionOf(snapshot: RoomSnapshot, room: HousePlanRoom2D, 
     thickness: thickest, filled: false, slices: nearSlices, panels,
   };
 }
+
+/**
+ * A plan of the worked examples: rooms of vertex loops (mm), each wall `thicknessMm` thick or as `walls` gives it ("from>to"),
+ * with its doors and windows (on "from>to", from its start), laid as `placement` gives it.
+ */
+export function importedDocument(id: string, spec: {
+  vertices: Record<string, [number, number]>; rooms: Record<string, string[]>; thicknessMm: number; walls?: Record<string, number>;
+  openings?: Array<{ edge: string; kind: "door" | "window"; offsetMm: number; widthMm: number }>;
+}, placement: Partial<Placement> = {}): FloorPlanDocumentV2 {
+  return documentOf(id, { kind: id, vertices: spec.vertices, rooms: spec.rooms }, { turnDeg: 0, mirror: false, dx: 0, dz: 0, ...placement },
+    (key) => Object.entries(spec.walls ?? {}).find(([entry]) => sameEdge(key, entry))?.[1] ?? spec.thicknessMm,
+    (walls) => (spec.openings ?? []).flatMap(({ edge, kind, offsetMm, widthMm }, index) => {
+      const wall = walls.find(({ id: wallId }) => wallId === `w-${edge.replace(">", "-")}` || wallId === `w-${edge.split(">").reverse().join("-")}`);
+      return wall ? [openingOf(`${kind}-${index}`, wall.id, kind, offsetMm, widthMm)] : [];
+    }));
+}
+
+/** A document's rooms as an upload makes them, each finished by `finish`, the plan's rooms and its canonical model. */
+export function importedCaseOf(document: FloorPlanDocumentV2, finish: (room: RoomSnapshot) => RoomSnapshot = (room) => room) {
+  const { snapshot } = canonicalFloorPlanToDesignSnapshot(document);
+  const rooms = snapshot.rooms.map(finish);
+  const planRooms = new Map(buildHousePlan2D(rooms, 8, 6).rooms.map((room) => [room.id, room]));
+  const model = compileCanonicalFloorPlanRenderModel(snapshot.floorPlan?.canonicalDocument ?? document);
+  return { snapshot, rooms, planRooms, model, floor: model.floors[0] };
+}
+
+/** A laminate on board: `boardThicknessMm` of MDF, glued (the panel stands off the wall by its board and the laminate). */
+export const laminate = (boardThicknessMm: number) => ({ materialId: "greenlam-woodgrains-5394", panelBacking: { board: "mdf" as const, boardThicknessMm, fixing: "glued" as const } });

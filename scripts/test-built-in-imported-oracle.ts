@@ -332,6 +332,12 @@ function checkNudges(context: Context, run: Run, preset: "base" | "wall", what: 
     check(contained(context, { ...run, x, z }, bottom), () => `${what()}: a nudge ${name} stopped where it isn't contained`);
     check(footprintInRegion(context.drawn, { ...run, x, z }, AS_DRAWN_TOLERANCE), () => `${what()}: a nudge ${name} stopped where the slices as drawn cut more than 0.75 mm into it`);
   }
+  // Containment takes a built-in only where it stands in the region, off the baseboards: a run moved 1 to 25 mm into its wall
+  // (into a baseboard, where furniture of its size may stand) is accepted only where it fits.
+  for (const into of [0.001, 0.003, 0.006, 0.01, 0.015, 0.025]) {
+    const moved = { ...run, x: run.x - out.x * into, z: run.z - out.z * into };
+    if (contained(context, moved, bottom)) check(fits(moved, 0.0006), () => `${what()}: contained ${(into * 1000).toFixed(0)} mm into its wall, where it doesn't fit (a ${(standOff * 1000).toFixed(0)} mm baseboard)`);
+  }
 }
 
 /** The turns tried, as the drawn oracle's: every eighth run in CI (its 600 mm unit −15° and 45°, the run 90° and 180°). */
