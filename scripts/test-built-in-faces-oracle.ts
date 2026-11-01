@@ -27,7 +27,7 @@ import {
   type Run, type Stretch,
 } from "./built-in-faces-oracle-utils";
 import { chainFaceBreaks, chainHost, collinearChains, COLLINEAR_SIN, type ChainHost, type EdgeFace } from "./built-in-collinear-oracle-utils";
-import { checkMovesFromStuck, type StuckMoves } from "./built-in-stuck-oracle-utils";
+import { checkMovesFromStuck, clearly, type StuckMoves } from "./built-in-stuck-oracle-utils";
 
 /**
  * A seeded randomized oracle for where built-ins stand (lib/room-built-in-region.ts; J, 29 Oct 2026: "Face, back flush").
@@ -303,8 +303,9 @@ function isChainFace(chain: ChainHost | undefined, [[a0, y0], [a1, y1]]: [[numbe
 /** Does the run's face, as the 3D view draws it, end anywhere between `from` and `to` along it (exposedOnLine)? */
 function faceBreaks(region: Region, run: Run, back: number, from: number, to: number, chain?: ChainHost): boolean {
   if (chain) return chainFaceBreaks(chain, run, back, from, to);
+  // Looked at a millimetre either side: a stretch under 1 mm isn't a face, so a narrower look finds none.
   const [low, high] = [Math.min(from, to), Math.max(from, to)];
-  return !exposedOnLine(region, runFrame(run, back), low - 0.00002, high + 0.00002).some((stretch) => stretch.from <= low && stretch.to >= high);
+  return !exposedOnLine(region, runFrame(run, back), low - 0.001, high + 0.001).some((stretch) => stretch.from <= low && stretch.to >= high);
 }
 
 /**
@@ -323,7 +324,8 @@ function endsRight(
   const slack = chain ? 0 : faceEndSlack(region, run, back, end, side, gap + tolerance + 0.006);
   const [short, long] = [gap - tolerance - slack, gap + tolerance + slack];
   if (process.env.ORACLE_ONLY) console.log(`  end ${side}: nearest ${(nearest * 1000).toFixed(3)} mm, face ends by ${(short * 1000).toFixed(2)}: ${faceEndsBy(short)}, by ${(long * 1000).toFixed(2)}: ${faceEndsBy(long)}, opening ${atOpening}`);
-  if (nearest < short || faceEndsBy(short)) return false;
+  // Within its slack of the face's end (a wall all but parallel ending it), where that end is isn't known nearer.
+  if (nearest < short || (short > 0 && faceEndsBy(short))) return false;
   // It keeps its allowance from all of a solid it meets, so it may end that far from a corner of it just past its front.
   return atOpening || nearest <= long || faceEndsBy(long) || distanceToBox(edgesItMeets(region, run, back, true).filter((edge) => !isChainFace(chain, edge, back)), box) <= long;
 }
@@ -522,7 +524,7 @@ function checkSnapAlongNormal(room: RoomSnapshot, piece: Run, bottom: number, st
 function checkStuck(room: RoomSnapshot, run: Run, definition: CabinetDefinition, bottom: number, { contained, fitsAt }: Tests, what: () => string) {
   const out = { x: Math.sin(run.rotationY), z: Math.cos(run.rotationY) }, options = { planRooms: plan.rooms, bottom };
   const moves: StuckMoves = {
-    contained, fits: (at) => fitsAt(at, 0.0006), clearlyFits: (at) => fitsAt({ ...at, width: at.width + 0.002 }, 0.0006),
+    contained, fits: (at) => fitsAt(at, 0.0006), clearlyFits: (at) => fitsAt(clearly(at), 0.000001),
     move: (piece, x, z) => clampBuiltInToRoom(room, x, z, piece.width, piece.depth, piece.rotationY, { ...options, from: [piece.x, piece.z] }),
     drag: (piece, x, z) => getBuiltInDragPlace(room, [piece.x, piece.z], x, z, piece.width, piece.depth, piece.rotationY, options),
     snapAim: (piece) => getBuiltInSnapTarget(room, [piece.x, bottom, piece.z], piece.width, piece.depth, piece.rotationY, plan.rooms),

@@ -9,7 +9,7 @@ import {
 import { buildBuiltInRegion, type BuiltInNeighbourWalls, type BuiltInRegion } from "@/lib/room-built-in-region";
 import { isFootprintClearOfFaces, isFootprintInBuiltInRegion } from "@/lib/room-built-in-footprint";
 import { findNearestBuiltInFit, type BuiltInFitObstacles } from "@/lib/built-in-nearest-fit";
-import { findStuckBuiltInPlace } from "@/lib/built-in-stuck-move";
+import { findStuckBuiltInPlace, getPlaceOnFaceStoodAgainst } from "@/lib/built-in-stuck-move";
 import { getBuiltInHostFaces } from "@/lib/room-built-in-host-faces";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildImportedBuiltInRegion } from "@/lib/room-built-in-imported-region";
@@ -320,8 +320,9 @@ function buildFitObstacles(faces: BuiltInRoomFaces, width: number, depth: number
  * turned room, or one with an angled wall), straight back to its nearest face instead, along that face's normal
  * (snapToNearestFace; J's delegate, 1 Nov 2026), where it slid along x or z. The move then takes it there if it fits there,
  * without checking what stands between (as for furniture), or else toward it as far as the clamp's halving search finds it
- * fits. A room on furniture's rule snaps as the line did, half the wall plus 2 cm in from its rectangle, to its middle for one
- * wider than that.
+ * fits. From a place it doesn't fit, it goes back onto the face it stands against, if any (getPlaceOnFaceStoodAgainst), where
+ * the move looks for the nearest place it fits. A room on furniture's rule snaps as the line did, half the wall plus 2 cm in
+ * from its rectangle, to its middle for one wider than that.
  */
 export function getBuiltInSnapTarget(
   room: RoomSnapshot, position: readonly [number, number, number], width: number, depth: number, rotationY: number,
@@ -340,6 +341,10 @@ export function getBuiltInSnapTarget(
   }
   // Its back against a face, or a floor-standing one's against the baseboard (getBuiltInStandOff, by its bottom).
   const standOff = getBuiltInStandOff(room, position[1]);
+  // From a place it doesn't fit, back onto the face it stands against (J's delegate, 2 Nov 2026), where the move frees it.
+  const stuck = !builtInFootprintFits(built, x, z, width, depth, rotationY, BUILT_IN_CONTACT_TOLERANCE / 10, standOff) &&
+    getPlaceOnFaceStoodAgainst({ hosts: getBuiltInHostFaces(built), walls: built.walls, width, depth, rotationY, standOff }, x, z);
+  if (stuck) return stuck;
   const offAxes = built.exposed.some((face, index) => face && Math.abs(built.walls[index].nx) > 1e-12 && Math.abs(built.walls[index].nz) > 1e-12);
   if (offAxes) return snapToNearestFace(built, x, z, width, depth, rotationY, standOff);
   const faces = built.polygon, xs = faces.map((point) => point.x), zs = faces.map((point) => point.z);

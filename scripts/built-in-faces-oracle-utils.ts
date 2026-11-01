@@ -165,7 +165,8 @@ const PROBE = 0.000005;
  * place a solid's edge crosses those lines; gaps under 0.01 mm (where solids meet) are passed over, and stretches under 1 mm
  * aren't faces. Where a wall ending a stretch is all but parallel to the line, its end is known only to 0.006 mm over that
  * wall's slope, `slack` (the bands' rounding to 0.001 mm, a few times over). In an imported plan, a solid no further than
- * `front` in front of the line is flush with it (its walls stand true to 0.05 mm: scripts/test-built-in-imported-oracle.ts).
+ * `front` in front of the line is flush with it, and a gap no wider along it is passed over (its walls stand true to 0.05 mm:
+ * scripts/test-built-in-imported-oracle.ts).
  */
 export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number, front = PROBE): Stretch[] {
   const rings = [region.outline, ...region.bands.flatMap((band) => [band.outer, ...band.holes]), ...region.others];
@@ -186,7 +187,7 @@ export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: nu
     const start = stops[index];
     if (!(stop > start) || !exposed((start + stop) / 2)) return;
     const last = merged[merged.length - 1];
-    if (last && start - last[1] < 0.00001) last[1] = stop;
+    if (last && start - last[1] < Math.max(0.00001, front)) last[1] = stop;
     else merged.push([start, stop]);
   });
   // Under 1 mm it holds nothing, and lies where solids meet a few thousandths apart (lib/room-built-in-region.ts's rule too).

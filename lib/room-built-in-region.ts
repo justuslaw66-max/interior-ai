@@ -61,8 +61,8 @@ export type BuiltInRegion = {
   faces: Array<{ start: Point; end: Point; nx: number; nz: number }>;
   /**
    * How far (mm) a solid may stand in front of a face and be flush with it, an imported plan's (PLAN_FLUSH_MM): neither ending
-   * nor splitting the face, nor an obstacle on it. A drawn room's face ends where a solid stands FACE_PROBE_MM in front, and
-   * anything at all in front is an obstacle.
+   * nor splitting the face, nor an obstacle on it; nor does a gap no wider behind it split it. A drawn room's face ends where a
+   * solid stands FACE_PROBE_MM in front, anything at all in front is an obstacle, and solids behind meet to FACE_EDGE_MM.
    */
   flush?: number;
 };
@@ -163,14 +163,17 @@ function buildSolids(walls: readonly RegionWall[], thickness: number): Point[][]
   return [...cores, ...panels];
 }
 
-/** The stretches along a face where a solid stands the probe's depth behind it, merged where they meet (to a ten-thousandth of a mm). */
-function getCoveredBehind(solids: readonly FacePoint[][]): Array<[number, number]> {
+/**
+ * The stretches along a face where a solid stands the probe's depth behind it, merged where they meet: to a ten-thousandth of
+ * a mm, or an imported plan's `flush` (two walls' mitres meeting at a corner a few ten-thousandths apart).
+ */
+function getCoveredBehind(solids: readonly FacePoint[][], gap = FACE_EDGE_MM): Array<[number, number]> {
   const spans = solids.map((points) => clipToStrip(points, -FACE_PROBE_MM, -FACE_PROBE_MM).map(([along]) => along))
     .filter((values) => values.length >= 2).map((values): [number, number] => [Math.min(...values), Math.max(...values)])
     .sort((left, right) => left[0] - right[0]);
   return spans.reduce<Array<[number, number]>>((merged, span) => {
     const last = merged[merged.length - 1];
-    if (last && span[0] <= last[1] + FACE_EDGE_MM) last[1] = Math.max(last[1], span[1]);
+    if (last && span[0] <= last[1] + gap) last[1] = Math.max(last[1], span[1]);
     else merged.push([...span]);
     return merged;
   }, []);
@@ -247,7 +250,7 @@ function buildFaceHost(region: Omit<BuiltInRegion, "exposed" | "faces">, index: 
   for (const inset of getFaceDepths(region, wall)) {
     const frame = getFaceFrame(region, wall, inset);
     // Each clear stretch, by the stretch of face behind them, of which the one most along the wall's own edge is its face.
-    const all = getCoveredBehind(frame.solids).map(([coverFrom, coverTo]) => frame.clearOf(coverFrom, coverTo)
+    const all = getCoveredBehind(frame.solids, region.flush).map(([coverFrom, coverTo]) => frame.clearOf(coverFrom, coverTo)
       .filter(([from, to]) => inRoom(frame.fromFrame((from + to) / 2, FACE_PROBE_MM / 2))));
     all.flat().forEach(([from, to]) => faces.push({ start: frame.fromFrame(from, 0), end: frame.fromFrame(to, 0), nx: wall.nx, nz: wall.nz }));
     const pieces = all.map((stretches) => stretches.filter(([from, to]) => to > 0 && from < lengthMm));

@@ -19,7 +19,7 @@ import {
   distanceToBox, edgesItMeets, EPS, exposedOnLine, inRegion, snapAlongNormal, snapGaps, toRun, toWorld, type LineFrame, type P, type Region, type Run, type Stretch,
 } from "./built-in-faces-oracle-utils";
 import { chainFaceBreaks, chainHost, collinearChains, type ChainHost, type EdgeFace } from "./built-in-collinear-oracle-utils";
-import { checkMovesFromStuck, type StuckMoves } from "./built-in-stuck-oracle-utils";
+import { checkMovesFromStuck, clearly, type StuckMoves } from "./built-in-stuck-oracle-utils";
 import { IMPORTED_SHAPES, importedRegionOf, makeImportedCase, type ImportedCase, type ImportedRegion } from "./built-in-imported-oracle-utils";
 
 /**
@@ -128,17 +128,17 @@ const fitsAt = (context: Context, at: Run, standOff: number, shrink = 0.0006) =>
   standsIn(context, at) && footprintInRegion(context.region, at, shrink) && clearOfBaseboards(context, at, standOff, shrink);
 
 /**
- * Where the 3D view leaves a gap behind the run's back for its height (a door, or a window over a wall cabinet): the slices
- * the line straight back from its back through the wall first meets (and those within 2 mm of that, up to 0.45 m back) don't
- * reach from `bottomMm` to `topMm`. Tried every 5 mm from 0.3 m before the run to 0.3 m past it, each change found to 0.01 mm;
+ * Where the 3D view leaves a gap behind the run's back for its height (a door, a window over a wall cabinet, an opening to the
+ * wall's top): the slices the line straight back from its back through the wall first meets (and those within 2 mm of that,
+ * up to 0.45 m back) don't reach from `bottomMm` to `topMm`, or there are none. Tried every 5 mm from 0.3 m before the run to 0.3 m past it, each change found to 0.01 mm;
  * as stretches along the run.
  */
 function gapsBehind(context: Context, run: Run, back: number, bottomMm: number, topMm: number): Array<[number, number]> {
   const out = { x: Math.sin(run.rotationY), z: Math.cos(run.rotationY) };
-  const near = context.drawn.slices.filter(({ quad }) => quad.some((point) => {
-    const [along, across] = toRun(run, back, point);
-    return Math.abs(along) < run.width / 2 + 0.8 && across > -0.8 && across < 0.1;
-  }));
+  const near = context.drawn.slices.filter(({ quad }) => {
+    const points = quad.map((point) => toRun(run, back, point)), [alongs, acrosses] = [points.map(([along]) => along), points.map(([, across]) => across)];
+    return Math.min(...alongs) < run.width / 2 + 0.8 && Math.max(...alongs) > -run.width / 2 - 0.8 && Math.min(...acrosses) < 0.1 && Math.max(...acrosses) > -0.8;
+  });
   const gapAt = (along: number) => {
     const origin = toWorld(run, along, -run.depth / 2 - back);
     const hits = near.flatMap((slice) => {
@@ -149,7 +149,8 @@ function gapsBehind(context: Context, run: Run, back: number, bottomMm: number, 
     const spans = hits.filter(({ into }) => into <= first + 0.002).map(({ slice }) => [slice.bottomMm, slice.topMm] as const).sort((a, b) => a[0] - b[0]);
     let reach = bottomMm;
     for (const [low, high] of spans) if (low <= reach + 0.5) reach = Math.max(reach, high);
-    return hits.length > 0 && reach < topMm - 0.5;
+    // No slice at all: an opening to the wall's top (or past the face's end, where only a run's end can be near it).
+    return hits.length === 0 || reach < topMm - 0.5;
   };
   const refine = (from: number, to: number) => {
     const opens = gapAt(to);
@@ -202,8 +203,9 @@ const runFrame = (run: Run, back: number): LineFrame => ({
 
 function faceBreaks(region: Region, run: Run, back: number, from: number, to: number, chain?: ChainHost): boolean {
   if (chain) return chainFaceBreaks(chain, run, back, from, to);
+  // Looked at a millimetre either side: a stretch under 1 mm isn't a face, so a narrower look finds none.
   const [low, high] = [Math.min(from, to), Math.max(from, to)];
-  return !exposedOnLine(region, runFrame(run, back), low - 0.00002, high + 0.00002, PLAN_FLUSH).some((stretch) => stretch.from <= low && stretch.to >= high);
+  return !exposedOnLine(region, runFrame(run, back), low - 0.001, high + 0.001, PLAN_FLUSH).some((stretch) => stretch.from <= low && stretch.to >= high);
 }
 
 /**
@@ -240,7 +242,10 @@ function endsRight(
   const faceEndsBy = (reach: number) => faceBreaks(region, run, back, end, end + side * reach, chain);
   // Where the wall ending the face is all but parallel to it, the face's end is known only to its slack (exposedOnLine).
   const slack = chain ? 0 : faceEndSlack(region, run, back, end, side, gap + tolerance + 0.006);
-  if (nearest.met < gap - tolerance || faceEndsBy(gap - tolerance - slack)) return false;
+  // At an opening it may stand up to it, and at one to the wall's top its face ends there. Within its slack of the face's end
+  // (a wall all but parallel ending it), where that end is isn't known nearer.
+  const near = gap - tolerance - slack;
+  if (nearest.met < gap - tolerance || (!atOpening && near > 0 && faceEndsBy(near))) return false;
   return atOpening || nearest.flush <= gap + tolerance || faceEndsBy(gap + tolerance + slack) || meetDistances(edgesItMeets(region, run, back, true, back, PLAN_FLUSH), box).flush <= gap + tolerance;
 }
 
@@ -440,7 +445,7 @@ function checkStuck(context: Context, run: Run, definition: CabinetDefinition, p
   const out = { x: Math.sin(run.rotationY), z: Math.cos(run.rotationY) }, options = { planRooms: context.planRooms, canonical: context.model, bottom };
   const moves: StuckMoves = {
     contained: (at) => contained(context, at, bottom), fits: (at) => fitsAt(context, at, standOff),
-    clearlyFits: (at) => fitsAt(context, { ...at, width: at.width + 0.002 }, standOff),
+    clearlyFits: (at) => fitsAt(context, clearly(at), standOff, 0.000001),
     move: (piece, x, z) => clampBuiltInToRoom(room, x, z, piece.width, piece.depth, piece.rotationY, { ...options, from: [piece.x, piece.z] }),
     drag: (piece, x, z) => getBuiltInDragPlace(room, [piece.x, piece.z], x, z, piece.width, piece.depth, piece.rotationY, options),
     snapAim: (piece) => getBuiltInSnapTarget(room, [piece.x, bottom, piece.z], piece.width, piece.depth, piece.rotationY, context.planRooms, context.model),
@@ -574,21 +579,13 @@ function checkHostsOffered(context: Context, spaces: CabinetHostSpace[], case_: 
       else all.push([stretch]);
       return all;
     }, []);
-    // The face Snap to wall measures from: the stretches 20 mm or more on the chosen line that reach the edge, backed between,
-    // the group of them most along it (a face runs on past its edge's end over its own wall's core), a host's or not.
-    const reaching = chosen.exposed.filter((stretch) => stretch.to > 0 && stretch.from < length && stretch.to - stretch.from >= 0.02);
-    const faceGroups = reaching.reduce<Array<typeof reaching>>((all, stretch) => {
-      const group = all[all.length - 1];
-      if (group && backedBetween(group[group.length - 1].to, stretch.from)) group.push(stretch);
-      else all.push([stretch]);
-      return all;
-    }, []);
-    const alongEdge = (group: typeof reaching) => group.reduce((sum, stretch) => sum + Math.max(0, Math.min(stretch.to, length) - Math.max(stretch.from, 0)), 0);
-    const snapFace = faceGroups.reduce<typeof reaching | null>((most, group) => (!most || alongEdge(group) > alongEdge(most) ? group : most), null);
+    // The face Snap to wall measures from: the stretches 20 mm or more on the chosen line that reach the edge, from the first to
+    // the last, a host's or not. Its host spans them all: an opening to the wall's top between two leaves nothing behind there.
+    const snapFace = chosen.exposed.filter((stretch) => stretch.to > 0 && stretch.from < length && stretch.to - stretch.from >= 0.02);
     // One reaching its edge by under a millimetre, or within a millimetre of 20 mm long, may be a face or not (borderline).
-    const [first, last] = snapFace ? [snapFace[0], snapFace[snapFace.length - 1]] : [];
+    const [first, last] = [snapFace[0], snapFace[snapFace.length - 1]];
     if (first && last) context.hostFaces.push({ a: chosen.line.at(first.from, 0), b: chosen.line.at(last.to, 0), n: { x: nx, z: nz },
-      borderline: last.to < 0.001 || first.from > length - 0.001 || Math.min(...snapFace!.map((stretch) => stretch.to - stretch.from)) < 0.021 });
+      borderline: last.to < 0.001 || first.from > length - 0.001 || Math.min(...snapFace.map((stretch) => stretch.to - stretch.from)) < 0.021 });
     return { index, what: `${label} edge ${index} (${wall.id})`, chosen, onLine: hostsOn(chosen), groups, face: { dx, dz, nx, nz, line: chosen.line, groups, backed: backedBetween } };
   });
   checkEdgeHosts(context, spaces, edges);

@@ -29,7 +29,9 @@ export type StuckBuiltIn = {
  * to, its back no further in front than AGAINST_IN_FRONT past its stand-off nor behind than half its depth, the one it runs
  * along furthest (a jog's two faces are both near), then the nearest.
  */
-export function getFaceStoodAgainst(stuck: StuckBuiltIn, x: number, z: number): { start: Point; along: Point; normal: Point } | null {
+type StandingBuiltIn = Pick<StuckBuiltIn, "hosts" | "walls" | "width" | "depth" | "rotationY" | "standOff">;
+
+export function getFaceStoodAgainst(stuck: StandingBuiltIn, x: number, z: number): { start: Point; along: Point; normal: Point } | null {
   const { hosts, walls, width, depth, rotationY, standOff } = stuck, out = { x: Math.sin(rotationY), z: Math.cos(rotationY) };
   const back = { x: x - (out.x * depth) / 2, z: z - (out.z * depth) / 2 };
   let best: { start: Point; along: Point; normal: Point; off: number; over: number } | null = null;
@@ -48,13 +50,24 @@ export function getFaceStoodAgainst(stuck: StuckBuiltIn, x: number, z: number): 
   return best;
 }
 
+type Face = NonNullable<ReturnType<typeof getFaceStoodAgainst>>;
+
+/** The place with its back on `face` (or the stand-off off it), as far along it as (x, z). */
+function onFace({ start, along, normal }: Face, stuck: StandingBuiltIn, x: number, z: number): Point {
+  const out = stuck.depth / 2 + stuck.standOff, t = (x - start.x) * along.x + (z - start.z) * along.z;
+  return { x: start.x + along.x * t + normal.x * out, z: start.z + along.z * t + normal.z * out };
+}
+
+/** Snap to wall's target from a place a built-in doesn't fit: back onto the face it stands against there, or null for none. */
+export function getPlaceOnFaceStoodAgainst(stuck: StandingBuiltIn, x: number, z: number): [number, number] | null {
+  const face = getFaceStoodAgainst(stuck, x, z), on = face && onFace(face, stuck, x, z);
+  return on ? [on.x, on.z] : null;
+}
+
 /** Where a built-in moved to (x, z) from a place it doesn't fit goes (above), or null where nothing near fits. */
 export function findStuckBuiltInPlace(stuck: StuckBuiltIn, x: number, z: number, minimumReach: number): [number, number] | null {
-  const { families, fits, outline, width, depth, standOff } = stuck, face = getFaceStoodAgainst(stuck, x, z);
+  const { families, fits, outline, width, depth } = stuck, face = getFaceStoodAgainst(stuck, x, z);
   if (!face) return findNearestBuiltInFit(families, { x, z }, Math.max(minimumReach, width, depth), fits, outline);
-  // Its back on the face (or the stand-off off it), from the target's place along it, sliding no further than its own length.
-  const { start, along, normal } = face, out = depth / 2 + standOff;
-  const t = (x - start.x) * along.x + (z - start.z) * along.z;
-  const on = { x: start.x + along.x * t + normal.x * out, z: start.z + along.z * t + normal.z * out };
-  return findNearestBuiltInFitAlong(families, on, along, width, fits, outline);
+  // From the target's place along its face, sliding no further than its own length.
+  return findNearestBuiltInFitAlong(families, onFace(face, stuck, x, z), face.along, width, fits, outline);
 }

@@ -14,7 +14,7 @@ export type StuckMoves = {
   contained: (at: Run) => boolean;
   /** Fits as the region tests it, give or take its rounding (the oracle's fitsAt). */
   fits: (at: Run) => boolean;
-  /** Fits with a millimetre to spare at each end: a place the code must not pass over. */
+  /** Fits as `clearly` gives it, exactly (no rounding): a place the code must not pass over. */
   clearlyFits: (at: Run) => boolean;
   /** A move's result (the inspector's clamp, from where `piece` stands), aimed at (x, z); a drag's; Snap to wall's aim. */
   move: (piece: Run, x: number, z: number) => [number, number];
@@ -23,6 +23,15 @@ export type StuckMoves = {
 };
 
 type Check = (condition: boolean, message: () => string) => void;
+
+/**
+ * The run with a millimetre to spare at each end and 0.05 mm (the move's tolerance) at its back, as a test of where it clearly
+ * fits. A wall a run meets may be all but parallel to its back (a bend of a few hundredths of a degree), and the move stops
+ * where its back would meet it: a test as lax as the oracle's rounding (0.6 mm) would pass that by hundreds of millimetres.
+ */
+export const clearly = (at: Run): Run => ({
+  ...at, x: at.x + Math.sin(at.rotationY) * 0.000025, z: at.z + Math.cos(at.rotationY) * 0.000025, width: at.width + 0.002, depth: at.depth - 0.00005,
+});
 
 /**
  * Checks `piece` (the run where it doesn't fit: pushed into its wall, or made longer than its face) nudged 10 mm along, snapped
