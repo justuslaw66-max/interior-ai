@@ -7,8 +7,15 @@ import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
 import { sourceDrawingInk, sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
 
 export const ROOM_MASK_MAX_PIXELS = 2_500_000;
-/** A pixel darker than this grey (over white paper) is ink. */
+/** In a page picture, a pixel darker than this grey (over white paper) is ink. */
 export const ROOM_MASK_INK_LEVEL = 160;
+/**
+ * In the clean drawing, which keeps each line's own grey, a pixel darker than this is ink: pale lines count, so walls
+ * drawn as two pale lines (s074's hollow walls) close their rooms. Measured on the 74 open plans' simulated clicks
+ * (16 plans with a missing room, none sealed): rooms open to the page edge 8 -> 0; a room found with no other
+ * space's name in it 27 -> 31.
+ */
+export const DRAWING_INK_LEVEL = 220;
 
 export type InkMask = { ink: Uint8Array; widthPx: number; heightPx: number; scale: number };
 type Point = { x: number; y: number };
@@ -19,13 +26,13 @@ export function roomMaskSize(pageWidthPx: number, pageHeightPx: number) {
   return { widthPx: Math.max(1, Math.round(pageWidthPx * scale)), heightPx: Math.max(1, Math.round(pageHeightPx * scale)), scale };
 }
 
-/** Ink from RGBA pixels: darker than ROOM_MASK_INK_LEVEL once laid over white. */
-export function inkFromPixels(rgba: ArrayLike<number>, widthPx: number, heightPx: number): Uint8Array {
+/** Ink from RGBA pixels: darker than `level` once laid over white. */
+export function inkFromPixels(rgba: ArrayLike<number>, widthPx: number, heightPx: number, level = ROOM_MASK_INK_LEVEL): Uint8Array {
   const ink = new Uint8Array(widthPx * heightPx);
   for (let i = 0; i < ink.length; i += 1) {
     const alpha = rgba[4 * i + 3] / 255;
     const grey = 0.299 * rgba[4 * i] + 0.587 * rgba[4 * i + 1] + 0.114 * rgba[4 * i + 2];
-    ink[i] = 255 - alpha * (255 - grey) < ROOM_MASK_INK_LEVEL ? 1 : 0;
+    ink[i] = 255 - alpha * (255 - grey) < level ? 1 : 0;
   }
   return ink;
 }
@@ -61,7 +68,7 @@ function canvas(widthPx: number, heightPx: number): Canvas2D {
 
 type Context2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
-function paint(pageWidthPx: number, pageHeightPx: number, draw: (context: Context2D, scale: number) => void): InkMask | null {
+function paint(pageWidthPx: number, pageHeightPx: number, level: number, draw: (context: Context2D, scale: number) => void): InkMask | null {
   const size = roomMaskSize(pageWidthPx, pageHeightPx);
   const context = canvas(size.widthPx, size.heightPx).getContext("2d");
   if (!context) return null;
@@ -70,7 +77,7 @@ function paint(pageWidthPx: number, pageHeightPx: number, draw: (context: Contex
   context.scale(size.scale, size.scale);
   draw(context, size.scale);
   const pixels = context.getImageData(0, 0, size.widthPx, size.heightPx).data;
-  return { ink: inkFromPixels(pixels, size.widthPx, size.heightPx), ...size };
+  return { ink: inkFromPixels(pixels, size.widthPx, size.heightPx, level), ...size };
 }
 
 /**
@@ -78,7 +85,7 @@ function paint(pageWidthPx: number, pageHeightPx: number, draw: (context: Contex
  * page drawn smaller than its own size every shape is also outlined a mask pixel wide, so no thin line fades out.
  */
 export function drawingInk(annotations: FloorPlanAnnotationV2[], pageWidthPx: number, pageHeightPx: number): InkMask | null {
-  return paint(pageWidthPx, pageHeightPx, (context, scale) => {
+  return paint(pageWidthPx, pageHeightPx, DRAWING_INK_LEVEL, (context, scale) => {
     for (const annotation of annotations) {
       const geometry = annotation.geometry;
       if (geometry.kind !== "source_drawing" || geometry.command === "text") continue;
@@ -93,5 +100,5 @@ export function drawingInk(annotations: FloorPlanAnnotationV2[], pageWidthPx: nu
 
 /** The page picture's ink. */
 export function pictureInk(picture: CanvasImageSource, pageWidthPx: number, pageHeightPx: number): InkMask | null {
-  return paint(pageWidthPx, pageHeightPx, (context) => context.drawImage(picture, 0, 0, pageWidthPx, pageHeightPx));
+  return paint(pageWidthPx, pageHeightPx, ROOM_MASK_INK_LEVEL, (context) => context.drawImage(picture, 0, 0, pageWidthPx, pageHeightPx));
 }

@@ -4,7 +4,7 @@ import { compileFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import { registerEmptyPlanScaleCalibration } from "@/lib/floor-plan-import-review-geometry";
 import { findRoomRegion } from "@/lib/floor-plan-review-room-fill";
 import { roomCornersFromRegion, traceBoundary } from "@/lib/floor-plan-review-room-outline";
-import { inkFromPixels, roomMaskSize, withSegments, type InkMask } from "@/lib/floor-plan-review-room-mask";
+import { DRAWING_INK_LEVEL, inkFromPixels, roomMaskSize, withSegments, type InkMask } from "@/lib/floor-plan-review-room-mask";
 import { findRoomAtClick, roomTypeFromName } from "@/lib/floor-plan-review-room-click";
 import { addFoundRoom } from "@/lib/floor-plan-review-room-conform";
 import { openingKindFromNote, openingSymbolAt } from "@/lib/floor-plan-review-door-click";
@@ -70,8 +70,10 @@ assert.ok(near(outline.corners, [[100, 100], [400, 100], [400, 350], [100, 350]]
 assert.equal(outline.wallThicknessMm, 120);
 assert.equal(traceBoundary(new Uint8Array([0, 1, 1, 0, 1, 1, 0, 0, 0]), 3, 3).length, 4, "a 2 px square has four corners");
 
-// 4. The mask: ink is what is darker than mid grey over white; a page is shrunk to at most 2.5 MP.
+// 4. The mask: in a picture, ink is what is darker than mid grey over white; in the clean drawing, which keeps each
+// line's grey, pale lines count too (walls drawn as two pale lines). A page is shrunk to at most 2.5 MP.
 assert.deepEqual([...inkFromPixels([0, 0, 0, 255, 200, 200, 200, 255, 0, 0, 0, 40, 120, 120, 120, 255], 4, 1)], [1, 0, 0, 1]);
+assert.deepEqual([...inkFromPixels([200, 200, 200, 255, 230, 230, 230, 255], 2, 1, DRAWING_INK_LEVEL)], [1, 0]);
 assert.deepEqual(roomMaskSize(1000, 800), { widthPx: 1000, heightPx: 800, scale: 1 });
 assert.ok(roomMaskSize(4000, 3000).widthPx * roomMaskSize(4000, 3000).heightPx <= 2_500_000);
 
@@ -185,7 +187,32 @@ clickAt(250, 300);
 clickAt(425, 215);
 assert.deepEqual(points, [{ x: 250, y: 300 }, { x: 425, y: 215 }]);
 
-// 7. Room types from printed names, as the room panel offers them.
+// 7. A doorway wider than the sweeping square (1.6 m between two 6 m by 4 m rooms) lets the click find both rooms as
+// one; the reader's door across it closes it, and the click finds the one room.
+const wide = (): InkMask => {
+  const ink = new Uint8Array(W * H);
+  const box = (x0: number, y0: number, x1: number, y1: number) => {
+    for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) ink[y * W + x] = 1;
+  };
+  box(97, 97, 703, 103); box(97, 297, 703, 303); box(97, 97, 103, 303); box(697, 97, 703, 303);
+  box(397, 97, 403, 160); box(397, 240, 403, 303);
+  return { ink, widthPx: W, heightPx: H, scale: 1 };
+};
+let twoRooms: FloorPlanDocumentV2 = registerEmptyPlanScaleCalibration({ document: empty, floorId: floor.id, sourceId, pageNumber: 1,
+  pageWidthPx: W, pageHeightPx: H, first: { x: 100, y: 100 }, second: { x: 300, y: 100 }, printedMm: 4000 });
+const leftRoom = () => findRoomAtClick({ document: twoRooms, floorId: floor.id, sourceId, pageNumber: 1, mask: wide(), point: { x: 250, y: 200 } });
+const merged = leftRoom();
+assert.ok(merged.ok && merged.room.areaM2 > 40, "without the door, the two rooms come back as one");
+twoRooms = structuredClone(twoRooms);
+twoRooms.floors[0].annotations.push({ id: "source-proposal:1:opening:0", kind: "note", scope: "reference",
+  text: "Unverified door span; operation swing needs review",
+  geometry: { kind: "source_drawing", sourceId, pageNumber: 1, widthPx: W, heightPx: H, command: "line", points: [{ x: 400, y: 160 }, { x: 400, y: 240 }] },
+  provenance: { confidence: 0, extractionVersion: "test", reviewHistory: [], evidence: [] } });
+const closed = leftRoom();
+assert.ok(closed.ok && closed.room.areaM2 > 20 && closed.room.areaM2 < 25, JSON.stringify(closed.ok && closed.room.areaM2));
+assert.ok(near(closed.room.corners, [[100, 100], [400, 100], [400, 300], [100, 300]], 3), JSON.stringify(closed.room.corners));
+
+// 8. Room types from printed names, as the room panel offers them.
 assert.deepEqual(["MASTER BEDROOM", "BATH/ W.C. 1", "MASTER BATH", "KITCHEN", "SERVICE YARD", "HOUSEHOLD SHELTER", "STUDY", "LIVING/ DINING", "BALCONY"].map(roomTypeFromName),
   ["bedroom", "toilet", "toilet", "kitchen", "service_yard", "shelter", "study", "living", "other"]);
 

@@ -1,7 +1,8 @@
 /**
  * "Click inside a room": from one click on the page to a room ready to add (corners, size, printed name, type and the
- * drawn wall thickness). The saved walls are drawn into the ink first, so the room found stops at them; a click inside
- * a saved room finds nothing new. Adding it is floor-plan-review-room-conform.ts.
+ * drawn wall thickness). The saved walls and the doors and windows the reader found are drawn into the ink first, so
+ * the room found stops at them and at its doorways; a click inside a saved room finds nothing new. Adding it is
+ * floor-plan-review-room-conform.ts.
  */
 import type { FloorPlanDocumentV2, FloorPlanFloorV2, FloorPlanPointMmV2 } from "@/lib/floor-plan-document-v2";
 import { buildFloorPlanSourceProjection } from "@/lib/floor-plan-imports/source-overlay-residuals";
@@ -9,6 +10,7 @@ import type { ReviewSourcePoint } from "@/lib/floor-plan-import-review-geometry"
 import { findRoomRegion, type RoomFillFailure } from "@/lib/floor-plan-review-room-fill";
 import { roomCornersFromRegion } from "@/lib/floor-plan-review-room-outline";
 import { withSegments, type InkMask } from "@/lib/floor-plan-review-room-mask";
+import { openingSpansOnPage } from "@/lib/floor-plan-review-door-click";
 
 export type FoundRoom = {
   corners: ReviewSourcePoint[];
@@ -105,7 +107,8 @@ export function findRoomAtClick(input: {
   const origin = projection.project({ xMm: 0, zMm: 0 }), metre = projection.project({ xMm: 1000, zMm: 0 });
   const mmPerMaskPx = 1000 / (Math.hypot(metre.xPx - origin.xPx, metre.yPx - origin.yPx) * scale || 1);
   const toMask = (point: ReviewSourcePoint) => ({ x: point.x * scale, y: point.y * scale });
-  const mask = withSegments(input.mask, savedWalls(floor, projection).map(([a, b]) => [toMask(a), toMask(b)]), 2);
+  const closers = [...savedWalls(floor, projection), ...openingSpansOnPage(input.document, input.floorId, input.sourceId, input.pageNumber)];
+  const mask = withSegments(input.mask, closers.map(([a, b]) => [toMask(a), toMask(b)]), 2);
   const found = findRoomRegion(mask, toMask(input.point), mmPerMaskPx);
   if (!found.ok) return { ok: false, message: MESSAGES[found.failure] };
   const outline = roomCornersFromRegion(found.region, mask.ink, mask.widthPx, mask.heightPx, mmPerMaskPx);
