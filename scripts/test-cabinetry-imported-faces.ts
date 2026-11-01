@@ -183,6 +183,30 @@ const kitchen = (turnDeg: number, baseboardDepth?: number) => importedCaseOf(imp
   assert.equal(inDrawnRoom(c, west, run), true, "its run stands against it, inside the 3D view's walls");
 }
 
+// The same T turned 20°, its stem 701 mm off the middle: the plan's whole-millimetre vertices bend the through wall at the T by
+// 0.006°, so its pieces' faces were two hosts, each running about 100 mm past the T, and no run could span the wall. Pieces
+// within 0.05° whose faces meet are one host (J's delegate, 1 Nov 2026: "Treat collinear pieces as one host"): over both, square
+// to its face, and a run filling it stands inside the 3D view's walls, contained.
+{
+  const c = importedCaseOf(importedDocument("t-turned", {
+    vertices: { p1: [-3000, -3000], p2: [3000, -3000], p3: [3000, 0], j: [701, 0], p4: [3000, 3000], p5: [701, 3000], p6: [-3000, 3000], p7: [-3000, 0] },
+    rooms: { N: ["p1", "p2", "p3", "j", "p7"], W: ["p7", "j", "p5", "p6"], E: ["j", "p3", "p4", "p5"] }, thicknessMm: 250, walls: { "j>p5": 100 },
+  }, { turnDeg: 20, dx: 1234, dz: -567 }));
+  const north = c.rooms.find(({ id }) => id === "N")!, faces = getRoomBuiltInFaces(north, undefined, c.planRooms, c.model);
+  const bend = Math.asin(Math.abs(faces.walls[2].dx * faces.walls[3].dz - faces.walls[2].dz * faces.walls[3].dx)) * 180 / Math.PI;
+  assert.ok(bend > 0.001 && bend < 0.05, `the through wall's pieces are ${bend.toFixed(4)}° apart`);
+  const spaces = hostsOf(c, north), through = spaces.filter((space) => space.wallId === "wall-2" || space.wallId === "wall-3");
+  assert.deepEqual(through.map((space) => space.wallId), ["wall-2"], "the through wall is one host, listed as its first piece");
+  assert.ok(Math.abs(through[0].availableWidthMm - 5750) < 0.5, `from face to face, 5750 mm (${through[0].availableWidthMm.toFixed(2)})`);
+  const segment = through[0].wallSegment!, length = Math.hypot(segment.endXmm - segment.startXmm, segment.endZmm - segment.startZmm);
+  assert.ok(Math.abs((segment.endXmm - segment.startXmm) * segment.inwardNormalX + (segment.endZmm - segment.startZmm) * segment.inwardNormalZ) / length < 1e-9, "square to its face");
+  const run = fitAndPlace(c, north, through[0], "base");
+  assert.ok(Math.abs(run.width * 1000 - 5730) < 0.5, `a base run fills it (${(run.width * 1000).toFixed(1)} mm)`);
+  assert.equal(contains(c, north, run), true, "contained");
+  assert.equal(inDrawnRoom(c, north, run), true, "inside the 3D view's walls");
+  for (const wallId of ["w-p3-j", "w-j-p7"]) assert.equal(findCabinetHostForWall(north, spaces, wallId)?.id, through[0].id, `selecting ${wallId} in the plan preselects it`);
+}
+
 // The plan's doors and windows: the kitchen's door cuts its south host where the 3D view draws it, and a base run fits under its
 // north window (900 mm sill) where a wall cabinet doesn't.
 {

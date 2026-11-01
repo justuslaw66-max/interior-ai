@@ -502,6 +502,43 @@ for (const [label, middleZ] of [["bent 2°", -1.5 + 2 * Math.tan(Math.PI / 90)],
   }
 }
 
+// Pieces all but collinear are one host (J's delegate, 1 Nov 2026: "Treat collinear pieces as one host"; COLLINEAR_HOST_DEGREES,
+// 0.05°): the 4 m wall bent 0.5 mm (its pieces 0.029° apart) is one host over both, square to its face, its back on the bend's
+// face and half a millimetre in front of the pieces' far ends, and a run filling it stands inside; bent 1 mm (0.057°) each piece is its own host as before
+// (above), and so is each with a panel on one piece, at any bend.
+{
+  const bent = drawnRoom([{ x: -2, z: -1.5 }, { x: 0, z: -1.4995 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);
+  const hosts = buildCabinetryAvailableSpaces({ activeRoom: bent, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
+  const north = hosts.filter((space) => space.wallId === "wall-0" || space.wallId === "wall-1");
+  assert.deepEqual(north.map((space) => space.wallId), ["wall-0"], "bent 0.5 mm, the north wall is one host, listed as its first piece");
+  const segment = north[0].wallSegment!, length = Math.hypot(segment.endXmm - segment.startXmm, segment.endZmm - segment.startZmm);
+  nearMm(north[0].availableWidthMm, 3880, "it runs from face to face");
+  assert.ok(Math.abs((segment.endXmm - segment.startXmm) * segment.inwardNormalX + (segment.endZmm - segment.startZmm) * segment.inwardNormalZ) / length < 1e-9, "square to its face");
+  const behind = (x: number, z: number) => ((x * 1000 - segment.startXmm) * (segment.endZmm - segment.startZmm) - (z * 1000 - segment.startZmm) * (segment.endXmm - segment.startXmm)) / length;
+  const gaps = [[-1.94, -1.44], [0, -1.4395], [1.94, -1.44]].map(([x, z]) => Math.abs(behind(x, z)));
+  assert.ok(gaps.every((gap) => gap <= 0.52) && gaps[1] < 0.02, `both pieces' faces within 0.52 mm of it, the bend's within 0.02 mm (${gaps.map((gap) => gap.toFixed(4)).join(", ")} mm)`);
+  const [run] = runsOf({ ...bent }).filter((entry) => entry.space.wallId === "wall-0");
+  nearMm(run.width * 1000, 3860, "a run fills it");
+  assert.equal(containedAt(bent, run), true, "and stands inside");
+  assert.equal(findCabinetHostForWall(bent, hosts, "wall-1")?.id, north[0].id, "selecting either piece preselects it");
+  for (const [label, middleZ, surfaces] of [["bent 1 mm", -1.499, undefined], ["bent 0.5 mm, a panel on one piece", -1.4995, panelOn("wall-1")]] as const) {
+    const stepped = drawnRoom([{ x: -2, z: -1.5 }, { x: 0, z: middleZ }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }], surfaces ? { surfaces } : {});
+    const ids = buildCabinetryAvailableSpaces({ activeRoom: stepped, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).map((space) => space.wallId);
+    assert.ok(ids.includes("wall-0") && ids.includes("wall-1"), `${label}: each piece is its own host (${ids.join(", ")})`);
+  }
+}
+
+// A bend of a thousandth of a degree with a panel on the shorter piece: that piece's wall core, run on past the bend, lies along
+// the other piece's face within a few thousandths of a mm, which the line kept as an obstacle on its host and Fit's validation
+// then refused ("A recorded opening conflicts"). An obstacle flush with the face is none (withoutFlushObstacles), so it fits.
+{
+  const room = drawnRoom([{ x: -2, z: -1.5 }, { x: -1, z: -1.49998 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }], { surfaces: panelOn("wall-0") });
+  const host = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).find((space) => space.wallId === "wall-1")!;
+  assert.ok(host.wallSegment?.obstacles?.every((points) => points.some(([, into]) => into > 0)) ?? true, "its host keeps no obstacle flush with its face");
+  const fitted = fitCabinetToSpace(createCabinetPreset("base", "sliver"), host, { mode: "fit_width" });
+  assert.equal(fitted.ok && fitted.definition.totalWidth, 2920, "and a run fills the bare piece (refused on the line)");
+}
+
 // Degenerate outlines: a zero-area spike drawn out of a wall is no wall; a room narrower than its walls has no exposed face,
 // so it keeps the line's rule (its hosts, clamp and snap are furniture's, as an imported plan's are).
 const spiked = drawnRoom([{ x: -2, z: -1.5 }, { x: 0, z: -1.5 }, { x: 0, z: -2.5 }, { x: 0, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }]);

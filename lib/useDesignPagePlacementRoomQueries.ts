@@ -267,14 +267,7 @@ export function useDesignPagePlacementRoomQueries({
     useCallback<IsPlacementContainedInRoom>(
       (room, position, rotationY, dimensions, builtIn) =>
         isPlacementContainedInRoom({
-          room,
-          position,
-          rotationY,
-          dimensions,
-          houseRoom: houseRoomById.get(room.id),
-          canonicalModel,
-          builtIn,
-          planRooms: houseRoomById,
+          room, position, rotationY, dimensions, houseRoom: houseRoomById.get(room.id), canonicalModel, builtIn, planRooms: houseRoomById,
         }),
       [houseRoomById, canonicalModel]
     );

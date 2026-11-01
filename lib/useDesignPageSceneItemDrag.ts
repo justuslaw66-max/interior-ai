@@ -43,6 +43,13 @@ type CrossRoomDragTarget = {
 
 type PlanningDimensions = { w: number; d: number; h: number };
 
+/** A built-in stuck where it doesn't fit (saved before its room's rule) dragged free, to the nearest place it fits. */
+function freeBuiltIn(
+  place: PlaceBuiltInDragInRoom | undefined, room: RoomSnapshot | null | undefined, mover: DesignItem, position: [number, number, number], dimensions: PlanningDimensions
+): [number, number, number] {
+  return place && room && isBuiltInItem(mover) ? place(room, mover.position, position, mover.rotationY ?? 0, dimensions) : position;
+}
+
 type SceneDragHistory = {
   beginContinuousCommand: (command: {
     id: string;
@@ -437,8 +444,7 @@ export function useDesignPageSceneItemDrag({
         }
 
         const moverRoom = roomSnapshotById.get(sceneEntry.roomId) ?? activeRoom;
-        // A built-in stuck where it doesn't fit (saved before its room's rule) comes free, at the nearest place it fits.
-        if (moverRoom && isBuiltInItem(mover) && placeBuiltInDrag) localPosition = placeBuiltInDrag(moverRoom, mover.position, localPosition, mover.rotationY ?? 0, configuredPlanningDims);
+        localPosition = freeBuiltIn(placeBuiltInDrag, moverRoom, mover, localPosition, configuredPlanningDims);
         if (moverRoom && !isPlacementContained(moverRoom, localPosition, mover.rotationY ?? 0,
           configuredPlanningDims, isBuiltInItem(mover))) { // A built-in may stand against the finished face.
           showDragRejection(

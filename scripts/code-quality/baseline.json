@@ -4379,7 +4379,7 @@
     "lib/useDesignPageSceneItemDrag.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 515
+        "maximum": 509
       },
       "complexFunctions": {
         "count": 1,

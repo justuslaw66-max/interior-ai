@@ -9,15 +9,16 @@ import { getCanonicalRoomWallFinish } from "../components/editor/renderers/canon
 import type { HousePlanRoom2D } from "../lib/design-page-house-plan";
 import type { CanonicalFloorPlanRenderModel } from "../lib/floor-plan-render-model";
 import {
-  builtInFootprintFits, clampBuiltInToRoom, getBuiltInSnapTarget, getBuiltInStandOff, getRoomBuiltInFaces, usesFurnitureRuleForBuiltIns,
+  builtInFootprintFits, clampBuiltInToRoom, getBuiltInDragPlace, getBuiltInSnapTarget, getBuiltInStandOff, getRoomBuiltInFaces, usesFurnitureRuleForBuiltIns,
 } from "../lib/room-built-in-faces";
 import { getRoomOutlineInsideFinishes, getRoomPlanOutlinePoints } from "../lib/room-finished-outline";
 import { createRoom, type RoomSnapshot } from "../lib/room-types";
 import { getRoomWallFinishDepths } from "../lib/room-wall-finish-depths";
 import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
 import {
-  distanceToBox, edgesItMeets, EPS, exposedOnLine, inRegion, toRun, toWorld, type LineFrame, type P, type Region, type Run,
+  distanceToBox, edgesItMeets, EPS, exposedOnLine, inRegion, snapAlongNormal, toRun, toWorld, type LineFrame, type P, type Region, type Run, type Stretch,
 } from "./built-in-faces-oracle-utils";
+import { chainFaceBreaks, chainHost, collinearChains, type ChainHost, type EdgeFace } from "./built-in-collinear-oracle-utils";
 import { IMPORTED_SHAPES, importedRegionOf, makeImportedCase, type ImportedCase, type ImportedRegion } from "./built-in-imported-oracle-utils";
 
 /**
@@ -50,10 +51,12 @@ const AS_DRAWN_TOLERANCE = 0.00075;
 type Context = {
   room: RoomSnapshot; planRoom: HousePlanRoom2D; region: ImportedRegion; drawn: ImportedRegion; label: string;
   planRooms: Map<string, HousePlanRoom2D>; model: CanonicalFloorPlanRenderModel; faces: Array<{ a: P; b: P; n: P }>;
+  /** The hosts over pieces all but collinear, and the faces the hosts are on, each with its normal (checkHostsOffered). */
+  chainHosts: Map<CabinetHostSpace, ChainHost>; hostFaces: Array<{ a: P; b: P; n: P }>;
 };
 const failures: string[] = [];
-const counts: Record<string, number> = { plans: 0, rooms: 0, furnitureRule: 0, faces: 0, hosts: 0, runs: 0, refused: 0, filling: 0, doorRuns: 0,
-  nudges: 0, kept: 0, stopped: 0, turns: 0, turnsRefused: 0, snaps: 0, copies: 0, placements: 0, placementsRefused: 0 };
+const counts: Record<string, number> = { plans: 0, rooms: 0, furnitureRule: 0, faces: 0, hosts: 0, chains: 0, runs: 0, refused: 0, filling: 0, doorRuns: 0,
+  nudges: 0, kept: 0, stopped: 0, turns: 0, turnsRefused: 0, snaps: 0, normalSnaps: 0, stuck: 0, stuckRefused: 0, copies: 0, placements: 0, placementsRefused: 0 };
 const kinds: Record<string, number> = {};
 function check(condition: boolean, message: () => string) {
   if (!condition && failures.length < 40) failures.push(message());
@@ -191,7 +194,8 @@ const runFrame = (run: Run, back: number): LineFrame => ({
   frame: (point) => toRun(run, back, point), at: (along, across) => toWorld(run, along, -run.depth / 2 - back + across),
 });
 
-function faceBreaks(region: Region, run: Run, back: number, from: number, to: number): boolean {
+function faceBreaks(region: Region, run: Run, back: number, from: number, to: number, chain?: ChainHost): boolean {
+  if (chain) return chainFaceBreaks(chain, run, back, from, to);
   const [low, high] = [Math.min(from, to), Math.max(from, to)];
   return !exposedOnLine(region, runFrame(run, back), low - 0.00002, high + 0.00002).some((stretch) => stretch.from <= low && stretch.to >= high);
 }
@@ -222,10 +226,12 @@ function meetDistances(edges: ReturnType<typeof edgesItMeets>, [a0, a1, y0, y1]:
 }
 
 /** Does the run end `gap` (±`tolerance`) from what its end meets, where its face ends, or at a door's edge, and nearer to none? */
-function endsRight(region: Region, edges: ReturnType<typeof edgesItMeets>, run: Run, back: number, gap: number, side: -1 | 1, atOpening: boolean, tolerance: number): boolean {
+function endsRight(
+  region: Region, edges: ReturnType<typeof edgesItMeets>, run: Run, back: number, gap: number, side: -1 | 1, atOpening: boolean, tolerance: number, chain?: ChainHost
+): boolean {
   const end = (side * run.width) / 2, box: [number, number, number, number] = [end, end, back, back + run.depth];
   const nearest = meetDistances(edges, box);
-  const faceEndsBy = (reach: number) => faceBreaks(region, run, back, end, end + side * reach);
+  const faceEndsBy = (reach: number) => faceBreaks(region, run, back, end, end + side * reach, chain);
   if (nearest.met < gap - tolerance || faceEndsBy(gap - tolerance)) return false;
   return atOpening || nearest.flush <= gap + tolerance || faceEndsBy(gap + tolerance) || meetDistances(edgesItMeets(region, run, back, true), box).flush <= gap + tolerance;
 }
@@ -255,8 +261,9 @@ function checkRun(context: Context, space: CabinetHostSpace, preset: "base" | "w
   check(footprintInRegion(context.drawn, run, AS_DRAWN_TOLERANCE), () => `${what()}: the slices as drawn cut more than 0.75 mm into it`);
   const floor = preset === "base", back = floor ? Math.max(0, space.baseboardOffsetMm ?? 0) / 1000 : 0;
   const gap = (10 + (floor ? Math.max(0, space.wallSegment?.startBaseboardClearanceMm ?? 0) : 0)) / 1000;
-  const backs = Array.from({ length: 21 }, (_, index) => -run.width / 2 + 0.002 + ((run.width - 0.004) * index) / 20);
-  check(backs.every((along) => !inRegion(context.region, toWorld(run, along, -run.depth / 2 - back - 0.0003))), () => `${what()}: its back isn't on a face`);
+  // On a face, or over pieces all but collinear as far in front of them as the face bows behind its host's line.
+  const chain = context.chainHosts.get(space), backs = Array.from({ length: 21 }, (_, index) => -run.width / 2 + 0.002 + ((run.width - 0.004) * index) / 20);
+  check(backs.every((along) => !inRegion(context.region, toWorld(run, along, -run.depth / 2 - back - 0.0003 - (chain?.bow ?? 0)))), () => `${what()}: its back isn't on a face`);
   check(contained(context, run, floor ? 0 : 1.45), () => `${what()}: not contained`);
   const edges = edgesItMeets(context.region, run, back);
   const clearance = meetDistances(edges, [-run.width / 2, run.width / 2, back, back + run.depth]).met;
@@ -272,7 +279,7 @@ function checkRun(context: Context, space: CabinetHostSpace, preset: "base" | "w
     counts.filling += 1;
     for (const side of [-1, 1] as const) {
       const end = (side * run.width) / 2, atDoor = gaps.some(([from, to]) => Math.abs(from - end) < 0.003 || Math.abs(to - end) < 0.003);
-      check(endsRight(context.region, edges, run, back, gap, side, atDoor, tolerance), () => `${what()}: its ${side < 0 ? "start" : "end"} is more than ${((gap + tolerance) * 1000).toFixed(2)} mm from what it meets`);
+      check(endsRight(context.region, edges, run, back, gap, side, atDoor, tolerance, chain), () => `${what()}: its ${side < 0 ? "start" : "end"} is more than ${((gap + tolerance) * 1000).toFixed(2)} mm from what it meets`);
     }
   }
   checkNudges(context, run, preset, what);
@@ -309,7 +316,7 @@ function checkRefusal(context: Context, space: CabinetHostSpace, preset: "base" 
   for (let along = width / 2; along <= length - width / 2 + 1e-9; along += 0.005) {
     const run: Run = { x: ax + ux * along + nx * (back + depth / 2), z: az + uz * along + nz * (back + depth / 2), width, depth, rotationY: Math.atan2(nx, nz) };
     if (meetDistances(edgesItMeets(context.region, run, back), [-width / 2, width / 2, back, back + depth]).flush < gap) continue;
-    if (faceBreaks(context.region, run, back, -width / 2 - gap, width / 2 + gap) || !standsIn(context, run)) continue;
+    if (faceBreaks(context.region, run, back, -width / 2 - gap, width / 2 + gap, context.chainHosts.get(space)) || !standsIn(context, run)) continue;
     if (gapsBehind(context, run, back, bottomMm, bottomMm + smallest.heightMm).some(([from, to]) => to > -width / 2 && from < width / 2)) continue;
     return check(false, () => `${context.label} ${space.wallId} ${preset}: Fit refuses it, but a ${(width * 1000).toFixed(1)} mm run stands ${(along * 1000).toFixed(0)} mm along it`);
   }
@@ -380,10 +387,57 @@ function checkMoves(context: Context, run: Run, definition: CabinetDefinition, p
     const [x, z] = clampBuiltInToRoom(room, toX, toZ, piece.width, piece.depth, piece.rotationY, { from: [piece.x, piece.z], planRooms: context.planRooms, canonical: context.model, bottom });
     check(contained(context, { ...piece, x, z }, bottom), () => `${what()} ${name}: Snap to wall is refused`);
     check(fitsAt(context, { ...piece, x, z }, standOff), () => `${what()} ${name}: Snap to wall put it where the 3D view's walls cut it or on a baseboard`);
+    checkSnapAlongNormal(context, piece, bottom, () => `${what()} ${name}`);
   }
+  if (turning) checkStuck(context, run, preset, what);
   counts.copies += 1;
   const copy = getCabinetPlacement(definition, room, true, context.planRooms, context.model);
   check(fitsAt(context, { ...run, x: copy.position[0], z: copy.position[2], rotationY: copy.rotationY }, standOff), () => `${what()}: Place as copy put it where the 3D view's walls cut it or on a baseboard`);
+}
+
+/**
+ * In a room with a face off x and z, Snap to wall from 0.3 m out from where it stands goes straight back to the nearest face
+ * along that face's normal (snapAlongNormal, over the faces the hosts are on), and from there stands where it fits.
+ */
+function checkSnapAlongNormal(context: Context, piece: Run, bottom: number, what: () => string) {
+  if (!context.hostFaces.some(({ n }) => Math.abs(n.x) > 1e-9 && Math.abs(n.z) > 1e-9)) return;
+  counts.normalSnaps += 1;
+  const standOff = getBuiltInStandOff(context.room, bottom), out: Run = { ...piece, x: piece.x + Math.sin(piece.rotationY) * 0.3, z: piece.z + Math.cos(piece.rotationY) * 0.3 };
+  const [toX, toZ] = getBuiltInSnapTarget(context.room, [out.x, bottom, out.z], out.width, out.depth, out.rotationY, context.planRooms, context.model);
+  const expected = snapAlongNormal(context.hostFaces, out, standOff);
+  check(expected.some(([x, z]) => Math.hypot(x - toX, z - toZ) < 1e-6), () => `${what()}: Snap to wall from 0.3 m out went to (${toX.toFixed(4)}, ${toZ.toFixed(4)}), not straight back to the nearest face (${expected.map(([x, z]) => `${x.toFixed(4)}, ${z.toFixed(4)}`).join("; ")})`);
+  const [x, z] = clampBuiltInToRoom(context.room, toX, toZ, out.width, out.depth, out.rotationY, { from: [out.x, out.z], planRooms: context.planRooms, canonical: context.model, bottom });
+  if (contained(context, { ...out, x, z }, bottom)) check(fitsAt(context, { ...out, x, z }, standOff), () => `${what()}: Snap to wall from 0.3 m out put it where it doesn't fit`);
+}
+
+/**
+ * A run saved where it doesn't fit, 30 mm into its wall (as one saved before its room's rule may stand), comes free on its first
+ * move (J's delegate, 1 Nov 2026): a 10 mm nudge along it, Snap to wall and a drag's drop 0.2 m along each end where it fits,
+ * contained, the nudge no further from its target than the run's fitted place is (the nearest place it fits is no further);
+ * a 5° turn there ends where it fits or is refused only where nothing fits within 0.6 m.
+ */
+function checkStuck(context: Context, run: Run, preset: "base" | "wall", what: () => string) {
+  const { room } = context, bottom = preset === "wall" ? 1.45 : 0, standOff = getBuiltInStandOff(room, bottom);
+  const out = { x: Math.sin(run.rotationY), z: Math.cos(run.rotationY) }, along = { x: Math.cos(run.rotationY), z: -Math.sin(run.rotationY) };
+  const stuck: Run = { ...run, x: run.x - out.x * 0.03, z: run.z - out.z * 0.03 };
+  if (fitsAt(context, stuck, standOff, -0.001)) return;
+  counts.stuck += 1;
+  const options = { planRooms: context.planRooms, canonical: context.model, bottom }, from: [number, number] = [stuck.x, stuck.z];
+  const frees = (move: string, [x, z]: [number, number], rotationY = run.rotationY) =>
+    check(contained(context, { ...stuck, x, z, rotationY }, bottom) && fitsAt(context, { ...stuck, x, z, rotationY }, standOff), () => `${what()}: stuck 30 mm in its wall, ${move} left it where it doesn't fit`);
+  const target = { x: stuck.x + along.x * 0.01, z: stuck.z + along.z * 0.01 };
+  const nudged = clampBuiltInToRoom(room, target.x, target.z, run.width, run.depth, run.rotationY, { ...options, from });
+  frees("a nudge along", nudged);
+  check(Math.hypot(nudged[0] - target.x, nudged[1] - target.z) <= Math.hypot(run.x - target.x, run.z - target.z) + 1e-6, () => `${what()}: stuck, a nudge along went further than its fitted place`);
+  const [toX, toZ] = getBuiltInSnapTarget(room, [stuck.x, bottom, stuck.z], run.width, run.depth, run.rotationY, context.planRooms, context.model);
+  frees("Snap to wall", clampBuiltInToRoom(room, toX, toZ, run.width, run.depth, run.rotationY, { ...options, from }));
+  frees("a drag", getBuiltInDragPlace(room, from, stuck.x + along.x * 0.2, stuck.z + along.z * 0.2, run.width, run.depth, run.rotationY, options));
+  const rotationY = run.rotationY + (5 * Math.PI) / 180;
+  const turned = clampBuiltInToRoom(room, stuck.x, stuck.z, run.width, run.depth, rotationY, { ...options, turnedFrom: run.rotationY });
+  if (contained(context, { ...stuck, x: turned[0], z: turned[1], rotationY }, bottom)) return frees("a 5° turn", turned, rotationY);
+  counts.stuckRefused += 1;
+  const nearest = bruteNearestFit(context, { ...stuck, rotationY }, bottom, 0.6, (place) => fitsAt(context, place, standOff));
+  check(nearest === null, () => `${what()}: stuck, a 5° turn is refused, though it fits ${((nearest ?? 0) * 1000).toFixed(0)} mm away`);
 }
 
 /** The distance to the nearest place within `reach` (a 10 mm grid, or reach/60) where it fits by the region's test and `fits`. */
@@ -441,7 +495,9 @@ function checkPlacements(context: Context) {
  * Every face the 3D view draws exposed is offered, and every host is one: for each outline edge, the face line half its own
  * wall and its panel in from it (the wall it names, as the 3D view draws it), or where a slice running along it stands its far
  * side in front of that, whichever is exposed along more of the edge; its stretches 21 mm or more each within a host on that
- * line, and each host on the line starting and ending where an exposed stretch does (±0.5 mm). No two hosts the same.
+ * line, and each host on the line starting and ending where an exposed stretch does (±0.5 mm). Edges whose pieces are all but
+ * collinear and whose faces meet (a T-junction's through wall a turned plan bends by rounding) are one host over them all
+ * (scripts/built-in-collinear-oracle-utils.ts), and no other host is on their lines. No two hosts the same.
  */
 function checkHostsOffered(context: Context, spaces: CabinetHostSpace[], case_: ImportedCase) {
   const { region, room, planRoom, label } = context, outline = region.outline;
@@ -449,10 +505,10 @@ function checkHostsOffered(context: Context, spaces: CabinetHostSpace[], case_: 
   const keys = spaces.map((space) => JSON.stringify(space.wallSegment && [space.wallSegment.startXmm, space.wallSegment.startZmm, space.wallSegment.endXmm, space.wallSegment.endZmm]));
   check(new Set(keys).size === keys.length, () => `${label}: a host is listed twice`);
   const reach = room.geometry.width + room.geometry.depth;
-  outline.forEach((start, index) => {
+  const edges = outline.map((start, index) => {
     const end = outline[(index + 1) % outline.length], length = Math.hypot(end.x - start.x, end.z - start.z);
     const wall = case_.floor.walls.find(({ id }) => id === room.planEdgeWallIds?.[index]);
-    if (!(length > 1e-9) || !wall) return check(Boolean(wall), () => `${label} edge ${index}: no wall`);
+    if (!(length > 1e-9) || !wall) return check(Boolean(wall), () => `${label} edge ${index}: no wall`), null;
     const [dx, dz] = [(end.x - start.x) / length, (end.z - start.z) / length], [nx, nz] = [-dz * sign, dx * sign];
     const lineAt = (face: number) => {
       const origin = { x: start.x + nx * face, z: start.z + nz * face };
@@ -480,27 +536,51 @@ function checkHostsOffered(context: Context, spaces: CabinetHostSpace[], case_: 
       return along && Math.abs(a[1]) < 0.00001 && Math.abs(b[1]) < 0.00001 ? [{ space, from: Math.min(a[0], b[0]), to: Math.max(a[0], b[0]) }] : [];
     });
     const best = faces.filter((face) => face.along >= most - 0.001);
-    const chosen = best.find((face) => hostsOn(face).length) ?? best[0], { exposed, own } = chosen, onLine = hostsOn(chosen);
+    const chosen = best.find((face) => hostsOn(face).length) ?? best[0], { own } = chosen;
     faces.forEach((face) => face.exposed.filter((stretch) => stretch.to - stretch.from >= 0.02)
       .forEach((stretch) => context.faces.push({ a: face.line.at(stretch.from, 0), b: face.line.at(stretch.to, 0), n: { x: nx, z: nz } })));
-    const what = `${label} edge ${index} (${wall.id})`;
-    counts.hosts += onLine.filter((host) => host.space.wallId === `wall-${index}`).length;
-    if (own.length) {
-      counts.faces += 1;
-      const backedBetween = (from: number, to: number) => Array.from({ length: 9 }, (_, step) => from + ((to - from) * (step + 1)) / 10)
-        .every((along) => !inRegion(region, chosen.line.at(along, -0.000005)));
-      const groups = own.reduce<Array<typeof own>>((all, stretch) => {
-        const group = all[all.length - 1];
-        if (group && backedBetween(group[group.length - 1].to, stretch.from)) group.push(stretch);
-        else all.push([stretch]);
-        return all;
-      }, []);
-      groups.forEach((group) => {
-        const first = group[0], last = group[group.length - 1];
-        check(onLine.some((host) => host.from <= first.from + 0.0005 + first.slackFrom && host.to >= last.to - 0.0005 - last.slackTo),
-          () => `${what}: its face, exposed ${group.map((stretch) => `${(stretch.from * 1000).toFixed(1)}..${(stretch.to * 1000).toFixed(1)}`).join(", ")} mm along it, isn't within a host (${onLine.map((host) => `${(host.from * 1000).toFixed(1)}..${(host.to * 1000).toFixed(1)}`).join(", ") || "none"})`);
-      });
-    }
+    // Stretches apart only where something stands in front of the face are one face, in one host.
+    const backedBetween = (from: number, to: number) => Array.from({ length: 9 }, (_, step) => from + ((to - from) * (step + 1)) / 10)
+      .every((along) => !inRegion(region, chosen.line.at(along, -0.000005)));
+    const groups = own.reduce<Array<typeof own>>((all, stretch) => {
+      const group = all[all.length - 1];
+      if (group && backedBetween(group[group.length - 1].to, stretch.from)) group.push(stretch);
+      else all.push([stretch]);
+      return all;
+    }, []);
+    groups.forEach((group) => context.hostFaces.push({ a: chosen.line.at(group[0].from, 0), b: chosen.line.at(group[group.length - 1].to, 0), n: { x: nx, z: nz } }));
+    return { index, what: `${label} edge ${index} (${wall.id})`, chosen, onLine: hostsOn(chosen), groups, face: { dx, dz, nx, nz, line: chosen.line, groups } };
+  });
+  checkEdgeHosts(context, spaces, edges);
+}
+
+type EdgeHosts = {
+  index: number; what: string; chosen: { exposed: Stretch[] }; onLine: Array<{ space: CabinetHostSpace; from: number; to: number }>; groups: Stretch[][]; face: EdgeFace;
+};
+
+/** Each edge's face groups within a host on its line, and each host there where a stretch starts and ends; a chain's, its host. */
+function checkEdgeHosts(context: Context, spaces: CabinetHostSpace[], edges: Array<EdgeHosts | null>) {
+  const faces = edges.map((edge) => edge?.face ?? null), chains = collinearChains(faces), chained = new Set(chains.flatMap(({ edges: of }) => of));
+  chains.forEach((chain) => {
+    const host = chainHost(chain, faces, spaces), what = `${context.label} edges ${chain.edges.join(", ")}`;
+    counts.chains += 1;
+    check(host !== null, () => `${what}: all but collinear, their faces meet, but no host runs over them all (${spaces.map((space) => space.wallId).join(", ")})`);
+    if (!host) return;
+    counts.hosts += 1;
+    context.chainHosts.set(host.space, host);
+    chain.edges.forEach((index) => check(edges[index]?.onLine.every(({ space }) => space === host.space) ?? true, () => `${what}: another host on edge ${index}'s line`));
+  });
+  edges.forEach((edge) => {
+    if (!edge) return;
+    const { what, onLine, groups, chosen: { exposed } } = edge;
+    if (groups.length) counts.faces += 1;
+    if (chained.has(edge.index)) return;
+    counts.hosts += onLine.filter((host) => host.space.wallId === `wall-${edge.index}`).length;
+    groups.forEach((group) => {
+      const first = group[0], last = group[group.length - 1];
+      check(onLine.some((host) => host.from <= first.from + 0.0005 + first.slackFrom && host.to >= last.to - 0.0005 - last.slackTo),
+        () => `${what}: its face, exposed ${group.map((stretch) => `${(stretch.from * 1000).toFixed(1)}..${(stretch.to * 1000).toFixed(1)}`).join(", ")} mm along it, isn't within a host (${onLine.map((host) => `${(host.from * 1000).toFixed(1)}..${(host.to * 1000).toFixed(1)}`).join(", ") || "none"})`);
+    });
     onLine.forEach((host) => check(exposed.some((stretch) => Math.abs(stretch.from - host.from) <= 0.0005 + stretch.slackFrom) &&
       exposed.some((stretch) => Math.abs(stretch.to - host.to) <= 0.0005 + stretch.slackTo),
       () => `${what}: host ${host.space.wallId} ${(host.from * 1000).toFixed(1)}..${(host.to * 1000).toFixed(1)} mm isn't where an exposed face starts and ends (${exposed.map((stretch) => `${(stretch.from * 1000).toFixed(1)}..${(stretch.to * 1000).toFixed(1)}`).join(", ") || "none"})`));
@@ -525,7 +605,7 @@ for (let index = 0; index < PLANS; index += 1) {
       continue;
     }
     const context: Context = {
-      room, planRoom, label, planRooms: case_.planRooms, model: case_.model, faces: [],
+      room, planRoom, label, planRooms: case_.planRooms, model: case_.model, faces: [], chainHosts: new Map(), hostFaces: [],
       region: importedRegionOf(room, planRoom, case_.floor), drawn: importedRegionOf(room, planRoom, case_.floor, true),
     };
     const spaces = buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: case_.rooms.length, planOpenings: [], planRooms: case_.planRooms, canonicalModel: case_.model });
@@ -536,8 +616,9 @@ for (let index = 0; index < PLANS; index += 1) {
 }
 
 console.log(`Built-in imported oracle: ${counts.plans} plans (${IMPORTED_SHAPES.map((kind) => `${kind} ${kinds[kind] ?? 0}`).join(", ")}), ${counts.rooms} rooms,`,
-  `${counts.furnitureRule} on furniture's rule; ${counts.faces} exposed faces, ${counts.hosts} hosts; ${counts.runs} runs (${counts.filling} filling their stretch, ${counts.doorRuns} beside a door or window), ${counts.refused} refused,`,
-  `${counts.nudges} nudges (${counts.kept} kept, ${counts.stopped} stopped at the face), ${counts.turns} turns (${counts.turnsRefused} refused), ${counts.snaps} snaps, ${counts.copies} copies,`,
+  `${counts.furnitureRule} on furniture's rule; ${counts.faces} exposed faces, ${counts.hosts} hosts (${counts.chains} over pieces all but collinear); ${counts.runs} runs (${counts.filling} filling their stretch, ${counts.doorRuns} beside a door or window), ${counts.refused} refused,`,
+  `${counts.nudges} nudges (${counts.kept} kept, ${counts.stopped} stopped at the face), ${counts.turns} turns (${counts.turnsRefused} refused), ${counts.snaps} snaps (${counts.normalSnaps} along a face's normal), ${counts.copies} copies,`,
+  `${counts.stuck} runs stuck in their wall moved free (${counts.stuckRefused} turns refused),`,
   `${counts.placements} placements of runs not fitted or fitted under the old rule (${counts.placementsRefused} refused); seed ${SEED}, ${((Date.now() - started) / 1000).toFixed(1)} s.`);
 assert.deepEqual(failures, [], `the oracle found ${failures.length}${failures.length >= 40 ? "+" : ""} failures`);
 console.log("Built-in imported oracle tests passed.");

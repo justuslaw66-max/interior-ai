@@ -191,3 +191,23 @@ export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: nu
   return merged.filter(([start, stop]) => stop - start >= 0.001)
     .map(([start, stop]) => ({ from: start, to: stop, slackFrom: slackAt(start), slackTo: slackAt(stop) }));
 }
+
+// --- Snap to wall in a turned room -------------------------------------------------------------------------------------------
+/**
+ * Where Snap to wall sends a built-in in a room with a face off x and z (J's delegate, 1 Nov 2026: "straight back to the
+ * nearest face, along that face's normal"): of the faces (each from `a` to `b`, `n` its normal into the room) its centre
+ * stands in front of and its footprint reaches along, the nearest to its footprint, `standOff` off it (a baseboard), it moved
+ * along that face's normal until it stands there. Every place as near as the nearest (ties), or where it stands if none.
+ */
+export function snapAlongNormal(faces: ReadonlyArray<{ a: P; b: P; n: P }>, run: Run, standOff: number): Array<[number, number]> {
+  const [ax, az, bx, bz] = [Math.cos(run.rotationY), -Math.sin(run.rotationY), Math.sin(run.rotationY), Math.cos(run.rotationY)];
+  const reach = (ux: number, uz: number) => Math.abs((run.width / 2) * (ax * ux + az * uz)) + Math.abs((run.depth / 2) * (bx * ux + bz * uz));
+  const gaps = faces.flatMap(({ a, b, n }) => {
+    const length = Math.hypot(b.x - a.x, b.z - a.z), [tx, tz] = [(b.x - a.x) / (length || 1), (b.z - a.z) / (length || 1)];
+    const out = (run.x - a.x) * n.x + (run.z - a.z) * n.z, along = (run.x - a.x) * tx + (run.z - a.z) * tz, sideways = reach(tx, tz);
+    return out > 0 && along >= -sideways && along <= length + sideways ? [{ gap: out - reach(n.x, n.z) - standOff, n }] : [];
+  });
+  if (!gaps.length) return [[run.x, run.z]];
+  const nearest = Math.min(...gaps.map(({ gap }) => Math.abs(gap)));
+  return gaps.filter(({ gap }) => Math.abs(gap) <= nearest + 1e-7).map(({ gap, n }) => [run.x - n.x * gap, run.z - n.z * gap]);
+}

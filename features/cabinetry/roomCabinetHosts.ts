@@ -8,7 +8,8 @@ import {
   usesFurnitureRuleForBuiltIns,
   type BuiltInPlanRooms,
 } from "@/lib/room-built-in-faces";
-import { getBuiltInFaceObstaclesAlong, type BuiltInFaceHost } from "@/lib/room-built-in-region";
+import { getBuiltInHostFaces, type BuiltInHostFace } from "@/lib/room-built-in-host-faces";
+import { getBuiltInFaceObstaclesAlong } from "@/lib/room-built-in-region";
 import { getRoomOutlineInsideFinishes, getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import { getRoomWallFaceIds, getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { RoomSnapshot } from "@/lib/room-types";
@@ -124,7 +125,7 @@ function buildHosts(activeRoom: RoomSnapshot, { activePlanRoom, planRoomCount, p
     openings: [...getDrawnOutlineOpenings(activeRoom, outline, planOpenings, openings, planRooms), ...sharedOnOutline],
     installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM,
   });
-  return placeOnFaces(outlineSpaces, getRoomBuiltInFaces(activeRoom, undefined, planRooms).exposed, baseboardOffsetMm);
+  return placeOnFaces(outlineSpaces, getBuiltInHostFaces(getRoomBuiltInFaces(activeRoom, undefined, planRooms)), baseboardOffsetMm);
 }
 
 type Point = { x: number; z: number };
@@ -136,7 +137,7 @@ type SharedSpaceInput = Omit<Parameters<typeof createCabinetRoomWallSpaces>[0], 
 function buildImportedHosts(room: RoomSnapshot, shared: SharedSpaceInput, canonical: Canonical | undefined): CabinetHostSpace[] {
   const polygon = room.planPolygon ?? [], openings = getImportedOutlineOpenings(room, polygon, canonical);
   const outlineSpaces = createCabinetPolygonWallSpaces({ ...shared, polygon, openings, installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM });
-  return placeOnFaces(outlineSpaces, getRoomBuiltInFaces(room, undefined, undefined, canonical).exposed, shared.baseboardOffsetMm ?? 0).map(withoutFlushObstacles);
+  return placeOnFaces(outlineSpaces, getBuiltInHostFaces(getRoomBuiltInFaces(room, undefined, undefined, canonical)), shared.baseboardOffsetMm ?? 0);
 }
 
 /**
@@ -175,17 +176,18 @@ function buildRectangleHosts(
 }
 
 /**
- * Each outline host on its wall's exposed face. A straight wall drawn in pieces has one face over them all: it is listed once,
- * as its first piece, with every piece's doors and windows.
+ * Each outline host on its wall's exposed face, less what stands flush with it (withoutFlushObstacles). A straight wall drawn in
+ * pieces, or in pieces all but collinear, has one face over them all (getBuiltInHostFaces): listed once, as its first piece,
+ * with every piece's doors and windows.
  */
-function placeOnFaces(spaces: CabinetHostSpace[], exposed: ReadonlyArray<BuiltInFaceHost | null>, baseboardMm: number): CabinetHostSpace[] {
+function placeOnFaces(spaces: CabinetHostSpace[], exposed: ReadonlyArray<BuiltInHostFace | null>, baseboardMm: number): CabinetHostSpace[] {
   const listed = new Set<string>();
   return spaces.flatMap((space) => {
     const face = exposed[wallIndex(space.wallId ?? "")];
     const key = face && [face.start.x, face.start.z, face.end.x, face.end.z].map((value) => value.toFixed(6)).join();
     if (!face || !key || listed.has(key)) return [];
     listed.add(key);
-    return [withFaceSegment(space, face, baseboardMm, spaces)];
+    return [withoutFlushObstacles(withFaceSegment(space, face, baseboardMm, spaces))];
   });
 }
 
@@ -194,17 +196,13 @@ function placeOnFaces(spaces: CabinetHostSpace[], exposed: ReadonlyArray<BuiltIn
  * thickness and panels; a drawn shape's outline moved in by its panels, a whole wall plus 10 mm off each end.
  */
 function buildLineHosts(
-  room: RoomSnapshot, size: { w: number; d: number }, shared: SharedSpaceInput,
-  openings: ReturnType<typeof getRoomHostOpenings>
+  room: RoomSnapshot, size: { w: number; d: number }, shared: SharedSpaceInput, openings: ReturnType<typeof getRoomHostOpenings>
 ): CabinetHostSpace[] {
   const wallMm = Math.round((room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness) * 1000);
-  const depths = getRoomWallFinishDepths(room);
-  const panelMm = (faceId: string) => Math.round((depths[faceId] ?? 0) * 1000);
+  const depths = getRoomWallFinishDepths(room), panelMm = (faceId: string) => Math.round((depths[faceId] ?? 0) * 1000);
   const shape = room.planShape ?? "rectangle";
   if (shape !== "rectangle") {
-    const polygon = getRoomPlanOutlinePoints(getRoomOutlineInsideFinishes({
-      shape, polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth,
-    }, depths));
+    const polygon = getRoomPlanOutlinePoints(getRoomOutlineInsideFinishes({ shape, polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth }, depths));
     return createCabinetPolygonWallSpaces({
       ...shared, polygon, openings: mapCabinetCardinalOpeningsToPolygonWalls({ polygon, openings }), installationClearanceSideMm: wallMm + 10,
     });
@@ -308,13 +306,14 @@ function getFaceDeepening(room: RoomSnapshot, outline: readonly Point[]) {
  * An outline host moved onto its exposed face: the face's own length and ends, the walls and columns in front of it to keep
  * clear of, and the doors and windows of every piece of the outline along it, measured from the face's middle.
  */
-function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboardMm: number, spaces: CabinetHostSpace[]): CabinetHostSpace {
+function withFaceSegment(space: CabinetHostSpace, face: BuiltInHostFace, baseboardMm: number, spaces: CabinetHostSpace[]): CabinetHostSpace {
   const outlineSegment = space.wallSegment;
   if (!outlineSegment) return space;
   const widthMm = Math.hypot(face.end.x - face.start.x, face.end.z - face.start.z) * 1000;
   const length = space.availableWidthMm || 1;
   const dx = (outlineSegment.endXmm - outlineSegment.startXmm) / length, dz = (outlineSegment.endZmm - outlineSegment.startZmm) / length;
-  const pieces = spaces.filter(({ wallSegment: piece }) => piece && isUnderFace(piece, outlineSegment, face, dx, dz));
+  const pieces = spaces.filter(({ wallSegment: piece, wallId }) => piece &&
+    (face.merged?.pieces.includes(wallIndex(wallId ?? "")) || isUnderFace(piece, outlineSegment, face, dx, dz)));
   const openings = pieces.flatMap((piece) => {
     const segment = piece.wallSegment;
     if (!segment) return [];
@@ -331,6 +330,7 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboa
       ...outlineSegment,
       startXmm: face.start.x * 1000, startZmm: face.start.z * 1000, endXmm: face.end.x * 1000, endZmm: face.end.z * 1000,
       startBaseboardClearanceMm: baseboardMm, endBaseboardClearanceMm: baseboardMm,
+      ...(face.merged ? { inwardNormalX: face.merged.nx, inwardNormalZ: face.merged.nz } : {}), // square to the face
       ...(face.obstacles.length ? { obstacles: face.obstacles } : {}),
     },
     openings,
@@ -343,7 +343,7 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboa
  * thicker wall next door gives one face.
  */
 function isUnderFace(
-  piece: NonNullable<CabinetHostSpace["wallSegment"]>, segment: NonNullable<CabinetHostSpace["wallSegment"]>, face: BuiltInFaceHost, dx: number, dz: number
+  piece: NonNullable<CabinetHostSpace["wallSegment"]>, segment: NonNullable<CabinetHostSpace["wallSegment"]>, face: BuiltInHostFace, dx: number, dz: number
 ): boolean {
   const length = Math.hypot(piece.endXmm - piece.startXmm, piece.endZmm - piece.startZmm) || 1;
   const parallel = ((piece.endXmm - piece.startXmm) * dx + (piece.endZmm - piece.startZmm) * dz) / length > 1 - 1e-9;

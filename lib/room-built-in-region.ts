@@ -74,10 +74,7 @@ const FACE_EDGE_MM = 0.0001;
  * proud at a bend of a few hundredths of a degree) doesn't end it: a run keeps clear of it all the same (its obstacles).
  */
 const FACE_PROBE_MM = 0.005;
-/**
- * A clear stretch of a face shorter than this (mm) is none: it holds nothing (the allowance at each end takes it), and lies
- * where solids meet a few thousandths apart (a panel's edge just off the face), or is a tiny edge's face between corners.
- */
+/** A clear stretch of face shorter than this (mm) is none: it holds nothing (the allowance at each end takes it). */
 const FACE_SLIVER_MM = 20;
 /** How far into the room (mm) a face keeps its obstacles: deeper than any run. */
 const FACE_REACH_MM = 3000;
@@ -243,16 +240,22 @@ function buildFaceHost(region: Omit<BuiltInRegion, "exposed" | "faces">, index: 
     const exposed = pieces.reduce((most, stretch) => (alongEdge(stretch) > alongEdge(most) ? stretch : most), pieces[0] ?? []);
     if (exposed.length && (!best || alongEdge(exposed) > alongEdge(best.exposed))) best = { inset, frame, exposed };
   }
-  if (!best) return null;
-  const { inset, frame: { toFrame, fromFrame }, exposed } = best;
-  // Found when first read (by Fit's hosts): containment and the clamp need only the region.
+  return best && faceHostOf(region, best.frame, best.exposed, best.inset);
+}
+
+/** A face's host from its clear stretches (`exposed`, mm along `frame`), its obstacles found when first read (by Fit's hosts). */
+function faceHostOf(
+  region: Omit<BuiltInRegion, "exposed" | "faces">, { toFrame, fromFrame }: ReturnType<typeof getFaceFrame>, exposed: ReadonlyArray<readonly [number, number]>, inset: number
+): BuiltInFaceHost {
+  const [from, to] = [exposed[0][0], exposed[exposed.length - 1][1]];
   let found: Array<Array<[number, number]>> | undefined;
-  return {
-    start: fromFrame(exposed[0][0], 0),
-    end: fromFrame(exposed[exposed.length - 1][1], 0),
-    inset,
-    get obstacles() { return (found ??= getFaceObstacles(region, toFrame, exposed, (exposed[0][0] + exposed[exposed.length - 1][1]) / 2)); },
-  };
+  return { start: fromFrame(from, 0), end: fromFrame(to, 0), inset, get obstacles() { return (found ??= getFaceObstacles(region, toFrame, exposed, (from + to) / 2)); } };
+}
+
+/** A face on any line (`line`'s frame, its face on the line) from `from` to `to` metres along it, as an exposed face's host is. */
+export function getBuiltInFaceOnLine(region: BuiltInRegion, line: RegionWall, from: number, to: number, inset: number): BuiltInFaceHost | null {
+  const frame = getFaceFrame(region, line, 0), exposed = frame.clearOf(from * 1000, to * 1000);
+  return exposed.length ? faceHostOf(region, frame, exposed, inset) : null;
 }
 
 /**
@@ -305,9 +308,8 @@ export function buildBuiltInRegion(
 }
 
 /**
- * The region of an imported plan's room (lib/room-built-in-imported-region.ts): its outline (room-local metres) with each edge's
- * own wall `thicknesses` and panel depth, and the solids its 3D view draws (`solids`: convex outlines), of which `cores` are
- * the walls' slices, whose far sides may stand a face deeper than its own wall's (getFaceDepths).
+ * An imported plan's room's region (lib/room-built-in-imported-region.ts): each edge's own wall `thicknesses`, the solids its 3D
+ * view draws (convex), and the walls' slices (`cores`), whose far sides may stand a face deeper than its own wall's.
  */
 export function buildBuiltInRegionFromSolids(
   outline: Point[], faceIds: readonly string[], panels: readonly number[], thicknesses: readonly number[], holes: Point[][],
