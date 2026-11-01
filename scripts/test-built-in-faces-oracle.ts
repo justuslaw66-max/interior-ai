@@ -742,7 +742,7 @@ function checkHostsOffered(region: Region, room: RoomSnapshot, spaces: CabinetHo
     }, []);
     groups.forEach((group) => plan.hostFaces.push({ a: chosen.line.at(group[0].from, 0), b: chosen.line.at(group[group.length - 1].to, 0), n: { x: nx, z: nz } }));
     const wallIds = [faceIds[index], `wall-${index}`];
-    return { index, what: `${label} edge ${index} (${faceIds[index]})`, wallIds, chosen, onLine: hostsOn(chosen), groups, face: { dx, dz, nx, nz, line: chosen.line, groups } };
+    return { index, what: `${label} edge ${index} (${faceIds[index]})`, wallIds, chosen, onLine: hostsOn(chosen), groups, face: { dx, dz, nx, nz, line: chosen.line, groups, backed: backedBetween } };
   });
   // A rectangle's hosts run corner to corner over a column, so their ends aren't checked where it has one.
   checkEdgeHosts(spaces, edges, label, !((room.planShape ?? "rectangle") === "rectangle" && room.planHoles?.length && !plan.neighbours.length));

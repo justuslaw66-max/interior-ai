@@ -13,13 +13,17 @@ export const COLLINEAR_DEGREES = 0.05;
 export const COLLINEAR_SIN = Math.sin((COLLINEAR_DEGREES * Math.PI) / 180);
 const COLLINEAR_COS = Math.cos((COLLINEAR_DEGREES * Math.PI) / 180);
 /**
- * Faces meet where one runs on to the next one's start (0.5 mm, along) and ends within 0.05 mm of the next one's line (across),
- * and as much more as the lines part over the stretch where the faces overlap.
+ * Faces meet where one runs on to the next one's start (0.5 mm, along, or further over face backed all the way: something
+ * stands in front of it there, as a T's stem joined to the wall's far face does, a few thousandths of a mm proud) and ends within
+ * 0.05 mm of the next one's line (across), and as much more as the lines part over the stretch where the faces overlap.
  */
 const MEET_ACROSS = 0.00005, MEET_ALONG = 0.0005;
 
-/** An edge's face as an oracle finds it: its edge's direction and normal, its face line and stretches (in groups, along it). */
-export type EdgeFace = { dx: number; dz: number; nx: number; nz: number; line: LineFrame; groups: Stretch[][] };
+/**
+ * An edge's face as an oracle finds it: its edge's direction and normal, its face line and stretches (in groups, along it), and
+ * whether a solid stands just behind the line all the way between two places along it.
+ */
+export type EdgeFace = { dx: number; dz: number; nx: number; nz: number; line: LineFrame; groups: Stretch[][]; backed: (from: number, to: number) => boolean };
 type End = { point: P; slack: number };
 /** Edges whose faces are one host, and their face stretches' ends. */
 export type CollinearChain = { edges: number[]; ends: End[] };
@@ -35,8 +39,9 @@ function joinsNext(faces: ReadonlyArray<EdgeFace | null>, index: number): boolea
   const last = face.groups.flat().reduce((most, stretch) => (stretch.to > most.to ? stretch : most));
   const first = next.groups.flat().reduce((least, stretch) => (stretch.from < least.from ? stretch : least));
   const [end, start] = [face.line.at(last.to, 0), next.line.at(first.from, 0)], gap = face.line.frame(start)[0] - last.to;
+  if (gap > MEET_ALONG && !face.backed(last.to, last.to + gap)) return false;
   const within = MEET_ACROSS + Math.max(0, -gap) * Math.abs(face.dx * next.dz - face.dz * next.dx);
-  return Math.abs(next.line.frame(end)[1]) <= within && Math.abs(face.line.frame(start)[1]) <= within && gap <= MEET_ALONG;
+  return Math.abs(next.line.frame(end)[1]) <= within && Math.abs(face.line.frame(start)[1]) <= within;
 }
 
 /** The chains of edges whose faces are one host, but for those on one line (a straight wall drawn in pieces: one face already). */
@@ -56,8 +61,9 @@ export function collinearChains(faces: ReadonlyArray<EdgeFace | null>): Collinea
 
 /**
  * The chain's host among `spaces`: along every piece (within COLLINEAR_DEGREES), square to its own line, every face stretch's
- * ends on or behind its line by at most its length over COLLINEAR_DEGREES and one of them on it, and starting and ending where
- * the first and last stretches do (±0.5 mm and their slack). Null when none is.
+ * ends on or behind its line by at most its length over COLLINEAR_DEGREES and the deepest on it (or as near as the faces could
+ * bow across a gap between stretches), and starting and ending where the first and last stretches do (±0.5 mm and their slack).
+ * Null when none is.
  */
 export function chainHost(chain: CollinearChain, faces: ReadonlyArray<EdgeFace | null>, spaces: readonly CabinetHostSpace[]): ChainHost | null {
   const inward = faces[chain.edges[0]] as EdgeFace;
@@ -73,7 +79,12 @@ export function chainHost(chain: CollinearChain, faces: ReadonlyArray<EdgeFace |
     if (Math.abs(segment.inwardNormalX * ux + segment.inwardNormalZ * uz) / normal > 1e-9) continue;
     const at = chain.ends.map(({ point, slack }) => ({ along: (point.x - from.x) * ux + (point.z - from.z) * uz, across: (point.x - from.x) * nx + (point.z - from.z) * nz, slack }));
     const bow = -Math.min(...at.map(({ across }) => across));
-    if (bow > length * COLLINEAR_SIN || Math.max(...at.map(({ across }) => across)) > 0.00001 || Math.max(...at.map(({ across }) => across)) < -0.00001) continue;
+    // The deepest end on its line, or behind it no further than the faces could bow across a gap between stretches (where
+    // something stands on the face, and the bend may lie).
+    const pairs = at.flatMap((end, index) => (index % 2 ? [] : [[end.along, at[index + 1].along].sort((a, b) => a - b)])).sort((a, b) => a[0] - b[0]);
+    const gap = Math.max(0, ...pairs.slice(1).map(([from], index) => from - Math.max(...pairs.slice(0, index + 1).map(([, to]) => to))));
+    const deepest = Math.max(...at.map(({ across }) => across));
+    if (bow > length * COLLINEAR_SIN || deepest > 0.00001 || deepest < -0.00001 - gap * COLLINEAR_SIN) continue;
     const start = at.reduce((least, end) => (end.along < least.along ? end : least)), end = at.reduce((most, entry) => (entry.along > most.along ? entry : most));
     const on = (along: number) => ({ x: from.x + ux * along, z: from.z + uz * along });
     if (Math.abs(start.along) <= 0.0005 + start.slack && Math.abs(end.along - length) <= 0.0005 + end.slack) return { space, from: on(start.along), to: on(end.along), bow };
