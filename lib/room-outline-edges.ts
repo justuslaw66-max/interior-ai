@@ -5,7 +5,7 @@ import type { RoomPlanPolygonPoint } from "@/lib/room-types";
  *
  * - A room's outline and edges (its walls' centre line, getRoomOutlineEdges in lib/room-wall-finish-depths.ts), read from the
  *   room itself and handed to the clamp with the furniture's context (lib/furniture-room-context.ts): whether it is an imported
- *   plan's, the plan wall each edge lies on (an arc's slices share one), each edge's laminate depth and wall thickness.
+ *   plan's (whose walls are read from the compiled plan), its walls' thickness and each edge's laminate depth.
  * - The outline inside its finishes (getRoomOutlineInsideFinishes, lib/room-finished-outline.ts), kept by its own array, which
  *   that call makes once per room's depths: the outline it was moved in from and how far each edge was moved. The clamp is
  *   handed only that outline (clampToRoom), and checks it is the room's.
@@ -16,17 +16,12 @@ type Point = RoomPlanPolygonPoint;
 export type OutlineEdges = {
   /** The room's outline (its walls' centre line) these are the edges of. */
   outline: readonly Point[];
-  /** The room's one wall thickness, metres: a drawn room's walls, and an imported room's where an edge's own isn't saved. */
+  /** The room's one wall thickness, metres, as a drawn room's 3D view draws its walls. */
   wallThickness: number;
-  /** True for an imported plan's room, whose 3D view draws a painted face as a 1.5 mm skin (CanonicalWallSurfaceMesh). */
+  /** True for an imported plan's room, whose 3D view draws the compiled plan's walls (lib/furniture-canonical-walls.ts). */
   imported: boolean;
-  /** An imported room's plan wall for each edge, when they are named. */
-  wallIds?: readonly string[];
   /** Each edge's laminate depth, metres (0 for paint). */
   panels: readonly number[];
-  /** An imported room's: each edge's own wall thickness, metres, when saved with its walls (and the saved millimetres). */
-  thicknesses?: readonly number[];
-  thicknessesMm?: readonly number[];
   /** What the panels were read from, so the edges are made again only when they change. */
   source: object;
 };

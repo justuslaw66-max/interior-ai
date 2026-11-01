@@ -4,8 +4,7 @@ import { buildHousePlan2D } from "../lib/design-page-house-plan";
 import { getFurnitureWallInset } from "../lib/design-page-geometry";
 import type { FloorPlanDocumentV2 } from "../lib/floor-plan-document-v2";
 import { canonicalFloorPlanToDesignSnapshot } from "../lib/floor-plan-legacy-adapters";
-import { buildCanonicalFloorPlanRenderModel } from "../lib/floor-plan-render-model";
-import { IMPORTED_PAINT_SKIN_METERS } from "../lib/furniture-faces-as-drawn";
+import { buildCanonicalFloorPlanRenderModel, type CanonicalFloorPlanRenderModel } from "../lib/floor-plan-render-model";
 import { getFurnitureRoomContext } from "../lib/furniture-room-context";
 import { getFurnitureFaces, getTurnedFootprint } from "../lib/furniture-room-fit";
 import { clampBuiltInToRoom } from "../lib/room-built-in-faces";
@@ -31,6 +30,7 @@ import { planFromShape, roomPanels, seeded, type ShapeSpec } from "./fixtures/im
  */
 
 type P = { x: number; z: number };
+type Floor = CanonicalFloorPlanRenderModel["floors"][number];
 const CLEAR = 0.02;
 const LAMINATE = { materialId: "greenlam-woodgrains-5394", panelBacking: { board: "mdf" as const, boardThicknessMm: 18, fixing: "battens" as const } };
 const PAINT = { paintColorHex: "#ffffff" };
@@ -78,12 +78,13 @@ function drawnRoom(id: string, points: P[], faces: Record<string, object>, thick
 const planOf = (room: RoomSnapshot, neighbours: readonly HousePlanRoom2D[] = []) =>
   new Map<string, HousePlanRoom2D>([[room.id, toPlanRoom(room)], ...neighbours.map((other): [string, HousePlanRoom2D] => [other.id, other])]);
 /** Where the room's furniture clamp puts the item, where the line's would (the same clamp, without the room), and containment. */
-function clampBoth(room: RoomSnapshot, target: P, width: number, depth: number, rotationY: number, planRooms = planOf(room)) {
+function clampBoth(room: RoomSnapshot, target: P, width: number, depth: number, rotationY: number, planRooms = planOf(room), floors?: Floor[]) {
   const inset = getFurnitureWallInset(room.geometry.wallThickness ?? 0.12), depths = getRoomWallFinishDepths(room);
   const args = [width, depth, room.geometry.width, room.geometry.depth, inset, rotationY, "custom_polygon", room.planPolygon, room.planHoles, depths] as const;
-  const at = clampToRoomInsideFinishes(target.x, target.z, ...args, getFurnitureRoomContext(room, planRooms));
+  const at = clampToRoomInsideFinishes(target.x, target.z, ...args, getFurnitureRoomContext(room, planRooms, floors));
   const line = clampToRoomInsideFinishes(target.x, target.z, ...args);
-  const contained = (place: P) => isPlacementContainedInRoom({ room, position: [place.x, 0, place.z], rotationY, dimensions: { w: width * 1000, d: depth * 1000 }, planRooms });
+  const canonicalModel = floors && ({ floors } as unknown as CanonicalFloorPlanRenderModel);
+  const contained = (place: P) => isPlacementContainedInRoom({ room, position: [place.x, 0, place.z], rotationY, dimensions: { w: width * 1000, d: depth * 1000 }, planRooms, canonicalModel });
   return { at, line, placed: contained({ x: at[0], z: at[1] }), contained, footprint: getTurnedFootprint(at[0], at[1], width, depth, rotationY),
     lineFootprint: getTurnedFootprint(line[0], line[1], width, depth, rotationY) };
 }
@@ -169,7 +170,7 @@ function importedGap(setup: ReturnType<typeof importedRooms>, room: RoomSnapshot
   assert.equal(arc.length, 9, "nine chords");
   // A sofa end on against the fourth chord, a third of the way along it.
   const [a, b] = [polygon[arc[3]], polygon[arc[4]]];
-  const { line, placed, footprint, lineFootprint } = clampBoth(room, { x: a.x + (b.x - a.x) * 0.3, z: a.z + (b.z - a.z) * 0.3 }, 1, 0.5, Math.PI / 2);
+  const { line, placed, footprint, lineFootprint } = clampBoth(room, { x: a.x + (b.x - a.x) * 0.3, z: a.z + (b.z - a.z) * 0.3 }, 1, 0.5, Math.PI / 2, undefined, [setup.floor]);
   assert.ok(importedGap(setup, room, lineFootprint) < CLEAR - 0.006, `on the arc's chords alone, nearer the panel (${line}: ${importedGap(setup, room, lineFootprint)})`);
   const gap = importedGap(setup, room, footprint);
   assert.ok(placed && gap >= CLEAR - 0.001 && gap <= CLEAR + 0.005, `an arc bowing in: 2 cm off its true curve (${gap})`);
@@ -181,7 +182,7 @@ function importedGap(setup: ReturnType<typeof importedRooms>, room: RoomSnapshot
     rooms: { R: ["a", "s0", "tip", "s1", "b", "c", "e"] } };
   const setup = importedRooms(spec, 5, (wallId) => (wallId.includes("tip") ? LAMINATE : PAINT));
   const room = setup.rooms[0], tip = room.planPolygon![2];
-  const { line, placed, footprint, lineFootprint } = clampBoth(room, tip, 1, 0.5, 0);
+  const { line, placed, footprint, lineFootprint } = clampBoth(room, tip, 1, 0.5, 0, undefined, [setup.floor]);
   assert.ok(importedGap(setup, room, lineFootprint) < 0.01, `the box test alone comes into the spike's panels (${line})`);
   const gap = importedGap(setup, room, footprint);
   assert.ok(placed && gap >= CLEAR - 0.0005, `at a thin spike's tip: 2 cm off (${gap})`);
@@ -195,7 +196,7 @@ function importedGap(setup: ReturnType<typeof importedRooms>, room: RoomSnapshot
   const room = setup.rooms.find(({ id }) => id === "N")!, ids = room.planEdgeWallIds ?? [];
   const painted = ids.indexOf("w-j-p7"), [from, to] = [room.planPolygon![painted], room.planPolygon![(painted + 1) % ids.length]];
   const middle = { x: (from.x + to.x) / 2, z: (from.z + to.z) / 2 };
-  const { at, line, placed, footprint } = clampBoth(room, middle, 0.4, 0.4, 0);
+  const { at, line, placed, footprint } = clampBoth(room, middle, 0.4, 0.4, 0, undefined, [setup.floor]);
   // It stands where the line puts it: the clamp's outline leans the painted half from the panel's depth at the T to its own at
   // the far corner (#256's open case), which keeps it clear, so the exact test keeps the line's place.
   assert.deepEqual(at, line, "the painted half of a T: the line's place, kept");
@@ -261,17 +262,16 @@ for (const angle of [10, 20, 40]) {
   const half = 1800 * Math.tan((5 * Math.PI) / 180);
   const spec: ShapeSpec = { kind: "spike", vertices: { a: [0, 0], s0: [2500 - half, 0], tip: [2500, 1800], s1: [2500 + half, 0], b: [5000, 0], c: [5000, 4000], e: [0, 4000] },
     rooms: { R: ["a", "s0", "tip", "s1", "b", "c", "e"] } };
-  const room = importedRooms(spec, 5, (wallId) => (wallId.includes("tip") ? LAMINATE : PAINT)).rooms[0];
+  const setup = importedRooms(spec, 5, (wallId) => (wallId.includes("tip") ? LAMINATE : PAINT)), room = setup.rooms[0];
   let differ = 0;
   for (const target of room.planPolygon!) for (const [width, depth] of [[0.6, 0.58], [0.45, 0.35]]) for (const rotationY of [0, 0.4, Math.PI / 2]) {
-    const { at, line } = clampBoth(room, target, width, depth, rotationY);
+    const { at, line } = clampBoth(room, target, width, depth, rotationY, undefined, [setup.floor]);
     assert.deepEqual(clampBuiltInToRoom(room, target.x, target.z, width, depth, rotationY), line, "a built-in on furniture's rule: the line's clamp");
     if (at[0] !== line[0] || at[1] !== line[1]) differ += 1;
   }
   assert.ok(differ > 0, "where furniture's own clamp moves off the line's place");
 }
 
-assert.equal(IMPORTED_PAINT_SKIN_METERS, WALL_FINISH_SKIN_MM / 1000, "the imported view's skin");
 
 // --- Drawn rooms against their 3D view ----------------------------------------------------------------------------------------
 let state = Number(process.env.FURNITURE_ORACLE_SEED ?? 20261101) >>> 0;

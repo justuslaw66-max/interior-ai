@@ -19,7 +19,7 @@ import { track, trackProductEvent } from "@/lib/analytics";
 import { getFurnitureWallInset } from "@/lib/design-page-geometry";
 import { clampToRoomInsideFinishes } from "@/lib/room-finished-outline";
 import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
-import { getFurnitureRoomContext } from "@/lib/furniture-room-context";
+import { getCompiledPlanFloors, getFurnitureRoomContext } from "@/lib/furniture-room-context";
 import {
   buildHousePlan2D,
   clampRoomDimension,
@@ -165,12 +165,11 @@ export function useDesignPageHousePlanState({
         x, z, itemWidth, itemDepth, targetRoomWidth, targetRoomDepth,
         getFurnitureWallInset(targetWallThickness),
         rotationY,
-        // Stops at each wall's laminate panel (J, 29 Oct 2026); read when called: React's compiler can't memoize it in render.
-        // Furniture keeps 2 cm off the room's walls as its 3D view draws them, the rooms next door's too (lib/furniture-room-fit.ts).
-        activeRoomPlanShape, activeRoomPlanPolygon, activeRoomPlanHoles, getRoomWallFinishDepths(activeRoom),
-        activeRoom ? getFurnitureRoomContext(activeRoom, placedPlan.rooms) : undefined
+        // Stops at each wall's laminate panel (J, 29 Oct 2026), 2 cm off the walls as the 3D view draws them (furniture-room-fit).
+        activeRoomPlanShape, activeRoomPlanPolygon, activeRoomPlanHoles, getRoomWallFinishDepths(activeRoom), activeRoom
+          ? getFurnitureRoomContext(activeRoom, placedPlan.rooms, getCompiledPlanFloors(designSnapshot.floorPlan?.canonicalDocument)) : undefined
       ),
-    [activeRoom, activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape, placedPlan]
+    [activeRoom, activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape, designSnapshot.floorPlan, placedPlan]
   );
 
   const activeRoomPlanOffset = useMemo(

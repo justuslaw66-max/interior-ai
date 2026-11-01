@@ -235,20 +235,17 @@ const edgesByOutline = new WeakMap<readonly RoomPlanPolygonPoint[], OutlineEdges
 
 /**
  * A drawn or imported room's outline's edges, for its furniture to keep 2 cm off its walls as its 3D view draws them
- * (lib/furniture-room-fit.ts): whether it is an imported plan's, each edge's plan wall and wall thickness (an imported room's)
- * and laminate depth. None for a rectangle or an L, whose clamp is the line's.
+ * (lib/furniture-room-fit.ts): whether it is an imported plan's, its walls' thickness and each edge's laminate depth. None for
+ * a rectangle or an L, whose clamp is the line's.
  */
 export function getRoomOutlineEdges(room: WallFinishRoom): OutlineEdges | undefined {
   const outline = room.planPolygon ?? room.polygon;
   if (!outline || roomShapeOf(room) !== "custom_polygon" || outline.length < 3) return undefined;
   const panels = getRoomWallPanelDepths(room), imported = typeof room.floorElevationMm === "number", wallThickness = roomWallThickness(room);
-  const wallIds = imported ? readPlanEdgeWallIds(room) : undefined, thicknessesMm = imported ? readPlanEdgeWallThicknesses(room) : undefined;
   const known = edgesByOutline.get(outline) ?? [];
-  const kept = known.find((edges) => edges.source === panels && edges.imported === imported && edges.wallIds === wallIds &&
-    edges.thicknessesMm === thicknessesMm && edges.wallThickness === wallThickness);
+  const kept = known.find((edges) => edges.source === panels && edges.imported === imported && edges.wallThickness === wallThickness);
   if (kept) return kept;
-  const edges: OutlineEdges = { outline, wallThickness, imported, wallIds, panels: outline.map((_, index) => panels[`wall-${index}`] ?? 0),
-    source: panels, thicknessesMm, thicknesses: thicknessesMm?.map((thickness) => thickness / 1000) };
+  const edges: OutlineEdges = { outline, wallThickness, imported, panels: outline.map((_, index) => panels[`wall-${index}`] ?? 0), source: panels };
   edgesByOutline.set(outline, [edges, ...known].slice(0, 4));
   return edges;
 }

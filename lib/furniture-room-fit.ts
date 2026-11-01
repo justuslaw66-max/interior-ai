@@ -1,16 +1,21 @@
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
-import { getOutlineInwardSign, insetPolygonEdges } from "@/lib/polygon-edge-inset";
 import { findNearestBuiltInFit } from "@/lib/built-in-nearest-fit";
-import type { BuiltInNeighbourWalls } from "@/lib/room-built-in-region";
-import { getDrawnWallSolids, getImportedFloor } from "@/lib/furniture-faces-as-drawn";
+import { buildBuiltInRegion, type BuiltInNeighbourWalls } from "@/lib/room-built-in-region";
+import type { CanonicalRoomWalls } from "@/lib/furniture-canonical-walls";
 import { isOutlineOf, type OutlineEdges } from "@/lib/room-outline-edges";
 
 /**
  * Where furniture may stand in a drawn or imported room (1 Nov 2026; J: "proceed with what u will recommend is best for real
  * life appliciation"): its real, turned footprint in the room and `clearance` (2 cm) off every wall, panel and column as the
- * room's 3D view draws them (lib/furniture-faces-as-drawn.ts), at an outside corner, a thin spike's tip or along an arc as along
- * a straight wall. The 3D view is the reference: where the room's outline would be more careful (its mitre at a spike's tip,
- * its leaning face beside a step, its chords of an arc), furniture may stand as near as the 3D view allows.
+ * room's 3D view draws them, at an outside corner, a thin spike's tip or along an arc as along a straight wall. The 3D view is the
+ * reference: where the room's outline would be more careful (its mitre at a spike's tip, its leaning face beside a step, its
+ * chords of an arc), furniture may stand as near as the 3D view allows.
+ *
+ * - A drawn room (components/editor/renderers/house-plan-3d/geometry.ts): its centre line, each wall's core, its thickness
+ *   wide and run on half of it past each end, each panel a box ended where the 3D view joins it to the next wall, and the
+ *   cores of the rooms next door: #245's region's solids (lib/room-built-in-region.ts), reused as they are.
+ * - An imported plan's room: its centre line, and the footprints of the plan's walls and the room's laminate strips as its 3D
+ *   view draws them (lib/furniture-canonical-walls.ts), read from the compiled plan.
  *
  * The room's walls are read from its own outline and edges, handed in with the furniture's context (FurnitureRoomContext,
  * lib/furniture-room-context.ts), with the walls of the rooms next door; the clamp's outline (the room's, or inside its panels,
@@ -23,21 +28,22 @@ type Point = RoomPlanPolygonPoint;
 type Bounds = { minX: number; maxX: number; minZ: number; maxZ: number };
 type Segment = Bounds & { a: Point; b: Point };
 
-/** What a furniture clamp or containment knows of its room: its outline's edges, and the walls of the rooms next door. */
-export type FurnitureRoomContext = { edges?: OutlineEdges; neighbours?: BuiltInNeighbourWalls };
+/**
+ * What a furniture clamp or containment knows of its room: its outline's edges; a drawn room's, the walls of the rooms next
+ * door; an imported plan's, its walls and laminates as its 3D view draws them (lib/furniture-canonical-walls.ts).
+ */
+export type FurnitureRoomContext = { edges?: OutlineEdges; neighbours?: BuiltInNeighbourWalls; canonical?: CanonicalRoomWalls | null };
 
 export type FurnitureFaces = {
-  /** The outline an item's corners must all be inside: a drawn room's centre line, an imported room's faces. */
+  /** The outline an item's corners must all be inside: the room's centre line. */
   floor: Point[];
-  /** Shapes its corners must all be out of: walls, panels and columns (a drawn room), columns and walls' square ends. */
+  /** Shapes its corners must all be out of, and keeps the clearance off: walls, panels and columns as drawn. */
   solids: Point[][];
   solidBounds: Bounds[];
-  /** Every edge it keeps `clearance` off, and the same as shapes for the nearest-fit search (each convex, or a segment). */
+  /** The shapes' edges, and the shapes for the nearest-fit search (each convex, or a segment). */
   segments: Segment[];
   obstacles: Point[][];
   clearance: number;
-  /** The walls leave no floor. */
-  inverted: boolean;
 };
 
 /** Contact allowed within this (metres): a place this near the clearance counts as at it. */
@@ -48,15 +54,14 @@ const ROUND_SIDES = 8;
 const segment = (a: Point, b: Point): Segment =>
   ({ a, b, minX: Math.min(a.x, b.x), maxX: Math.max(a.x, b.x), minZ: Math.min(a.z, b.z), maxZ: Math.max(a.z, b.z) });
 const segmentsOf = (loop: readonly Point[]): Segment[] => loop.map((a, index) => segment(a, loop[(index + 1) % loop.length]));
-const pathOf = (path: readonly Point[]): Segment[] => path.slice(1).map((b, index) => segment(path[index], b));
 const boundsOf = (points: readonly Point[]): Bounds => points.reduce((bounds, { x, z }) => ({
   minX: Math.min(bounds.minX, x), maxX: Math.max(bounds.maxX, x), minZ: Math.min(bounds.minZ, z), maxZ: Math.max(bounds.maxZ, z),
 }), { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity });
 const neighboursKey = (neighbours: BuiltInNeighbourWalls = []) =>
   neighbours.map(({ outline, thickness }) => `${thickness}:${outline.map(({ x, z }) => `${x},${z}`).join(";")}`).join("|");
 
-// One set of faces per room's edges, holes, clearance and rooms next door: the clamp runs on every frame of a drag.
-type KeptFaces = { clearance: number; holes: readonly (readonly Point[])[]; neighbours: unknown; key: string; faces: FurnitureFaces };
+// One set of faces per room's edges, holes, clearance and walls drawn round it: the clamp runs on every frame of a drag.
+type KeptFaces = { clearance: number; holes: readonly (readonly Point[])[]; walls: unknown; key: string; faces: FurnitureFaces };
 const facesByEdges = new WeakMap<OutlineEdges, KeptFaces[]>();
 const isSameHoles = (a: readonly (readonly Point[])[], b: readonly (readonly Point[])[]) =>
   a === b || (a.length === b.length && a.every((hole, index) => hole === b[index]));
@@ -70,46 +75,34 @@ export function getFurnitureFaces(
 ): FurnitureFaces | null {
   const edges = context.edges;
   if (!edges || edges.outline.length < 3 || !isOutlineOf(polygon, edges)) return null;
-  // A drawn room's 3D view draws the rooms next door's walls; an imported plan's, its own walls as they are.
-  const neighbours = edges.imported ? undefined : context.neighbours;
+  // A drawn room's 3D view draws the rooms next door's walls; an imported plan's, the plan's walls as compiled.
+  const walls = edges.imported ? context.canonical : context.neighbours;
+  if (edges.imported && !walls) return null;
   const known = facesByEdges.get(edges) ?? [];
-  const same = (entry: KeptFaces) => entry.clearance === clearance && isSameHoles(entry.holes, holes) &&
-    (entry.neighbours === neighbours || entry.key === neighboursKey(neighbours));
-  const kept = known.find(same);
+  const key = edges.imported ? "" : neighboursKey(context.neighbours);
+  const kept = known.find((entry) => entry.clearance === clearance && isSameHoles(entry.holes, holes) &&
+    (entry.walls === walls || (!edges.imported && entry.key === key)));
   if (kept) return kept.faces;
-  const faces = buildFurnitureFaces(edges, holes, clearance, neighbours);
-  if (!faces) return null;
-  facesByEdges.set(edges, [{ clearance, holes, neighbours, key: neighboursKey(neighbours), faces }, ...known].slice(0, 4));
+  const columns = holes.filter((hole) => hole.length >= 3).map((hole) => [...hole]);
+  const solids = edges.imported
+    ? [...context.canonical!.walls, ...context.canonical!.panels, ...columns]
+    // A drawn room: its walls' and panels', the rooms next door's and its columns' solids as drawn.
+    : [...drawnWallSolids(edges, context.neighbours), ...columns];
+  const faces = withShapes([...edges.outline], solids, clearance);
+  facesByEdges.set(edges, [{ clearance, holes, walls, key, faces }, ...known].slice(0, 4));
   return faces;
 }
 
-function buildFurnitureFaces(
-  edges: OutlineEdges, holes: readonly (readonly Point[])[], clearance: number, neighbours: BuiltInNeighbourWalls | undefined
-): FurnitureFaces | null {
-  const side = getOutlineInwardSign(edges.outline), columns = holes.filter((hole) => hole.length >= 3);
-  if (!edges.imported) {
-    // A drawn room: its centre line, and its walls' and panels', the rooms next door's and its columns' solids as drawn.
-    const solids = [...getDrawnWallSolids(edges, neighbours), ...columns.map((hole) => [...hole])];
-    return withShapes([...edges.outline], solids, [], clearance, false);
-  }
-  const floor = getImportedFloor(edges, side);
-  if (!floor) return null;
-  // An imported room's holes are walls round a void: they stand out of it by the room's half wall, as before.
-  const halfWall = edges.wallThickness / 2;
-  const grown = columns.map((hole) => insetPolygonEdges(hole, hole.map(() => halfWall), getOutlineInwardSign(hole) === 1 ? -1 : 1));
-  const inverted = getOutlineInwardSign(floor.outline) !== side;
-  return withShapes(floor.outline, [...grown, ...floor.wallEnds], floor.tips, clearance, inverted, true);
+/** A drawn room's walls' cores and panels' boxes, and the cores of the rooms next door, as its 3D view draws them (#245). */
+function drawnWallSolids(edges: OutlineEdges, neighbours: BuiltInNeighbourWalls = []): Point[][] {
+  const outline = [...edges.outline];
+  return buildBuiltInRegion(outline, outline.map((_, index) => `wall-${index}`), edges.panels, edges.wallThickness, [], neighbours).solids;
 }
 
-function withShapes(floor: Point[], solids: Point[][], tips: Point[][], clearance: number, inverted: boolean, floorIsFace = false): FurnitureFaces {
-  const floorSegments = floorIsFace ? segmentsOf(floor) : [], tipSegments = tips.flatMap(pathOf);
-  // The search grows each obstacle as a convex shape: a column that isn't convex goes in as its edges.
-  const solidObstacles = solids.flatMap((solid) => (isConvex(solid) ? [solid] : segmentsOf(solid).map(({ a, b }) => [a, b])));
-  return {
-    floor, solids, solidBounds: solids.map(boundsOf), clearance, inverted,
-    segments: [...floorSegments, ...solids.flatMap(segmentsOf), ...tipSegments],
-    obstacles: [...[...floorSegments, ...tipSegments].map(({ a, b }) => [a, b]), ...solidObstacles],
-  };
+function withShapes(floor: Point[], solids: Point[][], clearance: number): FurnitureFaces {
+  // The search grows each obstacle as a convex shape: one that isn't convex goes in as its edges.
+  const obstacles = solids.flatMap((solid) => (isConvex(solid) ? [solid] : segmentsOf(solid).map(({ a, b }) => [a, b])));
+  return { floor, solids, solidBounds: solids.map(boundsOf), segments: solids.flatMap(segmentsOf), obstacles, clearance };
 }
 
 function isConvex(points: readonly Point[]): boolean {
@@ -159,6 +152,12 @@ function segmentGap(a: Point, b: Point, footprint: readonly Point[]): number {
   return gap;
 }
 
+/** True when two outlines overlap: a corner of either inside the other, or an edge of each crossing. */
+export function doShapesMeet(a: readonly Point[], b: readonly Point[]): boolean {
+  if (a.some((point) => isInside(point, b)) || b.some((point) => isInside(point, a))) return true;
+  return a.some((from, i) => b.some((to, j) => segmentsCross(from, a[(i + 1) % a.length], to, b[(j + 1) % b.length])));
+}
+
 /**
  * True when the footprint `width` × `depth` at (x, z), turned `rotationY`, stands in the room and at least the clearance
  * (FURNITURE_FACE_TOLERANCE less) off every wall, panel and column the 3D view draws.
@@ -166,7 +165,6 @@ function segmentGap(a: Point, b: Point, footprint: readonly Point[]): number {
 export function isFurnitureFootprintClear(
   faces: FurnitureFaces, x: number, z: number, width: number, depth: number, rotationY: number
 ): boolean {
-  if (faces.inverted) return false;
   const footprint = getTurnedFootprint(x, z, width, depth, rotationY);
   const inSolid = (corner: Point) => faces.solids.some((solid, index) => {
     const bounds = faces.solidBounds[index];
@@ -206,7 +204,6 @@ function obstacleGap(obstacle: readonly Point[], footprint: readonly Point[]): n
 export function findNearestFurnitureFit(
   faces: FurnitureFaces, x: number, z: number, width: number, depth: number, rotationY: number, reach: number
 ): [number, number] | null {
-  if (faces.inverted) return null;
   const here = getTurnedFootprint(x, z, width, depth, rotationY), near = reach + faces.clearance + 1e-6;
   const bounds = boundsOf(here);
   const obstacles = faces.obstacles.filter((obstacle) => {

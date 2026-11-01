@@ -3,7 +3,7 @@
 // the room's drawn panels measured against its walls, its other panels and its furniture's clamp.
 import type { FloorPlanDocumentV2, FloorPlanFloorV2 } from "@/lib/floor-plan-document-v2";
 import { canonicalFloorPlanToDesignSnapshot } from "@/lib/floor-plan-legacy-adapters";
-import { buildCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { buildCanonicalFloorPlanRenderModel, type CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildHousePlan2D, type HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import { getCanonicalFaceTrimsMm, getCanonicalRoomWallFinish } from "@/components/editor/renderers/canonical-floor-plan/canonicalWallPanels";
 import { trimmedFaceEdge, wallSurfaceEdge, WALL_FINISH_SKIN_MM } from "@/components/editor/renderers/canonical-floor-plan/geometry";
@@ -328,7 +328,7 @@ function checkRoom(room: HousePlanRoom2D, snapshot: RoomSnapshot, floor: Paramet
     note(stats, "buriedMm", buried * 1000, tolerance.buriedMm, `${label} ${panel.wallId}`);
   }
   checkCoverage(room, snapshot, floor, footprints, outline, panels, label, stats, tolerance);
-  checkFurniture(room, snapshot, panels, footprints, label, stats, tolerance);
+  checkFurniture(room, snapshot, floor, panels, footprints, label, stats, tolerance);
 }
 
 const ITEMS = [[0.4, 0.4], [1, 0.5], [0.5, 1]] as const;
@@ -337,20 +337,25 @@ const TURNS = [0, 0.3, Math.PI / 4, Math.PI / 2];
 const turnedRectangle = (x: number, z: number, w: number, d: number, rotationY: number): P[] => [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => ({
   x: x + ((a * w) / 2) * Math.cos(rotationY) + ((b * d) / 2) * Math.sin(rotationY), z: z - ((a * w) / 2) * Math.sin(rotationY) + ((b * d) / 2) * Math.cos(rotationY),
 }));
-/** The gap between two convex outlines: none when they overlap. */
+/**
+ * The gap between two outlines: none when they overlap, a corner of either inside the other or an edge of each crossing (two
+ * rectangles crossed like a plus sign, or an item through a wall's long mitre, which isn't convex, hold no corner of the other).
+ */
 function gapBetween(a: readonly P[], b: readonly P[]): number {
   if (a.some((point) => inside(point, b)) || b.some((point) => inside(point, a))) return 0;
+  const turn = (p: P, q: P, r: P) => cross(sub(q, p), sub(r, p));
   let gap = Infinity;
   a.forEach((from, i) => b.forEach((to, j) => {
     const [aEnd, bEnd] = [a[(i + 1) % a.length], b[(j + 1) % b.length]];
+    if (turn(from, aEnd, to) * turn(from, aEnd, bEnd) < 0 && turn(to, bEnd, from) * turn(to, bEnd, aEnd) < 0) gap = 0;
     gap = Math.min(gap, segmentDistance(from, to, bEnd), segmentDistance(aEnd, to, bEnd), segmentDistance(to, from, aEnd), segmentDistance(bEnd, from, aEnd));
   }));
   return gap;
 }
 
 /**
- * How far apart two convex outlines are: the gap between them, or where they overlap, minus how deep (the least distance one
- * must move along an edge's normal to clear the other), so an item through a panel reads worse than one touching it.
+ * How far apart two outlines are: the gap between them, or where they overlap, minus how deep (the least distance one must
+ * move along an edge's normal to clear the other, for convex ones), so an item through a panel reads worse than one touching it.
  */
 function separation(a: readonly P[], b: readonly P[]): number {
   const gap = gapBetween(a, b);
@@ -378,7 +383,8 @@ function separation(a: readonly P[], b: readonly P[]): number {
  * moved), and containment accepts that place and the target, where they are as clear (furnitureRefusedClear).
  */
 function checkFurniture(
-  room: HousePlanRoom2D, snapshot: RoomSnapshot, panels: Panel[], footprints: Footprint[], label: string, stats: CornerStats, tolerance: Tolerances
+  room: HousePlanRoom2D, snapshot: RoomSnapshot, floor: Parameters<typeof roomPanels>[0], panels: Panel[], footprints: Footprint[], label: string,
+  stats: CornerStats, tolerance: Tolerances
 ) {
   const laminates = panels.filter(({ depth }) => depth > SKIN);
   const origin = snapshot.planPosition ?? { x: room.x, z: room.z };
@@ -391,7 +397,8 @@ function checkFurniture(
     ({ x: f0.x + (f1.x - f0.x) * t + (b0.x - f0.x) * 0.5, z: f0.z + (f1.z - f0.z) * t + (b0.z - f0.z) * 0.5 })))];
   const outsideCorners = outsideCornersOf(clampOutline, inset);
   let short = 0, missed = 0, wall = 0, pushed = 0, refused = 0;
-  const context = getFurnitureRoomContext(snapshot), clear = (local: P, w: number, d: number, rotationY: number) => {
+  const canonicalModel = { floors: [floor] } as unknown as CanonicalFloorPlanRenderModel;
+  const context = getFurnitureRoomContext(snapshot, undefined, canonicalModel.floors), clear = (local: P, w: number, d: number, rotationY: number) => {
     const item = turnedRectangle(local.x + origin.x, local.z + origin.z, w, d, rotationY), keep = 0.021 + (tolerance === CORNER_TOLERANCES.arc ? 0.001 : 0);
     return item.every((corner) => inside(corner, outline)) && [...laminates, ...footprints].every(({ quad }) => separation(item, quad) >= keep);
   };
@@ -399,7 +406,7 @@ function checkFurniture(
     const local = { x: target.x - origin.x, z: target.z - origin.z }, [width, depth] = [snapshot.geometry.width, snapshot.geometry.depth];
     const clampArgs = [w, d, width, depth, inset, rotationY, "custom_polygon", snapshot.planPolygon, snapshot.planHoles, depths] as const;
     const [x, z] = clampToRoomInsideFinishes(local.x, local.z, ...clampArgs, context), line = clampToRoomInsideFinishes(local.x, local.z, ...clampArgs);
-    const contained = (at: P) => isPlacementContainedInRoom({ room: snapshot, position: [at.x, 0, at.z], rotationY, dimensions: { w: w * 1000, d: d * 1000 } });
+    const contained = (at: P) => isPlacementContainedInRoom({ room: snapshot, position: [at.x, 0, at.z], rotationY, dimensions: { w: w * 1000, d: d * 1000 }, canonicalModel });
     for (const at of [local, { x: line[0], z: line[1] }]) if (clear(at, w, d, rotationY) && !contained(at)) refused += 1;
     if (clear({ x: line[0], z: line[1] }, w, d, rotationY)) pushed = Math.max(pushed, Math.hypot(x - line[0], z - line[1]));
     // Where the clamp finds no place for it (an item too big for a sharp corner), it keeps it in the room's box: not placed.

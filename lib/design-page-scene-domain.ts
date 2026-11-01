@@ -2,7 +2,7 @@ import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import { resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { getRoomWallFinishDepths, type RoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { FurnitureRoomContext } from "@/lib/furniture-room-fit";
-import { getItemRoomContext } from "@/lib/furniture-room-context";
+import { getCompiledPlanFloors, getItemRoomContext } from "@/lib/furniture-room-context";
 import type {
   DesignItem,
   DesignSnapshot,
@@ -58,7 +58,7 @@ function buildSceneRoomItemEntry(
   room: RoomSnapshot,
   roomOffset: { x: number; z: number },
   isActiveRoom: boolean,
-  planRooms: ReadonlyMap<string, ScenePlanRoom>
+  plan: { rooms: ReadonlyMap<string, ScenePlanRoom>; floors: ReturnType<typeof getCompiledPlanFloors> }
 ): SceneRoomItemEntry {
   return {
     item,
@@ -78,7 +78,7 @@ function buildSceneRoomItemEntry(
     roomWallThickness:
       room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
     roomWallFinishDepths: getRoomWallFinishDepths(room),
-    roomFurniture: getItemRoomContext(item, room, planRooms),
+    roomFurniture: getItemRoomContext(item, room, plan.rooms, plan.floors),
     isActiveRoom,
   };
 }
@@ -133,12 +133,14 @@ export function buildDesignPageSceneRoomItems({
   housePlanRooms,
   houseRoomById,
 }: BuildDesignPageSceneRoomItemsInput): SceneRoomItemEntry[] {
+  // Furniture's room for its clamp: the plan's rooms, and an imported plan's walls as compiled (lib/furniture-room-context.ts).
+  const plan = { rooms: houseRoomById, floors: getCompiledPlanFloors(designSnapshot.floorPlan?.canonicalDocument) };
   if (!hasWholeHousePlan) {
     if (!activeRoom) return [];
     const planRoom = houseRoomById.get(activeRoom.id);
     const roomOffset = { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 };
     return activeRoom.items.map((item) =>
-      buildSceneRoomItemEntry(item, activeRoom, roomOffset, true, houseRoomById)
+      buildSceneRoomItemEntry(item, activeRoom, roomOffset, true, plan)
     );
   }
 
@@ -154,7 +156,7 @@ export function buildDesignPageSceneRoomItems({
           room,
           roomOffset,
           room.id === designSnapshot.activeRoomId,
-          houseRoomById
+          plan
         )
       );
     });
