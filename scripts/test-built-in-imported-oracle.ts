@@ -199,28 +199,35 @@ function faceBreaks(region: Region, run: Run, back: number, from: number, to: nu
 /**
  * How far the run's box [a0, a1] × [y0, y1] (its frame) stands from the edges it meets (distanceToBox), but along the face for an
  * edge all but parallel to it (under 0.06°): a turned plan's vertices are whole millimetres, so two walls in line (a T-junction's
- * through wall) meet at a bend of a thousandth of a degree, and the next one's face, rising in front of the run's back over
- * metres, is a few ten-thousandths of a mm from the run's corner wherever it ends. From where its part in front of the back
- * starts, as Fit keeps its allowance (lib/built-in-free-span.ts); none where it stands no more than flush with the back.
+ * through wall) meet at a bend of a thousandth of a degree or less, and the next one's face, rising in front of the run's back
+ * over metres, is a few ten-thousandths of a mm from the run's corner wherever it ends. Where along it such a face comes in
+ * front of the run is then known only between where it rises past the back (`flush`) and where it stands a thousandth of a mm
+ * in front, where Fit meets it (`met`, lib/built-in-free-span.ts): the run keeps its allowance from somewhere between. Each the
+ * nearest; none from what stands no further in front than that.
  */
-function meetDistance(edges: ReturnType<typeof edgesItMeets>, [a0, a1, y0, y1]: [number, number, number, number]): number {
-  return Math.min(Number.POSITIVE_INFINITY, ...edges.map(([p, q]) => {
-    if (Math.abs(q[1] - p[1]) >= 0.001 * Math.abs(q[0] - p[0])) return distanceToBox([[p, q]], [a0, a1, y0, y1]);
-    if (Math.max(p[1], q[1]) <= y0 + 0.000001 || Math.min(p[1], q[1]) >= y1) return Number.POSITIVE_INFINITY;
+function meetDistances(edges: ReturnType<typeof edgesItMeets>, [a0, a1, y0, y1]: [number, number, number, number]): { met: number; flush: number } {
+  const along = ([p, q]: (typeof edges)[number], from: number) => {
     const at = (y: number) => p[0] + ((q[0] - p[0]) * (y - p[1])) / (q[1] - p[1]);
-    const xs = [p, q].filter(([, y]) => y >= y0).map(([x]) => x);
-    if (Math.min(p[1], q[1]) < y0) xs.push(at(y0));
+    const xs = [p, q].filter(([, y]) => y >= from).map(([x]) => x);
+    if (Math.min(p[1], q[1]) < from) xs.push(at(from));
     return Math.max(0, Math.min(...xs) - a1, a0 - Math.max(...xs));
-  }));
+  };
+  const each = edges.map((edge) => {
+    const [p, q] = edge;
+    if (Math.abs(q[1] - p[1]) >= 0.001 * Math.abs(q[0] - p[0])) return { met: distanceToBox([edge], [a0, a1, y0, y1]), flush: distanceToBox([edge], [a0, a1, y0, y1]) };
+    if (Math.max(p[1], q[1]) <= y0 + 0.000001 || Math.min(p[1], q[1]) >= y1) return { met: Number.POSITIVE_INFINITY, flush: Number.POSITIVE_INFINITY };
+    return { met: along(edge, y0 + 0.000001), flush: along(edge, y0) };
+  });
+  return { met: Math.min(Number.POSITIVE_INFINITY, ...each.map(({ met }) => met)), flush: Math.min(Number.POSITIVE_INFINITY, ...each.map(({ flush }) => flush)) };
 }
 
 /** Does the run end `gap` (±`tolerance`) from what its end meets, where its face ends, or at a door's edge, and nearer to none? */
 function endsRight(region: Region, edges: ReturnType<typeof edgesItMeets>, run: Run, back: number, gap: number, side: -1 | 1, atOpening: boolean, tolerance: number): boolean {
   const end = (side * run.width) / 2, box: [number, number, number, number] = [end, end, back, back + run.depth];
-  const nearest = meetDistance(edges, box);
+  const nearest = meetDistances(edges, box);
   const faceEndsBy = (reach: number) => faceBreaks(region, run, back, end, end + side * reach);
-  if (nearest < gap - tolerance || faceEndsBy(gap - tolerance)) return false;
-  return atOpening || nearest <= gap + tolerance || faceEndsBy(gap + tolerance) || meetDistance(edgesItMeets(region, run, back, true), box) <= gap + tolerance;
+  if (nearest.met < gap - tolerance || faceEndsBy(gap - tolerance)) return false;
+  return atOpening || nearest.flush <= gap + tolerance || faceEndsBy(gap + tolerance) || meetDistances(edgesItMeets(region, run, back, true), box).flush <= gap + tolerance;
 }
 
 function fitRun(space: CabinetHostSpace, preset: "base" | "wall"): CabinetDefinition | null {
@@ -252,7 +259,7 @@ function checkRun(context: Context, space: CabinetHostSpace, preset: "base" | "w
   check(backs.every((along) => !inRegion(context.region, toWorld(run, along, -run.depth / 2 - back - 0.0003))), () => `${what()}: its back isn't on a face`);
   check(contained(context, run, floor ? 0 : 1.45), () => `${what()}: not contained`);
   const edges = edgesItMeets(context.region, run, back);
-  const clearance = meetDistance(edges, [-run.width / 2, run.width / 2, back, back + run.depth]);
+  const clearance = meetDistances(edges, [-run.width / 2, run.width / 2, back, back + run.depth]).met;
   const slopes = edges.filter(([p, q]) => Math.min(Math.abs(p[0]), Math.abs(q[0])) < run.width / 2 + 0.03)
     .map(([p, q]) => Math.abs(q[1] - p[1]) / Math.max(1e-12, Math.abs(q[0] - p[0])));
   const tolerance = 0.0005 + Math.min(0.005, Math.max(0, ...slopes.map((slope) => 0.000002 / Math.max(1e-9, slope) - 0.0005)));
@@ -301,7 +308,7 @@ function checkRefusal(context: Context, space: CabinetHostSpace, preset: "base" 
   const bottomMm = floor ? 0 : 1450, width = smallest.width + 0.0005, depth = smallest.depth;
   for (let along = width / 2; along <= length - width / 2 + 1e-9; along += 0.005) {
     const run: Run = { x: ax + ux * along + nx * (back + depth / 2), z: az + uz * along + nz * (back + depth / 2), width, depth, rotationY: Math.atan2(nx, nz) };
-    if (meetDistance(edgesItMeets(context.region, run, back), [-width / 2, width / 2, back, back + depth]) < gap) continue;
+    if (meetDistances(edgesItMeets(context.region, run, back), [-width / 2, width / 2, back, back + depth]).flush < gap) continue;
     if (faceBreaks(context.region, run, back, -width / 2 - gap, width / 2 + gap) || !standsIn(context, run)) continue;
     if (gapsBehind(context, run, back, bottomMm, bottomMm + smallest.heightMm).some(([from, to]) => to > -width / 2 && from < width / 2)) continue;
     return check(false, () => `${context.label} ${space.wallId} ${preset}: Fit refuses it, but a ${(width * 1000).toFixed(1)} mm run stands ${(along * 1000).toFixed(0)} mm along it`);
