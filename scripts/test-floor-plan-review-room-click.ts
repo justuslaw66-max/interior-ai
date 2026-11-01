@@ -56,6 +56,25 @@ const belowName = findRoomRegion(mask, { x: 250, y: 300 }, 20);
 assert.ok(belowName.ok && Math.abs(belowName.areaM2 - roomA.areaM2) < 0.01, "a click below the name finds the same room");
 assert.ok(Math.abs(area(roomA.region) - roomA.areaM2) < 1e-9);
 
+// A store closed off in A's corner (1 m x 1.4 m, too narrow for the widest square), clicked by its wall: A's sweep lies
+// a wall away, nearer in a straight line than any of the store's; the click walks through floor only, so it finds the
+// store (it found A before).
+const withStore = plan();
+for (const [x0, y0, x1, y1] of [[97, 277, 153, 283], [147, 277, 153, 353]]) {
+  for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) withStore.ink[y * W + x] = 1;
+}
+const store = findRoomRegion(withStore, { x: 140, y: 300 }, 20);
+assert.ok(store.ok && store.areaM2 < 2 && store.region[200 * W + 250] === 0, JSON.stringify(store.ok && store.areaM2));
+
+// A click inside a letter of the room's name (an O, its inside shut in by its ink): the walk starts again outside the
+// letter, and finds A.
+const withLetter = plan();
+for (let y = 150; y < 162; y += 1) {
+  for (let x = 240; x < 248; x += 1) if (y < 152 || y >= 160 || x < 242 || x >= 246) withLetter.ink[y * W + x] = 1;
+}
+const inLetter = findRoomRegion(withLetter, { x: 244, y: 156 }, 20);
+assert.ok(inLetter.ok && Math.abs(inLetter.areaM2 - roomA.areaM2) < 0.05, JSON.stringify(inLetter.ok ? inLetter.areaM2 : inLetter));
+
 // 2. Nothing closed: a click on paper running out to the page edge, a click on a wall, a page too coarse to read.
 assert.deepEqual(findRoomRegion(mask, { x: 900, y: 700 }, 20), { ok: false, failure: "open_to_edge" });
 const walled = findRoomRegion(withSegments(mask, [[{ x: 0, y: 0 }, { x: 0, y: 0 }]], 1), { x: 100, y: 450 }, 20);
