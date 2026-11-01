@@ -180,9 +180,13 @@ const kitchen = (turnDeg: number, baseboardDepth?: number) => importedCaseOf(imp
 {
   const c = kitchen(20), room = c.rooms[0];
   const old = fitAndPlace(c, room, hostsOf(c, room, false)[0], "base", false);
-  const design: DesignSnapshot = { ...c.snapshot, rooms: [{ ...room, items: [] }] };
-  const reloaded = storedToSnapshot(snapshotToStored(design)).rooms[0];
+  const item = { id: "old-run", instanceId: "old-run", productId: "parametric-cabinet", variantId: old.definition.id, assetType: "parametric_cabinet" as const,
+    name: old.definition.name, cabinetDefinition: old.definition, position: [old.x, 0, old.z] as [number, number, number], rotationY: old.rotationY, qty: 1, includeInCheckout: false };
+  const design: DesignSnapshot = { ...c.snapshot, rooms: [{ ...room, items: [item] }] };
+  const reloaded = storedToSnapshot(snapshotToStored(design)).rooms[0], kept = reloaded.items.find(({ instanceId }) => instanceId === "old-run");
   assert.deepEqual(reloaded.planEdgeWallIds, room.planEdgeWallIds, "the reloaded room keeps its edges");
+  assert.deepEqual([kept?.position, kept?.rotationY, kept?.cabinetDefinition?.fitState?.host], [item.position, item.rotationY, old.definition.fitState?.host],
+    "the old run loads where it was saved, with its old host: loading moves nothing and saves nothing new");
   assert.ok(hostsOf(c, room).some((space) => space.id === old.space.id), "the new hosts have its host's id, so the Studio refreshes it");
   for (const copy of [false, true]) {
     const placed = getCabinetPlacement(old.definition, room, copy, c.planRooms, c.model), run = { ...old, x: placed.position[0], z: placed.position[2] };
