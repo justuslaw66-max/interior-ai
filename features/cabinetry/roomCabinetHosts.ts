@@ -19,7 +19,7 @@ import {
   getCabinetFitPlacement,
   mapCabinetCardinalOpeningsToPolygonWalls,
 } from "./fitToSpace";
-import { getImportedOutlineOpenings } from "./importedCabinetHostOpenings";
+import { getImportedOutlineOpenings, withoutFlushObstacles } from "./importedCabinetHosts";
 import { findMirroredEdges, getDrawnOutlineOpenings, getRoomHostOpenings, getSharedOpenings } from "./roomCabinetHostOpenings";
 import type { CabinetDefinition, CabinetHostSpace } from "./types";
 
@@ -138,7 +138,7 @@ function buildImportedHosts(room: RoomSnapshot, shared: SharedSpaceInput, canoni
   const outlineSpaces = createCabinetPolygonWallSpaces({
     ...shared, polygon, openings: getImportedOutlineOpenings(room, polygon, canonical), installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM,
   });
-  return placeOnFaces(outlineSpaces, getRoomBuiltInFaces(room, undefined, undefined, canonical).exposed, shared.baseboardOffsetMm ?? 0);
+  return placeOnFaces(outlineSpaces, getRoomBuiltInFaces(room, undefined, undefined, canonical).exposed, shared.baseboardOffsetMm ?? 0).map(withoutFlushObstacles);
 }
 
 /**

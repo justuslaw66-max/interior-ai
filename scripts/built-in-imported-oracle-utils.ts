@@ -178,40 +178,86 @@ export function makeImportedCase(index: number, seed: number, options: { kind?: 
 export type Slice = { wallId: string; quad: P[]; bottomMm: number; topMm: number };
 
 export type ImportedRegion = Region & { slices: Slice[]; panels: P[][] };
+type Wall = CanonicalFloorPlanFloorRenderModel["walls"][number];
+
+/**
+ * A straight wall's frame, plan metres, from its compiled centre line (whole millimetres): a point as [along it from its
+ * start, to its left], and back. Null for an arc.
+ */
+function wallFrame(wall: Wall) {
+  const [segment] = wall.centerlineSegments;
+  if (wall.path.kind !== "line" || wall.centerlineSegments.length !== 1) return null;
+  const length = Math.hypot(segment.end.xMm - segment.start.xMm, segment.end.zMm - segment.start.zMm) / 1000;
+  const origin = { x: segment.start.xMm / 1000, z: segment.start.zMm / 1000 };
+  const u = { x: (segment.end.xMm - segment.start.xMm) / 1000 / length, z: (segment.end.zMm - segment.start.zMm) / 1000 / length };
+  return {
+    length,
+    of: (point: P): [number, number] => [(point.x - origin.x) * u.x + (point.z - origin.z) * u.z, (point.z - origin.z) * u.x - (point.x - origin.x) * u.z],
+    at: (along: number, left: number): P => ({ x: origin.x + u.x * along - u.z * left, z: origin.z + u.z * along + u.x * left }),
+  };
+}
+
+/**
+ * The point put on a straight wall's line `left` metres to its left, and onto a slice's end `atMm` along the wall that is an
+ * opening's (short of the wall's ends) when it is within 2 mm of it: the plan rounds an opening's ends to whole millimetres, so
+ * along a turned wall the slices beside, below and above it stand up to 0.71 mm off the wall's line (restated, as
+ * lib/room-built-in-imported-region.ts takes them). As drawn when `asDrawn`.
+ */
+function lined(wall: Wall, asDrawn: boolean) {
+  const frame = asDrawn ? null : wallFrame(wall);
+  return (point: P, left: number, atMm: number): P => {
+    if (!frame) return point;
+    const [along] = frame.of(point), at = atMm / 1000;
+    return frame.at(at > 0.000001 && at < frame.length - 0.000001 && Math.abs(along - at) < 0.002 ? at : along, left);
+  };
+}
 
 /**
  * The room as the canonical 3D view draws it, room-local metres: inside its outline (the walls' centre lines, as the import
  * gives it), outside every slice of every wall on its floor and outside its laminate panels as drawn (from the bare face to
  * the finish's depth, cut at the room's corners). A paint or tile's 1.5 mm skin isn't measured (#256: the room stops at the
- * bare wall there). `room` is the plan's room, as the renderer reads it.
+ * bare wall there). `room` is the plan's room, as the renderer reads it. Each straight wall's slices and panels stand on its
+ * lines (`lined`), or exactly as drawn with `asDrawn`.
  */
-export function importedRegionOf(snapshot: RoomSnapshot, room: HousePlanRoom2D, floor: CanonicalFloorPlanFloorRenderModel): ImportedRegion {
+export function importedRegionOf(snapshot: RoomSnapshot, room: HousePlanRoom2D, floor: CanonicalFloorPlanFloorRenderModel, asDrawn = false): ImportedRegion {
   const origin = snapshot.planPosition ?? { x: 0, z: 0 };
   const local = (point: { x: number; z: number }) => ({ x: point.x - origin.x, z: point.z - origin.z });
-  const slices = floor.walls.flatMap((wall) => wall.solids.map((solid): Slice => ({
-    wallId: wall.id, bottomMm: solid.bottomMm, topMm: solid.topMm,
-    quad: [solid.footprint.startLeft, solid.footprint.endLeft, solid.footprint.endRight, solid.footprint.startRight].map(({ xMm, zMm }) => local({ x: xMm / 1000, z: zMm / 1000 })),
-  })));
+  const metres = ({ xMm, zMm }: { xMm: number; zMm: number }) => ({ x: xMm / 1000, z: zMm / 1000 });
+  const slices = floor.walls.flatMap((wall) => {
+    const put = lined(wall, asDrawn), half = wall.thicknessMm / 2000;
+    return wall.solids.map(({ footprint: f, startOffsetMm: from, endOffsetMm: to, bottomMm, topMm }): Slice => ({
+      wallId: wall.id, bottomMm, topMm,
+      quad: [put(metres(f.startLeft), half, from), put(metres(f.endLeft), half, to), put(metres(f.endRight), -half, to), put(metres(f.startRight), -half, from)].map(local),
+    }));
+  });
   const panels = floor.walls.flatMap((wall) => wall.roomSides.filter(({ roomId }) => roomId === room.id).flatMap(({ side }) => {
     const { depthMm } = getCanonicalRoomWallFinish(room, wall.id);
     if (!(depthMm > 0)) return [];
+    const put = lined(wall, asDrawn), [bareAt, frontAt] = [side * wall.thicknessMm / 2000, side * (wall.thicknessMm / 2 + depthMm) / 1000];
     return wall.solids.flatMap((solid) => {
       const trims = getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side);
       if (trims.hidden) return [];
       const [bare, front] = [trimmedFaceEdge(solid, side, 0, trims), trimmedFaceEdge(solid, side, depthMm, trims)];
-      return [[bare.start, bare.end, front.end, front.start].map(local)];
+      // Side 1's face runs with the wall, side -1's against it (wallSurfaceEdge).
+      const [first, last] = side === 1 ? [solid.startOffsetMm, solid.endOffsetMm] : [solid.endOffsetMm, solid.startOffsetMm];
+      return [[put(bare.start, bareAt, first), put(bare.end, bareAt, last), put(front.end, frontAt, last), put(front.start, frontAt, first)].map(local)];
     });
   }));
   const outline = (snapshot.planPolygon ?? []).map(({ x, z }) => ({ x, z }));
+  // Only what stands within half a metre of the room's outline can reach into it.
+  const xs = outline.map(({ x }) => x), zs = outline.map(({ z }) => z);
+  const near = (ring: readonly P[]) => ring.some(({ x }) => x > Math.min(...xs) - 0.5) && ring.some(({ x }) => x < Math.max(...xs) + 0.5) &&
+    ring.some(({ z }) => z > Math.min(...zs) - 0.5) && ring.some(({ z }) => z < Math.max(...zs) + 0.5);
+  const nearSlices = slices.filter(({ quad }) => near(quad));
   const others = [...panels, ...(snapshot.planHoles ?? [])];
-  const rings = [...slices.map(({ quad }) => quad), ...others];
+  const rings = [...nearSlices.map(({ quad }) => quad), ...others];
   const edges = rings.flatMap((ring) => ring.map((a, index) => {
     const b = ring[(index + 1) % ring.length];
     return { a, b, bounds: [Math.min(a.x, b.x), Math.max(a.x, b.x), Math.min(a.z, b.z), Math.max(a.z, b.z)] as [number, number, number, number] };
   }));
   const thickest = Math.max(...floor.walls.map((wall) => wall.thicknessMm)) / 1000;
   return {
-    outline, bands: slices.map(({ quad }) => ({ outer: quad, holes: [] })), others, vertices: [...outline, ...rings.flat()], edges,
-    thickness: thickest, filled: false, slices, panels,
+    outline, bands: nearSlices.map(({ quad }) => ({ outer: quad, holes: [] })), others, vertices: [...outline, ...rings.flat()], edges,
+    thickness: thickest, filled: false, slices: nearSlices, panels,
   };
 }

@@ -2,14 +2,15 @@ import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-mode
 import type { RoomPlanPolygonPoint, RoomSnapshot } from "@/lib/room-types";
 import { readPlanEdgeWallIds } from "@/lib/room-wall-finish-depths";
 
-import type { CabinetHostOpening } from "./types";
+import type { CabinetHostOpening, CabinetHostSpace } from "./types";
 
 /**
- * An imported plan's doors and windows as Fit to Space's hosts see them (features/cabinetry/roomCabinetHosts.ts): from the
- * plan's canonical model, where its 3D view draws them as gaps between a wall's slices. Each one on the plan wall an outline
- * edge lies on (`planEdgeWallIds`) is measured along that edge, from its middle, by where its ends stand along the wall's path;
- * the host on the edge's exposed face then takes the doors of every piece of the outline its face runs over. The plan's own
- * openings (the 2D plan's cardinal ones) aren't read.
+ * What an imported plan's room's hosts take from its plan (features/cabinetry/roomCabinetHosts.ts builds them):
+ * - its doors and windows from the plan's canonical model, where its 3D view draws them as gaps between a wall's slices. Each
+ *   one on the plan wall an outline edge lies on (`planEdgeWallIds`) is measured along that edge, from its middle, by where its
+ *   ends stand along the wall's path; the host on the edge's exposed face then takes the doors of every piece of the outline
+ *   its face runs over. The plan's own openings (the 2D plan's cardinal ones) aren't read.
+ * - its obstacles less those flush with the face (withoutFlushObstacles).
  */
 
 type Point = RoomPlanPolygonPoint;
@@ -41,4 +42,17 @@ export function getImportedOutlineOpenings(room: RoomSnapshot, outline: readonly
       }];
     });
   });
+}
+
+/**
+ * A host without the obstacles that stand nowhere in front of its face to the hundredth of a mm it keeps them at: the plan joins
+ * a T-junction's stem through the wall it meets to that wall's far face, to a thousandth of a mm (its footprints' rounding), so
+ * a few thousandths of it stand proud of the room's face there. Fit never meets one (it is met only a thousandth of a mm into a
+ * run's depth), but its validation, which measures a run's segment with no depth, would, and refuse the fit.
+ */
+export function withoutFlushObstacles(space: CabinetHostSpace): CabinetHostSpace {
+  const segment = space.wallSegment, obstacles = segment?.obstacles?.filter((points) => points.some(([, into]) => into > 0));
+  if (!segment?.obstacles || !obstacles || obstacles.length === segment.obstacles.length) return space;
+  const { obstacles: _flush, ...rest } = segment;
+  return { ...space, wallSegment: { ...rest, ...(obstacles.length ? { obstacles } : {}) } };
 }
