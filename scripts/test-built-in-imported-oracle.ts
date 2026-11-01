@@ -497,7 +497,8 @@ function checkStuck(context: Context, run: Run, definition: CabinetDefinition, p
     }
   }
   const longer: Run = { ...run, width: (definition.fitState?.host.availableWidthMm ?? 0) / 1000 + 0.03 };
-  if (longer.width > run.width && !fitsAt(context, longer, standOff, -0.001)) {
+  // Where it doesn't fit (the code's own test: a run past a face's corners may hang in the open and fit).
+  if (longer.width > run.width && !fitsAt(context, longer, standOff, -0.001) && !contained(context, longer, bottom)) {
     counts.tooLong += 1;
     counts.tooLongRefused += checkMovesFromStuck(run, longer, moves, check, () => `${what()} (made longer than its face)`);
   }
