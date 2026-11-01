@@ -10,7 +10,8 @@ import type { CabinetHostOpening, CabinetHostSpace } from "./types";
  *   one on the plan wall an outline edge lies on (`planEdgeWallIds`) is measured along that edge, from its middle, by where its
  *   ends stand along the wall's path; the host on the edge's exposed face then takes the doors of every piece of the outline
  *   its face runs over. The plan's own openings (the 2D plan's cardinal ones) aren't read.
- * - its obstacles less those flush with the face (withoutFlushObstacles).
+ * - its obstacles less those flush with the face (withoutFlushObstacles);
+ * - a wall the plan selects by its own id, as the outline edges on it (getImportedEdgeFaceIds).
  */
 
 type Point = RoomPlanPolygonPoint;
@@ -55,4 +56,10 @@ export function withoutFlushObstacles(space: CabinetHostSpace): CabinetHostSpace
   if (!segment?.obstacles || !obstacles || obstacles.length === segment.obstacles.length) return space;
   const { obstacles: _flush, ...rest } = segment;
   return { ...space, wallSegment: { ...rest, ...(obstacles.length ? { obstacles } : {}) } };
+}
+
+/** The faces (`wall-N`) of an imported room's outline edges on plan wall `wallId`, as the plan selects a wall; else `wallId` itself. */
+export function getImportedEdgeFaceIds(room: RoomSnapshot, wallId: string): string[] {
+  const edges = typeof room.floorElevationMm === "number" && !wallId.startsWith("wall-") ? readPlanEdgeWallIds(room) ?? [] : [];
+  return edges.includes(wallId) ? edges.flatMap((id, index) => (id === wallId ? [`wall-${index}`] : [])) : [wallId];
 }

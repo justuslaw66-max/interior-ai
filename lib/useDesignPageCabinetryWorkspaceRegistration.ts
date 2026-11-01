@@ -35,8 +35,7 @@ export function useDesignPageCabinetryWorkspaceRegistration({
       planRoomCount: documentRoom.derived.plan.housePlan2D.rooms.length,
       planOpenings: viewportShell.state.plan.planOpenings,
       activeSurfaceTarget: viewportShell.state.surface.activeSurfaceTarget,
-      selectedWallFaceId:
-        sceneRoomRead.derived.room.activeSelectedWallFaceId,
+      selectedWallFaceId: sceneRoomRead.derived.room.activeSelectedWallFaceId,
       selectedItem: itemSelection.state.selectedItem ?? null,
       designSnapshot: coreShell.state.document.designSnapshot,
     },

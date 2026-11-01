@@ -19,7 +19,7 @@ import {
   getCabinetFitPlacement,
   mapCabinetCardinalOpeningsToPolygonWalls,
 } from "./fitToSpace";
-import { getImportedOutlineOpenings, withoutFlushObstacles } from "./importedCabinetHosts";
+import { getImportedEdgeFaceIds, getImportedOutlineOpenings, withoutFlushObstacles } from "./importedCabinetHosts";
 import { findMirroredEdges, getDrawnOutlineOpenings, getRoomHostOpenings, getSharedOpenings } from "./roomCabinetHostOpenings";
 import type { CabinetDefinition, CabinetHostSpace } from "./types";
 
@@ -134,10 +134,8 @@ type SharedSpaceInput = Omit<Parameters<typeof createCabinetRoomWallSpaces>[0], 
 
 /** An imported room's outline's walls with its plan's doors and windows, each on its exposed face, as a drawn shape's are. */
 function buildImportedHosts(room: RoomSnapshot, shared: SharedSpaceInput, canonical: Canonical | undefined): CabinetHostSpace[] {
-  const polygon = room.planPolygon ?? [];
-  const outlineSpaces = createCabinetPolygonWallSpaces({
-    ...shared, polygon, openings: getImportedOutlineOpenings(room, polygon, canonical), installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM,
-  });
+  const polygon = room.planPolygon ?? [], openings = getImportedOutlineOpenings(room, polygon, canonical);
+  const outlineSpaces = createCabinetPolygonWallSpaces({ ...shared, polygon, openings, installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM });
   return placeOnFaces(outlineSpaces, getRoomBuiltInFaces(room, undefined, undefined, canonical).exposed, shared.baseboardOffsetMm ?? 0).map(withoutFlushObstacles);
 }
 
@@ -260,11 +258,14 @@ function wallIndex(wallId: string): number {
  * door's). None for a wall no host runs over (a spike's sides).
  */
 export function findCabinetHostForWall(room: RoomSnapshot, spaces: readonly CabinetHostSpace[], wallId: string): CabinetHostSpace | null {
+  // An imported plan's wall, as its plan selects it (by its plan wall id): the host over an edge on it.
+  return getImportedEdgeFaceIds(room, wallId).map((faceId) => findHostOverEdge(room, spaces, faceId)).find(Boolean) ?? null;
+}
+
+/** The host a wall (`wall-N`, or a rectangle's compass name) of `room` is fitted on (findCabinetHostForWall). */
+function findHostOverEdge(room: RoomSnapshot, spaces: readonly CabinetHostSpace[], wallId: string): CabinetHostSpace | null {
   const own = spaces.find((space) => space.wallId === wallId);
   if (own || (room.planShape ?? "rectangle") === "rectangle") return own ?? null;
-  // An imported plan's wall, as its plan selects it: the host over an edge on it.
-  const edges = isImportedPlanRoom(room) && !wallId.startsWith("wall-") ? room.planEdgeWallIds ?? [] : [];
-  if (edges.includes(wallId)) return edges.map((id, at) => (id === wallId ? findCabinetHostForWall(room, spaces, `wall-${at}`) : null)).find(Boolean) ?? null;
   const outline = getRoomPlanOutlinePoints({ shape: room.planShape ?? "rectangle", polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth });
   const index = wallIndex(wallId), start = outline[index], end = outline[(index + 1) % outline.length];
   const length = start && end ? Math.hypot(end.x - start.x, end.z - start.z) : 0;
