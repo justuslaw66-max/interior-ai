@@ -1122,6 +1122,11 @@ test("directory cancellation, malformed responses and exact canonical selection 
   // Compare the reopened runtime with the actual persisted projection, not a transient pre-save marker.
   const applied = fingerprintDesignSnapshot(storedToSnapshot(savedBeforeReload));
   await page.reload({ waitUntil: "domcontentloaded" });
+  // The editor reopens the saved design once the page has hydrated, as the reload above waits for. Under next dev that
+  // took 3–6 s on J's Mac (31 Oct), and a 5 s check started before it ran out first: the trace showed the server-rendered
+  // default design until hydration, then the saved one. So wait for the saved design's room to be the active one.
+  await expect(page.getByTestId("scene-canvas")).toHaveAttribute("data-client-hydrated", "true");
+  await expect(page.getByTestId("qa-design-layout-debug")).toHaveAttribute("data-active-room-id", savedBeforeReload.activeRoomId);
   try {
     await expect(page.getByTestId("qa-editor-snapshot-fingerprint")).toHaveAttribute("data-fingerprint", applied!, { timeout: 5_000 });
   } catch (error) {
