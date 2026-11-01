@@ -11,12 +11,12 @@ import { readMovedOutline, readOutlineEdges, type MovedOutline, type OutlineEdge
  *
  * The clamp's outline (lib/design-page-geometry.ts) is the room's outline inside its panels (lib/room-finished-outline.ts),
  * and furniture keeps `wallInset` (half the wall plus 2 cm, getFurnitureWallInset) off it. The faces here are that outline
- * moved in by the wall's part of the inset, mitred as the 3D view's walls meet: so a straight
- * wall keeps the same distance as before, and at an outside corner the item keeps 2 cm off the corner the walls draw, where
- * the clamp's nine sample points of its bounding box could miss it. Where the room's 3D view draws a wall or panel past those
- * faces (a drawn room's wall run on past an outside corner, an imported laminate's tip past paint, an imported arc's true
- * curve: lib/furniture-faces-as-drawn.ts), the item keeps 2 cm off that too. The nearest place that fits is found by the
- * built-ins' exact search (lib/built-in-nearest-fit.ts), reused as it is.
+ * moved in by the wall's part of the inset, mitred as the 3D view's walls meet: so a straight wall keeps the same distance as
+ * before, and at an outside corner the item keeps 2 cm off the corner the walls draw, where the clamp's nine sample points of
+ * its bounding box could miss it. Where the room's 3D view draws a wall or panel past those faces (a drawn room's wall run on
+ * past an outside corner and its panels' square ends, an imported laminate's tip past paint, an imported wall's square end
+ * where the plan leaves it unjoined, an imported arc's true curve: lib/furniture-faces-as-drawn.ts), the item keeps 2 cm off
+ * that too. The nearest place that fits is found by the built-ins' exact search (lib/built-in-nearest-fit.ts), reused as it is.
  */
 
 type Point = RoomPlanPolygonPoint;
@@ -86,8 +86,9 @@ function buildFurnitureFaces(
   const tips = drawn?.imported ? getImportedLaminateTips(moved, drawn, faceInset, roomSide) : [];
   const outers = arcFaces ? [outer, arcFaces.outer] : [outer];
   const faceSegments = outers.flatMap(segmentsOf);
-  const drawnSolids = drawn && faceInset > 0 ? (drawn.imported ? getImportedUnjoinedEnds(moved, drawn, roomSide) : getDrawnWallSolids(moved, drawn, faceInset)) : [];
-  const solids = drawnSolids.filter((solid) => reachesInto(solid, outer, faceSegments));
+  const pastFaces = !drawn || !(faceInset > 0) ? []
+    : drawn.imported ? getImportedUnjoinedEnds(moved, drawn, roomSide) : getDrawnWallSolids(moved, drawn, faceInset);
+  const solids = pastFaces.filter((solid) => reachesInto(solid, outer, faceSegments));
   return {
     outer, outers, solids, solidBounds: solids.map(boundsOf), clearance: keep,
     segments: [...faceSegments, ...solids.flatMap(segmentsOf), ...tips.flatMap(pathOf)],

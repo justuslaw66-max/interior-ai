@@ -19,7 +19,7 @@ import type { MovedOutline, OutlineEdges } from "@/lib/room-outline-edges";
  * - An imported plan's walls are joined where they meet unless the join would stand too far off (lib/floor-plan-wall-footprints.ts:
  *   farther than four times the thicker wall, or 250 mm): at a thin spike they aren't, and a wall's square end, wider than the
  *   other wall where it is thicker, stands out past that wall's face.
- * - An imported plan's arc is drawn on its true curve (in slices a quarter of the room outline's), and the outline is its
+ * - An imported plan's arc is drawn on its true curve (in slices half the angle of the room outline's), and the outline is its
  *   chords: where the arc bows into the room, the faces follow the arc itself.
  */
 
