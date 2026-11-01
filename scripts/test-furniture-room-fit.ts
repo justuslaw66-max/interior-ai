@@ -10,7 +10,7 @@ import { getFurnitureFaces, getTurnedFootprint } from "../lib/furniture-room-fit
 import { clampToRoomInsideFinishes, getRoomOutlineInsideFinishes } from "../lib/room-finished-outline";
 import { clampToCustomPolygonRoom } from "../lib/room-polygon-fit";
 import { createRoom, type RoomSnapshot } from "../lib/room-types";
-import { getRoomWallFaceIds, getRoomWallFinishDepths, getRoomWallPanelDepths } from "../lib/room-wall-finish-depths";
+import { getRoomWallFaceIds, getRoomWallFinishDepths } from "../lib/room-wall-finish-depths";
 import { inRegion, regionOf, type Region } from "./built-in-faces-oracle-utils";
 import { planFromShape, roomPanels, seeded, type ShapeSpec } from "./fixtures/imported-panel-corners";
 
@@ -87,7 +87,7 @@ function clampBoth(room: RoomSnapshot, target: P, width: number, depth: number, 
   const points = L.map(({ x, z }) => ({ x: x * Math.cos(turn) - z * Math.sin(turn), z: x * Math.sin(turn) + z * Math.cos(turn) }));
   const room = drawnRoom("turned-l", points, { "wall-2": LAMINATE, "wall-3": LAMINATE });
   const region = regionOf(room), corner = points[3];
-  const { line, placed, footprint, lineFootprint } = clampBoth(room, corner, 1, 0.5, 0);
+  const { placed, footprint, lineFootprint } = clampBoth(room, corner, 1, 0.5, 0);
   assert.ok(gapInRegion(region, lineFootprint) < CLEAR - 0.005, "the box test alone lets the item reach into the outside corner's panels");
   assert.ok(placed && gapInRegion(region, footprint) >= CLEAR - 0.0002, `a turned L's outside corner: 2 cm off (${gapInRegion(region, footprint)})`);
   assert.ok(Math.hypot(footprint[0].x - lineFootprint[0].x, footprint[0].z - lineFootprint[0].z) < 0.3, "the nearest place that fits");
