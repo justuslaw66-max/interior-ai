@@ -330,6 +330,17 @@ for (const heightMm of [2100, 2600]) {
   assert.equal(getCabinetAvailableSegments(host, 870, 0, 580).length, 2, `${heightMm} mm opening: a base run fits either side`);
 }
 
+// An L's inner corner where the next wall's panel is cut at a slant across this wall's face (the imported oracle's full set at
+// seed 123457, plan 3: turned 293.7° and mirrored). The two walls' mitres meet 0.0007 mm apart behind the face, which split
+// it there, and the face stopped at 1134.8 mm, short of where the panel's end stands 0.05 mm proud. They meet within the flush.
+{
+  const c = makeImportedCase(3, 123457) as unknown as Case, room = c.rooms.find(({ id }) => id === "R")!, outline = room.planPolygon!;
+  const edge = room.planEdgeWallIds!.indexOf("w-c-e"), face = getRoomBuiltInFaces(room, undefined, c.planRooms, c.model).exposed[edge]!;
+  const [start, end] = [outline[edge], outline[(edge + 1) % outline.length]], length = Math.hypot(end.x - start.x, end.z - start.z);
+  const alongMm = ({ x, z }: { x: number; z: number }) => (((x - start.x) * (end.x - start.x) + (z - start.z) * (end.z - start.z)) / length) * 1000;
+  assert.ok(Math.abs(alongMm(face.end) - 1136.04) < 0.05, `the L's inner face runs on under the panel's end (to ${alongMm(face.end).toFixed(2)} mm)`);
+}
+
 // A move from a place a run doesn't fit stays near it, its back on its face (J's delegate, 2 Nov 2026): a 3.86 m run fitted on
 // a drawn L kitchen's 4 m top wall, then cut into by a laminate on its end wall, fits nowhere along that wall. Its nudge, Snap
 // and drag are refused, where round 2 threw it 2 m off the wall into the middle of the L, and the refusal says to fit it again.
