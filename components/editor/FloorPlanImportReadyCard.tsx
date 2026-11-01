@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { inspectFloorPlanOptionalConfigurations } from "@/lib/floor-plan-optional-configurations";
+import type { ReviewHomeTypeId } from "@/lib/floor-plan-imports/review-home-type";
 import { Button } from "@/components/ui/Button";
 import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 import FloorPlanVisualReviewTools from "./floor-plan-import-review/FloorPlanVisualReviewTools";
+import ReadyCardHomeType, { useReadyCardHomeType } from "./FloorPlanReadyCardHomeType";
 import FloorPlanOptionalConfigurationPanel from "./FloorPlanOptionalConfigurationPanel";
 import { FloorPlanImportRetentionNotice } from "./FloorPlanImportRetentionNotice";
 
@@ -35,7 +37,7 @@ type FloorPlanImportReadyCardProps = {
   disabled: boolean;
   submitting: boolean;
   deletingSource: boolean;
-  createDesign: () => Promise<void>;
+  createDesign: (homeType?: ReviewHomeTypeId | null) => Promise<void>;
   createError: string | null;
   title: string;
   setTitle: (next: string) => void;
@@ -86,17 +88,17 @@ function ReadyCardSummary({ canonicalRoomCount, canonicalDimensionCount, subtle 
 }
 
 type ReadyCreateProps = Pick<FloorPlanImportReadyCardProps,
-  "disabled" | "submitting" | "deletingSource" | "createDesign" | "createError" | "subtle">;
+  "disabled" | "submitting" | "deletingSource" | "createDesign" | "createError" | "subtle"> & { homeType: ReviewHomeTypeId | null };
 
-/** Create design, and why it paused if it did. */
-function ReadyCardCreate({ disabled, submitting, deletingSource, createDesign, createError, subtle }: ReadyCreateProps) {
+/** Create design (with the home type chosen on the card, if one was), and why it paused if it did. */
+function ReadyCardCreate({ disabled, submitting, deletingSource, createDesign, createError, subtle, homeType }: ReadyCreateProps) {
   return (
     <>
       <Button
         data-floor-plan-workspace-focus="primary"
         variant="primary" size="touch" className="mt-4 w-full"
         disabled={disabled || submitting || deletingSource}
-        onClick={() => void createDesign()}
+        onClick={() => void createDesign(homeType)}
       >
         {submitting
           ? "Creating and opening…"
@@ -200,9 +202,10 @@ function ReadyCardOptions(props: FloorPlanImportReadyCardProps) {
   );
 }
 
-/** An upload the AI check passed: what it found, the traced drawing, Create design, and the plan's options. */
+/** An upload the AI check passed: what it found, the traced drawing, its home type, Create design, and the plan's options. */
 export default function FloorPlanImportReadyCard(props: FloorPlanImportReadyCardProps) {
   const { activeJob, candidate, floor, setCandidate, surface } = props;
+  const heights = useReadyCardHomeType(candidate, floor);
   return (
     <div className={surface} data-testid="floor-plan-import-ready" data-floor-plan-workspace-state="ready">
       <ReadyCardSummary {...props} />
@@ -216,7 +219,8 @@ export default function FloorPlanImportReadyCard(props: FloorPlanImportReadyCard
           disabled
         />
       ) : null}
-      <ReadyCardCreate {...props} />
+      <ReadyCardHomeType floor={floor} heights={heights} disabled={props.disabled || props.submitting || props.deletingSource} />
+      <ReadyCardCreate {...props} homeType={heights.chosen} />
       <ReadyCardOptions {...props} />
     </div>
   );

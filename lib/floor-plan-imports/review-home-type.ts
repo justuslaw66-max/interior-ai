@@ -124,6 +124,26 @@ export function applyReviewHomeType(
   return { document: next, kept, ...(storeyBelowWalls ? { storeyBelowWalls } : {}) };
 }
 
+/** A request's home type, read at the boundary: one of the review's choices, or none. */
+export function parseReviewHomeTypeId(value: unknown): ReviewHomeTypeId | null {
+  return REVIEW_HOME_TYPES.find((type) => type.id === value)?.id ?? null;
+}
+
+/**
+ * The document a ready upload's design is made from, with the home type chosen on its ready card applied to every floor
+ * (J, 1 Nov 2026: "On the ready card"; the review asks it of a plan that needs review). `value` is the request's home
+ * type: anything that isn't one changes nothing. Each floor follows applyReviewHomeType's rules: only assumed heights
+ * change, and a floor whose openings the walls would come under stays as it is.
+ */
+export function withConfirmedHomeType(document: FloorPlanDocumentV2, value: unknown): FloorPlanDocumentV2 {
+  const homeType = parseReviewHomeTypeId(value);
+  if (!homeType) return document;
+  return document.floors.reduce(
+    (next, floor) => applyReviewHomeType(next, { floorId: floor.id, homeType, storeyTyped: false }).document,
+    document
+  );
+}
+
 /** Assumed floor-standing structures as tall as the old walls (a core, a ledge, a column) follow the walls. */
 function raiseStructuresWithWalls(floor: FloorPlanFloorV2, fromMm: number, toMm: number) {
   for (const structure of floor.structures) {

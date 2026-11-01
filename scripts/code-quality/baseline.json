@@ -1195,11 +1195,11 @@
     "app/api/floor-plan-imports/[id]/confirm/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 168
+        "maximum": 161
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 29
+        "maximum": 25
       }
     },
     "app/api/floor-plan-imports/[id]/process/route.ts": {

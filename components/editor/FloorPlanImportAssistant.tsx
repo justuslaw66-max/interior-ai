@@ -374,7 +374,7 @@ export default function FloorPlanImportAssistant({
   }
 
   if (activeJob?.status === "ready") {
-    return <FloorPlanImportReadyCard {...{ activeJob, candidate, floor, setCandidate, canonicalRoomCount, canonicalDimensionCount, disabled, submitting, deletingSource, createDesign, createError, title, setTitle, subtle, surface, control, sourceDeletionPending, sourceContentDeleted, savedUnderlaysScrubbed, retentionDate, deletePrivateSource, onChooseFile, deleteError }} />;
+    return <FloorPlanImportReadyCard key={activeJob.id} {...{ activeJob, candidate, floor, setCandidate, canonicalRoomCount, canonicalDimensionCount, disabled, submitting, deletingSource, createDesign, createError, title, setTitle, subtle, surface, control, sourceDeletionPending, sourceContentDeleted, savedUnderlaysScrubbed, retentionDate, deletePrivateSource, onChooseFile, deleteError }} />;
   }
 
   if (
