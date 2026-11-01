@@ -1,6 +1,8 @@
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
 import { getOutlineInwardSign, insetPolygonEdges } from "@/lib/polygon-edge-inset";
 import { findNearestBuiltInFit, type BuiltInFitObstacles } from "@/lib/built-in-nearest-fit";
+import { getDrawnWallSolids, getImportedArcFaces, getImportedLaminateTips } from "@/lib/furniture-faces-as-drawn";
+import { readMovedOutline, readOutlineEdges, type MovedOutline, type OutlineEdges } from "@/lib/room-outline-edges";
 
 /**
  * Where furniture may stand in a drawn or imported room, exactly: its real (turned) footprint inside the room's finished
@@ -11,18 +13,28 @@ import { findNearestBuiltInFit, type BuiltInFitObstacles } from "@/lib/built-in-
  * and furniture keeps `wallInset` (half the wall plus 2 cm, getFurnitureWallInset) off it. The faces here are that outline
  * moved in by the wall's part of the inset, mitred as the 3D view's walls meet, and each hole grown out by it: so a straight
  * wall keeps the same distance as before, and at an outside corner the item keeps 2 cm off the corner the walls draw, where
- * the clamp's nine sample points of its bounding box could miss it. The nearest place that fits is found by the built-ins'
- * exact search (lib/built-in-nearest-fit.ts), reused as it is.
+ * the clamp's nine sample points of its bounding box could miss it. Where the room's 3D view draws a wall or panel past those
+ * faces (a drawn room's wall run on past an outside corner, an imported laminate's tip past paint, an imported arc's true
+ * curve: lib/furniture-faces-as-drawn.ts), the item keeps 2 cm off that too. The nearest place that fits is found by the
+ * built-ins' exact search (lib/built-in-nearest-fit.ts), reused as it is.
  */
 
 type Point = RoomPlanPolygonPoint;
-type Segment = { a: Point; b: Point; minX: number; maxX: number; minZ: number; maxZ: number };
+type Bounds = { minX: number; maxX: number; minZ: number; maxZ: number };
+type Segment = Bounds & { a: Point; b: Point };
 
 export type FurnitureFaces = {
   /** The finished faces' outline, and each hole's: the outline moved in (a hole grown out) by the wall's part of the inset. */
   outer: Point[];
+  /** Outlines an item's corners must all be inside: `outer`, and the faces along an arc's true curve. */
+  outers: Point[][];
+  /** Outlines its corners must all be out of: the holes, and walls and panels the 3D view draws past the faces. */
   holes: Point[][];
+  holeBounds: Bounds[];
+  /** Every edge it keeps `clearance` off. */
   segments: Segment[];
+  /** The same as convex shapes for the nearest-fit search: each face a segment, each solid and laminate tip whole. */
+  obstacles: Point[][];
   /** How far an item keeps off a face. */
   clearance: number;
   /** The walls leave no floor: the outline turned inside out when moved in. */
@@ -34,32 +46,71 @@ export const FURNITURE_FACE_TOLERANCE = 0.0001;
 /** The dilated footprint's corners are rounded by a circumscribed polygon of this many sides (at most 1.6 mm off a circle). */
 const ROUND_SIDES = 8;
 
-const segmentsOf = (loop: readonly Point[]): Segment[] => loop.map((a, index) => {
-  const b = loop[(index + 1) % loop.length];
-  return { a, b, minX: Math.min(a.x, b.x), maxX: Math.max(a.x, b.x), minZ: Math.min(a.z, b.z), maxZ: Math.max(a.z, b.z) };
-});
+const segment = (a: Point, b: Point): Segment =>
+  ({ a, b, minX: Math.min(a.x, b.x), maxX: Math.max(a.x, b.x), minZ: Math.min(a.z, b.z), maxZ: Math.max(a.z, b.z) });
+const segmentsOf = (loop: readonly Point[]): Segment[] => loop.map((a, index) => segment(a, loop[(index + 1) % loop.length]));
+const pathOf = (path: readonly Point[]): Segment[] => path.slice(1).map((b, index) => segment(path[index], b));
+const boundsOf = (points: readonly Point[]): Bounds => points.reduce((bounds, { x, z }) => ({
+  minX: Math.min(bounds.minX, x), maxX: Math.max(bounds.maxX, x), minZ: Math.min(bounds.minZ, z), maxZ: Math.max(bounds.maxZ, z),
+}), { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity });
 
-// One set of faces per outline, holes and inset: the clamp runs on every frame of a drag with the same outline.
-const facesByPolygon = new WeakMap<readonly Point[], { holes: unknown; wallInset: number; clearance: number; faces: FurnitureFaces }[]>();
+// One set of faces per outline, holes, inset and edges: the clamp runs on every frame of a drag with the same outline.
+type KeptFaces = {
+  holes: readonly (readonly Point[])[]; wallInset: number; clearance: number; from: unknown; edges: unknown; faces: FurnitureFaces;
+};
+// Callers hand on a room's holes as they are or as a new list of them (`room.holes ?? []`).
+const isSameHoles = (a: readonly (readonly Point[])[], b: readonly (readonly Point[])[]) =>
+  a === b || (a.length === b.length && a.every((hole, index) => hole === b[index]));
+const facesByPolygon = new WeakMap<readonly Point[], KeptFaces[]>();
 
 /** The faces furniture keeps `clearance` off, for an outline (and holes) it keeps `wallInset` off along a straight wall. */
 export function getFurnitureFaces(
   polygon: readonly Point[], holes: readonly (readonly Point[])[], wallInset: number, clearance: number
 ): FurnitureFaces {
+  const moved = readMovedOutline(polygon), edges = readOutlineEdges(moved.from);
   const known = facesByPolygon.get(polygon) ?? [];
-  const kept = known.find((entry) => entry.holes === holes && entry.wallInset === wallInset && entry.clearance === clearance);
+  const kept = known.find((entry) => isSameHoles(entry.holes, holes) && entry.wallInset === wallInset && entry.clearance === clearance &&
+    entry.from === moved.from && entry.edges === edges);
   if (kept) return kept.faces;
+  const faces = buildFurnitureFaces(polygon, holes, wallInset, clearance, moved, edges);
+  facesByPolygon.set(polygon, [{ holes, wallInset, clearance, from: moved.from, edges, faces }, ...known].slice(0, 4));
+  return faces;
+}
+
+function buildFurnitureFaces(
+  polygon: readonly Point[], holes: readonly (readonly Point[])[], wallInset: number, clearance: number,
+  moved: MovedOutline, edges: OutlineEdges | undefined
+): FurnitureFaces {
   const keep = Math.max(0, Math.min(clearance, wallInset)), faceInset = Math.max(0, wallInset - keep);
   const roomSide = getOutlineInwardSign(polygon);
   const outer = insetPolygonEdges(polygon, polygon.map(() => faceInset), roomSide);
   const grown = holes.filter((hole) => hole.length >= 3)
     .map((hole) => insetPolygonEdges(hole, hole.map(() => faceInset), getOutlineInwardSign(hole) === 1 ? -1 : 1));
-  const faces: FurnitureFaces = {
-    outer, holes: grown, segments: [outer, ...grown].flatMap(segmentsOf), clearance: keep,
+  // What the 3D view draws past the faces, read through the outline the polygon was moved in from (one of as many edges).
+  const drawn = edges && moved.from.length === polygon.length && edges.panels.length === polygon.length ? edges : undefined;
+  const arcFaces = drawn?.imported ? getImportedArcFaces(moved, drawn, faceInset, roomSide) : null;
+  const tips = drawn?.imported ? getImportedLaminateTips(moved, drawn, faceInset, roomSide) : [];
+  const outers = arcFaces ? [outer, arcFaces] : [outer];
+  const faceSegments = [...outers, ...grown].flatMap(segmentsOf);
+  const solids = (drawn && !drawn.imported && faceInset > 0 ? getDrawnWallSolids(moved, drawn, faceInset) : [])
+    .filter((solid) => reachesInto(solid, outer, faceSegments));
+  const out = [...grown, ...solids];
+  return {
+    outer, outers, holes: out, holeBounds: out.map(boundsOf), clearance: keep,
+    segments: [...faceSegments, ...solids.flatMap(segmentsOf), ...tips.flatMap(pathOf)],
+    obstacles: [...faceSegments.map(({ a, b }) => [a, b]), ...solids, ...tips],
     inverted: polygon.length < 3 || getOutlineInwardSign(outer) !== roomSide,
   };
-  facesByPolygon.set(polygon, [{ holes, wallInset, clearance, faces }, ...known].slice(0, 4));
-  return faces;
+}
+
+/**
+ * True when a wall's or panel's solid reaches inside the faces (past a corner): one wholly behind them is kept off by keeping
+ * off the faces, so only these are kept, a few in a room of hundreds of walls.
+ */
+function reachesInto(solid: readonly Point[], outer: readonly Point[], faces: readonly Segment[]): boolean {
+  const onFace = (point: Point) => faces.some((face) => distanceToSegment(point, face.a, face.b) <= 1e-6);
+  return solid.some((point) => isInside(point, outer) && !onFace(point)) ||
+    solid.some((a, index) => faces.some((face) => segmentsCross(a, solid[(index + 1) % solid.length], face.a, face.b)));
 }
 
 /** The corners of a footprint `width` × `depth` centred at (x, z) and turned `rotationY`, as the 3D view turns an item. */
@@ -111,7 +162,11 @@ export function isFurnitureFootprintClear(
 ): boolean {
   if (faces.inverted) return false;
   const footprint = getTurnedFootprint(x, z, width, depth, rotationY);
-  if (!footprint.every((corner) => isInside(corner, faces.outer) && !faces.holes.some((hole) => isInside(corner, hole)))) return false;
+  const inHole = (corner: Point) => faces.holes.some((hole, index) => {
+    const bounds = faces.holeBounds[index];
+    return corner.x >= bounds.minX && corner.x <= bounds.maxX && corner.z >= bounds.minZ && corner.z <= bounds.maxZ && isInside(corner, hole);
+  });
+  if (!footprint.every((corner) => faces.outers.every((outer) => isInside(corner, outer)) && !inHole(corner))) return false;
   const reach = faces.clearance;
   const xs = footprint.map((corner) => corner.x), zs = footprint.map((corner) => corner.z);
   const [minX, maxX, minZ, maxZ] = [Math.min(...xs) - reach, Math.max(...xs) + reach, Math.min(...zs) - reach, Math.max(...zs) + reach];
@@ -144,7 +199,7 @@ export function findNearestFurnitureFit(
   const cos = Math.abs(Math.cos(rotationY)), sin = Math.abs(Math.sin(rotationY));
   const boxWidth = width * cos + depth * sin + 2 * wallInset, boxDepth = width * sin + depth * cos + 2 * wallInset;
   const families: BuiltInFitObstacles[] = [
-    { footprint: grownFootprint(width, depth, rotationY, faces.clearance), obstacles: faces.segments.map(({ a, b }) => [a, b]) },
+    { footprint: grownFootprint(width, depth, rotationY, faces.clearance), obstacles: faces.obstacles },
     { footprint: getTurnedFootprint(0, 0, boxWidth, boxDepth, 0), obstacles: [polygon, ...holes].flatMap(segmentsOf).map(({ a, b }) => [a, b]) },
   ];
   return findNearestBuiltInFit(families, { x, z }, reach, (atX, atZ) =>

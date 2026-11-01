@@ -2,6 +2,7 @@ import { clampToRoom } from "@/lib/design-page-geometry";
 import { L_SHAPE_NOTCH_RATIO } from "@/lib/room-floor-area";
 import type { RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 import { insetPolygonEdges } from "@/lib/polygon-edge-inset";
+import { noteMovedOutline } from "@/lib/room-outline-edges";
 import {
   getRoomWallFaceIds,
   getRoomWallFinishDepths,
@@ -85,11 +86,11 @@ export function getRoomOutlineInsideFinishes(outline: RoomPlanOutline, depths: R
   if (known && isSameOutline(known.outline, outline)) return known.inside;
   const faceIds = getRoomWallFaceIds({ shape: outline.shape, polygon: outline.polygon });
   const points = getRoomPlanOutlinePoints(outline);
-  const inside: RoomPlanOutline = {
-    ...outline,
-    shape: "custom_polygon",
-    polygon: insetPolygonEdges(points, faceIds.map((faceId) => depths[faceId] ?? 0)),
-  };
+  const by = faceIds.map((faceId) => depths[faceId] ?? 0);
+  const polygon = insetPolygonEdges(points, by);
+  const inside: RoomPlanOutline = { ...outline, shape: "custom_polygon", polygon };
+  // The furniture clamp reads the outline's edges (lib/room-outline-edges.ts) through the one it was moved in from.
+  noteMovedOutline(polygon, outline.shape === "custom_polygon" && outline.polygon && outline.polygon.length >= 3 ? outline.polygon : points, by);
   insideOutlineByDepths.set(depths, { outline, inside });
   return inside;
 }

@@ -308,8 +308,10 @@ export function clampToCustomPolygonRoom(
   fallbackBounds: Bounds,
   item?: ClampedItem
 ): [number, number] {
-  const sampled = clampAsSampled(x, z, effectiveWidth, effectiveDepth, wall, polygon, holes, fallbackBounds);
-  return item && polygon.length >= 3 ? keepClearOfFaces(sampled, x, z, effectiveWidth, effectiveDepth, wall, polygon, holes, item) : sampled;
+  const sampled = clampAsSampled(x, z, effectiveWidth, effectiveDepth, wall, polygon, holes);
+  // Where the box fits nowhere, the room's bounds, as the line does for an item that can't fit.
+  if (!sampled) return clampToBounds(x, z, fallbackBounds);
+  return item ? keepClearOfFaces(sampled, x, z, effectiveWidth, effectiveDepth, wall, polygon, holes, item) : sampled;
 }
 
 /**
@@ -328,7 +330,7 @@ function keepClearOfFaces(
   const boxFits = (atX: number, atZ: number) => isFootprintInsideRoomPolygon(atX, atZ, halfWidth, halfDepth, polygon, holes);
   const xs = polygon.map((point) => point.x), zs = polygon.map((point) => point.z);
   const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) + Math.hypot(halfWidth, halfDepth);
-  for (let reach = Math.max(0.25, Math.hypot(sampled[0] - x, sampled[1] - z)); ; reach *= 2) {
+  for (let reach = Math.max(0.02, Math.hypot(sampled[0] - x, sampled[1] - z)); ; reach *= 2) {
     const found = findNearestFurnitureFit(faces, polygon, holes, wall, x, z, item.width, item.depth, item.rotationY, reach, boxFits);
     if (found) return found;
     if (reach > span + Math.hypot(x - sampled[0], z - sampled[1])) return sampled;
@@ -342,19 +344,18 @@ function clampAsSampled(
   effectiveDepth: number,
   wall: number,
   polygon: RoomPlanPolygonPoint[],
-  holes: RoomPlanPolygonPoint[][],
-  fallbackBounds: Bounds
-): [number, number] {
-  if (polygon.length < 3) return clampToBounds(x, z, fallbackBounds);
+  holes: RoomPlanPolygonPoint[][]
+): [number, number] | null {
+  if (polygon.length < 3) return null;
   const halfWidth = effectiveWidth / 2 + wall, halfDepth = effectiveDepth / 2 + wall;
   const bounds = {
     minX: Math.min(...polygon.map((point) => point.x)) + halfWidth, maxX: Math.max(...polygon.map((point) => point.x)) - halfWidth,
     minZ: Math.min(...polygon.map((point) => point.z)) + halfDepth, maxZ: Math.max(...polygon.map((point) => point.z)) - halfDepth,
   };
-  if (bounds.minX > bounds.maxX || bounds.minZ > bounds.maxZ) return clampToBounds(x, z, fallbackBounds);
+  if (bounds.minX > bounds.maxX || bounds.minZ > bounds.maxZ) return null;
   const fits = (atX: number, atZ: number) => isFootprintInsideRoomPolygon(atX, atZ, halfWidth, halfDepth, polygon, holes);
   const clamped = clampToBounds(x, z, bounds);
   if (fits(clamped[0], clamped[1])) return clamped;
   const [xs, zs] = candidatePlaces(polygon, holes, halfWidth, halfDepth, bounds, clamped);
-  return nearestFittingCandidate(xs, zs, x, z, fits) ?? clampToBounds(x, z, fallbackBounds);
+  return nearestFittingCandidate(xs, zs, x, z, fits);
 }

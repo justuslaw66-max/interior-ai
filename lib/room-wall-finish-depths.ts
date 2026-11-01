@@ -9,6 +9,7 @@ import {
   RECTANGULAR_WALL_FACE_IDS,
 } from "@/lib/surface-settings";
 import { parseWallPanelId } from "@/lib/wall-panel-ids";
+import { noteOutlineEdges, readOutlineEdges } from "@/lib/room-outline-edges";
 
 /**
  * How far each wall's laminate panel stands into a room, so the room is measured to the panel's face (J, 29 Oct 2026).
@@ -192,6 +193,26 @@ function faceListKey(room: WallFinishRoom): string {
 }
 
 function readRoomDepths(room: WallFinishRoom | null | undefined): MeasuredDepths | null {
+  const measured = readMeasuredDepths(room);
+  if (room) noteRoomOutlineEdges(room, measured?.panels ?? NO_WALL_FINISH_DEPTHS);
+  return measured;
+}
+
+/**
+ * Notes the room's outline's edges for the furniture clamp (lib/room-outline-edges.ts): an imported room's walls and every
+ * drawn shape's panels, which its 3D view draws as boxes past the faces' corners (lib/furniture-room-fit.ts).
+ */
+function noteRoomOutlineEdges(room: WallFinishRoom, panels: RoomWallFinishDepths): void {
+  const outline = room.planPolygon ?? room.polygon;
+  if (!outline || roomShapeOf(room) !== "custom_polygon" || outline.length < 3) return;
+  const imported = typeof room.floorElevationMm === "number";
+  const wallIds = imported ? readPlanEdgeWallIds(room) : undefined;
+  const known = readOutlineEdges(outline);
+  if (known?.source === panels && known.imported === imported && known.wallIds === wallIds) return;
+  noteOutlineEdges(outline, { imported, wallIds, panels: outline.map((_, index) => panels[`wall-${index}`] ?? 0), source: panels });
+}
+
+function readMeasuredDepths(room: WallFinishRoom | null | undefined): MeasuredDepths | null {
   const surfaces = room?.surfaces ?? room?.surfaceFinishes;
   const imported = room && typeof room.floorElevationMm === "number";
   const owner: object | undefined = surfaces?.walls ? surfaces : imported ? readPlanEdgeWallThicknesses(room) : undefined;
