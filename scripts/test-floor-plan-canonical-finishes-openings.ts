@@ -41,6 +41,10 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { getFurnitureWallInset } from "@/lib/design-page-geometry";
 import { isPlacementContainedInRoom } from "@/lib/useDesignPagePlacementRoomQueries";
 import { curvedApartment } from "./fixtures/scan-to-editable-plan/curved-apartment";
+import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
+import { buildCabinetryAvailableSpaces, getCabinetPlacement } from "@/features/cabinetry/roomCabinetHosts";
+import { fitCabinetToSpace } from "@/features/cabinetry/fitToSpace";
+import { createCabinetPreset } from "@/features/cabinetry/presets";
 import { CLAMP_LIMIT_CASES, OPEN_CORNER_CASES, runImportedPanelCornerProperties } from "./fixtures/imported-panel-corners";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
 
@@ -712,6 +716,28 @@ for (const turnDeg of [0, 10, 30]) {
   const depthsOne = getRoomWallFinishDepths(one);
   getRoomWallFinishDepths(two);
   assert.equal(getRoomWallFinishDepths(one), depthsOne, "two rooms on one surfaces object");
+}
+
+// Built-ins in an imported plan keep furniture's rule (#245), which now stands at each wall's panel: Fit's run, placed, has its
+// back 2 cm in front of its wall's 44 mm panel (200 and 100 mm walls in a room averaging 175 mm), where it stood up to 36.5 mm
+// inside it, and a drag 1 mm nearer is refused.
+{
+  const apartment = importedPlan(authoredApartment());
+  const planRooms = new Map(apartment.planRooms.map((room) => [room.id, room]));
+  for (const room of apartment.rooms) {
+    for (const host of buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: apartment.rooms.length, planOpenings: [], planRooms })) {
+      const { definition } = fitCabinetToSpace(createCabinetPreset("base", `run-${host.id}`), host, { mode: "fit_width" });
+      const { position: [x, , z], rotationY } = getCabinetPlacement(definition, room, false, planRooms);
+      const wall = apartment.floor.walls.find(({ id }) => id === room.planEdgeWallIds![Number(host.wallId.replace("wall-", ""))])!;
+      const [start, end] = [wall.centerlineSegments[0].start, wall.centerlineSegments[0].end].map(({ xMm, zMm }) => ({ x: xMm / 1000, z: zMm / 1000 }));
+      const back = { x: x + room.planPosition!.x - (Math.sin(rotationY) * definition.depth) / 2000, z: z + room.planPosition!.z - (Math.cos(rotationY) * definition.depth) / 2000 };
+      const fromCentreMm = (Math.abs((end.x - start.x) * (back.z - start.z) - (end.z - start.z) * (back.x - start.x)) / Math.hypot(end.x - start.x, end.z - start.z)) * 1000;
+      assert.ok(Math.abs(fromCentreMm - (wall.thicknessMm / 2 + 44 + 20)) < 0.5, `${room.id} ${host.wallId}: its back ${fromCentreMm.toFixed(1)} mm off the wall's line`);
+      const nearer = [x - Math.sin(rotationY) * 0.001, 0, z - Math.cos(rotationY) * 0.001] as [number, number, number];
+      assert.equal(isPlacementContainedInRoom({ room, position: nearer, rotationY, dimensions: { w: definition.totalWidth, d: definition.depth, h: 870 },
+        canonicalModel: apartment.model, builtIn: true, planRooms }), false, `${room.id} ${host.wallId}: 1 mm nearer the panel is refused`);
+    }
+  }
 }
 
 // A slice wholly inside a corner's cut is dropped, not drawn as a sliver: a door 120 mm along w2 from its corner with w1,
