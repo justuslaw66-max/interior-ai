@@ -7,8 +7,10 @@ import {
   parseCondoDevelopmentMap,
   parseCondoMapIndex,
   type CondoDevelopmentMap,
+  type LonLat,
 } from "@/lib/condo-map/condo-map-data";
-import { outerRings, pointInRing, ringsMeet } from "@/lib/condo-map/condo-map-geometry";
+import { outerRings, pointInRing, ringsMeet, segmentsCross } from "@/lib/condo-map/condo-map-geometry";
+import { OUTLINE_AREA_SLACK, smoothOutlines, smoothRing } from "@/lib/condo-map/condo-map-outline";
 import { condoMapFilePath, isGitLfsPointer } from "@/lib/condo-map/condo-map-paths";
 import { mapboxPublicToken } from "@/lib/condo-map/mapbox-token";
 import {
@@ -207,6 +209,54 @@ assert.ok(ringsMeet(square, [[-1, 0.5], [3, 0.5], [3, 1.5], [-1, 1.5], [-1, 0.5]
 assert.ok(!ringsMeet(square, [[5, 5], [6, 5], [6, 6], [5, 6], [5, 5]]), "apart");
 assert.equal(outerRings({ type: "MultiPolygon", coordinates: [[square], [square]] }).length, 2);
 assert.deepEqual(outerRings({ type: "Point", coordinates: [0, 0] }), []);
+
+// ---------- the painted outlines, smoothed (J, 31 Oct 2026: the painted floor looked rough beside a plan)
+// made-up outlines on the equator, in metres: a degree is 111,320 m east and 110,574 m north
+const ring = (points: Array<[number, number]>): LonLat[] => [...points, points[0]].map(([x, y]) => [x / 111_320, y / 110_574]);
+const corners = (smoothed: LonLat[]) => smoothed.length - 1;
+assert.equal(corners(smoothRing(ring([[0, 0], [4, 0], [4, 2], [4.05, 2], [4.05, 4], [0, 4]]), 0)), 4, "a 5 cm step goes");
+assert.equal(corners(smoothRing(ring([[0, 0], [4, 0], [4, 1.5], [3.5, 1.5], [3.5, 2], [4, 2], [4, 4], [0, 4]]), 0)), 8, "a 50 cm recess stays");
+assert.equal(corners(smoothRing(ring([[0, 0], [2, 0], [2, -1], [2.1, -1], [2.1, 0], [4, 0], [4, 4], [0, 4]]), 0)), 4, "a 10 cm spike a metre long goes");
+assert.equal(corners(smoothRing(ring([[0, 0], [2, 0], [2, 1], [2.1, 1], [2.1, 0], [4, 0], [4, 4], [0, 4]]), 0)), 4, "a 10 cm slit a metre deep closes");
+assert.equal(corners(smoothRing(ring([[0, 0], [2, 0], [2, -1], [2.4, -1], [2.4, 0], [4, 0], [4, 4], [0, 4]]), 0)), 8, "a 40 cm ledge stays");
+const triangle = ring([[0, 0], [4, 0], [0, 3]]);
+assert.deepEqual(smoothRing(triangle, 0), triangle, "a ring of three corners stays");
+// every real outline: its own corners in order, closed, not crossing itself, its area within 3 %, the short edges gone
+const metresAt = (lat: number) => (point: LonLat): [number, number] => [point[0] * 111_320 * Math.cos((lat * Math.PI) / 180), point[1] * 110_574];
+const shoelace = (points: Array<[number, number]>) => Math.abs(points.reduce((sum, [x, y], i) => { const [nx, ny] = points[(i + 1) % points.length]; return sum + x * ny - nx * y; }, 0)) / 2;
+const crossesItself = (points: Array<[number, number]>) =>
+  points.some((_, i) => points.some((__, j) => j >= i + 2 && !(i === 0 && j === points.length - 1) &&
+    segmentsCross(points[i], points[(i + 1) % points.length], points[j], points[(j + 1) % points.length])));
+let shortBefore = 0;
+let shortAfter = 0;
+for (const dev of Object.values(maps)) {
+  const toMetres = metresAt(dev.centre[1]);
+  for (const feature of [...dev.floors.features, ...dev.unitParts.features]) {
+    const traced = feature.geometry.coordinates[0];
+    const smoothed = smoothRing(traced, dev.centre[1]);
+    const where = `${dev.slug} ${feature.properties.unit} storey ${feature.properties.f}`;
+    assert.deepEqual(smoothed[0], smoothed[smoothed.length - 1], `${where}: closed`);
+    let from = 0;
+    for (const corner of smoothed.slice(0, -1)) {
+      const at = traced.findIndex((point, index) => index >= from && point[0] === corner[0] && point[1] === corner[1]);
+      assert.ok(at >= 0, `${where}: only its own corners, in order`);
+      from = at + 1;
+    }
+    const before = traced.slice(0, -1).map(toMetres);
+    const after = smoothed.slice(0, -1).map(toMetres);
+    // nine traced outlines cross themselves; smoothing never makes one that does, and one it can't mend stays as traced
+    if (crossesItself(after)) assert.deepEqual(smoothed, traced, `${where}: crosses itself only as traced`);
+    assert.ok(Math.abs(shoelace(after) - shoelace(before)) <= OUTLINE_AREA_SLACK * shoelace(before) + 1e-9, `${where}: its area`);
+    const short = (points: Array<[number, number]>) => points.filter(([x, y], i) => { const [nx, ny] = points[(i + 1) % points.length]; return Math.hypot(nx - x, ny - y) < 0.15; }).length;
+    shortBefore += short(before);
+    shortAfter += short(after);
+  }
+  // the map draws the smoothed floors and boxes; the masters' outlines stay as they are in its data
+  const sources = new Map(condoSources(dev));
+  assert.deepEqual(sources.get(`condo-${dev.slug}-floors-source`)?.data, smoothOutlines(dev.floors, dev.centre[1]), `${dev.slug}: the floors drawn smooth`);
+  assert.deepEqual(sources.get(`condo-${dev.slug}-units-source`)?.data, smoothOutlines(dev.unitParts, dev.centre[1]), `${dev.slug}: the boxes too`);
+}
+assert.ok(shortBefore > 3000 && shortAfter < shortBefore * 0.05, `edges under 15 cm: ${shortBefore} traced, ${shortAfter} drawn`);
 
 // ---------- the layers: one id each, on sources that exist
 const ids = new Set<string>();
@@ -495,6 +545,57 @@ const upper = chooseUnit({ slug: one.slug, floor: 2, unit: null }, maps, { slug:
 assert.deepEqual(upper, { slug: one.slug, floor: 2, unit: "#01-05" }, "a duplex chosen on its upper storey keeps it");
 assert.deepEqual(chooseUnit({ slug: one.slug, floor: 4, unit: null }, maps, { slug: one.slug, unit: "#01-05" }).floor, 1, "elsewhere, its own floor");
 assert.equal(shown(one, upper, "unit").length, 1, "24 One: the duplex's upper part is marked");
+// a duplex chosen on its lower storey stands up (J, 31 Oct 2026: "Both levels, standing up"): its upper level's rooms
+// painted orange over the cut floor, and its box from its floor to 1.2 m over its upper level; others as before
+const boxHeight = (view: CondoMapView, properties: Readonly<Record<string, unknown>>) => {
+  const update = condoViewUpdates(one, view).paint.find(([layerId, property]) => layerId === `condo-${one.slug}-unit` && property === "fill-extrusion-height");
+  assert.ok(update, "the view sets the box's height");
+  return evaluate(update[2], properties);
+};
+const roomColour = (view: CondoMapView, properties: Readonly<Record<string, unknown>>) =>
+  evaluate(condoViewUpdates(one, view).paint.find(([layerId]) => layerId === `condo-${one.slug}-floor`)?.[2] ?? null, properties);
+const lower = chooseUnit({ slug: one.slug, floor: null, unit: null }, maps, { slug: one.slug, unit: "#01-05" });
+assert.deepEqual(lower, { slug: one.slug, floor: 1, unit: "#01-05" }, "a duplex chosen from the whole building opens on its lower storey");
+assert.equal(unitPlanOn(one, lower), null, "#01-05's plan isn't placed: its floor is painted");
+// what a view draws of 24 One's painted rooms and unit boxes, with their own property types
+const drawnBy = (view: CondoMapView, part: string) => {
+  const update = condoViewUpdates(one, view).filters.find(([layerId]) => layerId === `condo-${one.slug}-${part}`);
+  assert.ok(update, `the view sets ${part}`);
+  return update[1];
+};
+const roomsDrawn = (view: CondoMapView) => one.floors.features.map((feature) => feature.properties).filter((properties) => evaluate(drawnBy(view, "floor"), properties) === true);
+const boxesDrawn = (view: CondoMapView) => one.unitParts.features.map((feature) => feature.properties).filter((properties) => evaluate(drawnBy(view, "unit"), properties) === true);
+const lowerRooms = roomsDrawn(lower);
+const upperRooms = lowerRooms.filter((properties) => properties.f === 2);
+assert.ok(upperRooms.length > 0 && upperRooms.every((properties) => properties.unit === "#01-05"), "its upper level's rooms, and no other unit's on storey 2");
+assert.equal(lowerRooms.length - upperRooms.length, one.floors.features.filter((feature) => feature.properties.f === 1).length, "the whole cut floor, as before");
+assert.ok(upperRooms.every((properties) => roomColour(lower, properties) === CONDO_MAP_COLOURS.selectedUnit), "its upper rooms in the accent");
+const lowerBox = boxesDrawn(lower);
+assert.deepEqual(lowerBox.map((properties) => properties.f).sort(), [1, 2], "its box on both of its storeys");
+const partOn = (f: number) => {
+  const found = lowerBox.find((properties) => properties.f === f);
+  assert.ok(found, `its part on storey ${f}`);
+  return found;
+};
+const [part1, part2] = [partOn(1), partOn(2)];
+assert.equal(boxHeight(lower, part1), part1.top, "the lower part's box runs up to its upper level");
+assert.equal(boxHeight(lower, part2), part2.base + 1.2, "the upper part's box: 1.2 m over its upper level");
+assert.ok(shown(one, lower, "ghost").every((properties) => "f" in properties && Number(properties.f) > 1), "the storeys above still a ghost");
+// on its upper storey: as before, that storey's rooms and the upper part's 1.2 m box
+assert.ok(roomsDrawn(upper).every((properties) => properties.f === 2), "chosen on storey 2: storey 2's rooms only");
+assert.equal(boxHeight(upper, part2), part2.base + 1.2);
+// a single-level unit on the same floor, and no unit: one storey, a 1.2 m box
+const flat = chooseUnit({ slug: one.slug, floor: 2, unit: null }, maps, { slug: one.slug, unit: "#02-01" });
+assert.ok(roomsDrawn(flat).every((properties) => properties.f === 2) && boxesDrawn(flat).every((properties) => properties.f === 2));
+const [flatPart] = boxesDrawn(flat);
+assert.ok(flatPart, "#02-01's box");
+assert.equal(boxHeight(flat, flatPart), flatPart.base + 1.2, "a single-level unit's box: 1.2 m");
+assert.equal(boxHeight({ ...lower, unit: null }, part1), part1.base + 1.2, "no unit chosen: the box's height as it was");
+// #01-06's lower-level plan is placed: the plan shows alone (its upper level would stand over the picture and hide it)
+const planned06 = { slug: one.slug, floor: 1, unit: "#01-06" };
+assert.ok(unitPlanOn(one, planned06), "#01-06's plan lies on storey 1");
+assert.equal(boxesDrawn(planned06).length, 0, "no box over its plan");
+assert.ok(roomsDrawn(planned06).every((properties) => properties.f === 1), "and no upper level over it");
 const duplex = one.units.find((unit) => unit.unit === "#01-05") ?? card;
 assert.equal(unitFloorName(duplex), "1st–2nd storey");
 assert.equal(unitFloorName({ ...duplex, floor: 4 }), "Levels 4–5");

@@ -179,17 +179,12 @@ for (const file of [
     assert.equal(ratio, L_SHAPE_NOTCH_RATIO, `${file} must cut the L-shape notch at L_SHAPE_NOTCH_RATIO.`);
   }
 }
-// The 2D plan and the cabinetry studio take the L outline from lib/room-finished-outline.ts (29 Oct 2026, with the room's
-// laminate panels), which cuts the notch at the floor-area owner's ratio.
+// The 2D plan takes the L outline from lib/room-finished-outline.ts, which cuts the notch at the floor-area owner's ratio (as do
+// Fit to Space's hosts, tested in test-cabinetry-polygon-hosts.ts and test-design-page-cabinetry-controller.ts).
 assert.match(
   readFileSync(join(process.cwd(), "components/editor/renderers/RoomRenderer2D.tsx"), "utf8"),
   /const getRoomOutlinePoints = \(room: HouseRoom2D\)[^\n]*\n\s*const points = getRoomPlanOutlinePoints\(room\)/,
   "The 2D plan must still draw the L-shape notch."
-);
-assert.match(
-  readFileSync(join(process.cwd(), "features/cabinetry/useDesignPageCabinetry.ts"), "utf8"),
-  /getRoomPlanOutlinePoints\(getRoomOutlineInsideFinishes\(\{\s*shape: planShape/,
-  "The cabinetry studio must still draw the L-shape notch."
 );
 assert.match(
   readFileSync(join(process.cwd(), "lib/room-finished-outline.ts"), "utf8"),

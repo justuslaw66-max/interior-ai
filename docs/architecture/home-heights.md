@@ -29,9 +29,24 @@ reference when the floor plan or brochure states no height; always check for, an
   `executive_condo`, `apartment`, `landed`, `cluster_house`, `townhouse`, …), or the stated height.
 - **Templates** (`lib/plan-template-document.ts`): a template tagged `condo` ("Small condo") opens at 2.8 m, one tagged
   `HDB-style` at 2.6 m; any other at the room's current height, as before.
+- **Uploaded plans** (the PDF, picture and CAD imports; `lib/floor-plan-imports/review-home-type.ts`): they start at
+  2.6 m walls in a 2.8 m storey, marked assumed, and the review asks for the home type (J, 31 Oct 2026: on the review
+  step, visible, above the plan's details). Its choices are HDB flat, HDB top floor, Condo, Condo penthouse, Landed and
+  Not sure (2.6 m, as before). A choice sets the wall and storey heights by the rules while they are still assumed, and
+  says so in their provenance; a height the plan states, or the person typed or confirmed, is kept, and the review says
+  which. A storey that changes stands 200 mm over the walls, kept or not; a storey that stays and ends up less than
+  200 mm over the walls is pointed out. Assumed floor-standing structures as tall as the old walls (a core, a ledge, a
+  column) follow the walls. A storey typed in the review keeps its
+  assumed evidence and is marked as typed in its provenance, so it is kept after a draft save or a resume too. A home
+  type whose walls would be lower than a door or window on the plan changes nothing, and the review says so. The review
+  starts on the home type the floor's assumed walls are (2.8 m reads Condo; 2.6 m reads Not sure).
+- **The server** (`lib/floor-plan-imports/review.ts`) keeps a home type's wall height assumed, with its own note, so
+  choosing a home type doesn't count as confirming it; and a level's height (elevation, storey, slab) the client says
+  the plan states is stored as the person's unless the plan stated it already at that value (then with the server's
+  own record of it). The choice itself isn't
+  stored: the heights it gave are.
 - **Not yet:**
-  - **Uploaded plans** (the PDF, picture and CAD imports) still start at 2.6 m walls in a 2.8 m storey, marked assumed
-    for the review step to confirm or replace: the import doesn't know what kind of home it is.
+  - **A home type for an upload** isn't guessed from the plan, and the review doesn't remember it for the next upload.
   - **A top-floor unit** needs the unit's floor, which a catalog layout doesn't carry.
   - **Raising a floor's walls in the editor** doesn't lift its storey.
   - **Double-volume rooms** need a height per room.

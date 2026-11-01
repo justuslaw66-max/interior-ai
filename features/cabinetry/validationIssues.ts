@@ -1,4 +1,4 @@
-import { getCabinetAvailableSegments } from "./fitSegments";
+import { getCabinetAvailableSegments, getCabinetBackOffsetMm } from "./fitSegments";
 import {
   getCabinetOverallDepth,
   getCabinetOverallHeight,
@@ -96,6 +96,7 @@ function inferTitle(code: string, draft: CabinetValidationIssueDraft): string {
     "fit.width.exceeded": "The design no longer fits its host",
     "fit.height.exceeded": "The design is taller than its fitted space",
     "fit.opening_conflict": "A recorded opening conflicts with the fitted segment",
+    "fit.corner_depth": "The design is too deep for its corner",
     "fit.depth.exceeded": "The design projects beyond the recorded depth",
     "fit.outlet.review": "Recorded outlets need access review",
     "fit.baseboard.clearance": "Baseboard clearance is included in placement",
@@ -126,6 +127,7 @@ function inferResolution(code: string, draft: CabinetValidationIssueDraft): stri
     "fit.width.exceeded": "Refit the assembly or unlock module widths so the system can redistribute them.",
     "fit.height.exceeded": "Refit the height or reduce the assembly height below the recorded ceiling clearance.",
     "fit.opening_conflict": "Choose another wall segment or refit after reviewing the door or window location.",
+    "fit.corner_depth": "Fit to Space again, or reduce the depth: a deeper run stands further back from a wall at an angle to it.",
     "fit.depth.exceeded": "Reduce the cabinet depth or verify that its projection leaves safe circulation.",
     "fit.outlet.review": "Confirm an accessible service opening, relocation, or approved cutout before fabrication.",
     "fit.baseboard.clearance": "Confirm the recorded offset matches the installed baseboard before placement.",
@@ -255,22 +257,42 @@ function inferFixes(
   return undefined;
 }
 
+/** True when the run where Fit to Space put it (its width about its segment's centre), at its depth, would cross a wall or
+ * panel in front of its face (lib/room-built-in-region.ts): it may use the 10 mm allowance, not cross. Openings aside. */
+function isRunTooDeepForCorner(
+  definition: CabinetDefinition, fit: NonNullable<CabinetDefinition["fitState"]>,
+  segmentsAtAnyDepth: ReturnType<typeof getCabinetAvailableSegments>, mountingHeightMm: number
+): boolean {
+  const halfWidthMm = getCabinetOverallWidth(definition) / 2, centreMm = fit.segment.centerOffsetMm, segment = fit.host.wallSegment;
+  // Within a millimetre: Fit rounds a run's width to the millimetre.
+  const holdsRun = (segments: typeof segmentsAtAnyDepth) => segments.some((candidate) =>
+    centreMm - halfWidthMm >= candidate.startMm - 1 && centreMm + halfWidthMm <= candidate.endMm + 1);
+  if (!segment?.obstacles?.length || !holdsRun(segmentsAtAnyDepth)) return false;
+  const touching = { ...fit.host, installationClearanceLeftMm: 0, installationClearanceRightMm: 0, wallSegment: { ...segment, startBaseboardClearanceMm: 0, endBaseboardClearanceMm: 0 } };
+  return !holdsRun(getCabinetAvailableSegments(touching, getCabinetOverallHeight(definition), mountingHeightMm, getCabinetOverallDepth(definition)));
+}
+
+/** True when one of the segments holds the fitted segment (to half a millimetre). */
+function holdsFitSegment(fit: NonNullable<CabinetDefinition["fitState"]>, segments: ReturnType<typeof getCabinetAvailableSegments>): boolean {
+  return segments.some((segment) => fit.segment.startMm >= segment.startMm - 0.5 && fit.segment.endMm <= segment.endMm + 0.5);
+}
+
+/** The host as it was before a baseboard was recorded: its face's ends and back not kept from one. */
+function withoutBaseboard(host: NonNullable<CabinetDefinition["fitState"]>["host"]): NonNullable<CabinetDefinition["fitState"]>["host"] {
+  const segment = host.wallSegment;
+  return { ...host, baseboardOffsetMm: 0, ...(segment ? { wallSegment: { ...segment, startBaseboardClearanceMm: 0, endBaseboardClearanceMm: 0 } } : {}) };
+}
+
 function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIssueDraft[] {
   const fit = definition.fitState;
   if (!fit) return [];
   const drafts: CabinetValidationIssueDraft[] = [];
-  const fitsWidth =
-    fit.mode === "fit_width" ||
-    fit.mode === "fit_both" ||
-    fit.mode === "between_boundaries";
+  const fitsWidth = fit.mode === "fit_width" || fit.mode === "fit_both" || fit.mode === "between_boundaries";
   const fitsHeight = fit.mode === "fit_height" || fit.mode === "fit_both";
   if (fitsWidth && getCabinetOverallWidth(definition) > fit.segment.widthMm + 0.5) {
     drafts.push({
-      code: "fit.width.exceeded",
-      severity: "error",
-      field: "fit.width",
+      code: "fit.width.exceeded", severity: "error", field: "fit.width", target: { scope: "fit", field: "width", hostId: fit.host.id },
       message: `The assembly is ${Math.round(getCabinetOverallWidth(definition) - fit.segment.widthMm)} mm wider than its fitted wall segment.`,
-      target: { scope: "fit", field: "width", hostId: fit.host.id },
     });
   }
   const mountingHeightMm = Math.max(0, fit.host.mountingHeightMm ?? 0);
@@ -280,30 +302,31 @@ function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIss
     mountingHeightMm;
   if (fitsHeight && getCabinetOverallHeight(definition) > usableHeight + 0.5) {
     drafts.push({
-      code: "fit.height.exceeded",
-      severity: "error",
-      field: "fit.height",
+      code: "fit.height.exceeded", severity: "error", field: "fit.height", target: { scope: "fit", field: "height", hostId: fit.host.id },
       message: `The assembly is ${Math.round(getCabinetOverallHeight(definition) - usableHeight)} mm taller than the recorded ceiling clearance.`,
-      target: { scope: "fit", field: "height", hostId: fit.host.id },
     });
   }
-  const availableSegments = getCabinetAvailableSegments(
-    fit.host,
-    getCabinetOverallHeight(definition),
-    mountingHeightMm
-  );
-  const segmentStillAvailable = availableSegments.some(
-    (segment) =>
-      fit.segment.startMm >= segment.startMm - 0.5 &&
-      fit.segment.endMm <= segment.endMm + 0.5
-  );
-  if (!segmentStillAvailable) {
+  const availableSegments = getCabinetAvailableSegments(fit.host, getCabinetOverallHeight(definition), mountingHeightMm);
+  const segmentStillAvailable = holdsFitSegment(fit, availableSegments);
+  if (!segmentStillAvailable && holdsFitSegment(fit, getCabinetAvailableSegments(withoutBaseboard(fit.host), getCabinetOverallHeight(definition), mountingHeightMm))) {
+    drafts.push({
+      code: "fit.baseboard.refit", severity: "warning", field: "fit.segment", target: { scope: "fit", field: "segment", hostId: fit.host.id },
+      title: "The baseboard leaves this run less room than it fills",
+      message: "A baseboard recorded since Fit to Space keeps a run on the floor further from the walls than where this one stands, so it can't be moved there.",
+      resolution: "Apply Fit to Space again to fit the run to the wall with the baseboard.",
+    });
+  } else if (!segmentStillAvailable) {
     drafts.push({
       code: "fit.opening_conflict",
       severity: "error",
       field: "fit.segment",
       message: "A recorded door, window, or obstruction now overlaps the fitted wall segment.",
       target: { scope: "fit", field: "segment", hostId: fit.host.id },
+    });
+  } else if (isRunTooDeepForCorner(definition, fit, availableSegments, mountingHeightMm)) {
+    drafts.push({
+      code: "fit.corner_depth", severity: "error", field: "fit.segment", target: { scope: "fit", field: "segment", hostId: fit.host.id },
+      message: "The design is now too deep for where Fit to Space put it: its front corner would cross the wall it meets there.",
     });
   }
   if (
@@ -328,7 +351,7 @@ function persistedFitDrafts(definition: CabinetDefinition): CabinetValidationIss
       target: { scope: "fit", field: "outlets", hostId: fit.host.id },
     });
   }
-  if ((fit.host.baseboardOffsetMm ?? 0) > 0) {
+  if (getCabinetBackOffsetMm(fit.host, mountingHeightMm) > 0) { // A wall cabinet hangs above the baseboard.
     drafts.push({
       code: "fit.baseboard.clearance",
       severity: "info",

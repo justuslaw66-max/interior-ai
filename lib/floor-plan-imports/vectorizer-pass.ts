@@ -1,4 +1,5 @@
 import type { RegisteredPageEvidence, PageSemanticEvidence } from "./deterministic-evidence";
+import { orientRasterUpload } from "./raster-orientation";
 import type { FloorPlanAdapterContext } from "./source-adapter";
 import type { FloorPlanRenderedPage } from "./types";
 import { registeredVectorizerDrawing } from "./vectorizer-drawing";
@@ -22,6 +23,8 @@ export type VectorizerPageDiagnostics = {
 type VectorizerPassInput = {
   pages: RegisteredPageEvidence[];
   renderedPages: FloorPlanRenderedPage[];
+  /** The upload itself: the faithful trace reads it where the app turned a raster page square (unturnedUpload). */
+  source?: { bytes: Uint8Array };
   context: FloorPlanAdapterContext;
   provider: FloorPlanVectorizerProvider | null;
   /** How many of the best-ranked pages to analyse. */
@@ -66,7 +69,8 @@ export async function applyVectorizerEvidence(input: VectorizerPassInput) {
     const derivative = rendered ? await context.store.readDerivative(rendered.assetKey) : null;
     if (!derivative) continue;
     const started = Date.now();
-    const pageImage = { pageNumber: page.pageNumber, widthPx: page.widthPx, heightPx: page.heightPx, mimeType: derivative.mimeType, bytes: derivative.bytes };
+    const pageImage = { pageNumber: page.pageNumber, widthPx: page.widthPx, heightPx: page.heightPx, mimeType: derivative.mimeType,
+      bytes: derivative.bytes, unturned: await unturnedUpload(rendered, input.source, provider) };
     try {
       const evidence = await provider.analyzePage(pageImage, { timeoutMs, signal: context.signal });
       page.semantics = input.mergeSemantics(page.semantics, registerVectorizerEvidence(page, evidence, derivative.bytes), page);
@@ -88,6 +92,27 @@ export async function applyVectorizerEvidence(input: VectorizerPassInput) {
     }
   }
   return diagnostics;
+}
+
+/**
+ * The upload as it came, for the faithful trace, where the app turned the page square on upload (raster_deskew_v1):
+ * turning resamples the page, and the trace drew its blurred small lettering and thin lines as grey blobs (s037, 31 Oct
+ * worker window). Only with the faithful trace on, and only a page turned at its own size, not also reduced. It fails
+ * soft: without it the trace reads the page.
+ */
+async function unturnedUpload(rendered: FloorPlanRenderedPage | undefined, source: VectorizerPassInput["source"],
+  provider: FloorPlanVectorizerProvider) {
+  const turn = rendered?.normalization;
+  if (!provider.drawsFaithfully || !source || !turn?.applied) return undefined;
+  const [a, b, c, d] = turn.sourceToRendered;
+  if (Math.abs(Math.hypot(a, b) - 1) > 1e-3 || Math.abs(Math.hypot(c, d) - 1) > 1e-3) return undefined;
+  try {
+    const oriented = await orientRasterUpload(source.bytes);
+    if (oriented.info.width !== turn.sourceWidthPx || oriented.info.height !== turn.sourceHeightPx) return undefined;
+    return { bytes: new Uint8Array(oriented.data), toPage: turn.sourceToRendered };
+  } catch {
+    return undefined;
+  }
 }
 
 /**

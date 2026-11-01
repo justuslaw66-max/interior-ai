@@ -6,7 +6,7 @@ import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapsh
 import { getExportCapabilities, type UserPlan } from "@/lib/export-capabilities";
 import { prisma } from "@/lib/prisma";
 import { storedToSnapshot } from "@/lib/room-persistence";
-import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
+import { projectSharedDesignForPublicPage } from "@/lib/public-share-projection";
 import { resolveRoomShoppingItems, summarizeShoppingRooms, summarizeWholeHomeShopping } from "@/lib/room-shopping";
 import { getRoomSnapshotFloorAreaSqm } from "@/lib/room-floor-area";
 import { buildRoomSurfaceMaterialBomResult, formatSurfaceMaterialBomOrder, formatSurfaceMaterialBomWarning } from "@/lib/surface-material-bom-result";
@@ -256,7 +256,7 @@ export async function GET(
       return NextResponse.json({ error: "Share link not found" }, { status: 404 });
     }
 
-    const publicDesign = projectSharedDesignTransport(design);
+    const publicDesign = projectSharedDesignForPublicPage(design);
     const designSnapshot: DesignSnapshot = storedToSnapshot(publicDesign.snapshot);
 
     const rooms = designSnapshot.rooms ?? [];
