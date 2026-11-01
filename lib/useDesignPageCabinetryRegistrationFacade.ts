@@ -6,6 +6,7 @@ import {
   useDesignPageCabinetry,
   type UseDesignPageCabinetryInput,
 } from "@/features/cabinetry/useDesignPageCabinetry";
+import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
 import type { SurfaceTargetMode } from "@/lib/useDesignPageSurfaceActions";
 
@@ -13,9 +14,9 @@ type CabinetryController = ReturnType<typeof useDesignPageCabinetry>;
 
 type DesignPageCabinetryRegistrationState = Omit<
   UseDesignPageCabinetryInput["state"],
-  "activePlanRoom" | "preferredWallFaceId"
+  "activePlanRoom" | "planRoomById" | "preferredWallFaceId"
 > & {
-  planRoomById: ReadonlyMap<string, { w: number; d: number }>;
+  planRoomById: ReadonlyMap<string, HousePlanRoom2D>;
   activeSurfaceTarget: SurfaceTargetMode;
   selectedWallFaceId: string | null;
 };
@@ -71,6 +72,7 @@ export function useDesignPageCabinetryRegistrationFacade({
     state: {
       ...cabinetryState,
       activePlanRoom,
+      planRoomById,
       preferredWallFaceId,
     },
     configuration,
