@@ -14,15 +14,17 @@ import {
   type BuiltInRegion,
 } from "@/lib/room-built-in-region";
 import { findNearestBuiltInFit, type BuiltInFitObstacles } from "@/lib/built-in-nearest-fit";
+import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
+import { buildImportedBuiltInRegion } from "@/lib/room-built-in-imported-region";
 import { getRoomWallFaceIds, getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { RoomPlanPolygonPoint, RoomSnapshot } from "@/lib/room-types";
 
 /**
- * Where a built-in cabinet may stand in a drawn room: in its finished region (lib/room-built-in-region.ts), inside its outline
- * and outside its walls and panels as the 3D view draws them, its back allowed against a face (J, 29 Oct 2026: "Face,
- * back flush"). Furniture's rule still holds wherever the region would refuse more. A room from an imported plan keeps
- * furniture's rule for now (its walls each have their own thickness, which its room doesn't carry), as does a room with no
- * exposed face (its walls fill it) or no wall thickness.
+ * Where a built-in cabinet may stand: in its room's finished region (lib/room-built-in-region.ts), inside its outline and
+ * outside its walls and panels as the 3D view draws them, its back allowed against a face (J, 29 Oct 2026: "Face, back flush").
+ * A room from an imported plan has its region from the plan's own 3D walls and panels (`canonical`, the plan's canonical model:
+ * lib/room-built-in-imported-region.ts; J, 1 Nov 2026). Only a room with no exposed face (its walls fill it), no wall thickness,
+ * or an imported room its plan's model doesn't hold or whose edges aren't named keeps furniture's rule.
  */
 
 type Point = RoomPlanPolygonPoint;
@@ -33,7 +35,7 @@ export type BuiltInRoomFaces = BuiltInRegion & {
   insets: number[];
   /** The exposed faces end to end, in outline order: what Snap to wall measures from. */
   polygon: Point[];
-  /** True when the room keeps furniture's rule for built-ins (no exposed face, or no wall thickness). */
+  /** True when the room keeps furniture's rule for built-ins (no exposed face, no wall thickness, or no imported region). */
   furnitureRule: boolean;
 };
 
@@ -81,7 +83,14 @@ function isSameNeighbours(a: BuiltInNeighbourWalls, b: BuiltInNeighbourWalls): b
     walls.outline.every((point, at) => point.x === b[index].outline[at].x && point.z === b[index].outline[at].z)));
 }
 
-function buildRoomBuiltInFaces(room: RoomSnapshot, size: { w: number; d: number }, neighbours: BuiltInNeighbourWalls): BuiltInRoomFaces {
+function buildRoomBuiltInFaces(
+  room: RoomSnapshot, size: { w: number; d: number }, neighbours: BuiltInNeighbourWalls, canonical?: CanonicalFloorPlanRenderModel
+): BuiltInRoomFaces {
+  if (isImportedPlanRoom(room)) {
+    const imported = buildImportedBuiltInRegion(room, canonical);
+    if (imported) return withFacesPolygon(imported.region, imported.faceIds, imported.panels.map((panel, index) =>
+      imported.region.exposed[index]?.inset ?? imported.thicknesses[index] / 2 + panel), false);
+  }
   const shape = room.planShape ?? "rectangle";
   const outline = getRoomPlanOutlinePoints({ shape, polygon: room.planPolygon, w: size.w, d: size.d });
   const faceIds = getRoomWallFaceIds({ shape, polygon: room.planPolygon });
@@ -90,6 +99,12 @@ function buildRoomBuiltInFaces(room: RoomSnapshot, size: { w: number; d: number 
   const panels = faceIds.map((faceId) => depths[faceId] ?? 0);
   const region = buildBuiltInRegion(outline, faceIds, panels, thickness, room.planHoles ?? [], neighbours);
   const insets = panels.map((panel, index) => region.exposed[index]?.inset ?? thickness / 2 + panel);
+  // An imported room its plan's model doesn't hold keeps furniture's rule.
+  return withFacesPolygon(region, faceIds, insets, !(thickness >= 0.001) || isImportedPlanRoom(room));
+}
+
+/** The region with its exposed faces end to end (what Snap to wall measures from); on furniture's rule with none exposed. */
+function withFacesPolygon(region: BuiltInRegion, faceIds: string[], insets: number[], furnitureRule: boolean): BuiltInRoomFaces {
   const polygon: Point[] = [];
   const exposed = region.exposed.filter((face) => face !== null);
   exposed.forEach((face, order) => {
@@ -97,11 +112,13 @@ function buildRoomBuiltInFaces(room: RoomSnapshot, size: { w: number; d: number 
     if (Math.hypot(previous.end.x - face.start.x, previous.end.z - face.start.z) >= 1e-6) polygon.push(previous.end);
     polygon.push(face.start);
   });
-  return { ...region, faceIds, insets, polygon, furnitureRule: !(thickness >= 0.001) || !exposed.length };
+  return { ...region, faceIds, insets, polygon, furnitureRule: furnitureRule || !exposed.length };
 }
 
-type FacesInputs = Pick<RoomSnapshot, "planShape" | "planPolygon" | "planHoles" | "surfaces" | "surfaceFinishes"> & {
+type FacesInputs = Pick<RoomSnapshot, "planShape" | "planPolygon" | "planHoles" | "surfaces" | "surfaceFinishes" | "planEdgeWallIds"> & {
   w: number; d: number; wall?: number; neighbours: BuiltInNeighbourWalls;
+  /** An imported room's: where it stands on its floor, and its plan's model. */
+  at?: string; canonical?: CanonicalFloorPlanRenderModel;
 };
 
 // One region per room outline, walls, surfaces and walls around it: containment runs on every frame of a drag, and a move or
@@ -111,33 +128,42 @@ const facesByGeometry = new WeakMap<RoomSnapshot["geometry"], { inputs: FacesInp
 function isSameInputs(a: FacesInputs, b: FacesInputs): boolean {
   return a.planShape === b.planShape && a.planPolygon === b.planPolygon && a.planHoles === b.planHoles &&
     a.surfaces === b.surfaces && a.surfaceFinishes === b.surfaceFinishes && a.w === b.w && a.d === b.d && a.wall === b.wall &&
-    isSameNeighbours(a.neighbours, b.neighbours);
+    a.planEdgeWallIds === b.planEdgeWallIds && a.at === b.at && a.canonical === b.canonical && isSameNeighbours(a.neighbours, b.neighbours);
 }
 
 /**
- * The room's finished region and exposed faces; `size` is the drawn size of its rectangle or L-shape when it isn't its own, and
- * `planRooms` the plan's rooms (whose walls the 3D view draws around it).
+ * The room's finished region and exposed faces; `size` is the drawn size of its rectangle or L-shape when it isn't its own,
+ * `planRooms` the plan's rooms (whose walls the 3D view draws around it), and `canonical` an imported plan's canonical model
+ * (whose walls and panels an imported room's region is).
  */
 export function getRoomBuiltInFaces(
   room: RoomSnapshot,
   size: { w: number; d: number } = { w: room.geometry.width, d: room.geometry.depth },
-  planRooms?: BuiltInPlanRooms
+  planRooms?: BuiltInPlanRooms,
+  canonical?: CanonicalFloorPlanRenderModel
 ): BuiltInRoomFaces {
+  const imported = isImportedPlanRoom(room);
   const inputs: FacesInputs = {
     planShape: room.planShape, planPolygon: room.planPolygon, planHoles: room.planHoles, surfaces: room.surfaces,
     surfaceFinishes: room.surfaceFinishes, w: size.w, d: size.d, wall: room.geometry.wallThickness,
     neighbours: getBuiltInNeighbourWalls(room.id, planRooms),
+    ...(imported ? { planEdgeWallIds: room.planEdgeWallIds, at: `${room.planPosition?.x},${room.planPosition?.z}`, canonical } : {}),
   };
   const known = facesByGeometry.get(room.geometry);
   if (known && isSameInputs(known.inputs, inputs)) return known.faces;
-  const faces = buildRoomBuiltInFaces(room, size, inputs.neighbours);
+  const faces = buildRoomBuiltInFaces(room, size, inputs.neighbours, canonical);
   facesByGeometry.set(room.geometry, { inputs, faces });
   return faces;
 }
 
-/** True when built-ins in `room` keep furniture's rule: an imported plan's room, or one with no exposed face. */
-export function usesFurnitureRuleForBuiltIns(room: RoomSnapshot, size?: { w: number; d: number }, planRooms?: BuiltInPlanRooms): boolean {
-  return isImportedPlanRoom(room) || getRoomBuiltInFaces(room, size, planRooms).furnitureRule;
+/**
+ * True when built-ins in `room` keep furniture's rule: one with no exposed face, or an imported plan's room without its plan's
+ * model (`canonical`) or named edges.
+ */
+export function usesFurnitureRuleForBuiltIns(
+  room: RoomSnapshot, size?: { w: number; d: number }, planRooms?: BuiltInPlanRooms, canonical?: CanonicalFloorPlanRenderModel
+): boolean {
+  return getRoomBuiltInFaces(room, size, planRooms, canonical).furnitureRule;
 }
 
 function footprintCorners(x: number, z: number, width: number, depth: number, rotationY: number, tolerance: number): Point[] {
@@ -194,10 +220,14 @@ function clampAsFurniture(room: RoomSnapshot, x: number, z: number, width: numbe
  */
 export function clampBuiltInToRoom(
   room: RoomSnapshot, x: number, z: number, width: number, depth: number, rotationY = 0,
-  options: { from?: readonly [number, number]; planRooms?: BuiltInPlanRooms; bottom?: number; turnedFrom?: number; nearestWithin?: number } = {}
+  options: {
+    from?: readonly [number, number]; planRooms?: BuiltInPlanRooms; canonical?: CanonicalFloorPlanRenderModel; bottom?: number; turnedFrom?: number;
+    nearestWithin?: number;
+  } = {}
 ): [number, number] {
-  if (usesFurnitureRuleForBuiltIns(room, undefined, options.planRooms)) return clampAsFurniture(room, x, z, width, depth, rotationY);
-  const faces = getRoomBuiltInFaces(room, undefined, options.planRooms), standOff = getBuiltInStandOff(room, options.bottom);
+  const faces = getRoomBuiltInFaces(room, undefined, options.planRooms, options.canonical);
+  if (faces.furnitureRule) return clampAsFurniture(room, x, z, width, depth, rotationY);
+  const standOff = getBuiltInStandOff(room, options.bottom);
   // A tenth of the contact tolerance: a move stops within 0.05 mm of a face, and containment (0.5 mm) keeps it.
   const fits = (atX: number, atZ: number) =>
     builtInFootprintFits(faces, atX, atZ, width, depth, rotationY, BUILT_IN_CONTACT_TOLERANCE / 10, standOff);
@@ -262,19 +292,20 @@ function getBuiltInFitObstacles(faces: BuiltInRoomFaces, width: number, depth: n
  */
 export function getBuiltInSnapTarget(
   room: RoomSnapshot, position: readonly [number, number, number], width: number, depth: number, rotationY: number,
-  planRooms?: BuiltInPlanRooms
+  planRooms?: BuiltInPlanRooms, canonical?: CanonicalFloorPlanRenderModel
 ): [number, number] {
   const [effectiveWidth, effectiveDepth] = getRotatedFootprint(width, depth, rotationY);
   const [x, , z] = position;
   const nearest = (candidates: Array<[number, number]>) => candidates.reduce((best, candidate) =>
     Math.hypot(candidate[0] - x, candidate[1] - z) < Math.hypot(best[0] - x, best[1] - z) ? candidate : best);
-  if (usesFurnitureRuleForBuiltIns(room, undefined, planRooms)) {
+  const built = getRoomBuiltInFaces(room, undefined, planRooms, canonical);
+  if (built.furnitureRule) {
     const inset = getFurnitureWallInset(room.geometry.wallThickness ?? 0.12);
     const wallX = Math.max(0, room.geometry.width / 2 - inset - effectiveWidth / 2);
     const wallZ = Math.max(0, room.geometry.depth / 2 - inset - effectiveDepth / 2);
     return nearest([[-wallX, z], [wallX, z], [x, -wallZ], [x, wallZ]]);
   }
-  const faces = getRoomBuiltInFaces(room, undefined, planRooms).polygon, xs = faces.map((point) => point.x), zs = faces.map((point) => point.z);
+  const faces = built.polygon, xs = faces.map((point) => point.x), zs = faces.map((point) => point.z);
   // Its back against a face, or a floor-standing one's against the baseboard (getBuiltInStandOff, by its bottom).
   const standOff = getBuiltInStandOff(room, position[1]);
   const sides = (low: number, high: number, size: number) => low + standOff + size / 2 <= high - standOff - size / 2

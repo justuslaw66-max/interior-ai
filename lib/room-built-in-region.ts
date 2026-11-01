@@ -50,7 +50,7 @@ export type BuiltInRegion = {
   walls: RegionWall[];
   /** The walls' cores and panels, and the cores of the walls around the room, convex outlines, room-local metres. */
   solids: Point[][];
-  /** The cores of the walls of the rooms around it (also in `solids`). */
+  /** The cores of the walls of the rooms around it (also in `solids`); an imported plan's room's, its floor's wall slices. */
   neighbourCores: Point[][];
   /** Each wall's exposed face, or null where none is (a wall inside another, or with no length). */
   exposed: Array<BuiltInFaceHost | null>;
@@ -100,15 +100,20 @@ function signedArea(points: readonly Point[]): number {
   }, 0) / 2;
 }
 
-/** Every edge of the outline as a wall, the room on the side its winding puts it (getWallSegments, getOutlineInteriorSide). */
-function buildWalls(outline: readonly Point[], faceIds: readonly string[], panels: readonly number[], thickness: number): RegionWall[] {
+/**
+ * Every edge of the outline as a wall, the room on the side its winding puts it (getWallSegments, getOutlineInteriorSide):
+ * `thickness` thick, or each its own (an imported plan's, by edge).
+ */
+function buildWalls(
+  outline: readonly Point[], faceIds: readonly string[], panels: readonly number[], thickness: number | readonly number[]
+): RegionWall[] {
   const sign = signedArea(outline) >= 0 ? 1 : -1;
   return outline.map((start, index) => {
     const next = outline[(index + 1) % outline.length];
     const length = Math.hypot(next.x - start.x, next.z - start.z);
     const [dx, dz] = length > 0 ? [(next.x - start.x) / length, (next.z - start.z) / length] : [1, 0];
-    const panel = panels[index] ?? 0;
-    return { start, dx, dz, nx: -dz * sign, nz: dx * sign, length, panel, face: thickness / 2 + panel, faceId: faceIds[index] ?? "" };
+    const panel = panels[index] ?? 0, wall = typeof thickness === "number" ? thickness : thickness[index] ?? 0;
+    return { start, dx, dz, nx: -dz * sign, nz: dx * sign, length, panel, face: wall / 2 + panel, faceId: faceIds[index] ?? "" };
   });
 }
 
@@ -294,11 +299,27 @@ export function buildBuiltInRegion(
 ): BuiltInRegion {
   const walls = buildWalls(outline, faceIds, panels, thickness);
   const neighbourCores = buildNeighbourCores(outline, neighbours);
-  const base = {
+  return withExposedFaces({
     outline, holes: holes.filter((hole) => hole.length >= 3), walls, solids: [...buildSolids(walls, thickness), ...neighbourCores], neighbourCores,
-  };
+  });
+}
+
+/**
+ * The region of an imported plan's room (lib/room-built-in-imported-region.ts): its outline (room-local metres) with each edge's
+ * own wall `thicknesses` and panel depth, and the solids its 3D view draws (`solids`: convex outlines), of which `cores` are
+ * the walls' slices, whose far sides may stand a face deeper than its own wall's (getFaceDepths).
+ */
+export function buildBuiltInRegionFromSolids(
+  outline: Point[], faceIds: readonly string[], panels: readonly number[], thicknesses: readonly number[], holes: Point[][],
+  solids: Point[][], cores: Point[][]
+): BuiltInRegion {
+  const walls = buildWalls(outline, faceIds, panels, thicknesses);
+  return withExposedFaces({ outline, holes: holes.filter((hole) => hole.length >= 3), walls, solids, neighbourCores: cores });
+}
+
+function withExposedFaces(base: Omit<BuiltInRegion, "exposed" | "faces">): BuiltInRegion {
   const faces: BuiltInRegion["faces"] = [];
-  return { ...base, exposed: walls.map((_, index) => buildFaceHost(base, index, faces)), faces };
+  return { ...base, exposed: base.walls.map((_, index) => buildFaceHost(base, index, faces)), faces };
 }
 
 /** The cores of the walls around the room (each room's at its own thickness) that reach over its outline's bounds. */

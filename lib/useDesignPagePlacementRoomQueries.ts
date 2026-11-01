@@ -23,7 +23,6 @@ import {
   builtInFootprintFits,
   getBuiltInStandOff,
   getRoomBuiltInFaces,
-  usesFurnitureRuleForBuiltIns,
   type BuiltInPlanRooms,
 } from "@/lib/room-built-in-faces";
 
@@ -200,12 +199,15 @@ export function isPlacementContainedInRoom({
   planRooms?: BuiltInPlanRooms;
 }): boolean {
   // A built-in stands in its room's region by its real (turned) footprint, crossing no wall, panel or column (the walls of the
-  // rooms next door included), against the finished face (one on the floor against the baseboard: lib/room-built-in-faces.ts);
-  // within the baseboard, only where furniture of its size may too. A room on furniture's rule for built-ins keeps that alone.
-  if (builtIn && !usesFurnitureRuleForBuiltIns(room, undefined, planRooms)) {
-    const faces = getRoomBuiltInFaces(room, undefined, planRooms), [width, depth] = [dimensions.w / 1000, dimensions.d / 1000];
-    if (!builtInFootprintFits(faces, position[0], position[2], width, depth, rotationY)) return false;
-    if (builtInFootprintFits(faces, position[0], position[2], width, depth, rotationY, undefined, getBuiltInStandOff(room, position[1]))) return true;
+  // rooms next door included; an imported plan's own 3D walls and panels, from `canonicalModel`), against the finished face,
+  // and one on the floor against the baseboard, never in it (lib/room-built-in-faces.ts). Only a room on furniture's rule for
+  // built-ins (no exposed face, or an imported room its model doesn't hold) takes furniture's containment.
+  if (builtIn) {
+    const faces = getRoomBuiltInFaces(room, undefined, planRooms, canonicalModel);
+    if (!faces.furnitureRule) {
+      return builtInFootprintFits(faces, position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY, undefined,
+        getBuiltInStandOff(room, position[1]));
+    }
   }
   if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   // Inside the room's laminate panels (lib/room-finished-outline.ts).
@@ -272,6 +274,8 @@ export function useDesignPagePlacementRoomQueries({
     );
 
   return {
+    /** The imported plan's canonical model, compiled once here: built-ins' moves read it too (features/cabinetry). */
+    canonicalModel,
     queries: {
       clampToCatalogPlacementRoom: clampToPlacementRoom,
       catalogPlacementCollidesInRoom,
