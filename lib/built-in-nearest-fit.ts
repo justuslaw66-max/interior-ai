@@ -184,4 +184,3 @@ function isInsideRing(point: Point, ring: readonly Point[]): boolean {
   });
   return inside;
 }
-
