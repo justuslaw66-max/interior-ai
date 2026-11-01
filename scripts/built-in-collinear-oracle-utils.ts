@@ -12,7 +12,10 @@ import { toRun, type LineFrame, type P, type Run, type Stretch } from "./built-i
 export const COLLINEAR_DEGREES = 0.05;
 export const COLLINEAR_SIN = Math.sin((COLLINEAR_DEGREES * Math.PI) / 180);
 const COLLINEAR_COS = Math.cos((COLLINEAR_DEGREES * Math.PI) / 180);
-/** Faces meet where one ends within 0.05 mm of the next one's line (across) and runs on to the next one's start (0.5 mm, along). */
+/**
+ * Faces meet where one runs on to the next one's start (0.5 mm, along) and ends within 0.05 mm of the next one's line (across),
+ * and as much more as the lines part over the stretch where the faces overlap.
+ */
 const MEET_ACROSS = 0.00005, MEET_ALONG = 0.0005;
 
 /** An edge's face as an oracle finds it: its edge's direction and normal, its face line and stretches (in groups, along it). */
@@ -31,8 +34,9 @@ function joinsNext(faces: ReadonlyArray<EdgeFace | null>, index: number): boolea
   if (faces.length < 2 || !face?.groups.length || !next?.groups.length || face.dx * next.dx + face.dz * next.dz < COLLINEAR_COS) return false;
   const last = face.groups.flat().reduce((most, stretch) => (stretch.to > most.to ? stretch : most));
   const first = next.groups.flat().reduce((least, stretch) => (stretch.from < least.from ? stretch : least));
-  const [end, start] = [face.line.at(last.to, 0), next.line.at(first.from, 0)];
-  return Math.abs(next.line.frame(end)[1]) <= MEET_ACROSS && Math.abs(face.line.frame(start)[1]) <= MEET_ACROSS && face.line.frame(start)[0] - last.to <= MEET_ALONG;
+  const [end, start] = [face.line.at(last.to, 0), next.line.at(first.from, 0)], gap = face.line.frame(start)[0] - last.to;
+  const within = MEET_ACROSS + Math.max(0, -gap) * Math.abs(face.dx * next.dz - face.dz * next.dx);
+  return Math.abs(next.line.frame(end)[1]) <= within && Math.abs(face.line.frame(start)[1]) <= within && gap <= MEET_ALONG;
 }
 
 /** The chains of edges whose faces are one host, but for those on one line (a straight wall drawn in pieces: one face already). */

@@ -8,7 +8,11 @@ type Point = { x: number; z: number };
  * a degree (a T-junction's through wall); a bend a plan means is far more (a tenth of a degree takes a 3 m wall 5 mm off line).
  */
 export const COLLINEAR_HOST_DEGREES = 0.05;
-/** And whose faces meet: each face ends within this (metres) of the next one's line, across it, and runs on to it, along. */
+/**
+ * And whose faces meet: each face runs on to the next one's start (along, metres), and ends within this (across, metres) of the
+ * next one's line, and as much more as their lines part over the stretch where they overlap (at a bend into the room, each face
+ * runs on past the bend to where its wall's core ends).
+ */
 const MEET_ACROSS = 0.00005, MEET_ALONG = 0.0005;
 const COLLINEAR_COS = Math.cos((COLLINEAR_HOST_DEGREES * Math.PI) / 180);
 
@@ -25,7 +29,8 @@ function joinsNext(region: BuiltInRegion, index: number): boolean {
   const [wall, nextWall] = [region.walls[index], region.walls[next]];
   if (!face || !nextFace || wall.dx * nextWall.dx + wall.dz * nextWall.dz < COLLINEAR_COS) return false;
   const gap = (nextFace.start.x - face.end.x) * wall.dx + (nextFace.start.z - face.end.z) * wall.dz;
-  return across(nextFace.start, wall, face) <= MEET_ACROSS && across(face.end, nextWall, nextFace) <= MEET_ACROSS && gap <= MEET_ALONG;
+  const within = MEET_ACROSS + Math.max(0, -gap) * Math.abs(wall.dx * nextWall.dz - wall.dz * nextWall.dx);
+  return across(nextFace.start, wall, face) <= within && across(face.end, nextWall, nextFace) <= within && gap <= MEET_ALONG;
 }
 
 /**

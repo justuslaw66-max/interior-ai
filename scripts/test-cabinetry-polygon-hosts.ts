@@ -521,7 +521,7 @@ for (const [label, middleZ] of [["bent 2°", -1.5 + 2 * Math.tan(Math.PI / 90)],
   nearMm(run.width * 1000, 3860, "a run fills it");
   assert.equal(containedAt(bent, run), true, "and stands inside");
   assert.equal(findCabinetHostForWall(bent, hosts, "wall-1")?.id, north[0].id, "selecting either piece preselects it");
-  for (const [label, middleZ, surfaces] of [["bent 1 mm", -1.499, undefined], ["bent 0.5 mm, a panel on one piece", -1.4995, panelOn("wall-1")]] as const) {
+  for (const [label, middleZ, surfaces] of [["bent 1 mm in", -1.499, undefined], ["bent 1 mm out", -1.501, undefined], ["bent 0.5 mm, a panel on one piece", -1.4995, panelOn("wall-1")]] as const) {
     const stepped = drawnRoom([{ x: -2, z: -1.5 }, { x: 0, z: middleZ }, { x: 2, z: -1.5 }, { x: 2, z: 1.5 }, { x: -2, z: 1.5 }], surfaces ? { surfaces } : {});
     const ids = buildCabinetryAvailableSpaces({ activeRoom: stepped, activePlanRoom: null, planRoomCount: 1, planOpenings: [] }).map((space) => space.wallId);
     assert.ok(ids.includes("wall-0") && ids.includes("wall-1"), `${label}: each piece is its own host (${ids.join(", ")})`);
