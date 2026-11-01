@@ -206,10 +206,11 @@ function noteRoomOutlineEdges(room: WallFinishRoom, panels: RoomWallFinishDepths
   const outline = room.planPolygon ?? room.polygon;
   if (!outline || roomShapeOf(room) !== "custom_polygon" || outline.length < 3) return;
   const imported = typeof room.floorElevationMm === "number";
-  const wallIds = imported ? readPlanEdgeWallIds(room) : undefined;
+  const wallIds = imported ? readPlanEdgeWallIds(room) : undefined, thicknessesMm = imported ? readPlanEdgeWallThicknesses(room) : undefined;
   const known = readOutlineEdges(outline);
-  if (known?.source === panels && known.imported === imported && known.wallIds === wallIds) return;
-  noteOutlineEdges(outline, { imported, wallIds, panels: outline.map((_, index) => panels[`wall-${index}`] ?? 0), source: panels });
+  if (known?.source === panels && known.imported === imported && known.wallIds === wallIds && known.thicknessesMm === thicknessesMm) return;
+  noteOutlineEdges(outline, { imported, wallIds, panels: outline.map((_, index) => panels[`wall-${index}`] ?? 0), source: panels,
+    thicknessesMm, thicknesses: thicknessesMm?.map((thickness) => thickness / 1000) });
 }
 
 function readMeasuredDepths(room: WallFinishRoom | null | undefined): MeasuredDepths | null {

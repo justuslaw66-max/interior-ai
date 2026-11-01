@@ -16,6 +16,9 @@ import type { MovedOutline, OutlineEdges } from "@/lib/room-outline-edges";
  * - An imported plan's room (canonical-floor-plan/CanonicalWallSurfaceMesh.tsx): a painted face is drawn as a 1.5 mm skin, and a
  *   laminate's end is cut from the bare walls' crossing to where its front meets that skin, so at an outside corner between a
  *   laminate and paint its tip stands past the painted face (by about 1.5 mm over the sine of the corner's angle).
+ * - An imported plan's walls are joined where they meet unless the join would stand too far off (lib/floor-plan-wall-footprints.ts:
+ *   farther than four times the thicker wall, or 250 mm): at a thin spike they aren't, and a wall's square end, wider than the
+ *   other wall where it is thicker, stands out past that wall's face.
  * - An imported plan's arc is drawn on its true curve (in slices a quarter of the room outline's), and the outline is its
  *   chords: where the arc bows into the room, the faces follow the arc itself.
  */
@@ -62,22 +65,58 @@ export function getDrawnWallSolids(moved: MovedOutline, edges: OutlineEdges, fac
  */
 export function getImportedLaminateTips(moved: MovedOutline, edges: OutlineEdges, faceInset: number, side: 1 | -1): Point[][] {
   const { from: outline, by } = moved, count = outline.length;
+  const face = (index: number, extra = 0) => edgeLine(outline, index, (by[index] ?? 0) + faceInset + extra, side);
   return outline.flatMap((_, corner) => {
-    const before = (corner - 1 + count) % count, after = corner;
-    const [panelBefore, panelAfter] = [edges.panels[before] ?? 0, edges.panels[after] ?? 0];
+    const before = (corner - 1 + count) % count;
+    const [panelBefore, panelAfter] = [edges.panels[before] ?? 0, edges.panels[corner] ?? 0];
     if (panelBefore > 0 === panelAfter > 0) return [];
-    const [laminate, paint] = panelBefore > 0 ? [before, after] : [after, before];
-    const face = (index: number, extra = 0) => edgeLine(outline, index, (by[index] ?? 0) + faceInset + extra, side);
-    const [front, painted] = [face(laminate), face(paint)];
-    if (!front || !painted) return [];
-    const [incoming, outgoing] = panelBefore > 0 ? [front, painted] : [painted, front];
-    const turn = incoming.dx * outgoing.dz - incoming.dz * outgoing.dx;
-    // An outside corner turns away from the room; a near-straight one steps.
-    if (turn * side >= 0 || Math.abs(turn) < NEAR_STRAIGHT_SIN) return [];
-    const tip = meet(front, painted), end = meet(front, face(paint, IMPORTED_PAINT_SKIN_METERS) ?? painted);
-    const bare = face(laminate, -(edges.panels[laminate] ?? 0)), crossing = bare && meet(bare, painted);
-    return tip && end && crossing ? [[tip, end, crossing]] : [];
+    const [laminate, paint] = panelBefore > 0 ? [before, corner] : [corner, before];
+    const tip = laminateTip(face, laminate, paint, edges.panels[laminate] ?? 0, panelBefore > 0, side);
+    return tip ? [tip] : [];
   });
+}
+
+/** The laminate's tip past the painted face at their corner, when it is an outside corner that isn't near-straight. */
+function laminateTip(
+  face: (index: number, extra?: number) => Line | null, laminate: number, paint: number, depth: number, laminateFirst: boolean, side: 1 | -1
+): Point[] | null {
+  const [front, painted, skin, bare] = [face(laminate), face(paint), face(paint, IMPORTED_PAINT_SKIN_METERS), face(laminate, -depth)];
+  if (!front || !painted || !skin || !bare) return null;
+  const [incoming, outgoing] = laminateFirst ? [front, painted] : [painted, front];
+  const turn = incoming.dx * outgoing.dz - incoming.dz * outgoing.dx;
+  // An outside corner turns away from the room; a near-straight one steps.
+  if (turn * side >= 0 || Math.abs(turn) < NEAR_STRAIGHT_SIN) return null;
+  const tip = meet(front, painted), end = meet(front, skin), crossing = meet(bare, painted);
+  return tip && end && crossing ? [tip, end, crossing] : null;
+}
+
+/** How far a joint's mitre may stand off it for an imported plan's walls to be joined (isSafeWallJoinPoint): metres. */
+const joinReach = (thickness: number) => Math.max(0.25, 4 * thickness);
+
+/**
+ * An imported room's walls' square ends where the plan leaves two of its walls unjoined at a corner (their faces' mitre away
+ * from the room past joinReach): each wall's footprint from halfway along its edge to the corner, as the 3D view draws it.
+ */
+export function getImportedUnjoinedEnds(moved: MovedOutline, edges: OutlineEdges, side: 1 | -1): Point[][] {
+  const { from: outline } = moved, count = outline.length, thicknesses = edges.thicknesses;
+  if (!thicknesses || thicknesses.length !== count) return [];
+  return outline.flatMap((joint, corner) => {
+    const before = (corner - 1 + count) % count, [thickBefore, thickAfter] = [thicknesses[before], thicknesses[corner]];
+    const [incoming, outgoing] = [edgeLine(outline, before, -thickBefore / 2, side), edgeLine(outline, corner, -thickAfter / 2, side)];
+    if (!incoming || !outgoing) return [];
+    const mitre = meet(incoming, outgoing);
+    if (mitre && Math.hypot(mitre.x - joint.x, mitre.z - joint.z) <= joinReach(Math.max(thickBefore, thickAfter))) return [];
+    return [wallEnd(outline, before, thickBefore, side, 1), wallEnd(outline, corner, thickAfter, side, 0)];
+  });
+}
+
+/** Edge `index`'s wall footprint from its middle to its start (`end` 0) or its end (1), `thickness` wide. */
+function wallEnd(outline: readonly Point[], index: number, thickness: number, side: 1 | -1, end: 0 | 1): Point[] {
+  const a = outline[index], b = outline[(index + 1) % outline.length], length = Math.hypot(b.x - a.x, b.z - a.z);
+  const dx = (b.x - a.x) / length, dz = (b.z - a.z) / length, nx = -dz * side, nz = dx * side;
+  const [from, to] = end ? [length / 2, length] : [0, length / 2];
+  const at = (along: number, across: number) => ({ x: a.x + dx * along + nx * across, z: a.z + dz * along + nz * across });
+  return [at(from, -thickness / 2), at(to, -thickness / 2), at(to, thickness / 2), at(from, thickness / 2)];
 }
 
 type Arc = { cx: number; cz: number; radius: number; start: number; sweep: number; turns: number[] };

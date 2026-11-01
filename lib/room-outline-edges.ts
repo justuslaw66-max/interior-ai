@@ -20,6 +20,9 @@ export type OutlineEdges = {
   wallIds?: readonly string[];
   /** Each edge's laminate depth, metres (0 for paint). */
   panels: readonly number[];
+  /** An imported room's: each edge's own wall thickness, metres, when saved with its walls (and the saved millimetres). */
+  thicknesses?: readonly number[];
+  thicknessesMm?: readonly number[];
   /** What the panels were read from, so a note is made again only when they change. */
   source: object;
 };

@@ -861,14 +861,7 @@ if (openCases) {
   }
   assert.deepEqual(Object.keys(corners.failing).filter((key) => !(key in openCases)), [], corners.failures.join("\n"));
 }
-// The clamp's own limit at outside corners and thin spikes, ratcheted by kind: counts and the worst may only come down.
-const clampLimit = CLAMP_LIMIT_CASES[cornerPlans];
-if (clampLimit) {
-  for (const [kind, { rooms, intoPanel, worstMm }] of Object.entries(corners.clampLimit)) {
-    const known = clampLimit[kind];
-    assert.ok(known && rooms <= known.rooms && intoPanel <= known.intoPanel && worstMm <= known.worstMm,
-      `the clamp's limit in ${kind} plans: ${rooms} rooms, ${intoPanel} into a laminate, ${worstMm.toFixed(2)} mm (${JSON.stringify(known)} known)`);
-  }
-}
+// The clamp's old limit at outside corners and thin spikes: none left (CLAMP_LIMIT_CASES), in any run.
+assert.deepEqual(corners.clampLimit, CLAMP_LIMIT_CASES[cornerPlans] ?? {}, `the clamp's limit at outside corners: ${JSON.stringify(corners.clampLimit)}`);
 
 console.log("Canonical wall finishes and opening semantics checks passed.");

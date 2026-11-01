@@ -1,7 +1,7 @@
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
 import { getOutlineInwardSign, insetPolygonEdges } from "@/lib/polygon-edge-inset";
 import { findNearestBuiltInFit, type BuiltInFitObstacles } from "@/lib/built-in-nearest-fit";
-import { getDrawnWallSolids, getImportedArcFaces, getImportedLaminateTips } from "@/lib/furniture-faces-as-drawn";
+import { getDrawnWallSolids, getImportedArcFaces, getImportedLaminateTips, getImportedUnjoinedEnds } from "@/lib/furniture-faces-as-drawn";
 import { readMovedOutline, readOutlineEdges, type MovedOutline, type OutlineEdges } from "@/lib/room-outline-edges";
 
 /**
@@ -86,8 +86,8 @@ function buildFurnitureFaces(
   const tips = drawn?.imported ? getImportedLaminateTips(moved, drawn, faceInset, roomSide) : [];
   const outers = arcFaces ? [outer, arcFaces.outer] : [outer];
   const faceSegments = outers.flatMap(segmentsOf);
-  const solids = (drawn && !drawn.imported && faceInset > 0 ? getDrawnWallSolids(moved, drawn, faceInset) : [])
-    .filter((solid) => reachesInto(solid, outer, faceSegments));
+  const drawnSolids = drawn && faceInset > 0 ? (drawn.imported ? getImportedUnjoinedEnds(moved, drawn, roomSide) : getDrawnWallSolids(moved, drawn, faceInset)) : [];
+  const solids = drawnSolids.filter((solid) => reachesInto(solid, outer, faceSegments));
   return {
     outer, outers, solids, solidBounds: solids.map(boundsOf), clearance: keep,
     segments: [...faceSegments, ...solids.flatMap(segmentsOf), ...tips.flatMap(pathOf)],

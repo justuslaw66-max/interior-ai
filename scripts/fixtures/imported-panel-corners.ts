@@ -8,7 +8,7 @@ import { buildHousePlan2D, type HousePlanRoom2D } from "@/lib/design-page-house-
 import { getCanonicalFaceTrimsMm, getCanonicalRoomWallFinish } from "@/components/editor/renderers/canonical-floor-plan/canonicalWallPanels";
 import { trimmedFaceEdge, wallSurfaceEdge, WALL_FINISH_SKIN_MM } from "@/components/editor/renderers/canonical-floor-plan/geometry";
 import { clampToRoomInsideFinishes, getRoomOutlineInsideFinishes } from "@/lib/room-finished-outline";
-import { getFurnitureWallInset, isFootprintInsideRoomPolygon } from "@/lib/design-page-geometry";
+import { getFurnitureWallInset, isPlacedItemInsideRoomPolygon } from "@/lib/design-page-geometry";
 import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { RoomSnapshot } from "@/lib/room-types";
 
@@ -243,28 +243,18 @@ export const OPEN_CORNER_CASES: Record<number, Record<string, number>> = {
 };
 
 /**
- * The furniture clamp's own limit, measured apart (31 Oct 2026; it is shared with drawn rooms, and fixing it is J's call): at
- * an outside corner of a turned room it keeps a square inset, and its nine points can let an item's box straddle a thin
- * spike. By kind of plan, in a run of this many: the rooms where an item comes nearer a laminate than 2 cm (beyond the kind's
- * tolerance), those where it goes into one, and the most it stops short of 2 cm in front (less 20 mm, how deep it goes). A
- * count or the worst may only come down; a kind not listed fails.
+ * The furniture clamp's own limit, measured apart (31 Oct 2026): at an outside corner of a turned room it kept a square inset,
+ * and its box's nine points could let an item straddle a thin spike. Since furniture keeps its real footprint off the faces
+ * (1 Nov 2026, lib/furniture-room-fit.ts) there are none: by kind of plan, the rooms where an item comes nearer a laminate
+ * than 2 cm there (beyond the kind's tolerance), those where it goes into one, and the most it stops short of 2 cm in front.
+ * The measure stays, so one coming back fails.
  */
-export const CLAMP_LIMIT_CASES: Record<number, Record<string, ClampLimit>> = {
-  100: {
-    spike: { rooms: 11, intoPanel: 11, worstMm: 534.44 }, l: { rooms: 10, intoPanel: 8, worstMm: 52.74 },
-    "arc-in": { rooms: 2, intoPanel: 2, worstMm: 23.82 },
-  },
-  2000: {
-    spike: { rooms: 208, intoPanel: 207, worstMm: 583.03 }, l: { rooms: 210, intoPanel: 142, worstMm: 328.3 },
-    "arc-in": { rooms: 9, intoPanel: 9, worstMm: 24.24 }, bend: { rooms: 10, intoPanel: 0, worstMm: 2.41 },
-    arcs: { rooms: 3, intoPanel: 3, worstMm: 25.1 }, "arc-cusp": { rooms: 2, intoPanel: 2, worstMm: 23.99 },
-  },
-};
+export const CLAMP_LIMIT_CASES: Record<number, Record<string, ClampLimit>> = { 100: {}, 2000: {} };
 
-type Panel = { wallId: string; quad: P[]; depth: number };
+export type Panel = { wallId: string; quad: P[]; depth: number };
 const SKIN = WALL_FINISH_SKIN_MM / 1000 + 1e-9;
 
-function roomPanels(floor: ReturnType<typeof buildCanonicalFloorPlanRenderModel>["floors"][number], room: HousePlanRoom2D): Panel[] {
+export function roomPanels(floor: ReturnType<typeof buildCanonicalFloorPlanRenderModel>["floors"][number], room: HousePlanRoom2D): Panel[] {
   return floor.walls.flatMap((wall) => wall.roomSides.filter(({ roomId }) => roomId === room.id).flatMap(({ side }) => {
     const { depthMm } = getCanonicalRoomWallFinish(room, wall.id);
     const depth = depthMm > 0 ? depthMm : WALL_FINISH_SKIN_MM;
@@ -338,12 +328,15 @@ function checkRoom(room: HousePlanRoom2D, snapshot: RoomSnapshot, floor: Paramet
     note(stats, "buriedMm", buried * 1000, tolerance.buriedMm, `${label} ${panel.wallId}`);
   }
   checkCoverage(room, snapshot, floor, footprints, outline, panels, label, stats, tolerance);
-  checkFurniture(room, snapshot, panels, label, stats, tolerance);
+  checkFurniture(room, snapshot, panels, footprints, label, stats, tolerance);
 }
 
 const ITEMS = [[0.4, 0.4], [1, 0.5], [0.5, 1]] as const;
-const rectangle = (x: number, z: number, w: number, d: number): P[] =>
-  [{ x: x - w / 2, z: z - d / 2 }, { x: x + w / 2, z: z - d / 2 }, { x: x + w / 2, z: z + d / 2 }, { x: x - w / 2, z: z + d / 2 }];
+const TURNS = [0, 0.3, Math.PI / 4, Math.PI / 2];
+/** An item's footprint at (x, z), turned as the 3D view turns it. */
+const turnedRectangle = (x: number, z: number, w: number, d: number, rotationY: number): P[] => [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => ({
+  x: x + ((a * w) / 2) * Math.cos(rotationY) + ((b * d) / 2) * Math.sin(rotationY), z: z - ((a * w) / 2) * Math.sin(rotationY) + ((b * d) / 2) * Math.cos(rotationY),
+}));
 /** The gap between two convex outlines: none when they overlap. */
 function gapBetween(a: readonly P[], b: readonly P[]): number {
   if (a.some((point) => inside(point, b)) || b.some((point) => inside(point, a))) return 0;
@@ -375,51 +368,49 @@ function separation(a: readonly P[], b: readonly P[]): number {
 }
 
 /**
- * Furniture stops 20 mm in front of every laminate the room is measured to: items dragged onto each panel (its ends and
- * middle) and onto each corner of the clamp's outline are placed by the room's clamp (clampToRoomInsideFinishes), and each one's gap to every laminate
- * panel is at least 20 mm. A skin (paint, tiles) isn't measured: the room stops at the bare wall there (J: what is drawn is what
- * is measured).
+ * Furniture stops 20 mm in front of every laminate the room is measured to and of every wall, as the 3D view draws them: items
+ * of three sizes, at four turns, dragged onto each panel (its ends and middle) and onto each corner of the clamp's outline,
+ * are placed by the room's clamp (clampToRoomInsideFinishes), and each one placement accepts (isPlacedItemInsideRoomPolygon)
+ * must stand inside the room with its real footprint at least 20 mm from every laminate panel and every wall's footprint. A
+ * skin (paint, tiles) isn't measured: the room stops at the bare wall there (J: what is drawn is what is measured).
  */
-function checkFurniture(room: HousePlanRoom2D, snapshot: RoomSnapshot, panels: Panel[], label: string, stats: CornerStats, tolerance: Tolerances) {
+function checkFurniture(
+  room: HousePlanRoom2D, snapshot: RoomSnapshot, panels: Panel[], footprints: Footprint[], label: string, stats: CornerStats, tolerance: Tolerances
+) {
   const laminates = panels.filter(({ depth }) => depth > SKIN);
-  if (!laminates.length) return;
   const origin = snapshot.planPosition ?? { x: room.x, z: room.z };
   const inset = getFurnitureWallInset(snapshot.geometry.wallThickness ?? 0.12);
   const depths = getRoomWallFinishDepths(snapshot);
   const inner = getRoomOutlineInsideFinishes({ shape: "custom_polygon", polygon: snapshot.planPolygon, holes: snapshot.planHoles, w: snapshot.geometry.width, d: snapshot.geometry.depth }, depths);
   const clampOutline = inner.polygon ?? [];
+  const outline = room.polygon!.map(({ x, z }) => ({ x: x + room.x, z: z + room.z }));
   const targets = [...clampOutline.map(({ x, z }) => ({ x: x + origin.x, z: z + origin.z })), ...laminates.flatMap(({ quad: [b0, , f1, f0] }) => [0.02, 0.5, 0.98].map((t) =>
     ({ x: f0.x + (f1.x - f0.x) * t + (b0.x - f0.x) * 0.5, z: f0.z + (f1.z - f0.z) * t + (b0.z - f0.z) * 0.5 })))];
-  const area = polygonArea(clampOutline), halfWall = inset - 0.02;
-  const outsideCorners = clampOutline.flatMap((corner, index) => {
-    const [before, after] = [clampOutline[(index - 1 + clampOutline.length) % clampOutline.length], clampOutline[(index + 1) % clampOutline.length]];
-    const [into, out] = [sub(corner, before), sub(after, corner)];
-    const turn = Math.atan2(cross(into, out), into.x * out.x + into.z * out.z);
-    return turn * area < -1e-12 ? [{ corner, reach: Math.min(1, inset + halfWall / Math.max(0.05, Math.cos(turn / 2))) }] : [];
-  });
-  let short = 0, missed = 0;
-  for (const target of targets) for (const [w, d] of ITEMS) {
+  const outsideCorners = outsideCornersOf(clampOutline, inset);
+  let short = 0, missed = 0, wall = 0;
+  for (const target of targets) for (const [w, d] of ITEMS) for (const rotationY of TURNS) {
     const [x, z] = clampToRoomInsideFinishes(target.x - origin.x, target.z - origin.z, w, d, snapshot.geometry.width, snapshot.geometry.depth,
-      inset, 0, "custom_polygon", snapshot.planPolygon, snapshot.planHoles, depths);
+      inset, rotationY, "custom_polygon", snapshot.planPolygon, snapshot.planHoles, depths);
     // Where the clamp finds no place for it (an item too big for a sharp corner), it keeps it in the room's box: not placed.
-    if (!isFootprintInsideRoomPolygon(x, z, w / 2 + inset, d / 2 + inset, clampOutline, snapshot.planHoles ?? [])) continue;
-    // The clamp tests nine points of the item's box grown by the wall inset (lib/design-page-geometry.ts), so an outside
-    // corner of its outline (a room's outside corner, a thin spike, the step where walls of different depths run on) can
-    // reach into the box between them, past the walls' faces as well as their panels: measured apart.
-    const grown = rectangle(x, z, w + 2 * inset, d + 2 * inset);
-    const crosses = clampOutline.some((corner, index) => inside(corner, grown)
-      || grown.some((from, side) => segmentsCross(corner, clampOutline[(index + 1) % clampOutline.length], from, grown[(side + 1) % 4])));
-    // And at an outside corner the clamp keeps the box's square, not a round, wall inset clear of the corner, so in a turned
-    // room the item can come nearer the walls' (and panels') corner than 2 cm, by up to (1 - cos 45°) of the corner's reach.
-    const nearOutside = outsideCorners.some(({ corner, reach }) => gapBetween(rectangle(x, z, w, d), [corner, corner, corner]) < reach);
-    const item = rectangle(x + origin.x, z + origin.z, w, d);
+    const [cos, sin] = [Math.abs(Math.cos(rotationY)), Math.abs(Math.sin(rotationY))];
+    if (!isPlacedItemInsideRoomPolygon(x, z, w * cos + d * sin, w * sin + d * cos, inset, clampOutline, snapshot.planHoles ?? [],
+      { width: w, depth: d, rotationY, clearance: 0.02 })) continue;
+    const item = turnedRectangle(x + origin.x, z + origin.z, w, d, rotationY);
+    // Where the box's nine sample points (lib/design-page-geometry.ts) would have let it reach past an outside corner of the
+    // outline (a room's outside corner, a thin spike, the step where walls of different depths run on), or its square inset
+    // kept it nearer the corner than 2 cm: measured apart, as the clamp's limit was (CLAMP_LIMIT_CASES).
+    const apart = crossesOutline(clampOutline, turnedRectangle(x, z, w * cos + d * sin + 2 * inset, w * sin + d * cos + 2 * inset, 0)) ||
+      outsideCorners.some(({ corner, reach }) => gapBetween(turnedRectangle(x, z, w, d, rotationY), [corner, corner, corner]) < reach);
     for (const panel of laminates) {
       const miss = 0.02 - separation(item, panel.quad);
-      if (crosses || nearOutside) missed = Math.max(missed, miss);
+      if (apart) missed = Math.max(missed, miss);
       else short = Math.max(short, miss);
     }
+    const inRoom = item.every((corner) => inside(corner, outline));
+    wall = Math.max(wall, inRoom ? 0.02 - Math.min(Infinity, ...footprints.map(({ quad }) => separation(item, quad))) : 1);
   }
   note(stats, "furnitureMm", short * 1000, tolerance.furnitureMm, label);
+  note(stats, "furnitureWallMm", wall * 1000, tolerance.furnitureMm, label);
   stats.worst.furnitureWhereClampMissesMm = Math.max(stats.worst.furnitureWhereClampMissesMm ?? 0, missed * 1000);
   if (missed * 1000 <= tolerance.furnitureMm) return;
   const kind = label.split(" ")[1] ?? "";
@@ -428,6 +419,20 @@ function checkFurniture(room: HousePlanRoom2D, snapshot: RoomSnapshot, panels: P
     rooms: known.rooms + 1, intoPanel: known.intoPanel + (missed > 0.02 ? 1 : 0), worstMm: Math.max(known.worstMm, missed * 1000),
   };
 }
+
+/** The outline's outside corners, each with how near an item's square inset could let it come (the clamp's old limit). */
+function outsideCornersOf(outline: readonly P[], inset: number): Array<{ corner: P; reach: number }> {
+  const area = polygonArea(outline), halfWall = inset - 0.02;
+  return outline.flatMap((corner, index) => {
+    const [before, after] = [outline[(index - 1 + outline.length) % outline.length], outline[(index + 1) % outline.length]];
+    const [into, out] = [sub(corner, before), sub(after, corner)];
+    const turn = Math.atan2(cross(into, out), into.x * out.x + into.z * out.z);
+    return turn * area < -1e-12 ? [{ corner, reach: Math.min(1, inset + halfWall / Math.max(0.05, Math.cos(turn / 2))) }] : [];
+  });
+}
+
+const crossesOutline = (outline: readonly P[], box: readonly P[]) => outline.some((corner, index) => inside(corner, box)
+  || box.some((from, side) => segmentsCross(corner, outline[(index + 1) % outline.length], from, box[(side + 1) % box.length])));
 
 const segmentsCross = (a: P, b: P, c: P, d: P) => {
   const [d1, d2, d3, d4] = [cross(sub(b, a), sub(c, a)), cross(sub(b, a), sub(d, a)), cross(sub(d, c), sub(a, c)), cross(sub(d, c), sub(b, c))];
