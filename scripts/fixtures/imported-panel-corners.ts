@@ -232,14 +232,12 @@ type Tolerances = (typeof CORNER_TOLERANCES)["straight"];
  * Rooms that still fail a check in a run of this many plans, by check (31 Oct 2026, fifth review): known open cases, so a
  * count can only come down. Wedges under about 15 degrees (their faces meet far up the wedge, where a door near the tip or the
  * plan's unjoined footprints leave slivers), arcs meeting a wall at a sharp angle (their slices' own mitres), and junctions of
- * three walls (slivers of up to 10 mm² where the plan's footprints join). The two furniture cases are arcs bowing into the
- * room: its outline is the plan's chords of the arc, which can each span more of it than one of the wall's slices, and the
- * clamp keeps to the outline, so an item comes nearer the arc by up to a chord's sagitta (4.7 mm into a panel in corners-341,
- * 1.1 mm in corners-1709). The clamp is the same at a bare arc.
+ * three walls (slivers of up to 10 mm² where the plan's footprints join). No furniture case is left (1 Nov 2026): the two
+ * there were, arcs bowing into the room where the clamp kept to the outline's chords, keep 2 cm off the true curve now.
  */
 export const OPEN_CORNER_CASES: Record<number, Record<string, number>> = {
   100: { overlapMm2: 1, uncoveredMm: 1 },
-  2000: { overlapMm2: 22, uncoveredMm: 40, furnitureMm: 2, buriedMm: 20, pokeMm: 3 },
+  2000: { overlapMm2: 22, uncoveredMm: 40, buriedMm: 20, pokeMm: 3 },
 };
 
 /**
