@@ -332,17 +332,26 @@ export function clampToCustomPolygonRoom(
 function keepClearOfWalls(
   faces: FurnitureFaces, placed: [number, number], x: number, z: number, polygon: RoomPlanPolygonPoint[], item: ClampedItem
 ): [number, number] {
-  if (isFurnitureFootprintClear(faces, placed[0], placed[1], item.width, item.depth, item.rotationY)) return placed;
+  const { width, depth, rotationY } = item;
+  if (isFurnitureFootprintClear(faces, placed[0], placed[1], width, depth, rotationY)) return placed;
+  const key = `${width}:${depth}:${rotationY}`, known = nowhere.get(faces) ?? new Set<string>();
+  if (known.has(key)) return placed;
+  // The nearest place within a reach is the nearest of all once one is found: first a little past how far the line moved it
+  // (the nearest clear place is most often just past the line's), then as far as the room reaches.
+  const moved = Math.hypot(placed[0] - x, placed[1] - z);
+  const near = findNearestFurnitureFit(faces, x, z, width, depth, rotationY, Math.max(0.02, moved) * 1.1 + 0.03);
+  if (near) return near;
   const xs = polygon.map((point) => point.x), zs = polygon.map((point) => point.z);
-  const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) + Math.hypot(item.width, item.depth);
-  // The nearest place within a reach is the nearest of all once one is found: the reach grows from a little past how far the
-  // line moved it (the nearest clear place is most often just past the line's).
-  for (let reach = Math.max(0.02, Math.hypot(placed[0] - x, placed[1] - z)) * 1.1 + 0.03; ; reach *= 1.6) {
-    const found = findNearestFurnitureFit(faces, x, z, item.width, item.depth, item.rotationY, reach);
-    if (found) return found;
-    if (reach > span + Math.hypot(x - placed[0], z - placed[1])) return placed;
-  }
+  const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) + Math.hypot(width, depth);
+  const far = findNearestFurnitureFit(faces, x, z, width, depth, rotationY, span + moved);
+  if (far) return far;
+  // Clear nowhere in the room: so it stays, for this size and turn, while the room's walls are the same (a drag's frames).
+  nowhere.set(faces, known.add(key));
+  return placed;
 }
+
+// The sizes and turns furniture fits nowhere clear in a room, by its walls as drawn.
+const nowhere = new WeakMap<FurnitureFaces, Set<string>>();
 
 function clampAsSampled(
   x: number,
