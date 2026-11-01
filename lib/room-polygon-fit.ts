@@ -288,7 +288,7 @@ export function isPlacedItemInsideRoomPolygon(
   polygon: RoomPlanPolygonPoint[], holes: RoomPlanPolygonPoint[][], item: ClampedItem
 ): boolean {
   return isFootprintInsideRoomPolygon(x, z, effectiveWidth / 2 + wall, effectiveDepth / 2 + wall, polygon, holes) &&
-    isFurnitureFootprintClear(getFurnitureFaces(polygon, holes, wall, item.clearance), x, z, item.width, item.depth, item.rotationY);
+    isFurnitureFootprintClear(getFurnitureFaces(polygon, wall, item.clearance), x, z, item.width, item.depth, item.rotationY);
 }
 
 /**
@@ -324,7 +324,7 @@ function keepClearOfFaces(
   sampled: [number, number], x: number, z: number, effectiveWidth: number, effectiveDepth: number, wall: number,
   polygon: RoomPlanPolygonPoint[], holes: RoomPlanPolygonPoint[][], item: ClampedItem
 ): [number, number] {
-  const faces = getFurnitureFaces(polygon, holes, wall, item.clearance);
+  const faces = getFurnitureFaces(polygon, wall, item.clearance);
   if (isFurnitureFootprintClear(faces, sampled[0], sampled[1], item.width, item.depth, item.rotationY)) return sampled;
   const halfWidth = effectiveWidth / 2 + wall, halfDepth = effectiveDepth / 2 + wall;
   const boxFits = (atX: number, atZ: number) => isFootprintInsideRoomPolygon(atX, atZ, halfWidth, halfDepth, polygon, holes);
