@@ -728,7 +728,7 @@ for (const turnDeg of [0, 10, 30]) {
     for (const host of buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: apartment.rooms.length, planOpenings: [], planRooms })) {
       const { definition } = fitCabinetToSpace(createCabinetPreset("base", `run-${host.id}`), host, { mode: "fit_width" });
       const { position: [x, , z], rotationY } = getCabinetPlacement(definition, room, false, planRooms);
-      const wall = apartment.floor.walls.find(({ id }) => id === room.planEdgeWallIds![Number(host.wallId.replace("wall-", ""))])!;
+      const wall = apartment.floor.walls.find(({ id }) => id === room.planEdgeWallIds![Number(host.wallId?.replace("wall-", ""))])!;
       const [start, end] = [wall.centerlineSegments[0].start, wall.centerlineSegments[0].end].map(({ xMm, zMm }) => ({ x: xMm / 1000, z: zMm / 1000 }));
       const back = { x: x + room.planPosition!.x - (Math.sin(rotationY) * definition.depth) / 2000, z: z + room.planPosition!.z - (Math.cos(rotationY) * definition.depth) / 2000 };
       const fromCentreMm = (Math.abs((end.x - start.x) * (back.z - start.z) - (end.z - start.z) * (back.x - start.x)) / Math.hypot(end.x - start.x, end.z - start.z)) * 1000;
