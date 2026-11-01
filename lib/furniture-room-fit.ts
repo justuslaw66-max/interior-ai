@@ -84,14 +84,15 @@ function buildFurnitureFaces(
   const drawn = edges && moved.from.length === polygon.length && edges.panels.length === polygon.length ? edges : undefined;
   const arcFaces = drawn?.imported ? getImportedArcFaces(moved, drawn, faceInset, roomSide) : null;
   const tips = drawn?.imported ? getImportedLaminateTips(moved, drawn, faceInset, roomSide) : [];
-  const outers = arcFaces ? [outer, arcFaces] : [outer];
+  const outers = arcFaces ? [outer, arcFaces.outer] : [outer];
   const faceSegments = outers.flatMap(segmentsOf);
   const solids = (drawn && !drawn.imported && faceInset > 0 ? getDrawnWallSolids(moved, drawn, faceInset) : [])
     .filter((solid) => reachesInto(solid, outer, faceSegments));
   return {
     outer, outers, solids, solidBounds: solids.map(boundsOf), clearance: keep,
     segments: [...faceSegments, ...solids.flatMap(segmentsOf), ...tips.flatMap(pathOf)],
-    obstacles: [...faceSegments.map(({ a, b }) => [a, b]), ...solids, ...tips],
+    // The search takes an arc's faces as the wall in front of it, whole (its many slices would each be an obstacle).
+    obstacles: [...segmentsOf(outer).map(({ a, b }) => [a, b]), ...(arcFaces?.bulges ?? []), ...solids, ...tips],
     inverted: polygon.length < 3 || getOutlineInwardSign(outer) !== roomSide,
   };
 }

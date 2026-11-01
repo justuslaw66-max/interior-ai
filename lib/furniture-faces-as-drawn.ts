@@ -29,8 +29,8 @@ const NEAR_STRAIGHT_SIN = Math.sin((10 * Math.PI) / 180);
 /** An arc's run of edges is fitted to a circle its points are within this of (they are rounded to the millimetre). */
 const ARC_FIT_METERS = 0.002;
 /** The arc's faces are slices of it bowing at most this far from it. */
-const ARC_SAGITTA_METERS = 0.00002;
-const MAX_ARC_SLICES = 1024;
+const ARC_SAGITTA_METERS = 0.0001;
+const MAX_ARC_SLICES = 256;
 
 type Line = { x: number; z: number; dx: number; dz: number };
 
@@ -118,36 +118,55 @@ function wallRuns(wallIds: readonly string[]): Array<[number, number]> {
   }).filter(([, length]) => length >= 2);
 }
 
+type SlicedArc = { points: Point[]; by: number[]; angles: number[] };
+
 /** The run's outline, edges 0..n of the arc replaced by its own slices, each moved in as far as the edge it lies along. */
-function sliceArc(arc: Arc, run: readonly Point[], by: readonly number[]): { points: Point[]; by: number[] } {
+function sliceArc(arc: Arc, run: readonly Point[], by: readonly number[]): SlicedArc {
   const step = 2 * Math.acos(Math.max(-1, 1 - ARC_SAGITTA_METERS / arc.radius));
   const slices = Math.min(MAX_ARC_SLICES, Math.max(run.length - 1, Math.ceil(Math.abs(arc.sweep) / step)));
   const bounds = arc.turns.reduce<number[]>((sums, turn) => [...sums, sums[sums.length - 1] + turn], [0]);
-  const points: Point[] = [run[0]], moved: number[] = [];
+  const points: Point[] = [run[0]], moved: number[] = [], angles = [arc.start];
   for (let slice = 1; slice <= slices; slice += 1) {
     const angle = (arc.sweep * slice) / slices, middle = (arc.sweep * (slice - 0.5)) / slices;
     const after = bounds.findIndex((bound, index) => index > 0 && Math.abs(bound) >= Math.abs(middle));
     const edge = after > 0 ? after - 1 : arc.turns.length - 1;
     moved.push(by[edge] ?? 0);
+    angles.push(arc.start + angle);
     if (slice < slices) points.push({ x: arc.cx + arc.radius * Math.cos(arc.start + angle), z: arc.cz + arc.radius * Math.sin(arc.start + angle) });
   }
-  return { points, by: moved };
+  return { points, by: moved, angles };
+}
+
+/**
+ * The wall in front of an arc bowing into the room, its faces' curve closed by the chord between its ends: a convex shape
+ * (inside the arc's circle, the room outside it), so the nearest-fit search takes the arc as one obstacle, not its slices.
+ */
+function bulgeOf(arc: Arc, sliced: SlicedArc, faceInset: number): Point[] {
+  return sliced.angles.map((angle, index) => {
+    const radius = arc.radius + Math.max(sliced.by[Math.max(0, index - 1)] ?? 0, sliced.by[Math.min(sliced.by.length - 1, index)] ?? 0) + faceInset;
+    return { x: arc.cx + radius * Math.cos(angle), z: arc.cz + radius * Math.sin(angle) };
+  });
 }
 
 /**
  * An imported room's faces with each arc bowing into the room on its true curve, as furniture's faces are made (the outline
- * moved in by `moved.by`, then by `faceInset`, mitred), or null when it has none.
+ * moved in by `moved.by`, then by `faceInset`, mitred), and the wall in front of each such arc (bulgeOf), or null when it has
+ * none.
  */
-export function getImportedArcFaces(moved: MovedOutline, edges: OutlineEdges, faceInset: number, side: 1 | -1): Point[] | null {
+export function getImportedArcFaces(
+  moved: MovedOutline, edges: OutlineEdges, faceInset: number, side: 1 | -1
+): { outer: Point[]; bulges: Point[][] } | null {
   const { from: outline, by } = moved, count = outline.length;
   if (!edges.wallIds || edges.wallIds.length !== count) return null;
-  const replaced = new Map<number, { points: Point[]; by: number[]; length: number }>();
+  const replaced = new Map<number, SlicedArc & { length: number }>(), bulges: Point[][] = [];
   for (const [start, length] of wallRuns(edges.wallIds)) {
     const run = Array.from({ length: length + 1 }, (_, index) => outline[(start + index) % count]);
     const arc = fitArc(run);
     // It bows into the room where its slices turn away from it (outside corners): points on a circle turn the way it sweeps.
     if (!arc || Math.sign(arc.sweep) !== -side) continue;
-    replaced.set(start, { ...sliceArc(arc, run, Array.from({ length }, (_, index) => by[(start + index) % count] ?? 0)), length });
+    const sliced = sliceArc(arc, run, Array.from({ length }, (_, index) => by[(start + index) % count] ?? 0));
+    replaced.set(start, { ...sliced, length });
+    bulges.push(bulgeOf(arc, sliced, faceInset));
   }
   if (!replaced.size) return null;
   const points: Point[] = [], offsets: number[] = [];
@@ -163,5 +182,5 @@ export function getImportedArcFaces(moved: MovedOutline, edges: OutlineEdges, fa
     }
   }
   const inside = insetPolygonEdges(points, offsets, side);
-  return insetPolygonEdges(inside, inside.map(() => faceInset), side);
+  return { outer: insetPolygonEdges(inside, inside.map(() => faceInset), side), bulges };
 }
