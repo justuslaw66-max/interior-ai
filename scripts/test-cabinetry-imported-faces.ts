@@ -48,8 +48,8 @@ function inDrawnRoom(c: Case, room: RoomSnapshot, run: Run): boolean {
   for (let across = -d; across <= d + 1e-9; across += 0.005) points.push(toWorld(run, -w, across), toWorld(run, w, across));
   return points.every((point) => inRegion(region, point));
 }
-const along = (run: Run, metres: number) => ({ ...run, x: run.x + Math.cos(run.rotationY) * metres, z: run.z - Math.sin(run.rotationY) * metres });
-const outFrom = (run: Run, metres: number) => ({ ...run, x: run.x + Math.sin(run.rotationY) * metres, z: run.z + Math.cos(run.rotationY) * metres });
+const along = <T extends Run>(run: T, metres: number): T => ({ ...run, x: run.x + Math.cos(run.rotationY) * metres, z: run.z - Math.sin(run.rotationY) * metres });
+const outFrom = <T extends Run>(run: T, metres: number): T => ({ ...run, x: run.x + Math.sin(run.rotationY) * metres, z: run.z + Math.cos(run.rotationY) * metres });
 
 /** A 4.2 × 3 m kitchen: its north wall 250 mm with a window, east 100 mm laminated, south 200 mm with a door, west 150 mm. */
 const kitchen = (turnDeg: number, baseboardDepth?: number) => importedCaseOf(importedDocument(`kitchen-${turnDeg}`, {
@@ -156,7 +156,7 @@ const kitchen = (turnDeg: number, baseboardDepth?: number) => importedCaseOf(imp
   const stemIndex = west.planEdgeWallIds!.indexOf("w-j-p5"), stem = hostsOf(c, west).find((space) => space.wallId === `wall-${stemIndex}`)!;
   const run = fitAndPlace(c, west, stem, "base");
   assert.ok(Math.abs(Math.abs(run.x - Math.sin(run.rotationY) * run.depth / 2 + west.planPosition!.x) - 0.05) < 1e-6,
-    `the stem's face is 50 mm off its line (the rooms average ${(west.geometry.wallThickness * 500).toFixed(1)} mm)`);
+    `the stem's face is 50 mm off its line (the rooms average ${((west.geometry.wallThickness ?? 0) * 500).toFixed(1)} mm)`);
   assert.equal(inDrawnRoom(c, west, run), true, "its run stands against it, inside the 3D view's walls");
 }
 
