@@ -10,7 +10,8 @@ import type { RoomPlanPolygonPoint } from "@/lib/room-types";
  *
  * Along an arc or a run of short walls, a sofa's grown shapes overlap one another almost wholly, so an edge lying inside one of
  * the other grown shapes is dropped before any are paired (no place on it is clear), and the shapes are looked up by a grid:
- * the places tried are the same, and a drag along a curved wall stays within a frame.
+ * the places tried are the same. The grown shapes and their grid are made once for a footprint (prepareClearSearch) and kept
+ * by the caller, so a drag along a curved wall stays within a frame.
  */
 
 type Point = RoomPlanPolygonPoint;
@@ -87,16 +88,14 @@ function segmentCrossing(one: Edge, two: Edge): Point | null {
 }
 
 /** The grown shapes' edges within `reach` of the start, less those lying wholly inside another grown shape. */
-function exposedEdges(shapes: readonly Shape[], start: Point, reach: number, insideOf: ReturnType<typeof gridOf>): Edge[] {
-  return shapes.flatMap((shape, index) => shape.points.map((a, at): Edge => {
-    const b = shape.points[(at + 1) % shape.points.length];
-    return { a, b, shape: index, minX: Math.min(a.x, b.x), maxX: Math.max(a.x, b.x), minZ: Math.min(a.z, b.z), maxZ: Math.max(a.z, b.z) };
-  })).filter((edge) => {
+function exposedEdges(search: ClearSearch, start: Point, reach: number): Edge[] {
+  return search.edges.filter((edge) => {
+    if (edge.minX - start.x > reach || start.x - edge.maxX > reach || edge.minZ - start.z > reach || start.z - edge.maxZ > reach) return false;
     const nearest = nearestOnSegment(edge.a, edge.b, start);
     if (Math.hypot(nearest.x - start.x, nearest.z - start.z) > reach) return false;
     // Both ends inside one convex shape: the whole edge is.
-    const inside = insideOf(edge.a, edge.shape);
-    return inside < 0 || !isStrictlyInside(shapes[inside], edge.b);
+    const inside = search.insideOf(edge.a, edge.shape);
+    return inside < 0 || !isStrictlyInside(search.shapes[inside], edge.b);
   });
 }
 
@@ -125,24 +124,34 @@ function isInsideRing(point: Point, ring: readonly Point[]): boolean {
   return inside;
 }
 
-/**
- * The nearest place to `start` within `reach` metres where the footprint (convex, about its centre, its own mirror) is clear
- * of every obstacle (convex shapes or segments), its centre is inside `within`, and `fits` accepts it; or null.
- */
-export function findNearestClearPlace(
-  footprint: readonly Point[], obstacles: ReadonlyArray<readonly Point[]>, start: Point, reach: number,
-  fits: (x: number, z: number) => boolean, within: readonly Point[]
-): [number, number] | null {
+/** A footprint's grown shapes for its obstacles, once for every search with it (a drag's frames keep its size and turn). */
+export type ClearSearch = { shapes: Shape[]; edges: Edge[]; insideOf: ReturnType<typeof gridOf> };
+
+/** The search for a footprint (convex, about its centre, its own mirror) among obstacles (convex shapes or segments). */
+export function prepareClearSearch(footprint: readonly Point[], obstacles: ReadonlyArray<readonly Point[]>): ClearSearch {
   const outline = convexHull(footprint);
   const shapes = obstacles.map((obstacle) => boxed(convexHull(obstacle.flatMap((o) => outline.map((f) => ({ x: o.x + f.x, z: o.z + f.z }))))));
   const span = Math.max(...outline.map(({ x, z }) => Math.hypot(x, z)));
-  const insideOf = gridOf(shapes, Math.max(0.05, span / 2));
-  const ordered = candidates(start, exposedEdges(shapes, start, reach, insideOf))
+  const edges = shapes.flatMap((shape, index) => shape.points.map((a, at): Edge => {
+    const b = shape.points[(at + 1) % shape.points.length];
+    return { a, b, shape: index, minX: Math.min(a.x, b.x), maxX: Math.max(a.x, b.x), minZ: Math.min(a.z, b.z), maxZ: Math.max(a.z, b.z) };
+  }));
+  return { shapes, edges, insideOf: gridOf(shapes, Math.max(0.05, span / 2)) };
+}
+
+/**
+ * The nearest place to `start` within `reach` metres where the search's footprint is clear of every obstacle, its centre is
+ * inside `within`, and `fits` accepts it; or null.
+ */
+export function findNearestClearPlace(
+  search: ClearSearch, start: Point, reach: number, fits: (x: number, z: number) => boolean, within: readonly Point[]
+): [number, number] | null {
+  const ordered = candidates(start, exposedEdges(search, start, reach))
     .map((point) => ({ point, distance: Math.hypot(point.x - start.x, point.z - start.z) }))
     .filter(({ distance }) => distance <= reach + 1e-12)
     .sort((first, second) => first.distance - second.distance);
   for (const { point } of ordered) {
-    if (!isInsideRing(point, within) || insideOf(point) >= 0) continue;
+    if (!isInsideRing(point, within) || search.insideOf(point) >= 0) continue;
     if (fits(point.x, point.z)) return [point.x, point.z];
   }
   return null;

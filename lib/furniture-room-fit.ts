@@ -1,5 +1,5 @@
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
-import { findNearestClearPlace } from "@/lib/furniture-nearest-fit";
+import { findNearestClearPlace, prepareClearSearch, type ClearSearch } from "@/lib/furniture-nearest-fit";
 import { buildBuiltInRegion, type BuiltInNeighbourWalls } from "@/lib/room-built-in-region";
 import type { CanonicalRoomWalls } from "@/lib/furniture-canonical-walls";
 import { isOutlineOf, type OutlineEdges } from "@/lib/room-outline-edges";
@@ -48,8 +48,8 @@ export type FurnitureFaces = {
 
 /** Contact allowed within this (metres): a place this near the clearance counts as at it. */
 export const FURNITURE_FACE_TOLERANCE = 0.0001;
-/** The dilated footprint's corners are rounded by a circumscribed polygon of this many sides (at most 1.6 mm off a circle). */
-const ROUND_SIDES = 8;
+/** The dilated footprint's corners are rounded by a circumscribed polygon of this many sides (at most 0.4 mm off a circle). */
+const ROUND_SIDES = 16;
 
 const segment = (a: Point, b: Point): Segment =>
   ({ a, b, minX: Math.min(a.x, b.x), maxX: Math.max(a.x, b.x), minZ: Math.min(a.z, b.z), maxZ: Math.max(a.z, b.z) });
@@ -189,28 +189,27 @@ function grownFootprint(width: number, depth: number, rotationY: number, by: num
   }));
 }
 
-/** The least gap between an obstacle (a convex shape or a segment) and a convex footprint. */
-function obstacleGap(obstacle: readonly Point[], footprint: readonly Point[]): number {
-  if (obstacle.length === 2) return segmentGap(obstacle[0], obstacle[1], footprint);
-  if (obstacle.some((point) => isInside(point, footprint)) || footprint.some((point) => isInside(point, obstacle))) return 0;
-  return Math.min(...obstacle.map((a, index) => segmentGap(a, obstacle[(index + 1) % obstacle.length], footprint)));
+
+// Each room's searches by footprint (size and turn): a drag's frames keep them, a few per room.
+const searches = new WeakMap<FurnitureFaces, Map<string, ClearSearch>>();
+
+function searchFor(faces: FurnitureFaces, width: number, depth: number, rotationY: number): ClearSearch {
+  const key = `${width}:${depth}:${rotationY}`, known = searches.get(faces) ?? new Map<string, ClearSearch>();
+  searches.set(faces, known);
+  const kept = known.get(key) ?? prepareClearSearch(grownFootprint(width, depth, rotationY, faces.clearance), faces.obstacles);
+  known.delete(key);
+  known.set(key, kept);
+  if (known.size > 8) known.delete(known.keys().next().value!);
+  return kept;
 }
 
 /**
  * The nearest place to (x, z), within `reach` metres, where the footprint is clear (isFurnitureFootprintClear), or null: the
- * places that may be nearest are where the footprint grown by the clearance meets the same shapes the test keeps off. Only
- * shapes it could meet within the reach are taken (nearer the footprint than the reach and the clearance).
+ * places that may be nearest are where the footprint grown by the clearance meets the same shapes the test keeps off.
  */
 export function findNearestFurnitureFit(
   faces: FurnitureFaces, x: number, z: number, width: number, depth: number, rotationY: number, reach: number
 ): [number, number] | null {
-  const here = getTurnedFootprint(x, z, width, depth, rotationY), near = reach + faces.clearance + 1e-6;
-  const bounds = boundsOf(here);
-  const obstacles = faces.obstacles.filter((obstacle) => {
-    const other = boundsOf(obstacle);
-    return other.maxX >= bounds.minX - near && other.minX <= bounds.maxX + near && other.maxZ >= bounds.minZ - near &&
-      other.minZ <= bounds.maxZ + near && obstacleGap(obstacle, here) <= near;
-  });
-  return findNearestClearPlace(grownFootprint(width, depth, rotationY, faces.clearance), obstacles, { x, z }, reach,
+  return findNearestClearPlace(searchFor(faces, width, depth, rotationY), { x, z }, reach,
     (atX, atZ) => isFurnitureFootprintClear(faces, atX, atZ, width, depth, rotationY), faces.floor);
 }
