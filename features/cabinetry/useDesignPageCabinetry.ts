@@ -7,6 +7,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { aabbIntersects, type AABB } from "@/lib/design-page-geometry";
 import { snapRotationRadians } from "@/lib/design-page-utils";
 import { clampBuiltInToRoom, getBuiltInSnapTarget, type BuiltInPlanRooms } from "@/lib/room-built-in-faces";
+import { getBuiltInRefusalNote } from "@/lib/built-in-move-notes";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { getActiveRoom } from "@/lib/room-types";
@@ -793,7 +794,7 @@ export function useDesignPageCabinetry({
 
       // A built-in may stand against the finished face.
       if (!isCatalogPlacementContainedInRoom(activeRoom, nextPosition, rotationY, planningDimensionsMm, true)) {
-        showToast(`Place fully inside ${activeRoom.name}`);
+        showToast(getBuiltInRefusalNote(!isCatalogPlacementContainedInRoom(activeRoom, item.position, rotationY, planningDimensionsMm, true), activeRoom.name, `Place fully inside ${activeRoom.name}`));
         return;
       }
 
@@ -824,8 +825,7 @@ export function useDesignPageCabinetry({
       commitItems,
       findSelectedPlacementBlocker,
       getItemDisplayName,
-      isCatalogPlacementContainedInRoom,
-      isDesigner,
+      isCatalogPlacementContainedInRoom, isDesigner,
       planRoomById, canonicalModel,
       selected,
       showToast,
@@ -875,7 +875,7 @@ export function useDesignPageCabinetry({
 
       // A built-in may stand against the finished face; a turn with nowhere near to go is refused, the built-in where it was.
       if (!isCatalogPlacementContainedInRoom(activeRoom, nextPosition, resolvedRotationY, planningDimensionsMm, true)) {
-        showToast(`No room to turn this built-in here in ${activeRoom.name}`);
+        showToast(getBuiltInRefusalNote(!isCatalogPlacementContainedInRoom(activeRoom, selected.item.position, getCabinetRotationY(selected.item), planningDimensionsMm, true), activeRoom.name, `No room to turn this built-in here in ${activeRoom.name}`));
         return;
       }
 

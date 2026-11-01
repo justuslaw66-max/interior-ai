@@ -2587,7 +2587,7 @@
     "features/cabinetry/useDesignPageCabinetry.ts": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 825
+        "maximum": 824
       },
       "complexFunctions": {
         "count": 2,
@@ -4379,7 +4379,7 @@
     "lib/useDesignPageSceneItemDrag.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 509
+        "maximum": 507
       },
       "complexFunctions": {
         "count": 1,

@@ -40,6 +40,16 @@ function joinsNext(region: BuiltInRegion, index: number): boolean {
  * and obstacles on that line. A straight wall drawn in pieces (already one face) and every other face are as exposed.
  */
 export function getBuiltInHostFaces(region: BuiltInRegion): Array<BuiltInHostFace | null> {
+  const known = hostFacesByRegion.get(region);
+  if (known) return known;
+  const hosts = buildHostFaces(region);
+  hostFacesByRegion.set(region, hosts);
+  return hosts;
+}
+// Per region (kept per room as long as its geometry is): Fit's hosts, and a stuck built-in's moves on every frame of a drag.
+const hostFacesByRegion = new WeakMap<BuiltInRegion, Array<BuiltInHostFace | null>>();
+
+function buildHostFaces(region: BuiltInRegion): Array<BuiltInHostFace | null> {
   const count = region.walls.length, joined = region.walls.map((_, index) => count > 1 && joinsNext(region, index));
   if (!joined.some(Boolean) || joined.every(Boolean)) return region.exposed;
   const hosts: Array<BuiltInHostFace | null> = [...region.exposed];

@@ -14,6 +14,8 @@ import {
   type BuiltInRegion,
 } from "@/lib/room-built-in-region";
 import { findNearestBuiltInFit, type BuiltInFitObstacles } from "@/lib/built-in-nearest-fit";
+import { findStuckBuiltInPlace } from "@/lib/built-in-stuck-move";
+import { getBuiltInHostFaces } from "@/lib/room-built-in-host-faces";
 import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import { buildImportedBuiltInRegion } from "@/lib/room-built-in-imported-region";
 import { getRoomWallFaceIds, getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
@@ -214,16 +216,17 @@ function clampAsFurniture(room: RoomSnapshot, x: number, z: number, width: numbe
  * recorded baseboard: getBuiltInStandOff, by its `bottom`). Where it stands in the region it stays put, as Fit to Space places
  * it. A move that would leave it stops where it still stands, going from `from`. A turn (no `from`; `turnedFrom` its rotation
  * before) that leaves it goes to the nearest place where it fits, within how far its corners swing in the turn (TURN_REACH at
- * least): touching what stops it, a face or a solid on it (findNearestBuiltInFit). From a place where it doesn't fit (a run
- * saved before its room's rule, overlapping its wall; Place of a run with no fit or an old one), a move, a turn or a placement
- * goes to the nearest place it fits anywhere in the room (J, 1 Nov 2026), so a stuck built-in comes free on its first move.
- * Where nothing fits, it is left at the target, which containment refuses (the built-in stays where it was; a placement is
- * refused). In a room on furniture's rule, it is clamped as furniture is.
+ * least): touching what stops it, a face or a solid on it (findNearestBuiltInFit). A placement (`anywhere`: Place, Save as
+ * copy) goes to the nearest place it fits anywhere in the room. A move from a place where it doesn't fit (a run saved before
+ * its room's rule, or one a panel since cuts into) goes to the nearest place near it, its back kept on the face it stands
+ * against (findStuckBuiltInPlace; J's delegate, 2 Nov 2026). Where nothing fits, it is left at the target, which containment
+ * refuses (the built-in stays where it was; a placement is refused). In a room on furniture's rule, it is clamped as furniture is.
  */
 export function clampBuiltInToRoom(
   room: RoomSnapshot, x: number, z: number, width: number, depth: number, rotationY = 0,
   options: {
     from?: readonly [number, number]; planRooms?: BuiltInPlanRooms; canonical?: CanonicalFloorPlanRenderModel; bottom?: number; turnedFrom?: number;
+    anywhere?: boolean;
   } = {}
 ): [number, number] {
   const faces = getRoomBuiltInFaces(room, undefined, options.planRooms, options.canonical);
@@ -243,13 +246,14 @@ export function clampBuiltInToRoom(
     }
     return [from[0] + (x - from[0]) * reach, from[1] + (z - from[1]) * reach];
   }
-  // A turn from where it stood turned before (`turnedFrom`, at the same centre) looks as far as its corners swing; one from where
-  // it didn't fit, or a move from such a place, anywhere in the room.
-  const turnedFrom = options.turnedFrom, stood = typeof turnedFrom === "number" &&
-    builtInFootprintFits(faces, x, z, width, depth, turnedFrom, BUILT_IN_CONTACT_TOLERANCE / 10, standOff);
-  const reach = from || (typeof turnedFrom === "number" && !stood) ? Number.POSITIVE_INFINITY : getTurnReach(width, depth, rotationY, turnedFrom);
-  // Nothing fits: it stays at the target, which containment refuses (a turn is refused, the built-in where it was).
-  return findNearestBuiltInFit(getBuiltInFitObstacles(faces, width, depth, rotationY, standOff), { x, z }, reach, fits, faces.outline) ?? [x, z];
+  // Nothing fits: it stays at the target, which containment refuses (a move or turn is refused, the built-in where it was).
+  const families = getBuiltInFitObstacles(faces, width, depth, rotationY, standOff);
+  if (from && !options.anywhere) {
+    const stuck = { hosts: getBuiltInHostFaces(faces), walls: faces.walls, families, fits, outline: faces.outline, width, depth, rotationY, standOff };
+    return findStuckBuiltInPlace(stuck, x, z, TURN_REACH) ?? [x, z];
+  }
+  const reach = options.anywhere ? Number.POSITIVE_INFINITY : getTurnReach(width, depth, rotationY, options.turnedFrom);
+  return findNearestBuiltInFit(families, { x, z }, reach, fits, faces.outline) ?? [x, z];
 }
 
 /**
@@ -262,8 +266,12 @@ export function getBuiltInDragPlace(
 ): [number, number] {
   const faces = getRoomBuiltInFaces(room, undefined, options.planRooms, options.canonical), standOff = getBuiltInStandOff(room, options.bottom);
   if (faces.furnitureRule || builtInFootprintFits(faces, from[0], from[1], width, depth, rotationY, BUILT_IN_CONTACT_TOLERANCE / 10, standOff)) return [x, z];
-  return clampBuiltInToRoom(room, x, z, width, depth, rotationY, { ...options, from });
+  // A drag held still over a place gives the same frame again: its search isn't repeated (one that finds nothing, above all).
+  const key = [...from, x, z, width, depth, rotationY, standOff].join();
+  if (lastDrag?.faces !== faces || lastDrag.key !== key) lastDrag = { faces, key, place: clampBuiltInToRoom(room, x, z, width, depth, rotationY, { ...options, from }) };
+  return [lastDrag.place[0], lastDrag.place[1]];
 }
+let lastDrag: { faces: BuiltInRoomFaces; key: string; place: [number, number] } | undefined;
 
 /** How far (metres) a turn looks for the nearest place a built-in fits, at least: a unit's turn by a column or in a corner. */
 const TURN_REACH = 0.6;
@@ -287,6 +295,17 @@ function getTurnReach(width: number, depth: number, rotationY: number, turnedFro
  * corner exactly on the outline may count as outside it, so the edges keep a further twentieth of the tolerance in hand.
  */
 function getBuiltInFitObstacles(faces: BuiltInRoomFaces, width: number, depth: number, rotationY: number, standOff: number): BuiltInFitObstacles[] {
+  // Kept per region and size, the last few: a drag tries a stuck built-in's moves on every frame (findNearestBuiltInFit grows
+  // each family's obstacles once).
+  const key = [width, depth, rotationY, standOff].join(), known = familiesByRegion.get(faces) ?? new Map<string, BuiltInFitObstacles[]>();
+  const kept = known.get(key) ?? buildFitObstacles(faces, width, depth, rotationY, standOff);
+  if (known.size >= 8 && !known.has(key)) known.delete(known.keys().next().value as string);
+  familiesByRegion.set(faces, known.set(key, kept));
+  return kept;
+}
+const familiesByRegion = new WeakMap<BuiltInRoomFaces, Map<string, BuiltInFitObstacles[]>>();
+
+function buildFitObstacles(faces: BuiltInRoomFaces, width: number, depth: number, rotationY: number, standOff: number): BuiltInFitObstacles[] {
   const touching = BUILT_IN_CONTACT_TOLERANCE / 10 - 1e-9, clear = BUILT_IN_CONTACT_TOLERANCE / 20;
   const ringEdges = (ring: readonly Point[]) => ring.map((point, index) => [point, ring[(index + 1) % ring.length]]);
   const families: BuiltInFitObstacles[] = [

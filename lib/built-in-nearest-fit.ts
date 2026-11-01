@@ -103,17 +103,64 @@ export function findNearestBuiltInFit(
   families: readonly BuiltInFitObstacles[], start: Point, reach: number, fits: (x: number, z: number) => boolean,
   within?: readonly Point[]
 ): [number, number] | null {
-  const shapes = families.flatMap(({ footprint, obstacles }) => {
-    const radius = Math.max(...footprint.map((point) => Math.hypot(point.x, point.z)));
-    return obstacles.filter((obstacle) => distanceToBounds(obstacle, start) <= reach + radius).map((obstacle) => grow(obstacle, footprint));
-  });
-  const boxed = shapes.map((shape) => ({ shape, ...boundsOf(shape) }));
-  const ordered = candidatesNear(start, shapes, reach)
+  const boxed = grownNear(families, start, reach);
+  const ordered = candidatesNear(start, boxed.map(({ shape }) => shape), reach)
     .map((point) => ({ point, distance: Math.hypot(point.x - start.x, point.z - start.z) }))
     .filter(({ distance }) => distance <= reach + 1e-12)
     .sort((first, second) => first.distance - second.distance);
-  for (const { point } of ordered) {
-    // A footprint inside the room has its centre inside the room's outline (`within`), and it is clear of every grown shape.
+  return firstClear(ordered.map(({ point }) => point), boxed, fits, within);
+}
+
+/**
+ * The nearest place to `start` on the line through it along `along` (a unit vector), within `reach` metres either way, where
+ * the footprints stand clear and `fits` accepts it: the start, or where the line meets a grown shape's edge (a built-in slid
+ * along a face, its back on it). Null where none is.
+ */
+export function findNearestBuiltInFitAlong(
+  families: readonly BuiltInFitObstacles[], start: Point, along: Point, reach: number, fits: (x: number, z: number) => boolean,
+  within?: readonly Point[]
+): [number, number] | null {
+  const boxed = grownNear(families, start, reach), offsets = [0];
+  for (const { a, b } of edgesOf(boxed.map(({ shape }) => shape))) {
+    const [ex, ez] = [b.x - a.x, b.z - a.z], denominator = along.x * ez - along.z * ex;
+    if (Math.abs(denominator) < 1e-15) continue;
+    const t = ((a.x - start.x) * ez - (a.z - start.z) * ex) / denominator, u = ((a.x - start.x) * along.z - (a.z - start.z) * along.x) / denominator;
+    if (u >= 0 && u <= 1 && Math.abs(t) <= reach) offsets.push(t);
+  }
+  offsets.sort((first, second) => Math.abs(first) - Math.abs(second));
+  return firstClear(offsets.map((t) => ({ x: start.x + along.x * t, z: start.z + along.z * t })), boxed, fits, within);
+}
+
+type Boxed = { shape: Point[]; minX: number; maxX: number; minZ: number; maxZ: number };
+type Bounds = { minX: number; maxX: number; minZ: number; maxZ: number };
+// Each family's obstacles' bounds, its footprint's reach, and each obstacle grown by it once it is first near (a drag tries a
+// stuck built-in's moves on every frame with the same family).
+const grownByFamily = new WeakMap<BuiltInFitObstacles, { radius: number; bounds: Bounds[]; grown: Array<Boxed | undefined> }>();
+const distanceTo = (box: Bounds, point: Point) => Math.hypot(Math.max(box.minX - point.x, 0, point.x - box.maxX), Math.max(box.minZ - point.z, 0, point.z - box.maxZ));
+
+/** The obstacles a footprint centred within `reach` of `start` could meet, grown by it. */
+function grownNear(families: readonly BuiltInFitObstacles[], start: Point, reach: number): Boxed[] {
+  return families.flatMap((family) => {
+    let known = grownByFamily.get(family);
+    if (!known) {
+      known = { radius: Math.max(...family.footprint.map((point) => Math.hypot(point.x, point.z))), bounds: family.obstacles.map(boundsOf), grown: [] };
+      grownByFamily.set(family, known);
+    }
+    const { radius, bounds, grown } = known;
+    return family.obstacles.flatMap((obstacle, index) => {
+      if (distanceTo(bounds[index], start) > reach + radius) return [];
+      if (!grown[index]) {
+        const shape = grow(obstacle, family.footprint);
+        grown[index] = { shape, ...boundsOf(shape) };
+      }
+      return [grown[index] as Boxed];
+    });
+  });
+}
+
+/** The first of the places, in order, whose centre is in the room (`within`), clear of every grown shape, and that `fits` accepts. */
+function firstClear(points: readonly Point[], boxed: readonly Boxed[], fits: (x: number, z: number) => boolean, within?: readonly Point[]): [number, number] | null {
+  for (const point of points) {
     if (within && !isInsideRing(point, within)) continue;
     if (boxed.some((box) => point.x > box.minX && point.x < box.maxX && point.z > box.minZ && point.z < box.maxZ &&
       isStrictlyInside(box.shape, point))) continue;
@@ -138,7 +185,3 @@ function isInsideRing(point: Point, ring: readonly Point[]): boolean {
   return inside;
 }
 
-function distanceToBounds(points: readonly Point[], point: Point): number {
-  const { minX, maxX, minZ, maxZ } = boundsOf(points);
-  return Math.hypot(Math.max(minX - point.x, 0, point.x - maxX), Math.max(minZ - point.z, 0, point.z - maxZ));
-}

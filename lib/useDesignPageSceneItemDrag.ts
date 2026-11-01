@@ -23,6 +23,7 @@ import type { HistoryCommand, HistoryStatus } from "@/lib/historyManager";
 import { clampToPlacementRoom, type PlaceBuiltInDragInRoom } from "@/lib/useDesignPagePlacementRoomQueries";
 import { getCrossRoomItemDragTarget } from "@/lib/useDesignPageCrossRoomItemTransfer";
 import { isBuiltInItem } from "@/lib/room-finished-outline";
+import { getBuiltInRefusalNote } from "@/lib/built-in-move-notes";
 import type {
   SceneItemDragEndContext,
   SceneItemMoveContext,
@@ -50,11 +51,12 @@ function freeBuiltIn(
   return place && room && isBuiltInItem(mover) ? place(room, mover.position, position, mover.rotationY ?? 0, dimensions) : position;
 }
 
+/** Why a drag is refused at a wall: a built-in that doesn't fit where it stands either, with nowhere near to go, is fitted again. */
+const wallRejection = (contained: SceneItemDragOptions["actions"]["isPlacementContained"], room: RoomSnapshot, mover: DesignItem, dimensions: PlanningDimensions, otherwise: string) =>
+  getBuiltInRefusalNote(isBuiltInItem(mover) && !contained(room, mover.position, mover.rotationY ?? 0, dimensions, true), room.name, otherwise);
+
 type SceneDragHistory = {
-  beginContinuousCommand: (command: {
-    id: string;
-    description: string;
-  }) => void;
+  beginContinuousCommand: (command: { id: string; description: string }) => void;
   updateContinuousCommand: <TInput, TResult>(
     command: HistoryCommand<TInput, TResult>
   ) => TResult;
@@ -447,9 +449,7 @@ export function useDesignPageSceneItemDrag({
         localPosition = freeBuiltIn(placeBuiltInDrag, moverRoom, mover, localPosition, configuredPlanningDims);
         if (moverRoom && !isPlacementContained(moverRoom, localPosition, mover.rotationY ?? 0,
           configuredPlanningDims, isBuiltInItem(mover))) { // A built-in may stand against the finished face.
-          showDragRejection(
-            `Move blocked by a wall. Keep the whole item inside ${moverRoom.name}.`
-          );
+          showDragRejection(wallRejection(isPlacementContained, moverRoom, mover, configuredPlanningDims, `Move blocked by a wall. Keep the whole item inside ${moverRoom.name}.`));
           return false;
         }
 
