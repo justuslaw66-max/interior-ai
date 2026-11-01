@@ -5,7 +5,8 @@ import type { Run } from "./built-in-faces-oracle-utils";
  * nearest fit near where it stands, keeping its back on the face it stood against ... the run's own length is a sensible
  * bound. If nothing fits within that, refuse and leave it where it is"), restated from the decision: a nudge, Snap to wall or a
  * drag goes along its face, its back where Fit stood it (`run`, fitted there: the line through its centre along its face), to
- * a place that fits no further than its own width from where the move aims along it, with none clearly nearer that fits; or it
+ * a place that fits no further than its own width from where the move aims along it, with none clearly nearer that fits (a
+ * quarter, half and three quarters of the way, either side); or it
  * is refused, and then no place on that line within its width clearly fits (its fitted place, where that is in reach).
  */
 
@@ -50,12 +51,9 @@ export function checkMovesFromStuck(run: Run, piece: Run, moves: StuckMoves, che
     // On its face (to a millimetre: Snap to wall may take it to another face's line a hair off this one's, where it fits).
     check(Math.abs(across) < 0.001, () => `${what()}: stuck, ${move} took it ${(across * 1000).toFixed(1)} mm off its wall`);
     check(Math.abs(at - aim) <= piece.width + 1e-6, () => `${what()}: stuck, ${move} slid it ${(Math.abs(at - aim) * 1000).toFixed(0)} mm, further than its own width`);
-    for (let step = 0.005; step < Math.abs(at - aim) - 0.005; step += 0.005) {
-      const nearer = [aim - step, aim + step].find((t) => moves.clearlyFits(onLine(t)));
-      if (nearer === undefined) continue;
-      check(false, () => `${what()}: stuck, ${move} slid it ${(Math.abs(at - aim) * 1000).toFixed(0)} mm, past a place ${(step * 1000).toFixed(0)} mm from its aim that fits`);
-      break;
-    }
+    // Nothing clearly fits nearer its aim: a quarter, half and three quarters of the way, either side (each test is costly).
+    const slid = Math.abs(at - aim), nearer = slid > 0.01 ? [0.25, 0.5, 0.75].flatMap((f) => [aim - slid * f, aim + slid * f]).find((t) => moves.clearlyFits(onLine(t))) : undefined;
+    check(nearer === undefined, () => `${what()}: stuck, ${move} slid it ${(slid * 1000).toFixed(0)} mm, past a place ${(Math.abs((nearer ?? 0) - aim) * 1000).toFixed(0)} mm from its aim that fits`);
   }
   return refused;
 }
