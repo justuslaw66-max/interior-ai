@@ -21,7 +21,8 @@ const workspace = read("components/editor/FloorPlanImportWorkspace.tsx");
 const chooseStep = read("components/editor/FloorPlanUploadChooseStep.tsx");
 const roomSetupStartActions = read("components/editor/RoomSetupStartActions.tsx");
 const pausedNotice = read("components/editor/FloorPlanImportPausedNotice.tsx");
-const assistant = read("components/editor/FloorPlanImportAssistant.tsx");
+// the ready card is its own component, shown by the assistant
+const assistant = ["components/editor/FloorPlanImportAssistant.tsx", "components/editor/FloorPlanImportReadyCard.tsx"].map(read).join("\n");
 const progressCard = read("components/editor/FloorPlanImportProgressCard.tsx");
 const lastUploadCard = read("components/editor/FloorPlanLastUploadCard.tsx");
 const pageSelection = read("components/editor/FloorPlanPageSelectionPanel.tsx");

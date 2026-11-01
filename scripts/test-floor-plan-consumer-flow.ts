@@ -39,6 +39,7 @@ const read = (relativePath: string) =>
 
 const assistant = [
   "components/editor/FloorPlanImportAssistant.tsx",
+  "components/editor/FloorPlanImportReadyCard.tsx",
   "components/editor/useConsumerFloorPlanImportCreation.ts",
   "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx",
   "components/editor/floor-plan-import-review/FloorPlanReviewHomeType.tsx",
