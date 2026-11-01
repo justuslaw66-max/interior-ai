@@ -41,6 +41,18 @@ function openingSpan(annotation: FloorPlanAnnotationV2, sourceId: string, pageNu
   return geometry.sourceId === sourceId && kind && a && b ? { kind, a, b } : null;
 }
 
+/**
+ * The doors and windows the reader found on a page, as their spans (page px). A room click draws them in as lines, so
+ * a found room stops at its doorways, dashed or wide ones too.
+ */
+export function openingSpansOnPage(document: FloorPlanDocumentV2, floorId: string, sourceId: string, pageNumber: number) {
+  const floor = document.floors.find((entry) => entry.id === floorId);
+  return (floor?.annotations ?? []).flatMap((annotation) => {
+    const span = openingSpan(annotation, sourceId, pageNumber);
+    return span ? [[{ x: span.a.x, y: span.a.y }, { x: span.b.x, y: span.b.y }] as [ReviewSourcePoint, ReviewSourcePoint]] : [];
+  });
+}
+
 /** The found door or window symbol nearest a click on the page, if the click is on it. */
 export function openingSymbolAt(input: {
   document: FloorPlanDocumentV2; floorId: string; sourceId: string; pageNumber: number; point: ReviewSourcePoint;
