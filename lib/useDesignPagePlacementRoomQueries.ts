@@ -19,6 +19,13 @@ import type { DesignItem, RoomSnapshot } from "@/lib/room-types";
 import { compileCanonicalFloorPlanRenderModel, type CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
+import {
+  builtInFootprintFits,
+  getBuiltInStandOff,
+  getRoomBuiltInFaces,
+  usesFurnitureRuleForBuiltIns,
+  type BuiltInPlanRooms,
+} from "@/lib/room-built-in-faces";
 
 type PlacementDimensions = Pick<DimensionsMm, "w" | "d"> & Partial<Pick<DimensionsMm, "h">>;
 type ExcludedPlacementItems = string | string[] | undefined;
@@ -55,7 +62,9 @@ export type IsPlacementContainedInRoom = (
   room: RoomSnapshot,
   position: [number, number, number],
   rotationY: number,
-  dimensions: PlacementDimensions
+  dimensions: PlacementDimensions,
+  /** A built-in cabinet, which may stand against the finished face; furniture keeps 2 cm off it. */
+  builtIn?: boolean
 ) => boolean;
 
 type UseDesignPagePlacementRoomQueriesInput = {
@@ -165,6 +174,8 @@ export function isPlacementContainedInRoom({
   dimensions,
   houseRoom,
   canonicalModel,
+  builtIn = false,
+  planRooms,
 }: {
   room: RoomSnapshot;
   position: [number, number, number];
@@ -172,7 +183,18 @@ export function isPlacementContainedInRoom({
   dimensions: PlacementDimensions;
   houseRoom?: HousePlanRoom2D;
   canonicalModel?: CanonicalFloorPlanRenderModel;
+  builtIn?: boolean;
+  /** The plan's rooms: the walls the 3D view draws around the room stand in its region (lib/room-built-in-faces.ts). */
+  planRooms?: BuiltInPlanRooms;
 }): boolean {
+  // A built-in stands in its room's region by its real (turned) footprint, crossing no wall, panel or column (the walls of the
+  // rooms next door included), against the finished face (one on the floor against the baseboard: lib/room-built-in-faces.ts);
+  // within the baseboard, only where furniture of its size may too. A room on furniture's rule for built-ins keeps that alone.
+  if (builtIn && !usesFurnitureRuleForBuiltIns(room, undefined, planRooms)) {
+    const faces = getRoomBuiltInFaces(room, undefined, planRooms), [width, depth] = [dimensions.w / 1000, dimensions.d / 1000];
+    if (!builtInFootprintFits(faces, position[0], position[2], width, depth, rotationY)) return false;
+    if (builtInFootprintFits(faces, position[0], position[2], width, depth, rotationY, undefined, getBuiltInStandOff(room, position[1]))) return true;
+  }
   if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   // Inside the room's laminate panels (lib/room-finished-outline.ts).
   const outline = getRoomOutlineInsideFinishes({
@@ -222,7 +244,7 @@ export function useDesignPagePlacementRoomQueries({
 
   const isCatalogPlacementContainedInRoom =
     useCallback<IsPlacementContainedInRoom>(
-      (room, position, rotationY, dimensions) =>
+      (room, position, rotationY, dimensions, builtIn) =>
         isPlacementContainedInRoom({
           room,
           position,
@@ -230,6 +252,8 @@ export function useDesignPagePlacementRoomQueries({
           dimensions,
           houseRoom: houseRoomById.get(room.id),
           canonicalModel,
+          builtIn,
+          planRooms: houseRoomById,
         }),
       [houseRoomById, canonicalModel]
     );

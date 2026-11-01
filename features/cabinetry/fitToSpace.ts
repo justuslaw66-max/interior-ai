@@ -16,10 +16,7 @@ import {
   getCabinetOverallHeight,
   getCabinetOverallWidth,
 } from "./layout";
-import {
-  chooseCabinetFitSegment,
-  getCabinetAvailableSegments,
-} from "./fitSegments";
+import { chooseCabinetFitSegment, getCabinetAvailableSegments, getCabinetBackOffsetMm } from "./fitSegments";
 import { resolveCabinetTemplateHostCompatibility } from "./hostCompatibility";
 import { validateCabinetDefinition } from "./validation";
 import { getCabinetMinimumModuleWidthMm } from "./moduleWidthRules";
@@ -567,7 +564,7 @@ export function fitCabinetToSpace(
   const segments = getCabinetAvailableSegments(
     space,
     fittedAssemblyHeightMm,
-    mountingHeightMm
+    mountingHeightMm, getCabinetOverallDepth(definition)
   );
   const segment = chooseCabinetFitSegment(segments, alignment);
   if (!segment) {
@@ -746,7 +743,7 @@ export function fitCabinetToSpace(
       suggestedAction: "review_opening",
     });
   }
-  if ((space.baseboardOffsetMm ?? 0) > 0) {
+  if (getCabinetBackOffsetMm(space, mountingHeightMm) > 0) { // A wall cabinet hangs above the baseboard.
     issues.push({
       code: "baseboard_offset_applied",
       severity: "info",
@@ -809,7 +806,7 @@ export function getCabinetFitPlacement(
   const wall = fitState?.host.wall;
   if (!fitState) return null;
   const offsetMeters = fitState.segment.centerOffsetMm / 1000;
-  const wallOffsetMeters = Math.max(0, fitState.host.baseboardOffsetMm ?? 0) / 1000;
+  const wallOffsetMeters = getCabinetBackOffsetMm(fitState.host, fitState.host.mountingHeightMm ?? 0) / 1000;
   const depthMeters = getCabinetOverallDepth(definition) / 1000;
   const mountingHeightMeters = Math.max(0, fitState.host.mountingHeightMm ?? 0) / 1000;
 

@@ -1,3 +1,5 @@
+import { getObstacleFreeSpans } from "@/lib/built-in-free-span";
+
 import type {
   CabinetFitAlignment,
   CabinetFitSegment,
@@ -31,55 +33,74 @@ function mergeIntervals(intervals: Array<{ startMm: number; endMm: number }>) {
   return merged;
 }
 
+/** The stretches of [startMm, endMm] clear of the openings. */
+function segmentsBetweenOpenings(startMm: number, endMm: number, blocked: Array<{ startMm: number; endMm: number }>): CabinetFitSegment[] {
+  const segments: CabinetFitSegment[] = [];
+  const push = (from: number, to: number) => segments.push({ startMm: from, endMm: to, widthMm: to - from, centerOffsetMm: from + (to - from) / 2 });
+  let cursorMm = startMm;
+  blocked.forEach((interval) => {
+    if (interval.endMm <= startMm || interval.startMm >= endMm) return;
+    if (interval.startMm > cursorMm) push(cursorMm, interval.startMm);
+    cursorMm = Math.max(cursorMm, interval.endMm);
+  });
+  if (cursorMm < endMm) push(cursorMm, endMm);
+  return segments;
+}
+
+/**
+ * How far a run's back stands off its host's face (J, 29 Oct 2026: "Face, back flush"): a run standing on the floor by the
+ * recorded baseboard's depth; a wall cabinet (its bottom above the floor) hangs above the baseboard, its back against the face.
+ */
+export function getCabinetBackOffsetMm(space: Pick<CabinetHostSpace, "baseboardOffsetMm">, assemblyBottomMm: number): number {
+  return assemblyBottomMm > 0 ? 0 : Math.max(0, space.baseboardOffsetMm ?? 0);
+}
+
+/** The allowance at each end of a run: a run standing on the floor also keeps clear of the end walls' baseboards; a wall
+ * cabinet hangs above them. */
+function getEndClearancesMm(space: CabinetHostSpace, assemblyBottomMm: number): [number, number] {
+  const onFloor = !(assemblyBottomMm > 0), segment = space.wallSegment;
+  const baseboard = (value: number | undefined) => (onFloor ? Math.max(0, value ?? 0) : 0);
+  return [
+    Math.max(0, space.installationClearanceLeftMm ?? 0) + baseboard(segment?.startBaseboardClearanceMm),
+    Math.max(0, space.installationClearanceRightMm ?? 0) + baseboard(segment?.endBaseboardClearanceMm),
+  ];
+}
+
+/**
+ * The stretches of a host a run can fill. On a face with obstacles (another wall at a corner, a panel, a column, the face's
+ * two ends: `wallSegment.obstacles`, lib/room-built-in-region.ts), a run `assemblyDepthMm` deep standing out from the face by
+ * the baseboard keeps the end allowance from each, measured from whatever its nearest point meets, and on the floor a
+ * baseboard's depth more.
+ */
 export function getCabinetAvailableSegments(
   space: CabinetHostSpace,
   assemblyHeightMm: number,
-  assemblyBottomMm = 0
+  assemblyBottomMm = 0,
+  assemblyDepthMm = 0
 ): CabinetFitSegment[] {
   if (!Number.isFinite(space.availableWidthMm) || space.availableWidthMm <= 0) return [];
   const halfWidthMm = space.availableWidthMm / 2;
-  const startBoundaryMm =
-    -halfWidthMm + Math.max(0, space.installationClearanceLeftMm ?? 0);
-  const endBoundaryMm =
-    halfWidthMm - Math.max(0, space.installationClearanceRightMm ?? 0);
+  const depthMm = Number.isFinite(assemblyDepthMm) ? Math.max(0, assemblyDepthMm) : 0;
+  const segment = space.wallSegment;
+  const [startClearanceMm, endClearanceMm] = getEndClearancesMm(space, assemblyBottomMm);
+  // With obstacles, the allowance is kept from them (the face's two ends are among them), not from the host's ends.
+  const obstacles = segment?.obstacles ?? [];
+  const startBoundaryMm = -halfWidthMm + (obstacles.length ? 0 : startClearanceMm);
+  const endBoundaryMm = halfWidthMm - (obstacles.length ? 0 : endClearanceMm);
   if (endBoundaryMm <= startBoundaryMm) return [];
+  // Its back stands off the face by the baseboard on the floor; a wall cabinet hangs above it, its back against the face.
+  const backMm = getCabinetBackOffsetMm(space, assemblyBottomMm);
+  const spans = obstacles.length
+    ? getObstacleFreeSpans(obstacles, backMm, backMm + depthMm, Math.max(startClearanceMm, endClearanceMm), startBoundaryMm, endBoundaryMm)
+    : [[startBoundaryMm, endBoundaryMm] as [number, number]];
 
   const blockedIntervals = mergeIntervals(
     space.openings
-      .filter((opening) =>
-        openingBlocksHeight(opening, assemblyHeightMm, assemblyBottomMm)
-      )
-      .map((opening) => ({
-        startMm: Math.max(startBoundaryMm, opening.offsetMm - opening.widthMm / 2),
-        endMm: Math.min(endBoundaryMm, opening.offsetMm + opening.widthMm / 2),
-      }))
+      .filter((opening) => openingBlocksHeight(opening, assemblyHeightMm, assemblyBottomMm))
+      .map((opening) => ({ startMm: opening.offsetMm - opening.widthMm / 2, endMm: opening.offsetMm + opening.widthMm / 2 }))
       .filter((interval) => interval.endMm > interval.startMm)
   );
-
-  const segments: CabinetFitSegment[] = [];
-  let cursorMm = startBoundaryMm;
-  blockedIntervals.forEach((interval) => {
-    if (interval.startMm > cursorMm) {
-      const widthMm = interval.startMm - cursorMm;
-      segments.push({
-        startMm: cursorMm,
-        endMm: interval.startMm,
-        widthMm,
-        centerOffsetMm: cursorMm + widthMm / 2,
-      });
-    }
-    cursorMm = Math.max(cursorMm, interval.endMm);
-  });
-  if (cursorMm < endBoundaryMm) {
-    const widthMm = endBoundaryMm - cursorMm;
-    segments.push({
-      startMm: cursorMm,
-      endMm: endBoundaryMm,
-      widthMm,
-      centerOffsetMm: cursorMm + widthMm / 2,
-    });
-  }
-  return segments;
+  return spans.flatMap(([from, to]) => segmentsBetweenOpenings(from, to, blockedIntervals));
 }
 
 export function chooseCabinetFitSegment(

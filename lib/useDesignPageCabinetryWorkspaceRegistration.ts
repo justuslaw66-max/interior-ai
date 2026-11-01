@@ -25,8 +25,7 @@ export function useDesignPageCabinetryWorkspaceRegistration({
     documentSelection.boundaries;
   const selectionInspection =
     planAuthoring.boundaries.selectionInspection;
-  const { activeRoom, roomWidth, roomDepth, wallThickness } =
-    documentRoom.derived.room;
+  const { activeRoom } = documentRoom.derived.room;
 
   const cabinetry = useDesignPageCabinetryRegistrationFacade({
     state: {
@@ -45,9 +44,6 @@ export function useDesignPageCabinetryWorkspaceRegistration({
       isDesigner: coreShell.derived.access.isDesigner,
       canEdit: coreShell.derived.access.canEdit,
       designId: base.state.identity.designId,
-      roomWidth,
-      roomDepth,
-      wallThickness,
       rotationSnapEnabled:
         selectionInspection.state.inspection.rotationSnapEnabled,
       rotationSnapStepRadians:
@@ -63,9 +59,6 @@ export function useDesignPageCabinetryWorkspaceRegistration({
       commitItemsToRoom: itemDocument.actions.commitItemsToRoom,
       updateSelection: itemSelection.actions.updateSelection,
       createInstanceId: itemDocument.actions.createInstanceId,
-      clampToActiveRoom: documentRoom.actions.room.clampToActiveRoom,
-      clampToCatalogPlacementRoom:
-        placement.actions.catalog.clampToCatalogPlacementRoom,
       isCatalogPlacementContainedInRoom:
         placement.actions.catalog.isCatalogPlacementContainedInRoom,
       getItemAABB: selectionInspection.actions.geometry.getItemAABB,

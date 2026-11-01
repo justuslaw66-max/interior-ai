@@ -17,6 +17,20 @@ import {
  * furniture at the panel. A room with no panels keeps its outline exactly.
  */
 
+/**
+ * A built-in cabinet's inset from the bare wall: half the wall, so its back stands against the finished face with no gap (J,
+ * 29 Oct 2026: "Face, back flush"). Furniture keeps half the wall plus 2 cm (getFurnitureWallInset). The outline inside the
+ * panels adds each wall's panel, as it does for furniture.
+ */
+export function getBuiltInWallInset(wallThickness = 0.12): number {
+  return Number.isFinite(wallThickness) ? Math.max(0, wallThickness) / 2 : 0;
+}
+
+/** True for a built-in cabinet, which stands against the finished face (lib/room-built-in-faces.ts); furniture keeps 2 cm. */
+export function isBuiltInItem(item: { assetType?: string }): boolean {
+  return item.assetType === "parametric_cabinet";
+}
+
 /** The outline fields placement reads, in a room snapshot's or a plan room's terms. */
 export type RoomPlanOutline = {
   shape: RoomPlanShape;

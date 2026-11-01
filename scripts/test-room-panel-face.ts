@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { getRoomPanelStrips2D } from "../components/editor/renderers/roomPanelStrips2D";
 import { evaluateConstraints } from "../lib/constraints/evaluate";
 import { clampToRoom, getFurnitureWallInset } from "../lib/design-page-geometry";
-import { buildCabinetryAvailableSpaces } from "../features/cabinetry/useDesignPageCabinetry";
+import { buildCabinetryAvailableSpaces } from "../features/cabinetry/roomCabinetHosts";
 import {
   clampToRoomInsideFinishes,
   getFurnitureRoomFrameInsideFinishes,
@@ -13,6 +13,7 @@ import {
   getInsetPolygonFaces,
   insetPolygonEdges,
   insetPolygonEdgesWithSteps,
+  isBuiltInItem,
   isInsetStep,
 } from "../lib/room-finished-outline";
 import { getRoomWallClearance } from "../lib/room-finished-faces";
@@ -236,9 +237,20 @@ assert.match(lWallMessage(room({ default: { paintColorHex: "#ffffff" } }, { plan
 near(getRoomWallClearance(lRoom, { x: 1.1, z: notchConsoleZ(0.05) }, { w: 1.5, d: consoleDepth }), 0.04,
   "placement scoring's clearance: to the notch wall's panel, 10 mm in front of the wall");
 
-// Built-ins: a cabinet run along a wall is the clear length between the walls either side, less their panels.
+// Built-ins: a wall's host is its finished face, from the finished face of the wall at one end to the other's (half each wall
+// in, and its panel), and its back stands on the face (J, 29 Oct 2026: "Face, back flush"; features/cabinetry/roomCabinetHosts.ts).
 const [north, east] = buildCabinetryAvailableSpaces({ activeRoom: tiledWithPanel, activePlanRoom: null, planRoomCount: 1, planOpenings: [] });
-assert.deepEqual([north.availableWidthMm, east.availableWidthMm], [4000 - 240 - 44, 3000 - 240 - 10]);
+assert.deepEqual([north.availableWidthMm, east.availableWidthMm], [4000 - 120 - 44, 3000 - 120 - 10]);
+near(north.wallSegment!.startZmm, -1500 + 60 + 10, "the north host stands on its panel's face");
+near(north.wallSegment!.endXmm, 2000 - 60 - 44, "and stops at the east wall's panel");
+near(east.wallSegment!.startXmm, 2000 - 60 - 44, "the east host is its panel's face");
+const builtIn = (x: number) => isPlacementContainedInRoom({
+  room: tiledWithPanel, position: [x, 0, 0], rotationY: 0, dimensions: { w: 1000, d: 500, h: 800 }, builtIn: true,
+});
+assert.equal(builtIn(2 - 0.06 - 0.044 - 0.5), true, "a built-in may stand against the panel's face");
+assert.equal(contained(2 - 0.06 - 0.044 - 0.5), false, "furniture keeps 2 cm off it");
+assert.equal(builtIn(2 - 0.06 - 0.044 - 0.5 + 0.001), false, "but not into the panel");
+assert.deepEqual([isBuiltInItem({ assetType: "parametric_cabinet" }), isBuiltInItem({ assetType: "catalog_item" })], [true, false]);
 
 // The clear size inside the panels, for the room inspector; nothing without panels.
 const metres = (valueMm: number) => `${(valueMm / 1000).toFixed(2)} m`;
@@ -407,11 +419,22 @@ assert.deepEqual([sharedDoor.room.id, sharedDoor.panelDepth], ["a", 0.044]);
 // The wiring: the active room's clamp, the checks' callers, the 3D window outline and the inside corners.
 const read = (path: string) => readFileSync(path, "utf8");
 assert.match(read("lib/useDesignPageHousePlanState.ts"), /clampToRoomInsideFinishes\([\s\S]*?getRoomWallFinishDepths\(activeRoom\)\s*\)/);
-assert.match(
-  read("lib/useDesignPageSceneItemDrag.ts"),
-  /: clampToRoomInsideFinishes\([^\n]*\n(?:[^\n]*\n){7}\s*targetRoom\.planHoles,\s*getRoomWallFinishDepths\(targetRoom\)\s*\)/,
-  "an item dragged into another room is clamped to that room's own shape and panels"
-);
+// An item dragged into another room is clamped to that room's own shape, columns and panels (clampToPlacementRoom(targetRoom),
+// as the line's clampToRoomInsideFinishes call there was): in a drawn L with a 44 mm east panel and a column, a sofa pushed
+// past the east wall stops half the wall plus 2 cm off the panel, and one dropped on the column is moved off it.
+assert.match(read("lib/useDesignPageSceneItemDrag.ts"), /: clampToPlacementRoom\(targetRoom, \/\/ The target room's own shape and panels/,
+  "an item dragged into another room is clamped to that room's own shape and panels");
+const dragTarget: RoomSnapshot = {
+  ...tiledWithPanel, planShape: "custom_polygon",
+  surfaces: { walls: { default: { paintColorHex: "#ffffff" }, faces: { "wall-1": { materialId: NORDIC_ACACIA, panelBacking: DEEPEST } } } },
+  planPolygon: [{ x: -2, z: -1.5 }, { x: 2, z: -1.5 }, { x: 2, z: 0.5 }, { x: 0, z: 0.5 }, { x: 0, z: 1.5 }, { x: -2, z: 1.5 }],
+  planHoles: [[{ x: -1.2, z: 0.6 }, { x: -0.8, z: 0.6 }, { x: -0.8, z: 1 }, { x: -1.2, z: 1 }]],
+};
+const [intoEastX] = clampToPlacementRoom(dragTarget, 5, -1, 1, 0.5);
+near(intoEastX, 2 - 0.06 - 0.044 - 0.02 - 0.5, "dragged past the target room's panelled east wall");
+const offColumn = clampToPlacementRoom(dragTarget, -1, 0.8, 0.3, 0.3);
+assert.ok(isPlacementContainedInRoom({ room: dragTarget, position: [offColumn[0], 0, offColumn[1]], rotationY: 0, dimensions: { w: 300, d: 300, h: 800 } }),
+  `dropped on the target room's column, moved off it (${offColumn})`);
 for (const file of ["lib/useDesignPageSceneItemDrag.ts", "lib/useDesignPageSelectionTransforms.ts"]) {
   assert.match(read(file), /room: \{ width: roomWidth, depth: roomDepth, wallThickness, wallFinishRoom: activeRoom \}/, file);
 }
