@@ -1,6 +1,8 @@
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import { resolveCanonicalFloorElevationMeters } from "@/lib/floor-plan-scene-elevation";
 import { getRoomWallFinishDepths, type RoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
+import type { FurnitureRoomContext } from "@/lib/furniture-room-fit";
+import { getItemRoomContext } from "@/lib/furniture-room-context";
 import type {
   DesignItem,
   DesignSnapshot,
@@ -38,6 +40,8 @@ export type SceneRoomItemEntry = {
   roomWallThickness: number;
   /** Each wall's laminate panel depth, so items stop at the panel (lib/room-wall-finish-depths.ts). */
   roomWallFinishDepths?: RoomWallFinishDepths;
+  /** Furniture's room for its clamp (lib/furniture-room-context.ts): its walls and the rooms next door's; none for a built-in. */
+  roomFurniture?: FurnitureRoomContext;
   isActiveRoom: boolean;
 };
 
@@ -53,7 +57,8 @@ function buildSceneRoomItemEntry(
   item: DesignItem,
   room: RoomSnapshot,
   roomOffset: { x: number; z: number },
-  isActiveRoom: boolean
+  isActiveRoom: boolean,
+  planRooms: ReadonlyMap<string, ScenePlanRoom>
 ): SceneRoomItemEntry {
   return {
     item,
@@ -73,6 +78,7 @@ function buildSceneRoomItemEntry(
     roomWallThickness:
       room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness,
     roomWallFinishDepths: getRoomWallFinishDepths(room),
+    roomFurniture: getItemRoomContext(item, room, planRooms),
     isActiveRoom,
   };
 }
@@ -132,7 +138,7 @@ export function buildDesignPageSceneRoomItems({
     const planRoom = houseRoomById.get(activeRoom.id);
     const roomOffset = { x: planRoom?.x ?? 0, z: planRoom?.z ?? 0 };
     return activeRoom.items.map((item) =>
-      buildSceneRoomItemEntry(item, activeRoom, roomOffset, true)
+      buildSceneRoomItemEntry(item, activeRoom, roomOffset, true, houseRoomById)
     );
   }
 
@@ -147,7 +153,8 @@ export function buildDesignPageSceneRoomItems({
           item,
           room,
           roomOffset,
-          room.id === designSnapshot.activeRoomId
+          room.id === designSnapshot.activeRoomId,
+          houseRoomById
         )
       );
     });

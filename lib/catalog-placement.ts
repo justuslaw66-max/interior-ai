@@ -4,7 +4,7 @@ import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { mapToTopCategory, type CatalogTopCategory } from "@/lib/catalog/view-builders";
 import {
   aabbIntersects,
-  FURNITURE_WALL_CLEARANCE_METERS, isPlacedItemInsideRoomPolygon,
+  isFootprintInsideRoomPolygon,
   isPointInsideRoomPolygonWithHoles,
   type AABB,
 } from "@/lib/design-page-geometry";
@@ -408,8 +408,8 @@ export function isCatalogPlacementFootprintInsideRoom({
   });
   if (!samplesInside) return false;
   if (room.shape === "custom_polygon" && room.polygon?.length) {
-    return isPlacedItemInsideRoomPolygon(position[0] - room.x, position[2] - room.z, widthMeters, depthMeters, wall, room.polygon,
-      room.holes ?? [], { width: dimsMm.w / 1000, depth: dimsMm.d / 1000, rotationY, clearance: FURNITURE_WALL_CLEARANCE_METERS });
+    return isFootprintInsideRoomPolygon(position[0] - room.x, position[2] - room.z,
+      halfWidth + wall, halfDepth + wall, room.polygon, room.holes);
   }
   return true;
 }

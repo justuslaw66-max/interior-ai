@@ -1,6 +1,8 @@
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
-import { findNearestFurnitureFit, getFurnitureFaces, isFurnitureFootprintClear } from "@/lib/furniture-room-fit";
+import {
+  findNearestFurnitureFit, getFurnitureFaces, isFurnitureFootprintClear, type FurnitureFaces, type FurnitureRoomContext,
+} from "@/lib/furniture-room-fit";
 
 /**
  * Placement in a drawn or imported room's outline (a custom polygon): whether a point or an item's box stands inside it, and
@@ -276,26 +278,33 @@ export function nearestFittingCandidate(
   return null;
 }
 
-/** The item as it stands: its own size (metres) and turn, and how far it keeps off the room's faces. */
-export type ClampedItem = { width: number; depth: number; rotationY: number; clearance: number };
+/**
+ * A piece of furniture as it stands: its own size (metres) and turn, how far it keeps off the walls, and what is known of the
+ * room beyond its outline (the rooms next door). Built-ins on furniture's rule pass none and keep the line's box test.
+ */
+export type ClampedItem = { width: number; depth: number; rotationY: number; clearance: number; context: FurnitureRoomContext };
 
 /**
- * Placement containment's test in a drawn or imported room: the item's box (`effectiveWidth` × `effectiveDepth`, grown by
- * `wall`) passes the clamp's own test, and its real footprint keeps clear of the room's faces (lib/furniture-room-fit.ts).
+ * Placement containment's test in a drawn or imported room. For furniture whose room is known (`item`, and faces for the
+ * outline), its real footprint in the room and 2 cm off every wall, panel and column as the room's 3D view draws them
+ * (lib/furniture-room-fit.ts); otherwise the line's: its box (`effectiveWidth` × `effectiveDepth`, grown by `wall`) inside the
+ * outline and out of its holes.
  */
 export function isPlacedItemInsideRoomPolygon(
   x: number, z: number, effectiveWidth: number, effectiveDepth: number, wall: number,
-  polygon: RoomPlanPolygonPoint[], holes: RoomPlanPolygonPoint[][], item: ClampedItem
+  polygon: RoomPlanPolygonPoint[], holes: RoomPlanPolygonPoint[][], item?: ClampedItem
 ): boolean {
-  return isFootprintInsideRoomPolygon(x, z, effectiveWidth / 2 + wall, effectiveDepth / 2 + wall, polygon, holes) &&
-    isFurnitureFootprintClear(getFurnitureFaces(polygon, wall, item.clearance), x, z, item.width, item.depth, item.rotationY);
+  const faces = item && getFurnitureFaces(polygon, holes, item.clearance, item.context);
+  if (item && faces) return isFurnitureFootprintClear(faces, x, z, item.width, item.depth, item.rotationY);
+  return isFootprintInsideRoomPolygon(x, z, effectiveWidth / 2 + wall, effectiveDepth / 2 + wall, polygon, holes);
 }
 
 /**
  * An item's centre kept inside a drawn or imported room's outline: its box, `effectiveWidth` × `effectiveDepth` and grown by
  * `wall`, inside the outline and out of its holes (isFootprintInsideRoomPolygon): where it is, else the nearest of the
- * candidate places, else `fallbackBounds`. Given the `item`, that place also has to keep its real footprint clear of the
- * room's faces (lib/furniture-room-fit.ts); where it doesn't, the item goes to the nearest place that does.
+ * candidate places, else `fallbackBounds`. That is the line's clamp, and a built-in's on furniture's rule. Furniture (`item`)
+ * whose room is known keeps that place where its real footprint is clear of the room's walls, panels and columns as its 3D
+ * view draws them (lib/furniture-room-fit.ts); where it isn't, it goes to the nearest place to the target that is.
  */
 export function clampToCustomPolygonRoom(
   x: number,
@@ -308,32 +317,29 @@ export function clampToCustomPolygonRoom(
   fallbackBounds: Bounds,
   item?: ClampedItem
 ): [number, number] {
-  const sampled = clampAsSampled(x, z, effectiveWidth, effectiveDepth, wall, polygon, holes);
   // Where the box fits nowhere, the room's bounds, as the line does for an item that can't fit.
-  if (!sampled) return clampToBounds(x, z, fallbackBounds);
-  return item ? keepClearOfFaces(sampled, x, z, effectiveWidth, effectiveDepth, wall, polygon, holes, item) : sampled;
+  const placed = clampAsSampled(x, z, effectiveWidth, effectiveDepth, wall, polygon, holes) ?? clampToBounds(x, z, fallbackBounds);
+  const faces = item && getFurnitureFaces(polygon, holes, item.clearance, item.context);
+  return item && faces ? keepClearOfWalls(faces, placed, x, z, polygon, item) : placed;
 }
 
 /**
- * Where the clamp's place leaves the item's footprint nearer a face than its clearance (an outside corner, a thin spike or a
- * column's corner between the box's nine sample points), the nearest place to the target where it keeps clear and the box
- * test still passes, searched out from the target as far as the outline reaches; where none does, the clamp's place, as
- * the line does for an item that can't fit (containment then refuses it).
+ * Where the clamp's place leaves the item's footprint nearer a wall, panel or column than its clearance (an outside corner, a
+ * thin spike, an arc between the box's nine sample points), the nearest place to the target where it is clear, searched out
+ * from the target as far as the outline reaches; where none is, the clamp's place, as the line does for an item that can't
+ * fit (containment then refuses it).
  */
-function keepClearOfFaces(
-  sampled: [number, number], x: number, z: number, effectiveWidth: number, effectiveDepth: number, wall: number,
-  polygon: RoomPlanPolygonPoint[], holes: RoomPlanPolygonPoint[][], item: ClampedItem
+function keepClearOfWalls(
+  faces: FurnitureFaces, placed: [number, number], x: number, z: number, polygon: RoomPlanPolygonPoint[], item: ClampedItem
 ): [number, number] {
-  const faces = getFurnitureFaces(polygon, wall, item.clearance);
-  if (isFurnitureFootprintClear(faces, sampled[0], sampled[1], item.width, item.depth, item.rotationY)) return sampled;
-  const halfWidth = effectiveWidth / 2 + wall, halfDepth = effectiveDepth / 2 + wall;
-  const boxFits = (atX: number, atZ: number) => isFootprintInsideRoomPolygon(atX, atZ, halfWidth, halfDepth, polygon, holes);
+  if (isFurnitureFootprintClear(faces, placed[0], placed[1], item.width, item.depth, item.rotationY)) return placed;
   const xs = polygon.map((point) => point.x), zs = polygon.map((point) => point.z);
-  const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) + Math.hypot(halfWidth, halfDepth);
-  for (let reach = Math.max(0.02, Math.hypot(sampled[0] - x, sampled[1] - z)); ; reach *= 2) {
-    const found = findNearestFurnitureFit(faces, polygon, holes, wall, x, z, item.width, item.depth, item.rotationY, reach, boxFits);
+  const span = Math.hypot(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs)) + Math.hypot(item.width, item.depth);
+  // The nearest place within a reach is the nearest of all once one is found: the reach grows from how far the line moved it.
+  for (let reach = Math.max(0.02, Math.hypot(placed[0] - x, placed[1] - z)); ; reach *= 2) {
+    const found = findNearestFurnitureFit(faces, x, z, item.width, item.depth, item.rotationY, reach);
     if (found) return found;
-    if (reach > span + Math.hypot(x - sampled[0], z - sampled[1])) return sampled;
+    if (reach > span + Math.hypot(x - placed[0], z - placed[1])) return placed;
   }
 }
 

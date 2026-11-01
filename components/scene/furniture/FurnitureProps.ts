@@ -2,6 +2,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
+import type { FurnitureRoomContext } from "@/lib/furniture-room-fit";
 import type {
   ConfigurableNodeTransform,
   PlanMeasurementUnit,
@@ -31,6 +32,8 @@ export type FurnitureProps = {
   roomPlanShape?: RoomPlanShape;
   roomPlanPolygon?: RoomPlanPolygonPoint[];
   roomPlanHoles?: RoomPlanPolygonPoint[][];
+  /** Its room, for its furniture clamp (lib/furniture-room-context.ts); a built-in has none and keeps the line's clamp. */
+  roomFurniture?: FurnitureRoomContext;
   wallThickness?: number;
   wallContactInset?: number;
   margin?: number;

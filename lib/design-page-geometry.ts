@@ -13,6 +13,7 @@ import {
 import type { RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import { clampToCustomPolygonRoom } from "@/lib/room-polygon-fit";
+import type { FurnitureRoomContext } from "@/lib/furniture-room-fit";
 
 export {
   isFootprintInsideRoomPolygon,
@@ -100,7 +101,9 @@ export function resolvePointerRotationRadians({
 }
 
 /**
- * Clamps an item centre position so it sits fully inside the room walls.
+ * Clamps an item centre position so it sits fully inside the room walls. Furniture (`furniture`: what is known of the room
+ * beyond its outline) in a drawn or imported room also keeps its real footprint 2 cm off the walls, panels and columns as the
+ * 3D view draws them (lib/furniture-room-fit.ts); a built-in on furniture's rule passes none and keeps the line's clamp.
  */
 export function clampToRoom(
   x: number,
@@ -113,7 +116,8 @@ export function clampToRoom(
   rotationY: number = 0,
   planShape: RoomPlanShape = "rectangle",
   planPolygon?: RoomPlanPolygonPoint[],
-  planHoles: RoomPlanPolygonPoint[][] = []
+  planHoles: RoomPlanPolygonPoint[][] = [],
+  furniture?: FurnitureRoomContext
 ): [number, number] {
   const [effW, effD] = getRotatedFootprint(itemWidth, itemDepth, rotationY);
   const minX = -roomW / 2 + wall + effW / 2;
@@ -122,9 +126,8 @@ export function clampToRoom(
   const maxZ = roomD / 2 - wall - effD / 2;
 
   if (planShape === "custom_polygon" && planPolygon?.length) {
-    // Kept inside by its real footprint too, 2 cm (or the inset, if less) off every face (lib/furniture-room-fit.ts).
-    return clampToCustomPolygonRoom(x, z, effW, effD, wall, planPolygon, planHoles, { minX, maxX, minZ, maxZ },
-      { width: itemWidth, depth: itemDepth, rotationY, clearance: FURNITURE_WALL_CLEARANCE_METERS });
+    return clampToCustomPolygonRoom(x, z, effW, effD, wall, planPolygon, planHoles, { minX, maxX, minZ, maxZ }, furniture &&
+      { width: itemWidth, depth: itemDepth, rotationY, clearance: FURNITURE_WALL_CLEARANCE_METERS, context: furniture });
   }
 
   if (planShape === "l_shape") {

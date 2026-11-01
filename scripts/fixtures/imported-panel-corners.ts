@@ -8,8 +8,10 @@ import { buildHousePlan2D, type HousePlanRoom2D } from "@/lib/design-page-house-
 import { getCanonicalFaceTrimsMm, getCanonicalRoomWallFinish } from "@/components/editor/renderers/canonical-floor-plan/canonicalWallPanels";
 import { trimmedFaceEdge, wallSurfaceEdge, WALL_FINISH_SKIN_MM } from "@/components/editor/renderers/canonical-floor-plan/geometry";
 import { clampToRoomInsideFinishes, getRoomOutlineInsideFinishes } from "@/lib/room-finished-outline";
-import { getFurnitureWallInset, isPlacedItemInsideRoomPolygon } from "@/lib/design-page-geometry";
+import { getFurnitureWallInset } from "@/lib/design-page-geometry";
 import { getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
+import { getFurnitureRoomContext } from "@/lib/furniture-room-context";
+import { isPlacementContainedInRoom } from "@/lib/useDesignPagePlacementRoomQueries";
 import type { RoomSnapshot } from "@/lib/room-types";
 
 type P = { x: number; z: number };
@@ -368,9 +370,12 @@ function separation(a: readonly P[], b: readonly P[]): number {
 /**
  * Furniture stops 20 mm in front of every laminate the room is measured to and of every wall, as the 3D view draws them: items
  * of three sizes, at four turns, dragged onto each panel (its ends and middle) and onto each corner of the clamp's outline,
- * are placed by the room's clamp (clampToRoomInsideFinishes), and each one placement accepts (isPlacedItemInsideRoomPolygon)
- * must stand inside the room with its real footprint at least 20 mm from every laminate panel and every wall's footprint. A
- * skin (paint, tiles) isn't measured: the room stops at the bare wall there (J: what is drawn is what is measured).
+ * are placed by the room's furniture clamp (clampToRoomInsideFinishes with the room's context), and each one containment
+ * accepts (isPlacementContainedInRoom) must stand inside the room with its real footprint at least 20 mm from every laminate
+ * panel and every wall's footprint. A skin (paint, tiles) isn't measured: the room stops at the bare wall there (J: what is
+ * drawn is what is measured). And it is no stricter than the 3D view: where the line's clamp (the same, without the context)
+ * leaves it clear of every laminate and wall by 2 cm and a millimetre, it stays there (furniturePushedOffClearMm: how far it is
+ * moved), and containment accepts that place and the target, where they are as clear (furnitureRefusedClear).
  */
 function checkFurniture(
   room: HousePlanRoom2D, snapshot: RoomSnapshot, panels: Panel[], footprints: Footprint[], label: string, stats: CornerStats, tolerance: Tolerances
@@ -385,14 +390,21 @@ function checkFurniture(
   const targets = [...clampOutline.map(({ x, z }) => ({ x: x + origin.x, z: z + origin.z })), ...laminates.flatMap(({ quad: [b0, , f1, f0] }) => [0.02, 0.5, 0.98].map((t) =>
     ({ x: f0.x + (f1.x - f0.x) * t + (b0.x - f0.x) * 0.5, z: f0.z + (f1.z - f0.z) * t + (b0.z - f0.z) * 0.5 })))];
   const outsideCorners = outsideCornersOf(clampOutline, inset);
-  let short = 0, missed = 0, wall = 0;
+  let short = 0, missed = 0, wall = 0, pushed = 0, refused = 0;
+  const context = getFurnitureRoomContext(snapshot), clear = (local: P, w: number, d: number, rotationY: number) => {
+    const item = turnedRectangle(local.x + origin.x, local.z + origin.z, w, d, rotationY), keep = 0.021 + (tolerance === CORNER_TOLERANCES.arc ? 0.001 : 0);
+    return item.every((corner) => inside(corner, outline)) && [...laminates, ...footprints].every(({ quad }) => separation(item, quad) >= keep);
+  };
   for (const target of targets) for (const [w, d] of ITEMS) for (const rotationY of TURNS) {
-    const [x, z] = clampToRoomInsideFinishes(target.x - origin.x, target.z - origin.z, w, d, snapshot.geometry.width, snapshot.geometry.depth,
-      inset, rotationY, "custom_polygon", snapshot.planPolygon, snapshot.planHoles, depths);
+    const local = { x: target.x - origin.x, z: target.z - origin.z }, [width, depth] = [snapshot.geometry.width, snapshot.geometry.depth];
+    const clampArgs = [w, d, width, depth, inset, rotationY, "custom_polygon", snapshot.planPolygon, snapshot.planHoles, depths] as const;
+    const [x, z] = clampToRoomInsideFinishes(local.x, local.z, ...clampArgs, context), line = clampToRoomInsideFinishes(local.x, local.z, ...clampArgs);
+    const contained = (at: P) => isPlacementContainedInRoom({ room: snapshot, position: [at.x, 0, at.z], rotationY, dimensions: { w: w * 1000, d: d * 1000 } });
+    for (const at of [local, { x: line[0], z: line[1] }]) if (clear(at, w, d, rotationY) && !contained(at)) refused += 1;
+    if (clear({ x: line[0], z: line[1] }, w, d, rotationY)) pushed = Math.max(pushed, Math.hypot(x - line[0], z - line[1]));
     // Where the clamp finds no place for it (an item too big for a sharp corner), it keeps it in the room's box: not placed.
     const [cos, sin] = [Math.abs(Math.cos(rotationY)), Math.abs(Math.sin(rotationY))];
-    if (!isPlacedItemInsideRoomPolygon(x, z, w * cos + d * sin, w * sin + d * cos, inset, clampOutline, snapshot.planHoles ?? [],
-      { width: w, depth: d, rotationY, clearance: 0.02 })) continue;
+    if (!contained({ x, z })) continue;
     const item = turnedRectangle(x + origin.x, z + origin.z, w, d, rotationY);
     // Where the box's nine sample points (lib/design-page-geometry.ts) would have let it reach past an outside corner of the
     // outline (a room's outside corner, a thin spike, the step where walls of different depths run on), or its square inset
@@ -407,6 +419,8 @@ function checkFurniture(
     const inRoom = item.every((corner) => inside(corner, outline));
     wall = Math.max(wall, inRoom ? 0.02 - Math.min(Infinity, ...footprints.map(({ quad }) => separation(item, quad))) : 1);
   }
+  note(stats, "furniturePushedOffClearMm", pushed * 1000, 0, label);
+  note(stats, "furnitureRefusedClear", refused, 0, label);
   note(stats, "furnitureMm", short * 1000, tolerance.furnitureMm, label);
   note(stats, "furnitureWallMm", wall * 1000, tolerance.furnitureMm, label);
   stats.worst.furnitureWhereClampMissesMm = Math.max(stats.worst.furnitureWhereClampMissesMm ?? 0, missed * 1000);

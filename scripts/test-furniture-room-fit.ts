@@ -1,27 +1,33 @@
 import assert from "node:assert/strict";
 import { WALL_FINISH_SKIN_MM } from "../components/editor/renderers/canonical-floor-plan/geometry";
 import { buildHousePlan2D } from "../lib/design-page-house-plan";
-import { getFurnitureWallInset, isPlacedItemInsideRoomPolygon } from "../lib/design-page-geometry";
+import { getFurnitureWallInset } from "../lib/design-page-geometry";
 import type { FloorPlanDocumentV2 } from "../lib/floor-plan-document-v2";
 import { canonicalFloorPlanToDesignSnapshot } from "../lib/floor-plan-legacy-adapters";
 import { buildCanonicalFloorPlanRenderModel } from "../lib/floor-plan-render-model";
 import { IMPORTED_PAINT_SKIN_METERS } from "../lib/furniture-faces-as-drawn";
+import { getFurnitureRoomContext } from "../lib/furniture-room-context";
 import { getFurnitureFaces, getTurnedFootprint } from "../lib/furniture-room-fit";
+import { clampBuiltInToRoom } from "../lib/room-built-in-faces";
 import { clampToRoomInsideFinishes, getRoomOutlineInsideFinishes } from "../lib/room-finished-outline";
-import { clampToCustomPolygonRoom } from "../lib/room-polygon-fit";
 import { createRoom, type RoomSnapshot } from "../lib/room-types";
 import { getRoomWallFaceIds, getRoomWallFinishDepths } from "../lib/room-wall-finish-depths";
-import { inRegion, regionOf, type Region } from "./built-in-faces-oracle-utils";
+import { isPlacementContainedInRoom } from "../lib/useDesignPagePlacementRoomQueries";
+import type { HousePlanRoom2D } from "../lib/design-page-house-plan";
+import { inRegion, regionOf, toPlanRoom, type Region } from "./built-in-faces-oracle-utils";
 import { planFromShape, roomPanels, seeded, type ShapeSpec } from "./fixtures/imported-panel-corners";
 
 /**
- * Furniture in drawn and imported rooms keeps its real (turned) footprint inside the room's finished faces and 2 cm off every
- * one, and off every wall and panel the 3D view draws past them (lib/furniture-room-fit.ts; J, 1 Nov 2026: "proceed with what u
- * will recommend is best for real life appliciation"). Worked examples first, each set against what the clamp's nine-point box
- * test alone (the line's clamp) does there; then a seeded oracle of drawn rooms against the room as their 3D view draws it
- * (scripts/built-in-faces-oracle-utils.ts: wall bands, panel boxes, columns). Imported rooms are measured against their 3D
- * walls and laminates by the panel-corner property test (scripts/test-floor-plan-canonical-finishes-openings.ts). CI runs 40
- * random rooms; FURNITURE_ORACLE_ROOMS any number, FURNITURE_ORACLE_SEED another seed.
+ * Furniture in drawn and imported rooms keeps its real (turned) footprint 2 cm off every wall, panel and column as the room's
+ * 3D view draws them, the rooms next door's walls included, and no further (lib/furniture-room-fit.ts; J, 1 Nov 2026: "proceed
+ * with what u will recommend is best for real life appliciation"): where the line's clamp leaves it that clear it stays, where
+ * not it goes to the nearest place that is, and containment accepts exactly what is. Built-ins keep the line's clamp. Worked
+ * examples first, each set against the line's clamp (the same, without the furniture's room); then a seeded oracle of drawn
+ * rooms, some beside a room with thicker walls, against the room as their 3D view draws it (scripts/built-in-faces-oracle-utils.ts:
+ * wall bands, panel boxes, columns), with brute-force checks that a moved item went to the nearest place the 3D view leaves
+ * clear and that one refused had no such place near. Imported rooms are measured against their 3D walls and laminates, both
+ * ways, by the panel-corner property test (scripts/test-floor-plan-canonical-finishes-openings.ts). CI runs 40 random rooms;
+ * FURNITURE_ORACLE_ROOMS any number, FURNITURE_ORACLE_SEED another seed.
  */
 
 type P = { x: number; z: number };
@@ -61,25 +67,38 @@ function gapInRegion(region: Region, footprint: readonly P[]): number {
   return gap;
 }
 
+const box = (w: number, d: number): P[] => [{ x: -w / 2, z: -d / 2 }, { x: w / 2, z: -d / 2 }, { x: w / 2, z: d / 2 }, { x: -w / 2, z: d / 2 }];
 function drawnRoom(id: string, points: P[], faces: Record<string, object>, thickness = 0.12, holes?: P[][]): RoomSnapshot {
   const xs = points.map((p) => p.x), zs = points.map((p) => p.z);
   const geometry = { width: Math.max(...xs) - Math.min(...xs), depth: Math.max(...zs) - Math.min(...zs), wallThickness: thickness, height: 2.6, slabThickness: 0.1 };
   return { ...createRoom(id, id, "living", geometry), planShape: "custom_polygon", planPolygon: points, planHoles: holes,
     surfaces: { walls: { default: PAINT, faces } } } as RoomSnapshot;
 }
-/** Where the room's clamp puts the item, and where the line's (its box's nine points alone) would. */
-function clampBoth(room: RoomSnapshot, target: P, width: number, depth: number, rotationY: number) {
+/** The plan's rooms: the room at the origin, and those next door where they stand. */
+const planOf = (room: RoomSnapshot, neighbours: readonly HousePlanRoom2D[] = []) =>
+  new Map<string, HousePlanRoom2D>([[room.id, toPlanRoom(room)], ...neighbours.map((other): [string, HousePlanRoom2D] => [other.id, other])]);
+/** Where the room's furniture clamp puts the item, where the line's would (the same clamp, without the room), and containment. */
+function clampBoth(room: RoomSnapshot, target: P, width: number, depth: number, rotationY: number, planRooms = planOf(room)) {
   const inset = getFurnitureWallInset(room.geometry.wallThickness ?? 0.12), depths = getRoomWallFinishDepths(room);
-  const outline = getRoomOutlineInsideFinishes({ shape: "custom_polygon", polygon: room.planPolygon, holes: room.planHoles,
-    w: room.geometry.width, d: room.geometry.depth }, depths).polygon!;
-  const [cos, sin] = [Math.abs(Math.cos(rotationY)), Math.abs(Math.sin(rotationY))], [boxW, boxD] = [width * cos + depth * sin, width * sin + depth * cos];
-  const at = clampToRoomInsideFinishes(target.x, target.z, width, depth, room.geometry.width, room.geometry.depth, inset, rotationY,
-    "custom_polygon", room.planPolygon, room.planHoles, depths);
-  const line = clampToCustomPolygonRoom(target.x, target.z, boxW, boxD, inset, outline, room.planHoles ?? [], { minX: -9, maxX: 9, minZ: -9, maxZ: 9 });
-  const item = { width, depth, rotationY, clearance: CLEAR };
-  const placed = isPlacedItemInsideRoomPolygon(at[0], at[1], boxW, boxD, inset, outline, room.planHoles ?? [], item);
-  return { at, line, placed, footprint: getTurnedFootprint(at[0], at[1], width, depth, rotationY), lineFootprint: getTurnedFootprint(line[0], line[1], width, depth, rotationY) };
+  const args = [width, depth, room.geometry.width, room.geometry.depth, inset, rotationY, "custom_polygon", room.planPolygon, room.planHoles, depths] as const;
+  const at = clampToRoomInsideFinishes(target.x, target.z, ...args, getFurnitureRoomContext(room, planRooms));
+  const line = clampToRoomInsideFinishes(target.x, target.z, ...args);
+  const contained = (place: P) => isPlacementContainedInRoom({ room, position: [place.x, 0, place.z], rotationY, dimensions: { w: width * 1000, d: depth * 1000 }, planRooms });
+  return { at, line, placed: contained({ x: at[0], z: at[1] }), contained, footprint: getTurnedFootprint(at[0], at[1], width, depth, rotationY),
+    lineFootprint: getTurnedFootprint(line[0], line[1], width, depth, rotationY) };
 }
+/** The nearest place within `reach` of the target, on rings `step` apart, where `clear` holds, or null. */
+function nearestBrute(target: P, reach: number, step: number, clear: (place: P) => boolean): P | null {
+  for (let radius = 0; radius <= reach; radius += step) {
+    const count = Math.max(8, Math.ceil((2 * Math.PI * radius) / step));
+    for (let index = 0; index < count; index += 1) {
+      const place = { x: target.x + radius * Math.cos((2 * Math.PI * index) / count), z: target.z + radius * Math.sin((2 * Math.PI * index) / count) };
+      if (clear(place)) return place;
+    }
+  }
+  return null;
+}
+const turned = (place: P, width: number, depth: number, rotationY: number) => getTurnedFootprint(place.x, place.z, width, depth, rotationY);
 
 // --- A turned L, at its outside corner ---------------------------------------------------------------------------------------
 {
@@ -185,20 +204,71 @@ function importedGap(setup: ReturnType<typeof importedRooms>, room: RoomSnapshot
   console.log(`The painted half of a T: the item stands ${(gap * 1000).toFixed(1)} mm off, where the line puts it.`);
 }
 
-// --- The noted edges follow the room ------------------------------------------------------------------------------------------
+// --- The edges follow the room, whatever was read before -------------------------------------------------------------------
 {
-  // The outline's array is kept when a finish changes; the faces follow the new finish (the panel's box past an outside corner).
+  // The outline's array is kept when a finish changes; each room's faces follow its own finish (the panel's box past an outside
+  // corner), read in either order.
   const points: P[] = [{ x: -2, z: -2 }, { x: 0, z: -2 }, { x: 0.6, z: -1 }, { x: 2, z: -1 }, { x: 2, z: 2 }, { x: -2, z: 2 }];
   const panelled = drawnRoom("swap", points, { "wall-1": LAMINATE }), painted = { ...panelled, surfaces: { walls: { default: PAINT, faces: {} } } } as RoomSnapshot;
   const facesOf = (room: RoomSnapshot) => {
     const depths = getRoomWallFinishDepths(room);
     const outline = getRoomOutlineInsideFinishes({ shape: "custom_polygon", polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth }, depths).polygon!;
-    return getFurnitureFaces(outline, getFurnitureWallInset(0.12), CLEAR);
+    return getFurnitureFaces(outline, [], CLEAR, getFurnitureRoomContext(room))!;
   };
-  const before = facesOf(panelled), after = facesOf(painted);
+  const before = facesOf(panelled), after = facesOf(painted), again = facesOf(panelled);
   assert.equal(painted.planPolygon, panelled.planPolygon, "one outline array");
   // At the outside corner the walls' cores run on past each other's faces either way; the panel's box goes with its finish.
   assert.ok(after.solids.length > 0 && before.solids.length > after.solids.length, "a panel's box past the corner, then none once it is painted");
+  assert.equal(again, before, "the panelled room's faces again, after the painted one's were read");
+  assert.equal(facesOf(painted), after, "and the painted room's");
+}
+
+// --- A thin V spike's tip: as near as the 3D view draws it, not the outline's mitre --------------------------------------
+for (const angle of [10, 20, 40]) {
+  // A V spike 1.2 m long off a 5 m room's north wall (120 mm walls). The outline's mitre at its tip stands 345 mm past it at
+  // 20° (690 mm at 10°); the 3D view's cores end about 60 mm past it.
+  const half = 1.2 * Math.tan(((angle / 2) * Math.PI) / 180);
+  const points: P[] = [{ x: -2.5, z: -2.5 }, { x: -half, z: -2.5 }, { x: 0, z: -1.3 }, { x: half, z: -2.5 }, { x: 2.5, z: -2.5 }, { x: 2.5, z: 2.5 }, { x: -2.5, z: 2.5 }];
+  const room = drawnRoom(`v-${angle}`, points, {}), region = regionOf(room);
+  for (const z of [-0.93, -0.85, -0.75, -0.69, -1.1]) {
+    const { at, line, placed, contained, footprint } = clampBoth(room, { x: 0, z }, 1, 0.5, 0);
+    const clear = (place: P) => gapInRegion(region, turned(place, 1, 0.5, 0)) >= CLEAR + 0.001;
+    if (clear({ x: 0, z })) assert.ok(contained({ x: 0, z }), `a ${angle}° spike: a table ${((z + 1.05) * 1000).toFixed(0)} mm past the tip, clear of its 3D walls, is accepted`);
+    if (clear({ x: line[0], z: line[1] })) assert.deepEqual(at, line, `a ${angle}° spike: the line's place, clear of its 3D walls, is kept`);
+    assert.ok(placed && gapInRegion(region, footprint) >= CLEAR - 0.0002, `a ${angle}° spike: 2 cm off its tip (${gapInRegion(region, footprint)})`);
+    const moved = Math.hypot(at[0], at[1] - z), nearer = nearestBrute({ x: 0, z }, moved - 0.008, 0.004, clear);
+    assert.equal(nearer, null, `a ${angle}° spike: moved ${(moved * 1000).toFixed(0)} mm, a nearer place is clear (${JSON.stringify(nearer)})`);
+  }
+}
+
+// --- The thicker walls of the room next door -----------------------------------------------------------------------------
+{
+  // Room A (120 mm walls) shares its north wall with room B (250 mm walls) to its north: the 3D view draws the shared wall at
+  // both thicknesses, so B's core stands 65 mm past A's face. A sofa pushed north stops 2 cm off it.
+  const A = drawnRoom("A", box(4, 3), {}), B = drawnRoom("B", box(4, 3), {}, 0.25), next = { ...toPlanRoom(B), z: -3 };
+  const region = regionOf(A, [next]), { at, line, placed, footprint, lineFootprint } = clampBoth(A, { x: 0, z: -1.45 }, 1, 0.5, 0, planOf(A, [next]));
+  assert.ok(gapInRegion(region, lineFootprint) < 0, `on its own walls alone, it stands in the next room's thicker wall (${line})`);
+  const gap = gapInRegion(region, footprint);
+  assert.ok(placed && gap >= CLEAR - 0.0002 && gap <= CLEAR + 0.001, `beside the next room's thicker wall: 2 cm off it (${gap})`);
+  assert.ok(Math.abs(at[1] - 0.25 - (-1.5 + 0.125 + CLEAR)) < 0.001, `its edge 2 cm off the thicker core (${at[1] - 0.25})`);
+  // The same room in the plan alone keeps the line's place.
+  assert.deepEqual(clampBoth(A, { x: 0, z: -1.45 }, 1, 0.5, 0).at, line, "alone in its plan: the line's place");
+}
+
+// --- Built-ins keep the line's clamp ------------------------------------------------------------------------------------
+{
+  // An imported room keeps furniture's rule for built-ins (usesFurnitureRuleForBuiltIns): their clamp stays the line's.
+  const half = 1800 * Math.tan((5 * Math.PI) / 180);
+  const spec: ShapeSpec = { kind: "spike", vertices: { a: [0, 0], s0: [2500 - half, 0], tip: [2500, 1800], s1: [2500 + half, 0], b: [5000, 0], c: [5000, 4000], e: [0, 4000] },
+    rooms: { R: ["a", "s0", "tip", "s1", "b", "c", "e"] } };
+  const room = importedRooms(spec, 5, (wallId) => (wallId.includes("tip") ? LAMINATE : PAINT)).rooms[0];
+  let differ = 0;
+  for (const target of room.planPolygon!) for (const [width, depth] of [[0.6, 0.58], [0.45, 0.35]]) for (const rotationY of [0, 0.4, Math.PI / 2]) {
+    const { at, line } = clampBoth(room, target, width, depth, rotationY);
+    assert.deepEqual(clampBuiltInToRoom(room, target.x, target.z, width, depth, rotationY), line, "a built-in on furniture's rule: the line's clamp");
+    if (at[0] !== line[0] || at[1] !== line[1]) differ += 1;
+  }
+  assert.ok(differ > 0, "where furniture's own clamp moves off the line's place");
 }
 
 assert.equal(IMPORTED_PAINT_SKIN_METERS, WALL_FINISH_SKIN_MM / 1000, "the imported view's skin");
@@ -214,7 +284,6 @@ function random(): number {
 const between = (low: number, high: number) => low + (high - low) * random();
 const chance = (probability: number) => random() < probability;
 const pick = <T,>(values: readonly T[]): T => values[Math.floor(random() * values.length)];
-const box = (w: number, d: number): P[] => [{ x: -w / 2, z: -d / 2 }, { x: w / 2, z: -d / 2 }, { x: w / 2, z: d / 2 }, { x: -w / 2, z: d / 2 }];
 const north = (w: number, d: number, middle: (z: number) => P[], east?: P): P[] => { const [a, b, c, e] = box(w, d); return [a, ...middle(a.z), east ?? b, c, e]; };
 const SHAPES: Record<string, (w: number, d: number) => P[]> = {
   rectangle: box,
@@ -231,30 +300,63 @@ const SHAPES: Record<string, (w: number, d: number) => P[]> = {
 const ITEMS: Array<[number, number]> = [[0.4, 0.4], [1, 0.5], [0.5, 1], [1.8, 0.9], [0.12, 0.12]];
 const TURNS = [0, 0.3, Math.PI / 4, Math.PI / 2, 2.1];
 const ROOMS = Number(process.env.FURNITURE_ORACLE_ROOMS ?? 40);
-const counts = { rooms: 0, placed: 0, worstMm: 0 };
+const counts = { rooms: 0, beside: 0, placed: 0, worstMm: 0, moved: 0, kept: 0, refused: 0, accepted: 0 };
+const rotate = (angle: number) => ({ x, z }: P) => ({ x: x * Math.cos(angle) - z * Math.sin(angle), z: x * Math.sin(angle) + z * Math.cos(angle) });
 for (let index = 0; index < ROOMS; index += 1) {
-  const family = pick(Object.keys(SHAPES)), angle = chance(0.5) ? between(0, 2 * Math.PI) : 0;
-  let points = SHAPES[family](between(1.2, 6), between(1.2, 5)).map(({ x, z }) => ({ x: x * Math.cos(angle) - z * Math.sin(angle), z: x * Math.sin(angle) + z * Math.cos(angle) }));
+  const family = pick(Object.keys(SHAPES)), angle = chance(0.5) ? between(0, 2 * Math.PI) : 0, [w, d] = [between(1.2, 6), between(1.2, 5)];
+  let points = SHAPES[family](w, d).map(rotate(angle));
   if (chance(0.5)) points = [...points].reverse();
   const faces = Object.fromEntries(getRoomWallFaceIds({ shape: "custom_polygon", polygon: points }).filter(() => chance(0.45)).map((faceId) => [faceId,
     { materialId: LAMINATE.materialId, panelBacking: { board: "mdf" as const, boardThicknessMm: pick([6, 9, 12, 18]), fixing: pick(["glued", "battens"] as const) } }]));
   const xs = points.map((p) => p.x), zs = points.map((p) => p.z);
   const column = chance(0.2) ? box(between(0.15, 0.4), between(0.15, 0.4)).map((p) => ({ x: p.x + between(-0.2, 0.2) * (Math.max(...xs) - Math.min(...xs)), z: p.z + between(-0.2, 0.2) * (Math.max(...zs) - Math.min(...zs)) })) : null;
-  const room = drawnRoom(`oracle-${index}`, points, faces, pick([0.08, 0.1, 0.12, 0.15, 0.2, 0.25]), column ? [column] : undefined);
-  const region = regionOf(room);
+  const thickness = pick([0.08, 0.1, 0.12, 0.15, 0.2, 0.25]);
+  const room = drawnRoom(`oracle-${index}`, points, faces, thickness, column ? [column] : undefined);
+  // Some beside a room to the south with thicker walls, sharing the south wall (every shape but a star and a wedge has it whole).
+  const beside = !["star", "wedge"].includes(family) && chance(0.35), southDepth = between(1, 3);
+  const neighbours = beside ? [{ ...toPlanRoom(drawnRoom(`south-${index}`, box(w, southDepth).map(rotate(angle)), {}, thickness + between(0.03, 0.15))),
+    ...rotate(angle)({ x: 0, z: d / 2 + southDepth / 2 }) }] : [];
+  const region = regionOf(room, neighbours), planRooms = planOf(room, neighbours);
   if (region.filled) continue;
   counts.rooms += 1;
+  counts.beside += beside ? 1 : 0;
   const targets: P[] = [...points, ...points.map((p, i) => ({ x: (p.x + points[(i + 1) % points.length].x) / 2, z: (p.z + points[(i + 1) % points.length].z) / 2 })),
     ...Array.from({ length: 8 }, () => ({ x: between(Math.min(...xs) - 0.3, Math.max(...xs) + 0.3), z: between(Math.min(...zs) - 0.3, Math.max(...zs) + 0.3) }))];
   for (const target of targets) for (const [width, depth] of ITEMS) for (const rotationY of TURNS) {
-    const { at, placed, footprint } = clampBoth(room, target, width, depth, rotationY);
-    if (!placed) continue;
+    const { at, line, placed, contained, footprint } = clampBoth(room, target, width, depth, rotationY, planRooms);
+    const where = `${family} room ${index}${beside ? " beside a thicker room" : ""}: a ${width} × ${depth} item turned ${rotationY.toFixed(2)} for (${target.x.toFixed(3)}, ${target.z.toFixed(3)})`;
+    const gapAt = (place: P) => gapInRegion(region, turned(place, width, depth, rotationY));
+    // Clear by the 3D view, with a millimetre in hand: what the line's clamp leaves so clear stays, and containment accepts.
+    const clear = (place: P) => gapAt(place) >= CLEAR + 0.001;
+    const targetGap = gapAt(target);
+    if (targetGap >= CLEAR + 0.001) assert.ok(contained(target), `${where}: containment refuses it there, ${(targetGap * 1000).toFixed(2)} mm off the 3D view's walls`);
+    if (contained(target)) assert.ok(targetGap >= CLEAR - 0.0002, `${where}: containment accepts it there, ${(targetGap * 1000).toFixed(2)} mm off the 3D view's walls`);
+    counts.accepted += contained(target) ? 1 : 0;
+    const lineGap = gapAt({ x: line[0], z: line[1] });
+    if (lineGap >= CLEAR + 0.001) {
+      counts.kept += 1;
+      assert.deepEqual(at, line, `${where}: moved off the line's place (${line}), ${(lineGap * 1000).toFixed(2)} mm off the 3D view's walls`);
+    }
+    if (!placed) {
+      // Refused: nowhere near is clear.
+      counts.refused += 1;
+      const near = nearestBrute(target, 0.25, 0.02, clear);
+      assert.equal(near, null, `${where}: refused at (${at[0].toFixed(4)}, ${at[1].toFixed(4)}), but (${near?.x.toFixed(4)}, ${near?.z.toFixed(4)}) is clear`);
+      continue;
+    }
     counts.placed += 1;
     const gap = gapInRegion(region, footprint);
     counts.worstMm = Math.max(counts.worstMm, (CLEAR - gap) * 1000);
-    assert.ok(gap >= CLEAR - 0.0002, `${family} room ${index}: a ${width} × ${depth} item turned ${rotationY.toFixed(2)} for (${target.x.toFixed(3)}, ${target.z.toFixed(3)}) at (${at[0].toFixed(4)}, ${at[1].toFixed(4)}) stands ${(gap * 1000).toFixed(2)} mm off the 3D view's walls and panels`);
+    assert.ok(gap >= CLEAR - 0.0002, `${where} at (${at[0].toFixed(4)}, ${at[1].toFixed(4)}) stands ${(gap * 1000).toFixed(2)} mm off the 3D view's walls and panels`);
+    if (at[0] === line[0] && at[1] === line[1]) continue;
+    // Moved off the line's place: to the nearest place the 3D view leaves clear (to within its rounding and a few millimetres).
+    counts.moved += 1;
+    const moved = Math.hypot(at[0] - target.x, at[1] - target.z), near = moved > 0.014 ? nearestBrute(target, Math.min(0.6, moved - 0.012), 0.006, clear) : null;
+    assert.equal(near, null, `${where}: moved ${(moved * 1000).toFixed(0)} mm to (${at[0].toFixed(4)}, ${at[1].toFixed(4)}), but (${near?.x.toFixed(4)}, ${near?.z.toFixed(4)}) is clear ${near ? (Math.hypot(near.x - target.x, near.z - target.z) * 1000).toFixed(0) : ""} mm off`);
   }
 }
-assert.ok(counts.placed > ROOMS * 100, "placements to measure");
-console.log(`Furniture in drawn rooms: ${counts.rooms} rooms, ${counts.placed} placements, at most ${Math.max(0, counts.worstMm).toFixed(3)} mm nearer than 2 cm.`);
+assert.ok(counts.placed > ROOMS * 100 && counts.beside > 0 && counts.moved > 0, "placements to measure");
+console.log(`Furniture in drawn rooms: ${counts.rooms} rooms (${counts.beside} beside a room with thicker walls), ${counts.placed} placements, at most ` +
+  `${Math.max(0, counts.worstMm).toFixed(3)} mm nearer than 2 cm; ${counts.kept} kept where the line's clamp left them clear, ${counts.moved} moved to the ` +
+  `nearest clear place, ${counts.refused} refused with none clear near; containment as the 3D view at ${counts.accepted} targets it accepts.`);
 console.log("Furniture room fit checks passed.");

@@ -3,6 +3,7 @@ import { L_SHAPE_NOTCH_RATIO } from "@/lib/room-floor-area";
 import type { RoomPlanPolygonPoint, RoomPlanShape } from "@/lib/room-types";
 import { insetPolygonEdges } from "@/lib/polygon-edge-inset";
 import { noteMovedOutline } from "@/lib/room-outline-edges";
+import type { FurnitureRoomContext } from "@/lib/furniture-room-fit";
 import {
   getRoomWallFaceIds,
   getRoomWallFinishDepths,
@@ -96,8 +97,9 @@ export function getRoomOutlineInsideFinishes(outline: RoomPlanOutline, depths: R
 }
 
 /**
- * `clampToRoom` (lib/design-page-geometry.ts) inside the room's panels: the same arguments, then the room's panel depths.
- * `wallInset` is still placement's inset from the bare wall.
+ * `clampToRoom` (lib/design-page-geometry.ts) inside the room's panels: the same arguments, then the room's panel depths and,
+ * for furniture, its room (`furniture`, lib/furniture-room-context.ts; a built-in on furniture's rule passes none and keeps the
+ * line's clamp). `wallInset` is still placement's inset from the bare wall.
  */
 export function clampToRoomInsideFinishes(
   x: number,
@@ -111,13 +113,14 @@ export function clampToRoomInsideFinishes(
   planShape: RoomPlanShape | undefined,
   planPolygon: RoomPlanPolygonPoint[] | undefined,
   planHoles: RoomPlanPolygonPoint[][] | undefined,
-  depths: RoomWallFinishDepths
+  depths: RoomWallFinishDepths,
+  furniture?: FurnitureRoomContext
 ): [number, number] {
   const outline = getRoomOutlineInsideFinishes(
     { shape: planShape ?? "rectangle", polygon: planPolygon, holes: planHoles, w: roomW, d: roomD },
     depths
   );
-  return clampToRoom(x, z, itemWidth, itemDepth, roomW, roomD, wallInset, rotationY, outline.shape, outline.polygon, outline.holes);
+  return clampToRoom(x, z, itemWidth, itemDepth, roomW, roomD, wallInset, rotationY, outline.shape, outline.polygon, outline.holes, furniture);
 }
 
 /** The room fields an item in the 3D view is placed with (components/scene/FurnitureItem.tsx). */
@@ -129,6 +132,8 @@ export type FurnitureRoomFrame = {
   roomPlanShape: RoomPlanShape;
   roomPlanPolygon?: RoomPlanPolygonPoint[];
   roomPlanHoles?: RoomPlanPolygonPoint[][];
+  /** For its furniture clamp (clampToRoom's `furniture`): its room, none for a built-in (lib/furniture-room-context.ts). */
+  roomFurniture?: FurnitureRoomContext;
 };
 
 /**
@@ -144,12 +149,14 @@ export function getFurnitureRoomFrameInsideFinishes(
     roomPlanPolygon?: RoomPlanPolygonPoint[];
     roomPlanHoles?: RoomPlanPolygonPoint[][];
     roomWallFinishDepths?: RoomWallFinishDepths;
+    roomFurniture?: FurnitureRoomContext;
   },
   origin: { x: number; z: number }
 ): FurnitureRoomFrame {
   const { roomWidth, roomDepth, roomPlanShape, roomPlanPolygon, roomPlanHoles } = room;
   const depths = room.roomWallFinishDepths ?? NO_WALL_FINISH_DEPTHS;
-  const frame = { roomWidth, roomDepth, roomOriginX: origin.x, roomOriginZ: origin.z, roomPlanShape, roomPlanPolygon, roomPlanHoles };
+  const frame = { roomWidth, roomDepth, roomOriginX: origin.x, roomOriginZ: origin.z, roomPlanShape, roomPlanPolygon, roomPlanHoles,
+    roomFurniture: room.roomFurniture };
   if (!hasWallFinishDepths(depths)) return frame;
   if (roomPlanShape === "rectangle") {
     const west = depths.west ?? 0, east = depths.east ?? 0, north = depths.north ?? 0, south = depths.south ?? 0;
