@@ -718,24 +718,26 @@ for (const turnDeg of [0, 10, 30]) {
   assert.equal(getRoomWallFinishDepths(one), depthsOne, "two rooms on one surfaces object");
 }
 
-// Built-ins in an imported plan keep furniture's rule (#245), which now stands at each wall's panel: Fit's run, placed, has its
-// back 2 cm in front of its wall's 44 mm panel (200 and 100 mm walls in a room averaging 175 mm), where it stood up to 36.5 mm
-// inside it, and a drag 1 mm nearer is refused.
+// Built-ins in an imported plan stand on the faces of its own 3D walls and panels (1 Nov 2026): Fit's run, placed, has its back
+// on its wall's 44 mm panel (200 and 100 mm walls in a room averaging 175 mm), and a drag 1 mm nearer is refused. On furniture's
+// rule (#245), as before, and still for a room without its plan's model, it stood 2 cm in front of the panel (up to 36.5 mm inside
+// it before #256), and 1 mm nearer was refused.
 {
   const apartment = importedPlan(authoredApartment());
   const planRooms = new Map(apartment.planRooms.map((room) => [room.id, room]));
-  for (const room of apartment.rooms) {
-    for (const host of buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: apartment.rooms.length, planOpenings: [], planRooms })) {
+  for (const room of apartment.rooms) for (const model of [apartment.model, undefined]) {
+    for (const host of buildCabinetryAvailableSpaces({ activeRoom: room, activePlanRoom: null, planRoomCount: apartment.rooms.length, planOpenings: [], planRooms, canonicalModel: model })) {
       const { definition } = fitCabinetToSpace(createCabinetPreset("base", `run-${host.id}`), host, { mode: "fit_width" });
-      const { position: [x, , z], rotationY } = getCabinetPlacement(definition, room, false, planRooms);
+      const { position: [x, , z], rotationY } = getCabinetPlacement(definition, room, false, planRooms, model);
       const wall = apartment.floor.walls.find(({ id }) => id === room.planEdgeWallIds![Number(host.wallId?.replace("wall-", ""))])!;
       const [start, end] = [wall.centerlineSegments[0].start, wall.centerlineSegments[0].end].map(({ xMm, zMm }) => ({ x: xMm / 1000, z: zMm / 1000 }));
       const back = { x: x + room.planPosition!.x - (Math.sin(rotationY) * definition.depth) / 2000, z: z + room.planPosition!.z - (Math.cos(rotationY) * definition.depth) / 2000 };
       const fromCentreMm = (Math.abs((end.x - start.x) * (back.z - start.z) - (end.z - start.z) * (back.x - start.x)) / Math.hypot(end.x - start.x, end.z - start.z)) * 1000;
-      assert.ok(Math.abs(fromCentreMm - (wall.thicknessMm / 2 + 44 + 20)) < 0.5, `${room.id} ${host.wallId}: its back ${fromCentreMm.toFixed(1)} mm off the wall's line`);
+      const what = `${room.id} ${host.wallId} ${model ? "with its plan" : "on furniture's rule"}`;
+      assert.ok(Math.abs(fromCentreMm - (wall.thicknessMm / 2 + 44 + (model ? 0 : 20))) < 0.5, `${what}: its back ${fromCentreMm.toFixed(1)} mm off the wall's line`);
       const nearer = [x - Math.sin(rotationY) * 0.001, 0, z - Math.cos(rotationY) * 0.001] as [number, number, number];
       assert.equal(isPlacementContainedInRoom({ room, position: nearer, rotationY, dimensions: { w: definition.totalWidth, d: definition.depth, h: 870 },
-        canonicalModel: apartment.model, builtIn: true, planRooms }), false, `${room.id} ${host.wallId}: 1 mm nearer the panel is refused`);
+        canonicalModel: model, builtIn: true, planRooms }), false, `${what}: 1 mm nearer the panel is refused`);
     }
   }
 }
