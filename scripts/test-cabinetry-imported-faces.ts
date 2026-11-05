@@ -341,6 +341,25 @@ for (const heightMm of [2100, 2600]) {
   assert.ok(Math.abs(alongMm(face.end) - 1136.04) < 0.05, `the L's inner face runs on under the panel's end (to ${alongMm(face.end).toFixed(2)} mm)`);
 }
 
+// A run belongs against the finished face (J's delegate, 5 Nov 2026). The 3D view cuts the next wall's laminate against this
+// wall's 1.5 mm paint skin at a corner, so it overhangs this face; the face and its host end where it stands. In the imported
+// oracle's full set at seed 8080, plan 281, the next piece bends 11° into the room: the face ran on 91 mm under its laminate,
+// and a base run's back corner reached that laminate's baseboard, so Place moved it 6 mm off its wall. At a square corner (a
+// turned T's through wall) only the host's width changes: Fit kept its allowance from the laminate all along.
+{
+  const c = makeImportedCase(281, 8080) as unknown as Case, room = c.rooms.find(({ id }) => id === "R")!;
+  const host = hostsOf(c, room).find((space) => space.wallId === "wall-0")!;
+  assert.ok(Math.abs(host.availableWidthMm - 2353.2) < 0.5, `bent wall: its host ends at the laminates overhanging it (${host.availableWidthMm.toFixed(1)} mm, not 2476.4)`);
+  const run = fitAndPlace(c, room, host, "base");
+  assert.ok(Math.hypot(run.x - run.fitX, run.z - run.fitZ) < 1e-6, "bent wall: Place leaves the run where Fit put it");
+  assert.equal(contains(c, room, run), true, "bent wall: contained, clear of the next piece's baseboard");
+  const t = makeImportedCase(8, 4242, { kind: "t", placement: { turnDeg: (8 * 37.3) % 360 } }) as unknown as Case, north = t.rooms.find(({ id }) => id === "N")!;
+  const through = hostsOf(t, north).find((space) => space.wallId === `wall-${north.planEdgeWallIds!.indexOf("w-p3-j")}`)!;
+  const filled = fitAndPlace(t, north, through, "base"), baseboard = through.wallSegment!.startBaseboardClearanceMm ?? 0;
+  assert.ok(Math.abs(through.availableWidthMm - 7565) < 1, `square corner: the host ends at the end wall's laminate (${through.availableWidthMm.toFixed(1)} mm, not 7608.9)`);
+  assert.ok(Math.abs(filled.width * 1000 - (through.availableWidthMm - 20 - 2 * baseboard)) < 1, `square corner: a base run still fills it (${(filled.width * 1000).toFixed(0)} mm)`);
+}
+
 // A move from a place a run doesn't fit stays near it, its back on its face (J's delegate, 2 Nov 2026): a 3.86 m run fitted on
 // a drawn L kitchen's 4 m top wall, then cut into by a laminate on its end wall, fits nowhere along that wall. Its nudge, Snap
 // and drag are refused, where round 2 threw it 2 m off the wall into the middle of the L, and the refusal says to fit it again.

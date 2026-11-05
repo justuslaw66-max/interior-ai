@@ -51,6 +51,12 @@ const ALL_TURNS = process.env.ORACLE_TURNS === "all";
  * stem 0.006-0.02 mm proud of the through wall's face; review, 2 Nov 2026). It neither ends a face nor stands in a run's way.
  */
 const PLAN_FLUSH = 0.00005;
+/**
+ * The 3D view draws a painted face's 1.5 mm skin, and cuts the next wall's laminate against it at a corner, so that laminate
+ * overhangs the face by the skin: a run belongs against the finished face, which ends where it stands (J's delegate, 5 Nov
+ * 2026). The line is no face where a solid stands this far (metres) in front of it: the skin, and the flush.
+ */
+const PLAN_SKIN = 0.0015 + PLAN_FLUSH;
 /** How far a run may reach into a slice exactly as drawn: the plan's rounding of a turned wall's openings' ends (0.71 mm). */
 const AS_DRAWN_TOLERANCE = 0.00075;
 
@@ -236,7 +242,7 @@ function faceBreaks(region: Region, run: Run, back: number, from: number, to: nu
   if (chain) return chainFaceBreaks(chain, run, back, from, to);
   // Looked at a millimetre either side: a stretch under 1 mm isn't a face, so a narrower look finds none.
   const [low, high] = [Math.min(from, to), Math.max(from, to)];
-  return !exposedOnLine(region, runFrame(run, back), low - 0.001, high + 0.001, PLAN_FLUSH).some((stretch) => stretch.from <= low && stretch.to >= high);
+  return !exposedOnLine(region, runFrame(run, back), low - 0.001, high + 0.001, PLAN_FLUSH, PLAN_SKIN).some((stretch) => stretch.from <= low && stretch.to >= high);
 }
 
 /**
@@ -283,7 +289,7 @@ function endsRight(
 /** How well the end of the face the run's `side` end stands on is known (its slack), looking `reach` past the run's end. */
 function faceEndSlack(region: Region, run: Run, back: number, end: number, side: -1 | 1, reach: number): number {
   const [low, high] = [Math.min(end, end + side * reach), Math.max(end, end + side * reach)];
-  const on = exposedOnLine(region, runFrame(run, back), low - 0.00002, high + 0.00002, PLAN_FLUSH).find((stretch) => stretch.from <= end + 1e-9 && stretch.to >= end - 1e-9);
+  const on = exposedOnLine(region, runFrame(run, back), low - 0.00002, high + 0.00002, PLAN_FLUSH, PLAN_SKIN).find((stretch) => stretch.from <= end + 1e-9 && stretch.to >= end - 1e-9);
   return on ? (side > 0 ? on.slackTo : on.slackFrom) : 0;
 }
 
@@ -580,7 +586,7 @@ function checkHostsOffered(context: Context, spaces: CabinetHostSpace[], case_: 
         frame: (point) => [(point.x - origin.x) * dx + (point.z - origin.z) * dz, (point.x - origin.x) * nx + (point.z - origin.z) * nz],
         at: (along, across) => ({ x: origin.x + dx * along + nx * across, z: origin.z + dz * along + nz * across }),
       };
-      const exposed = exposedOnLine(region, line, -reach, length + reach, PLAN_FLUSH);
+      const exposed = exposedOnLine(region, line, -reach, length + reach, PLAN_FLUSH, PLAN_SKIN);
       const own = exposed.filter((stretch) => Math.min(stretch.to, length) - Math.max(stretch.from, 0) >= 0.02 + 0.001 + stretch.slackFrom + stretch.slackTo);
       return { line, exposed, own, along: own.reduce((sum, stretch) => sum + Math.min(stretch.to, length) - Math.max(stretch.from, 0), 0) };
     };

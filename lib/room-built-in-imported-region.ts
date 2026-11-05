@@ -1,5 +1,5 @@
 import { getCanonicalFaceTrimsMm, getCanonicalRoomWallFinish } from "@/components/editor/renderers/canonical-floor-plan/canonicalWallPanels";
-import { trimmedFaceEdge } from "@/components/editor/renderers/canonical-floor-plan/geometry";
+import { trimmedFaceEdge, WALL_FINISH_SKIN_MM } from "@/components/editor/renderers/canonical-floor-plan/geometry";
 import type {
   CanonicalFloorPlanFloorRenderModel,
   CanonicalFloorPlanRenderModel,
@@ -137,6 +137,6 @@ export function buildImportedBuiltInRegion(room: RoomSnapshot, model: CanonicalF
   const thicknesses = walls.map((wall) => (wall?.thicknessMm ?? 0) / 1000);
   const panels = edges.map((wallId) => getCanonicalRoomWallFinish(room, wallId).depthMm / 1000);
   const solids = [...cores, ...panelsDrawn].flatMap(convexPieces);
-  const region = buildBuiltInRegionFromSolids([...outline], faceIds, panels, thicknesses, room.planHoles ?? [], solids, cores);
+  const region = buildBuiltInRegionFromSolids([...outline], faceIds, panels, thicknesses, room.planHoles ?? [], solids, cores, WALL_FINISH_SKIN_MM);
   return { region, faceIds, panels, thicknesses };
 }

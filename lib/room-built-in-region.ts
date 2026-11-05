@@ -65,6 +65,12 @@ export type BuiltInRegion = {
    * solid stands FACE_PROBE_MM in front, anything at all in front is an obstacle, and solids behind meet to FACE_EDGE_MM.
    */
   flush?: number;
+  /**
+   * How far (mm) in front of a face a solid that doesn't touch it still stands on the face as finished, an imported plan's: its
+   * paint skin (WALL_FINISH_SKIN_MM, which the region doesn't measure), and the flush. The next wall's laminate, cut against
+   * that skin at a corner, overhangs the face by it, so the face and its host end where that laminate stands.
+   */
+  skin?: number;
 };
 
 /** How near two wall ends meet to join, as the 3D view joins them (LEGACY_WALL_JOIN_TOLERANCE_METERS). */
@@ -200,16 +206,29 @@ function getFaceFrame(region: Omit<BuiltInRegion, "exposed" | "faces">, wall: Re
       low = Math.min(low, across);
       high = Math.max(high, across);
     }
-    return low < Math.max(FACE_PROBE_MM, region.flush ?? 0) && high > -FACE_PROBE_MM;
+    return low < Math.max(FACE_PROBE_MM, region.flush ?? 0, region.skin ?? 0) && high > -FACE_PROBE_MM;
   };
   const solids = region.solids.filter(nearLine).map((points) => points.map(toFrame));
   const standing = [...solids, ...region.holes.filter(nearLine).map((hole) => hole.map(toFrame))]
     .map((points) => clipToStrip(points, region.flush ?? FACE_EDGE_MM, FACE_REACH_MM))
     .filter((points) => points.length >= 2);
-  /** The stretches of [from, to] with nothing standing the probe's depth (or `flush`) in front of the face (a panel's corner past a bend). */
-  const probe = region.flush ?? FACE_PROBE_MM, clearOf = (from: number, to: number) =>
-    getObstacleFreeSpans(standing, probe, probe, 0, from, to).filter(([start, stop]) => stop - start >= FACE_SLIVER_MM);
+  /**
+   * The stretches of [from, to] with nothing standing the probe's depth (or `flush`) in front of the face (a panel's corner past a
+   * bend), nor at its `skin` (a laminate overhanging it there).
+   */
+  const probe = region.flush ?? FACE_PROBE_MM, clearOf = (from: number, to: number) => {
+    const clear = getObstacleFreeSpans(standing, probe, probe, 0, from, to);
+    const onSkin = region.skin ? intersectSpans(clear, getObstacleFreeSpans(standing, region.skin, region.skin, 0, from, to)) : clear;
+    return onSkin.filter(([start, stop]) => stop - start >= FACE_SLIVER_MM);
+  };
   return { toFrame, fromFrame, solids, clearOf };
+}
+
+/** Where two sorted lists of disjoint stretches overlap. */
+function intersectSpans(first: ReadonlyArray<[number, number]>, second: ReadonlyArray<[number, number]>): Array<[number, number]> {
+  const both: Array<[number, number]> = [];
+  for (const [a, b] of first) for (const [c, d] of second) if (Math.min(b, d) > Math.max(a, c)) both.push([Math.max(a, c), Math.min(b, d)]);
+  return both.sort((left, right) => left[0] - right[0]);
 }
 
 /**
@@ -333,10 +352,13 @@ export function buildBuiltInRegion(
  */
 export function buildBuiltInRegionFromSolids(
   outline: Point[], faceIds: readonly string[], panels: readonly number[], thicknesses: readonly number[], holes: Point[][],
-  solids: Point[][], cores: Point[][]
+  solids: Point[][], cores: Point[][], skinMm = 0
 ): BuiltInRegion {
   const walls = buildWalls(outline, faceIds, panels, thicknesses);
-  return withExposedFaces({ outline, holes: holes.filter((hole) => hole.length >= 3), walls, solids, neighbourCores: cores, flush: PLAN_FLUSH_MM });
+  return withExposedFaces({
+    outline, holes: holes.filter((hole) => hole.length >= 3), walls, solids, neighbourCores: cores, flush: PLAN_FLUSH_MM,
+    ...(skinMm > 0 ? { skin: skinMm + PLAN_FLUSH_MM } : {}),
+  });
 }
 
 function withExposedFaces(base: Omit<BuiltInRegion, "exposed" | "faces">): BuiltInRegion {

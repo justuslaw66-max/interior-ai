@@ -192,20 +192,22 @@ const PROBE = 0.000005;
  * aren't faces. Where a wall ending a stretch is all but parallel to the line, its end is known only to 0.006 mm over that
  * wall's slope, `slack` (the bands' rounding to 0.001 mm, a few times over). In an imported plan, a solid no further than
  * `front` in front of the line is flush with it, and a gap no wider along it is passed over (its walls stand true to 0.05 mm:
- * scripts/test-built-in-imported-oracle.ts).
+ * scripts/test-built-in-imported-oracle.ts); and the line is no face where a solid stands `skin` in front of it (a laminate
+ * cut against the face's paint skin, overhanging it).
  */
-export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number, front = PROBE): Stretch[] {
+export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number, front = PROBE, skin?: number): Stretch[] {
   const rings = [region.outline, ...region.bands.flatMap((band) => [band.outer, ...band.holes]), ...region.others];
   const cuts: Array<{ along: number; slope: number; extent: number }> = [];
   rings.forEach((ring) => ring.forEach((point, index) => {
     const [p, q] = [frame(point), frame(ring[(index + 1) % ring.length])];
     const slope = Math.abs(q[1] - p[1]) / Math.max(1e-12, Math.abs(q[0] - p[0]));
-    for (const level of [-PROBE, front]) {
+    for (const level of skin ? [-PROBE, front, skin] : [-PROBE, front]) {
       if ((p[1] - level) * (q[1] - level) > 0 || p[1] === q[1]) continue;
       cuts.push({ along: p[0] + ((q[0] - p[0]) * (level - p[1])) / (q[1] - p[1]), slope, extent: Math.abs(q[0] - p[0]) });
     }
   }));
-  const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) && inRegion(region, at(along, front));
+  const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) && inRegion(region, at(along, front)) &&
+    (!skin || inRegion(region, at(along, skin)));
   const stops = [from, ...cuts.map(({ along }) => along).filter((along) => along > from && along < to).sort((a, b) => a - b), to];
   const near = (along: number) => cuts.filter((cut) => Math.abs(cut.along - along) < 0.00005);
   const slackAt = (along: number) => Math.min(0.005, Math.max(0, ...near(along).map(({ slope }) => 0.000006 / Math.max(1e-9, slope))));
