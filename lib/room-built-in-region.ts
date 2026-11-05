@@ -301,6 +301,13 @@ export function buildBuiltInRegion(
   return { ...base, exposed: walls.map((_, index) => buildFaceHost(base, index, faces)), faces };
 }
 
+/** The region's solids alone (buildBuiltInRegion's `solids`), without its exposed faces: what furniture keeps 2 cm off. */
+export function buildBuiltInRegionSolids(
+  outline: Point[], faceIds: readonly string[], panels: readonly number[], thickness: number, neighbours: BuiltInNeighbourWalls = []
+): Point[][] {
+  return [...buildSolids(buildWalls(outline, faceIds, panels, thickness), thickness), ...buildNeighbourCores(outline, neighbours)];
+}
+
 /** The cores of the walls around the room (each room's at its own thickness) that reach over its outline's bounds. */
 function buildNeighbourCores(outline: readonly Point[], neighbours: BuiltInNeighbourWalls): Point[][] {
   if (!outline.length) return [];

@@ -1,6 +1,6 @@
 import type { RoomPlanPolygonPoint } from "@/lib/room-types";
 import { findNearestClearPlace, prepareClearSearch, type ClearSearch } from "@/lib/furniture-nearest-fit";
-import { buildBuiltInRegion, type BuiltInNeighbourWalls } from "@/lib/room-built-in-region";
+import { buildBuiltInRegionSolids, type BuiltInNeighbourWalls } from "@/lib/room-built-in-region";
 import type { CanonicalRoomWalls } from "@/lib/furniture-canonical-walls";
 import { isOutlineOf, type OutlineEdges } from "@/lib/room-outline-edges";
 
@@ -96,7 +96,7 @@ export function getFurnitureFaces(
 /** A drawn room's walls' cores and panels' boxes, and the cores of the rooms next door, as its 3D view draws them (#245). */
 function drawnWallSolids(edges: OutlineEdges, neighbours: BuiltInNeighbourWalls = []): Point[][] {
   const outline = [...edges.outline];
-  return buildBuiltInRegion(outline, outline.map((_, index) => `wall-${index}`), edges.panels, edges.wallThickness, [], neighbours).solids;
+  return buildBuiltInRegionSolids(outline, outline.map((_, index) => `wall-${index}`), edges.panels, edges.wallThickness, neighbours);
 }
 
 function withShapes(floor: Point[], solids: Point[][], clearance: number): FurnitureFaces {
@@ -190,7 +190,7 @@ const searches = new WeakMap<FurnitureFaces, Map<string, ClearSearch>>();
 function searchFor(faces: FurnitureFaces, width: number, depth: number, rotationY: number): ClearSearch {
   const key = `${width}:${depth}:${rotationY}`, known = searches.get(faces) ?? new Map<string, ClearSearch>();
   searches.set(faces, known);
-  const kept = known.get(key) ?? prepareClearSearch(grownFootprint(width, depth, rotationY, faces.clearance), faces.obstacles);
+  const kept = known.get(key) ?? prepareClearSearch(grownFootprint(width, depth, rotationY, faces.clearance), faces.obstacles, `${key}:${faces.clearance}`);
   known.delete(key);
   known.set(key, kept);
   if (known.size > 8) known.delete(known.keys().next().value!);
