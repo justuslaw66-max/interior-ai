@@ -249,13 +249,27 @@ export function prepareClearSearch(footprint: readonly Point[], obstacles: Reado
 /**
  * The nearest place to `start` within `reach` metres where the search's footprint is clear of every obstacle, its centre is
  * inside `within`, and `fits` accepts it; or null. Places the same distance away are tried in the order they were found.
+ *
+ * A long reach is searched a quarter and a half of it first: the places that may be nearest within a reach come from the edges
+ * within it, so the first place found within one is the nearest of all, and a sofa near a curved wall is most often clear
+ * well inside the reach its line's clamp moved it, which pairs the edges of a few walls rather than of most of the arc.
  */
 export function findNearestClearPlace(
   search: ClearSearch, start: Point, reach: number, fits: (x: number, z: number) => boolean, within: readonly Point[]
 ): [number, number] | null {
+  for (const part of reach > 0.2 ? [reach / 4, reach / 2] : []) {
+    const found = findWithin(search, start, part, part, fits, within);
+    if (found) return found;
+  }
+  return findWithin(search, start, reach, reach + 1e-12, fits, within);
+}
+
+function findWithin(
+  search: ClearSearch, start: Point, reach: number, upTo: number, fits: (x: number, z: number) => boolean, within: readonly Point[]
+): [number, number] | null {
   const found = candidates(start, exposedEdges(search, start, reach));
   const distances = found.map((point) => Math.hypot(point.x - start.x, point.z - start.z));
-  const ordered = found.map((_, index) => index).filter((index) => distances[index] <= reach + 1e-12)
+  const ordered = found.map((_, index) => index).filter((index) => distances[index] <= upTo)
     .sort((first, second) => distances[first] - distances[second] || first - second);
   for (const index of ordered) {
     const point = found[index];
