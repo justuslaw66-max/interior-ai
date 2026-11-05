@@ -8,9 +8,10 @@ import { createSampleFloorPlanPdf } from "./helpers";
 export function registerUploadTests() {
   test("floor plan upload exposes pdf pages and calibration controls", async ({ page, baseURL }, testInfo) => {
     if (!baseURL) throw new Error("The import test requires its configured application URL");
-    // Its steps allow 20 s each, and under next dev processing the PDF alone takes about 13 s, so
-    // the default 30 s ran out just after the review showed (31 Oct 2026, the Mac's traces).
-    test.setTimeout(90_000);
+    // Under next dev reading the PDF alone takes about 13 s, so the default 30 s ran out just after the
+    // review showed (31 Oct 2026, the Mac's traces). It can take longer: on 2 Nov the page choice showed
+    // about 21 s after the upload, with the job 16 s on "rendered", so the waits for the read allow 45 s.
+    test.setTimeout(120_000);
     const seed = await createBetaSeedDesign();
     const failures: unknown[] = [];
     const renderWarnings: string[] = [];
@@ -47,13 +48,13 @@ export function registerUploadTests() {
       const jobId: string = payload.job.id;
       const selection = page.getByTestId("floor-plan-page-selection");
       const review = page.getByTestId("floor-plan-import-review");
-      await expect(selection.or(review)).toBeVisible({ timeout: 20000 });
+      await expect(selection.or(review)).toBeVisible({ timeout: 45_000 });
       if (await selection.isVisible()) {
         await expect(selection.locator('[data-testid^="floor-plan-page-candidate-"]')).toHaveCount(2);
         await selection.getByTestId("floor-plan-page-candidate-1").click();
         await selection.getByRole("button", { name: "Use this page", exact: true }).click();
       }
-      await expect(review).toBeVisible({ timeout: 20000 });
+      await expect(review).toBeVisible({ timeout: 45_000 });
       const statusResponse = await page.request.get(`/api/floor-plan-imports/${jobId}`);
       expect(statusResponse.status()).toBe(200);
       const { job } = await statusResponse.json();

@@ -149,7 +149,7 @@ assert.match(
   read("components/editor/useConsumerFloorPlanImportCreation.ts"),
   /router\.push\(buildDesignEditorUrl\(\{ designId: id, view: "2d", floorPlanImportId: activeJob\.id \}\)\)/
 );
-assert.match(read("components/editor/FloorPlanImportAssistant.tsx"), /Opens in Plan, in 2D, so you can check it before you furnish\./);
+assert.match(read("components/editor/FloorPlanImportReadyCard.tsx"), /Opens in Plan, in 2D, so you can check it before you furnish\./);
 const arrival = read("components/editor/FloorPlanImportArrivalNote.tsx");
 assert.match(arrival, /useSearchParams\(\)\.get\("floorPlanImport"\)/);
 assert.match(arrival, /url\.searchParams\.delete\("floorPlanImport"\);\s*window\.history\.replaceState\(null, "", url\);/);

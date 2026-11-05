@@ -4,6 +4,7 @@ import type { ConsumerFloorPlanImportJob } from "./floor-plan-import-ui-types";
 import { floorPlanImportResponseJson } from "./useConsumerFloorPlanImportSession";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { buildDesignEditorUrl } from "@/lib/design-editor-url";
+import type { ReviewHomeTypeId } from "@/lib/floor-plan-imports/review-home-type";
 
 type CreationInput = {
   activeJob: ConsumerFloorPlanImportJob | null;
@@ -16,7 +17,8 @@ type CreationInput = {
 
 export function useConsumerFloorPlanImportCreation({ activeJob, title, beginAction, setSubmitting, setCreateError, onActiveJobIdChange }: CreationInput) {
   const router = useRouter();
-  return useCallback(async () => {
+  // homeType: the one chosen on the ready card, when it isn't the one the card started on; the server applies it.
+  return useCallback(async (homeType: ReviewHomeTypeId | null = null) => {
     if (!activeJob || activeJob.status !== "ready") return;
     const signal = beginAction();
     setSubmitting(true);
@@ -25,7 +27,7 @@ export function useConsumerFloorPlanImportCreation({ activeJob, title, beginActi
       // Confirmation can finish server-side after closure; suppress its stale UI effects.
       const payload = await floorPlanImportResponseJson(await fetch(`/api/floor-plan-imports/${activeJob.id}/confirm`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, candidateVersion: activeJob.candidateVersion }),
+        body: JSON.stringify({ title, candidateVersion: activeJob.candidateVersion, ...(homeType ? { homeType } : {}) }),
       }));
       signal.throwIfAborted();
       const id = typeof payload.id === "string" ? payload.id : null;
