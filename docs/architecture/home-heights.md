@@ -40,6 +40,12 @@ reference when the floor plan or brochure states no height; always check for, an
   assumed evidence and is marked as typed in its provenance, so it is kept after a draft save or a resume too. A home
   type whose walls would be lower than a door or window on the plan changes nothing, and the review says so. The review
   starts on the home type the floor's assumed walls are (2.8 m reads Condo; 2.6 m reads Not sure).
+- **A ready upload** (one the AI check passed, which skips the review panel) asks it on its ready card, above Create
+  design (J, 1 Nov 2026: "On the ready card"; found when s037 came out ready on the live site with 2.6 m walls and no
+  question). The card shows the same field and walls line, without the review's "Optional plan details" hint, and
+  starts the same way. Create design sends the home type's id only once the person changed it; the confirm route
+  (`withConfirmedHomeType`) applies it to the stored candidate on every floor, by the review's rules, compiles it again,
+  and makes the design from that. The stored candidate itself isn't changed.
 - **The server** (`lib/floor-plan-imports/review.ts`) keeps a home type's wall height assumed, with its own note, so
   choosing a home type doesn't count as confirming it; and a level's height (elevation, storey, slab) the client says
   the plan states is stored as the person's unless the plan stated it already at that value (then with the server's

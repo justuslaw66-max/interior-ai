@@ -4,6 +4,7 @@ import { registerEditingTests } from "./multi-room/editing";
 import { registerStartAndFloorTests } from "./multi-room/start-and-floors";
 import { registerTemplateTests } from "./multi-room/templates";
 import { registerUploadTests } from "./multi-room/upload";
+import { registerUploadCancelTests } from "./multi-room/upload-cancel";
 import { registerViewportNavigationTests } from "./multi-room/viewport-navigation";
 import { registerWorkspaceTests } from "./multi-room/workspace";
 
@@ -27,4 +28,5 @@ test.describe("18. Multi-Room Whole Home", () => {
   registerEditingTests();
   registerTemplateTests();
   registerUploadTests();
+  registerUploadCancelTests();
 });

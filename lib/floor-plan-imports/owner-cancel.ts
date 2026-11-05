@@ -1,6 +1,14 @@
+import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { FLOOR_PLAN_IMPORT_PROGRESS } from "./status";
 import type { FloorPlanImportStatus } from "./types";
+
+/**
+ * The lease owner of a cancel that stopped a read under way: it holds the reading worker's lease end, with a token
+ * no worker has, so the worker's writes and heartbeats are refused while purges wait. Health doesn't count it as a
+ * worker's lease; once it ends, the workers' expired-lease sweep clears it and keeps the cancel.
+ */
+export const OWNER_CANCEL_LEASE_OWNER = "owner-cancel";
 
 /** Unfinished uploads the owner may cancel. One that made a design or a revision is past cancelling. */
 export const FLOOR_PLAN_OWNER_CANCELLABLE_STATUSES = [
@@ -39,6 +47,12 @@ async function cancelOnce(jobs: OwnerCancelClient["floorPlanImportJob"], input: 
   if (!job) return "not_found" as const;
   if (job.status === "failed") return "already_stopped" as const;
   const reading = Boolean(job.leaseToken && job.leaseExpiresAt && job.leaseExpiresAt > now);
+  // The worker can take until its lease's end to stop, writing the job's files meanwhile, so privacy.ts holds purges
+  // till then. The database keeps a lease whole or absent (FloorPlanImportJob_lease_complete), so the cancel holds that
+  // end with a token of its own, which no worker has.
+  const lease = reading
+    ? { leaseToken: `cancel-${randomUUID()}`, leaseOwner: OWNER_CANCEL_LEASE_OWNER, leaseExpiresAt: job.leaseExpiresAt }
+    : { leaseToken: null, leaseOwner: null, leaseExpiresAt: null };
   const cancelled = await jobs.updateMany({
     where: {
       id: input.id,
@@ -53,11 +67,7 @@ async function cancelOnce(jobs: OwnerCancelClient["floorPlanImportJob"], input: 
       statusChangedAt: now,
       progress: FLOOR_PLAN_IMPORT_PROGRESS.failed,
       errorMessage: "Cancelled by owner",
-      leaseToken: null,
-      leaseOwner: null,
-      // Without its token the lease is no worker's, but the worker can take until then to stop:
-      // privacy.ts holds back purges of the job's files till this time passes.
-      leaseExpiresAt: reading ? job.leaseExpiresAt : null,
+      ...lease,
       nextAttemptAt: null,
     },
   });

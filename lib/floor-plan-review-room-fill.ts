@@ -67,21 +67,66 @@ function neighbours(i: number, w: number, h: number, out: Int32Array) {
   return n;
 }
 
-/** The pixel the square sweeps nearest the click, within 2r of it; -1 if none. */
-function nearestSwept(d: Int32Array, w: number, h: number, point: { x: number; y: number }, r: number) {
-  const cx = Math.floor(point.x), cy = Math.floor(point.y);
-  let best = -1, bestDistance = Infinity;
-  for (let y = Math.max(0, cy - 2 * r); y <= Math.min(h - 1, cy + 2 * r); y += 1) {
-    for (let x = Math.max(0, cx - 2 * r); x <= Math.min(w - 1, cx + 2 * r); x += 1) {
-      const distance = (x - cx) ** 2 + (y - cy) ** 2;
-      if (d[y * w + x] > r && distance < bestDistance) {
-        best = y * w + x;
-        bestDistance = distance;
-      }
+type Window = { x0: number; y0: number; x1: number; y1: number; cx: number; cy: number };
+
+/** The floor within e px of the click not walked yet, where a walk starts (the click itself may be on a letter's ink). */
+function startRing(d: Int32Array, w: number, box: Window, e: number, seen: Set<number>) {
+  const start: number[] = [];
+  for (let y = Math.max(box.y0, box.cy - e); y <= Math.min(box.y1, box.cy + e); y += 1) {
+    for (let x = Math.max(box.x0, box.cx - e); x <= Math.min(box.x1, box.cx + e); x += 1) {
+      const i = y * w + x;
+      if (d[i] > 0 && !seen.has(i) && (x - box.cx) ** 2 + (y - box.cy) ** 2 <= e * e) start.push(i);
     }
   }
-  return best;
+  start.forEach((i) => seen.add(i));
+  return start;
 }
+
+/**
+ * A walk over the floor inside the window from start, layer by layer: the swept pixel (d > r) nearest the click on the
+ * first layer that has one (-1 if none), and whether the floor walked has room anywhere for the narrowest square.
+ */
+function walkFloor(d: Int32Array, w: number, h: number, box: Window, start: number[], seen: Set<number>, r: number, rMin: number) {
+  const around = new Int32Array(4);
+  let layer = start, roomy = false;
+  while (layer.length) {
+    const hits = layer.filter((i) => d[i] > r);
+    if (hits.length) return { hit: hits.reduce((best, i) => (dist2(i, w, box) < dist2(best, w, box) ? i : best)), roomy: true };
+    roomy ||= layer.some((i) => d[i] > rMin);
+    const next: number[] = [];
+    for (const i of layer) {
+      const n = neighbours(i, w, h, around);
+      for (let k = 0; k < n; k += 1) {
+        const j = around[k], x = j % w, y = Math.floor(j / w);
+        if (d[j] > 0 && !seen.has(j) && x >= box.x0 && x <= box.x1 && y >= box.y0 && y <= box.y1) { seen.add(j); next.push(j); }
+      }
+    }
+    layer = next;
+  }
+  return { hit: -1, roomy };
+}
+
+/**
+ * The swept pixel (d > r) the click reaches first over the floor, within 2r of it; -1 if none. The walk goes through
+ * floor only, so the sweep of the room next door, past a wall a few pixels from the click, is never taken for this
+ * room's (a click in a store by its wall, the bedroom beyond it nearer in a straight line). A walk shut in where not
+ * even the narrowest square fits (the inside of a letter of the room's name, clicked) is no room: it starts again
+ * from the floor a little farther out, 2, 4, 8 and then r px from the click.
+ */
+function seedOf(d: Int32Array, w: number, h: number, point: { x: number; y: number }, r: number, rMin: number) {
+  const cx = Math.floor(point.x), cy = Math.floor(point.y);
+  const box: Window = { x0: Math.max(0, cx - 2 * r), y0: Math.max(0, cy - 2 * r), x1: Math.min(w - 1, cx + 2 * r), y1: Math.min(h - 1, cy + 2 * r), cx, cy };
+  const seen = new Set<number>();
+  for (const e of [2, 4, 8, Math.max(8, r)]) {
+    const start = startRing(d, w, box, e, seen);
+    if (!start.length) continue;
+    const { hit, roomy } = walkFloor(d, w, h, box, start, seen, r, rMin);
+    if (hit >= 0 || roomy) return hit;                  // (roomy, no hit: a space of its own, for a narrower square)
+  }
+  return -1;
+}
+
+const dist2 = (i: number, w: number, box: Window) => ((i % w) - box.cx) ** 2 + (Math.floor(i / w) - box.cy) ** 2;
 
 /** Cores: the 4-connected pieces of the paper the square sweeps (d > r), numbered from 1. */
 function labelCores(d: Int32Array, w: number, h: number, r: number) {
@@ -274,9 +319,10 @@ export function findRoomRegion(mask: RoomFillMask, point: { x: number; y: number
   const { widthPx: w, heightPx: h } = mask;
   if (!(mmPerPx > 0) || mask.ink.length !== w * h) return { ok: false, failure: "no_room_here" };
   const d = distanceToInk(mask.ink, w, h, true);
+  const rMin = Math.max(1, Math.round(ROOM_FILL_SWEEPS_MM[ROOM_FILL_SWEEPS_MM.length - 1] / mmPerPx));
   for (const sweepMm of ROOM_FILL_SWEEPS_MM) {
     const r = Math.max(1, Math.round(sweepMm / mmPerPx));
-    const seed = nearestSwept(d, w, h, point, r);
+    const seed = seedOf(d, w, h, point, r, rMin);
     if (seed >= 0) return roomAround(mask, d, r, seed, mmPerPx);
   }
   return { ok: false, failure: "no_room_here" };
