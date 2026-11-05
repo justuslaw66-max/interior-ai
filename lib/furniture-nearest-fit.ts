@@ -10,13 +10,14 @@ import type { RoomPlanPolygonPoint } from "@/lib/room-types";
  *
  * Along an arc or a run of short walls, a sofa's grown shapes overlap one another almost wholly, so an edge lying inside one of
  * the other grown shapes is dropped before any are paired (no place on it is clear), and the shapes are looked up by a grid:
- * the places tried are the same. The grown shapes and their grid are made once for a footprint (prepareClearSearch) and kept
- * by the caller, so a drag along a curved wall stays within a frame.
+ * the places tried are the same. A footprint's search (prepareClearSearch) is kept by the caller, its grid made from the grown
+ * shapes' bounds and each shape grown when the search first reaches it, so a drag along a curved wall, or a resize or turn that
+ * makes a new footprint each frame, stays within a frame.
  */
 
 type Point = RoomPlanPolygonPoint;
 /** A grown shape: its points (counter-clockwise), bounds, edges, and each edge's inward unit normal and offset (n·p > c inside). */
-type Shape = { points: Point[]; minX: number; maxX: number; minZ: number; maxZ: number; edges: Edge[]; sides: Float64Array };
+type Shape = { points: Point[]; minX: number; maxX: number; minZ: number; maxZ: number; edges: Edge[] | null; sides: Float64Array };
 type Edge = { a: Point; b: Point; shape: Shape; minX: number; maxX: number; minZ: number; maxZ: number };
 
 /** A point this far (metres) inside a grown shape, on every side, is inside it; nearer its edge counts as on it. */
@@ -40,6 +41,37 @@ export function convexHull(points: readonly Point[]): Point[] {
   return [...lower.slice(0, -1), ...upper.slice(0, -1)];
 }
 
+/**
+ * The corners of two convex shapes' sum (each counter-clockwise, as convexHull gives it; one may be a segment), walked round both
+ * by their edges' directions from their lowest corners: each a corner of one plus a corner of the other, as the sum of every
+ * pair would give them, in a few steps for each corner rather than one for each pair.
+ */
+function convexSum(one: readonly Point[], two: readonly Point[]): Point[] {
+  const lowest = (loop: readonly Point[]) => loop.reduce((best, point, index) =>
+    (point.z < loop[best].z || (point.z === loop[best].z && point.x < loop[best].x) ? index : best), 0);
+  const [n, m] = [one.length, two.length], sums: Point[] = [];
+  let [i, j, stepsOne, stepsTwo] = [lowest(one), lowest(two), 0, 0];
+  while (stepsOne < n || stepsTwo < m) {
+    const a = one[i % n], b = two[j % m], nextA = one[(i + 1) % n], nextB = two[(j + 1) % m];
+    sums.push({ x: a.x + b.x, z: a.z + b.z });
+    const turn = stepsOne === n ? -1 : stepsTwo === m ? 1 : (nextA.x - a.x) * (nextB.z - b.z) - (nextA.z - a.z) * (nextB.x - b.x);
+    if (turn >= 0) [i, stepsOne] = [i + 1, stepsOne + 1];
+    if (turn <= 0) [j, stepsTwo] = [j + 1, stepsTwo + 1];
+  }
+  return sums;
+}
+
+/** A shape `obstacle` grown by `outline` (convexHull's), as the hull of every corner of one plus every corner of the other. */
+function grownBy(obstacle: readonly Point[], outline: readonly Point[]): Point[] {
+  const hull = convexHull(obstacle);
+  // A point, or a segment or shape with a corner twice: every pair, as a sum walked by edges needs edges of some length.
+  const walkable = hull.length >= 2 && outline.length >= 3 && hull.every((point, index) => {
+    const next = hull[(index + 1) % hull.length];
+    return point.x !== next.x || point.z !== next.z;
+  });
+  return convexHull(walkable ? convexSum(hull, outline) : obstacle.flatMap((o) => outline.map((f) => ({ x: o.x + f.x, z: o.z + f.z }))));
+}
+
 function boxed(points: Point[]): Shape {
   let [minX, maxX, minZ, maxZ] = [Infinity, -Infinity, Infinity, -Infinity];
   for (const { x, z } of points) [minX, maxX, minZ, maxZ] = [Math.min(minX, x), Math.max(maxX, x), Math.min(minZ, z), Math.max(maxZ, z)];
@@ -50,12 +82,16 @@ function boxed(points: Point[]): Shape {
     const [nx, nz] = length > 0 ? [-(end.z - start.z) / length, (end.x - start.x) / length] : [0, 0];
     sides.set([nx, nz, length > 0 ? nx * start.x + nz * start.z : -Infinity], index * 3);
   });
-  const shape: Shape = { points, minX, maxX, minZ, maxZ, edges: [], sides };
-  shape.edges = points.map((a, at) => {
-    const b = points[(at + 1) % points.length];
+  return { points, minX, maxX, minZ, maxZ, edges: null, sides };
+}
+
+/** A shape's edges, made the first time a search pairs them (a shape only looked inside never needs them). */
+function edgesOf(shape: Shape): Edge[] {
+  shape.edges ??= shape.points.map((a, at) => {
+    const b = shape.points[(at + 1) % shape.points.length];
     return { a, b, shape, minX: Math.min(a.x, b.x), maxX: Math.max(a.x, b.x), minZ: Math.min(a.z, b.z), maxZ: Math.max(a.z, b.z) };
   });
-  return shape;
+  return shape.edges;
 }
 
 function isStrictlyInside(shape: Shape, point: Point): boolean {
@@ -67,20 +103,28 @@ function isStrictlyInside(shape: Shape, point: Point): boolean {
   return true;
 }
 
-/** The shapes by a grid of their bounds, for the ones a point may be in. */
-function gridOf(shapes: readonly Shape[], cell: number) {
-  const cells = new Map<number, Shape[]>();
+/**
+ * An obstacle's place in a search: the bounds of its grown shape (the obstacle's plus the footprint's, as the shape's own are)
+ * and the shape, grown the first time the search reaches it (most of a room's are never near the place sought).
+ */
+type Entry = { obstacle: readonly Point[]; minX: number; maxX: number; minZ: number; maxZ: number; shape: Shape | null };
+
+/** The entries by a grid of their bounds, for the shapes a point may be in. */
+function gridOf(entries: readonly Entry[], cell: number, shapeOf: (entry: Entry) => Shape) {
+  const cells = new Map<number, Entry[]>();
   const at = (value: number) => Math.floor(value / cell), key = (i: number, j: number) => i * 1048576 + j;
-  for (const shape of shapes) {
-    for (let i = at(shape.minX); i <= at(shape.maxX); i += 1) for (let j = at(shape.minZ); j <= at(shape.maxZ); j += 1) {
+  for (const entry of entries) {
+    for (let i = at(entry.minX); i <= at(entry.maxX); i += 1) for (let j = at(entry.minZ); j <= at(entry.maxZ); j += 1) {
       const list = cells.get(key(i, j));
-      if (list) list.push(shape);
-      else cells.set(key(i, j), [shape]);
+      if (list) list.push(entry);
+      else cells.set(key(i, j), [entry]);
     }
   }
   /** The shape (other than `except`) the point is strictly inside, or null. */
   return (point: Point, except?: Shape): Shape | null => {
-    for (const shape of cells.get(key(at(point.x), at(point.z))) ?? []) {
+    for (const entry of cells.get(key(at(point.x), at(point.z))) ?? []) {
+      if (point.x <= entry.minX || point.x >= entry.maxX || point.z <= entry.minZ || point.z >= entry.maxZ) continue;
+      const shape = shapeOf(entry);
       if (shape !== except && isStrictlyInside(shape, point)) return shape;
     }
     return null;
@@ -103,22 +147,40 @@ function segmentCrossing(one: Edge, two: Edge): Point | null {
 
 /** The grown shapes' edges within `reach` of the start, less those lying wholly inside another grown shape. */
 function exposedEdges(search: ClearSearch, start: Point, reach: number): Edge[] {
-  // Only the shapes reaching within `reach` of the start, by their bounds, have edges that may.
-  const near = search.shapes.flatMap((shape) => (shape.minX - start.x > reach || start.x - shape.maxX > reach ||
-    shape.minZ - start.z > reach || start.z - shape.maxZ > reach ? [] : shape.edges));
-  return near.filter((edge) => {
-    if (edge.minX - start.x > reach || start.x - edge.maxX > reach || edge.minZ - start.z > reach || start.z - edge.maxZ > reach) return false;
-    const nearest = nearestOnSegment(edge.a, edge.b, start);
-    if (Math.hypot(nearest.x - start.x, nearest.z - start.z) > reach) return false;
-    // Both ends inside one convex shape: the whole edge is.
-    const inside = search.insideOf(edge.a, edge.shape);
-    return !inside || !isStrictlyInside(inside, edge.b);
-  });
+  const edges: Edge[] = [];
+  for (const entry of search.entries) {
+    // Only the shapes reaching within `reach` of the start, by their bounds, have edges that may.
+    if (entry.minX - start.x > reach || start.x - entry.maxX > reach || entry.minZ - start.z > reach || start.z - entry.maxZ > reach) continue;
+    for (const edge of edgesOf(search.shapeOf(entry))) if (isExposed(search, edge, start, reach)) edges.push(edge);
+  }
+  return edges;
 }
 
-/** The places a nearest clear place may be: the start, each exposed edge's nearest point and ends, and their crossings. */
+function isExposed(search: ClearSearch, edge: Edge, start: Point, reach: number): boolean {
+  if (edge.minX - start.x > reach || start.x - edge.maxX > reach || edge.minZ - start.z > reach || start.z - edge.maxZ > reach) return false;
+  const nearest = nearestOnSegment(edge.a, edge.b, start);
+  if (Math.hypot(nearest.x - start.x, nearest.z - start.z) > reach) return false;
+  // Both ends inside one convex shape: the whole edge is.
+  const inside = search.insideOf(edge.a, edge.shape);
+  return !inside || !isStrictlyInside(inside, edge.b);
+}
+
+/**
+ * The places a nearest clear place may be: the start, each exposed edge's nearest point and ends, and their crossings. A corner
+ * is listed once, where it first comes (the end of one edge and the start of the next).
+ */
 function candidates(start: Point, edges: Edge[]): Point[] {
-  const found: Point[] = [start, ...edges.flatMap((edge) => [nearestOnSegment(edge.a, edge.b, start), edge.a, edge.b])];
+  const found: Point[] = [start], seen = new Set<Point>();
+  const add = (corner: Point) => {
+    if (seen.has(corner)) return;
+    seen.add(corner);
+    found.push(corner);
+  };
+  for (const edge of edges) {
+    found.push(nearestOnSegment(edge.a, edge.b, start));
+    add(edge.a);
+    add(edge.b);
+  }
   const byX = [...edges].sort((one, two) => one.minX - two.minX);
   for (let first = 0; first < byX.length; first += 1) {
     const one = byX[first];
@@ -141,52 +203,63 @@ function isInsideRing(point: Point, ring: readonly Point[]): boolean {
   return inside;
 }
 
-/** A footprint's grown shapes for its obstacles, once for every search with it (a drag's frames keep its size and turn). */
-export type ClearSearch = { shapes: Shape[]; insideOf: ReturnType<typeof gridOf> };
+/** A footprint's obstacles, each grown once for every search with it (a drag's frames keep its size and turn). */
+export type ClearSearch = { entries: Entry[]; shapeOf: (entry: Entry) => Shape; insideOf: ReturnType<typeof gridOf> };
 
 // Grown shapes by footprint and obstacle, so a room whose walls are being moved (a wall drag: new faces every frame, most of
 // their shapes the same) grows only the shapes that changed. A few footprints, each with a bounded number of shapes.
 const grownByFootprint = new Map<string, Map<string, Shape>>();
 
-function grownShapes(outline: readonly Point[], obstacles: ReadonlyArray<readonly Point[]>, key: string | undefined): Shape[] {
-  const grow = (obstacle: readonly Point[]) => boxed(convexHull(obstacle.flatMap((o) => outline.map((f) => ({ x: o.x + f.x, z: o.z + f.z })))));
-  if (key === undefined) return obstacles.map(grow);
+/** How an entry's shape is grown: the footprint's `outline` summed with its obstacle, kept by obstacle for the footprint `key`. */
+function growerOf(outline: readonly Point[], key: string | undefined): (entry: Entry) => Shape {
+  const grow = (obstacle: readonly Point[]) => boxed(grownBy(obstacle, outline));
+  if (key === undefined) return (entry) => (entry.shape ??= grow(entry.obstacle));
   const known = grownByFootprint.get(key) ?? new Map<string, Shape>();
   grownByFootprint.delete(key);
   grownByFootprint.set(key, known);
   if (grownByFootprint.size > 8) grownByFootprint.delete(grownByFootprint.keys().next().value!);
   if (known.size > 20000) known.clear();
-  return obstacles.map((obstacle) => {
-    const id = obstacle.map(({ x, z }) => `${x},${z}`).join(";"), kept = known.get(id) ?? grow(obstacle);
+  return (entry) => {
+    if (entry.shape) return entry.shape;
+    const id = entry.obstacle.map(({ x, z }) => `${x},${z}`).join(";"), kept = known.get(id) ?? grow(entry.obstacle);
     known.set(id, kept);
-    return kept;
-  });
+    return (entry.shape = kept);
+  };
 }
+
+const boundsOf = (points: readonly Point[]) => points.reduce((bounds, { x, z }) => ({
+  minX: Math.min(bounds.minX, x), maxX: Math.max(bounds.maxX, x), minZ: Math.min(bounds.minZ, z), maxZ: Math.max(bounds.maxZ, z),
+}), { minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity });
 
 /**
  * The search for a footprint (convex, about its centre, its own mirror) among obstacles (convex shapes or segments); `key` names
  * the footprint, so its grown shapes are kept for other searches with it.
  */
 export function prepareClearSearch(footprint: readonly Point[], obstacles: ReadonlyArray<readonly Point[]>, key?: string): ClearSearch {
-  const outline = convexHull(footprint);
-  const shapes = grownShapes(outline, obstacles, key);
-  const span = Math.max(...outline.map(({ x, z }) => Math.hypot(x, z)));
-  return { shapes, insideOf: gridOf(shapes, Math.max(0.05, span / 2)) };
+  const outline = convexHull(footprint), around = boundsOf(outline);
+  // A sum's bounds are its parts' summed: the grown shape's (to rounding, far inside the 1e-9 a point must be inside by).
+  const entries = obstacles.map((obstacle): Entry => {
+    const { minX, maxX, minZ, maxZ } = boundsOf(obstacle);
+    return { obstacle, minX: minX + around.minX, maxX: maxX + around.maxX, minZ: minZ + around.minZ, maxZ: maxZ + around.maxZ, shape: null };
+  });
+  const shapeOf = growerOf(outline, key), span = Math.max(...outline.map(({ x, z }) => Math.hypot(x, z)));
+  return { entries, shapeOf, insideOf: gridOf(entries, Math.max(0.05, span / 2), shapeOf) };
 }
 
 /**
  * The nearest place to `start` within `reach` metres where the search's footprint is clear of every obstacle, its centre is
- * inside `within`, and `fits` accepts it; or null.
+ * inside `within`, and `fits` accepts it; or null. Places the same distance away are tried in the order they were found.
  */
 export function findNearestClearPlace(
   search: ClearSearch, start: Point, reach: number, fits: (x: number, z: number) => boolean, within: readonly Point[]
 ): [number, number] | null {
-  const ordered = candidates(start, exposedEdges(search, start, reach))
-    .map((point) => ({ point, distance: Math.hypot(point.x - start.x, point.z - start.z) }))
-    .filter(({ distance }) => distance <= reach + 1e-12)
-    .sort((first, second) => first.distance - second.distance);
-  for (const { point } of ordered) {
-    if (!isInsideRing(point, within) || search.insideOf(point)) continue;
+  const found = candidates(start, exposedEdges(search, start, reach));
+  const distances = found.map((point) => Math.hypot(point.x - start.x, point.z - start.z));
+  const ordered = found.map((_, index) => index).filter((index) => distances[index] <= reach + 1e-12)
+    .sort((first, second) => distances[first] - distances[second] || first - second);
+  for (const index of ordered) {
+    const point = found[index];
+    if (search.insideOf(point) || !isInsideRing(point, within)) continue;
     if (fits(point.x, point.z)) return [point.x, point.z];
   }
   return null;
