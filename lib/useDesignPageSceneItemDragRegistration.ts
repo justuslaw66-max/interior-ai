@@ -34,6 +34,7 @@ export function useDesignPageSceneItemDragRegistration(presentation: DesignPageP
         placement.actions.catalog.findCatalogPlacementBlockerInRoom,
       isPlacementContained:
         placement.actions.catalog.isCatalogPlacementContainedInRoom,
+      placeBuiltInDrag: placement.actions.catalog.placeBuiltInDragInRoom,
       clampToRoom: documentRoom.actions.room.clampToActiveRoom,
       clampToPlacementRoom: placement.actions.catalog.clampToCatalogPlacementRoom,
       getItemBounds: selectionInspection.actions.geometry.getItemAABB,

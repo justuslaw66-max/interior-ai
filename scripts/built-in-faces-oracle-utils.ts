@@ -85,6 +85,28 @@ export function regionOf(room: RoomSnapshot, neighbours: readonly HousePlanRoom2
   return { outline, bands: walls, others, vertices: [...outline, ...rings.flat()], edges, thickness, filled };
 }
 
+/** Each ring's bounds [minX, maxX, minZ, maxZ], kept per ring. */
+const boundsByRing = new WeakMap<readonly P[], [number, number, number, number]>();
+function ringBounds(ring: readonly P[]): [number, number, number, number] {
+  let bounds = boundsByRing.get(ring);
+  if (!bounds) {
+    bounds = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
+    for (const { x, z } of ring) bounds = [Math.min(bounds[0], x), Math.max(bounds[1], x), Math.min(bounds[2], z), Math.max(bounds[3], z)];
+    boundsByRing.set(ring, bounds);
+  }
+  return bounds;
+}
+
+/**
+ * The region with only the solids whose bounds meet those of `points`: inRegion gives the same answer for each of them, and a
+ * footprint's samples test only the rings around them.
+ */
+export function regionAround<R extends Region>(region: R, points: readonly P[]): R {
+  const [minX, maxX, minZ, maxZ] = ringBounds(points);
+  const meets = (ring: readonly P[]) => { const [a, b, c, d] = ringBounds(ring); return a <= maxX && b >= minX && c <= maxZ && d >= minZ; };
+  return { ...region, bands: region.bands.filter(({ outer }) => meets(outer)), others: region.others.filter(meets) };
+}
+
 /** True when the point is in the room and in no solid: no wall band (inside its outline, not in a hole of it), panel or column. */
 export function inRegion(region: Region, point: P): boolean {
   if (!insideRing(point, region.outline)) return false;
@@ -109,8 +131,9 @@ export function toRun(run: Run, back: number, point: P): [number, number] {
  * `from` 0. Cut 0.005 mm behind it, as the 3D view's bands are drawn to 0.001 mm: cut at it, the next wall's face at a bend of
  * a few hundredths of a degree would start half a millimetre off. In the run's frame.
  */
-export function edgesItMeets(region: Region, run: Run, back: number, pastFront = false, from = back): Array<[[number, number], [number, number]]> {
-  const edge = from - 0.000005, low = from + 0.000001;
+export function edgesItMeets(region: Region, run: Run, back: number, pastFront = false, from = back, flush = 0): Array<[[number, number], [number, number]]> {
+  // In an imported plan, what stands no further than `flush` in front of the back is flush with the face: cut there.
+  const edge = flush > 0 ? from + flush : from - 0.000005, low = from + Math.max(0.000001, flush);
   const high = pastFront ? Number.POSITIVE_INFINITY : back + run.depth - 0.000001;
   return region.edges.flatMap(({ a, b }) => {
     let [p, q] = [toRun(run, back, a), toRun(run, back, b)];
@@ -121,7 +144,7 @@ export function edgesItMeets(region: Region, run: Run, back: number, pastFront =
     }
     // The run's own face isn't in front of it: the 3D view's bands are rounded to a thousandth of a mm, and their union leaves
     // corners up to a few thousandths off the face.
-    if (Math.max(p[1], q[1]) < 0.000005) return [];
+    if (Math.max(p[1], q[1]) < Math.max(0.000005, flush)) return [];
     return Math.min(p[1], q[1]) <= high && Math.max(p[1], q[1]) >= low ? [[p, q]] : [];
   });
 }
@@ -151,8 +174,12 @@ export function distanceToBox(edges: Array<[[number, number], [number, number]]>
 // --- Where the 3D view draws a face ------------------------------------------------------------------------------------------
 /** A line's frame: a point in the plan as [along it, out from it to the room's side], and back. */
 export type LineFrame = { frame: (point: P) => [number, number]; at: (along: number, across: number) => P };
-/** An exposed stretch along a line, and how much less exactly each end is known (where a wall ending it is all but parallel). */
-export type Stretch = { from: number; to: number; slackFrom: number; slackTo: number };
+/**
+ * An exposed stretch along a line, and how much less exactly each end is known (where a wall ending it is all but parallel):
+ * its slack (to 5 mm), and how far past it the end may lie (`runOn`: as far as that wall's edge runs along the line, where a
+ * few thousandths of a mm of rounding move it).
+ */
+export type Stretch = { from: number; to: number; slackFrom: number; slackTo: number; runOnFrom: number; runOnTo: number };
 
 const PROBE = 0.000005;
 
@@ -163,31 +190,62 @@ const PROBE = 0.000005;
  * (a panel's end a few thousandths proud at a bend of hundredths of a degree) doesn't end it. Exact: tested between each
  * place a solid's edge crosses those lines; gaps under 0.01 mm (where solids meet) are passed over, and stretches under 1 mm
  * aren't faces. Where a wall ending a stretch is all but parallel to the line, its end is known only to 0.006 mm over that
- * wall's slope, `slack` (the bands' rounding to 0.001 mm, a few times over).
+ * wall's slope, `slack` (the bands' rounding to 0.001 mm, a few times over). In an imported plan, a solid no further than
+ * `front` in front of the line is flush with it, and a gap no wider along it is passed over (its walls stand true to 0.05 mm:
+ * scripts/test-built-in-imported-oracle.ts); and the line is no face where a solid stands `skin` in front of it (a laminate
+ * cut against the face's paint skin, overhanging it).
  */
-export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number): Stretch[] {
+export function exposedOnLine(region: Region, { frame, at }: LineFrame, from: number, to: number, front = PROBE, skin?: number): Stretch[] {
   const rings = [region.outline, ...region.bands.flatMap((band) => [band.outer, ...band.holes]), ...region.others];
-  const cuts: Array<{ along: number; slope: number }> = [];
+  const cuts: Array<{ along: number; slope: number; extent: number }> = [];
   rings.forEach((ring) => ring.forEach((point, index) => {
     const [p, q] = [frame(point), frame(ring[(index + 1) % ring.length])];
     const slope = Math.abs(q[1] - p[1]) / Math.max(1e-12, Math.abs(q[0] - p[0]));
-    for (const level of [-PROBE, PROBE]) {
+    for (const level of skin ? [-PROBE, front, skin] : [-PROBE, front]) {
       if ((p[1] - level) * (q[1] - level) > 0 || p[1] === q[1]) continue;
-      cuts.push({ along: p[0] + ((q[0] - p[0]) * (level - p[1])) / (q[1] - p[1]), slope });
+      cuts.push({ along: p[0] + ((q[0] - p[0]) * (level - p[1])) / (q[1] - p[1]), slope, extent: Math.abs(q[0] - p[0]) });
     }
   }));
-  const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) && inRegion(region, at(along, PROBE));
+  const exposed = (along: number) => !inRegion(region, at(along, -PROBE)) && insideRing(at(along, -PROBE), region.outline) && inRegion(region, at(along, front)) &&
+    (!skin || inRegion(region, at(along, skin)));
   const stops = [from, ...cuts.map(({ along }) => along).filter((along) => along > from && along < to).sort((a, b) => a - b), to];
-  const slackAt = (along: number) => Math.min(0.005, Math.max(0, ...cuts.filter((cut) => Math.abs(cut.along - along) < 0.00005).map(({ slope }) => 0.000006 / Math.max(1e-9, slope))));
+  const near = (along: number) => cuts.filter((cut) => Math.abs(cut.along - along) < 0.00005);
+  const slackAt = (along: number) => Math.min(0.005, Math.max(0, ...near(along).map(({ slope }) => 0.000006 / Math.max(1e-9, slope))));
+  const runOnAt = (along: number) => Math.max(0, ...near(along).map(({ extent }) => extent));
   const merged: Array<[number, number]> = [];
   stops.slice(1).forEach((stop, index) => {
     const start = stops[index];
     if (!(stop > start) || !exposed((start + stop) / 2)) return;
     const last = merged[merged.length - 1];
-    if (last && start - last[1] < 0.00001) last[1] = stop;
+    if (last && start - last[1] < Math.max(0.00001, front)) last[1] = stop;
     else merged.push([start, stop]);
   });
   // Under 1 mm it holds nothing, and lies where solids meet a few thousandths apart (lib/room-built-in-region.ts's rule too).
   return merged.filter(([start, stop]) => stop - start >= 0.001)
-    .map(([start, stop]) => ({ from: start, to: stop, slackFrom: slackAt(start), slackTo: slackAt(stop) }));
+    .map(([start, stop]) => ({ from: start, to: stop, slackFrom: slackAt(start), slackTo: slackAt(stop), runOnFrom: runOnAt(start), runOnTo: runOnAt(stop) }));
+}
+
+// --- Snap to wall in a turned room -------------------------------------------------------------------------------------------
+/**
+ * Where Snap to wall sends a built-in in a room with a face off x and z (J's delegate, 1 Nov 2026: "straight back to the
+ * nearest face, along that face's normal"): of the faces (each from `a` to `b`, `n` its normal into the room) its centre
+ * stands in front of and its footprint reaches along, the nearest to its footprint, `standOff` off it (a baseboard), it moved
+ * along that face's normal until it stands there. Every place as near as the nearest (ties), or where it stands if none.
+ */
+export function snapAlongNormal(faces: ReadonlyArray<{ a: P; b: P; n: P }>, run: Run, standOff: number): Array<[number, number]> {
+  const gaps = snapGaps(faces, run, standOff);
+  if (!gaps.length) return [[run.x, run.z]];
+  const nearest = Math.min(...gaps.map(({ gap }) => Math.abs(gap)));
+  return gaps.filter(({ gap }) => Math.abs(gap) <= nearest + 1e-7).map(({ gap, n }) => [run.x - n.x * gap, run.z - n.z * gap]);
+}
+
+/** Of the faces its centre stands in front of and its footprint reaches along, how far it stands from each, along its normal. */
+export function snapGaps(faces: ReadonlyArray<{ a: P; b: P; n: P }>, run: Run, standOff: number): Array<{ gap: number; n: P }> {
+  const [ax, az, bx, bz] = [Math.cos(run.rotationY), -Math.sin(run.rotationY), Math.sin(run.rotationY), Math.cos(run.rotationY)];
+  const reach = (ux: number, uz: number) => Math.abs((run.width / 2) * (ax * ux + az * uz)) + Math.abs((run.depth / 2) * (bx * ux + bz * uz));
+  return faces.flatMap(({ a, b, n }) => {
+    const length = Math.hypot(b.x - a.x, b.z - a.z), [tx, tz] = [(b.x - a.x) / (length || 1), (b.z - a.z) / (length || 1)];
+    const out = (run.x - a.x) * n.x + (run.z - a.z) * n.z, along = (run.x - a.x) * tx + (run.z - a.z) * tz, sideways = reach(tx, tz);
+    return out > 0 && along >= -sideways && along <= length + sideways ? [{ gap: out - reach(n.x, n.z) - standOff, n }] : [];
+  });
 }

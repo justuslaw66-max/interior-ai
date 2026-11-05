@@ -31,11 +31,11 @@ export function useDesignPageCabinetryWorkspaceRegistration({
     state: {
       activeRoom: activeRoom ?? null,
       planRoomById: sceneRoomRead.derived.scene.houseRoomById,
+      canonicalModel: placement.boundaries.roomQueries.canonicalModel,
       planRoomCount: documentRoom.derived.plan.housePlan2D.rooms.length,
       planOpenings: viewportShell.state.plan.planOpenings,
       activeSurfaceTarget: viewportShell.state.surface.activeSurfaceTarget,
-      selectedWallFaceId:
-        sceneRoomRead.derived.room.activeSelectedWallFaceId,
+      selectedWallFaceId: sceneRoomRead.derived.room.activeSelectedWallFaceId,
       selectedItem: itemSelection.state.selectedItem ?? null,
       designSnapshot: coreShell.state.document.designSnapshot,
     },

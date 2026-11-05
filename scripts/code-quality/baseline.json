@@ -389,7 +389,7 @@
       "limit": 400
     },
     "features/cabinetry/useDesignPageCabinetry.ts": {
-      "lines": 1105,
+      "lines": 1099,
       "limit": 400
     },
     "features/cabinetry/validation.ts": {
@@ -2583,7 +2583,7 @@
     "features/cabinetry/useDesignPageCabinetry.ts": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 825
+        "maximum": 824
       },
       "complexFunctions": {
         "count": 2,
@@ -4375,7 +4375,7 @@
     "lib/useDesignPageSceneItemDrag.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 514
+        "maximum": 506
       },
       "complexFunctions": {
         "count": 1,

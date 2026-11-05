@@ -20,9 +20,10 @@ import {
   type DesignItemTransformPatch,
 } from "@/lib/design-page-item-commands";
 import type { HistoryCommand, HistoryStatus } from "@/lib/historyManager";
-import type { ClampToPlacementRoom } from "@/lib/useDesignPagePlacementRoomQueries";
+import type { ClampToPlacementRoom, PlaceBuiltInDragInRoom } from "@/lib/useDesignPagePlacementRoomQueries";
 import { getCrossRoomItemDragTarget } from "@/lib/useDesignPageCrossRoomItemTransfer";
 import { isBuiltInItem } from "@/lib/room-finished-outline";
+import { getBuiltInRefusalNote } from "@/lib/built-in-move-notes";
 import type {
   SceneItemDragEndContext,
   SceneItemMoveContext,
@@ -43,11 +44,19 @@ type CrossRoomDragTarget = {
 
 type PlanningDimensions = { w: number; d: number; h: number };
 
+/** A built-in stuck where it doesn't fit (saved before its room's rule) dragged free, to the nearest place it fits. */
+function freeBuiltIn(
+  place: PlaceBuiltInDragInRoom | undefined, room: RoomSnapshot | null | undefined, mover: DesignItem, position: [number, number, number], dimensions: PlanningDimensions
+): [number, number, number] {
+  return place && room && isBuiltInItem(mover) ? place(room, mover.position, position, mover.rotationY ?? 0, dimensions) : position;
+}
+
+/** Why a drag is refused at a wall: a built-in that doesn't fit where it stands either, with nowhere near to go, is fitted again. */
+const wallRejection = (contained: SceneItemDragOptions["actions"]["isPlacementContained"], room: RoomSnapshot, mover: DesignItem, dimensions: PlanningDimensions, otherwise: string) =>
+  getBuiltInRefusalNote(isBuiltInItem(mover) && !contained(room, mover.position, mover.rotationY ?? 0, dimensions, true), room.name, otherwise);
+
 type SceneDragHistory = {
-  beginContinuousCommand: (command: {
-    id: string;
-    description: string;
-  }) => void;
+  beginContinuousCommand: (command: { id: string; description: string }) => void;
   updateContinuousCommand: <TInput, TResult>(
     command: HistoryCommand<TInput, TResult>
   ) => TResult;
@@ -86,12 +95,11 @@ type SceneItemDragOptions = {
       excludedIds?: string | string[]
     ) => DesignItem | null;
     isPlacementContained: (
-      room: RoomSnapshot,
-      position: [number, number, number],
-      rotationY: number,
-      dimensions: PlanningDimensions, builtIn?: boolean
+      room: RoomSnapshot, position: [number, number, number], rotationY: number, dimensions: PlanningDimensions, builtIn?: boolean
     ) => boolean;
     clampToPlacementRoom: ClampToPlacementRoom; // The placement queries': the plan's rooms and an imported plan's walls too.
+    /** Where a built-in dragged out of a place it doesn't fit goes (the nearest place it fits); elsewhere where it was dragged. */
+    placeBuiltInDrag?: PlaceBuiltInDragInRoom;
     clampToRoom: (
       x: number,
       z: number,
@@ -148,7 +156,7 @@ export function useDesignPageSceneItemDrag({
     findPlanRoomAtWorldPoint,
     setCrossRoomDragTarget,
     findPlacementBlocker,
-    isPlacementContained,
+    isPlacementContained, placeBuiltInDrag,
     clampToRoom, clampToPlacementRoom,
     getItemBounds,
     getItemDisplayName,
@@ -281,7 +289,7 @@ export function useDesignPageSceneItemDrag({
         return false;
       }
 
-      const localPosition: [number, number, number] = [
+      let localPosition: [number, number, number] = [
         position[0] - sceneEntry.roomOffset.x,
         position[1] ?? 0,
         position[2] - sceneEntry.roomOffset.z,
@@ -438,18 +446,10 @@ export function useDesignPageSceneItemDrag({
         }
 
         const moverRoom = roomSnapshotById.get(sceneEntry.roomId) ?? activeRoom;
-        if (
-          moverRoom &&
-          !isPlacementContained(
-            moverRoom,
-            localPosition,
-            mover.rotationY ?? 0,
-            configuredPlanningDims, isBuiltInItem(mover) // A built-in may stand against the finished face.
-          )
-        ) {
-          showDragRejection(
-            `Move blocked by a wall. Keep the whole item inside ${moverRoom.name}.`
-          );
+        localPosition = freeBuiltIn(placeBuiltInDrag, moverRoom, mover, localPosition, configuredPlanningDims);
+        if (moverRoom && !isPlacementContained(moverRoom, localPosition, mover.rotationY ?? 0,
+          configuredPlanningDims, isBuiltInItem(mover))) { // A built-in may stand against the finished face.
+          showDragRejection(wallRejection(isPlacementContained, moverRoom, mover, configuredPlanningDims, `Move blocked by a wall. Keep the whole item inside ${moverRoom.name}.`));
           return false;
         }
 

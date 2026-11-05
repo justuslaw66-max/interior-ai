@@ -1,12 +1,15 @@
 import { ROOM_DIMENSION_DEFAULTS } from "@/lib/design-page-house-plan";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import type { CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import {
   clampBuiltInToRoom,
   getRoomBuiltInFaces,
+  isImportedPlanRoom,
   usesFurnitureRuleForBuiltIns,
   type BuiltInPlanRooms,
 } from "@/lib/room-built-in-faces";
-import { getBuiltInFaceObstaclesAlong, type BuiltInFaceHost } from "@/lib/room-built-in-region";
+import { getBuiltInHostFaces, type BuiltInHostFace } from "@/lib/room-built-in-host-faces";
+import { getBuiltInFaceObstaclesAlong } from "@/lib/room-built-in-region";
 import { getRoomOutlineInsideFinishes, getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import { getRoomWallFaceIds, getRoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import type { RoomSnapshot } from "@/lib/room-types";
@@ -17,6 +20,7 @@ import {
   getCabinetFitPlacement,
   mapCabinetCardinalOpeningsToPolygonWalls,
 } from "./fitToSpace";
+import { getImportedEdgeFaceIds, getImportedOutlineOpenings, withoutFlushObstacles } from "./importedCabinetHosts";
 import { findMirroredEdges, getDrawnOutlineOpenings, getRoomHostOpenings, getSharedOpenings } from "./roomCabinetHostOpenings";
 import type { CabinetDefinition, CabinetHostSpace } from "./types";
 
@@ -28,8 +32,10 @@ import type { CabinetDefinition, CabinetHostSpace } from "./types";
  * a run on the floor keeps a recorded baseboard's depth more. The walls of the rooms around it stand as the 3D view draws them
  * (`planRooms`, the plan's rooms), and a door or window of theirs on a wall it shares cuts the host as its own do. Its back
  * stands against the face (a run on the floor against the baseboard): the host's segment is the face, which
- * getCabinetFitPlacement puts the back on. A room on furniture's rule for built-ins (an imported plan's, or one with no exposed
- * face) keeps the hosts it had on the line: its outline, a whole wall plus 10 mm off each end.
+ * getCabinetFitPlacement puts the back on. An imported plan's room's faces are its plan's own 3D walls and panels (`canonicalModel`),
+ * and its doors and windows the plan's (importedCabinetHosts.ts). A room on furniture's rule for built-ins (one with no
+ * exposed face, or an imported room without its plan's model) keeps the hosts it had on the line: its outline, a whole wall plus
+ * 10 mm off each end.
  */
 
 /** Fit to Space's allowance at each end of a run, from the finished face of the wall there (or its baseboard). */
@@ -41,6 +47,8 @@ export type CabinetryAvailableSpacesInput = {
   planRoomCount: number;
   planOpenings: RoomOpening2D[];
   planRooms?: BuiltInPlanRooms;
+  /** An imported plan's canonical model: its rooms' walls, panels, doors and windows. */
+  canonicalModel?: CanonicalFloorPlanRenderModel;
 };
 
 export function buildCabinetryAvailableSpaces(input: CabinetryAvailableSpacesInput): CabinetHostSpace[] {
@@ -57,7 +65,7 @@ export function buildCabinetryAvailableSpaces(input: CabinetryAvailableSpacesInp
 // every frame of a 3D drag (a single item's drag previews without one), but keeps their outlines, walls and doors.
 type HostsKey = {
   room: Record<string, unknown>; geometry: Record<string, unknown>; size: unknown[]; planRoomCount: number; planOpenings: readonly RoomOpening2D[];
-  planRooms: Record<string, unknown>[] | null;
+  planRooms: Record<string, unknown>[] | null; canonical: unknown;
 };
 const hostsByGeometry = new WeakMap<RoomSnapshot["geometry"], { key: HostsKey; spaces: CabinetHostSpace[] }>();
 
@@ -67,6 +75,7 @@ function getHostsKey(room: RoomSnapshot, input: CabinetryAvailableSpacesInput): 
     size: [input.activePlanRoom?.w, input.activePlanRoom?.d], planRoomCount: input.planRoomCount, planOpenings: [...input.planOpenings],
     // Fit reads no plan room's surfaces (its own come from the room), which the plan rebuilds with every snapshot.
     planRooms: input.planRooms ? [...input.planRooms.values()].map((other) => ({ ...other, surfaces: undefined, surfaceFinishes: undefined })) : null,
+    canonical: input.canonicalModel,
   };
 }
 
@@ -78,11 +87,11 @@ function isSameFields(a: Record<string, unknown>, b: Record<string, unknown>): b
 function isSameHostsKey(a: HostsKey, b: HostsKey): boolean {
   const sameList = <T>(x: readonly T[], y: readonly T[], same: (p: T, q: T) => boolean) => x.length === y.length && x.every((p, i) => same(p, y[i]));
   return isSameFields(a.room, b.room) && isSameFields(a.geometry, b.geometry) && sameList(a.size, b.size, Object.is) &&
-    a.planRoomCount === b.planRoomCount && sameList(a.planOpenings, b.planOpenings, Object.is) &&
+    a.planRoomCount === b.planRoomCount && sameList(a.planOpenings, b.planOpenings, Object.is) && a.canonical === b.canonical &&
     (a.planRooms === null || b.planRooms === null ? a.planRooms === b.planRooms : sameList(a.planRooms, b.planRooms, isSameFields));
 }
 
-function buildHosts(activeRoom: RoomSnapshot, { activePlanRoom, planRoomCount, planOpenings, planRooms }: CabinetryAvailableSpacesInput) {
+function buildHosts(activeRoom: RoomSnapshot, { activePlanRoom, planRoomCount, planOpenings, planRooms, canonicalModel }: CabinetryAvailableSpacesInput) {
   const isRectangle = (activeRoom.planShape ?? "rectangle") === "rectangle";
   const size = { w: activePlanRoom?.w ?? activeRoom.geometry.width, d: activePlanRoom?.d ?? activeRoom.geometry.depth };
   const baseboardOffsetMm = Math.max(0, Math.round((activeRoom.geometry.baseboardDepth ?? 0) * 1000));
@@ -94,9 +103,10 @@ function buildHosts(activeRoom: RoomSnapshot, { activePlanRoom, planRoomCount, p
     baseboardOffsetMm,
   };
   const openings = getRoomHostOpenings(activeRoom.id, planRoomCount, planOpenings);
-  if (usesFurnitureRuleForBuiltIns(activeRoom, isRectangle ? size : undefined, planRooms)) {
+  if (usesFurnitureRuleForBuiltIns(activeRoom, isRectangle ? size : undefined, planRooms, canonicalModel)) {
     return buildLineHosts(activeRoom, size, sharedSpaceInput, openings);
   }
+  if (isImportedPlanRoom(activeRoom)) return buildImportedHosts(activeRoom, sharedSpaceInput, canonicalModel);
   const shared = getSharedOpenings(activeRoom, planRooms, planOpenings);
 
   if (isRectangle) return buildRectangleHosts(activeRoom, size, sharedSpaceInput, openings, shared, planRooms);
@@ -115,12 +125,20 @@ function buildHosts(activeRoom: RoomSnapshot, { activePlanRoom, planRoomCount, p
     openings: [...getDrawnOutlineOpenings(activeRoom, outline, planOpenings, openings, planRooms), ...sharedOnOutline],
     installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM,
   });
-  return placeOnFaces(outlineSpaces, getRoomBuiltInFaces(activeRoom, undefined, planRooms).exposed, baseboardOffsetMm);
+  return placeOnFaces(outlineSpaces, getBuiltInHostFaces(getRoomBuiltInFaces(activeRoom, undefined, planRooms)), baseboardOffsetMm);
 }
 
 type Point = { x: number; z: number };
+type Canonical = CanonicalFloorPlanRenderModel;
 
 type SharedSpaceInput = Omit<Parameters<typeof createCabinetRoomWallSpaces>[0], "widthMm" | "depthMm" | "openings">;
+
+/** An imported room's outline's walls with its plan's doors and windows, each on its exposed face, as a drawn shape's are. */
+function buildImportedHosts(room: RoomSnapshot, shared: SharedSpaceInput, canonical: Canonical | undefined): CabinetHostSpace[] {
+  const polygon = room.planPolygon ?? [], openings = getImportedOutlineOpenings(room, polygon, canonical), faces = getRoomBuiltInFaces(room, undefined, undefined, canonical);
+  const outlineSpaces = createCabinetPolygonWallSpaces({ ...shared, polygon, openings, installationClearanceSideMm: CABINET_RUN_END_ALLOWANCE_MM });
+  return placeOnFaces(outlineSpaces, getBuiltInHostFaces(faces), shared.baseboardOffsetMm ?? 0, faces.flush);
+}
 
 /**
  * A drawn rectangle's hosts, each wall's face between the faces' corners: half the wall and its panel in from the outline
@@ -158,17 +176,18 @@ function buildRectangleHosts(
 }
 
 /**
- * Each outline host on its wall's exposed face. A straight wall drawn in pieces has one face over them all: it is listed once,
- * as its first piece, with every piece's doors and windows.
+ * Each outline host on its wall's exposed face, less what stands flush with it (withoutFlushObstacles). A straight wall drawn in
+ * pieces, or in pieces all but collinear, has one face over them all (getBuiltInHostFaces): listed once, as its first piece,
+ * with every piece's doors and windows.
  */
-function placeOnFaces(spaces: CabinetHostSpace[], exposed: ReadonlyArray<BuiltInFaceHost | null>, baseboardMm: number): CabinetHostSpace[] {
+function placeOnFaces(spaces: CabinetHostSpace[], exposed: ReadonlyArray<BuiltInHostFace | null>, baseboardMm: number, flushMm = 0): CabinetHostSpace[] {
   const listed = new Set<string>();
   return spaces.flatMap((space) => {
     const face = exposed[wallIndex(space.wallId ?? "")];
     const key = face && [face.start.x, face.start.z, face.end.x, face.end.z].map((value) => value.toFixed(6)).join();
     if (!face || !key || listed.has(key)) return [];
     listed.add(key);
-    return [withFaceSegment(space, face, baseboardMm, spaces)];
+    return [withoutFlushObstacles(withFaceSegment(space, face, baseboardMm, spaces), flushMm)];
   });
 }
 
@@ -177,17 +196,13 @@ function placeOnFaces(spaces: CabinetHostSpace[], exposed: ReadonlyArray<BuiltIn
  * thickness and panels; a drawn shape's outline moved in by its panels, a whole wall plus 10 mm off each end.
  */
 function buildLineHosts(
-  room: RoomSnapshot, size: { w: number; d: number }, shared: SharedSpaceInput,
-  openings: ReturnType<typeof getRoomHostOpenings>
+  room: RoomSnapshot, size: { w: number; d: number }, shared: SharedSpaceInput, openings: ReturnType<typeof getRoomHostOpenings>
 ): CabinetHostSpace[] {
   const wallMm = Math.round((room.geometry.wallThickness ?? ROOM_DIMENSION_DEFAULTS.wallThickness) * 1000);
-  const depths = getRoomWallFinishDepths(room);
-  const panelMm = (faceId: string) => Math.round((depths[faceId] ?? 0) * 1000);
+  const depths = getRoomWallFinishDepths(room), panelMm = (faceId: string) => Math.round((depths[faceId] ?? 0) * 1000);
   const shape = room.planShape ?? "rectangle";
   if (shape !== "rectangle") {
-    const polygon = getRoomPlanOutlinePoints(getRoomOutlineInsideFinishes({
-      shape, polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth,
-    }, depths));
+    const polygon = getRoomPlanOutlinePoints(getRoomOutlineInsideFinishes({ shape, polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth }, depths));
     return createCabinetPolygonWallSpaces({
       ...shared, polygon, openings: mapCabinetCardinalOpeningsToPolygonWalls({ polygon, openings }), installationClearanceSideMm: wallMm + 10,
     });
@@ -241,6 +256,12 @@ function wallIndex(wallId: string): number {
  * door's). None for a wall no host runs over (a spike's sides).
  */
 export function findCabinetHostForWall(room: RoomSnapshot, spaces: readonly CabinetHostSpace[], wallId: string): CabinetHostSpace | null {
+  // An imported plan's wall, as its plan selects it (by its plan wall id): the host over an edge on it.
+  return getImportedEdgeFaceIds(room, wallId).map((faceId) => findHostOverEdge(room, spaces, faceId)).find(Boolean) ?? null;
+}
+
+/** The host a wall (`wall-N`, or a rectangle's compass name) of `room` is fitted on (findCabinetHostForWall). */
+function findHostOverEdge(room: RoomSnapshot, spaces: readonly CabinetHostSpace[], wallId: string): CabinetHostSpace | null {
   const own = spaces.find((space) => space.wallId === wallId);
   if (own || (room.planShape ?? "rectangle") === "rectangle") return own ?? null;
   const outline = getRoomPlanOutlinePoints({ shape: room.planShape ?? "rectangle", polygon: room.planPolygon, w: room.geometry.width, d: room.geometry.depth });
@@ -285,13 +306,14 @@ function getFaceDeepening(room: RoomSnapshot, outline: readonly Point[]) {
  * An outline host moved onto its exposed face: the face's own length and ends, the walls and columns in front of it to keep
  * clear of, and the doors and windows of every piece of the outline along it, measured from the face's middle.
  */
-function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboardMm: number, spaces: CabinetHostSpace[]): CabinetHostSpace {
+function withFaceSegment(space: CabinetHostSpace, face: BuiltInHostFace, baseboardMm: number, spaces: CabinetHostSpace[]): CabinetHostSpace {
   const outlineSegment = space.wallSegment;
   if (!outlineSegment) return space;
   const widthMm = Math.hypot(face.end.x - face.start.x, face.end.z - face.start.z) * 1000;
   const length = space.availableWidthMm || 1;
   const dx = (outlineSegment.endXmm - outlineSegment.startXmm) / length, dz = (outlineSegment.endZmm - outlineSegment.startZmm) / length;
-  const pieces = spaces.filter(({ wallSegment: piece }) => piece && isUnderFace(piece, outlineSegment, face, dx, dz));
+  const pieces = spaces.filter(({ wallSegment: piece, wallId }) => piece &&
+    (face.merged?.pieces.includes(wallIndex(wallId ?? "")) || isUnderFace(piece, outlineSegment, face, dx, dz)));
   const openings = pieces.flatMap((piece) => {
     const segment = piece.wallSegment;
     if (!segment) return [];
@@ -308,6 +330,7 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboa
       ...outlineSegment,
       startXmm: face.start.x * 1000, startZmm: face.start.z * 1000, endXmm: face.end.x * 1000, endZmm: face.end.z * 1000,
       startBaseboardClearanceMm: baseboardMm, endBaseboardClearanceMm: baseboardMm,
+      ...(face.merged ? { inwardNormalX: face.merged.nx, inwardNormalZ: face.merged.nz } : {}), // square to the face
       ...(face.obstacles.length ? { obstacles: face.obstacles } : {}),
     },
     openings,
@@ -320,7 +343,7 @@ function withFaceSegment(space: CabinetHostSpace, face: BuiltInFaceHost, baseboa
  * thicker wall next door gives one face.
  */
 function isUnderFace(
-  piece: NonNullable<CabinetHostSpace["wallSegment"]>, segment: NonNullable<CabinetHostSpace["wallSegment"]>, face: BuiltInFaceHost, dx: number, dz: number
+  piece: NonNullable<CabinetHostSpace["wallSegment"]>, segment: NonNullable<CabinetHostSpace["wallSegment"]>, face: BuiltInHostFace, dx: number, dz: number
 ): boolean {
   const length = Math.hypot(piece.endXmm - piece.startXmm, piece.endZmm - piece.startZmm) || 1;
   const parallel = ((piece.endXmm - piece.startXmm) * dx + (piece.endZmm - piece.startZmm) * dz) / length > 1 - 1e-9;
@@ -335,9 +358,9 @@ function isUnderFace(
  * Where Place as copy puts a copy of a fitted run in `room`: 15 cm along its wall. A run fitted nowhere, or in a room on
  * furniture's rule (which keeps the line's), moves 15 cm along x for a north or south wall, z for an east or west one, or both.
  */
-export function getCabinetCopyOffset(host: CabinetHostSpace | undefined, room: RoomSnapshot, planRooms?: BuiltInPlanRooms): [number, number] {
+export function getCabinetCopyOffset(host: CabinetHostSpace | undefined, room: RoomSnapshot, planRooms?: BuiltInPlanRooms, canonical?: Canonical): [number, number] {
   const segment = host?.wallSegment;
-  if (segment && !usesFurnitureRuleForBuiltIns(room, undefined, planRooms)) {
+  if (segment && !usesFurnitureRuleForBuiltIns(room, undefined, planRooms, canonical)) {
     const length = Math.hypot(segment.endXmm - segment.startXmm, segment.endZmm - segment.startZmm) || 1;
     return [(0.15 * (segment.endXmm - segment.startXmm)) / length, (0.15 * (segment.endZmm - segment.startZmm)) / length];
   }
@@ -350,27 +373,28 @@ export function getCabinetCopyOffset(host: CabinetHostSpace | undefined, room: R
  * (clampBuiltInToRoom). A copy moves from there along its wall as far as it still fits.
  */
 export function getCabinetPlacement(
-  definition: CabinetDefinition, room: RoomSnapshot, placeAsCopy = false, planRooms?: BuiltInPlanRooms
+  definition: CabinetDefinition, room: RoomSnapshot, placeAsCopy = false, planRooms?: BuiltInPlanRooms, canonical?: Canonical
 ): { position: [number, number, number]; rotationY: number } {
   const fitted = getCabinetFitPlacement(definition, room.geometry.width, room.geometry.depth);
   const rotationY = fitted?.rotationY ?? 0;
   const at: [number, number] = [fitted?.position[0] ?? 0, fitted?.position[2] ?? 0];
-  const [offsetX, offsetZ] = placeAsCopy ? getCabinetCopyOffset(definition.fitState?.host, room, planRooms) : [0, 0];
+  const [offsetX, offsetZ] = placeAsCopy ? getCabinetCopyOffset(definition.fitState?.host, room, planRooms, canonical) : [0, 0];
   // From where Fit put it (a run with no fit, from the room's middle). Where that doesn't fit (a run never fitted, or fitted on
   // the line to a host this room no longer offers), the nearest place it does; where none does, the target, which Place refuses.
   const [x, z] = clampBuiltInToRoom(room, at[0] + offsetX, at[1] + offsetZ, definition.totalWidth / 1000, definition.depth / 1000,
-    rotationY, { from: at, planRooms, bottom: fitted?.position[1], nearestWithin: Number.POSITIVE_INFINITY });
+    rotationY, { from: at, planRooms, canonical, bottom: fitted?.position[1], anywhere: true });
   return { position: [x, fitted?.position[1] ?? 0, z], rotationY };
 }
 
 /**
- * Whether Place refuses a built-in at `placement`. A room on furniture's rule (an imported plan's, until PR B) keeps the line's
- * Place, which never refused: furniture's clamp puts it there. Elsewhere it is refused where `contains` finds it outside the room.
+ * Whether Place refuses a built-in at `placement`. A room on furniture's rule (one with no exposed face, or an imported room
+ * without its plan's model) keeps the line's Place, which never refused: furniture's clamp puts it there. Elsewhere it is
+ * refused where `contains` finds it outside the room.
  */
 export function isCabinetPlacementRefused(
   room: RoomSnapshot, placement: { position: [number, number, number]; rotationY: number }, size: { w: number; d: number },
   contains: (room: RoomSnapshot, position: [number, number, number], rotationY: number, size: { w: number; d: number }, builtIn: boolean) => boolean,
-  planRooms?: BuiltInPlanRooms
+  planRooms?: BuiltInPlanRooms, canonical?: Canonical
 ): boolean {
-  return !usesFurnitureRuleForBuiltIns(room, undefined, planRooms) && !contains(room, placement.position, placement.rotationY, size, true);
+  return !usesFurnitureRuleForBuiltIns(room, undefined, planRooms, canonical) && !contains(room, placement.position, placement.rotationY, size, true);
 }
