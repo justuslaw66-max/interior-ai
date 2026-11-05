@@ -218,7 +218,8 @@ function importedGap(setup: ReturnType<typeof importedRooms>, room: RoomSnapshot
 {
   // An imported room with a door and a window (J, 2 Nov 2026: furniture never stands in a wall's thickness, a reveal included).
   // Pushed into either opening, a sideboard stops 2 cm off the wall's face line there, as the line's box clamp does, and one with
-  // its back in the reveal is refused (a floor with only the slices standing on it let it in, up to the centre line).
+  // its back in the reveal is refused, as is one narrower than the opening (a floor with only the slices standing on it let that
+  // in through a door, up to the centre line).
   const spec: ShapeSpec = { kind: "rect", vertices: { a: [0, 0], b: [5000, 0], c: [5000, 4000], e: [0, 4000] }, rooms: { R: ["a", "b", "c", "e"] } };
   const setup = importedRooms(spec, 1951, () => PAINT, [
     { id: "door", wallId: "w-a-b", kind: "door", operation: "swing", offsetMm: 1500, widthMm: 800, hinge: "start", handing: "left" },
@@ -240,6 +241,12 @@ function importedGap(setup: ReturnType<typeof importedRooms>, room: RoomSnapshot
     // Its back 50 mm into the reveal (its face half the wall in from the centre line).
     assert.equal(contained(at(wall.thicknessMm / 2000 - 0.05 + 0.2)), false, `a sideboard with its back in the ${wallId} reveal is refused`);
     assert.ok(contained(at(wall.thicknessMm / 2000 + 0.021 + 0.2)), `one 21 mm off the ${wallId} wall's face is accepted`);
+    // One narrower than the opening, its ends clear of the wall either side: in the reveal by 10 or 50 mm, refused all the same.
+    const narrow = clampBoth(room, at(-0.3), 0.6, 0.4, rotationY, undefined, [setup.floor]).contained;
+    for (const intoMm of [10, 50]) {
+      assert.equal(narrow(at(wall.thicknessMm / 2000 - intoMm / 1000 + 0.2)), false, `a 0.6 m stool ${intoMm} mm into the ${wallId} reveal is refused`);
+    }
+    assert.ok(narrow(at(wall.thicknessMm / 2000 + 0.021 + 0.2)), `a 0.6 m stool 21 mm off the ${wallId} wall's face is accepted`);
   }
 }
 
