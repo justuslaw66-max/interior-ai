@@ -30,8 +30,8 @@
       "root": "tests/e2e/multi-room",
       "filePattern": "\\.ts$",
       "classification": "release-only-imported-test-modules",
-      "expectedFileCount": 8,
-      "expectedPathSha256": "e701b0ff04421c8eca749fdd8e6daffcd0c0fbb987226ec2319bdcee8d368851"
+      "expectedFileCount": 9,
+      "expectedPathSha256": "30d5060e07021a386f1719d90a798aa398cf162fe984f629d9f23d13eaa9744b"
     },
     {
       "id": "cabinetry-script-modules",
@@ -1555,6 +1555,7 @@
         { "module": "./multi-room/start-and-floors", "symbol": "registerStartAndFloorTests" },
         { "module": "./multi-room/templates", "symbol": "registerTemplateTests" },
         { "module": "./multi-room/upload", "symbol": "registerUploadTests" },
+        { "module": "./multi-room/upload-cancel", "symbol": "registerUploadCancelTests" },
         { "module": "./multi-room/viewport-navigation", "symbol": "registerViewportNavigationTests" },
         { "module": "./multi-room/workspace", "symbol": "registerWorkspaceTests" }
       ]
