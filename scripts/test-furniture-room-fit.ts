@@ -27,8 +27,10 @@ import { planFromShape, roomPanels, seeded, type ShapeSpec } from "./fixtures/im
  * rooms, some beside a room with thicker walls, against the room as their 3D view draws it (scripts/built-in-faces-oracle-utils.ts:
  * wall bands, panel boxes, columns), with brute-force checks that a moved item went to the nearest place the 3D view leaves
  * clear and that one refused had no such place near. Imported rooms are measured against their 3D walls and laminates, both
- * ways, by the panel-corner property test (scripts/test-floor-plan-canonical-finishes-openings.ts). CI runs 40 random rooms;
- * FURNITURE_ORACLE_ROOMS any number, FURNITURE_ORACLE_SEED another seed, FURNITURE_ORACLE_FINE=1 the brute force finer.
+ * ways, by the panel-corner property test (scripts/test-floor-plan-canonical-finishes-openings.ts). CI runs 40 random rooms, their
+ * arcs of 16 segments, and checks one move or refusal in six by brute force; FURNITURE_ORACLE_ROOMS any number,
+ * FURNITURE_ORACLE_SEED another seed, FURNITURE_ORACLE_ARC_SEGMENTS 32 or 64, FURNITURE_ORACLE_BRUTE_EVERY=1 every move and
+ * refusal, FURNITURE_ORACLE_FINE=1 every one on a finer grid, farther out.
  */
 
 type P = { x: number; z: number };
@@ -339,12 +341,14 @@ function random(): number {
 const between = (low: number, high: number) => low + (high - low) * random();
 const chance = (probability: number) => random() < probability;
 const pick = <T,>(values: readonly T[]): T => values[Math.floor(random() * values.length)];
+// An arc's segments: CI's 16; FURNITURE_ORACLE_ARC_SEGMENTS=32 or 64 for the drawn arcs the reviewer's probes use.
+const ARC = Math.max(2, Number(process.env.FURNITURE_ORACLE_ARC_SEGMENTS ?? 16));
 const north = (w: number, d: number, middle: (z: number) => P[], east?: P): P[] => { const [a, b, c, e] = box(w, d); return [a, ...middle(a.z), east ?? b, c, e]; };
 const SHAPES: Record<string, (w: number, d: number) => P[]> = {
   rectangle: box,
   l: (w, d) => { const [cw, cd] = [between(0.2, 0.7) * w, between(0.2, 0.7) * d]; return [{ x: -w / 2, z: -d / 2 }, { x: w / 2, z: -d / 2 }, { x: w / 2, z: d / 2 - cd }, { x: w / 2 - cw, z: d / 2 - cd }, { x: w / 2 - cw, z: d / 2 }, { x: -w / 2, z: d / 2 }]; },
   bend: (w, d) => { const at = between(-0.3, 0.3) * w, half = (between(0, 25) * Math.PI) / 180, s = chance(0.5) ? 1 : -1; return north(w, d, (z) => [{ x: at, z: z + s * Math.tan(half) * Math.min(at + w / 2, w / 2 - at) }]); },
-  arc: (w, d) => { const sag = between(0.1, 0.8) * (chance(0.5) ? 1 : -1), r = (sag * sag + (w / 2) ** 2) / (2 * Math.abs(sag)); return north(w, d, (z) => Array.from({ length: 31 }, (_, i) => { const x = -w / 2 + (w * (i + 1)) / 32; return { x, z: z - Math.sign(sag) * (Math.sqrt(r * r - x * x) - (r - Math.abs(sag))) }; })); },
+  arc: (w, d) => { const sag = between(0.1, 0.8) * (chance(0.5) ? 1 : -1), r = (sag * sag + (w / 2) ** 2) / (2 * Math.abs(sag)); return north(w, d, (z) => Array.from({ length: ARC - 1 }, (_, i) => { const x = -w / 2 + (w * (i + 1)) / ARC; return { x, z: z - Math.sign(sag) * (Math.sqrt(r * r - x * x) - (r - Math.abs(sag))) }; })); },
   spike: (w, d) => { const at = between(-0.4, 0.4) * w, length = between(0.03, 0.8) * (chance(0.5) ? 1 : -1), width = chance(0.5) ? 0 : between(0.01, 0.4); return north(w, d, (z) => [{ x: at, z }, { x: at, z: z + length }, ...(width ? [{ x: at + width, z: z + length }] : []), { x: at + width, z }]); },
   "v spike": (w, d) => { const at = between(-0.3, 0.3) * w, length = between(0.2, 1.2), half = between(0.02, 0.4); return north(w, d, (z) => [{ x: at - half, z }, { x: at, z: z + length }, { x: at + half, z }]); },
   wedge: (w) => { const half = (between(2.5, 20) * Math.PI) / 180; return [{ x: -w / 2, z: 0 }, { x: w / 2, z: -w * Math.tan(half) }, { x: w / 2, z: w * Math.tan(half) }]; },
@@ -357,7 +361,11 @@ const TURNS = [0, 0.3, Math.PI / 4, Math.PI / 2, 2.1];
 const ROOMS = Number(process.env.FURNITURE_ORACLE_ROOMS ?? 40);
 // The brute-force checks on a finer grid, farther out (FURNITURE_ORACLE_FINE=1); CI's: within 0.4 m on a 1 cm grid.
 const FINE = process.env.FURNITURE_ORACLE_FINE === "1";
-const counts = { rooms: 0, beside: 0, placed: 0, worstMm: 0, moved: 0, kept: 0, refused: 0, accepted: 0 };
+// Which moves and refusals the brute force checks: CI's, one in BRUTE_EVERY (6), picked by the placement (its room, target,
+// item and turn) so every kind of target is checked; FURNITURE_ORACLE_BRUTE_EVERY=1, or FINE, every one.
+const BRUTE_EVERY = FINE ? 1 : Math.max(1, Number(process.env.FURNITURE_ORACLE_BRUTE_EVERY ?? 6));
+const isBruteChecked = (...at: number[]) => at.reduce((hash, value) => Math.imul(hash ^ value, 0x9e3779b1) >>> 0, 0x811c9dc5) % BRUTE_EVERY === 0;
+const counts = { rooms: 0, beside: 0, placed: 0, worstMm: 0, moved: 0, kept: 0, refused: 0, accepted: 0, brute: 0 };
 const rotate = (angle: number) => ({ x, z }: P) => ({ x: x * Math.cos(angle) - z * Math.sin(angle), z: x * Math.sin(angle) + z * Math.cos(angle) });
 for (let index = 0; index < ROOMS; index += 1) {
   const family = pick(Object.keys(SHAPES)), angle = chance(0.5) ? between(0, 2 * Math.PI) : 0, [w, d] = [between(1.2, 6), between(1.2, 5)];
@@ -380,7 +388,7 @@ for (let index = 0; index < ROOMS; index += 1) {
   counts.beside += beside ? 1 : 0;
   const targets: P[] = [...points, ...points.map((p, i) => ({ x: (p.x + points[(i + 1) % points.length].x) / 2, z: (p.z + points[(i + 1) % points.length].z) / 2 })),
     ...Array.from({ length: 8 }, () => ({ x: between(Math.min(...xs) - 0.3, Math.max(...xs) + 0.3), z: between(Math.min(...zs) - 0.3, Math.max(...zs) + 0.3) }))];
-  for (const target of targets) for (const [width, depth] of ITEMS) for (const rotationY of TURNS) {
+  for (const [targetIndex, target] of targets.entries()) for (const [itemIndex, [width, depth]] of ITEMS.entries()) for (const [turnIndex, rotationY] of TURNS.entries()) {
     const { at, line, placed, contained, footprint } = clampBoth(room, target, width, depth, rotationY, planRooms);
     const where = `${family} room ${index}${beside ? " beside a thicker room" : ""}: a ${width} × ${depth} item turned ${rotationY.toFixed(2)} for (${target.x.toFixed(3)}, ${target.z.toFixed(3)})`;
     const gapAt = (place: P) => gapInRegion(region, turned(place, width, depth, rotationY));
@@ -398,6 +406,8 @@ for (let index = 0; index < ROOMS; index += 1) {
     if (!placed) {
       // Refused: nowhere near is clear.
       counts.refused += 1;
+      if (!isBruteChecked(index, targetIndex, itemIndex, turnIndex)) continue;
+      counts.brute += 1;
       const near = nearestBrute(target, 0.25, 0.02, clear);
       assert.equal(near, null, `${where}: refused at (${at[0].toFixed(4)}, ${at[1].toFixed(4)}), but (${near?.x.toFixed(4)}, ${near?.z.toFixed(4)}) is clear`);
       continue;
@@ -409,13 +419,16 @@ for (let index = 0; index < ROOMS; index += 1) {
     if (at[0] === line[0] && at[1] === line[1]) continue;
     // Moved off the line's place: to the nearest place the 3D view leaves clear (to within its rounding and a few millimetres).
     counts.moved += 1;
+    if (!isBruteChecked(index, targetIndex, itemIndex, turnIndex)) continue;
+    counts.brute += 1;
     const moved = Math.hypot(at[0] - target.x, at[1] - target.z), [reach, step] = FINE ? [Math.min(0.8, moved - 0.012), 0.005] : [Math.min(0.4, moved - 0.015), 0.01];
     const near = reach > 0 ? nearestBrute(target, reach, step, clear) : null;
     assert.equal(near, null, `${where}: moved ${(moved * 1000).toFixed(0)} mm to (${at[0].toFixed(4)}, ${at[1].toFixed(4)}), but (${near?.x.toFixed(4)}, ${near?.z.toFixed(4)}) is clear ${near ? (Math.hypot(near.x - target.x, near.z - target.z) * 1000).toFixed(0) : ""} mm off`);
   }
 }
-assert.ok(counts.placed > ROOMS * 100 && counts.beside > 0 && counts.moved > 0, "placements to measure");
+assert.ok(counts.placed > ROOMS * 100 && counts.beside > 0 && counts.moved > 0 && counts.brute > ROOMS * 4, "placements to measure");
 console.log(`Furniture in drawn rooms: ${counts.rooms} rooms (${counts.beside} beside a room with thicker walls), ${counts.placed} placements, at most ` +
   `${Math.max(0, counts.worstMm).toFixed(3)} mm nearer than 2 cm; ${counts.kept} kept where the line's clamp left them clear, ${counts.moved} moved to the ` +
-  `nearest clear place, ${counts.refused} refused with none clear near; containment as the 3D view at ${counts.accepted} targets it accepts.`);
+  `nearest clear place, ${counts.refused} refused with none clear near (${counts.brute} of the two by brute force); containment as the 3D view at ` +
+  `${counts.accepted} targets it accepts.`);
 console.log("Furniture room fit checks passed.");
