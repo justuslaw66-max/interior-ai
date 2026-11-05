@@ -3,6 +3,7 @@ import { FloorPlanImportJobStatus, Prisma } from "@prisma/client";
 import { getFreshCatalogYamlMap } from "@/lib/catalog-yaml";
 import { getPublishedFlooringMaterials, getSurfaceMaterials } from "@/lib/catalog-registry";
 import { assessFloorPlanQueueHealth } from "@/lib/floor-plan-imports/queue-health";
+import { OWNER_CANCEL_LEASE_OWNER } from "@/lib/floor-plan-imports/owner-cancel";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +72,11 @@ async function checkFloorPlanQueue() {
       { OR: [{ leaseToken: null }, { leaseExpiresAt: { lte: now } }] },
     ],
   };
+  // A worker's lease, not the hold a cancel of a read under way keeps till that worker stops (owner-cancel.ts).
+  const workerLease: Prisma.FloorPlanImportJobWhereInput = {
+    leaseToken: { not: null },
+    leaseOwner: { not: OWNER_CANCEL_LEASE_OWNER },
+  };
   const failedSince = new Date(now.getTime() - 24 * 60 * 60 * 1_000);
   const [queued, oldestQueued, active, expiredLeases, failedLast24Hours] =
     await Promise.all([
@@ -81,10 +87,10 @@ async function checkFloorPlanQueue() {
         select: { createdAt: true },
       }),
       prisma.floorPlanImportJob.count({
-        where: { leaseToken: { not: null }, leaseExpiresAt: { gt: now } },
+        where: { ...workerLease, leaseExpiresAt: { gt: now } },
       }),
       prisma.floorPlanImportJob.count({
-        where: { leaseToken: { not: null }, leaseExpiresAt: { lte: now } },
+        where: { ...workerLease, leaseExpiresAt: { lte: now } },
       }),
       prisma.floorPlanImportJob.count({
         where: { status: "failed", updatedAt: { gte: failedSince } },

@@ -209,7 +209,7 @@
       "limit": 250
     },
     "components/editor/FloorPlanImportAssistant.tsx": {
-      "lines": 569,
+      "lines": 428,
       "limit": 250
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -1191,11 +1191,11 @@
     "app/api/floor-plan-imports/[id]/confirm/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 168
+        "maximum": 161
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 29
+        "maximum": 25
       }
     },
     "app/api/floor-plan-imports/[id]/process/route.ts": {
@@ -1925,11 +1925,11 @@
     "components/editor/FloorPlanImportAssistant.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 507
+        "maximum": 388
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 65
+        "maximum": 41
       }
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -4375,7 +4375,7 @@
     "lib/useDesignPageSceneItemDrag.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 515
+        "maximum": 514
       },
       "complexFunctions": {
         "count": 1,

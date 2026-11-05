@@ -7,10 +7,13 @@ import {
   applyReviewHomeType,
   isHomeTypeWallHeightMm,
   markStoreyTypedAtReview,
+  parseReviewHomeTypeId,
   reviewHomeTypeFor,
   reviewHomeTypeHeights,
   storeyTypedAtReview,
+  withConfirmedHomeType,
 } from "@/lib/floor-plan-imports/review-home-type";
+import { compileCandidateFloorPlanDocumentV2 } from "@/lib/floor-plan-imports/validation";
 import { validateFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import { applyConsumerFloorPlanCorrection } from "@/lib/floor-plan-imports/review";
 import { loadPingYiCourtV2ReviewSeedBundle } from "@/lib/floor-plan-seeds/ping-yi-court-review-intake";
@@ -190,4 +193,44 @@ assert.match(field, /data-testid="floor-plan-import-home-type"/);
 assert.match(field, /role="status" aria-live="polite"/);
 assert.match(field, /toFixed\(3\)/, "heights to the millimetre");
 
-console.log("Floor-plan review home type checks passed: 6 home types, kept heights, the server's assumed walls.");
+// 8. A ready upload's card (J, 1 Nov 2026: "On the ready card"): Create design sends the home type's id, and the confirm
+// route applies it to the stored candidate with withConfirmedHomeType, on every floor, before it compiles it again.
+assert.deepEqual(REVIEW_HOME_TYPES.map((type) => parseReviewHomeTypeId(type.id)), REVIEW_HOME_TYPES.map((type) => type.id));
+for (const odd of ["Condo", "", null, undefined, 2800, {}, ["condo"], "toString", "__proto__"]) {
+  assert.equal(parseReviewHomeTypeId(odd), null, `${JSON.stringify(odd)} is no home type`);
+}
+const stored = plan();
+const storedText = JSON.stringify(stored);
+for (const odd of [undefined, "villa", { id: "condo" }]) assert.equal(withConfirmedHomeType(stored, odd), stored, "anything else changes nothing");
+const confirmedCondo = withConfirmedHomeType(stored, "condo");
+assert.equal(JSON.stringify(stored), storedText, "the stored candidate is left as it was");
+assert.deepEqual(confirmedCondo.floors[0].defaults.wallHeight.valueMm, 2800);
+assert.equal(confirmedCondo.floors[0].defaults.wallHeight.evidence, "assumed");
+assert.equal(confirmedCondo.floors[0].storeyHeightMm, 3000);
+assert.deepEqual(confirmedCondo, applyReviewHomeType(stored, { floorId, homeType: "condo", storeyTyped: false }).document,
+  "on one floor, what the review gives");
+assert.doesNotThrow(() => compileCandidateFloorPlanDocumentV2(confirmedCondo), "the route compiles the result again");
+// Every floor: a second storey gets it too, each by the review's rules (a wall height the person confirmed stays).
+const twoFloors = (upperWall: "assumed" | "user_confirmed") => {
+  const document = plan();
+  const upper = structuredClone(document.floors[0]);
+  upper.id = `${upper.id}-upper`;
+  upper.defaults.wallHeight = { ...upper.defaults.wallHeight, evidence: upperWall };
+  document.floors.push(upper);
+  return withConfirmedHomeType(document, "landed").floors;
+};
+assert.deepEqual(twoFloors("assumed").map((entry) => [entry.defaults.wallHeight.valueMm, entry.storeyHeightMm]),
+  [[3000, 3200], [3000, 3200]], "both storeys");
+assert.deepEqual(twoFloors("user_confirmed").map((entry) => [entry.defaults.wallHeight.valueMm, entry.defaults.wallHeight.evidence]),
+  [[3000, "assumed"], [2600, "user_confirmed"]]);
+// A floor the home type's walls would put under its door stays as it is, and so does a stated or typed height.
+assert.equal(withConfirmedHomeType(tall, "hdb"), tall);
+assert.equal(withConfirmedHomeType(stated, "condo").floors[0].defaults.wallHeight.valueMm, statedFloor.defaults.wallHeight.valueMm);
+assert.equal(withConfirmedHomeType(marked, "condo_penthouse").floors[0].storeyHeightMm, marked.floors[0].storeyHeightMm);
+// The card's field: the same as the review's, without the review's "Optional plan details" hint.
+const card = read("components/editor/FloorPlanReadyCardHomeType.tsx");
+assert.match(card, /applyReviewHomeType\(candidate, \{ floorId: floor\.id, homeType, storeyTyped: false \}\)/);
+assert.match(card, /<FloorPlanReviewHomeType[\s\S]*?detailsHint=\{false\}/);
+assert.match(field, /editable && detailsHint \? " You can change them in Optional plan details\." : ""/);
+
+console.log("Floor-plan review home type checks passed: 6 home types, kept heights, the server's assumed walls, the ready card's.");

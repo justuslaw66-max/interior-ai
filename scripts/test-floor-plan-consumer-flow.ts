@@ -39,6 +39,8 @@ const read = (relativePath: string) =>
 
 const assistant = [
   "components/editor/FloorPlanImportAssistant.tsx",
+  "components/editor/FloorPlanImportReadyCard.tsx",
+  "components/editor/FloorPlanReadyCardHomeType.tsx",
   "components/editor/useConsumerFloorPlanImportCreation.ts",
   "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx",
   "components/editor/floor-plan-import-review/FloorPlanReviewHomeType.tsx",
@@ -780,12 +782,12 @@ assert.match(
 );
 assert.match(
   assistant,
-  /fetch\(`\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/confirm`, \{[\s\S]*?JSON\.stringify\(\{ title, candidateVersion: activeJob\.candidateVersion \}\)/,
-  "Final confirmation should send only the title and reviewed candidate version, not an arbitrary design payload."
+  /fetch\(`\/api\/floor-plan-imports\/\$\{activeJob\.id\}\/confirm`, \{[\s\S]*?JSON\.stringify\(\{ title, candidateVersion: activeJob\.candidateVersion, \.\.\.\(homeType \? \{ homeType \} : \{\}\) \}\)/,
+  "Final confirmation should send only the title, the reviewed candidate version and the ready card's home type, not an arbitrary design payload."
 );
 assert.match(
   assistant,
-  /useConsumerFloorPlanImportCreation\([\s\S]*?return useCallback\(async \(\) => \{[\s\S]*?signal\.throwIfAborted\(\)[\s\S]*?\[activeJob, title, beginAction, setSubmitting, setCreateError, onActiveJobIdChange, router\]/,
+  /useConsumerFloorPlanImportCreation\([\s\S]*?return useCallback\(async \(homeType: ReviewHomeTypeId \| null = null\) => \{[\s\S]*?signal\.throwIfAborted\(\)[\s\S]*?\[activeJob, title, beginAction, setSubmitting, setCreateError, onActiveJobIdChange, router\]/,
   "Design creation should refresh for current job, title, navigation, and active-job ownership without depending on an unused session setter."
 );
 assert.match(
@@ -838,6 +840,17 @@ assert.match(
   `${coreShellBase}\n${read("lib/useUrlViewMode.ts")}`,
   /useUrlViewMode\(urlView\)[\s\S]*?urlView === "2d" \? "2d" : "3d"[\s\S]*?if \(urlView === "2d" \|\| urlView === "3d"\) setViewMode\(urlView\);/,
   "The imported-design route should open in 2D, on a fresh load and on a link within the editor."
+);
+// The ready card's home type (J, 1 Nov 2026): Create design sends its id only once the person changed it, and the
+// server applies it to the stored candidate, checked by compiling again, before the readiness checks and the design.
+assert.match(assistant, /onClick=\{\(\) => void createDesign\(homeType\)\}/);
+assert.match(assistant, /<ReadyCardCreate \{\.\.\.props\} homeType=\{heights\.chosen\} \/>/);
+assert.match(assistant, /chosen: homeType === starting \? null : homeType/);
+assert.match(assistant, /<FloorPlanImportReadyCard key=\{activeJob\.id\}/, "A new job's card starts on its own home type.");
+assert.match(
+  confirmRoute,
+  /readConfirmRequest\(await request\.json\(\)[\s\S]*?const stored = compileCandidateFloorPlanDocumentV2\(job\.candidateJson\);\s*const compiled = homeType === undefined \? stored : compileCandidateFloorPlanDocumentV2\(withConfirmedHomeType\(stored\.document, homeType\)\);\s*const readinessIssues = collectFloorPlanImportReadinessIssues\(\{\s*document: compiled\.document/,
+  "Confirmation applies the ready card's home type to the stored candidate before its checks and the design."
 );
 assert.match(
   confirmRoute,
