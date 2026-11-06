@@ -16,11 +16,25 @@ import {
 import { collectFloorPlanImportReadinessIssues } from "@/lib/floor-plan-imports/readiness";
 import { isFloorPlanMvpBlockingIssue } from "@/lib/floor-plan-imports/types";
 import { syncFloorPlanDesignReference } from "@/lib/floor-plan-design-reference";
+import { withConfirmedHomeType } from "@/lib/floor-plan-imports/review-home-type";
 
 export const runtime = "nodejs";
 
 function error(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+/** The request's design title, the candidate version it was made from, and the home type its ready card chose, if any. */
+function readConfirmRequest(body: unknown) {
+  const fields = isRecord(body) ? body : {};
+  return {
+    title: typeof fields.title === "string" ? fields.title.trim().slice(0, 160) : "Uploaded floor plan",
+    expectedCandidateVersion: fields.candidateVersion ?? null,
+    homeType: fields.homeType,
+  };
 }
 
 export async function POST(
@@ -31,15 +45,7 @@ export async function POST(
   const userId = session?.user?.id;
   if (!userId) return error("Unauthorized", 401);
   const { id } = await params;
-  const body = await request.json().catch(() => null);
-  const title =
-    body && typeof body === "object" && typeof (body as Record<string, unknown>).title === "string"
-      ? (body as Record<string, unknown>).title!.toString().trim().slice(0, 160)
-      : "Uploaded floor plan";
-  const expectedCandidateVersion =
-    body && typeof body === "object"
-      ? (body as Record<string, unknown>).candidateVersion
-      : null;
+  const { title, expectedCandidateVersion, homeType } = readConfirmRequest(await request.json().catch(() => null));
   if (!Number.isInteger(expectedCandidateVersion)) {
     return error("candidateVersion is required", 400);
   }
@@ -84,7 +90,8 @@ export async function POST(
 
   let canonicalDesign: ReturnType<typeof canonicalFloorPlanToDesignSnapshot>;
   try {
-    const compiled = compileCandidateFloorPlanDocumentV2(job.candidateJson);
+    const stored = compileCandidateFloorPlanDocumentV2(job.candidateJson);
+    const compiled = homeType === undefined ? stored : compileCandidateFloorPlanDocumentV2(withConfirmedHomeType(stored.document, homeType));
     const readinessIssues = collectFloorPlanImportReadinessIssues({
       document: compiled.document,
       sourceManifest:

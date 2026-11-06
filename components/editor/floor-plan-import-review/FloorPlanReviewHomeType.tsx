@@ -29,7 +29,7 @@ function heightWords(floor: Floor) {
 
 /** The review's home type: it sets the floor's assumed wall and storey heights by the height rules. */
 export default function FloorPlanReviewHomeType({
-  floor, homeType, kept, refused, storeyBelowWalls, disabled, onChange,
+  floor, homeType, kept, refused, storeyBelowWalls, disabled, onChange, detailsHint = true,
 }: {
   floor: Floor;
   homeType: ReviewHomeTypeId;
@@ -38,6 +38,8 @@ export default function FloorPlanReviewHomeType({
   storeyBelowWalls: boolean;
   disabled?: boolean;
   onChange: (next: ReviewHomeTypeId) => void;
+  /** The review's "Optional plan details" hint; the ready card has no such section. */
+  detailsHint?: boolean;
 }) {
   const words = heightWords(floor);
   const editable = floorPlanPropertyEvidenceIsEditable(floor.defaults.wallHeight.evidence) ||
@@ -62,7 +64,7 @@ export default function FloorPlanReviewHomeType({
       </label>
       <p className="mt-1 text-xs text-label-secondary">
         Walls {metres(floor.defaults.wallHeight.valueMm)} ({words.wall}) · storey {metres(floor.storeyHeightMm)} ({words.storey}).
-        {editable ? " You can change them in Optional plan details." : ""}
+        {editable && detailsHint ? " You can change them in Optional plan details." : ""}
       </p>
       <div role="status" aria-live="polite" className="text-xs text-label-secondary">
         {refused ? (

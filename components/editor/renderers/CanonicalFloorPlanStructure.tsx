@@ -1,8 +1,8 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import { Line } from "@react-three/drei/core/Line";
-import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { DoubleSide, Mesh } from "three";
 import type {
   CompiledFloorPlanOpeningV2,
@@ -23,11 +23,6 @@ import {
   type CanonicalCutawayTarget,
 } from "@/lib/floor-plan-camera-cutaway";
 import { resolveFloorUndersideCutawayElevationMeters } from "@/lib/floor-plan-scene-elevation";
-import { clampFloorPatternScale, normalizeFloorRotationDeg } from "@/lib/floor-materials";
-import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
-import { getWallFaceSurfaceSettings } from "@/lib/surface-settings";
-import { resolveWallSurfaceColorFillIntensity } from "@/lib/wall-paint-rendering";
-import { useSurfaceMaterialTexture } from "./useSurfaceMaterialTexture";
 import {
   canonicalOpening2DSymbolLines,
   planarUnionShapes,
@@ -37,8 +32,6 @@ import {
   structureOutlinePoints,
   structureShape,
   wallSolidShape,
-  wallSurfaceGeometry,
-  wallSurfaceLayout,
 } from "./canonical-floor-plan/geometry";
 import {
   useCanonicalOpeningDrag,
@@ -46,8 +39,11 @@ import {
   type CanonicalOpeningDragMode,
   type CanonicalOpeningEditHandler,
 } from "./canonical-floor-plan/openingDrag";
-import { WALL_SURFACE_TEXTURE_RESOLUTION, resolveRoomSurfaceAssignments, surfaceMaterialFallbackColor } from "./canonical-floor-plan/surfaceMaterials";
-import { getDrawnWallJointMm } from "@/lib/laminate-wall-backing";
+import { CANONICAL_WALL_INDIRECT_FILL_INTENSITY } from "./canonical-floor-plan/surfaceMaterials";
+import { CanonicalWallSurfaceMesh } from "./canonical-floor-plan/CanonicalWallSurfaceMesh";
+import { meshRaycast, noRaycast, type CanonicalPointerEvent } from "./canonical-floor-plan/canonicalPointer";
+import { CanonicalPanelStrips2D } from "./canonical-floor-plan/CanonicalPanelStrips2D";
+import { getCanonicalFaceTrimsMm, getCanonicalOpeningHighlightDepth, getCanonicalWallPanelDepthMm } from "./canonical-floor-plan/canonicalWallPanels";
 import { useCanonicalCameraCutawayWallKeys } from "./canonical-floor-plan/useCameraCutaway";
 import { useCanonicalWallBands } from "./canonical-floor-plan/useCanonicalWallBands";
 import { usePrebuiltCanonicalWallBands } from "./canonical-floor-plan/usePrebuiltCanonicalWallBands";
@@ -64,16 +60,10 @@ import { stableExtrudeOptions } from "./stableExtrudeOptions";
 
 export type { CanonicalOpeningDragMetricsV2 } from "./canonical-floor-plan/openingDrag";
 
-type CanonicalPointerEvent = ThreeEvent<MouseEvent | PointerEvent>;
 
 const CANONICAL_WALL_TOP_CAP_OFFSET_METERS = 0.0005;
-const CANONICAL_ACTIVE_WALL_COLOR = "#fbfbf7";
 const CANONICAL_WALL_BODY_COLOR = "#ddddda";
 const CANONICAL_WALL_CUT_SURFACE_COLOR = CANONICAL_WALL_BODY_COLOR;
-const CANONICAL_WALL_INDIRECT_FILL_INTENSITY = 0.08;
-const noRaycast = () => null;
-// R3F 9 skips a prop that becomes undefined, so turning picking back on must pass the default raycast.
-const meshRaycast = Mesh.prototype.raycast;
 
 function CanonicalStructure2D({
   structure,
@@ -517,140 +507,6 @@ function CanonicalWallBodies3D({
   });
 }
 
-const CanonicalWallSurfaceMesh = memo(function CanonicalWallSurfaceMesh({
-  solid,
-  wallSolids,
-  wallId,
-  floorId,
-  floorElevationMm,
-  room,
-  side,
-  selected,
-  opacity,
-  geometryHash,
-  interactive,
-  cutAway,
-  onSelectWall,
-}: {
-  solid: CanonicalFloorPlanWallSolid;
-  wallSolids: readonly CanonicalFloorPlanWallSolid[]; // the wall's slices, which give its face's corners
-  wallId: string;
-  floorId: string;
-  floorElevationMm: number;
-  room: HousePlanRoom2D;
-  side: 1 | -1;
-  selected: boolean;
-  opacity: number;
-  geometryHash: string;
-  /** False while cut away, so a hidden surface takes no pointer events. */
-  interactive: boolean;
-  cutAway: boolean;
-  onSelectWall?: (wallId: string, roomId: string | null, event: CanonicalPointerEvent) => void;
-}) {
-  const { gl } = useThree();
-  // Wall panels are laid from the floor and from the wall's start (canonical-floor-plan/geometry.ts).
-  const layout = useMemo(() => wallSurfaceLayout(solid, side, wallSolids), [side, solid, wallSolids]);
-  const geometry = useMemo(() => wallSurfaceGeometry(solid, side), [side, solid]);
-  useEffect(() => () => geometry.dispose(), [geometry]);
-  const settings = getWallFaceSurfaceSettings(
-    resolveRoomSurfaceAssignments(room),
-    wallId,
-    normalizeFloorRotationDeg,
-    clampFloorPatternScale
-  );
-  const material = getRuntimeSurfaceMaterialById(settings.materialId);
-  const texture = useSurfaceMaterialTexture({
-    material,
-    roomWidthMeters: layout.lengthMeters,
-    roomDepthMeters: layout.heightMeters,
-    bottomAboveFloorMeters: layout.bottomAboveFloorMeters,
-    startAlongFaceMeters: layout.startAlongFaceMeters,
-    floorScale: settings.scale,
-    rotationRad: (settings.rotationDeg * Math.PI) / 180,
-    floorPattern: settings.pattern,
-    patternOffset: settings.offset,
-    jointSizeMm: getDrawnWallJointMm(material, settings.jointSizeMm),
-    jointColor: settings.jointColor,
-    maxAnisotropy: gl.capabilities.getMaxAnisotropy(),
-    uvMode: "normalized",
-    textureResolution: WALL_SURFACE_TEXTURE_RESOLUTION,
-  });
-  const displayedColor = texture
-    ? "#ffffff"
-    : settings.paintColorHex ??
-      surfaceMaterialFallbackColor(material) ??
-      CANONICAL_ACTIVE_WALL_COLOR;
-  const displayedColorFillIntensity =
-    resolveWallSurfaceColorFillIntensity({
-      hasTexture: Boolean(texture),
-      paintColorHex: settings.paintColorHex,
-      neutralFillIntensity: CANONICAL_WALL_INDIRECT_FILL_INTENSITY,
-    });
-  const roomOpacity = Math.max(
-    0.05,
-    Math.min(1, Number.isFinite(room.surfaceOpacity?.wall) ? room.surfaceOpacity!.wall! : 1)
-  );
-  return (
-    <mesh
-      position={[0, floorElevationMm / 1000, 0]}
-      renderOrder={12}
-      visible={!cutAway}
-      raycast={interactive ? meshRaycast : noRaycast}
-      userData={{
-        testId: "canonical-wall-surface-3d",
-        canonicalFloorId: floorId,
-        canonicalWallId: wallId,
-        canonicalRoomId: room.id,
-        canonicalRoomSide: side,
-        canonicalSurfaceFaceId: wallId,
-        canonicalMaterialId: settings.materialId,
-        canonicalGeometryHash: geometryHash,
-      }}
-      onClick={
-        interactive
-          ? (event: CanonicalPointerEvent) => {
-              event.stopPropagation();
-              onSelectWall?.(wallId, room.id, event);
-            }
-          : undefined
-      }
-    >
-      <primitive object={geometry} attach="geometry" />
-      <meshStandardMaterial
-        color={displayedColor}
-        map={texture ?? undefined}
-        emissive={
-          displayedColorFillIntensity > 0 ? displayedColor : "#000000"
-        }
-        emissiveIntensity={displayedColorFillIntensity}
-        roughness={material?.rendering.roughness ?? 0.86}
-        metalness={material?.rendering.metalness ?? 0}
-        side={DoubleSide}
-        transparent={opacity * roomOpacity < 0.999}
-        opacity={opacity * roomOpacity}
-        depthWrite={opacity * roomOpacity > 0.34}
-        polygonOffset
-        polygonOffsetFactor={-1}
-        polygonOffsetUnits={-1}
-      />
-      {selected && (
-        <Line
-          points={[
-            [layout.edge.start.x, solid.bottomMm / 1000 + 0.02, layout.edge.start.z],
-            [layout.edge.end.x, solid.bottomMm / 1000 + 0.02, layout.edge.end.z],
-            [layout.edge.end.x, solid.topMm / 1000 - 0.02, layout.edge.end.z],
-            [layout.edge.start.x, solid.topMm / 1000 - 0.02, layout.edge.start.z],
-            [layout.edge.start.x, solid.bottomMm / 1000 + 0.02, layout.edge.start.z],
-          ]}
-          color="#f97316"
-          lineWidth={2.2}
-          raycast={() => null}
-        />
-      )}
-    </mesh>
-  );
-});
-
 const CanonicalOpening3DSymbol = memo(function CanonicalOpening3DSymbol({
   opening,
   wallId,
@@ -658,7 +514,7 @@ const CanonicalOpening3DSymbol = memo(function CanonicalOpening3DSymbol({
   floorId,
   floorElevationMm,
   hostSegments,
-  geometryHash, revisionId,
+  geometryHash, revisionId, panelDepthMm = 0,
   selected, cutAway,
   opacity,
   interactive,
@@ -674,7 +530,7 @@ const CanonicalOpening3DSymbol = memo(function CanonicalOpening3DSymbol({
   floorId: string;
   floorElevationMm: number;
   hostSegments: CanonicalFloorPlanLineSegment[];
-  geometryHash: string; revisionId: string;
+  geometryHash: string; revisionId: string; panelDepthMm?: number; // the deeper of its wall's rooms' laminates
   selected: boolean; cutAway: boolean;
   opacity: number;
   interactive: boolean;
@@ -871,7 +727,7 @@ const CanonicalOpening3DSymbol = memo(function CanonicalOpening3DSymbol({
             onPointerUp={interactive && onEdit ? finish : undefined}
             onPointerCancel={interactive && onEdit ? cancel : undefined}
           >
-            <boxGeometry args={[host.length, height, Math.max(0.08, wallThicknessMm / 1000)]} />
+            <boxGeometry args={[host.length, height, getCanonicalOpeningHighlightDepth(wallThicknessMm, panelDepthMm)]} />
             <meshBasicMaterial
               color={color}
               transparent
@@ -923,6 +779,7 @@ type CanonicalFloorPlanWalls2DProps = {
   showStructures?: boolean;
   interactive?: boolean;
   theme?: "consumer" | "pro";
+  rooms?: readonly HousePlanRoom2D[]; // the plan's rooms, whose laminate panels are drawn on their walls
 } & CanonicalPlan2DHandlers;
 
 export function CanonicalFloorPlanWalls2D({
@@ -935,6 +792,7 @@ export function CanonicalFloorPlanWalls2D({
   showStructures = true,
   interactive = false,
   theme = "consumer",
+  rooms,
   ...latestHandlers
 }: CanonicalFloorPlanWalls2DProps) {
   const wallEditing = useStableWallGestureControls(latestWallEditing);
@@ -965,6 +823,7 @@ export function CanonicalFloorPlanWalls2D({
             theme={theme}
           />
         ))}
+      {activeFloor && rooms && <CanonicalPanelStrips2D floor={activeFloor} rooms={rooms} isPro={theme === "pro"} />}
       {activeFloor && <CanonicalWallSegments2D floor={activeFloor} geometryHash={model.geometryHash}
         activeRoomId={activeRoomId} theme={theme} interactive={interactive} wallEditing={wallEditing}
         onSelectWall={onSelectWall} onSelectRoom={onSelectRoom} onSelectOpening={onSelectOpening} />}
@@ -1117,7 +976,7 @@ export function CanonicalFloorPlanWalls3D({
           />
         );
         const walls = visibleWalls.flatMap((wall) => {
-          // A cut-away wall stays mounted, hidden and unpickable, so a cutaway change creates no meshes or shaders.
+          // A cut-away wall stays mounted, hidden and unpickable; a cutaway change rebuilds only the panels stopping at its own.
           const cutAway = cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, wall.id));
           const roomId = preferredRoomId(wall.adjacentRoomIds, activeRoomId, floor.rooms);
           const selected = wall.id === selectedWallId;
@@ -1138,11 +997,12 @@ export function CanonicalFloorPlanWalls3D({
             ) : null;
             const surfaces = wall.roomSides.flatMap(({ roomId: surfaceRoomId, side }) => {
               const room = rooms.find((candidate) => candidate.id === surfaceRoomId);
-              if (!room) return [];
+              const trims = room && getCanonicalFaceTrimsMm(room, floor.walls, wall, solid, side, (id) => cutawayWallKeys.has(canonicalWallCutawayKey(floor.id, id)));
+              if (!room || !trims || trims.hidden) return [];
               return [
                 <CanonicalWallSurfaceMesh
                   key={`${floor.id}:${solid.id}:surface:${surfaceRoomId}`}
-                  solid={solid} wallSolids={wall.solids}
+                  solid={solid} wallSolids={wall.solids} trims={trims}
                   wallId={wall.id}
                   floorId={floor.id}
                   floorElevationMm={floor.elevationMm}
@@ -1195,7 +1055,7 @@ export function CanonicalFloorPlanWalls3D({
                 onSelect={onSelectOpening}
                 wallStart={wall.centerlineSegments[0]?.start ?? opening.start}
                 wallEnd={wall.centerlineSegments.at(-1)?.end ?? opening.end}
-                revisionId={model.revisionId}
+                revisionId={model.revisionId} panelDepthMm={getCanonicalWallPanelDepthMm(wall, rooms)}
                 {...openingGestureBindings(wallEditing, floor.id, wall.path.kind, onEditOpening, onOpeningDragStateChange)}
               />
             ));

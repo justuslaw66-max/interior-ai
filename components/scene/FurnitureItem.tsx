@@ -70,7 +70,7 @@ export function Furniture({
   roomOriginZ = 0,
   roomPlanShape = "rectangle",
   roomPlanPolygon,
-  roomPlanHoles,
+  roomPlanHoles, roomFurniture,
   wallThickness = 0.12,
   wallContactInset,
   snapDistance = 0.25,
@@ -370,7 +370,7 @@ export function Furniture({
         nextRotationY,
         roomPlanShape,
         roomPlanPolygon,
-        roomPlanHoles
+        roomPlanHoles, roomFurniture // furniture: 2 cm off the room's walls as the 3D view draws them (a built-in: none)
       );
 
       return [localX + roomOriginX, localZ + roomOriginZ];
@@ -383,7 +383,7 @@ export function Furniture({
       roomOriginX,
       roomOriginZ,
       roomPlanPolygon,
-      roomPlanHoles,
+      roomPlanHoles, roomFurniture,
       roomPlanShape,
       roomWidth,
       rotation,

@@ -1567,6 +1567,7 @@ export type HousePlanRoom2D = {
   floorSlabThicknessMm?: number;
   shape: RoomPlanShape;
   polygon?: Array<{ x: number; z: number }>;
+  edgeWallIds?: readonly string[]; edgeWallThicknessesMm?: readonly number[]; // an imported room's: each edge's plan wall, its thickness
   holes?: Array<Array<{ x: number; z: number }>>;
   surfaces?: RoomSurfaceFinishes;
   surfaceFinishes?: RoomSurfaceFinishes;
@@ -1847,6 +1848,15 @@ function mergeRoomSurfaceFinishes(
   };
 }
 
+const CANONICAL_FLOOR_FIELDS = ["floorElevationMm", "floorStoreyHeightMm", "floorSlabThicknessMm"] as const;
+/** A canonical import's exact floor fields, each kept when it is a whole number of millimetres. */
+function canonicalFloorFields(room: RoomSnapshot): Pick<HousePlanRoom2D, (typeof CANONICAL_FLOOR_FIELDS)[number]> {
+  return Object.fromEntries(CANONICAL_FLOOR_FIELDS.flatMap((key): [string, number][] => {
+    const value = room[key];
+    return typeof value === "number" && Number.isInteger(value) ? [[key, value]] : [];
+  }));
+}
+
 export function buildHousePlan2D(
   rooms: RoomSnapshot[],
   fallbackWidth: number,
@@ -1865,11 +1875,7 @@ export function buildHousePlan2D(
     const storedZ = room.planPosition?.z;
     const fallbackX = index === 0 ? 0 : rightEdge + w / 2;
 
-    if (index === 0) {
-      rightEdge = w / 2;
-    } else {
-      rightEdge += w;
-    }
+    rightEdge = index === 0 ? w / 2 : rightEdge + w;
 
     return {
       id: room.id,
@@ -1880,17 +1886,10 @@ export function buildHousePlan2D(
           ? room.floorLevel
           : 1,
       ...(room.floorLabel ? { floorLabel: room.floorLabel } : {}),
-      ...(typeof room.floorElevationMm === "number" && Number.isInteger(room.floorElevationMm)
-        ? { floorElevationMm: room.floorElevationMm }
-        : {}),
-      ...(typeof room.floorStoreyHeightMm === "number" && Number.isInteger(room.floorStoreyHeightMm)
-        ? { floorStoreyHeightMm: room.floorStoreyHeightMm }
-        : {}),
-      ...(typeof room.floorSlabThicknessMm === "number" && Number.isInteger(room.floorSlabThicknessMm)
-        ? { floorSlabThicknessMm: room.floorSlabThicknessMm }
-        : {}),
+      ...canonicalFloorFields(room),
       shape: room.planShape ?? "rectangle",
       ...(room.planPolygon ? { polygon: room.planPolygon } : {}),
+      ...(room.planEdgeWallIds ? { edgeWallIds: room.planEdgeWallIds, edgeWallThicknessesMm: room.planEdgeWallThicknessesMm } : {}),
       ...(room.planHoles?.length ? { holes: room.planHoles } : {}),
       ...(roomSurfaces ? { surfaces: roomSurfaces } : {}),
       ...(roomSurfaces ? { surfaceFinishes: roomSurfaces } : {}),

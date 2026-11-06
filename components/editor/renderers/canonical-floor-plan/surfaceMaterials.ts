@@ -2,6 +2,10 @@ import type { HousePlanRoom2D } from "@/lib/design-page-house-plan";
 import type { RoomSurfaceAssignments } from "@/lib/room-types";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 
+/** An imported plan's unfinished wall face, and the low neutral fill its walls take so their faces keep their shading. */
+export const CANONICAL_ACTIVE_WALL_COLOR = "#fbfbf7";
+export const CANONICAL_WALL_INDIRECT_FILL_INTENSITY = 0.08;
+
 export const WALL_SURFACE_TEXTURE_RESOLUTION = {
   maxSize: 4096,
   minSize: 768,
@@ -20,7 +24,9 @@ export function surfaceMaterialFallbackColor(
   return material ? "#c9c2b4" : null;
 }
 
-export function resolveRoomSurfaceAssignments(room: HousePlanRoom2D): RoomSurfaceAssignments | undefined {
+export function resolveRoomSurfaceAssignments(
+  room: Pick<HousePlanRoom2D, "surfaces" | "surfaceFinishes">
+): RoomSurfaceAssignments | undefined {
   const compatibility = room.surfaceFinishes;
   const current = room.surfaces;
   if (!compatibility) return current;

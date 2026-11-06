@@ -1,5 +1,4 @@
 import { memo } from "react";
-import type { ThreeEvent } from "@react-three/fiber";
 import type {
   CanonicalFloorPlanFloorRenderModel,
   CanonicalFloorPlanWallRenderModel,
@@ -9,8 +8,8 @@ import { useCanvasPalette } from "@/lib/canvas-colours";
 import { useLatestCallback } from "../useLatestCallback";
 import { preferredRoomId, segmentTransform } from "./geometry";
 import { CanonicalVoidRooms2D } from "./CanonicalVoidRooms2D";
+import type { CanonicalPointerEvent } from "./canonicalPointer";
 
-type CanonicalPointerEvent = ThreeEvent<MouseEvent | PointerEvent>;
 type Props = {
   floor: CanonicalFloorPlanFloorRenderModel; geometryHash: string; activeRoomId: string | null;
   theme: "consumer" | "pro"; interactive: boolean; wallEditing?: CanonicalWallGestureControls;

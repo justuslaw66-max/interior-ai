@@ -162,11 +162,11 @@ export function floorPlanRevisionProtectsSource(
 
 /**
  * A worker holds the job, or held it when its owner cancelled it: owner-cancel.ts keeps that lease's
- * end, without the token, because the worker can take until then to stop writing the job's files.
+ * end, with a token no worker has, because the worker can take until then to stop writing the job's files.
  */
 function hasActiveLease(job: FloorPlanRetentionJob, now: Date) {
   return Boolean(
-    (job.leaseToken || job.status === "failed") &&
+    job.leaseToken &&
       job.leaseExpiresAt &&
       job.leaseExpiresAt.getTime() > now.getTime()
   );

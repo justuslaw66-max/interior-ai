@@ -208,12 +208,8 @@
       "lines": 257,
       "limit": 250
     },
-    "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
-      "lines": 256,
-      "limit": 250
-    },
     "components/editor/FloorPlanImportAssistant.tsx": {
-      "lines": 569,
+      "lines": 428,
       "limit": 250
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -229,7 +225,7 @@
       "limit": 250
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
-      "lines": 1206,
+      "lines": 1066,
       "limit": 250
     },
     "components/editor/renderers/house-plan-3d/geometry.ts": {
@@ -393,7 +389,7 @@
       "limit": 400
     },
     "features/cabinetry/useDesignPageCabinetry.ts": {
-      "lines": 1105,
+      "lines": 1099,
       "limit": 400
     },
     "features/cabinetry/validation.ts": {
@@ -460,12 +456,8 @@
       "lines": 1018,
       "limit": 400
     },
-    "lib/design-page-geometry.ts": {
-      "lines": 473,
-      "limit": 400
-    },
     "lib/design-page-house-plan.ts": {
-      "lines": 2797,
+      "lines": 2796,
       "limit": 400
     },
     "lib/design-page-model-maps.ts": {
@@ -557,7 +549,7 @@
       "limit": 400
     },
     "lib/floor-plan-legacy-adapters.ts": {
-      "lines": 539,
+      "lines": 501,
       "limit": 400
     },
     "lib/floor-plan-library-schema.ts": {
@@ -1199,11 +1191,11 @@
     "app/api/floor-plan-imports/[id]/confirm/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 168
+        "maximum": 161
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 29
+        "maximum": 25
       }
     },
     "app/api/floor-plan-imports/[id]/process/route.ts": {
@@ -1857,11 +1849,7 @@
     "components/editor/floor-plan-import-review/FloorPlanRoomTracePanel.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 166
-      },
-      "complexFunctions": {
-        "count": 1,
-        "maximum": 17
+        "maximum": 152
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanScaleReviewPanel.tsx": {
@@ -1899,7 +1887,7 @@
     "components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 218
+        "maximum": 198
       },
       "complexFunctions": {
         "count": 1,
@@ -1937,11 +1925,11 @@
     "components/editor/FloorPlanImportAssistant.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 507
+        "maximum": 388
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 65
+        "maximum": 41
       }
     },
     "components/editor/FloorPlanImportHistory.tsx": {
@@ -2004,7 +1992,7 @@
     },
     "components/editor/renderers/CanonicalFloorPlanStructure.tsx": {
       "overlongFunctions": {
-        "count": 9,
+        "count": 8,
         "maximum": 259
       },
       "complexFunctions": {
@@ -2595,7 +2583,7 @@
     "features/cabinetry/useDesignPageCabinetry.ts": {
       "overlongFunctions": {
         "count": 7,
-        "maximum": 825
+        "maximum": 824
       },
       "complexFunctions": {
         "count": 2,
@@ -2966,8 +2954,8 @@
     },
     "lib/design-page-geometry.ts": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 97
+        "count": 1,
+        "maximum": 64
       }
     },
     "lib/design-page-house-plan.ts": {
@@ -2977,7 +2965,7 @@
       },
       "complexFunctions": {
         "count": 4,
-        "maximum": 32
+        "maximum": 27
       },
       "deeplyNestedFunctions": {
         "count": 1,
@@ -3587,7 +3575,7 @@
     "lib/floor-plan-legacy-adapters.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 199
+        "maximum": 198
       },
       "complexFunctions": {
         "count": 2,
@@ -4387,7 +4375,7 @@
     "lib/useDesignPageSceneItemDrag.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 515
+        "maximum": 506
       },
       "complexFunctions": {
         "count": 1,

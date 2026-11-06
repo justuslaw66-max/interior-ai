@@ -636,7 +636,7 @@ export function registerEmptyPlanScaleCalibration(input: {
   return next;
 }
 
-function nextOrdinalId(document: FloorPlanDocumentV2, prefix: string) {
+export function nextOrdinalId(document: FloorPlanDocumentV2, prefix: string) {
   const ids = new Set<string>();
   for (const floor of document.floors) {
     for (const collection of [

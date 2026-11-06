@@ -4,7 +4,7 @@ import {
   PrismaFloorPlanImportLeaseService,
   type FloorPlanImportLease,
 } from "@/lib/floor-plan-imports/lease";
-import { cancelOwnedFloorPlanImport } from "@/lib/floor-plan-imports/owner-cancel";
+import { cancelOwnedFloorPlanImport, OWNER_CANCEL_LEASE_OWNER } from "@/lib/floor-plan-imports/owner-cancel";
 import { assessFloorPlanRetentionPurge } from "@/lib/floor-plan-imports/privacy";
 import { PrismaFloorPlanImportJobRepository } from "@/lib/floor-plan-imports/prisma-repository";
 import { FLOOR_PLAN_IMPORT_PROGRESS } from "@/lib/floor-plan-imports/status";
@@ -125,6 +125,18 @@ function applyData(row: MutableJob, data: unknown) {
   }
 }
 
+/**
+ * The database's FloorPlanImportJob_lease_complete check (prisma/migrations/20260716190000_…): a lease is whole
+ * (token, owner and end) or absent. Postgres refuses the whole statement otherwise (code 23514); the 2 Nov push run
+ * hit it on a cancel of a job being read, which this stand-in, without the check, had let through.
+ */
+function assertLeaseComplete(row: MutableJob) {
+  const parts = [row.leaseToken, row.leaseOwner, row.leaseExpiresAt].filter((value) => value !== null).length;
+  if (parts !== 0 && parts !== 3) {
+    throw new Error(`new row for relation "FloorPlanImportJob" violates check constraint "FloorPlanImportJob_lease_complete" (${row.id})`);
+  }
+}
+
 class FakeLeasePrisma {
   readonly jobs = new Map<string, MutableJob>();
   private transactionTail: Promise<void> = Promise.resolve();
@@ -148,13 +160,15 @@ class FakeLeasePrisma {
     },
     updateMany: async (args: unknown) => {
       const input = args as { where: unknown; data: unknown };
-      let count = 0;
-      for (const row of this.jobs.values()) {
-        if (!matches(row, input.where)) continue;
-        applyData(row, input.data);
-        count += 1;
+      const rows = [...this.jobs.values()].filter((row) => matches(row, input.where));
+      // One statement: every changed row passes the database's checks, or none changes.
+      for (const row of rows) {
+        const next = { ...row };
+        applyData(next, input.data);
+        assertLeaseComplete(next);
       }
-      return { count };
+      for (const row of rows) applyData(row, input.data);
+      return { count: rows.length };
     },
   };
 
@@ -418,13 +432,17 @@ async function testOwnerCancelStopsTheWorkerReadingIt() {
   assert.equal(row.status, "failed");
   assert.equal(row.errorMessage, "Cancelled by owner");
   assert.equal(row.progress, FLOOR_PLAN_IMPORT_PROGRESS.failed);
-  assert.equal(row.leaseToken, null);
-  assert.equal(row.leaseOwner, null);
-  // The lease's end stays, without its token: the worker can take until then to stop writing files.
+  // The lease's end stays, the worker can take until then to stop writing files, held by the cancel with a token
+  // of its own: the database keeps a lease whole or absent (the 2 Nov push run's 500 kept the end alone).
+  assert.match(row.leaseToken ?? "", /^cancel-/);
+  assert.notEqual(row.leaseToken, lease.token);
+  assert.equal(row.leaseOwner, OWNER_CANCEL_LEASE_OWNER);
   assert.equal(row.leaseExpiresAt?.getTime(), leaseEnd.getTime());
-  // A repeated cancel (a lost answer, a second press) is answered as done.
+  const hold = row.leaseToken;
+  // A repeated cancel (a lost answer, a second press) is answered as done, and leaves the hold as it is.
   assert.equal(await cancelOwnedFloorPlanImport({ id: "reading", userId: "owner-1", now }, database), "already_stopped");
   assert.equal(row.errorMessage, "Cancelled by owner");
+  assert.equal(row.leaseToken, hold);
 
   // The worker's next write is refused, so nothing more of the read lands.
   const repository = new PrismaFloorPlanImportJobRepository(database);
@@ -469,6 +487,13 @@ async function testOwnerCancelStopsTheWorkerReadingIt() {
     }).code;
   assert.equal(purgeAt(heartbeatAt), "active_lease");
   assert.equal(purgeAt(new Date(leaseEnd.getTime() + 1)), "purge");
+  // Once the hold has ended, the workers' expired-lease sweep clears it, keeps the cancel, and resumes nothing.
+  const afterHold = new Date(leaseEnd.getTime() + 1);
+  assert.deepEqual(await service.recoverExpired({ now: afterHold }), []);
+  assert.deepEqual([row.leaseToken, row.leaseOwner, row.leaseExpiresAt], [null, null, null]);
+  assert.equal(row.status, "failed");
+  assert.equal(row.errorMessage, "Cancelled by owner");
+  assert.equal(purgeAt(afterHold), "purge");
   // A worker that releases or claims the job between the cancel's read and its write changes the lease: the
   // cancel reads again and lands on the new state.
   const lateLeaseEnd = new Date(leaseEnd.getTime() + 60_000);
@@ -491,7 +516,8 @@ async function testOwnerCancelStopsTheWorkerReadingIt() {
     database.floorPlanImportJob.updateMany = updateMany;
     const cancelled = database.jobs.get(id);
     assert.equal(cancelled?.status, "failed");
-    assert.equal(cancelled?.leaseToken, null);
+    assert.notEqual(cancelled?.leaseToken, "late-claim");
+    assert.equal(cancelled?.leaseOwner ?? null, id === "claimed" ? OWNER_CANCEL_LEASE_OWNER : null);
     // Held for the lease that was live when the cancel landed (the late claim's, not the one first read), and
     // none once the worker had let go.
     assert.equal(cancelled?.leaseExpiresAt?.getTime() ?? null, id === "claimed" ? lateLeaseEnd.getTime() : null);
