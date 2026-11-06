@@ -36,8 +36,8 @@ import {
 } from "@/lib/design-page-house-plan";
 
 /** Furniture's room for the active room's clamp: 2 cm off its walls as the 3D view draws them (lib/furniture-room-context.ts). */
-function furnitureRoomOf(room: RoomSnapshot | null, planRooms: HousePlanRoom2D[], snapshot: DesignSnapshot) {
-  return room ? getFurnitureRoomContext(room, planRooms, getCompiledPlanFloors(snapshot.floorPlan?.canonicalDocument)) : undefined;
+function furnitureRoomOf(room: RoomSnapshot | null, planRooms: HousePlanRoom2D[], floorPlan: DesignSnapshot["floorPlan"]) {
+  return room ? getFurnitureRoomContext(room, planRooms, getCompiledPlanFloors(floorPlan?.canonicalDocument)) : undefined;
 }
 
 type Params = {
@@ -173,7 +173,7 @@ export function useDesignPageHousePlanState({
         rotationY,
         // Stops at each wall's laminate panel (J, 29 Oct 2026); read when called: React's compiler can't memoize it in render.
         activeRoomPlanShape, activeRoomPlanPolygon, activeRoomPlanHoles, getRoomWallFinishDepths(activeRoom),
-        furnitureRoomOf(activeRoom, placedPlan.rooms, designSnapshot)
+        furnitureRoomOf(activeRoom, placedPlan.rooms, designSnapshot.floorPlan)
       ),
     [activeRoom, activeRoomPlanHoles, activeRoomPlanPolygon, activeRoomPlanShape, designSnapshot.floorPlan, placedPlan]
   );
