@@ -456,10 +456,6 @@
       "lines": 1018,
       "limit": 400
     },
-    "lib/design-page-geometry.ts": {
-      "lines": 473,
-      "limit": 400
-    },
     "lib/design-page-house-plan.ts": {
       "lines": 2796,
       "limit": 400
@@ -2958,8 +2954,8 @@
     },
     "lib/design-page-geometry.ts": {
       "overlongFunctions": {
-        "count": 2,
-        "maximum": 97
+        "count": 1,
+        "maximum": 64
       }
     },
     "lib/design-page-house-plan.ts": {
@@ -4379,7 +4375,7 @@
     "lib/useDesignPageSceneItemDrag.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 507
+        "maximum": 506
       },
       "complexFunctions": {
         "count": 1,

@@ -848,9 +848,10 @@ assert.match(read("components/editor/renderers/RoomRenderer2D.tsx"), /<Canonical
 // wedges of 5 to 60 degrees, bends of up to 20 degrees either way, spikes (outside cusps) and arcs (meeting a straight wall in
 // and out, at a cusp, and meeting each other), with walls 100 to 300 mm thick, each laminated on a random board or painted,
 // turned, mirrored and moved, and some with a door near a corner. Each room's drawn panels are checked: no two overlap, none
-// pokes out past the walls or into another wall, each face is covered up to its corners, and furniture placed by the clamp
-// stands 2 cm in front of every laminate (each within the stated tolerances). The cases still open are counted, so a count
-// can only come down. 100 plans by default; the full 2,000 with IMPORTED_CORNER_PLANS=2000 (about a minute and a half).
+// pokes out past the walls or into another wall, each face is covered up to its corners, and furniture placed by the clamp,
+// at four turns, stands with its real footprint 2 cm in front of every laminate and wall (each within the stated tolerances).
+// The cases still open are counted, so a count can only come down. 100 plans by default (about 20 s); the full 2,000 with
+// IMPORTED_CORNER_PLANS=2000 (about 10 minutes).
 const cornerPlans = Number(process.env.IMPORTED_CORNER_PLANS ?? 100);
 const corners = runImportedPanelCornerProperties(cornerPlans);
 console.log(`Imported panel corners: ${corners.plans} plans (${corners.skipped} invalid, skipped), ${corners.rooms} rooms, ${corners.panels} panels; worst ${JSON.stringify(
@@ -863,14 +864,7 @@ if (openCases) {
   }
   assert.deepEqual(Object.keys(corners.failing).filter((key) => !(key in openCases)), [], corners.failures.join("\n"));
 }
-// The clamp's own limit at outside corners and thin spikes, ratcheted by kind: counts and the worst may only come down.
-const clampLimit = CLAMP_LIMIT_CASES[cornerPlans];
-if (clampLimit) {
-  for (const [kind, { rooms, intoPanel, worstMm }] of Object.entries(corners.clampLimit)) {
-    const known = clampLimit[kind];
-    assert.ok(known && rooms <= known.rooms && intoPanel <= known.intoPanel && worstMm <= known.worstMm,
-      `the clamp's limit in ${kind} plans: ${rooms} rooms, ${intoPanel} into a laminate, ${worstMm.toFixed(2)} mm (${JSON.stringify(known)} known)`);
-  }
-}
+// The clamp's old limit at outside corners and thin spikes: none left (CLAMP_LIMIT_CASES), in any run.
+assert.deepEqual(corners.clampLimit, CLAMP_LIMIT_CASES[cornerPlans] ?? {}, `the clamp's limit at outside corners: ${JSON.stringify(corners.clampLimit)}`);
 
 console.log("Canonical wall finishes and opening semantics checks passed.");

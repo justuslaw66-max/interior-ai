@@ -8,7 +8,7 @@ import {
   findCatalogPlacementCollision,
   isCatalogPlacementLocalFootprintInsideRoom,
 } from "@/lib/catalog-placement";
-import { getFurnitureWallInset, type AABB } from "@/lib/design-page-geometry";
+import { FURNITURE_WALL_CLEARANCE_METERS, getFurnitureWallInset, type AABB } from "@/lib/design-page-geometry";
 import { clampToRoomInsideFinishes, getRoomOutlineInsideFinishes, type RoomPlanOutline } from "@/lib/room-finished-outline";
 import { getRoomWallFinishDepths, type RoomWallFinishDepths } from "@/lib/room-wall-finish-depths";
 import {
@@ -19,6 +19,8 @@ import type { DesignItem, RoomSnapshot } from "@/lib/room-types";
 import { compileCanonicalFloorPlanRenderModel, type CanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-model";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { findCanonicalPlacementWall } from "@/lib/floor-plan-placement-boundaries";
+import { getFurnitureRoomContext } from "@/lib/furniture-room-context";
+import { getFurnitureFaces, isFurnitureFootprintClear, type FurnitureRoomContext } from "@/lib/furniture-room-fit";
 import {
   builtInFootprintFits,
   getBuiltInDragPlace,
@@ -82,13 +84,19 @@ type UseDesignPagePlacementRoomQueriesInput = {
   };
 };
 
+/**
+ * Furniture's clamp in a room, 2 cm off its walls as its 3D view draws them: the plan's rooms next door's too (`planRooms`), and
+ * an imported plan's as compiled (`floors`).
+ */
 export function clampToPlacementRoom(
   room: RoomSnapshot,
   x: number,
   z: number,
   itemWidth: number,
   itemDepth: number,
-  rotationY: number = 0
+  rotationY: number = 0,
+  planRooms?: BuiltInPlanRooms,
+  floors?: CanonicalFloorPlanRenderModel["floors"]
 ): [number, number] {
   return clampToRoomInsideFinishes(
     x,
@@ -104,7 +112,8 @@ export function clampToPlacementRoom(
     room.planShape ?? "rectangle",
     room.planPolygon,
     room.planHoles,
-    getRoomWallFinishDepths(room)
+    getRoomWallFinishDepths(room),
+    getFurnitureRoomContext(room, planRooms, floors)
   );
 }
 
@@ -184,6 +193,16 @@ function boundsHolding(outline: RoomPlanOutline, depths: RoomWallFinishDepths): 
   return { w: Math.max(w, reach("x")), d: Math.max(d, reach("z")) };
 }
 
+/** Whether furniture stands clear in its room's outline by its 3D view's walls; null where the room's walls aren't known. */
+function isFurnitureClearInRoom(
+  outline: RoomPlanOutline, position: [number, number, number], rotationY: number, dimensions: PlacementDimensions,
+  context: FurnitureRoomContext
+): boolean | null {
+  if (outline.shape !== "custom_polygon" || !outline.polygon?.length) return null;
+  const faces = getFurnitureFaces(outline.polygon, outline.holes ?? [], FURNITURE_WALL_CLEARANCE_METERS, context);
+  return faces && isFurnitureFootprintClear(faces, position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY);
+}
+
 export function isPlacementContainedInRoom({
   room,
   position,
@@ -215,7 +234,6 @@ export function isPlacementContainedInRoom({
         getBuiltInStandOff(room, position[1]));
     }
   }
-  if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   // Inside the room's laminate panels (lib/room-finished-outline.ts).
   const depths = getRoomWallFinishDepths(room);
   const outline = getRoomOutlineInsideFinishes({
@@ -225,6 +243,12 @@ export function isPlacementContainedInRoom({
     w: room.geometry.width,
     d: room.geometry.depth,
   }, depths);
+  // Furniture in a drawn or imported room: its real footprint 2 cm off the walls as the 3D view draws them (a door's or a
+  // window's reveal and the wall over it counted as wall), and nothing else: the clamp keeps to the same shapes.
+  const context = builtIn ? null : getFurnitureRoomContext(room, planRooms, canonicalModel?.floors);
+  const exact = context && isFurnitureClearInRoom(outline, position, rotationY, dimensions, context);
+  if (typeof exact === "boolean") return exact;
+  if (findCanonicalPlacementWall(canonicalModel, room, position, rotationY, dimensions)) return false;
   return isCatalogPlacementLocalFootprintInsideRoom({
     room: { id: room.id, name: room.name, ...outline, ...boundsHolding(outline, depths), x: 0, z: 0 },
     position,
@@ -272,6 +296,10 @@ export function useDesignPagePlacementRoomQueries({
       [houseRoomById, canonicalModel]
     );
 
+  // Furniture's clamp knows the plan's rooms next door and an imported plan's walls as compiled.
+  const clampToCatalogPlacementRoom = useCallback<ClampToPlacementRoom>((room, x, z, itemWidth, itemDepth, rotationY) =>
+    clampToPlacementRoom(room, x, z, itemWidth, itemDepth, rotationY, houseRoomById, canonicalModel?.floors), [houseRoomById, canonicalModel]);
+
   const placeBuiltInDragInRoom = useCallback<PlaceBuiltInDragInRoom>((room, from, position, rotationY, dimensions) => {
     const [x, z] = getBuiltInDragPlace(room, [from[0], from[2]], position[0], position[2], dimensions.w / 1000, dimensions.d / 1000, rotationY,
       { planRooms: houseRoomById, canonical: canonicalModel, bottom: position[1] });
@@ -283,7 +311,7 @@ export function useDesignPagePlacementRoomQueries({
     canonicalModel,
     queries: {
       placeBuiltInDragInRoom,
-      clampToCatalogPlacementRoom: clampToPlacementRoom,
+      clampToCatalogPlacementRoom,
       catalogPlacementCollidesInRoom,
       findCatalogPlacementBlockerInRoom,
       isCatalogPlacementContainedInRoom,

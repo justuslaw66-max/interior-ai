@@ -450,7 +450,8 @@ assert.deepEqual([sharedDoor.room.id, sharedDoor.panelDepth], ["a", 0.044]);
 
 // The wiring: the active room's clamp, the checks' callers, the 3D window outline and the inside corners.
 const read = (path: string) => readFileSync(path, "utf8");
-assert.match(read("lib/useDesignPageHousePlanState.ts"), /clampToRoomInsideFinishes\([\s\S]*?getRoomWallFinishDepths\(activeRoom\)\s*\)/);
+// Its panels' depths, and furniture's room after them (lib/furniture-room-context.ts).
+assert.match(read("lib/useDesignPageHousePlanState.ts"), /clampToRoomInsideFinishes\([\s\S]*?getRoomWallFinishDepths\(activeRoom\),\s*furnitureRoomOf\(activeRoom[^)]*\)\s*\)/);
 // An item dragged into another room is clamped to that room's own shape, columns and panels (clampToPlacementRoom(targetRoom),
 // as the line's clampToRoomInsideFinishes call there was): in a drawn L with a 44 mm east panel and a column, a sofa pushed
 // past the east wall stops half the wall plus 2 cm off the panel, and one dropped on the column is moved off it.

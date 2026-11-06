@@ -9,6 +9,7 @@ import {
   RECTANGULAR_WALL_FACE_IDS,
 } from "@/lib/surface-settings";
 import { parseWallPanelId } from "@/lib/wall-panel-ids";
+import type { OutlineEdges } from "@/lib/room-outline-edges";
 
 /**
  * How far each wall's laminate panel stands into a room, so the room is measured to the panel's face (J, 29 Oct 2026).
@@ -226,6 +227,27 @@ export function getRoomWallFinishDepths(room: WallFinishRoom | null | undefined)
 /** Each face's laminate depth alone, without an imported room's wall corrections: what the panels themselves are. */
 export function getRoomWallPanelDepths(room: WallFinishRoom | null | undefined): RoomWallFinishDepths {
   return readRoomDepths(room)?.panels ?? NO_WALL_FINISH_DEPTHS;
+}
+
+// A room's edges while its outline, panels and walls are the same (the clamp runs on every frame of a drag); a few per outline,
+// as rooms may share one.
+const edgesByOutline = new WeakMap<readonly RoomPlanPolygonPoint[], OutlineEdges[]>();
+
+/**
+ * A drawn or imported room's outline's edges, for its furniture to keep 2 cm off its walls as its 3D view draws them
+ * (lib/furniture-room-fit.ts): whether it is an imported plan's, its walls' thickness and each edge's laminate depth. None for
+ * a rectangle or an L, whose clamp is the line's.
+ */
+export function getRoomOutlineEdges(room: WallFinishRoom): OutlineEdges | undefined {
+  const outline = room.planPolygon ?? room.polygon;
+  if (!outline || roomShapeOf(room) !== "custom_polygon" || outline.length < 3) return undefined;
+  const panels = getRoomWallPanelDepths(room), imported = typeof room.floorElevationMm === "number", wallThickness = roomWallThickness(room);
+  const known = edgesByOutline.get(outline) ?? [];
+  const kept = known.find((edges) => edges.source === panels && edges.imported === imported && edges.wallThickness === wallThickness);
+  if (kept) return kept;
+  const edges: OutlineEdges = { outline, wallThickness, imported, panels: outline.map((_, index) => panels[`wall-${index}`] ?? 0), source: panels };
+  edgesByOutline.set(outline, [edges, ...known].slice(0, 4));
+  return edges;
 }
 
 /** Whether any of the room's walls has a laminate standing off it. */
