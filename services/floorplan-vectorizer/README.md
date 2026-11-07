@@ -187,6 +187,14 @@ reader unavailable: …`). Its model files ship inside its package, installed by
 (its own `opencv-python` would clash with `opencv-python-headless`); the doctor checks it reads a word from the image
 alone. For a local venv: `pip install -r requirements.txt && pip install --no-deps rapidocr_onnxruntime==1.3.24`.
 
+The topology clean-up (8 Nov 2026, model first, workstream 1; `FLOOR_PLAN_TOPOLOGY_CLEANUP=1`, off unless set) runs in
+the app's import, not here: after the document is built from this evidence,
+`lib/floor-plan-imports/vectorizer-topology-cleanup.ts` squares walls within 2 degrees of square (each logged), merges
+walls running straight on, gives a short piece the thickness of the wall it runs into, folds a piece lying along a wall
+into it, joins free wall ends onto a wall end or wall ahead of them (a corner or a T), and drops short pieces that touch
+nothing, undoing any edit the compiler would refuse. What it did goes in the job's `topologyCleanup` metric.
+`tools/score/topology.py` scores the result per plan.
+
 Everything runs on the worker; page bytes are written to a private temporary folder that is removed afterwards.
 Development history, scoring tools, truth files and test plans live in the main checkout's copy of this folder
 (`APP-EXPORT.md`, `TUNING.md`, `tools/`); this copy holds only what the worker runs.

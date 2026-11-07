@@ -1,8 +1,9 @@
 #!/bin/bash
 # Corrections per plan for a folder of exporter evidence (the score harness: document-from-evidence.ts, then
-# corrections.py). Run from the root of a checkout of the app:
+# corrections.py), and the walls' topology per plan (topology.py). Run from the root of a checkout of the app:
 #   bash services/floorplan-vectorizer/tools/score/score.sh <evidence dir> <out dir> [corrections.py options, e.g. -v]
-# Writes <out>/docs.json (the app's documents, summarised) and <out>/corrections.json, and prints the table.
+# Writes <out>/docs.json (the app's documents, summarised), <out>/corrections.json and <out>/topology.json, and prints
+# both tables. FLOOR_PLAN_TOPOLOGY_CLEANUP=1 scores the documents with the topology clean-up on.
 # TS_RUN picks another TypeScript runner (default: the checkout's ts-node with tsconfig-paths); PY another python3.
 # The sealed plans are scored as numbers only. No network, no git; writes only under <out>.
 set -euo pipefail
@@ -22,3 +23,4 @@ else
 fi
 "$PY" "$HERE/corrections.py" --docs="$OUT/docs.json" --ev="$EV" --truth="$HERE/truth-reviewed,$HERE/truth-unreviewed" \
   --sealed="${SEALED_PLANS:-$SEALED}" --json="$OUT/corrections.json" "$@"
+"$PY" "$HERE/topology.py" --docs="$OUT/docs.json" --sealed="${SEALED_PLANS:-$SEALED}" --json="$OUT/topology.json"

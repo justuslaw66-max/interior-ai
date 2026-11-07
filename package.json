@@ -224,6 +224,7 @@
     "test:floor-plan-cad-adapters": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-cad-adapters.ts",
     "floor-plan:vectorizer": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/run-floor-plan-vectorizer.ts",
     "test:floor-plan-vectorizer-evidence": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-vectorizer-evidence.ts",
+    "test:floor-plan-topology-cleanup": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-topology-cleanup.ts",
     "test:floor-plan-vectorizer-pdf-pages": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-vectorizer-pdf-pages.ts",
     "test:floor-plan-detection-evidence": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-detection-evidence.ts",
     "test:floor-plan-consumer-auto-extraction": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-consumer-auto-extraction.ts",

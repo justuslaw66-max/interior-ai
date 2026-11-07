@@ -16,9 +16,13 @@ later round measures against the same tool.
   delete for rooms; add and delete for doors and windows; and set for the scale. The docstring has every rule. A
   "strict" column adds the near-misses: a door read as a doorway, extra doorways and windows, and names that differ
   only in a number.
+- `topology.py` (8 Nov 2026): the walls' topology per plan, on the same documents - unjoined wall ends, stubs,
+  slivers, walls lying along each other, unclosed rooms, openings off a wall, and the compiler's errors (must stay 0).
+  The docstring has every rule. `document-from-evidence.ts` writes each document's wall graph (`graph`) and, with
+  `FLOOR_PLAN_TOPOLOGY_CLEANUP=1`, what the clean-up did (`cleanup`).
 - `docpic.py`: draws the app's document over the plan, with the corrections listed under it, for checking a count
   by eye.
-- `score.sh <evidence dir> <out dir>`: runs both steps (from the checkout's root).
+- `score.sh <evidence dir> <out dir>`: runs the steps (from the checkout's root): documents, corrections, topology.
 - `truth-reviewed/`: copies of the 15 dev and gate truth files J reviewed (`tools/truth-rooms/` on J's Mac).
   `truth-unreviewed/`: the 59 dev s-plan files Claude typed on 9 Oct. Both READMEs say more.
 - `ab/`: the blind A/B harness for the clean drawing (its own README).
