@@ -47,9 +47,34 @@ model Design {
   user               User?                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   floorPlanImportJob FloorPlanImportJob?       @relation("FloorPlanAppliedDesign")
   floorPlanReference FloorPlanDesignReference?
+  checkpoints        DesignCheckpoint[]
 
   @@index([userId])
   @@index([anonymousId])
+}
+
+/// An earlier version of a design the owner can restore: the design as it stood before a save
+/// overwrote it (at most one every 10 minutes) and before a restore. Kept: the newest 20 plus the
+/// newest of each of the last 14 days (lib/design-checkpoints.ts). Never holds the private
+/// floor-plan image link (`snapshot.floorPlan.underlay`); a restore keeps the design's current one.
+model DesignCheckpoint {
+  id              String   @id @default(cuid())
+  designId        String
+  createdAt       DateTime @default(now())
+  /// "save" (before a save overwrote it) or "restore" (before a restore replaced it).
+  reason          String   @db.VarChar(32)
+  /// The design's revision (`Design.updatedAt`) this copy was of.
+  sourceUpdatedAt DateTime
+  title           String
+  roomWidth       Float
+  roomDepth       Float
+  items           Json
+  zones           Json?
+  savedViews      Json?
+  snapshot        Json?
+  design          Design   @relation(fields: [designId], references: [id], onDelete: Cascade)
+
+  @@index([designId, createdAt])
 }
 
 model ShopifyOrder {

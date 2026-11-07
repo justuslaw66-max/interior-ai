@@ -7,6 +7,7 @@ import { buildDesignUpdatePayload, withStoredDesignRename } from "@/lib/design-r
 import { sanitizePrivateFloorPlanUnderlayForSave } from "@/lib/floor-plan-imports/retention";
 import { projectSharedDesignTransport } from "@/lib/shared-design-snapshot";
 import { syncFloorPlanDesignReference } from "@/lib/floor-plan-design-reference";
+import { recordDesignCheckpoint } from "@/lib/design-checkpoints";
 import {
   ApiBoundaryError,
   apiErrorResponse,
@@ -117,10 +118,7 @@ export async function PUT(
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { plan: true },
-    });
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { plan: true } });
     const isProUser = user?.plan === "pro";
     const itemsArr = Array.isArray(items) ? items : [];
     if (!isProUser && itemsArr.length > 20) {
@@ -145,6 +143,7 @@ export async function PUT(
           })
         ).snapshot as Prisma.InputJsonValue;
       }
+      await recordDesignCheckpoint(transaction, id, "save"); // rolled back with the save on a conflict
       let saved;
       if (typeof expectedUpdatedAt === "string") {
         const result = await transaction.design.updateMany({

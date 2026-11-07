@@ -7305,7 +7305,7 @@ for (const mutate of [
       transportAttestationSha256: null,
       transportVerificationStatus: "verified-live",
       imageClassification: null,
-      migrationCount: 43,
+      migrationCount: 44,
       finalState: "stable-absence-verified",
       targetAbsent: true,
     },

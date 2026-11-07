@@ -52,6 +52,7 @@ export function buildDesignPageDialogLayerAdapter({
       // Download stays open while its export briefly turns on Client Preview to capture the scene.
       download: dialogs.download,
       designRename: dialogs.designRename,
+      earlierVersions: dialogs.earlierVersions,
       roomRename: dialogs.roomRename,
       planAnnotation: dialogs.planAnnotation,
       catalogPlacement: dialogs.catalogPlacement,

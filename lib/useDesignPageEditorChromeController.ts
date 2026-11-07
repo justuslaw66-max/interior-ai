@@ -65,6 +65,8 @@ export type UseDesignPageEditorChromeControllerInput = {
       openNewPlan: CommandBarActions["onNewPlan"];
       /** Opens Rename design for the design's name in the bar, or for More below `xl`. */
       openDesignRename: () => void;
+      /** Earlier versions, for a design in the account (`lib/useDesignPageEarlierVersions.ts`). */
+      openEarlierVersions?: () => void;
       setFeedbackOpen: Dispatch<SetStateAction<boolean>>;
       setDownloadOpen: Dispatch<SetStateAction<boolean>>;
       setUpgradeReason: (reason: "designer") => void;
@@ -205,14 +207,14 @@ export function useDesignPageEditorChromeController({
           onPlan: actions.navigation.plan,
           onFurnish: actions.navigation.furnish,
           onShop: actions.navigation.shop,
-          onUndo: actions.history.undo,
-          onRedo: actions.history.redo,
+          onUndo: actions.history.undo, onRedo: actions.history.redo,
           onToggleDesignSidebar: toggleDesignSidebar,
           onViewModeChange: actions.navigation.changeViewMode,
           onToggleDesignerMode: toggleDesignerMode,
           onToggleClientPreview: toggleClientPreview,
           onViewPlans: openPlans, onGetPro: getPro,
           onNewPlan: actions.dialogs.openNewPlan, onRenameDesign: actions.dialogs.openDesignRename,
+          onOpenEarlierVersions: actions.dialogs.openEarlierVersions,
           onManageBilling: manageBilling, onFeedback: openFeedback,
           onOpenMyDesigns: () => void leave.openMyDesigns(),
           onSave: save,
