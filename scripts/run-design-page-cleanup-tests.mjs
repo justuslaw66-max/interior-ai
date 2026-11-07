@@ -66,6 +66,7 @@ const typescriptGuardFiles = [
   "test-design-page-selection-transforms.ts",
   "test-design-page-selection-workspace-registration.ts",
   "test-design-page-share-link.ts",
+  "test-design-page-unsent-edits.ts",
   "test-design-page-viewport-workspace-read-model.ts",
   "test-design-page-viewport-workspace-registration.ts",
   "test-design-page-viewport-overlay-layer.ts",

@@ -8,6 +8,8 @@ export type EditorSaveStatus = {
   detail: string;
   tone: "error" | "saving" | "saved" | "pending";
   canRetry: boolean;
+  /** What the bar's action says: "Retry", or "Sign in" when the sign-in has expired. */
+  retryLabel?: "Retry" | "Sign in";
   lastSuccessfulSaveAt: number | null;
   /**
    * The design lives in the account (it was saved there once), so it saves itself and the bar
@@ -32,6 +34,28 @@ export type DesignPageSaveStatusInput = {
 type SaveStatusCase = Omit<EditorSaveStatus, "lastSuccessfulSaveAt" | "cloudBacked">;
 
 /**
+ * The save error an expired sign-in leaves (a save answered 401). The edits stay in this browser
+ * (`design-page-unsent-edits.ts`), and the bar's action signs in again; reopening the design then
+ * sends them.
+ */
+export const SIGNED_OUT_SAVE_ERROR = "Signed out. Sign in to save; your changes are kept on this device.";
+
+/** A save the account refused: an expired sign-in asks to sign in again, anything else offers Retry. */
+function describeCloudSaveFailure(
+  error: string,
+  lastLocalAutosaveAt: number | null,
+  isAuthenticated: boolean
+): SaveStatusCase {
+  if (error === SIGNED_OUT_SAVE_ERROR) {
+    return { kind: "failed", source: "cloud", label: "Signed out", detail: SIGNED_OUT_SAVE_ERROR,
+      tone: "error", canRetry: true, retryLabel: "Sign in" };
+  }
+  const copy = lastLocalAutosaveAt ? ` A copy was saved on this device ${formatTimeAgo(lastLocalAutosaveAt)}.` : "";
+  return { kind: "failed", source: "cloud", label: "Not saved", detail: `${error}${copy}`,
+    tone: "error", canRetry: isAuthenticated };
+}
+
+/**
  * What the bar says about saving (UX audit SX5): "Saving…", "Saved" (in the account), "Saved on
  * this device" (guests, and designs not yet saved to the account) or "Not saved", with Retry when
  * it can help. The detail is the tooltip. A design that hasn't saved anything yet says nothing.
@@ -47,11 +71,7 @@ function describeSaveStatus(input: DesignPageSaveStatusInput): SaveStatusCase {
     return { kind: "conflict", source: "cloud", label: "Not saved",
       detail: "This design changed in another session. Choose which copy to keep.", tone: "error", canRetry: false };
   }
-  if (lastCloudSaveError) {
-    const copy = lastLocalAutosaveAt ? ` A copy was saved on this device ${formatTimeAgo(lastLocalAutosaveAt)}.` : "";
-    return { kind: "failed", source: "cloud", label: "Not saved", detail: `${lastCloudSaveError}${copy}`,
-      tone: "error", canRetry: input.isAuthenticated };
-  }
+  if (lastCloudSaveError) return describeCloudSaveFailure(lastCloudSaveError, lastLocalAutosaveAt, input.isAuthenticated);
   if (lastLocalSaveError) {
     return { kind: "failed", source: "local", label: "Not saved", detail: lastLocalSaveError, tone: "error", canRetry: true };
   }

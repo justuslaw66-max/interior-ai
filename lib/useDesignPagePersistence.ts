@@ -15,7 +15,8 @@ import { resolveDesignTitle, withoutDesignTitle } from "@/lib/design-title";
 import { userFacingErrorMessage } from "@/lib/user-facing-error";
 import { executeDesignPageCloudWrite } from "@/lib/design-page-cloud-write-execution";
 import { createDesignPageCloudWriteQueue } from "@/lib/design-page-cloud-write-queue";
-import { getDesignPageSaveStatus } from "@/lib/design-page-save-status";
+import { getDesignPageSaveStatus, SIGNED_OUT_SAVE_ERROR } from "@/lib/design-page-save-status";
+import { useDesignPageUnsentEdits } from "@/lib/useDesignPageUnsentEdits";
 import { useDesignPageLeaveSave } from "@/lib/useDesignPageLeaveSave";
 import { writeValidatedLocalBackup } from "@/lib/design-page-local-backup-recovery";
 import type { NamedCameraView, Style } from "@/lib/design-page-types";
@@ -204,6 +205,13 @@ export function useDesignPagePersistence({
   const { currentWriteIsBlocked: currentCloudWriteIsBlocked,
     detach: detachCloudBaseline, stageWrite: stageCloudWriteBaseline } =
     cloudBaselineController.actions;
+  const hasPendingCloudSnapshotChanges = Boolean(designId && cloudBaseline.status === "acknowledged" &&
+    lastPersistedSnapshotFingerprint && currentStoredDesignFingerprint !== lastPersistedSnapshotFingerprint);
+  const { noteLoadedCloudDesign, discardUnsentEdits, keepUnsentEdits, forgetUnsentEdits } =
+    useDesignPageUnsentEdits({ designId, lastCloudRevision, hasPendingCloudSnapshotChanges,
+    localBackupHydrated, cloudBaseline, cloudSaveConflict, savedViews, currentStoredDesignFingerprint,
+    getStoredDesignForPersistence,
+    actions: { setDesignSnapshot, hydratePersistedFloorPlanState, setSavedViews, setCloudSaveConflict, showRuleToast } });
 
   const invalidateCloudWrites = useCallback(() => { cloudWriteQueue.invalidate(); setIsSaving(false); }, [cloudWriteQueue]);
 
@@ -218,7 +226,8 @@ export function useDesignPagePersistence({
 
   const recordCloudSaveFailure = useCallback(
     (error: unknown, targetDesignId: string | null, fallback: string) => {
-      const message = userFacingErrorMessage(error, fallback);
+      const signedOut = error instanceof DesignApiError && error.kind === "unauthorized";
+      const message = signedOut ? SIGNED_OUT_SAVE_ERROR : userFacingErrorMessage(error, fallback);
       setLastCloudSaveError(message);
       if (
         targetDesignId &&
@@ -372,7 +381,7 @@ export function useDesignPagePersistence({
       setStyle,
       setBudget,
       fetchShareStatus,
-      showRuleToast,
+      showRuleToast, noteLoadedCloudDesign,
     },
   });
   const { save: saveConflictAsNewCopy, cancel: cancelConflictCopy } =
@@ -416,6 +425,7 @@ export function useDesignPagePersistence({
       isWorking: true,
       resolutionError: null,
     });
+    discardUnsentEdits(conflict.designId);
     const result = await loadDesignAfterCancellingConflictCopy(conflict.designId);
     if (result === "loaded") {
       setLastCloudSaveError(null);
@@ -423,6 +433,7 @@ export function useDesignPagePersistence({
       showRuleToast("Newer cloud copy loaded");
       return;
     }
+    keepUnsentEdits(conflict.designId);
     setCloudSaveConflict((previous) =>
       previous?.designId === conflict.designId
         ? {
@@ -433,7 +444,11 @@ export function useDesignPagePersistence({
           }
         : previous
     );
-  }, [cloudSaveConflict, loadDesignAfterCancellingConflictCopy, showRuleToast]);
+  }, [cloudSaveConflict, discardUnsentEdits, keepUnsentEdits, loadDesignAfterCancellingConflictCopy, showRuleToast]);
+  const saveConflictCopy = useCallback(async () => {
+    const sourceDesignId = cloudSaveConflict?.designId;
+    if (await saveConflictAsNewCopy() && sourceDesignId) forgetUnsentEdits(sourceDesignId);
+  }, [cloudSaveConflict, forgetUnsentEdits, saveConflictAsNewCopy]);
 
   const claimGuestDesign = useCallback(async () => {
     if (isAuthenticated) return;
@@ -642,27 +657,10 @@ export function useDesignPagePersistence({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [
-    cloudSaveDelayMs,
-    cloudRetryNonce,
-    cloudSaveConflict,
-    cloudBaseline,
-    cloudWriteQueue,
-    currentCloudWriteIsBlocked,
-    currentStoredDesignFingerprint,
-    designId,
-    fingerprintStoredDesign,
-    getStoredDesignForPersistence,
-    items,
-    lastPersistedSnapshotFingerprint,
-    localBackupHydrated,
-    recordCloudSaveFailure,
-    roomDepth,
-    roomWidth,
-    savedViews,
-    stageCloudWriteBaseline,
-    zones,
-  ]);
+  }, [cloudSaveDelayMs, cloudRetryNonce, cloudSaveConflict, cloudBaseline, cloudWriteQueue,
+    currentCloudWriteIsBlocked, currentStoredDesignFingerprint, designId, fingerprintStoredDesign,
+    getStoredDesignForPersistence, items, lastPersistedSnapshotFingerprint, localBackupHydrated,
+    recordCloudSaveFailure, roomDepth, roomWidth, savedViews, stageCloudWriteBaseline, zones]);
 
   useEffect(() => {
     if (designId || isAuthenticated) return;
@@ -701,13 +699,6 @@ export function useDesignPagePersistence({
     style,
   ]);
 
-  const hasPendingCloudSnapshotChanges = Boolean(
-    designId &&
-      cloudBaseline.status === "acknowledged" &&
-      lastPersistedSnapshotFingerprint &&
-      currentStoredDesignFingerprint !== lastPersistedSnapshotFingerprint
-  );
-
   const saveStatus = useMemo(
     () =>
       getDesignPageSaveStatus({
@@ -736,6 +727,7 @@ export function useDesignPagePersistence({
 
   const retrySaveStatus = useCallback(async () => {
     if (cloudSaveConflict) return;
+    if (lastCloudSaveError === SIGNED_OUT_SAVE_ERROR) return requestSignIn();
     if (lastCloudSaveError && isAuthenticated) {
       if (designId) {
         setLastCloudSaveError(null);
@@ -754,15 +746,8 @@ export function useDesignPagePersistence({
     } else {
       showRuleToast("Local backup failed");
     }
-  }, [
-    designId,
-    cloudSaveConflict,
-    isAuthenticated,
-    lastCloudSaveError,
-    saveDesignToCloud,
-    showRuleToast,
-    writeLocalDesignBackup,
-  ]);
+  }, [designId, cloudSaveConflict, isAuthenticated, lastCloudSaveError, requestSignIn, saveDesignToCloud,
+    showRuleToast, writeLocalDesignBackup]);
 
   // Leaving the editor for My designs saves first; see useDesignPageLeaveSave.
   const saveBeforeLeaving = useDesignPageLeaveSave({
@@ -787,7 +772,7 @@ export function useDesignPagePersistence({
       saveDesignToCloud,
       preserveCurrentDesign,
       detachCurrentDesignForNewDraft,
-      saveConflictAsNewCopy,
+      saveConflictAsNewCopy: saveConflictCopy,
       reloadCloudAfterConflict,
       retrySaveStatus,
       loadDesign: loadDesignAfterCancellingConflictCopy,

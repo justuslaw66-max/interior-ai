@@ -67,6 +67,8 @@ type CloudLoadControllerInput = {
     setStyle: Dispatch<SetStateAction<Style>>;
     setBudget: Dispatch<SetStateAction<Budget>>;
     fetchShareStatus: (id?: string) => Promise<void>;
+    /** The account copy just opened, to bring back this browser's unsent edits to it. */
+    noteLoadedCloudDesign?: (data: LoadedDesignTransport, loaded: { fingerprint: string; revision: string }) => void;
     showRuleToast: (message: string) => void;
   };
 };
@@ -153,6 +155,7 @@ function commitLoadedCloudDesign(
   }
   void actions.fetchShareStatus(data.id);
   actions.showRuleToast(`Loaded ${presentation.title}`);
+  actions.noteLoadedCloudDesign?.(data, normalized);
 }
 
 function handleCloudLoadFailure(
