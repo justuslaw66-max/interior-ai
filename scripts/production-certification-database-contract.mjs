@@ -963,7 +963,7 @@ function semanticEvidenceIssues(evidence) {
   if (
     hasState(evidence, "migrated") &&
     (evidence.migration?.owner !== "prisma-migrate-deploy" ||
-      evidence.migration?.count !== 43 ||
+      evidence.migration?.count !== 44 ||
       !isSha256(evidence.migration?.sourceAggregateSha256) ||
       !isSha256(evidence.migration?.appliedNamesSha256) ||
       evidence.migration?.targetIdentitySha256 !== evidence.database.identitySha256)
