@@ -59,6 +59,7 @@ function allowExpectedHttpFailure(input: {
     reason: input.reason,
   });
   const descriptions: Record<number, string> = {
+    401: "Unauthorized",
     409: "Conflict",
     503: "Service Unavailable",
   };
@@ -876,6 +877,215 @@ test.describe("3. Save + Reload Persistence", () => {
       expect(loadedFingerprint).toMatch(/^[a-f0-9]{8}$/);
     } finally {
       await cleanupBetaSeed(seed.userId);
+    }
+  });
+});
+
+// Edits the account never took stay in this browser per design (lib/design-page-unsent-edits.ts)
+// and come back when the design opens again: saved on the revision they were made on, or, when
+// the account copy changed since, the conflict dialog asks which copy to keep.
+test.describe("3b. Unsent edits survive reopening a design", () => {
+  test.afterAll(async () => {
+    await disconnectBetaPrismaClient();
+  });
+
+  async function refuseDesignWrites(
+    page: Page,
+    designId: string,
+    status: 401 | 503,
+  ) {
+    allowExpectedHttpFailure({
+      page, method: "PUT", pathname: `/api/designs/${designId}`, status,
+      reason: status === 401
+        ? "an expired sign-in refuses the autosave"
+        : "a dropped connection loses the autosave",
+    });
+    const route = `**/api/designs/${designId}`;
+    await page.route(route, async (request) => {
+      if (request.request().method() !== "PUT") return request.continue();
+      await request.fulfill({
+        status,
+        contentType: "application/json",
+        body: JSON.stringify(status === 401
+          ? { error: "Sign in to continue.", code: "UNAUTHORIZED" }
+          : { error: "Cloud save is temporarily unavailable.", code: "INTERNAL_ERROR" }),
+      });
+    });
+    return () => page.unroute(route);
+  }
+
+  async function editWidthTo5900(page: Page) {
+    const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+    await widthInput.fill("5900");
+    await widthInput.press("Enter");
+    await expect(widthInput).toHaveValue("5900");
+    await expect(page.getByTestId("save-status")).toHaveAttribute("data-status", "failed", {
+      timeout: 30_000,
+    });
+  }
+
+  // Another device renames the design, so the account copy moves on without this browser's edit.
+  async function renameOnAnotherDevice(page: Page, designId: string) {
+    const current = await page.request.get(`/api/designs/${encodeURIComponent(designId)}`);
+    const body = await current.json() as Record<string, unknown>;
+    const renamed = await page.request.put(`/api/designs/${encodeURIComponent(designId)}`, {
+      data: {
+        items: body.items, zones: body.zones, savedViews: body.savedViews,
+        roomWidth: body.roomWidth, roomDepth: body.roomDepth, snapshot: body.snapshot,
+        title: "Renamed on another device", expectedUpdatedAt: body.updatedAt,
+      },
+    });
+    expect(renamed.status()).toBe(200);
+  }
+
+  async function storedWidth(page: Page, designId: string) {
+    const response = await page.request.get(`/api/designs/${encodeURIComponent(designId)}`);
+    expect(response.status()).toBe(200);
+    return legacyApiToSnapshot(await response.json()).rooms[0]?.geometry.width;
+  }
+
+  test("a reload after a failed save brings the edit back and saves it", async ({ page }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      const allowWrites = await refuseDesignWrites(page, seed.designId, 503);
+      await editWidthTo5900(page);
+      expect(await storedWidth(page, seed.designId)).toBe(5.8);
+
+      await allowWrites();
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5900", {
+        timeout: 30_000,
+      });
+      await expect.poll(() => storedWidth(page, seed.designId), { timeout: 60_000 }).toBe(5.9);
+      await expect(page.getByTestId("save-status")).toHaveAttribute("data-status", "saved", {
+        timeout: 30_000,
+      });
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("an expired sign-in asks to sign in and keeps the edit for the next visit", async ({ page }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      const allowWrites = await refuseDesignWrites(page, seed.designId, 401);
+      await editWidthTo5900(page);
+      const saveStatus = page.getByTestId("save-status");
+      await expect(saveStatus).toHaveAttribute("aria-label", /^Signed out\. /);
+      await expect(page.getByTestId("save-status-retry")).toHaveText("Sign in");
+
+      // Signing in again brings the person back to the design, as this reload does.
+      await allowWrites();
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect.poll(() => storedWidth(page, seed.designId), { timeout: 60_000 }).toBe(5.9);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("another device's save in between asks which copy to keep", async ({ page }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      const allowWrites = await refuseDesignWrites(page, seed.designId, 503);
+      await editWidthTo5900(page);
+      await allowWrites();
+
+      await renameOnAnotherDevice(page, seed.designId);
+
+      const dialog = page.getByTestId("cloud-save-conflict-dialog");
+      // Twice: closing or reloading with the dialog open must not turn the edit into one made on
+      // the renamed copy, which autosave would then send over it.
+      for (let reopen = 0; reopen < 2; reopen += 1) {
+        await page.reload({ waitUntil: "domcontentloaded" });
+        await expect(dialog).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByTestId("cloud-save-conflict-message")).toContainText("weren't saved");
+        await page.waitForTimeout(CLOUD_AUTOSAVE_DELAY_MS * 3);
+        expect(await storedWidth(page, seed.designId)).toBe(5.8);
+      }
+
+      await page.getByTestId("cloud-conflict-reload").click();
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5800");
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expectCloudDesignReady(page, seed.designId);
+      await readStableFingerprint(page);
+      await expect(dialog).toBeHidden();
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5800");
+      expect(await storedWidth(page, seed.designId)).toBe(5.8);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("saving the reopened edit as a copy leaves the original as the account has it", async ({ page }) => {
+    test.setTimeout(180_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      const allowWrites = await refuseDesignWrites(page, seed.designId, 503);
+      await editWidthTo5900(page);
+      await allowWrites();
+      await renameOnAnotherDevice(page, seed.designId);
+
+      await page.reload({ waitUntil: "domcontentloaded" });
+      const dialog = page.getByTestId("cloud-save-conflict-dialog");
+      await expect(dialog).toBeVisible({ timeout: 30_000 });
+      const copyCreated = page.waitForResponse((response) =>
+        response.request().method() === "POST" && new URL(response.url()).pathname === "/api/designs");
+      await page.getByTestId("cloud-conflict-save-copy").click();
+      const copy = await (await copyCreated).json() as { id: string };
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect.poll(() => storedWidth(page, copy.id), { timeout: 60_000 }).toBe(5.9);
+
+      await page.goto(`/design?designId=${encodeURIComponent(seed.designId)}`, { waitUntil: "domcontentloaded" });
+      await expectCloudDesignReady(page, seed.designId);
+      await readStableFingerprint(page);
+      await expect(dialog).toBeHidden();
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5800");
+      expect(await storedWidth(page, seed.designId)).toBe(5.8);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("opening another design keeps the first design's unsent edit", async ({ page }) => {
+    test.setTimeout(180_000);
+    const email = `unsent-switch-${Date.now()}@example.com`;
+    const seedA = await createBetaSeedDesign({ email });
+    try {
+      const seedB = await createBetaSeedDesign({ email });
+      await loadSeedDesign(page, seedA);
+      await expectCloudDesignReady(page, seedA.designId);
+      const allowWrites = await refuseDesignWrites(page, seedA.designId, 503);
+      await editWidthTo5900(page);
+      await allowWrites();
+
+      await page.goto(`/design?designId=${encodeURIComponent(seedB.designId)}`, {
+        waitUntil: "domcontentloaded",
+      });
+      await expectCloudDesignReady(page, seedB.designId);
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5800");
+
+      await page.goto(`/design?designId=${encodeURIComponent(seedA.designId)}`, {
+        waitUntil: "domcontentloaded",
+      });
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5900", {
+        timeout: 30_000,
+      });
+      await expect.poll(() => storedWidth(page, seedA.designId), { timeout: 60_000 }).toBe(5.9);
+      expect(await storedWidth(page, seedB.designId)).toBe(5.8);
+    } finally {
+      await cleanupBetaSeed(seedA.userId);
     }
   });
 });

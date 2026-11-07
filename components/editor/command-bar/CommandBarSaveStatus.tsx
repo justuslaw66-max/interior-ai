@@ -19,7 +19,7 @@ type CommandBarSaveStatusProps = {
 /**
  * The save status, a line under the design's name at every width (UX 4c and 4d, the approved
  * TopBar and PhonePlan mockups):
- * "Saving…", "✓ Saved", "Saved on this device" or "Not saved" with Retry. The detail is the
+ * "Saving…", "✓ Saved", "Saved on this device", "Not saved" with Retry, or "Signed out" with Sign in. The detail is the
  * tooltip and part of what a screen reader hears; a design that hasn't saved yet says nothing.
  */
 export function CommandBarSaveStatus({
@@ -53,7 +53,7 @@ export function CommandBarSaveStatus({
           className="shrink-0 underline"
           onClick={onRetrySaveStatus}
         >
-          Retry
+          {saveStatus.retryLabel ?? "Retry"}
         </Button>
       ) : null}
     </div>
