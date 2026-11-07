@@ -210,6 +210,29 @@ function validateShare(value: unknown): { shareToken: string; shareEnabled?: boo
   };
 }
 
+export type DesignCheckpointSummary = {
+  id: string;
+  createdAt: string;
+  reason: "save" | "restore";
+  title: string;
+};
+
+function validateDesignCheckpoints(value: unknown): DesignCheckpointSummary[] | null {
+  if (!isRecord(value) || !Array.isArray(value.checkpoints)) return null;
+  const checkpoints: DesignCheckpointSummary[] = [];
+  for (const entry of value.checkpoints) {
+    if (!isRecord(entry) || !isNonEmptyString(entry.id) || typeof entry.createdAt !== "string") return null;
+    if (!Number.isFinite(Date.parse(entry.createdAt))) return null;
+    checkpoints.push({
+      id: entry.id,
+      createdAt: entry.createdAt,
+      reason: entry.reason === "restore" ? "restore" : "save",
+      title: typeof entry.title === "string" ? entry.title : "",
+    });
+  }
+  return checkpoints;
+}
+
 export const designApi = {
   get(id: string, signal?: AbortSignal) {
     return fetchJson(`/api/designs/${encodeURIComponent(id)}`, {
@@ -258,6 +281,20 @@ export const designApi = {
       signal,
       validate: validateShare,
     });
+  },
+  /** The design's earlier versions, newest first (`lib/design-checkpoints.ts`). */
+  checkpoints(id: string, signal?: AbortSignal) {
+    return fetchJson(`/api/designs/${encodeURIComponent(id)}/checkpoints`, {
+      signal,
+      validate: validateDesignCheckpoints,
+    });
+  },
+  /** Restores an earlier version on the revision the editor holds; the design's new revision. */
+  restoreCheckpoint(id: string, checkpointId: string, expectedUpdatedAt: string, signal?: AbortSignal) {
+    return fetchJson(
+      `/api/designs/${encodeURIComponent(id)}/checkpoints/${encodeURIComponent(checkpointId)}/restore`,
+      { method: "POST", body: { expectedUpdatedAt }, signal, validate: validateSavedDesign }
+    );
   },
   claim(payload: unknown, signal?: AbortSignal) {
     return fetchJson("/api/designs/claim", {

@@ -59,7 +59,7 @@ type EditorCommandBarProps = {
   /** Share and Download show when given handlers. Share saves the design first if it isn't in the cloud. */
   onShare?: () => void; isSharing?: boolean; onDownload?: () => void;
   /** The design's name, at every width, and Rename design, which the phone Menu also offers. */
-  designTitle?: string; onRenameDesign?: () => void;
+  designTitle?: string; onRenameDesign?: () => void; onOpenEarlierVersions?: () => void;
   saveStatus: EditorSaveStatus;
   onRetrySaveStatus: () => void | Promise<void>;
   contextSlot?: ReactNode;
@@ -150,7 +150,7 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
       onOpenMyDesigns={onOpenMyDesigns} onNewPlan={props.onNewPlan}
       onToggleDesignerMode={props.onToggleDesignerMode} onToggleClientPreview={props.onToggleClientPreview}
       onFeedback={props.onFeedback} onDownload={props.onDownload}
-      onRenameDesign={props.onRenameDesign}
+      onRenameDesign={props.onRenameDesign} onOpenEarlierVersions={props.onOpenEarlierVersions}
       onOpenLightingSettings={() => setLightingSettingsOpen(true)} onCloseLightingSettings={closeLightingSettings}
     />
   );
