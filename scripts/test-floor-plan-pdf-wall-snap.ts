@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { validateFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
-import { PdfFillGround, type PdfFace } from "@/lib/floor-plan-imports/pdf-wall-faces";
+import type { RegisteredPageEvidence, SourceVectorPath, SourceVectorSegment } from "@/lib/floor-plan-imports/deterministic-evidence";
+import { PdfFillGround, type PdfFace, pdfPageDrawing } from "@/lib/floor-plan-imports/pdf-wall-faces";
 import { facePairFor, snapImportedWallsToPdf, snapWallsToPdf, wallRuns } from "@/lib/floor-plan-imports/pdf-wall-snap";
 import { authoredApartment } from "./fixtures/scan-to-editable-plan/apartment";
 
@@ -51,6 +52,27 @@ function testSnap() {
   assert.ok(log.shiftsMm.every((shift) => shift === 23));
 }
 
+function testAfterARefusal() {
+  // Two short walls on nearly the same line, not joined, both lying between one face pair: the first snaps onto it,
+  // the second would then overlap the first without a shared corner, so the app's wall rules refuse it. The runs after
+  // that refusal must still take their thickness (the floor is restored from a copy, so walls are found again by id).
+  const document = authoredApartment();
+  const floor = document.floors[0];
+  const provenance = floor.vertices[0].provenance;
+  floor.vertices.push({ id: "pa", xMm: 500, zMm: 3000, provenance }, { id: "pb", xMm: 1500, zMm: 3000, provenance },
+    { id: "pc", xMm: 800, zMm: 3060, provenance }, { id: "pd", xMm: 1800, zMm: 3060, provenance });
+  const template = floor.walls[0];
+  floor.walls.unshift({ ...structuredClone(template), id: "extra-a", path: { kind: "line", startVertexId: "pa", endVertexId: "pb" }, thicknessMm: 100, adjacentRoomIds: [] },
+    { ...structuredClone(template), id: "extra-b", path: { kind: "line", startVertexId: "pc", endVertexId: "pd" }, thicknessMm: 100, adjacentRoomIds: [] });
+  const faces = [...facesFor(authoredApartment(), 0, (id) => (id === "shared" ? 90 : 210)),
+    { axis: "z" as const, at: 2980, from: 400, to: 1900 }, { axis: "z" as const, at: 3080, from: 400, to: 1900 }];
+  const log = snapWallsToPdf(floor, faces, null);
+  assert.ok(log.refused >= 1, "the second short wall is refused");
+  assert.ok(floor.walls.filter((w) => !w.id.startsWith("extra") && w.id !== "shared").every((w) => w.thicknessMm === 210),
+    "walls snapped after the refusal take the drawing's thickness");
+  assert.equal(floor.walls.find((w) => w.id === "shared")?.thicknessMm, 90);
+}
+
 function testLeftAsRead() {
   const document = authoredApartment();
   const before = JSON.stringify(document);
@@ -76,6 +98,30 @@ function testStructural() {
   assert.equal(log.structural, 1);
 }
 
+function testDimensionLines() {
+  // A page at 10 mm a pixel: a wall face at y = 300 and a dimension line at y = 100 with a filled dot at each end. The
+  // dimension line is left out, so it can never pair with a wall's face beside it.
+  const line = (id: string, x0: number, y0: number, x1: number, y1: number): SourceVectorSegment =>
+    ({ id, pageNumber: 1, start: { x: x0, y: y0 }, end: { x: x1, y: y1 }, strokeWidthPx: 1, evidenceKind: "pdf_vector" });
+  const dot = (id: string, x: number, y: number) => [line(`${id}-1`, x - 3, y - 3, x + 3, y - 3), line(`${id}-2`, x + 3, y - 3, x + 3, y + 3),
+    line(`${id}-3`, x + 3, y + 3, x - 3, y + 3)];
+  const dots = [dot("dot-a", 100, 100), dot("dot-b", 600, 100)];
+  const fill = (id: string, segments: SourceVectorSegment[]): SourceVectorPath => ({ id, pageNumber: 1, closed: true, segmentIds: segments.map((s) => s.id),
+    bbox: { left: 0, top: 0, right: 0, bottom: 0 }, rectilinearScore: 1, evidenceKind: "pdf_vector", paintOperation: "fill" });
+  const page: RegisteredPageEvidence = {
+    pageNumber: 1, widthPx: 1000, heightPx: 1000, text: [],
+    vectorSegments: [line("dimension", 100, 100, 600, 100), line("wall-face", 100, 300, 600, 300), ...dots.flat()],
+    vectorPaths: dots.map((segments, i) => fill(`dot-${i}`, segments)),
+    semantics: { roomLabels: [], dimensionLabels: [], openingSymbols: [], notes: [] },
+  };
+  const calibration = { id: "c", sourceId: "s", pageNumber: 1, imageWidthPx: 1000, imageHeightPx: 1000, controlPoints: [
+    { sourcePx: { x: 0, y: 0 }, planMm: { xMm: 0, zMm: 0 } }, { sourcePx: { x: 1000, y: 0 }, planMm: { xMm: 10_000, zMm: 0 } },
+    { sourcePx: { x: 0, y: 1000 }, planMm: { xMm: 0, zMm: 10_000 } }] };
+  const drawing = pdfPageDrawing(page, calibration)!;
+  assert.deepEqual(drawing.faces.map((f) => [f.axis, Math.round(f.at)]), [["z", 3000]], "only the wall's face is kept");
+  assert.equal(drawing.dimensionLines, 1);
+}
+
 function testSwitch() {
   const document = authoredApartment();
   assert.equal(snapImportedWallsToPdf(document, [], {}), "off", "off unless FLOOR_PLAN_PDF_WALL_SNAP=1");
@@ -84,7 +130,9 @@ function testSwitch() {
 
 testPairChoice();
 testSnap();
+testAfterARefusal();
 testLeftAsRead();
 testStructural();
+testDimensionLines();
 testSwitch();
 console.log("floor-plan PDF wall snap: ok");

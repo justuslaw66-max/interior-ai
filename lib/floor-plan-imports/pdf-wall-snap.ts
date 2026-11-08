@@ -86,7 +86,8 @@ function facesAlong(run: Run, faces: PdfFace[]) {
     .filter((f) => f.share >= PDF_WALL_SNAP_LIMITS.minCoverShare);
 }
 
-/** The pair of PDF faces a run lies between: the nearest middle, then the nearest thickness. */
+/** The pair of PDF faces a run lies between: the pair running furthest along it (a wall's faces run its length; a
+ * window's or a kerb's lines only part of it), then the nearest middle, then the nearest thickness. */
 export function facePairFor(run: Run, faces: PdfFace[]) {
   const along = facesAlong(run, faces).sort((a, b) => a.at - b.at);
   const reach = Math.max(run.thicknessMm, PDF_WALL_SNAP_LIMITS.minReachMm);
@@ -95,7 +96,7 @@ export function facePairFor(run: Run, faces: PdfFace[]) {
     const thickness = along[j].at - along[i].at, middle = (along[i].at + along[j].at) / 2;
     if (thickness < PDF_WALL_SNAP_LIMITS.minThicknessMm || thickness > PDF_WALL_SNAP_LIMITS.maxThicknessMm) continue;
     if (Math.abs(middle - run.at) > reach) continue;
-    const cost = Math.abs(middle - run.at) + 0.5 * Math.abs(thickness - run.thicknessMm) - 100 * Math.min(along[i].share, along[j].share);
+    const cost = Math.abs(middle - run.at) + 0.1 * Math.abs(thickness - run.thicknessMm) - 300 * Math.min(along[i].share, along[j].share);
     if (!best || cost < best.cost) best = { middle, thickness, cost };
   }
   return best;
@@ -122,7 +123,9 @@ function snapRun(floor: TopologyFloor, run: Run, pair: { middle: number; thickne
     const delta = line - (run.axis === "x" ? vertex.xMm : vertex.zMm);
     moveVertex(floor, id, run.axis === "x" ? delta : 0, run.axis === "z" ? delta : 0);
   }
-  for (const wall of run.walls) wall.thicknessMm = Math.round(pair.thickness);
+  // By id: a refused run before this one restored the floor from a copy, so the run's own wall objects may be stale.
+  const ids = new Set(run.walls.map((wall) => wall.id));
+  for (const wall of floor.walls) if (ids.has(wall.id)) wall.thicknessMm = Math.round(pair.thickness);
   if (wallsStillValid(floor)) return true;
   restoreFloor(floor, saved);
   return false;
