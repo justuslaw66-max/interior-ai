@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useFloorPlanReviewHistory } from "./useFloorPlanReviewHistory";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type {
   FloorPlanImportStatus,
@@ -135,7 +136,8 @@ export function useConsumerFloorPlanImportSession(input: {
   } = input;
   const runIdRef = useRef(0);
   const [state, setState] = useState<ConsumerFloorPlanImportState>({ kind: "idle" });
-  const [candidate, setCandidate] = useState<FloorPlanDocumentV2 | null>(null);
+  const [candidate, setRawCandidate] = useState<FloorPlanDocumentV2 | null>(null);
+  const { setCandidate, replaceCandidate, history: reviewHistory } = useFloorPlanReviewHistory(candidate, setRawCandidate);
   const [issues, setIssues] = useState<FloorPlanReviewIssue[]>([]);
   const [title, setTitle] = useState("Uploaded floor plan");
 
@@ -149,7 +151,7 @@ export function useConsumerFloorPlanImportSession(input: {
     const uploadController = new AbortController();
     const upload = file ? startFloorPlanUpload(file) : null;
     const isCurrent = () => !controller.signal.aborted && runIdRef.current === runId;
-    setCandidate(null);
+    replaceCandidate(null);
     setIssues([]);
     if (file) setTitle(file.name.replace(/\.[^.]+$/, "") || "Uploaded floor plan");
 
@@ -228,7 +230,7 @@ export function useConsumerFloorPlanImportSession(input: {
           });
         }
         if (!isCurrent()) return;
-        setCandidate(parseFloorPlanImportDocument(job.candidateJson));
+        replaceCandidate(parseFloorPlanImportDocument(job.candidateJson));
         setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
         setState({ kind: "job", job });
       } catch (cause) {
@@ -255,19 +257,15 @@ export function useConsumerFloorPlanImportSession(input: {
       // An upload whose Cancel upload was pressed is left to finish, so the job it makes is cancelled.
       if (!isFloorPlanUploadCancelPending(upload)) uploadController.abort();
     };
-  }, [
-    file,
-    onActiveJobIdChange,
-    onJobUpdate,
-    resumeJobId,
-    trainingBenchmarkOptIn,
-  ]);
+  }, [file, onActiveJobIdChange, onJobUpdate, replaceCandidate, resumeJobId, trainingBenchmarkOptIn]);
 
   return {
     state,
     setState,
     candidate,
     setCandidate,
+    replaceCandidate,
+    reviewHistory,
     issues,
     setIssues,
     title,
