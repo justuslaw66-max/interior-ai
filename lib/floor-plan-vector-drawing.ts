@@ -89,8 +89,9 @@ function annotationPrimitives(floor: CompiledFloorPlanFloorV2): PlanDrawingPrimi
   });
 }
 
-export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, options: PlanDrawingOptions, furniture?: PlanFurnitureDrawingSource): PlanVectorDrawing {
-  const model = compileCanonicalFloorPlanRenderModel(document);
+export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, options: PlanDrawingOptions, furniture?: PlanFurnitureDrawingSource,
+  compiledModel?: ReturnType<typeof compileCanonicalFloorPlanRenderModel>): PlanVectorDrawing {
+  const model = compiledModel ?? compileCanonicalFloorPlanRenderModel(document);
   const floor = model.floors.find(({ id }) => id === options.floorId);
   const compiled = model.compiledScene.floors.find(({ id }) => id === options.floorId);
   if (!floor || !compiled) throw new Error("Choose an existing floor for vector export.");
