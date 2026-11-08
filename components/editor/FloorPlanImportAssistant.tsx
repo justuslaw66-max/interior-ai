@@ -52,7 +52,7 @@ export default function FloorPlanImportAssistant({
     state,
     setState,
     candidate,
-    setCandidate,
+    setCandidate, replaceCandidate, reviewHistory,
     issues,
     setIssues,
     title,
@@ -182,7 +182,7 @@ export default function FloorPlanImportAssistant({
         draft ? "Validating review draft" : "Validating your corrections", { signal }
       );
       signal.throwIfAborted();
-      setCandidate(parseFloorPlanImportDocument(job.candidateJson));
+      replaceCandidate(parseFloorPlanImportDocument(job.candidateJson), { keepHistory: draft }); // a draft keeps its undo
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
       if (draft) setSavedDraftVersion(job.candidateVersion);
@@ -225,7 +225,7 @@ export default function FloorPlanImportAssistant({
         { continueSelectedPage: true, signal }
       );
       signal.throwIfAborted();
-      setCandidate(parseFloorPlanImportDocument(job.candidateJson));
+      replaceCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
@@ -247,7 +247,7 @@ export default function FloorPlanImportAssistant({
     try {
       const job=await requestDetectionReview({activeJob,photo,trace,candidate,signal,onActiveJobIdChange,processAndPoll});
       signal.throwIfAborted();
-      setCandidate(parseFloorPlanImportDocument(job.candidateJson));
+      replaceCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
     } catch (cause) {
@@ -405,7 +405,7 @@ export default function FloorPlanImportAssistant({
         </p>
       ) : null}
       <FloorPlanReviewDraftSave disabled={disabled} submitting={submitting} deletingSource={deletingSource}
-        savedVersion={savedDraftVersion} subtle={subtle} onSave={() => void submitReview(issues, true)} />
+        savedVersion={savedDraftVersion} subtle={subtle} history={reviewHistory} onSave={() => void submitReview(issues, true)} />
       <SourceTraceAction.Provider value={{candidateVersion:activeJob.candidateVersion,saved:parseFloorPlanImportDocument(activeJob.candidateJson),onAccept:request=>void retryDetection(undefined,request)}}>
       <PhotoReviewAction.Provider value={(request)=>void retryDetection(request)}><FloorPlanImportReviewPanel
         candidate={candidate}
@@ -421,7 +421,7 @@ export default function FloorPlanImportAssistant({
         retryingDetection={retryingDetection}
         onSubmit={(reviewIssues) => void submitReview(reviewIssues)}
         submitting={submitting}
-        disabled={photoReviewBusy(disabled,submitting,retryingDetection)} proMode={proMode}
+        disabled={photoReviewBusy(disabled,submitting,retryingDetection)} proMode={proMode} reviewRestores={reviewHistory.restores}
       /></PhotoReviewAction.Provider></SourceTraceAction.Provider>
     </div>
   );

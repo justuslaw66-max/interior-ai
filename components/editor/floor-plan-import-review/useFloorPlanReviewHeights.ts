@@ -91,10 +91,15 @@ function withAssumedDefaultsConfirmed(candidate: FloorPlanDocumentV2, floor: Flo
   return next;
 }
 
-/** The review's heights: the home type, the height fields and their confirmations, on the candidate document. */
+/**
+ * The review's heights: the home type, the height fields and their confirmations, on the candidate document.
+ * `restores` counts the documents Undo and Redo put back: the home type and its notes are then read from that
+ * document again, as when the review opens, so they never describe a choice that was undone.
+ */
 export function useFloorPlanReviewHeights(
   candidate: FloorPlanDocumentV2,
-  setCandidate: Dispatch<SetStateAction<FloorPlanDocumentV2 | null>>
+  setCandidate: Dispatch<SetStateAction<FloorPlanDocumentV2 | null>>,
+  restores = 0
 ) {
   const floor = candidate.floors[0];
   const [homeType, setHomeType] = useState<ReviewHomeTypeId>(() => reviewHomeTypeFor(floor));
@@ -102,6 +107,15 @@ export function useFloorPlanReviewHeights(
   const [refused, setRefused] = useState(false);
   const [storeyBelowWalls, setStoreyBelowWalls] = useState(false);
   const [storeyTyped, setStoreyTyped] = useState(false);
+  const [readForRestores, setReadForRestores] = useState(restores);
+  if (readForRestores !== restores) {
+    setReadForRestores(restores);
+    setHomeType(reviewHomeTypeFor(floor));
+    setKept([]);
+    setRefused(false);
+    setStoreyBelowWalls(false);
+    setStoreyTyped(false);
+  }
   const commit = (next: FloorPlanDocumentV2 | null) => { if (next) setCandidate(next); };
   return {
     homeType,
