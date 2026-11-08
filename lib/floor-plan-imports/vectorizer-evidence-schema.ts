@@ -179,6 +179,9 @@ const vectorizerEvidenceSchema = z.object({
         sourcePx: z.tuple([point, point]),
         thicknessPx: z.number().positive(),
         opening: edgeOpening.nullable(),
+        // How the drawing draws the wall (exporter, 8 Nov 2026): a bold solid band, two thin outlines, or neither. A hint
+        // for the wall's type - HDB plans draw structural walls solid - never proof that a wall may be hacked.
+        drawnAs: z.enum(["solid", "outline", "mixed"]).optional(),
       })
     )
     .max(4_000),

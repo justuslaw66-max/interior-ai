@@ -16,7 +16,7 @@ import json, math, os, re, sys
 import numpy as np
 import cv2
 
-VERSION = "app-evidence-0.34.0"
+VERSION = "app-evidence-0.35.0"
 OUTDOOR_WORDS = ("BALCONY", "LEDGE", "YARD", "PES", "TERRACE", "PATIO", "PLANTER", "ENCLOSED SPACE", "ROOF", "COURTYARD", "DECK", "GARDEN", "VOID", "A/C", "AC ", "AIR-CON", "AIRCON")
 SLIVER_M2 = 1.5          # a nameless face smaller than this is a shaft, a strip behind a wardrobe or a notch, not a room
 R39_PICTURE_BAND = os.environ.get("AE_R39_PICTURE_BAND", "1") != "0"   # round 39: a window read in the picture where stage 1 has its strokes only in pieces
@@ -5661,9 +5661,13 @@ def build(m, gray=None):
         out["diagnostics"]["wallThicknessUnified"] = unify_wall_thickness(out, (scale_work / k_len) if (scale_work and k_len) else None)
     out["diagnostics"]["jogFacesFlushed"] = flush_jog_faces(out, FLUSH_JOGS) if FLUSH_JOGS > 0 else 0
     out["diagnostics"]["facesFitToTheDrawing"] = fit_drawn_faces(out, gray, S, T * k_len, FIT_FACES) if FIT_FACES > 0 else 0
+    if FULL_BAND and FIT_FACES > 0:
+        out["diagnostics"]["wallsWidenedToTheDrawing"] = fit_drawn_faces(out, gray, S, T * k_len, FIT_FACES, wide=True)
     jogs = out.pop("_jogs", [])
     chosen = choose_jog_thickness(out, jogs)                 # (before the standalone walls, which fit the walls as built)
     _standalone_walls(out, m, S, T, gray, jogs, chosen)
+    if DRAWN_AS and gray is not None:
+        out["diagnostics"]["wallsDrawnAs"] = mark_drawn_as(out, gray, S)
     if SCHEMA_CAPS:
         out["diagnostics"]["itemsLeftOutForTheAppsLimits"] = fit_app_limits(out)
     dbg = {"k": k, "closed": closed, "bars": bars, "blobs": blobs, "gaps": gaps, "openings": openings, "rooms": rooms, "labels": labels, "unhosted": list(unhosted)}
@@ -5886,6 +5890,15 @@ def flush_jog_faces(out, tol):
 # outline double back, gives the app a geometry problem it did not have, or fails, is put back exactly as it was.
 FIT_FACES = float(os.environ.get("AE_FIT_FACES", "1.5"))
 FIT_FACES_LOG = os.environ.get("AE_FIT_FACES_LOG")
+# Model first, workstream 1 (8 Nov 2026, claude/handoff-2026-11-08-topology-cleanup.md) - the full drawn wall.  Round 35
+# keeps a wall's faces within a quarter of its thickness of its trace; where the drawing's solid wall runs on further (the
+# room traced against one part of a thick wall), the rest of it was added afterwards as a standalone wall lying along the
+# room's wall, and the app built two walls in one place.  After round 35's fitting, each wall takes the solid band it lies
+# in when that runs on past a face by more than a quarter of its thickness (the band through the darkest point within its
+# trace, from 0.8 to FULL_BAND_MAX_T thicknesses wide, no gap bridged) - by the same line plan, jogs and guards as round 35,
+# a wall alone between two corners included.  The standalone walls are fitted after it, to what is left.  0 = off.
+FULL_BAND = os.environ.get("AE_FULL_BAND", "1") != "0"
+FULL_BAND_MAX_T = float(os.environ.get("AE_FULL_BAND_MAX_T", "2.5"))
 # Round 37 - the line-up round (J, 14 Oct: "proceed with the next round"; faces the drawing has straight come out
 # straight in the app, "it should be 0mm").  Measured with the app check counting steps sideways (a corner point on a
 # straight face is none), round 35's fitting made about half the steps left: each piece took its own drawn band, and
@@ -5927,18 +5940,20 @@ def _sample(gray, x, y):
     return float(g[0, 0] * (1 - fx) * (1 - fy) + g[0, 1] * fx * (1 - fy) + g[1, 0] * (1 - fx) * fy + g[1, 1] * fx * fy)
 
 
-def drawn_band(gray, S, ax, c, a, b, t, multi=False):
+def drawn_band(gray, S, ax, c, a, b, t, multi=False, reach_t=None, gap_px=None):
     """the dark band the drawing has across a level (ax 'h': centre-line y = c, from x = a to b) or plumb edge, in source
     px: (lo, hi) as medians over stations at 20-80 % of its length, or None when fewer than 60 % of them show one.  At a
     station the band is the dark run (darker than halfway between the paper and the darkest point within t/2 of the
     centre-line) through that darkest point, gaps of up to 0.75 t bridged in a wall (one drawn as two outlines) and 0.5 t in a
     window (several thin lines)."""
     step = 0.5
-    reach = t / 2.0 + max(3.0, 0.5 * t)
+    reach = t / 2.0 + max(3.0, (reach_t or 0.5) * t)                     # (the full drawn wall: further either side)
     offs = np.arange(-reach, reach + 1e-9, step)
     inner = np.abs(offs) <= t / 2.0
     gap = (max(1.5, 0.5 * t) if multi else max(1.0, 0.75 * t)) / step    # a window: frame and glass lines; a wall: drawn
                                                                          # solid, or as two outlines (room4, J's plan)
+    if gap_px is not None:
+        gap = gap_px / step
     L = b - a
     n = max(3, min(40, int(L / 2.0)))
     lows, highs = [], []
@@ -5971,6 +5986,50 @@ def drawn_band(gray, S, ax, c, a, b, t, multi=False):
     if len(lows) < 0.6 * n:
         return None
     return c + float(np.median(lows)), c + float(np.median(highs))
+
+
+# Model first (8 Nov 2026) - how each wall is drawn, for the wall's type.  HDB plans draw structural walls (and the
+# household shelter's) as bold solid bands and the walls that may be hacked as two thin outlines; condo brochures often
+# draw every wall alike.  Each level / plumb wall edge (no opening) gets drawnAs: "solid" when most of its band is ink at
+# most stations, "outline" when its two faces are ink with paper between, "mixed" otherwise; an edge too short to sample
+# gets none.  The app reads it as a hint for the wall's type (never as proof a wall may be hacked).  0 = off.
+DRAWN_AS = os.environ.get("AE_DRAWN_AS", "1") != "0"
+
+
+def mark_drawn_as(out, gray, S):
+    """sets drawnAs on the wall edges (see DRAWN_AS); returns the count of each"""
+    counts = {"solid": 0, "outline": 0, "mixed": 0}
+    for e in out["wallEdges"]:
+        e.pop("drawnAs", None)
+        if e.get("opening"):
+            continue
+        (x0, y0), (x1, y1) = e["sourcePx"][:2]
+        t = float(e.get("thicknessPx") or 0)
+        if abs(y0 - y1) < 1e-6 and abs(x0 - x1) > 1e-6:
+            ax, c, a, b = "h", y0, min(x0, x1), max(x0, x1)
+        elif abs(x0 - x1) < 1e-6 and abs(y0 - y1) > 1e-6:
+            ax, c, a, b = "v", x0, min(y0, y1), max(y0, y1)
+        else:
+            continue
+        if t < 2.0 or b - a < max(6.0, t):
+            continue
+        offs = np.arange(-t / 2.0 + 0.25, t / 2.0, 0.5)
+        n, at = _band_stations(a, b)
+        solid = outline = 0
+        for s_ in at:
+            v, paper, dark = _drawing_across(gray, S, ax, s_, c + offs)
+            if paper < 200.0:                                # (the band's own paper: the page around it is white)
+                paper = 255.0
+            ink = v < (paper + min(dark, 120.0)) / 2.0
+            k_ = max(1, len(ink) // 4)
+            if ink.mean() >= 0.75:
+                solid += 1
+            elif ink[:k_].any() and ink[-k_:].any() and not ink[k_:-k_].all() and ink[k_:-k_].mean() <= 0.35:
+                outline += 1
+        kind = "solid" if solid >= 0.6 * n else "outline" if outline >= 0.6 * n else "mixed"
+        e["drawnAs"] = kind
+        counts[kind] += 1
+    return counts
 
 
 def _corner_keys(E, rooms):
@@ -6069,10 +6128,13 @@ def _outline_pair(gray, S, ax, c, a, b, t, mm_px):
             sum(x[2] for x in g) >= 0.6 * n)
 
 
-def _drawn_pieces(E, gray, S, mm_px):
+def _drawn_pieces(E, gray, S, mm_px, wide=False):
     """1  the pieces: level / plumb edges, with the drawn band of each wall and window.  A wall's band must lie within its
     trace (a quarter of its thickness either side) and never thins it to one drawn line or under 80 mm; a window's band is
-    checked against its line's walls later (_line_plan)."""
+    checked against its line's walls later (_line_plan).  wide (FULL_BAND): only walls, each taking the solid drawn band
+    it lies in where that runs on past its trace (see FULL_BAND)."""
+    if wide:
+        return _full_band_pieces(E, gray, S)
     pcs = {}
     for e in E:
         (x0, y0), (x1, y1) = e["sourcePx"][:2]
@@ -6102,6 +6164,39 @@ def _drawn_pieces(E, gray, S, mm_px):
         pcs[e["id"]] = {"e": e, "ax": ax, "c": c, "a": a, "b": b, "t": t, "kind": kind,
                         "band": band, "ends": [tuple(e["sourcePx"][0]), tuple(e["sourcePx"][1])],
                         "outline": bool(pair and pair[2]), "pair": pair[:2] if pair else None}
+    return pcs
+
+
+def _full_band_pieces(E, gray, S):
+    """FULL_BAND's pieces: every level / plumb wall edge, its band the solid dark band of the drawing it lies in (no gap
+    bridged, so a door leaf or a line beside the wall stays out; it runs through the darkest point within the trace) where
+    that band runs on past one of its faces by more than a quarter of its thickness, from 0.8 to FULL_BAND_MAX_T times
+    as wide (a trace laid partly over the paper beside its wall moves onto the wall).
+    Windows, doors and passages keep their place (they take their wall's faces through _line_plan's step 4)."""
+    pcs = {}
+    for e in E:
+        (x0, y0), (x1, y1) = e["sourcePx"][:2]
+        t = float(e.get("thicknessPx") or 0)
+        if t <= 0:
+            continue
+        if abs(y0 - y1) < 1e-6 and abs(x0 - x1) > 1e-6:
+            ax, c, a, b = "h", y0, min(x0, x1), max(x0, x1)
+        elif abs(x0 - x1) < 1e-6 and abs(y0 - y1) > 1e-6:
+            ax, c, a, b = "v", x0, min(y0, y1), max(y0, y1)
+        else:
+            continue
+        kind = (e.get("opening") or {}).get("kind") or "wall"
+        band = None
+        if kind == "wall" and b - a >= max(6.0, 0.5 * t):
+            band = drawn_band(gray, S, ax, c, a, b, t, reach_t=FULL_BAND_MAX_T, gap_px=1.0)
+        if band:
+            lo_t, hi_t, m_ = c - t / 2.0, c + t / 2.0, max(1.0, 0.25 * t)
+            grows = band[0] < lo_t - m_ or band[1] > hi_t + m_
+            if not grows or band[1] - band[0] < 0.8 * t or band[1] - band[0] > FULL_BAND_MAX_T * t:
+                band = None
+        pcs[e["id"]] = {"e": e, "ax": ax, "c": c, "a": a, "b": b, "t": t, "kind": kind,
+                        "band": band, "ends": [tuple(e["sourcePx"][0]), tuple(e["sourcePx"][1])],
+                        "outline": False, "pair": None}
     return pcs
 
 
@@ -6301,7 +6396,7 @@ def _restore(E, rooms, saved):
         r["sourcePoints"] = sp; r["edgeIds"] = ids
 
 
-def fit_drawn_faces(out, gray, S, T, tol):
+def fit_drawn_faces(out, gray, S, T, tol, wide=False):
     """Round 35 (see above).  Returns the number of pieces whose faces moved.  Each wall line is done on its own; a line
     whose change leans a side, makes an outline double back, gives the app a geometry problem it did not have, or cannot be
     done (an error is counted in the diagnostics as faceLinesThatFailed) is put back exactly as it was."""
@@ -6310,8 +6405,11 @@ def fit_drawn_faces(out, gray, S, T, tol):
     E = out["wallEdges"]; rooms = out["rooms"]
     key = _corner_keys(E, rooms)
     tol_ = max(tol, 0.2 * T)
-    pcs = _drawn_pieces(E, gray, S, (out.get("scale") or {}).get("millimetresPerPixel"))
+    pcs = _drawn_pieces(E, gray, S, (out.get("scale") or {}).get("millimetresPerPixel"), wide=wide)
     nb, lines = _wall_lines(pcs, key)
+    if wide:                                                 # (a wall alone on its line, between two corners, too)
+        inline = {i for comp in lines for i in comp}
+        lines = lines + [[i] for i, p in pcs.items() if i not in inline and p["band"]]
     outlines = lambda: [[(q["x"], q["y"]) for q in r["sourcePoints"]] for r in rooms]
     before, slant0, spike0 = {repr(p_) for p_ in app_geometry_problems(outlines())}, _slanted(out), _spikes(out)
     moved = failed = 0
@@ -6324,7 +6422,7 @@ def fit_drawn_faces(out, gray, S, T, tol):
             u = [v[0] if p["ax"] == "h" else v[1] for v in p["ends"]]
             p["a"], p["b"] = min(u), max(u)
         P = [p for p in P if p["b"] - p["a"] > 1e-6]
-        if len(P) < 2:
+        if len(P) < (1 if wide else 2) or (wide and not any(p["band"] for p in P)):
             continue
         saved = _snapshot(E, rooms)
         guard = None
@@ -6350,14 +6448,14 @@ def fit_drawn_faces(out, gray, S, T, tol):
         if not ok or after - before:
             _restore(E, rooms, saved)
             if FIT_FACES_LOG:
-                print("faces: line %s left (%s)" % (",".join(sorted(comp)), res if not ok else "app problem: %s" % sorted(after - before)[:2]), file=sys.stderr)
+                print("%s: line %s left (%s)" % ("band" if wide else "faces", ",".join(sorted(comp)), res if not ok else "app problem: %s" % sorted(after - before)[:2]), file=sys.stderr)
             continue
         before, slant0, spike0 = after, _slanted(out), _spikes(out)
         moved += len(plan)
         if FIT_FACES_LOG:
-            print("faces: line %s: %s" % (",".join(sorted(comp)), "; ".join("%s c %.1f->%.1f t %.1f->%.1f" % (
+            print("%s: line %s: %s" % ("band" if wide else "faces", ",".join(sorted(comp)), "; ".join("%s c %.1f->%.1f t %.1f->%.1f" % (
                 i, pcs[i]["c"], c2, pcs[i]["t"], t2) for i, (c2, t2) in sorted(plan.items()))), file=sys.stderr)
-    out.setdefault("diagnostics", {})["faceLinesThatFailed"] = failed
+    out.setdefault("diagnostics", {})["fullBandLinesThatFailed" if wide else "faceLinesThatFailed"] = failed
     return moved
 
 
@@ -6732,11 +6830,13 @@ def _apply_face_plan(out, pcs, plan, nb, key, next_id, line_ids):
             same = [o for o in sorted(nb[pid]) if o in line_ids and any(key(v) == k_ for v in pcs[o]["ends"])]
             other_side = [o for o in same if abs(shift.get(o, 0.0) - shift[pid]) >= 1e-6]
             if other_side:
-                if len(same) != 1:
+                # (FULL_BAND: a twin - the other room's piece over the same stretch, shifting with this one - may meet the
+                # joint too; the one piece shifting otherwise is still the only other side)
+                if len(other_side) != 1 or (len(same) != 1 and not FULL_BAND):
                     return "a joint of %s with %d pieces of its line" % (pid, len(same))
                 o = other_side[0]
-                if o not in plan or pid < o:                 # (one jog per joint; a piece that stays never asks for one)
-                    jogs.append((k_, q, pid, o))
+                if (o not in plan or pid < o) and not any(j[0] == k_ and j[3] == o for j in jogs):
+                    jogs.append((k_, q, pid, o))             # (one jog per joint; a piece that stays never asks for one)
                 continue
             d = shift[pid]
             m_ = (q[0], q[1] + d) if p["ax"] == "h" else (q[0] + d, q[1])
@@ -6799,19 +6899,21 @@ def _apply_face_plan(out, pcs, plan, nb, key, next_id, line_ids):
         E.append({"id": jid, "kind": "wall_centerline", "sourcePx": [list(qp), list(qo)], "thicknessPx": round(tj, 2),
                   "thicknessMm": int(round(tj * mm_px)) if mm_px else None, "opening": None})
         out.setdefault("_jogs", []).append((E[-1], pid, oid))  # (choose_jog_thickness; taken out before the evidence leaves)
-        for e in (p["e"], o["e"]):
+        movers = {pid} | {i for i in plan if i != oid and abs(shift[i] - dp) < 1e-6
+                          and any(key(v) == k_ for v in pcs[i]["ends"])}     # (pid and a twin shifting with it)
+        for e in [pcs[i]["e"] for i in movers] + [o["e"]]:
             for v in e["sourcePx"]:
                 if key(v) == k_:
-                    v[0], v[1] = qp if e is p["e"] else qo
+                    v[0], v[1] = qo if e is o["e"] else qp
         for r in rooms:
             Pp = [(q2["x"], q2["y"]) for q2 in r["sourcePoints"]]; ids = r["edgeIds"]; n = len(Pp)
             for i in range(n):
                 if key(Pp[i]) != k_:
                     continue
                 e_in, e_out = ids[(i - 1) % n], ids[i]       # side i-1 ends at point i, side i starts there
-                if {e_in, e_out} != {pid, oid}:
+                if oid not in (e_in, e_out) or not ({e_in, e_out} - {oid}) <= movers:
                     return "a room meets the jog at %s from another side" % (q,)
-                first, second = (qp, qo) if e_in == pid else (qo, qp)
+                first, second = (qo, qp) if e_in == oid else (qp, qo)
                 r["sourcePoints"][i:i + 1] = [{"x": first[0], "y": first[1]}, {"x": second[0], "y": second[1]}]
                 ids.insert(i, jid)
                 break

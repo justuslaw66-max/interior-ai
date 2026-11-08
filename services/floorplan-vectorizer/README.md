@@ -187,6 +187,11 @@ reader unavailable: …`). Its model files ship inside its package, installed by
 (its own `opencv-python` would clash with `opencv-python-headless`); the doctor checks it reads a word from the image
 alone. For a local venv: `pip install -r requirements.txt && pip install --no-deps rapidocr_onnxruntime==1.3.24`.
 
+Exporter 0.35.0 (8 Nov 2026, model first, workstream 1) adds two passes to `app_evidence.py`. `AE_FULL_BAND` (on):
+after round 35's face fitting, a wall takes the solid drawn band it lies in where that runs on past its trace, so the
+rest of a thick wall is no longer added beside it as a separate standalone wall. `AE_DRAWN_AS` (on): each wall edge
+says how it is drawn (`drawnAs`: solid, outline or mixed), a hint for its type; HDB plans draw structural walls solid.
+
 The topology clean-up (8 Nov 2026, model first, workstream 1; `FLOOR_PLAN_TOPOLOGY_CLEANUP=1`, off unless set) runs in
 the app's import, not here: after the document is built from this evidence,
 `lib/floor-plan-imports/vectorizer-topology-cleanup.ts` squares walls within 2 degrees of square (each logged), merges
