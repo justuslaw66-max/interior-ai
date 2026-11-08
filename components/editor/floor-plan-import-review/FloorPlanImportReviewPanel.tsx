@@ -24,7 +24,7 @@ type FloorPlanImportReviewPanelProps = {
   candidate: FloorPlanDocumentV2;
   job: ConsumerFloorPlanImportJob;
   issues: FloorPlanReviewIssue[];
-  setCandidate: Dispatch<SetStateAction<FloorPlanDocumentV2 | null>>;
+  setCandidate: (next: FloorPlanDocumentV2 | null) => void;
   setIssues: Dispatch<SetStateAction<FloorPlanReviewIssue[]>>;
   entranceOpeningId: string;
   setEntranceOpeningId: (value: string) => void;
@@ -34,7 +34,7 @@ type FloorPlanImportReviewPanelProps = {
   retryingDetection?: boolean;
   onSubmit: (reviewIssues?: FloorPlanReviewIssue[]) => void;
   submitting: boolean;
-  disabled?: boolean; proMode?: boolean;
+  disabled?: boolean; proMode?: boolean; /** Undo or Redo put back a document this many times. */ reviewRestores?: number;
 };
 
 function issuePrerequisite(
@@ -122,7 +122,7 @@ export default function FloorPlanImportReviewPanel({
   retryingDetection = false,
   onSubmit,
   submitting,
-  disabled = false, proMode = false,
+  disabled = false, proMode = false, reviewRestores = 0,
 }: FloorPlanImportReviewPanelProps) {
   const floor = candidate.floors[0];
   const [focusedIssueId, setFocusedIssueId] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export default function FloorPlanImportReviewPanel({
     () => Object.fromEntries(issues.map((issue) => [issue.id, issue.resolution ?? ""]))
   );
   const [manualToolsOpen, setManualToolsOpen] = useState(false);
-  const heights = useFloorPlanReviewHeights(candidate, setCandidate);
+  const heights = useFloorPlanReviewHeights(candidate, setCandidate, reviewRestores);
   const { changeHeight, changeVerticalValue, confirmVerticalValue, confirmDisplayedHeightDefaults } = heights;
   if (!floor) return null;
   const namedRooms = namedFloorPlanRooms(floor.rooms); // voids (ducts, shafts) keep their walls but are not rooms to count or name
@@ -303,7 +303,7 @@ export default function FloorPlanImportReviewPanel({
         focusedIssueEntityIds={focusedIssueEntityIds}
         focusedIssue={issues.find((issue) => issue.id === focusedIssueId)}
         onChange={(next) => setCandidate(next)}
-        consumerMode proMode={proMode}
+        consumerMode proMode={proMode} restores={reviewRestores}
         manualToolsOpen={manualToolsOpen}
         onManualToolsOpenChange={setManualToolsOpen}
         disabled={disabled}

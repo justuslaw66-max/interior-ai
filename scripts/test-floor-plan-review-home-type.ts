@@ -186,7 +186,7 @@ assert.deepEqual(untouched.defaults.wallHeight, original.floors[0].defaults.wall
 const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
 const panel = read("components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx");
 const field = read("components/editor/floor-plan-import-review/FloorPlanReviewHomeType.tsx");
-assert.match(panel, /useFloorPlanReviewHeights\(candidate, setCandidate\);[\s\S]*?if \(!floor\) return null;/);
+assert.match(panel, /useFloorPlanReviewHeights\(candidate, setCandidate, reviewRestores\);[\s\S]*?if \(!floor\) return null;/);
 assert.match(panel, /<FloorPlanReviewHomeType[\s\S]*?Optional plan details/);
 assert.match(field, /Home type[\s\S]*?REVIEW_HOME_TYPES\.map/);
 assert.match(field, /data-testid="floor-plan-import-home-type"/);

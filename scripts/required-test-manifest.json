@@ -6,16 +6,16 @@
       "root": "scripts",
       "filePattern": "^test-.*\\.(?:js|mjs|ts)$",
       "classification": "risk-triggered",
-      "expectedFileCount": 346,
-      "expectedPathSha256": "ca3d7cdf7f534f30180236f339dcb4de84a622d8ee2a66c1a3e796045816f082"
+      "expectedFileCount": 347,
+      "expectedPathSha256": "020187611e659e9cdd804eaff502b66526b39627f93e5b8a403b1e720f1cf7ab"
     },
     {
       "id": "browser-specs",
       "root": "tests/e2e",
       "filePattern": "\\.spec\\.ts$",
       "classification": "release-only",
-      "expectedFileCount": 111,
-      "expectedPathSha256": "82be62c3c6ce20ac0fd77815a854e1a31b35818bdcd245b88e427c6106cad3b6"
+      "expectedFileCount": 112,
+      "expectedPathSha256": "c1fd354c5f435b498c97d2ef4247e3e9707e7078963947a5dec2175b0c388214"
     },
     {
       "id": "cabinetry-browser-modules",
@@ -506,7 +506,7 @@
       "blocking": true,
       "command": "npm run test:floor-plan-required",
       "packageScript": "test:floor-plan-required",
-      "packageClosure": { "expectedScriptCount": 66, "expectedSha256": "4e6b9624adcafe7587e7d0f9dd3ba4c68c8a935306103face51e0a9d2f38487f" },
+      "packageClosure": { "expectedScriptCount": 67, "expectedSha256": "6756b6fd54d28576ab90e29c367c4f9909fcfd1b4a5761cd503a582e6b0e4b33" },
       "runner": "npm-chain",
       "requiredSources": [
         "scripts/test-floor-plan-directory-privacy.ts",

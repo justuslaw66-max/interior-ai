@@ -2123,7 +2123,7 @@
     "components/editor/useConsumerFloorPlanImportSession.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 155
+        "maximum": 152
       },
       "complexFunctions": {
         "count": 1,
