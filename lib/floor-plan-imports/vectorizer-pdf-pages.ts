@@ -12,6 +12,9 @@ export type PageRoomRegistration = (
 /**
  * Whether a page's own linework closes at least one room, judged on a copy of the page
  * with the scale the page's printed dimensions give (diagnosis notes stay off the page).
+ * A page whose printed dimensions give no scale does not count: its rooms could not be
+ * promoted (the scale gate refuses them), so the vectorizer reads it instead. HDB's Floor
+ * Plan Order PDFs plot their figures as strokes, not text (8 Nov 2026, Blk 88 #03-351).
  */
 export function ownLineworkClosesRooms(page: RegisteredPageEvidence, registerRooms: PageRoomRegistration) {
   const probe = structuredClone(page);
@@ -19,7 +22,7 @@ export function ownLineworkClosesRooms(page: RegisteredPageEvidence, registerRoo
   const scale = diagnosis.status === "accepted" && diagnosis.candidate
     ? { pageNumber: probe.pageNumber, ...diagnosis.candidate }
     : null;
-  return registerRooms(probe, scale).rooms.length > 0;
+  return scale !== null && registerRooms(probe, scale).rooms.length > 0;
 }
 
 /**

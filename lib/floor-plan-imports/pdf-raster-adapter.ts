@@ -98,6 +98,7 @@ import { appendPdfRasterRegion, mergeMixedPdfEvidence, pageGeometryBasis, pageLi
 import { parsePdfDrawPathEvidence } from "./pdf-vector-evidence";
 import { addVectorizerStandaloneWalls } from "./vectorizer-standalone-walls";
 import { cleanImportedTopology } from "./vectorizer-topology-cleanup";
+import { snapImportedWallsToPdf } from "./pdf-wall-snap";
 import {
   buildSourceBoundCatalogDraft,
   catalogFloorPlanDraftMatchReference,
@@ -2533,17 +2534,14 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       metrics: {
         ...result.metrics,
         topologyCleanup: cleanImportedTopology(built.document, envelope.pages),
+        pdfWallSnap: snapImportedWallsToPdf(built.document, envelope.pages),
         roomCount: built.document.floors[0]?.rooms.length ?? 0,
         wallCount: built.document.floors[0]?.walls.length ?? 0,
         openingCount: built.document.floors[0]?.openings.length ?? 0,
         exteriorWallCount:
           built.document.floors[0]?.walls.filter((wall) => wall.classification === "exterior").length ?? 0,
         sharedInteriorWallCount:
-          built.document.floors[0]?.walls.filter(
-            (wall) =>
-              wall.classification === "interior" &&
-              wall.adjacentRoomIds.length > 1
-          ).length ?? 0,
+          built.document.floors[0]?.walls.filter((wall) => wall.classification === "interior" && wall.adjacentRoomIds.length > 1).length ?? 0,
         shortWallOwnershipSpanCount:
           built.document.floors[0]?.walls.filter((wall) => {
             if (wall.path.kind !== "line") return false;
