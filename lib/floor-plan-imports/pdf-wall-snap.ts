@@ -1,6 +1,7 @@
 import type { FloorPlanDocumentV2, FloorPlanVertexV2, FloorPlanWallV2 } from "@/lib/floor-plan-document-v2";
 import type { RegisteredPageEvidence } from "./deterministic-evidence";
 import { pageLineworkKind } from "./mixed-pdf-evidence";
+import { addFillWalls } from "./pdf-fill-walls";
 import { type PdfFace, type PdfFillGround, pdfPageDrawing } from "./pdf-wall-faces";
 import { moveVertex, restoreFloor, snapshotFloor, type TopologyFloor, vertexMap, wallsStillValid } from "./vectorizer-topology-graph";
 
@@ -28,7 +29,8 @@ export const PDF_WALL_SNAP_LIMITS = {
 } as const;
 
 type Run = { axis: "x" | "z"; at: number; from: number; to: number; thicknessMm: number; walls: FloorPlanWallV2[]; vertexIds: Set<string> };
-export type PdfWallSnapLog = { runs: number; snapped: number; unmatched: number; refused: number; shiftsMm: number[]; thicknessChanges: number; structural: number };
+export type PdfWallSnapLog = { runs: number; snapped: number; unmatched: number; refused: number; shiftsMm: number[]; thicknessChanges: number; structural: number;
+  added: number; addRefused: number };
 
 function runAxis(wall: FloorPlanWallV2, vertices: Map<string, FloorPlanVertexV2>) {
   const a = vertices.get(wall.path.startVertexId), b = vertices.get(wall.path.endVertexId);
@@ -148,7 +150,7 @@ function markStructural(floor: TopologyFloor, fills: PdfFillGround) {
 
 /** Moves each run onto its PDF face pair; returns the log. Each move is checked by the app's wall rules on its own. */
 export function snapWallsToPdf(floor: TopologyFloor, faces: PdfFace[], fills: PdfFillGround | null): PdfWallSnapLog {
-  const log: PdfWallSnapLog = { runs: 0, snapped: 0, unmatched: 0, refused: 0, shiftsMm: [], thicknessChanges: 0, structural: 0 };
+  const log: PdfWallSnapLog = { runs: 0, snapped: 0, unmatched: 0, refused: 0, shiftsMm: [], thicknessChanges: 0, structural: 0, added: 0, addRefused: 0 };
   for (const run of wallRuns(floor)) {
     log.runs++;
     const pair = facePairFor(run, faces);
@@ -158,7 +160,12 @@ export function snapWallsToPdf(floor: TopologyFloor, faces: PdfFace[], fills: Pd
     log.shiftsMm.push(Math.round(Math.abs(Math.round(pair.middle) - run.at)));
     if (Math.abs(Math.round(pair.thickness) - run.thicknessMm) >= 5) log.thicknessChanges++;
   }
-  if (fills && fills.size > 0) log.structural = markStructural(floor, fills);
+  if (fills && fills.size > 0) {
+    log.structural = markStructural(floor, fills);
+    const added = addFillWalls(floor, fills);
+    log.added = added.added;
+    log.addRefused = added.refused;
+  }
   return log;
 }
 
@@ -166,7 +173,8 @@ export function summarizePdfWallSnap(log: PdfWallSnapLog) {
   const shifts = [...log.shiftsMm].sort((a, b) => a - b);
   const median = shifts.length ? shifts[Math.floor(shifts.length / 2)] : 0;
   return `runs ${log.runs}; snapped ${log.snapped}; unmatched ${log.unmatched}; refused ${log.refused}; ` +
-    `moved median ${median}mm max ${shifts.at(-1) ?? 0}mm; thickness changed ${log.thicknessChanges}; structural ${log.structural}`;
+    `moved median ${median}mm max ${shifts.at(-1) ?? 0}mm; thickness changed ${log.thicknessChanges}; structural ${log.structural}; ` +
+    `added from black fill ${log.added} (refused ${log.addRefused})`;
 }
 
 /**
