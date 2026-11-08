@@ -210,7 +210,11 @@ export class PythonFloorPlanVectorizerProvider implements FloorPlanVectorizerPro
   private async withFaithfulDrawing(evidence: FloorPlanVectorizerEvidence, files: PageFiles, signal?: AbortSignal,
     timeoutMs = this.config.faithfulTimeoutMs) {
     const result = await this.faithfulDrawing(files, signal, timeoutMs);
-    return "drawing" in result ? { ...evidence, drawing: result.drawing } : withNote(evidence, result.note);
+    if (!("drawing" in result)) return withNote(evidence, result.note);
+    // The faithful trace marks no lettering; stage 1's text boxes say where it is, so the plan drawn from the model can
+    // leave the traced lettering out (it types the room names itself).
+    const textBoxes = result.drawing.textBoxes.length ? result.drawing.textBoxes : evidence.drawing?.textBoxes ?? [];
+    return { ...evidence, drawing: { ...result.drawing, textBoxes } };
   }
 
   /** Runs faithful_drawing.py on the page; a page it leaves, a failure or a timeout comes back as a note. Cancelling the

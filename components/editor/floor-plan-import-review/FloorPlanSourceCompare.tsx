@@ -10,6 +10,7 @@ import type { SourceReviewLayer } from "./useSourceReviewLayers";
 
 /** Before / after for the traced drawing: what the tracer took from the floor plan, and what it left out. */
 
+const PLAN_VIEW = { value: "plan" as const, label: "Clean plan", title: "Drawn from the walls and rooms found on it; it changes as you correct them" };
 const VIEWS: Array<{ value: SourceReviewLayer; label: string; title: string }> = [
   { value: "source", label: "Original", title: "Your floor plan as uploaded" },
   { value: "trace", label: "Traced", title: "Only the strokes traced from it" },
@@ -17,16 +18,22 @@ const VIEWS: Array<{ value: SourceReviewLayer; label: string; title: string }> =
   { value: "compare", label: "Compare", title: "Slide a divider between the original and the trace" },
 ];
 
-export function FloorPlanSourceCompareToggle({ layer, onLayer, wipe, onWipe, disabled }: {
+export function FloorPlanSourceCompareToggle({ layer, onLayer, wipe, onWipe, disabled, plan = false, traced = true }: {
   layer: SourceReviewLayer; onLayer: (value: string) => void; wipe: number; onWipe: (value: number) => void; disabled?: boolean;
+  /** The clean plan drawn from the walls and rooms can be shown (workstream 2). */
+  plan?: boolean;
+  /** A faithful trace exists, so the trace views can be shown. */
+  traced?: boolean;
 }) {
+  const views = [...(plan ? [PLAN_VIEW] : []), ...VIEWS.filter((view) => traced || view.value === "source")];
   return (
     <div className="mb-2 rounded border border-separator bg-surface-floating p-2 text-xs text-label-secondary" data-testid="floor-plan-source-compare">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-semibold">Before / after</span>
-        <SegmentedControl label="Original or traced drawing" size="compact" value={layer} options={VIEWS} disabled={disabled}
+        <SegmentedControl label="Original or traced drawing" size="compact" value={layer} options={views} disabled={disabled}
           onChange={onLayer} />
-        <span className="text-label-secondary">Anything visible on the original but missing from the trace was not picked up.</span>
+        <span className="text-label-secondary">{layer === "plan" ? "Something missing or wrong? Correct the rooms, walls and doors, and the plan redraws."
+          : "Anything visible on the original but missing from the trace was not picked up."}</span>
       </div>
       {layer === "compare" ? (
         <label className="mt-2 flex items-center gap-2">

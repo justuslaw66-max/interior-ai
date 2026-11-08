@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 import type { FloorPlanAnnotationV2, FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
 import { INTERIOR_ITEM_REVIEW_CONFIGURATION } from "@/lib/floor-plan-source-span-review";
+import { buildReviewPlanDrawing } from "@/lib/floor-plan-review-plan-drawing";
 
 export const SOURCE_REVIEW_LAYERS = [
+  { value: "plan", label: "Clean plan (drawn from your walls and rooms)" },
   { value: "source", label: "Source only" },
   { value: "trace", label: "Final vectors only" },
   { value: "trace-overlay", label: "Source + final vectors" },
@@ -35,7 +37,13 @@ function annotationLayer(annotation: FloorPlanAnnotationV2): SourceReviewLayer {
 /** View filters never discard evidence or change recognition/acceptance state.
  * Explicit issue/span focus remains visible even when its layer is hidden. */
 export function useSourceReviewLayers(document: FloorPlanDocumentV2, floorId: string, sourceId: string,
-  pageNumber: number | undefined, focused: Set<string>) {
+  page: { pageNumber: number; widthPx: number; heightPx: number } | undefined, focused: Set<string>) {
+  const pageNumber = page?.pageNumber;
+  // The plan drawn from the document (workstream 2): redrawn on every correction, so it is never stale.
+  const plan = useMemo(() => page ? buildReviewPlanDrawing({ document, floorId, sourceId, ...page }) : null,
+    [document, floorId, sourceId, page]);
+  // The first view is unchanged (the trace, else the picture with the proposals): the plan drawn from the model lost
+  // the blind A/B to the trace on 62 of 63 pages (8 Nov 2026), its errors being the model's. It is a view to switch to.
   const [layer, setLayer] = useState<SourceReviewLayer>(document.floors.some(f=>f.annotations.some(isFinalSourceTrace)) ? "trace-overlay" : "selected");
   const [selectedId, select] = useState("");
   const [error, onError] = useState<string | null>(null);
@@ -44,25 +52,28 @@ export function useSourceReviewLayers(document: FloorPlanDocumentV2, floorId: st
   const artwork = useMemo(() => document.floors.find(floor => floor.id === floorId)?.annotations.filter(annotation =>
     annotation.geometry.kind === "source_drawing" && annotation.geometry.sourceId === sourceId && annotation.geometry.pageNumber === pageNumber
   ) ?? [], [document, floorId, sourceId, pageNumber]);
-  const visible = artwork.filter(a => sourceTraceView(layer) ? layer !== "source" && isFinalSourceTrace(a) :
+  const visible = layer === "plan" ? [] : artwork.filter(a => sourceTraceView(layer) ? layer !== "source" && isFinalSourceTrace(a) :
     layer === "all" || a.id === selectedId || focused.has(a.id) || (layer !== "selected" && annotationLayer(a) === layer));
   const onLayer = (value: string) => {
     const option = SOURCE_REVIEW_LAYERS.find(item => item.value === value);
     if (option) { setLayer(option.value); select(""); onError(null); }
   };
-  return { artwork, visible, layer, onLayer, selectedId, select, error, onError, wipe, setWipe,
+  return { artwork, visible, plan: layer === "plan" ? plan : null, planAvailable: Boolean(plan), layer, onLayer, selectedId, select, error, onError, wipe, setWipe,
     annotation: artwork.find(annotation => annotation.id === selectedId) };
 }
 
 export function sourceReviewPresentation(layer:SourceReviewLayer,sourceOpacity:number,overlayOpacity:number) {
+  if(layer==="plan")return {sourceOpacity:0,overlayOpacity:0,showProposals:false,artworkView:false,planView:true};
   const trace=sourceTraceView(layer);
   return {sourceOpacity:layer==="trace"?0:layer==="source"||layer==="compare"?1:layer==="trace-overlay"?0.6:sourceOpacity/100,
-    overlayOpacity:layer==="compare"?0:trace?1:overlayOpacity/100,showProposals:!trace&&layer!=="raw",artworkView:trace};
+    overlayOpacity:layer==="compare"?0:trace?1:overlayOpacity/100,showProposals:!trace&&layer!=="raw",artworkView:trace,planView:false};
 }
 
-export const sourceReviewOverlay = <T,>(layer:SourceReviewLayer,overlay:T) => sourceTraceView(layer)||layer==="raw" ? null : overlay;
+export const sourceReviewOverlay = <T,>(layer:SourceReviewLayer,overlay:T) => sourceTraceView(layer)||layer==="raw"||layer==="plan" ? null : overlay;
 
-export function sourceReviewLabels(artwork:boolean,isCad:boolean,registered:boolean) {
+export function sourceReviewLabels(artwork:boolean,isCad:boolean,registered:boolean,plan=false) {
+  if(plan)return {title:"Clean plan",description:"Drawn from the walls, doors and rooms found on your floor plan. It changes as you correct them.",
+    overlay:"Clean plan drawn from your walls and rooms",caption:"Walls, doors, windows and room names are drawn from the plan's rooms and walls. Fixtures are copied from your floor plan."};
   if(artwork)return {title:"Traced drawing",description:"Compare the visible strokes with your floor plan. Select a path to edit its image coordinates.",
     overlay:"Traced drawing overlay",caption:"Dark paths: traced from your floor plan. Red: selected path. No building meaning or physical scale is inferred."};
   return {title:"2D preview",overlay:"Detected rooms and walls",
