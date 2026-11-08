@@ -42,10 +42,9 @@ export function useSourceReviewLayers(document: FloorPlanDocumentV2, floorId: st
   // The plan drawn from the document (workstream 2): redrawn on every correction, so it is never stale.
   const plan = useMemo(() => page ? buildReviewPlanDrawing({ document, floorId, sourceId, ...page }) : null,
     [document, floorId, sourceId, page]);
-  // The faithful trace stays the first view: the plan drawn from the model lost the blind A/B to it on 62 of 63
-  // pages (8 Nov 2026), its errors being the model's. It is the first view only where there is no trace.
-  const [layer, setLayer] = useState<SourceReviewLayer>(document.floors.some(f=>f.annotations.some(isFinalSourceTrace)) ? "trace-overlay" :
-    plan ? "plan" : "selected");
+  // The first view is unchanged (the trace, else the picture with the proposals): the plan drawn from the model lost
+  // the blind A/B to the trace on 62 of 63 pages (8 Nov 2026), its errors being the model's. It is a view to switch to.
+  const [layer, setLayer] = useState<SourceReviewLayer>(document.floors.some(f=>f.annotations.some(isFinalSourceTrace)) ? "trace-overlay" : "selected");
   const [selectedId, select] = useState("");
   const [error, onError] = useState<string | null>(null);
   // Where the compare wipe sits, as a share of the page width: the source shows to its left, the trace to its right.
