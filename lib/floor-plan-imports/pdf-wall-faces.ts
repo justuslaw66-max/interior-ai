@@ -49,6 +49,13 @@ export class PdfFillGround {
   covered(point: { xMm: number; zMm: number }) {
     return this.cells.has(this.key(Math.floor(point.xMm / this.cell), Math.floor(point.zMm / this.cell)));
   }
+  /** The filled cells as [i, j] grid indices (cell i spans i*cell to (i+1)*cell mm). */
+  indices() {
+    return [...this.cells].map((key) => [Math.floor(key / 100_000) - 50_000, (key % 100_000) - 50_000] as const);
+  }
+  get cellMm() {
+    return this.cell;
+  }
   get size() {
     return this.cells.size;
   }
