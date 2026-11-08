@@ -22,7 +22,7 @@ import type { FloorPlanAdapterContext } from "@/lib/floor-plan-imports/source-ad
 import { parseFloorPlanVectorizerEvidence, registerVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-evidence";
 
 type Pt = [number, number];
-type DocumentSummary = {
+export type DocumentSummary = {
   file: string;
   stage: "schema" | "topology" | "built";
   error?: string;
@@ -102,9 +102,23 @@ async function one(file: string): Promise<DocumentSummary> {
     candidate.scale = stand;
     candidate.scales = [stand];
   }
-  const mmPerPx = scale!.millimetresPerPixel;
   const built = await adapter.buildTopology(solved, context);
   const validated = await adapter.validate(built);
+  return summarizeBuilt(name, built, validated, {
+    mmPerPx: scale!.millimetresPerPixel,
+    basis: scale!.basis ?? "printed",
+    assumed: solvedByApp ? isAssumedScale(scale as never) : false,
+    solvedByApp,
+    dimensionCount: scale!.dimensionCount ?? 0,
+  });
+}
+
+type BuiltStage = Awaited<ReturnType<PdfRasterFloorPlanSourceAdapter["buildTopology"]>>;
+type ValidatedStage = Awaited<ReturnType<PdfRasterFloorPlanSourceAdapter["validate"]>>;
+
+/** The summary corrections.py and topology.py read, of a document the adapter built (also used by document-from-pdf.ts). */
+export function summarizeBuilt(name: string, built: BuiltStage, validated: ValidatedStage, scale: NonNullable<DocumentSummary["scale"]>): DocumentSummary {
+  const mmPerPx = scale.mmPerPx;
   const document = validated.candidate as unknown as FloorPlanDocumentV2;
   const floor = document.floors?.[0];
   if (!floor) return { file: name, stage: "topology", error: "no floor" };
@@ -146,13 +160,7 @@ async function one(file: string): Promise<DocumentSummary> {
   return {
     file: name,
     stage: "built",
-    scale: {
-      mmPerPx,
-      basis: scale!.basis ?? "printed",
-      assumed: solvedByApp ? isAssumedScale(scale as never) : false,
-      solvedByApp,
-      dimensionCount: scale!.dimensionCount ?? 0,
-    },
+    scale,
     rooms,
     openings,
     labels,
@@ -200,4 +208,4 @@ async function main() {
   console.log(`documents: ${built} of ${results.length} evidence files built -> ${out}`);
 }
 
-void main();
+if (require.main === module) void main();
