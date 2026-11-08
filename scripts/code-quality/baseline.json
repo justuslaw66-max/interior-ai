@@ -1149,7 +1149,7 @@
     "app/api/designs/[id]/route.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 118
+        "maximum": 116
       },
       "complexFunctions": {
         "count": 2,
@@ -4289,7 +4289,7 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 260
+        "maximum": 259
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {

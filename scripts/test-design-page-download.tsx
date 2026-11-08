@@ -66,8 +66,10 @@ const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 const commandBar = readEditorCommandBarSource();
 assert.match(commandBar, /data-testid="editor-command-download"[\s\S]{0,400}?"hidden h-9 w-9 [^"]*md:inline-flex/,
   "Download sits in the bar from tablet width up.");
-assert.match(commandBar, /data-testid="editor-command-overflow-download"\s*className=\{`\$\{menuButtonClass\} md:hidden`\}/,
+assert.match(commandBar, /testId="editor-command-overflow-download" phoneOnly onSelect=\{onDownload\}/,
   "Phones reach Download through More.");
+assert.match(commandBar, /className=\{phoneOnly \? `\$\{menuButtonClass\} md:hidden` : menuButtonClass\}/,
+  "More's phone-only items are hidden from tablet width up.");
 assert.match(
   read("lib/useDesignPageEditorChromeController.ts"),
   /const openDownload = \(\) => \{\s*actions\.navigation\.changeViewMode\("3d"\);\s*actions\.dialogs\.setDownloadOpen\(true\);[\s\S]*?onDownload: openDownload,/,

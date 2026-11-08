@@ -248,7 +248,7 @@ async function runTimeoutCase({ manifest, journal, runnerTemp, runId, failAbsenc
             new URL(databaseState.database.environment.DATABASE_URL).username,
           );
           const databaseName = databaseState.active.binding.databaseName;
-          assert.equal(databaseState.active.evidence.migration.count, 43);
+          assert.equal(databaseState.active.evidence.migration.count, 44);
           assert.deepEqual(await adminCounts(databaseName, roleName), {
             database: 1,
             databasePrefix: 1,

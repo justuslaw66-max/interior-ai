@@ -1585,7 +1585,7 @@ async function deterministicContractCoverage() {
       adapter: successAdapter,
     });
     assert.equal(provisioned.evidence.currentState, "migrated");
-    assert.equal(provisioned.evidence.migration.count, 43);
+    assert.equal(provisioned.evidence.migration.count, 44);
     assert.notEqual(provisioned.descriptor.sha256, stalePlanSha);
     assert.throws(
       () =>

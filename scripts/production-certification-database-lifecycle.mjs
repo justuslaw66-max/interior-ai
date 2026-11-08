@@ -881,11 +881,11 @@ export async function provisionCertificationDatabase(options = {}) {
       const migrations = migrationInventory(repositoryRoot);
       const applied = await adapter.migrationNames(evidence.database.name);
       if (
-        migrations.count !== 43 ||
+        migrations.count !== 44 ||
         JSON.stringify(applied) !==
           JSON.stringify(migrations.migrations.map((migration) => migration.id))
       ) {
-        throw new Error("target database did not receive the exact 43 migrations");
+        throw new Error("target database did not receive the exact 44 migrations");
       }
       const roleName = stageRoleName(evidence);
       const password = randomBytes(32).toString("hex");

@@ -5,6 +5,7 @@ import type { DesignPageEditorChromeProps } from "@/components/editor/design-pag
 import type { DesignPageHistoryQaSummary, DesignPageProjectQaMarkersProps, DesignPageRuntimeQaMarkersProps } from "@/components/editor/design-page/DesignPageQaMarkers";
 import type { DesignPagePresentationQaLayerProps } from "@/components/editor/design-page/DesignPagePresentationQaLayer";
 import type { DesignRenameDialogProps } from "@/components/editor/design-page/DesignRenameDialog";
+import { useDesignPageEarlierVersions } from "@/lib/useDesignPageEarlierVersions";
 import { buildDesignPageBetaFeedbackContext, type DesignPageBetaFeedbackInput } from "@/lib/design-page-beta-feedback";
 import { getRoomTypeLabel } from "@/lib/design-page-house-plan";
 import { getEditorPlanLabel, resolveEditorCapabilities } from "@/lib/editor-capabilities";
@@ -187,7 +188,7 @@ export type DesignPagePresentationQaFacade = {
     presentExport: ReturnType<typeof useDesignPagePresentExportController>;
     editorChrome: DesignPageEditorChromeProps;
     presentationQaLayer: DesignPagePresentationQaLayerProps;
-    designRename: DesignRenameDialogProps;
+    designRename: DesignRenameDialogProps; earlierVersions: ReturnType<typeof useDesignPageEarlierVersions>["dialog"];
   };
 };
 export function useDesignPagePresentationQaFacade({
@@ -198,6 +199,8 @@ export function useDesignPagePresentationQaFacade({
   const editorCapabilities = resolveEditorCapabilities(state.editor.plan);
   const designRename = useDesignPageDesignRename({ snapshot: state.document.snapshot,
     runTransaction: actions.history.runTransaction, setDesignSnapshot: actions.shell.setDesignSnapshot, showToast: actions.feedback.showToast });
+  const earlierVersions = useDesignPageEarlierVersions({ designId: state.identity.designId, cloudRevision: state.persistence.cloudRevision,
+    saveStatus: state.persistence.saveStatus, showToast: actions.feedback.showToast });
   const presentExport = useDesignPagePresentExportController({
     state: {
       tools: {
@@ -393,17 +396,14 @@ export function useDesignPagePresentationQaFacade({
       editor: { setMode: actions.shell.setEditorMode, setDesignPanelOpen: actions.shell.setDesignPanelOpen,
         setDesignPanelCollapsed: actions.shell.setDesignPanelCollapsed,
         setClientPreview: actions.shell.setClientPreview, setUrlMode: actions.shell.setUrlMode },
-      dialogs: { ...actions.dialogs, openDesignRename: designRename.openRename,
+      dialogs: { ...actions.dialogs, openDesignRename: designRename.openRename, openEarlierVersions: earlierVersions.openEarlierVersions,
         setUpgradeReason: actions.shell.setUpgradeReason, setUpgradeOpen: actions.shell.setUpgradeOpen },
       billing: actions.billing,
       persistence: actions.persistence,
       room: actions.room,
       scenePerformance: actions.scenePerformance,
-      sceneLighting: {
-        changePreset: actions.presentation.changeLightingPreset,
-        changeShadowsEnabled: actions.lighting.changeShadowsEnabled,
-        updateSettings: actions.lighting.updateSettings,
-      },
+      sceneLighting: { changePreset: actions.presentation.changeLightingPreset,
+        changeShadowsEnabled: actions.lighting.changeShadowsEnabled, updateSettings: actions.lighting.updateSettings },
       betaStart: actions.betaStart,
       savedViews: savedViewActions(presentExport.actions),
       showToast: actions.feedback.showToast,
@@ -433,8 +433,7 @@ export function useDesignPagePresentationQaFacade({
       history: state.qa.history,
     },
     commandPalette: {
-      open: commandPalette.state.open,
-      query: commandPalette.state.query,
+      open: commandPalette.state.open, query: commandPalette.state.query,
       actions: commandPalette.state.actions,
       returnFocusIds: commandPalette.state.returnFocusIds,
       focusRestorationEnabledRef: commandPalette.state.focusRestorationEnabledRef,
@@ -447,6 +446,7 @@ export function useDesignPagePresentationQaFacade({
     state: { commandPalette: commandPalette.state },
     derived: { betaFeedbackContext, qa: qaReadModel.derived },
     actions: { commandPalette: commandPalette.actions, planCanvas },
-    regions: { presentExport, editorChrome, presentationQaLayer, designRename: designRename.dialog },
+    regions: { presentExport, editorChrome, presentationQaLayer, earlierVersions: earlierVersions.dialog,
+      designRename: designRename.dialog },
   };
 }

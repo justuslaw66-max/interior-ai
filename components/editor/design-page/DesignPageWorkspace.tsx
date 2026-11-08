@@ -367,7 +367,7 @@ export function DesignPageWorkspace() {
   const {
     derived: { betaFeedbackContext },
     regions: { presentExport: presentExportDialog, editorChrome: editorChromeModel,
-      presentationQaLayer: presentationQaLayerModel, designRename: designRenameDialog },
+      presentationQaLayer: presentationQaLayerModel, designRename: designRenameDialog, earlierVersions: earlierVersionsDialog },
   } = presentationQaWorkspace;
   const sceneCanvasRegionModel =
     useDesignPageSceneRegionWorkspaceRegistration({
@@ -409,7 +409,7 @@ export function DesignPageWorkspace() {
       onDownloadImages: presentationBackupRegistration.actions.exportImages,
       onDownloadPdf: presentationBackupRegistration.actions.exportPdf,
       onSignIn: signInWithReturn, onSeePricing: () => { setPlansOpenerId(EDITOR_DOWNLOAD_OPENER_ID); setShowPlans(true); } } },
-    editing: { designRename: designRenameDialog,
+    editing: { designRename: designRenameDialog, earlierVersions: earlierVersionsDialog,
       roomRename: { pendingRoomId: pendingRoomRenameId, value: pendingRoomRenameValue,
         onValueChange: setPendingRoomRenameValue, onCancel: cancelRoomRename, onSave: commitRoomRename },
       annotation: { kind: pendingAnnotationKind, text: pendingAnnotationText, onTextChange: setPendingAnnotationText,

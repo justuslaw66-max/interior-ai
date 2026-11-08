@@ -32,6 +32,8 @@ type CommandBarMoreMenuProps = {
   onDownload?: () => void;
   /** Below `xl` the bar has no room for the design's name, so More offers Rename design. */
   onRenameDesign?: () => void;
+  /** A design in the account: its earlier versions, to restore one. */
+  onOpenEarlierVersions?: () => void;
 };
 
 /** The command bar's More button and menu; on phones, the Menu (UX 4d). */
@@ -62,11 +64,10 @@ export function CommandBarMoreMenu(props: CommandBarMoreMenuProps) {
   );
 }
 
-// New design and My designs come first: both move to another design. Rename design and, on
-// phones, Download follow.
-function MoreMenuDesignItems({
-  menuButtonClass, buttonRef, onClose, showLoadDesign, onNewPlan, onOpenMyDesigns, onDownload, onRenameDesign,
-}: CommandBarMoreMenuProps) {
+// New design and My designs come first: both move to another design. Rename design, on phones
+// Download, and Earlier versions follow.
+function MoreMenuDesignItems(props: CommandBarMoreMenuProps) {
+  const { menuButtonClass, buttonRef, onClose, showLoadDesign, onNewPlan, onOpenMyDesigns, onDownload, onRenameDesign } = props;
   return (
     <>
       <button
@@ -95,33 +96,35 @@ function MoreMenuDesignItems({
           My designs
         </button>
       )}
-      {onRenameDesign ? (
-        <button type="button" role="menuitem" data-testid="editor-command-overflow-rename-design"
-          className={`${menuButtonClass} md:hidden`}
-          onClick={() => {
-            // Rename design from the Menu hands focus back to the Menu (the dialog's opener).
-            buttonRef.current?.focus();
-            onClose();
-            onRenameDesign();
-          }}
-        >
-          Rename design
-        </button>
-      ) : null}
-      {onDownload ? (
-        <button type="button" role="menuitem" data-testid="editor-command-overflow-download"
-          className={`${menuButtonClass} md:hidden`}
-          onClick={() => {
-            // The Download dialog hands focus back to More when there is no Download button.
-            buttonRef.current?.focus();
-            onClose();
-            onDownload();
-          }}
-        >
-          Download
-        </button>
-      ) : null}
+      {/* Each dialog hands focus back to More (its opener) when it closes. */}
+      <MoreMenuDialogItem {...props} testId="editor-command-overflow-rename-design" phoneOnly onSelect={onRenameDesign}>
+        Rename design
+      </MoreMenuDialogItem>
+      <MoreMenuDialogItem {...props} testId="editor-command-overflow-download" phoneOnly onSelect={onDownload}>
+        Download
+      </MoreMenuDialogItem>
+      <MoreMenuDialogItem {...props} testId="editor-command-overflow-earlier-versions" onSelect={props.onOpenEarlierVersions}>
+        Earlier versions
+      </MoreMenuDialogItem>
     </>
+  );
+}
+
+/** An item that opens a dialog: focus goes to More first, since the menu closes. */
+function MoreMenuDialogItem({ menuButtonClass, buttonRef, onClose, testId, phoneOnly = false, onSelect, children }:
+  CommandBarMoreMenuProps & { testId: string; phoneOnly?: boolean; onSelect?: () => void; children: ReactNode }) {
+  if (!onSelect) return null;
+  return (
+    <button type="button" role="menuitem" data-testid={testId}
+      className={phoneOnly ? `${menuButtonClass} md:hidden` : menuButtonClass}
+      onClick={() => {
+        buttonRef.current?.focus();
+        onClose();
+        onSelect();
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
