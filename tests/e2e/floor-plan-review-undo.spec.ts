@@ -11,7 +11,7 @@ const CHOICES = ["condo", "landed", "hdb_top_floor", "condo_penthouse"] as const
 const LANDED_WALL_MM = 3000;
 
 // Roadmap week 1, saving and recovery, PR 3: one Undo and Redo over the upload review's corrections.
-test("the upload review undoes and redoes its corrections, and a saved draft keeps them", async ({ page, baseURL }, testInfo) => {
+test("the upload review undoes and redoes its corrections, and a saved draft starts afresh", async ({ page, baseURL }, testInfo) => {
   if (!baseURL) throw new Error("The import test requires its configured application URL");
   // Reading the PDF takes 13 to 21 s under next dev (multi-room/upload.ts), and the draft save reads it again.
   test.setTimeout(150_000);
@@ -88,17 +88,20 @@ test("the upload review undoes and redoes its corrections, and a saved draft kee
     await expect(homeType).toHaveValue("landed");
     await expect(redo).toBeEnabled();
 
-    // Save review draft sends the document as it now stands, and the history stays.
+    // Save review draft sends the document as it now stands. The history then starts afresh: the server compares what
+    // is sent with the draft it holds, so undoing past it would send detected values back as the person's own.
     await review.getByRole("button", { name: "Save review draft", exact: true }).click();
     await expect(review.getByRole("status").filter({ hasText: /Review draft version \d+ saved/ })).toBeVisible({ timeout: 45_000 });
     const job = await getBetaPrismaClient().floorPlanImportJob.findUnique({ where: { id: jobId }, select: { candidateJson: true } });
     const saved = job?.candidateJson as unknown as { floors: { defaults: { wallHeight: { valueMm: number } } }[] } | null;
     expect(saved?.floors[0]?.defaults.wallHeight.valueMm).toBe(LANDED_WALL_MM);
     await expect(homeType).toHaveValue("landed");
+    await expect(undo).toBeDisabled();
+    await expect(redo).toBeDisabled();
+    await homeType.selectOption("condo");
     await expect(undo).toBeEnabled();
-    await expect(redo).toBeEnabled();
     await undo.click();
-    await expect(homeType).toHaveValue("condo");
+    await expect(homeType).toHaveValue("landed");
 
     expect(renderWarnings).toEqual([]);
     expect(pageErrors).toEqual([]);

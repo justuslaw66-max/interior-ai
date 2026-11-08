@@ -70,7 +70,8 @@ type ShortcutRoot = { querySelectorAll: (selector: string) => ArrayLike<{ matche
 
 /** The upload review's own dialog (`FloorPlanUploadWorkspaceDialog.tsx`). */
 const REVIEW_DIALOG_SELECTOR = '[data-testid="floor-plan-import-dialog"]';
-const KEYBOARD_OWNER_SELECTOR = '[aria-modal="true"], [data-testid="editor-command-palette"]';
+// An inline confirmation (`role="alertdialog"`, e.g. deleting an upload) owns the keys too.
+const KEYBOARD_OWNER_SELECTOR = '[aria-modal="true"], [role="alertdialog"], [data-testid="editor-command-palette"]';
 
 /**
  * The editor's undo keys (`hooks/useUndoRedoHotkeys.ts`), for the review: ⌘Z undoes, ⌘⇧Z and ⌘Y

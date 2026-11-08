@@ -1,4 +1,4 @@
-import { useState, type Dispatch, type SetStateAction } from "react";
+import { useState } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import {
   applyFloorPlanMeasuredPropertyMutationV2,
@@ -98,7 +98,7 @@ function withAssumedDefaultsConfirmed(candidate: FloorPlanDocumentV2, floor: Flo
  */
 export function useFloorPlanReviewHeights(
   candidate: FloorPlanDocumentV2,
-  setCandidate: Dispatch<SetStateAction<FloorPlanDocumentV2 | null>>,
+  setCandidate: (next: FloorPlanDocumentV2 | null) => void,
   restores = 0
 ) {
   const floor = candidate.floors[0];

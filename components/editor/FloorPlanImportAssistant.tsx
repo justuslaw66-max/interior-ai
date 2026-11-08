@@ -182,7 +182,7 @@ export default function FloorPlanImportAssistant({
         draft ? "Validating review draft" : "Validating your corrections", { signal }
       );
       signal.throwIfAborted();
-      replaceCandidate(parseFloorPlanImportDocument(job.candidateJson), { keepHistory: draft }); // a draft keeps its undo
+      replaceCandidate(parseFloorPlanImportDocument(job.candidateJson));
       setIssues(parseFloorPlanImportIssues(job.reviewIssuesJson));
       setState({ kind: "job", job });
       if (draft) setSavedDraftVersion(job.candidateVersion);
@@ -404,7 +404,7 @@ export default function FloorPlanImportAssistant({
           {reviewError}
         </p>
       ) : null}
-      <FloorPlanReviewDraftSave disabled={disabled} submitting={submitting} deletingSource={deletingSource}
+      <FloorPlanReviewDraftSave disabled={photoReviewBusy(disabled,retryingDetection)} submitting={submitting} deletingSource={deletingSource}
         savedVersion={savedDraftVersion} subtle={subtle} history={reviewHistory} onSave={() => void submitReview(issues, true)} />
       <SourceTraceAction.Provider value={{candidateVersion:activeJob.candidateVersion,saved:parseFloorPlanImportDocument(activeJob.candidateJson),onAccept:request=>void retryDetection(undefined,request)}}>
       <PhotoReviewAction.Provider value={(request)=>void retryDetection(request)}><FloorPlanImportReviewPanel

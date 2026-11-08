@@ -24,7 +24,7 @@ type FloorPlanImportReviewPanelProps = {
   candidate: FloorPlanDocumentV2;
   job: ConsumerFloorPlanImportJob;
   issues: FloorPlanReviewIssue[];
-  setCandidate: Dispatch<SetStateAction<FloorPlanDocumentV2 | null>>;
+  setCandidate: (next: FloorPlanDocumentV2 | null) => void;
   setIssues: Dispatch<SetStateAction<FloorPlanReviewIssue[]>>;
   entranceOpeningId: string;
   setEntranceOpeningId: (value: string) => void;
@@ -303,7 +303,7 @@ export default function FloorPlanImportReviewPanel({
         focusedIssueEntityIds={focusedIssueEntityIds}
         focusedIssue={issues.find((issue) => issue.id === focusedIssueId)}
         onChange={(next) => setCandidate(next)}
-        consumerMode proMode={proMode}
+        consumerMode proMode={proMode} restores={reviewRestores}
         manualToolsOpen={manualToolsOpen}
         onManualToolsOpenChange={setManualToolsOpen}
         disabled={disabled}

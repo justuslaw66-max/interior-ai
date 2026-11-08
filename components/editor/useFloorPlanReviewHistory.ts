@@ -24,10 +24,12 @@ export type FloorPlanReviewHistoryControls = {
 /**
  * The upload review's corrections with undo and redo (`lib/floor-plan-review-history.ts`).
  *
- * `setCandidate` records a step for each correction. `replaceCandidate` is for a document the
- * server sends (the job opening, a new page, a detection retried): it starts the history afresh,
- * unless `keepHistory` (a saved draft comes back as it was sent). The buttons and the keyboard
- * shortcuts are `FloorPlanReviewHistoryControls.tsx`, shown while the review is open.
+ * `setCandidate` records a step for each correction; it takes a whole document, never an update
+ * function, since it records the document this render shows. `replaceCandidate` is for a document
+ * the server sends (the job opening, a new page, a detection retried, a draft saved, the review
+ * confirmed): it starts the history afresh. After a save the server compares what is sent with what
+ * it holds, so undoing past a save would send detected values back as the person's own
+ * corrections. The buttons and the keys are `FloorPlanReviewHistoryControls.tsx`.
  */
 export function useFloorPlanReviewHistory(
   candidate: Document | null,
@@ -36,8 +38,7 @@ export function useFloorPlanReviewHistory(
   const [history, setHistory] = useState<ReviewHistory<Document>>(emptyReviewHistory);
   const [restores, setRestores] = useState(0);
 
-  const setCandidate = useCallback<Dispatch<SetStateAction<Document | null>>>((update) => {
-    const next = typeof update === "function" ? update(candidate) : update;
+  const setCandidate = useCallback((next: Document | null) => {
     if (next === candidate) return;
     const now = Date.now();
     if (candidate && next) setHistory((previous) => recordReviewChange(previous, candidate, now));
@@ -45,8 +46,8 @@ export function useFloorPlanReviewHistory(
     setRawCandidate(next);
   }, [candidate, setRawCandidate]);
 
-  const replaceCandidate = useCallback((next: Document | null, options: { keepHistory?: boolean } = {}) => {
-    if (!options.keepHistory || !next) setHistory(emptyReviewHistory<Document>());
+  const replaceCandidate = useCallback((next: Document | null) => {
+    setHistory(emptyReviewHistory<Document>());
     setRawCandidate(next);
   }, [setRawCandidate]);
 

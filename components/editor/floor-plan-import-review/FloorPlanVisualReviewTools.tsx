@@ -32,7 +32,7 @@ type FloorPlanVisualReviewToolsProps = {
   assetRoutePrefix?: string;
   guidedLayout?: boolean;
   openScaleByDefault?: boolean;
-  consumerMode?: boolean; proMode?: boolean;
+  consumerMode?: boolean; proMode?: boolean; /** Undo or Redo put back a document this many times: correction fields read it again. */ restores?: number;
   manualToolsOpen?: boolean;
   onManualToolsOpenChange?: (value: boolean) => void;
   previewOnly?: boolean;
@@ -49,7 +49,7 @@ export default function FloorPlanVisualReviewTools({
   assetRoutePrefix,
   guidedLayout = false,
   openScaleByDefault = false,
-  consumerMode = false, proMode = false,
+  consumerMode = false, proMode = false, restores = 0,
   manualToolsOpen = false,
   onManualToolsOpenChange,
   previewOnly = false,
@@ -126,7 +126,7 @@ export default function FloorPlanVisualReviewTools({
       <FloorPlanPendingSpanReview key={`spans:${sourceId}:${pageNumber}`} document={document} floorId={floor.id} sourceId={sourceId}
         page={page} points={scalePoints} onPick={()=>{setScalePoints([]);pick("scale");}} onChange={onChange} disabled={disabled}
         onSelect={(id,points)=>{setFocusedCorrectionIds(id?[id]:[]);setScalePoints(points);pick("scale",false);}}/>
-      <FloorPlanScaleReviewPanel key={`${sourceId}:${page?.pageNumber}`}
+      <FloorPlanScaleReviewPanel key={`${sourceId}:${page?.pageNumber}:${restores}`}
         document={document}
         floorId={floor.id}
         sourceId={sourceId}
@@ -159,7 +159,7 @@ export default function FloorPlanVisualReviewTools({
         <p className="mt-2 text-xs leading-4 text-label-secondary">
           Most uploads do not need these controls. Use them only to repair a specific wall, opening, structural object, dimension, or orientation.
         </p>
-        <FloorPlanTopologyCorrectionPanel
+        <FloorPlanTopologyCorrectionPanel key={restores}
           document={document}
           onChange={onChange}
           onFocusIds={setFocusedCorrectionIds}

@@ -129,6 +129,9 @@ function redo(history: ReviewHistory<Doc>, current: Doc) {
   assert.equal(reviewHistoryShortcut(key({ ctrlKey: true, isComposing: true }), other), null, "an input method's composition");
   assert.equal(reviewHistoryShortcut(key({ ctrlKey: true }), { isMac: false, root: rootWith(reviewDialog, otherDialog) }), null,
     "a dialog over the review owns the keyboard");
+  let asked = "";
+  reviewHistoryShortcut(key({ ctrlKey: true }), { isMac: false, root: { querySelectorAll: (selector: string) => { asked = selector; return []; } } });
+  assert.match(asked, /\[role="alertdialog"\]/, "an inline confirmation (deleting an upload) owns the keys too");
   assert.equal(reviewHistoryShortcut(key({ ctrlKey: true }), { isMac: false, root: null }), "undo");
 }
 
@@ -141,15 +144,18 @@ function redo(history: ReviewHistory<Doc>, current: Doc) {
 
   const assistant = source("components/editor/FloorPlanImportAssistant.tsx");
   assert.doesNotMatch(assistant, /setCandidate\(parseFloorPlanImportDocument/, "documents from the server never become undo steps");
-  assert.equal(assistant.match(/replaceCandidate\(parseFloorPlanImportDocument\(job\.candidateJson\)/g)?.length, 3);
-  assert.match(assistant, /replaceCandidate\(parseFloorPlanImportDocument\(job\.candidateJson\), \{ keepHistory: draft \}\)/,
-    "a saved draft keeps its history; confirmed corrections end it");
-  assert.match(assistant, /<FloorPlanReviewDraftSave [\s\S]*?history=\{reviewHistory\}/);
+  // Every document the server sends starts the history afresh, a saved draft included: the server compares what is
+  // sent with what it holds, so undoing past a save would send detected values back as the person's corrections.
+  assert.equal(assistant.match(/replaceCandidate\(parseFloorPlanImportDocument\(job\.candidateJson\)\);/g)?.length, 3);
+  assert.doesNotMatch(assistant, /keepHistory/);
+  assert.match(assistant, /<FloorPlanReviewDraftSave disabled=\{photoReviewBusy\(disabled,retryingDetection\)\}[\s\S]*?history=\{reviewHistory\}/,
+    "Undo, Redo and Save review draft stand still during a detection retry");
   assert.match(assistant, /reviewRestores=\{reviewHistory\.restores\}/);
 
   const hook = source("components/editor/useFloorPlanReviewHistory.ts");
   assert.match(hook, /if \(candidate && next\) setHistory\(\(previous\) => recordReviewChange\(previous, candidate, now\)\);\n\s*else setHistory\(emptyReviewHistory<Document>\(\)\);/);
-  assert.match(hook, /if \(!options\.keepHistory \|\| !next\) setHistory\(emptyReviewHistory<Document>\(\)\);/);
+  assert.match(hook, /const replaceCandidate = useCallback\(\(next: Document \| null\) => \{\n\s*setHistory\(emptyReviewHistory<Document>\(\)\);/);
+  assert.match(hook, /const setCandidate = useCallback\(\(next: Document \| null\) => \{/, "a whole document, never an update function");
   assert.equal(hook.match(/setRestores\(\(count\) => count \+ 1\);/g)?.length, 2, "undo and redo both count as a restore");
 
   const draftSave = source("components/editor/floor-plan-import-review/FloorPlanReviewDraftSave.tsx");
@@ -162,6 +168,11 @@ function redo(history: ReviewHistory<Doc>, current: Doc) {
 
   const panel = source("components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx");
   assert.match(panel, /useFloorPlanReviewHeights\(candidate, setCandidate, reviewRestores\)/);
+  assert.match(panel, /consumerMode proMode=\{proMode\} restores=\{reviewRestores\}/);
+  // Correction fields copied from the document (a corner's X and Z, an opening's width, the scale) read it again.
+  const tools = source("components/editor/floor-plan-import-review/FloorPlanVisualReviewTools.tsx");
+  assert.match(tools, /<FloorPlanScaleReviewPanel key=\{`\$\{sourceId\}:\$\{page\?\.pageNumber\}:\$\{restores\}`\}/);
+  assert.match(tools, /<FloorPlanTopologyCorrectionPanel key=\{restores\}/);
   const heights = source("components/editor/floor-plan-import-review/useFloorPlanReviewHeights.ts");
   assert.match(heights, /if \(readForRestores !== restores\) \{\n\s*setReadForRestores\(restores\);\n\s*setHomeType\(reviewHomeTypeFor\(floor\)\);/,
     "after Undo or Redo the home type is read from the document put back");
