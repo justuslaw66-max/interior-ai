@@ -9,6 +9,7 @@ import {
   type ReviewSourceSnapResult,
 } from "@/lib/floor-plan-import-review-geometry";
 import FloorPlanSourceReviewOverlay from "./FloorPlanSourceReviewOverlay";
+import FloorPlanReviewPlanDrawing from "./FloorPlanReviewPlanDrawing";
 import FloorPlanSourceReviewToolbar from "./FloorPlanSourceReviewToolbar";
 import type { ConsumerFloorPlanImportJob } from "../floor-plan-import-ui-types";
 import { useFloorPlanReviewZoom } from "./useFloorPlanReviewZoom";
@@ -89,7 +90,7 @@ export default function FloorPlanSourceReviewCanvas({
     () => new Set(focusedEntityIds),
     [focusedEntityIds]
   );
-  const sourceReview = useSourceReviewLayers(document, floorId, sourceId, page?.pageNumber, focused);
+  const sourceReview = useSourceReviewLayers(document, floorId, sourceId, page, focused);
 
   const presentation = sourceReviewPresentation(sourceReview.layer, sourceOpacity, overlayOpacity);
   const visibleOverlay = sourceReviewOverlay(sourceReview.layer, overlay);
@@ -140,24 +141,14 @@ export default function FloorPlanSourceReviewCanvas({
     else onOpeningPoint?.(snap.point);
   };
   const isCad = Boolean(adapterId && /(dxf|ifc|dwg)/i.test(adapterId));
-  const labels = sourceReviewLabels(presentation.artworkView,isCad,Boolean(overlay));
+  const labels = sourceReviewLabels(presentation.artworkView,isCad,Boolean(overlay),presentation.planView);
   const picking = pickingScale || pickingRoom || pickingOpening;
   const lensSize = Math.max(
     60,
     Math.min(page.widthPx, page.heightPx) / 12
   );
-  const lensX = hoverSnap
-    ? Math.max(
-        0,
-        Math.min(page.widthPx - lensSize, hoverSnap.point.x - lensSize / 2)
-      )
-    : 0;
-  const lensY = hoverSnap
-    ? Math.max(
-        0,
-        Math.min(page.heightPx - lensSize, hoverSnap.point.y - lensSize / 2)
-      )
-    : 0;
+  const lensX = hoverSnap ? Math.max(0, Math.min(page.widthPx - lensSize, hoverSnap.point.x - lensSize / 2)) : 0;
+  const lensY = hoverSnap ? Math.max(0, Math.min(page.heightPx - lensSize, hoverSnap.point.y - lensSize / 2)) : 0;
 
   return (
     <section className="mt-3" aria-label="Interactive 2D preview">
@@ -218,6 +209,7 @@ export default function FloorPlanSourceReviewCanvas({
             role="group"
             viewBox={`0 0 ${page.widthPx} ${page.heightPx}`}
           >
+            <FloorPlanReviewPlanDrawing drawing={sourceReview.plan} />
             <FloorPlanSourceReviewOverlay overlay={visibleOverlay} focused={focused} pickingRoom={pickingRoom}
               opacity={presentation.overlayOpacity} annotations={sourceReview.visible} selectedId={sourceReview.selectedId}
               picking={picking} onSelect={sourceReview.select} />

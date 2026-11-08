@@ -13,7 +13,8 @@ export default function FloorPlanSourceReviewToolbar(props:Props) {
   const {sourceReview,document,sourceId,pageNumber}=props;
   return <>
     {!props.previewOnly?<FloorPlanSourceTracePanel {...props}/>:null}
-    {sourceReview.artwork.some(isFinalSourceTrace)?<FloorPlanSourceCompareToggle layer={sourceReview.layer} onLayer={sourceReview.onLayer} wipe={sourceReview.wipe} onWipe={sourceReview.setWipe}/>:null}
+    {sourceReview.planAvailable||sourceReview.artwork.some(isFinalSourceTrace)?<FloorPlanSourceCompareToggle layer={sourceReview.layer} onLayer={sourceReview.onLayer} wipe={sourceReview.wipe} onWipe={sourceReview.setWipe}
+      plan={sourceReview.planAvailable} traced={sourceReview.artwork.some(isFinalSourceTrace)}/>:null}
     <FloorPlanSourceArtworkSelection {...props} {...sourceReview} count={sourceReview.artwork.length} visibleCount={sourceReview.visible.length} onClose={()=>sourceReview.select("")}/>
     {sourceReview.artwork.some(isFinalSourceTrace)?<FloorPlanTraceExport document={document} sourceId={sourceId} pageNumber={pageNumber}/>:null}
   </>;

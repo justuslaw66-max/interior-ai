@@ -629,6 +629,15 @@ async function main() {
       assert.equal(traced.drawing?.version, "faithful-trace-r6");
       assert.equal(traced.drawing?.items[0].tone, 120, "the faithful drawing replaces stage 1's, tones and all");
       assert.equal(traced.rooms.length > 0, true, "the rest of the evidence is stage 1's");
+      // Stage 1's text boxes stay with the faithful drawing (it marks none), so the clean plan can leave the traced
+      // lettering out.
+      const lettered = path.join(directory, "lettered.evidence.json");
+      writeFileSync(lettered, JSON.stringify({ ...JSON.parse(readFileSync(fixture, "utf8")),
+        drawing: { version: "stage1-svg-1", items: [], textBoxes: [[20, 30, 80, 44]] } }));
+      writeFileSync(path.join(directory, "app_evidence.py"), `import sys, shutil\nshutil.copyfile(${JSON.stringify(lettered)}, sys.argv[2])\n`);
+      const withBoxes = await faithfulRun(`import sys, json\njson.dump(json.loads(${JSON.stringify(JSON.stringify(faithfulDrawing))}), open(sys.argv[2], 'w'))\n`);
+      assert.deepEqual(withBoxes.drawing?.textBoxes, [[20, 30, 80, 44]], "stage 1's text boxes are kept on the faithful drawing");
+      writeFileSync(path.join(directory, "app_evidence.py"), `import sys, shutil\nshutil.copyfile(${JSON.stringify(fixture)}, sys.argv[2])\n`);
       const skipped = await faithfulRun("import sys, json\njson.dump({'skipped': 'picture not crisp enough'}, open(sys.argv[2], 'w'))\n");
       assert.equal(JSON.stringify(skipped.drawing), stage1Drawing, "a page it leaves keeps stage 1's drawing");
       assert.ok(skipped.semantics.notes.includes("Faithful trace not used: picture not crisp enough"));
