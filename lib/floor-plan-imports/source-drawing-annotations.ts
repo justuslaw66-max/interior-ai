@@ -4,6 +4,7 @@ import { sourceDrawingGeometryError, type FloorPlanSourceDrawingGeometryV2 } fro
 import type { FloorPlanReviewIssue } from "./types";
 import type { RegisteredPageEvidence } from "./deterministic-evidence";
 import { sourceProposalAnnotations } from "./source-proposal-annotations";
+import { sourceStrokePaths } from "./source-stroke-paths";
 
 /** Preserve private source marks independently of semantic/topology success. */
 export function sourceDrawingAnnotations(page: RegisteredPageEvidence | undefined, sourceId: string, version: string, issues: FloorPlanReviewIssue[] = []) {
@@ -11,12 +12,14 @@ export function sourceDrawingAnnotations(page: RegisteredPageEvidence | undefine
   if (!page) return annotations;
   let rejected = 0;
   const conflictIds: string[] = [];
+  const drawing = (command: FloorPlanSourceDrawingGeometryV2["command"], points: FloorPlanSourceDrawingGeometryV2["points"],
+    extra: Partial<FloorPlanSourceDrawingGeometryV2> = {}): FloorPlanSourceDrawingGeometryV2 => ({
+    kind: "source_drawing", sourceId, pageNumber: page.pageNumber, widthPx: page.widthPx, heightPx: page.heightPx, command, points, ...extra,
+  });
   const add = (command: FloorPlanSourceDrawingGeometryV2["command"],
-    points: FloorPlanSourceDrawingGeometryV2["points"], text: string, raster: boolean, textRotationDegrees?: number, reviewRequired = false) => {
-    const geometry: FloorPlanSourceDrawingGeometryV2 = {
-      kind: "source_drawing", sourceId, pageNumber: page.pageNumber,
-      widthPx: page.widthPx, heightPx: page.heightPx, command, points, ...(textRotationDegrees ? { textRotationDegrees } : {}),
-    };
+    points: FloorPlanSourceDrawingGeometryV2["points"], text: string, raster: boolean, textRotationDegrees?: number, reviewRequired = false,
+    pathCommands?: FloorPlanSourceDrawingGeometryV2["pathCommands"]) => {
+    const geometry = drawing(command, points, { ...(textRotationDegrees ? { textRotationDegrees } : {}), ...(pathCommands ? { pathCommands } : {}) });
     if (sourceDrawingGeometryError(geometry)) { rejected++; return; }
     const provenance: FloorPlanEntityProvenanceV2 = {
       confidence: 0, extractionVersion: version, reviewHistory: [],
@@ -32,8 +35,15 @@ export function sourceDrawingAnnotations(page: RegisteredPageEvidence | undefine
       scope: "reference", geometry, provenance,
     });
   };
-  for (const segment of page.vectorSegments) {
-    add("line", [segment.start, segment.end], "", segment.evidenceKind === "raster_linework");
+  // Straight strokes joined into one path per connected group (source-stroke-paths.ts): the same picture, far fewer marks.
+  const drawable = page.vectorSegments.filter((segment) => {
+    if (!sourceDrawingGeometryError(drawing("line", [segment.start, segment.end]))) return true;
+    rejected++;
+    return false;
+  });
+  for (const raster of [false, true]) {
+    const strokes = drawable.filter((segment) => (segment.evidenceKind === "raster_linework") === raster);
+    for (const path of sourceStrokePaths(strokes)) add("path", path.points, "", raster, undefined, false, path.pathCommands);
   }
   for (const path of page.vectorPaths) {
     for (const curve of path.curves ?? []) {
