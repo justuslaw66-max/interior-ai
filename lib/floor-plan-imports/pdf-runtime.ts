@@ -13,11 +13,15 @@ export async function loadFloorPlanPdfRuntime() {
   // folder (a file path ending in a separator: in Node PDF.js reads them with fs). Without it such a picture is left
   // off the rendered page, as brochures scanned to black and white draw their plans (1 Suites, 10 Shelford, 120 Grange).
   const wasmUrl = path.join(path.dirname(workerPath), "..", "..", "wasm") + path.sep;
+  // With `outlines` every font is drawn from its own outlines (pdf-own-drawing.ts): a font the PDF does not embed is
+  // PDF.js's own standard font from this folder, never a system font that has no outline to keep.
+  const standardFontDataUrl = path.join(path.dirname(workerPath), "..", "..", "standard_fonts") + path.sep;
   return {
-    createLoadingTask: (bytes: Uint8Array) => pdfjs.getDocument({
+    createLoadingTask: (bytes: Uint8Array, outlines = false) => pdfjs.getDocument({
       data: bytes.slice(),
-      useSystemFonts: true,
+      useSystemFonts: !outlines,
       wasmUrl,
+      ...(outlines ? { standardFontDataUrl, disableFontFace: true } : {}),
     }),
     OPS: pdfjs.OPS,
   };

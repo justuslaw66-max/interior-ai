@@ -1,4 +1,5 @@
 import { extractSourceArtwork } from "./source-artwork-trace";
+import { pdfOwnDrawings,type OwnDrawing } from "./pdf-own-drawing";
 import { extractRasterLinework, normalizeRasterForLinework,type RasterLineworkDiagnostics } from "./raster-linework";
 import type { FloorPlanAdapterContext,StoredFloorPlanSource } from "./source-adapter";
 import type { FloorPlanRenderedPage } from "./types";
@@ -10,13 +11,17 @@ const emptySemantics=():PageSemanticEvidence=>({planRegion:null,unitSystem:"unkn
  * whose plan is a picture but whose headings are vector text). With the vectorizer's own drawing the trace is the clean
  * traced drawing (source-strokes-v3, or the faithful trace as it is); without one, the artwork trace. With the faithful
  * trace on (`faithfulOnly`), a page's traced drawing is the faithful trace or none: the older traces are not drawn
- * (J, 24 Oct), and the page's picture shows as it is.
+ * (J, 24 Oct), and the page's picture shows as it is. A vector PDF page with no picture on it is drawn from the PDF
+ * itself instead (`pdf`, pdf-own-drawing.ts), wherever that draws it exactly; the tracers stay for the rest.
  */
 export async function attachSourceArtwork(pages:RegisteredPageEvidence[],rasterPages:RegisteredPageEvidence[],rendered:FloorPlanRenderedPage[],
-  context:FloorPlanAdapterContext,faithfulOnly:boolean) {
-  for(const page of pages) {
-    const clean=pageCleanDrawing(page),faithful=isFaithfulDrawing(clean);
-    if(!rasterPages.includes(page)&&!faithful)continue;
+  context:FloorPlanAdapterContext,faithfulOnly:boolean,pdf?:StoredFloorPlanSource) {
+  const traced=pages.filter(page=>rasterPages.includes(page)||isFaithfulDrawing(pageCleanDrawing(page)));
+  const own=pdf?await pdfOwnDrawings(pdf.bytes,traced.filter(page=>page.vectorPaths.length&&!page.rasterRegions?.length),context.signal):new Map<number,OwnDrawing>();
+  for(const page of traced) {
+    const clean=pageCleanDrawing(page),faithful=isFaithfulDrawing(clean),drawn=own.get(page.pageNumber);
+    if(drawn&&"trace" in drawn){page.sourceArtwork=drawn.trace;continue;}
+    if(drawn)page.semantics.notes.push(`Traced from the page picture: the PDF's own drawing was not used (${drawn.reason}).`);
     if(faithfulOnly&&!faithful){page.semantics.notes.push("No traced drawing: the faithful trace did not draw this page, and the older traces are not drawn while it is on.");continue;}
     const preview=rendered.find(p=>p.pageNumber===page.pageNumber);
     try {
