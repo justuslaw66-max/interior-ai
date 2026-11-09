@@ -260,7 +260,7 @@ function samplePath(geometry: FloorPlanSourceDrawingGeometryV2, stepPx: number) 
 /** Whether a trace shape is a fixture to keep: not lettering, larger than a speck, not a floor's tint, and mostly on
  * the plan, off what the model draws itself. */
 function isTracedFixture(geometry: FloorPlanSourceDrawingGeometryV2, ground: PlanGround, projection: Projection, pxPerMm: number) {
-  if (geometry.command === "text" || geometry.groupId?.startsWith("faithful-letter-")) return false;
+  if (geometry.command === "text" || geometry.groupId?.startsWith("faithful-letter-") || geometry.groupId?.startsWith("pdf-letter-")) return false;
   const xs = geometry.points.map((p) => p.x), ys = geometry.points.map((p) => p.y);
   const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
   if (span < REVIEW_PLAN_STYLE.fixtureMinSpanMm * pxPerMm) return false;

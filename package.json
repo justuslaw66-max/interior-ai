@@ -228,6 +228,7 @@
     "test:floor-plan-review-plan-drawing": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-review-plan-drawing.ts",
     "test:floor-plan-pdf-wall-snap": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-pdf-wall-snap.ts",
     "test:floor-plan-pdf-fill-walls": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-pdf-fill-walls.ts",
+    "test:floor-plan-pdf-own-drawing": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-pdf-own-drawing.ts",
     "test:floor-plan-import-recovery-notice": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-import-recovery-notice.ts",
     "test:floor-plan-source-stroke-paths": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-source-stroke-paths.ts",
     "test:floor-plan-vectorizer-pdf-pages": "npx ts-node --transpile-only --compiler-options '{\"module\":\"CommonJS\",\"moduleResolution\":\"node\"}' -r tsconfig-paths/register scripts/test-floor-plan-vectorizer-pdf-pages.ts",

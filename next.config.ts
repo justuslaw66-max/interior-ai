@@ -13,6 +13,8 @@ const SHARP_LINUX_NATIVE_FILES = [
 const PDFJS_RUNTIME_FILES = [
   "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs",
   "./node_modules/pdfjs-dist/wasm/**/*",
+  // The standard fonts, as outlines, for a PDF's own drawing of a font it does not embed (pdf-own-drawing.ts).
+  "./node_modules/pdfjs-dist/standard_fonts/**/*",
 ];
 
 const nextConfig: NextConfig = {
