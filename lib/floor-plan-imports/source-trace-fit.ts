@@ -1,7 +1,9 @@
 import type { SourcePointPx as Point } from "./deterministic-evidence";
 export type TraceCommand = "M" | "L" | "C" | "Z";
 /** `tone`: the grey the path is drawn in (0 black - 255 white), where the trace knows it (the faithful trace). */
-export type TracePath = { points: Point[]; commands: TraceCommand[]; fill: boolean; strokeWidthPx: number; groupId: string; tone?: number };
+export type TracePath = { points: Point[]; commands: TraceCommand[]; fill: boolean; strokeWidthPx: number; groupId: string; tone?: number;
+  /** How the line ends and turns where it is not the views' butt ends and mitred corners (a PDF's own drawing). */
+  lineCap?: "round" | "square"; lineJoin?: "round" | "bevel" };
 const distance = (a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
 const blend = (a:Point,b:Point,t:number)=>({x:a.x*(1-t)+b.x*t,y:a.y*(1-t)+b.y*t});
 

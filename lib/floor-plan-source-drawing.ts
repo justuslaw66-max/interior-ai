@@ -13,6 +13,9 @@ export type FloorPlanSourceDrawingGeometryV2 = {
   groupId?: string;
   /** The grey it is drawn in (0 black - 255 white), where the trace knows it (the faithful trace). */
   tone?: number;
+  /** Round or square line ends and round or bevelled corners, where the source draws them so (a PDF's own drawing). */
+  lineCap?: "round" | "square";
+  lineJoin?: "round" | "bevel";
   points: Array<{ x: number; y: number }>;
 };
 
@@ -25,7 +28,7 @@ export function sourceDrawingGeometryError(geometry: FloorPlanSourceDrawingGeome
     (!Number.isFinite(geometry.textRotationDegrees) || Math.abs(geometry.textRotationDegrees) > 360)) {
     return "Source text rotation must be a finite angle in degrees.";
   }
-  const commandError = sourceCommandError(geometry) ?? sourceToneError(geometry.tone);
+  const commandError = sourceCommandError(geometry) ?? sourceToneError(geometry.tone) ?? sourceLineEndsError(geometry);
   if (commandError) return commandError;
   if (!geometry.sourceId || !Number.isSafeInteger(geometry.pageNumber) || geometry.pageNumber < 1 ||
     ![geometry.widthPx, geometry.heightPx].every(validPageLength)) {
@@ -65,9 +68,11 @@ export function sourceDrawingInk(geometry: Pick<FloorPlanSourceDrawingGeometryV2
  * the page like the picture under it (drawn in screen pixels, a page shown at half size would get lines twice too
  * thick). Any other source shape (a proposal, a raster candidate) is a review mark of a fixed screen width.
  */
-export function sourceDrawingStroke(geometry: Pick<FloorPlanSourceDrawingGeometryV2, "strokeWidthPx">, finalTrace: boolean,
-  selected = false): { strokeWidth: number; vectorEffect?: "non-scaling-stroke" } {
-  return finalTrace ? { strokeWidth: geometry.strokeWidthPx ?? 1 } : { strokeWidth: selected ? 4 : 1.5, vectorEffect: "non-scaling-stroke" };
+export function sourceDrawingStroke(geometry: Pick<FloorPlanSourceDrawingGeometryV2, "strokeWidthPx" | "lineCap" | "lineJoin">, finalTrace: boolean,
+  selected = false): { strokeWidth: number; vectorEffect?: "non-scaling-stroke"; strokeLinecap?: "round" | "square"; strokeLinejoin?: "round" | "bevel" } {
+  if (!finalTrace) return { strokeWidth: selected ? 4 : 1.5, vectorEffect: "non-scaling-stroke" };
+  return { strokeWidth: geometry.strokeWidthPx ?? 1, ...(geometry.lineCap ? { strokeLinecap: geometry.lineCap } : {}),
+    ...(geometry.lineJoin ? { strokeLinejoin: geometry.lineJoin } : {}) };
 }
 
 export function sourceDrawingSvgPoints(points: FloorPlanSourceDrawingGeometryV2["points"]) {
@@ -87,6 +92,12 @@ function sourceCommandError(geometry: FloorPlanSourceDrawingGeometryV2): string 
 }
 
 const validStrokeWidth = (value:number) => Number.isFinite(value) && value > 0 && value <= 100;
+
+/** Round or square ends and round or bevelled corners, where the source draws them so. */
+function sourceLineEndsError(geometry: FloorPlanSourceDrawingGeometryV2): string | null {
+  const capOk = [undefined, "round", "square"].includes(geometry.lineCap), joinOk = [undefined, "round", "bevel"].includes(geometry.lineJoin);
+  return capOk && joinOk ? null : "Invalid source line ends.";
+}
 
 /** A grey, 0 black - 255 white, where the trace gave one. */
 function sourceToneError(tone: number | undefined): string | null {

@@ -2185,7 +2185,7 @@ export class PdfRasterFloorPlanSourceAdapter implements FloorPlanSourceAdapter {
       rankPages: rankFloorPlanSemanticPages,
       mergeSemantics: (deterministic, semantic, page) => mergeSemantics(deterministic, semantic, vectorizerReadingsLead(page)),
     });
-    await attachSourceArtwork(pages,rasterEvidence?.pages??[],renderedPages,context,this.vectorizerProvider?.drawsFaithfully===true);
+    await attachSourceArtwork(pages,rasterEvidence?.pages??[],renderedPages,context,this.vectorizerProvider?.drawsFaithfully===true,source.mimeType==="application/pdf"?source:undefined);
     const semanticPages = rankFloorPlanSemanticPages(pages).slice(
       0,
       MAX_SEMANTIC_PAGES
