@@ -56,7 +56,7 @@ async function commitFork(input:Input,job:ReviewJob,pages:ReturnType<typeof pars
     const store=new PrismaFloorPlanSourceStore(transaction),copies=[];
     for(const page of pages){const asset=await store.readDerivative(page.assetKey);if(!asset)throw new Error("The source preview was removed.");
       if(asset.mimeType!=="image/png"&&asset.mimeType!=="image/webp")throw new Error("The source preview type is unsupported.");
-      const assetKey=await store.putDerivative({jobId:created.id,fileName:asset.fileName,mimeType:asset.mimeType,bytes:asset.bytes});copies.push({...page,assetKey});}
+      const assetKey=await store.putDerivative({jobId:created.id,fileName:asset.fileName,mimeType:asset.mimeType,bytes:asset.bytes});copies.push({...page,assetKey,displayAssetKey:undefined});} // a photo's correction redraws the page; no PDF display picture
     const reviewExtractionAssetId=await store.putDerivative({jobId:created.id,fileName:"source-review-observations.json",mimeType:"application/json",bytes:observations});
     const document={...result.document,id:`import-${created.id}`,revisionId:`candidate-${created.id}-1`,parentRevisionId:undefined};
     const sourceManifest={...result.sourceManifest,reviewExtractionAssetId,photoReviewParent:{jobId:job.id,candidateVersion:job.candidateVersion,

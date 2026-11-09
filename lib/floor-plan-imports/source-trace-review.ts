@@ -82,7 +82,10 @@ async function createTraceReview(tx:Prisma.TransactionClient,store:PrismaFloorPl
   document:ReturnType<typeof replaceSourceTrace>,pack:TracePack) {
   const child=await new PrismaFloorPlanImportJobRepository(tx).create({userId:job.userId,sourceAssetId:job.sourceAssetId,privacy:privacy(job)}),copies=[];
   for(const page of pages){const asset=await store.readDerivative(page.assetKey);if(!asset || (asset.mimeType!=="image/png" && asset.mimeType!=="image/webp"))throw new Error("Source preview was removed or has an unsupported type.");
-    const assetKey=await store.putDerivative({jobId:child.id,fileName:asset.fileName,mimeType:asset.mimeType,bytes:asset.bytes});copies.push({...page,assetKey});}
+    const assetKey=await store.putDerivative({jobId:child.id,fileName:asset.fileName,mimeType:asset.mimeType,bytes:asset.bytes});
+    const display=page.displayAssetKey?await store.readDerivative(page.displayAssetKey):null; // the review's sharper picture, when kept
+    const displayAssetKey=display?.mimeType==="image/png"?await store.putDerivative({jobId:child.id,fileName:display.fileName,mimeType:"image/png",bytes:display.bytes}):undefined;
+    copies.push({...page,assetKey,displayAssetKey});}
   const manifest={...((job.sourceManifestJson??{}) as Record<string,unknown>)};
   if(typeof manifest.reviewExtractionAssetId==="string"){
     const observation=await store.readDerivative(manifest.reviewExtractionAssetId);if(!observation || observation.mimeType!=="application/json")throw new Error("Source observations were removed or have an unsupported type.");

@@ -62,6 +62,7 @@ const renderedPageSchema = z.object({
   widthPx: z.number().int().positive().max(100_000),
   heightPx: z.number().int().positive().max(100_000),
   assetKey: z.string().trim().min(1).max(500),
+  displayAssetKey: z.string().trim().min(1).max(500).optional(),
   normalization: z
     .object({
       kind: z.literal("raster_deskew_v1"),

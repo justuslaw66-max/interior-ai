@@ -80,6 +80,8 @@ export type FloorPlanRenderedPage = {
   widthPx: number;
   heightPx: number;
   assetKey: string;
+  /** A sharper picture of the same page in the same frame, for people to look at only (a PDF page at 432 dpi). */
+  displayAssetKey?: string;
   normalization?: {
     kind: "raster_deskew_v1";
     coordinateSpace: "exif_oriented_source_px_to_rendered_px";

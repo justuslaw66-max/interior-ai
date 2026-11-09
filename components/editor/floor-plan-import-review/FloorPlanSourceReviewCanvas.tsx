@@ -44,6 +44,9 @@ type FloorPlanSourceReviewCanvasProps = {
   previewOnly?: boolean;
 };
 
+/** The page's picture to look at: the sharper one when the import kept it (pdf-display-picture.ts), same frame. */
+const pagePictureUrl = (prefix: string, page: { assetKey: string; displayAssetKey?: string }) => `${prefix}/${encodeURIComponent(page.displayAssetKey ?? page.assetKey)}`;
+
 export default function FloorPlanSourceReviewCanvas({
   document,
   floorId,
@@ -98,10 +101,7 @@ export default function FloorPlanSourceReviewCanvas({
     A preview of your floor plan is not available. Use guided tracing.
   </p>;
 
-  const assetUrl = `${
-    assetRoutePrefix ??
-    `/api/floor-plan-imports/${encodeURIComponent(jobId)}/assets`
-  }/${encodeURIComponent(page.assetKey)}`;
+  const assetUrl = pagePictureUrl(assetRoutePrefix ?? `/api/floor-plan-imports/${encodeURIComponent(jobId)}/assets`, page);
   const pointFromEvent = (event: MouseEvent<SVGSVGElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
     if (!bounds.width || !bounds.height) return null;

@@ -105,6 +105,7 @@ import {
   matchPrivateUploadToCatalogDraft,
   resolveCatalogFloorPlanDraftMatch,
 } from "./catalog-draft-match";
+import { storePdfDisplayPicture } from "./pdf-display-picture";
 
 const EXTRACTION_VERSION = "pdf-raster-hybrid-2.6.0";
 const MAX_PDF_PAGES = 30;
@@ -532,19 +533,12 @@ async function renderPdf(
         canvasContext: canvasContext as unknown as CanvasRenderingContext2D,
         viewport,
       }).promise;
-      const bytes = new Uint8Array(canvas.toBuffer("image/png"));
       const assetKey = await context.store.putDerivative({
-        jobId: context.jobId,
-        fileName: `page-${pageNumber}.png`,
-        mimeType: "image/png",
-        bytes,
+        jobId: context.jobId, fileName: `page-${pageNumber}.png`, mimeType: "image/png", bytes: new Uint8Array(canvas.toBuffer("image/png")),
       });
-      result.push({
-        pageNumber,
-        widthPx: canvas.width,
-        heightPx: canvas.height,
-        assetKey,
-      });
+      // The review's sharper picture of the same page (pdf-display-picture.ts); nothing reads geometry from it.
+      const displayAssetKey = await storePdfDisplayPicture(page, PDF_RENDER_SCALE * pixelScale, pageNumber, createCanvas, context);
+      result.push({ pageNumber, widthPx: canvas.width, heightPx: canvas.height, assetKey, ...(displayAssetKey ? { displayAssetKey } : {}) });
     }
     return result;
   } finally {
