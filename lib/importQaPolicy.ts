@@ -5,6 +5,10 @@ export type ImportQaLimits = {
   maxTextureResolution: number;
   minAabbAxisMeters: number;
   maxAabbAxisMeters: number;
+  /** Mesh-vs-catalog proportion drift that is still accepted silently (0.05 = 5 %). */
+  dimensionWarnRatio: number;
+  /** Mesh-vs-catalog proportion drift that blocks the import. */
+  dimensionErrorRatio: number;
 };
 
 export const DEFAULT_IMPORT_QA_LIMITS: ImportQaLimits = {
@@ -14,6 +18,8 @@ export const DEFAULT_IMPORT_QA_LIMITS: ImportQaLimits = {
   maxTextureResolution: 2048,
   minAabbAxisMeters: 0.05,
   maxAabbAxisMeters: 8,
+  dimensionWarnRatio: 0.05,
+  dimensionErrorRatio: 0.15,
 };
 
 function envNumber(name: string, fallback: number, env: NodeJS.ProcessEnv): number {
@@ -61,6 +67,10 @@ export function resolveImportQaLimits(env: NodeJS.ProcessEnv = process.env): Imp
       DEFAULT_IMPORT_QA_LIMITS.maxAabbAxisMeters,
       env
     ),
+    dimensionWarnRatio:
+      envNumber("IMPORT_QA_DIMENSION_WARN_PCT", DEFAULT_IMPORT_QA_LIMITS.dimensionWarnRatio * 100, env) / 100,
+    dimensionErrorRatio:
+      envNumber("IMPORT_QA_DIMENSION_ERROR_PCT", DEFAULT_IMPORT_QA_LIMITS.dimensionErrorRatio * 100, env) / 100,
   };
 }
 
