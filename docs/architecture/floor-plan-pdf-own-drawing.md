@@ -18,6 +18,7 @@ It is no longer a re-trace of the 144 dpi page picture. Images, scanned PDFs and
   - Dashes are cut into their pieces.
   - Smooth runs of curves are refitted within 0.08 page pixels (`pdf-own-curves.ts`).
   - Shapes that look alike are joined, so a page fits the candidate's 5 MB cap. Lettering is joined page-wide (`pdf-letter-*`). Other shapes join only shapes they touch (`pdf-*`), so a path stays one drawn thing for the Clean plan's fixtures. A shape only moves back to join a path when nothing drawn since in another grey overlaps it.
+  - Fills of one outline are turned the same way and may join overlapping ones. The pieces of a solid (a wall's triangles, a dot's slices) are then one path, with no seam between them. A fill with holes only joins where it overlaps nothing.
 - **Where it is used.** `attachSourceArtwork` (raster-page-evidence.ts) uses it on the same pages that were traced before: the faithful-trace pages and picture pages. The page must have vector paths and no picture. Every other page, or a failure, goes to the tracers as before, with a page note giving the reason.
 - **Fonts.** PDF.js's standard fonts are loaded from `pdfjs-dist/standard_fonts`, which `next.config.ts` ships. A font the PDF doesn't embed (HDB's Helvetica) then still has outlines. Without them, its text has no outline and the page keeps its picture-based trace.
 - **Line ends and corners.** These are new optional geometry fields, `lineCap` (round, square) and `lineJoin` (round, bevel). `sourceDrawingStroke` gives them to the views, for final traces only.
@@ -26,10 +27,10 @@ It is no longer a re-trace of the 144 dpi page picture. Images, scanned PDFs and
 
 | PDF | Paths | Points | Trace annotations | Mean grey difference |
 |---|---|---|---|---|
-| HDB Blk 670 | 751 | 11,810 | 0.92 MB (faithful trace was 1.26 MB) | 0.8 / 255 |
-| HDB Blk 88 | 557 | 12,008 | 0.77 MB | 0.7 |
+| HDB Blk 670 | 509 | 11,810 | 0.73 MB (faithful trace was 1.26 MB) | 0.8 / 255 |
+| HDB Blk 88 | 395 | 12,008 | 0.65 MB | 0.7 |
 | Fernvale | 447 | 46,274 | 1.62 MB | 2.1 |
-| Tengah | 366 | 77,377 | 2.35 MB | 2.0 |
+| Tengah | 350 | 77,377 | 2.34 MB | 2.0 |
 
 Thomson (AutoCAD, with a picture on the page) keeps its picture-based trace.
 

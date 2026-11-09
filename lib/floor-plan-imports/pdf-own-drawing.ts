@@ -130,26 +130,36 @@ function scaled(shape: DrawnShape, scale: number): DrawnShape {
     ? { op: "C", p: [c.p[0] * scale, c.p[1] * scale, c.p[2] * scale, c.p[3] * scale, c.p[4] * scale, c.p[5] * scale] } : { op: c.op, p: [c.p[0] * scale, c.p[1] * scale] }));
   const commands = simplifiedCurves(inPage, PDF_OWN_DRAWING_SETTINGS.curveTolerancePx).map((c): DrawnCommand => (c.op === "Z" ? c : c.op === "C"
     ? { op: "C", p: [r(c.p[0]), r(c.p[1]), r(c.p[2]), r(c.p[3]), r(c.p[4]), r(c.p[5])] } : { op: c.op, p: [r(c.p[0]), r(c.p[1])] }));
-  const oriented = shape.kind === "fill" && shape.evenOdd ? evenOddAsNonZero(commands) : commands;
+  const oriented = shape.kind !== "fill" ? commands : simple(commands) ? turnedPositive(commands)
+    : shape.evenOdd ? evenOddAsNonZero(commands) : commands;
   return { ...shape, commands: oriented, widthPx: Math.max(0.01, shape.widthPx * scale), bbox: boundsOf(oriented, shape.kind === "stroke" ? shape.widthPx * scale / 2 : 0),
     dash: shape.dash.map((d) => d * scale), dashOffset: shape.dashOffset * scale };
 }
 
 /**
  * Same-looking shapes become one path, drawn where the first of them was. A shape moves back to join one only if
- * nothing drawn since in another grey overlaps it, so the page looks the same; fills join only where they do not
- * overlap, so the non-zero rule the views fill with cannot cancel one against another.
+ * nothing drawn since in another grey overlaps it, so the page looks the same. Fills of one outline, all turned the same
+ * way, join even where they overlap: one path, so the pieces of a solid (a wall's triangles, a dot's slices) show no
+ * seam between them. A fill with holes joins only where it overlaps nothing, so the non-zero rule the views fill
+ * with cannot cancel one against another.
  */
-type Group = { path: TracePath; key: string; tone: number; boxes: number[][] };
+/** A fill of one outline, turned one way (`turnedPositive`): any number of them overlap without cancelling. */
+const simple = (commands: DrawnCommand[]) => commands.filter((c) => c.op === "M").length === 1;
+function turnedPositive(commands: DrawnCommand[]) {
+  const ring = flattened(commands).map(([a]) => a);
+  return ring.length > 2 && area(ring) < 0 ? reversed(commands) : commands;
+}
+
+type Group = { path: TracePath; key: string; tone: number; boxes: Array<{ box: number[]; simple: boolean }> };
 const pathKey = (piece: DrawnShape) =>
   `${piece.letter}|${piece.kind}|${piece.tone}|${piece.kind === "stroke" ? `${piece.widthPx.toFixed(2)}|${piece.cap}|${piece.join}` : ""}`;
 
-/** Whether the piece can join the group: alike, room left, a fill not over the group's own, and (lettering aside)
+/** Whether the piece can join the group: alike, room left, a fill not cancelling the group's own, and (lettering aside)
  * touching what the group already holds, so a path stays one drawn thing (a door, a fixture, a run of wall). */
 function joins(group: Group, key: string, piece: DrawnShape) {
   return group.key === key && group.path.commands.length + piece.commands.length <= PDF_OWN_DRAWING_SETTINGS.maxCommandsPerPath &&
-    (piece.kind === "stroke" || !group.boxes.some((box) => overlaps(box, piece.bbox))) &&
-    (piece.letter || group.boxes.some((box) => touches(box, piece.bbox)));
+    (piece.kind === "stroke" || !group.boxes.some((b) => overlaps(b.box, piece.bbox) && !(b.simple && simple(piece.commands)))) &&
+    (piece.letter || group.boxes.some((b) => touches(b.box, piece.bbox)));
 }
 
 function newGroup(piece: DrawnShape, key: string, index: number): Group {
@@ -168,10 +178,10 @@ function mergedPaths(shapes: DrawnShape[]): TracePath[] | null {
     let target: Group | undefined;
     for (let i = groups.length - 1; i >= Math.max(0, groups.length - lookBack) && !target; i--) {
       if (joins(groups[i], key, piece)) target = groups[i];
-      else if (groups[i].tone !== piece.tone && groups[i].boxes.some((box) => overlaps(box, piece.bbox))) break;
+      else if (groups[i].tone !== piece.tone && groups[i].boxes.some((b) => overlaps(b.box, piece.bbox))) break;
     }
     if (!target) groups.push((target = newGroup(piece, key, groups.length)));
-    target.boxes.push(piece.bbox);
+    target.boxes.push({ box: piece.bbox, simple: piece.kind === "fill" && simple(piece.commands) });
     append(target.path, piece.commands);
   }
   return groups.map((group) => group.path);

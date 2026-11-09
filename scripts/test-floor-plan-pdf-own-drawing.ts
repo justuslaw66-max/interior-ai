@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {
-  LineCapStyle, PDFDocument, PDFOperator, PDFOperatorNames, StandardFonts, clip, closePath, endPath, grayscale, lineTo, moveTo,
+  LineCapStyle, PDFDocument, PDFOperator, PDFOperatorNames, StandardFonts, clip, closePath, endPath, fill, grayscale, lineTo, moveTo,
   popGraphicsState, pushGraphicsState, rectangle, setFillingGrayscaleColor,
 } from "pdf-lib";
 import { attachSourceArtwork } from "@/lib/floor-plan-imports/raster-page-evidence";
@@ -33,6 +33,9 @@ async function fixturePdf() {
     closePath(), moveTo(160, 30), lineTo(180, 30), lineTo(180, 50), lineTo(160, 50), closePath(), PDFOperator.of(PDFOperatorNames.FillEvenOdd),
     popGraphicsState());
   page.drawText("AB 12", { x: 200, y: 100, size: 20, font });
+  // A solid square drawn as two triangles turning opposite ways, as CAD draws a wall's solid.
+  page.pushOperators(pushGraphicsState(), setFillingGrayscaleColor(0.2), moveTo(240, 140), lineTo(270, 140), lineTo(270, 170), closePath(), fill(),
+    moveTo(240, 140), lineTo(240, 170), lineTo(270, 170), closePath(), fill(), popGraphicsState());
   const picture = pdf.addPage([300, 200]);
   picture.drawImage(await pdf.embedPng(PIXEL_PNG), { x: 10, y: 10, width: 50, height: 50 });
   picture.drawLine({ start: { x: 100, y: 100 }, end: { x: 200, y: 100 }, thickness: 1 });
@@ -85,6 +88,11 @@ async function testPageDrawing(bytes: Uint8Array) {
   assert.ok(ring, "the even-odd ring is kept");
   const [outer, hole] = pathRings(ring).map((r) => signedArea(r.map((p): [number, number] => [p.x, p.y])));
   assert.ok(outer * hole < 0, "the hole turns the other way, so the non-zero rule leaves it empty");
+  // The two triangles are one path, turned the same way, so the views draw no seam along their shared edge.
+  const solid = fills.filter((p) => inBox(p, [479, 59, 541, 121]));
+  assert.equal(solid.length, 1, "touching one-outline fills of one grey are one path");
+  const halves = pathRings(solid[0]).map((r) => signedArea(r.map((p): [number, number] => [p.x, p.y])));
+  assert.ok(halves.length === 2 && halves[0] * halves[1] > 0, "both halves turn the same way");
   // The lettering: Helvetica's own outlines, as letters, where the text is.
   const letters = trace.paths.filter((p) => p.groupId.startsWith("pdf-letter-"));
   assert.ok(letters.length >= 1 && letters.every((p) => p.fill && inBox(p, [399, 160, 512, 202])), "the text is drawn as letter outlines");
