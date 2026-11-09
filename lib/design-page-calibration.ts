@@ -729,11 +729,9 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
   },
   "coffee-real-castlery-bristol-coffee-table-set-walnut": {
     useVariantColor: false,
-    swapWidthDepthAxes: false,
   },
   "coffee-real-castlery-vincent-coffee-table-set-walnut": {
     useVariantColor: false,
-    swapWidthDepthAxes: false,
   },
   "accessory-real-castlery-cedric-floor-lamp-with-table": {
     // The source GLB's long footprint axis is X, while the catalog's long
@@ -743,6 +741,7 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     swapWidthDepthAxes: true,
   },
   "dining-real-castlery-kelsey-marble-160": {
+    swapWidthDepthAxes: true, // GLB long axis is Z; unswapped the top squashes 69% / 77%
     brightness: 1.18,
     saturation: 0.88,
     roughnessOverride: 0.86,
@@ -759,6 +758,7 @@ export const GLB_CALIBRATION_BY_PRODUCT_ID: Record<string, GLBCalibration> = {
     woodLegDetectionMode: "kelsey",
   },
   "dining-real-castlery-kelsey-marble-180": {
+    swapWidthDepthAxes: true, // GLB long axis is Z; unswapped the top squashes 69% / 77%
     brightness: 1.18,
     saturation: 0.88,
     roughnessOverride: 0.86,
