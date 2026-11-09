@@ -16,8 +16,8 @@ design_zone: "living_zone"
 anchor_role: "secondary"
 
 dimensions:
-  width_cm: 110
-  depth_cm: 60
+  width_cm: 162
+  depth_cm: 75
   height_cm: 51
 
 size_class: "small"
@@ -133,7 +133,7 @@ authoring_notes:
   single_variant_expected: true
   preset_family: "table"
   source_checked: "Castlery Singapore product page, 2026-06-09"
-  note: "Castlery SG page lists this as a single Walnut finish with two nested tables. Dimensions are stored as the largest planning footprint and tallest nested table height."
+  note: "Castlery SG page lists this as a single Walnut finish with two nested tables. Dimensions are stored as the largest planning footprint and tallest nested table height. Product and variant dimensions describe the set as modelled (both tables side by side, the high table offset): 162 x 75 x 51cm, from the GLB at the 51cm high-table height; Castlery lists the pieces as High W55 x D55 x H51 and Low W110 x D60 x H42.8 (110 + 55 = 165 wide side by side). size_label keeps the Castlery SKU label."
 
 feature_flags:
   has_storage: false
@@ -219,8 +219,8 @@ variants:
     brand_tier: "premium_mid"
 
     dimensions:
-      width_cm: 110
-      depth_cm: 60
+      width_cm: 162
+      depth_cm: 75
       height_cm: 51
 
     size_class: "small"

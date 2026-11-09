@@ -223,26 +223,26 @@ configurations:
     state_type: "open"
     description: "Two ottomans pulled out for seating around the table."
     planning_bounds_cm:
-      width: 130
-      depth: 180
+      width: 180
+      depth: 60
       height: 43.2
     visual_bounds_cm:
-      width: 110
-      depth: 162
+      width: 174
+      depth: 56
       height: 43.2
     dimensions_estimate:
-      width_cm: 110
-      depth_cm: 162
+      width_cm: 174
+      depth_cm: 56
       height_cm: 43.2
     dimensions_recommended_planning:
-      width_cm: 130
-      depth_cm: 180
+      width_cm: 180
+      depth_cm: 60
       height_cm: 43.2
-    estimation_note: "Open-state footprint estimated from Castlery-listed 110 x 55cm table dimensions plus two 55.5 x 53.5cm ottomans pulled out along the long sides. Recommended planning footprint adds practical seating gap."
+    estimation_note: "Open-state footprint follows the seats-open model, which shows the two 55.5 x 53.5cm ottomans pulled out at the short ends of the 110 x 55cm table (model-implied 174 x 56cm at the 43.2cm table height); the planning footprint adds a seating gap. Castlery lists no open-state size. Recommended planning footprint adds practical seating gap."
     collision_bounds:
       type: "box"
-      width_cm: 110
-      depth_cm: 162
+      width_cm: 174
+      depth_cm: 56
       height_cm: 43.2
     seat_modules:
       count: 2
