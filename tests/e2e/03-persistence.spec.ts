@@ -59,6 +59,7 @@ function allowExpectedHttpFailure(input: {
     reason: input.reason,
   });
   const descriptions: Record<number, string> = {
+    401: "Unauthorized",
     409: "Conflict",
     503: "Service Unavailable",
   };
@@ -874,6 +875,342 @@ test.describe("3. Save + Reload Persistence", () => {
       expect(cycledFingerprint).toMatch(/^[a-f0-9]{8}$/);
       expect(cycledFingerprint).not.toBe(fingerprintDesignSnapshot(seed.snapshot));
       expect(loadedFingerprint).toMatch(/^[a-f0-9]{8}$/);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+});
+
+// Edits the account never took stay in this browser per design (lib/design-page-unsent-edits.ts)
+// and come back when the design opens again: saved on the revision they were made on, or, when
+// the account copy changed since, the conflict dialog asks which copy to keep.
+test.describe("3b. Unsent edits survive reopening a design", () => {
+  test.afterAll(async () => {
+    await disconnectBetaPrismaClient();
+  });
+
+  async function refuseDesignWrites(
+    page: Page,
+    designId: string,
+    status: 401 | 503,
+  ) {
+    allowExpectedHttpFailure({
+      page, method: "PUT", pathname: `/api/designs/${designId}`, status,
+      reason: status === 401
+        ? "an expired sign-in refuses the autosave"
+        : "a dropped connection loses the autosave",
+    });
+    const route = `**/api/designs/${designId}`;
+    await page.route(route, async (request) => {
+      if (request.request().method() !== "PUT") return request.continue();
+      await request.fulfill({
+        status,
+        contentType: "application/json",
+        body: JSON.stringify(status === 401
+          ? { error: "Sign in to continue.", code: "UNAUTHORIZED" }
+          : { error: "Cloud save is temporarily unavailable.", code: "INTERNAL_ERROR" }),
+      });
+    });
+    return () => page.unroute(route);
+  }
+
+  async function editWidthTo5900(page: Page) {
+    const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+    await widthInput.fill("5900");
+    await widthInput.press("Enter");
+    await expect(widthInput).toHaveValue("5900");
+    await expect(page.getByTestId("save-status")).toHaveAttribute("data-status", "failed", {
+      timeout: 30_000,
+    });
+  }
+
+  // Another device renames the design, so the account copy moves on without this browser's edit.
+  async function renameOnAnotherDevice(page: Page, designId: string) {
+    const current = await page.request.get(`/api/designs/${encodeURIComponent(designId)}`);
+    const body = await current.json() as Record<string, unknown>;
+    const renamed = await page.request.put(`/api/designs/${encodeURIComponent(designId)}`, {
+      data: {
+        items: body.items, zones: body.zones, savedViews: body.savedViews,
+        roomWidth: body.roomWidth, roomDepth: body.roomDepth, snapshot: body.snapshot,
+        title: "Renamed on another device", expectedUpdatedAt: body.updatedAt,
+      },
+    });
+    expect(renamed.status()).toBe(200);
+  }
+
+  async function storedWidth(page: Page, designId: string) {
+    const response = await page.request.get(`/api/designs/${encodeURIComponent(designId)}`);
+    expect(response.status()).toBe(200);
+    return legacyApiToSnapshot(await response.json()).rooms[0]?.geometry.width;
+  }
+
+  // A full navigation in the middle of a session can cancel the editor's in-flight telemetry
+  // beacons, as the sign-in reload above can cancel scripts.
+  async function navigateWithinSession(page: Page, reason: string, navigate: () => Promise<unknown>, ready: () => Promise<void>) {
+    const navigation = runtimePolicies.get(page)?.beginNavigationCancellation({ reason, maxCancellations: 6 });
+    try {
+      await navigate();
+      await ready();
+      navigation?.completeReplacementReady();
+    } catch (cause) {
+      navigation?.failReplacement(cause instanceof Error ? cause.message : String(cause));
+      throw cause;
+    }
+  }
+
+  async function reloadDesign(page: Page) {
+    await navigateWithinSession(page, "reload the design", () => page.reload({ waitUntil: "domcontentloaded" }), async () => {
+      const sceneCanvas = page.getByTestId("scene-canvas").first();
+      await expect(sceneCanvas).toHaveAttribute("data-client-hydrated", "true", { timeout: 30_000 });
+    });
+  }
+
+  async function openDesignById(page: Page, designId: string) {
+    await navigateWithinSession(page, `open design ${designId} by its link`,
+      () => page.goto(`/design?designId=${encodeURIComponent(designId)}`, { waitUntil: "domcontentloaded" }),
+      () => expectCloudDesignReady(page, designId));
+  }
+
+  test("a reload after a failed save brings the edit back and saves it", async ({ page }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      const allowWrites = await refuseDesignWrites(page, seed.designId, 503);
+      await editWidthTo5900(page);
+      expect(await storedWidth(page, seed.designId)).toBe(5.8);
+
+      await allowWrites();
+      await reloadDesign(page);
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5900", {
+        timeout: 30_000,
+      });
+      await expect.poll(() => storedWidth(page, seed.designId), { timeout: 60_000 }).toBe(5.9);
+      await expect(page.getByTestId("save-status")).toHaveAttribute("data-status", "saved", {
+        timeout: 30_000,
+      });
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("an expired sign-in asks to sign in and keeps the edit for the next visit", async ({ page }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      const allowWrites = await refuseDesignWrites(page, seed.designId, 401);
+      await editWidthTo5900(page);
+      const saveStatus = page.getByTestId("save-status");
+      await expect(saveStatus).toHaveAttribute("aria-label", /^Signed out\. /);
+      await expect(page.getByTestId("save-status-retry")).toHaveText("Sign in");
+
+      // Signing in again brings the person back to the design, as this reload does.
+      await allowWrites();
+      await reloadDesign(page);
+      await expect.poll(() => storedWidth(page, seed.designId), { timeout: 60_000 }).toBe(5.9);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("another device's save in between asks which copy to keep", async ({ page }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      const allowWrites = await refuseDesignWrites(page, seed.designId, 503);
+      await editWidthTo5900(page);
+      await allowWrites();
+
+      await renameOnAnotherDevice(page, seed.designId);
+
+      const dialog = page.getByTestId("cloud-save-conflict-dialog");
+      // Twice: closing or reloading with the dialog open must not turn the edit into one made on
+      // the renamed copy, which autosave would then send over it.
+      for (let reopen = 0; reopen < 2; reopen += 1) {
+        await reloadDesign(page);
+        await expect(dialog).toBeVisible({ timeout: 30_000 });
+        await expect(page.getByTestId("cloud-save-conflict-message")).toContainText("weren't saved");
+        await page.waitForTimeout(CLOUD_AUTOSAVE_DELAY_MS * 3);
+        expect(await storedWidth(page, seed.designId)).toBe(5.8);
+      }
+
+      await page.getByTestId("cloud-conflict-reload").click();
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5800");
+      await reloadDesign(page);
+      await expectCloudDesignReady(page, seed.designId);
+      await readStableFingerprint(page);
+      await expect(dialog).toBeHidden();
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5800");
+      expect(await storedWidth(page, seed.designId)).toBe(5.8);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("saving the reopened edit as a copy leaves the original as the account has it", async ({ page }) => {
+    test.setTimeout(180_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      const allowWrites = await refuseDesignWrites(page, seed.designId, 503);
+      await editWidthTo5900(page);
+      await allowWrites();
+      await renameOnAnotherDevice(page, seed.designId);
+
+      await reloadDesign(page);
+      const dialog = page.getByTestId("cloud-save-conflict-dialog");
+      await expect(dialog).toBeVisible({ timeout: 30_000 });
+      const copyCreated = page.waitForResponse((response) =>
+        response.request().method() === "POST" && new URL(response.url()).pathname === "/api/designs");
+      await page.getByTestId("cloud-conflict-save-copy").click();
+      const copy = await (await copyCreated).json() as { id: string };
+      await expect(dialog).toBeHidden({ timeout: 30_000 });
+      await expect.poll(() => storedWidth(page, copy.id), { timeout: 60_000 }).toBe(5.9);
+
+      await openDesignById(page, seed.designId);
+      await readStableFingerprint(page);
+      await expect(dialog).toBeHidden();
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5800");
+      expect(await storedWidth(page, seed.designId)).toBe(5.8);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("opening another design keeps the first design's unsent edit", async ({ page }) => {
+    test.setTimeout(180_000);
+    const email = `unsent-switch-${Date.now()}@example.com`;
+    const seedA = await createBetaSeedDesign({ email });
+    try {
+      const seedB = await createBetaSeedDesign({ email });
+      await loadSeedDesign(page, seedA);
+      await expectCloudDesignReady(page, seedA.designId);
+      const allowWrites = await refuseDesignWrites(page, seedA.designId, 503);
+      await editWidthTo5900(page);
+      await allowWrites();
+
+      await openDesignById(page, seedB.designId);
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5800");
+
+      await openDesignById(page, seedA.designId);
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5900", {
+        timeout: 30_000,
+      });
+      await expect.poll(() => storedWidth(page, seedA.designId), { timeout: 60_000 }).toBe(5.9);
+      expect(await storedWidth(page, seedB.designId)).toBe(5.8);
+    } finally {
+      await cleanupBetaSeed(seedA.userId);
+    }
+  });
+});
+
+// Earlier versions (lib/design-checkpoints.ts): every save keeps the design as it stood before it,
+// at most one every 10 minutes, and a restore keeps the current design first.
+test.describe("3c. Earlier versions", () => {
+  test.afterAll(async () => {
+    await disconnectBetaPrismaClient();
+  });
+
+  async function serverWidth(page: Page, designId: string) {
+    const response = await page.request.get(`/api/designs/${encodeURIComponent(designId)}`);
+    expect(response.status()).toBe(200);
+    return legacyApiToSnapshot(await response.json()).rooms[0]?.geometry.width;
+  }
+
+  async function openEarlierVersions(page: Page) {
+    await page.getByTestId("editor-command-overflow").click();
+    await page.getByTestId("editor-command-overflow-earlier-versions").click();
+    const dialog = page.getByTestId("design-earlier-versions-dialog");
+    await expect(dialog).toBeVisible();
+    return dialog;
+  }
+
+  test("a save keeps the version before it, and restoring it can itself be undone", async ({ page }) => {
+    test.setTimeout(180_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      let dialog = await openEarlierVersions(page);
+      await expect(page.getByTestId("design-earlier-versions-empty")).toBeVisible({ timeout: 30_000 });
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+
+      const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+      await widthInput.fill("5900");
+      await widthInput.press("Enter");
+      await expect.poll(() => serverWidth(page, seed.designId), { timeout: 60_000 }).toBe(5.9);
+      await expect(page.getByTestId("save-status")).toHaveAttribute("data-status", "saved", { timeout: 30_000 });
+
+      dialog = await openEarlierVersions(page);
+      const restoreButtons = page.getByTestId("design-earlier-versions-restore");
+      await expect(restoreButtons).toHaveCount(1, { timeout: 30_000 });
+      await expect(restoreButtons.first()).toBeEnabled();
+      // The restored version opens afresh, as the account now has it: the server answers, then the page reloads.
+      const navigation = runtimePolicies.get(page)?.beginNavigationCancellation({
+        reason: "a restored version reloads the editor", maxCancellations: 6 });
+      try {
+        const restored = page.waitForResponse((response) =>
+          response.request().method() === "POST" && new URL(response.url()).pathname.endsWith("/restore"));
+        const reloaded = page.waitForEvent("load");
+        await restoreButtons.first().click();
+        expect((await restored).status()).toBe(200);
+        await reloaded;
+        await expectCloudDesignReady(page, seed.designId);
+        navigation?.completeReplacementReady();
+      } catch (cause) {
+        navigation?.failReplacement(cause instanceof Error ? cause.message : String(cause));
+        throw cause;
+      }
+      await expect(page.getByRole("spinbutton", { name: "Width mm" }).first()).toHaveValue("5800", { timeout: 30_000 });
+      expect(await serverWidth(page, seed.designId)).toBe(5.8);
+
+      // The design as it stood before the restore is a version too.
+      dialog = await openEarlierVersions(page);
+      await expect(page.getByTestId("design-earlier-versions-restore")).toHaveCount(2, { timeout: 30_000 });
+      await expect(dialog.getByText(/^Before a restore/)).toHaveCount(1);
+    } finally {
+      await cleanupBetaSeed(seed.userId);
+    }
+  });
+
+  test("restore stays off while a save hasn't reached the account", async ({ page }) => {
+    test.setTimeout(150_000);
+    const seed = await createBetaSeedDesign();
+    try {
+      await loadSeedDesign(page, seed);
+      await expectCloudDesignReady(page, seed.designId);
+      // One save first, so there is a version to (not) restore.
+      const widthInput = page.getByRole("spinbutton", { name: "Width mm" }).first();
+      await widthInput.fill("5900");
+      await widthInput.press("Enter");
+      await expect.poll(() => serverWidth(page, seed.designId), { timeout: 60_000 }).toBe(5.9);
+      await expect(page.getByTestId("save-status")).toHaveAttribute("data-status", "saved", { timeout: 30_000 });
+      allowExpectedHttpFailure({
+        page, method: "PUT", pathname: `/api/designs/${seed.designId}`, status: 503,
+        reason: "a dropped connection loses the autosave",
+      });
+      await page.route(`**/api/designs/${seed.designId}`, async (route) => {
+        if (route.request().method() !== "PUT") return route.continue();
+        await route.fulfill({ status: 503, contentType: "application/json",
+          body: JSON.stringify({ error: "Cloud save is temporarily unavailable.", code: "INTERNAL_ERROR" }) });
+      });
+      await widthInput.fill("6000");
+      await widthInput.press("Enter");
+      await expect(page.getByTestId("save-status")).toHaveAttribute("data-status", "failed", { timeout: 30_000 });
+
+      await openEarlierVersions(page);
+      await expect(page.getByTestId("design-earlier-versions-blocked")).toContainText("Save your latest changes first");
+      await expect(page.getByTestId("design-earlier-versions-restore")).toHaveCount(1, { timeout: 30_000 });
+      await expect(page.getByTestId("design-earlier-versions-restore").first()).toBeDisabled();
+      expect(await serverWidth(page, seed.designId)).toBe(5.9);
     } finally {
       await cleanupBetaSeed(seed.userId);
     }

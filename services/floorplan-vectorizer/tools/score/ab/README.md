@@ -16,3 +16,16 @@ is which. It was rebuilt on 30 Oct 2026; the first version (`/root/t44`) was los
 
 `list80.txt` holds the 80 real uploads from the 24 Oct study: 68 pictures and 12 brochure pages, no sealed plan. The
 brochure pages are rendered from their PDFs as the live app renders them (pdf.js).
+
+## The plan drawn from the model (workstream 2, 8 Nov 2026)
+
+`model_drawing.ts <evidence.json> <faithful.json|-> <out.svg>` draws the other side: the clean plan the review draws
+from the document (`lib/floor-plan-review-plan-drawing.ts`), with the page's faithful trace supplying the fixtures it
+keeps; render the SVG with Chromium at the page's size. A page with nothing to draw the plan from is drawn by the
+faithful trace, as the review does. Grade it with `prompt-redrawn.md`: the same task, but neutral between a traced copy
+and a redrawn one (typed names, standard symbols), and asking for things in the wrong place as well as missing ones.
+
+First run, 8 Nov (63 of the 80 pages; the 17 others were not in the cloud copy): r12 better on 62, the same on 1,
+the model drawing better on none. Its defects were mostly the model's (rooms merged or named in the wrong room,
+walls missing or moved, doors misplaced); the drawing's own were fixtures against a wall left out, small dimension
+figures and stray traced letters. So r12 stays the review's first view (`claude/handoff-2026-11-08-model-drawing.md`).

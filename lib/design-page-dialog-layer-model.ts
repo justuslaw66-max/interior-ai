@@ -92,6 +92,7 @@ export type BuildDesignPageDialogLayerModelInput = {
   presentation: { presentExport: PresentationTools; download: DownloadModel };
   editing: {
     designRename: Dialogs["designRename"];
+    earlierVersions: Dialogs["earlierVersions"];
     roomRename: {
       pendingRoomId: string | null;
       value: Dialogs["roomRename"]["value"];
@@ -225,7 +226,7 @@ export function buildDesignPageDialogLayerModel({
         onClose: ai.notes.onClose,
       },
       download: buildDownloadDialog(access, presentation),
-      designRename: editing.designRename,
+      designRename: editing.designRename, earlierVersions: editing.earlierVersions,
       roomRename: { open: Boolean(editing.roomRename.pendingRoomId), value: editing.roomRename.value,
         onValueChange: editing.roomRename.onValueChange, onCancel: editing.roomRename.onCancel, onSave: editing.roomRename.onSave },
       planAnnotation: {

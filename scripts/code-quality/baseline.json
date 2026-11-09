@@ -197,11 +197,11 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
-      "lines": 568,
+      "lines": 560,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
-      "lines": 451,
+      "lines": 443,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanStructureCorrectionFields.tsx": {
@@ -521,7 +521,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/pdf-raster-adapter.ts": {
-      "lines": 2652,
+      "lines": 2650,
       "limit": 400
     },
     "lib/floor-plan-imports/planar-face-evidence.ts": {
@@ -617,7 +617,7 @@
       "limit": 400
     },
     "lib/useDesignPagePersistence.ts": {
-      "lines": 807,
+      "lines": 792,
       "limit": 400
     },
     "lib/useDesignPagePlanPresentationModel.ts": {
@@ -1149,7 +1149,7 @@
     "app/api/designs/[id]/route.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 118
+        "maximum": 116
       },
       "complexFunctions": {
         "count": 2,
@@ -1817,11 +1817,11 @@
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 458
+        "maximum": 450
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 29
+        "maximum": 27
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanOpeningAddFields.tsx": {
@@ -1865,7 +1865,7 @@
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 406
+        "maximum": 397
       },
       "complexFunctions": {
         "count": 1,
@@ -2123,7 +2123,7 @@
     "components/editor/useConsumerFloorPlanImportSession.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 155
+        "maximum": 152
       },
       "complexFunctions": {
         "count": 1,
@@ -4173,7 +4173,7 @@
     "lib/useDesignPagePersistence.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 687
+        "maximum": 671
       }
     },
     "lib/useDesignPagePersistenceRegistration.ts": {
@@ -4289,7 +4289,7 @@
     "lib/useDesignPagePresentationQaFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 260
+        "maximum": 259
       }
     },
     "lib/useDesignPagePresentationWorkspaceRegistration.ts": {

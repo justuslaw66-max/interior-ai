@@ -321,23 +321,23 @@ function createTransitionAdapters(
 async function executeConflictCopy(
   inputRef: ConflictCopyInputRef,
   coordinator: ConflictCopyOperationCoordinator,
-) {
+): Promise<boolean> {
   const current = inputRef.current;
   const conflict = current.state.cloudSaveConflict;
-  if (!conflict || conflict.isWorking) return;
+  if (!conflict || conflict.isWorking) return false;
   if (current.actions.currentCloudWriteIsBlocked()) {
     current.actions.setCloudSaveConflict({
       ...conflict,
       resolutionError: "Wait for the loaded cloud design to finish restoring.",
     });
-    return;
+    return false;
   }
   const snapshot = captureTransition(current);
   const operation = coordinator.begin({
     conflictKey: `${conflict.designId}:${conflict.detectedAt}`,
     authority: readAuthority(current),
   });
-  if (!operation) return;
+  if (!operation) return false;
   current.actions.setCloudSaveConflict({
     ...conflict,
     isWorking: true,
@@ -355,7 +355,7 @@ async function executeConflictCopy(
   });
   coordinator.finish(operation);
   if (result.status !== "failed" && result.status !== "copy_created_not_activated") {
-    return;
+    return result.status === "activated";
   }
   recordFailure(
     inputRef.current,
@@ -363,6 +363,7 @@ async function executeConflictCopy(
     result.error,
     result.status === "copy_created_not_activated",
   );
+  return false;
 }
 export function useDesignPageCloudConflictCopyController(
   input: ConflictCopyControllerInput,

@@ -25,6 +25,10 @@ import {
 } from "@/components/editor/design-page/DesignValidationFeedback";
 import { DesignRenameDialog, type DesignRenameDialogProps } from "@/components/editor/design-page/DesignRenameDialog";
 import {
+  DesignEarlierVersionsDialog,
+  type DesignEarlierVersionsDialogProps,
+} from "@/components/editor/design-page/DesignEarlierVersionsDialog";
+import {
   DownloadDialog,
   type DownloadDialogProps,
 } from "@/components/editor/design-page/DownloadDialog";
@@ -65,6 +69,7 @@ export type DesignPageDialogLayerDialogs = {
   aiNotes: AiNotesDialogProps;
   download: DownloadDialogProps;
   designRename: DesignRenameDialogProps;
+  earlierVersions: DesignEarlierVersionsDialogProps;
   roomRename: RoomRenameDialogProps;
   planAnnotation: PlanAnnotationDialogProps;
   catalogPlacement: CatalogPlacementConfirmPanelProps;
@@ -111,6 +116,7 @@ export function DesignPageDialogLayer({ dialogs, overlays }: DesignPageDialogLay
       <AiNotesDialog {...dialogs.aiNotes} />
       <DownloadDialog {...dialogs.download} />
       <DesignRenameDialog {...dialogs.designRename} />
+      <DesignEarlierVersionsDialog {...dialogs.earlierVersions} />
       <RoomRenameDialog {...dialogs.roomRename} />
       <PlanAnnotationDialog {...dialogs.planAnnotation} />
       <CatalogPlacementConfirmPanel {...dialogs.catalogPlacement} />

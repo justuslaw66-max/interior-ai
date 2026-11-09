@@ -1,6 +1,6 @@
 "use client";
 
-import { importReviewSummary,photoReviewRequired } from "./import-review-summary";
+import { importRecoveryNotice,importReviewSummary,photoReviewRequired } from "./import-review-summary";
 
 import { useState, type Dispatch, type SetStateAction } from "react";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
@@ -24,7 +24,7 @@ type FloorPlanImportReviewPanelProps = {
   candidate: FloorPlanDocumentV2;
   job: ConsumerFloorPlanImportJob;
   issues: FloorPlanReviewIssue[];
-  setCandidate: Dispatch<SetStateAction<FloorPlanDocumentV2 | null>>;
+  setCandidate: (next: FloorPlanDocumentV2 | null) => void;
   setIssues: Dispatch<SetStateAction<FloorPlanReviewIssue[]>>;
   entranceOpeningId: string;
   setEntranceOpeningId: (value: string) => void;
@@ -34,7 +34,7 @@ type FloorPlanImportReviewPanelProps = {
   retryingDetection?: boolean;
   onSubmit: (reviewIssues?: FloorPlanReviewIssue[]) => void;
   submitting: boolean;
-  disabled?: boolean; proMode?: boolean;
+  disabled?: boolean; proMode?: boolean; /** Undo or Redo put back a document this many times. */ reviewRestores?: number;
 };
 
 function issuePrerequisite(
@@ -122,7 +122,7 @@ export default function FloorPlanImportReviewPanel({
   retryingDetection = false,
   onSubmit,
   submitting,
-  disabled = false, proMode = false,
+  disabled = false, proMode = false, reviewRestores = 0,
 }: FloorPlanImportReviewPanelProps) {
   const floor = candidate.floors[0];
   const [focusedIssueId, setFocusedIssueId] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export default function FloorPlanImportReviewPanel({
     () => Object.fromEntries(issues.map((issue) => [issue.id, issue.resolution ?? ""]))
   );
   const [manualToolsOpen, setManualToolsOpen] = useState(false);
-  const heights = useFloorPlanReviewHeights(candidate, setCandidate);
+  const heights = useFloorPlanReviewHeights(candidate, setCandidate, reviewRestores);
   const { changeHeight, changeVerticalValue, confirmVerticalValue, confirmDisplayedHeightDefaults } = heights;
   if (!floor) return null;
   const namedRooms = namedFloorPlanRooms(floor.rooms); // voids (ducts, shafts) keep their walls but are not rooms to count or name
@@ -150,6 +150,7 @@ export default function FloorPlanImportReviewPanel({
     blockingPrerequisites.length > 0 ||
     needsDetectionRetry || photoReviewRequired(unresolvedCritical);
   const summary=importReviewSummary({needsRoomRecovery,needsScaleRecovery,unresolvedCritical,photo:floor.calibrations.some(c=>Boolean(c.photoCorrection))});
+  const recovery=importRecoveryNotice({needsRoomRecovery,unresolvedCritical,prerequisite:blockingPrerequisites[0]});
   const focusedIssueEntityIds =
     issues.find((issue) => issue.id === focusedIssueId)?.entityIds ?? [];
 
@@ -252,19 +253,10 @@ export default function FloorPlanImportReviewPanel({
           className="mt-4 rounded-xl border border-warning-tint-border bg-warning-tint p-4"
           data-testid="floor-plan-import-simple-recovery"
         >
-          <div className="text-sm font-semibold">
-            {needsRoomRecovery
-              ? "For the fastest result, upload the original floor plan"
-              : "One small correction is needed"}
-          </div>
-          <p className={`mt-1 text-xs leading-5 ${subtle}`}>
-            {needsRoomRecovery
-              ? "Check the scale and visible wall outlines. You can save an incomplete draft, retry detection, or choose another source. Manually traced rooms remain consumer-authored corrections."
-              : blockingPrerequisites[0] ??
-                "Open the correction tools and adjust the highlighted part of the plan."}
-          </p>
+          <div className="text-sm font-semibold">{recovery.title}</div>
+          <p className={`mt-1 text-xs leading-5 ${subtle}`}>{recovery.description}</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {onRetryDetection ? (
+            {onRetryDetection && recovery.retry ? (
               <Button
                 variant="primary" size="compact" data-floor-plan-workspace-focus="primary"
                 disabled={disabled || submitting || retryingDetection}
@@ -303,7 +295,7 @@ export default function FloorPlanImportReviewPanel({
         focusedIssueEntityIds={focusedIssueEntityIds}
         focusedIssue={issues.find((issue) => issue.id === focusedIssueId)}
         onChange={(next) => setCandidate(next)}
-        consumerMode proMode={proMode}
+        consumerMode proMode={proMode} restores={reviewRestores}
         manualToolsOpen={manualToolsOpen}
         onManualToolsOpenChange={setManualToolsOpen}
         disabled={disabled}

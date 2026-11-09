@@ -222,7 +222,7 @@ const neutralColours = sources.reduce((count, { text }) => count + (text.match(N
 assert.equal("hover:bg-white md:bg-neutral-900/80 text-neutral-50 bg-neutral-950 border-black/10".match(NEUTRAL_COLOUR_CLASS)?.length, 5);
 assert.equal("bg-control-primary text-label bg-white-ish text-whitespace".match(NEUTRAL_COLOUR_CLASS), null);
 // Buttons with emoji reached 0 with the icons step (30 Oct 2026): icons are lucide's.
-const LIMITS = { rawButtons: 145, emojiButtons: 0, neutralColours: 715 };
+const LIMITS = { rawButtons: 144, emojiButtons: 0, neutralColours: 715 };
 const counts = { rawButtons, emojiButtons, neutralColours };
 for (const [name, limit] of Object.entries(LIMITS) as Array<[keyof typeof LIMITS, number]>) {
   assert.ok(counts[name] <= limit, `${name} rose to ${counts[name]} (limit ${limit}); it can only go down.`);

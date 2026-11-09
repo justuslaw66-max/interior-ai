@@ -12,6 +12,7 @@
 //       -r tsconfig-paths/register services/floorplan-vectorizer/tools/score/document-from-evidence.ts <out.json> <evidence.json>...
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { validateFloorPlanDocumentV2 } from "@/lib/floor-plan-compiler-v2";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import { isAssumedScale } from "@/lib/floor-plan-imports/assumed-scale";
 import { isFloorPlanVoidRoom } from "@/lib/floor-plan-void-rooms";
@@ -21,7 +22,7 @@ import type { FloorPlanAdapterContext } from "@/lib/floor-plan-imports/source-ad
 import { parseFloorPlanVectorizerEvidence, registerVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-evidence";
 
 type Pt = [number, number];
-type DocumentSummary = {
+export type DocumentSummary = {
   file: string;
   stage: "schema" | "topology" | "built";
   error?: string;
@@ -31,6 +32,17 @@ type DocumentSummary = {
   labels?: { text: string; atPx: Pt }[];
   walls?: number;
   issues?: string[];
+  /** The compiler's errors for the document (the editor refuses a document with any): code per error. */
+  compileErrors?: string[];
+  /** What the topology clean-up did (FLOOR_PLAN_TOPOLOGY_CLEANUP=1), as the job's metrics have it; "off" without it. */
+  cleanup?: string;
+  /** The wall graph in millimetres, for topology.py: vertices by id, walls (line or arc) with thickness and rooms. */
+  graph?: {
+    vertices: Record<string, [number, number]>;
+    walls: { id: string; a: string; b: string; arc: boolean; t: number; rooms: string[] }[];
+    loops: { roomId: string; walls: { wallId: string; forward: boolean }[] }[];
+    openings: { id: string; wallId: string; offsetMm: number; widthMm: number }[];
+  };
 };
 
 const context = { jobId: "score-harness" } as unknown as FloorPlanAdapterContext;
@@ -90,9 +102,23 @@ async function one(file: string): Promise<DocumentSummary> {
     candidate.scale = stand;
     candidate.scales = [stand];
   }
-  const mmPerPx = scale!.millimetresPerPixel;
   const built = await adapter.buildTopology(solved, context);
   const validated = await adapter.validate(built);
+  return summarizeBuilt(name, built, validated, {
+    mmPerPx: scale!.millimetresPerPixel,
+    basis: scale!.basis ?? "printed",
+    assumed: solvedByApp ? isAssumedScale(scale as never) : false,
+    solvedByApp,
+    dimensionCount: scale!.dimensionCount ?? 0,
+  });
+}
+
+type BuiltStage = Awaited<ReturnType<PdfRasterFloorPlanSourceAdapter["buildTopology"]>>;
+type ValidatedStage = Awaited<ReturnType<PdfRasterFloorPlanSourceAdapter["validate"]>>;
+
+/** The summary corrections.py and topology.py read, of a document the adapter built (also used by document-from-pdf.ts). */
+export function summarizeBuilt(name: string, built: BuiltStage, validated: ValidatedStage, scale: NonNullable<DocumentSummary["scale"]>): DocumentSummary {
+  const mmPerPx = scale.mmPerPx;
   const document = validated.candidate as unknown as FloorPlanDocumentV2;
   const floor = document.floors?.[0];
   if (!floor) return { file: name, stage: "topology", error: "no floor" };
@@ -134,18 +160,32 @@ async function one(file: string): Promise<DocumentSummary> {
   return {
     file: name,
     stage: "built",
-    scale: {
-      mmPerPx,
-      basis: scale!.basis ?? "printed",
-      assumed: solvedByApp ? isAssumedScale(scale as never) : false,
-      solvedByApp,
-      dimensionCount: scale!.dimensionCount ?? 0,
-    },
+    scale,
     rooms,
     openings,
     labels,
     walls: floor.walls.length,
     issues,
+    cleanup: String((built.metrics as Record<string, unknown>).topologyCleanup ?? "off"),
+    compileErrors: validateFloorPlanDocumentV2(document).filter((i) => i.severity === "error").map((i) => i.code),
+    graph: {
+      vertices: Object.fromEntries(floor.vertices.map((v) => [v.id, [v.xMm, v.zMm] as [number, number]])),
+      walls: floor.walls.map((w) => ({
+        id: w.id,
+        a: w.path.startVertexId,
+        b: w.path.endVertexId,
+        arc: w.path.kind === "arc",
+        t: w.thicknessMm,
+        rooms: [...w.adjacentRoomIds],
+      })),
+      loops: floor.rooms.flatMap((room) =>
+        room.wallLoops.map((loop) => ({
+          roomId: room.id,
+          walls: loop.walls.map((ref) => ({ wallId: ref.wallId, forward: ref.direction === "forward" })),
+        }))
+      ),
+      openings: floor.openings.map((o) => ({ id: o.id, wallId: o.wallId, offsetMm: o.offsetMm, widthMm: o.widthMm })),
+    },
   };
 }
 
@@ -168,4 +208,4 @@ async function main() {
   console.log(`documents: ${built} of ${results.length} evidence files built -> ${out}`);
 }
 
-void main();
+if (require.main === module) void main();

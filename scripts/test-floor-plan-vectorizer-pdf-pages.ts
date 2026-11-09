@@ -51,6 +51,11 @@ function testCandidatePages() {
   assert.deepEqual(vectorizerCandidatePages([raster], [raster], () => assert.fail("no vector page to judge")).map((p) => p.pageNumber), [1]);
   assert.equal(vectorizerReadingsLead(raster), true, "on a raster page the vectorizer's readings lead");
   assert.equal(vectorizerReadingsLead(open), false, "on a vector page the PDF's own text leads");
+  // A page whose printed dimensions give no scale (HDB's Floor Plan Order PDFs plot their figures as strokes) does
+  // not count as closing its rooms, whatever its linework: they could not be promoted without a scale, so the
+  // vectorizer reads the page (8 Nov 2026: Blk 88 #03-351 got no rooms and no scale before).
+  assert.equal(ownLineworkClosesRooms(page(4, "pdf_vector"), () => ({ rooms: [{ id: "room-1" }] })), false,
+    "no scale from the page's own dimensions: its rooms do not count");
 }
 
 function testGeometryBasis() {
