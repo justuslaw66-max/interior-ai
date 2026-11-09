@@ -197,7 +197,7 @@
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
-      "lines": 568,
+      "lines": 560,
       "limit": 250
     },
     "components/editor/floor-plan-import-review/FloorPlanSourceReviewCanvas.tsx": {
@@ -1817,11 +1817,11 @@
     "components/editor/floor-plan-import-review/FloorPlanImportReviewPanel.tsx": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 458
+        "maximum": 450
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 29
+        "maximum": 27
       }
     },
     "components/editor/floor-plan-import-review/FloorPlanOpeningAddFields.tsx": {
