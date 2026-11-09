@@ -99,6 +99,12 @@ function testRowsThatAreNotBars() {
     "an OCR reading that missed the 0 still reads from the five numbers it has");
   assert.equal(readScaleBar(page([], separateLabels()), scaleBarWordsFromText(separateLabels()), "pdf_text"), null,
     "numbers without ticks under them are not a bar");
+  // HDB Blk 88 (10 Nov): page text with a lone "M" first in its row (an OCR word) stopped the whole import.
+  const unitFirst = [text("M", LEFT - 40), ...[1, 2].map((value) => text(String(value), LEFT + value * STEP))];
+  assert.equal(readScaleBar(page(ruledBar(), unitFirst), scaleBarWordsFromText(unitFirst), "pdf_text"), null,
+    "a row that starts with a unit and has no number before it is not a bar, and does not throw");
+  assert.equal(readScaleBar(page(ruledBar(), [text("mm", LEFT)]), scaleBarWordsFromText([text("mm", LEFT)]), "pdf_text"), null,
+    "a lone unit on its own row is not a bar");
   const offTicks = [0, 1, 2, 3, 4].map((metre) => text(String(metre), LEFT + metre * 45)).concat(text("5 METRES", LEFT + 5 * 45 + 26, 59));
   assert.equal(readScaleBar(page(ruledBar(), offTicks), scaleBarWordsFromText(offTicks), "pdf_text"), null,
     "numbers that do not sit on the ticks are not read as the bar");
