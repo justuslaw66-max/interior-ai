@@ -8,6 +8,7 @@ product_name: "Auburn Performance Fabric Armless Curve 3 Seater Sofa With Ottoma
 variant: "Chalk Bouclé"
 
 price_sgd: 2939
+compare_at_price_sgd: 3096
 price_band: "premium"
 brand_tier: "premium_mid"
 
@@ -51,6 +52,7 @@ assets:
 variants:
   - variant: "Selected upholstery"
     price_sgd: 2939
+    compare_at_price_sgd: 3096
     price_band: "premium"
     brand_tier: "premium_mid"
     dimensions:

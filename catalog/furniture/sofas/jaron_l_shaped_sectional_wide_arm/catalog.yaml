@@ -14,8 +14,8 @@ design_zone: "living_zone"
 anchor_role: "sofa_anchor"
 
 dimensions:
-  width_cm: 325
-  depth_cm: 325
+  width_cm: 330
+  depth_cm: 330
   height_cm: 77
 
 seat_capacity: 5
@@ -172,7 +172,7 @@ variants:
     price_sgd: 8595
     price_band: "premium"
     brand_tier: "premium_mid"
-    dimensions: { width_cm: 325, depth_cm: 325, height_cm: 77 }
+    dimensions: { width_cm: 330, depth_cm: 330, height_cm: 77 }
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "brown"
@@ -190,7 +190,7 @@ variants:
     price_sgd: 8595
     price_band: "premium"
     brand_tier: "premium_mid"
-    dimensions: { width_cm: 325, depth_cm: 325, height_cm: 77 }
+    dimensions: { width_cm: 330, depth_cm: 330, height_cm: 77 }
     seat_capacity: 5
     size_class: "extra_large"
     color_family: "white"
