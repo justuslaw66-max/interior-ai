@@ -41,6 +41,7 @@ The library is pure: no React or Three.js. Renderers consume its shapes: the SVG
 - `lib/plan-symbols/plan-symbol-tessellate.ts` turns shapes into line segments and paper polygons. Drawing order becomes height: each filled shape sits one layer (0.5 mm, four depth steps of the plan camera) above what came before, so a table's paper covers its tucked-in chairs.
 - `PlanSymbol2D` draws one paper mesh and one drei `Line` (in `segments` mode) per line weight and dash, so a symbol costs a handful of draw calls whatever its detail. Ink and paper go through the canvas palette (`#111111` and `#ffffff`, light lines on dark paper in dark mode).
 - Selection, hover, snapping and clashes stay as coloured marks over the symbol at `PLAN_SYMBOL_OVERLAY_Y`; an invisible plane over the footprint is still the pick target.
+- **Names:** the symbol says what an item is, so `PlanItemName2D` shows a product's name only while it is pointed at, selected or keyboard-focused, and always on a plain box with no symbol yet (J, 11 Nov: the 2D plan is for mapping out the layout). The name's button stays in place unseen, so Tab still reaches every item. Numbered tags with a product list belong to the PDF export.
 
 ## Next
 
