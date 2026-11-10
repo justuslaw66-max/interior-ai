@@ -8,6 +8,7 @@ product_name: "Auburn Performance Fabric 3 Seater Sofa With Ottoman"
 variant: "Chalk Bouclé"
 
 price_sgd: 2029
+compare_at_price_sgd: 2137
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -51,6 +52,7 @@ assets:
 variants:
   - variant: "Selected upholstery"
     price_sgd: 2029
+    compare_at_price_sgd: 2137
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions:

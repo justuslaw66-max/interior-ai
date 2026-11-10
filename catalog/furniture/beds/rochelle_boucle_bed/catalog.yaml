@@ -151,8 +151,8 @@ variants:
     model_url: "/assets/models/bed-real-castlery-rochelle-standard-king-white-quartz-boucle.glb"
     affiliate_url: "https://www.castlery.com/sg/products/rochelle-performance-boucle-bed?bed_frame_size=king&material=performance_white_quartz_boucle_new"
     available: true
-    price_sgd: 1399
-    compare_at_price_sgd: 1399
+    price_sgd: 1499
+    compare_at_price_sgd: 1499
     dimensions: &standard_king_dims
       width_cm: 200
       depth_cm: 218
