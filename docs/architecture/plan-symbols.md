@@ -27,14 +27,25 @@ Black-and-white furniture and fixture symbols for the 2D plan, in the style of a
 | `lib/plan-symbols/plan-symbol-library.ts` | The registry: label, group, typical size and builder per kind; `buildPlanSymbol` |
 | `lib/plan-symbols/plan-symbol-match.ts` | `resolvePlanSymbolKind(category, name)`: catalogue category first, then words in the name |
 | `lib/plan-symbols/plan-symbol-svg.ts` | The SVG adapter (exports, sheets, thumbnails) |
+| `lib/plan-symbols/plan-symbol-item.ts` | A placed item's shapes, and the plan heights |
+| `lib/plan-symbols/plan-symbol-tessellate.ts` | Shapes as segments and paper polygons, layered by drawing order |
+| `components/editor/renderers/PlanSymbol2D.tsx` | The 2D plan's WebGL drawing of a symbol |
 
-The library is pure: no React or Three.js. A renderer turns the shapes into its own lines (`placePoints` and `roundedRectPoints` help tessellate).
+The library is pure: no React or Three.js. Renderers consume its shapes: the SVG adapter directly, the 2D plan through the tessellation.
 
-## Status
+## In the 2D plan
 
-- **Done:** 41 symbols with size rules, the category and name matcher, the SVG adapter, the review sheet and `npm run test:plan-symbols`.
-- **Not yet wired into the editor.** The 2D plan still draws items with `ItemRenderer2D`'s tinted boxes. Wiring it in touches the editor's screens, so it is the next change, with its browser specs.
-- **Next symbols to add:** doors and windows stay with the openings code; still to draw are a bunk bed, a sofa bed, a corner (U) sofa, an island counter, a built-in oven, a dishwasher, a water heater, an aircon fan-coil (dashed), a bay-window seat and an altar cabinet.
+`ItemRenderer2D` draws every placed product as its symbol through `PlanSymbol2D`, for consumers and Pro alike. The old tinted box with a line or two per category is gone.
+
+- `lib/plan-symbols/plan-symbol-item.ts` picks the shapes for an item (its symbol, or a plain outlined box when nothing matches yet) and holds the plan heights.
+- `lib/plan-symbols/plan-symbol-tessellate.ts` turns shapes into line segments and paper polygons. Drawing order becomes height: each filled shape sits one layer (0.5 mm, four depth steps of the plan camera) above what came before, so a table's paper covers its tucked-in chairs.
+- `PlanSymbol2D` draws one paper mesh and one drei `Line` (in `segments` mode) per line weight and dash, so a symbol costs a handful of draw calls whatever its detail. Ink and paper go through the canvas palette (`#111111` and `#ffffff`, light lines on dark paper in dark mode).
+- Selection, hover, snapping and clashes stay as coloured marks over the symbol at `PLAN_SYMBOL_OVERLAY_Y`; an invisible plane over the footprint is still the pick target.
+
+## Next
+
+- A black-and-white plan in the PDF export, through the SVG adapter.
+- More symbols: bunk bed, sofa bed, U sofa, island counter, built-in oven, dishwasher, water heater, aircon fan-coil (dashed), bay-window seat, altar cabinet. Doors and windows stay with the openings code.
 
 ## Commands
 

@@ -3,7 +3,14 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { PLAN_SYMBOLS, PLAN_SYMBOL_KINDS, buildPlanSymbol } from "../lib/plan-symbols/plan-symbol-library";
+import {
+  PLAN_SYMBOL_BASE_Y,
+  PLAN_SYMBOL_LAYER_STEP,
+  PLAN_SYMBOL_OVERLAY_Y,
+  planSymbolShapesForItem,
+} from "../lib/plan-symbols/plan-symbol-item";
 import { resolvePlanSymbolKind } from "../lib/plan-symbols/plan-symbol-match";
+import { tessellatePlanSymbol } from "../lib/plan-symbols/plan-symbol-tessellate";
 import { planSymbolSvgDocument, planSymbolSvgGroup } from "../lib/plan-symbols/plan-symbol-svg";
 import type { PlanSymbol, PlanSymbolPoint, PlanSymbolShape } from "../lib/plan-symbols/plan-symbol-types";
 import { buildPlanSymbolSheet } from "./plan-symbol-sheet";
@@ -146,6 +153,42 @@ for (const kind of PLAN_SYMBOL_KINDS) {
 const toilet = planSymbolSvgDocument(buildPlanSymbol("toilet", 0.4, 0.68), { pxPerMetre: 1000 }, 4);
 assert.match(toilet, /^<svg [^>]*width="408" height="688"/, "the document is the footprint plus its margin");
 assert.match(toilet, /data-plan-symbol="toilet"/);
+
+// The 2D plan's drawing: segments in pairs, paper layered in drawing order, and every
+// symbol below the selection marks.
+const layers = { baseY: PLAN_SYMBOL_BASE_Y, layerStep: PLAN_SYMBOL_LAYER_STEP };
+for (const kind of PLAN_SYMBOL_KINDS) {
+  const { typical } = PLAN_SYMBOLS[kind];
+  const symbol = buildPlanSymbol(kind, typical.width * 1.3, typical.depth * 1.3);
+  const drawing = tessellatePlanSymbol(symbol.shapes, layers);
+  assert.ok(drawing.lines.length > 0, `${kind}: draws lines`);
+  for (const batch of drawing.lines) {
+    assert.equal(batch.segments.length % 2, 0, `${kind}: segments come in pairs`);
+    assert.ok(batch.segments.flat().every(Number.isFinite), `${kind}: finite segments`);
+  }
+  assert.equal(drawing.fills.length, count(symbol, (shape) => Boolean(shape.fill)), `${kind}: one paper polygon per filled shape`);
+  drawing.fills.forEach((fill, index) => {
+    assert.ok(fill.points.length >= 3, `${kind}: paper ${index} is a polygon`);
+    if (index > 0) assert.ok(fill.y > drawing.fills[index - 1].y, `${kind}: later paper sits higher`);
+  });
+  assert.ok(drawing.topY < PLAN_SYMBOL_OVERLAY_Y, `${kind}: the symbol stays under the selection marks (${drawing.topY})`);
+}
+const set = tessellatePlanSymbol(buildPlanSymbol("dining_set", 2.6, 1.75).shapes, layers);
+const tablePaper = set.fills[set.fills.length - 1];
+const chairLines = set.lines.find((batch) => batch.stroke === "detail");
+assert.ok(chairLines, "a dining set has detail lines");
+assert.ok(
+  Math.min(...chairLines.segments.map(([, y]) => y)) < tablePaper.y,
+  "the table's paper sits above its chairs' lines, so it covers the tucked-in part"
+);
+const unknown = planSymbolShapesForItem("wall_art", "Canvas print", 1.2, 0.04);
+assert.equal(unknown.length, 1, "a product with no symbol draws one box");
+assert.equal(unknown[0].type, "rect");
+assert.deepEqual(
+  planSymbolShapesForItem("sofa", "Auburn 3 Seater", 2.3, 0.93),
+  buildPlanSymbol("sofa", 2.3, 0.93).shapes,
+  "a placed sofa draws the sofa symbol at its footprint"
+);
 
 // The review sheet in the docs is what the code draws now.
 const sheetPath = path.join(__dirname, "../docs/architecture/plan-symbol-sheet.svg");

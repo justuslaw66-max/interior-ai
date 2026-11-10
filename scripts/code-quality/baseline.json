@@ -245,7 +245,7 @@
       "limit": 250
     },
     "components/editor/renderers/ItemRenderer2D.tsx": {
-      "lines": 328,
+      "lines": 253,
       "limit": 250
     },
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
@@ -277,7 +277,7 @@
       "limit": 400
     },
     "components/scene/FurnitureItem.tsx": {
-      "lines": 921,
+      "lines": 920,
       "limit": 250
     },
     "components/scene/glb-scaled-model/huggMaterial.ts": {
@@ -2045,11 +2045,11 @@
     "components/editor/renderers/ItemRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 293
+        "maximum": 221
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 34
+        "maximum": 23
       }
     },
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
@@ -2155,7 +2155,7 @@
     "components/scene/FurnitureItem.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 866
+        "maximum": 865
       },
       "complexFunctions": {
         "count": 1,
