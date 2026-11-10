@@ -1,6 +1,7 @@
 import { boundsOf, DrawingRecorder, type DrawnCommand, type DrawnShape } from "./pdf-drawing-recorder";
 import { simplifiedCurves } from "./pdf-own-curves";
 import { loadFloorPlanPdfRuntime } from "./pdf-runtime";
+import { pdfDrawingPlanArea } from "./pdf-own-plan-area";
 import type { SourceTextEvidence } from "./deterministic-evidence";
 import type { SourceArtworkTrace } from "./source-artwork-trace";
 import type { TracePath } from "./source-trace-fit";
@@ -31,7 +32,8 @@ type PdfPage = {
   getViewport(options: { scale: number }): { width: number; height: number };
   render(options: { canvas: unknown; canvasContext?: unknown; viewport: unknown }): { promise: Promise<unknown>; cancel(): void };
 };
-export type OwnDrawing = { trace: SourceArtworkTrace } | { reason: string };
+/** A page's own drawing (of its plan area alone, where `area` is given), or why it keeps the picture-based trace. */
+export type OwnDrawing = { trace: SourceArtworkTrace; area?: number[] } | { reason: string };
 
 /**
  * The scale the page picture was drawn at (pdf-raster-adapter.ts renderPdf: twice the PDF's points, less for a page
@@ -42,7 +44,8 @@ export function pdfReadingScale(unitWidth: number, unitHeight: number, widthPx: 
   return Math.ceil(unitWidth * scale) === widthPx ? scale : widthPx / unitWidth;
 }
 
-/** What the page draws, recorded in page-picture pixels (`widthPx` by `heightPx`). A shape it cannot keep stops it. */
+/** What the page draws, recorded in page-picture pixels (`widthPx` by `heightPx`). A problem with no known place stops
+ * it; one with a place (a picture, a shape a clip cuts) is kept, so a plan area clear of it can still be drawn. */
 export async function recordPdfPageDrawing(page: PdfPage, widthPx: number, heightPx: number) {
   const { oversample } = PDF_OWN_DRAWING_SETTINGS;
   const unit = page.getViewport({ scale: 1 });
@@ -50,13 +53,14 @@ export async function recordPdfPageDrawing(page: PdfPage, widthPx: number, heigh
   const recorder = new DrawingRecorder(Math.ceil(viewport.width), Math.ceil(viewport.height));
   const task = page.render({ canvas: recorder.canvas, canvasContext: recorder, viewport });
   recorder.onUnsupported = () => task.cancel();
-  await task.promise.catch((cause: unknown) => { if (!recorder.unsupported.size) throw cause; });
-  return { shapes: recorder.shapes, unsupported: recorder.unsupported, scale: 1 / oversample, widthPx, heightPx };
+  await task.promise.catch((cause: unknown) => { if (!recorder.problems.some((problem) => !problem.bbox)) throw cause; });
+  return { shapes: recorder.shapes, problems: recorder.problems, scale: 1 / oversample, widthPx, heightPx };
 }
 
 /** The PDF's own drawing of each page asked for, by page number, or why a page keeps its picture-based trace. Only a
  * cancelled import stops it: any other failure leaves the pages to the tracers. */
-export async function pdfOwnDrawings(bytes: Uint8Array, pages: Array<{ pageNumber: number; widthPx: number; heightPx: number; text?: TextBox[] }>,
+export async function pdfOwnDrawings(bytes: Uint8Array,
+  pages: Array<{ pageNumber: number; widthPx: number; heightPx: number; text?: TextBox[]; area?: number[] | null }>,
   signal?: AbortSignal): Promise<Map<number, OwnDrawing>> {
   const drawings = new Map<number, OwnDrawing>();
   const reason = (cause: unknown) => ({ reason: cause instanceof Error ? cause.message : "the PDF could not be drawn" });
@@ -67,11 +71,15 @@ export async function pdfOwnDrawings(bytes: Uint8Array, pages: Array<{ pageNumbe
     const task = createLoadingTask(bytes, true);
     loadingTask = task;
     const pdf = await task.promise;
-    for (const { pageNumber, widthPx, heightPx, text } of pages) {
+    for (const { pageNumber, widthPx, heightPx, text, area } of pages) {
       signal?.throwIfAborted();
       const started = Date.now();
       const recorded = await recordPdfPageDrawing(await pdf.getPage(pageNumber), widthPx, heightPx).catch(reason);
-      drawings.set(pageNumber, "reason" in recorded ? recorded : pdfOwnDrawingTrace(recorded, started, text));
+      if ("reason" in recorded) { drawings.set(pageNumber, recorded); continue; }
+      // The whole sheet first; where it cannot be drawn, the plan area alone (the vectorizer's, or else the drawing's).
+      const whole = pdfOwnDrawingTrace(recorded, started, text);
+      const planArea = "reason" in whole ? area ?? pdfDrawingPlanArea(recorded) : null;
+      drawings.set(pageNumber, planArea ? pdfOwnDrawingTrace(recorded, started, text, planArea) : whole);
     }
   } catch (cause) {
     signal?.throwIfAborted();
@@ -82,11 +90,16 @@ export async function pdfOwnDrawings(bytes: Uint8Array, pages: Array<{ pageNumbe
   return drawings;
 }
 
-/** The recorded page as a trace, or the reason it is not drawn this way. */
+/** The recorded page as a trace (only what lies wholly inside `area`, page pixels, where given), or the reason it is not
+ * drawn this way: a problem anywhere on a whole page; in an area, a picture or lettering over it, or a shape left out
+ * that lies wholly inside it (one crossing its edge is left out like any other shape there). */
 export function pdfOwnDrawingTrace(recorded: Awaited<ReturnType<typeof recordPdfPageDrawing>>, started = Date.now(),
-  text: TextBox[] = []): OwnDrawing {
-  if (recorded.unsupported.size) return { reason: [...recorded.unsupported.keys()].join(", ") };
-  const shapes = visibleShapes(recorded.shapes);
+  text: TextBox[] = [], area?: number[]): OwnDrawing {
+  const device = area?.map((value) => value / recorded.scale);
+  const blocking = recorded.problems.filter((problem) => !device || !problem.bbox
+    || (problem.shape ? within(problem.bbox, device) : overlaps(problem.bbox, device)));
+  if (blocking.length) return { reason: [...new Set(blocking.map((problem) => problem.reason))].join(", ") + (area ? " in the plan area" : "") };
+  const shapes = visibleShapes(device ? recorded.shapes.filter((shape) => within(shape.bbox, device)) : recorded.shapes);
   const boxes = text.map(textBounds);
   const paths = mergedPaths(shapes.map((shape) => scaled(shape, recorded.scale))
     .map((shape) => (!shape.letter && boxes.some((box) => within(shape.bbox, box)) ? { ...shape, letter: true } : shape)));
@@ -95,7 +108,7 @@ export function pdfOwnDrawingTrace(recorded: Awaited<ReturnType<typeof recordPdf
   if (!paths.length) return { reason: "nothing drawn" };
   if (points > PDF_OWN_DRAWING_SETTINGS.maxPoints) return { reason: `${points} points, more than ${PDF_OWN_DRAWING_SETTINGS.maxPoints}` };
   const curves = paths.reduce((sum, path) => sum + path.commands.filter((c) => c === "C").length, 0);
-  return { trace: { version: PDF_OWN_DRAWING_VERSION, widthPx: recorded.widthPx, heightPx: recorded.heightPx, paths,
+  return { ...(area ? { area } : {}), trace: { version: PDF_OWN_DRAWING_VERSION, widthPx: recorded.widthPx, heightPx: recorded.heightPx, paths,
     settings: { ...TRACE_SETTINGS, version: PDF_OWN_DRAWING_VERSION },
     diagnostics: { inkPixels: 0, removedSpeckPixels: 0, rawChains: 0, fillContours: shapes.filter((s) => s.kind === "fill").length,
       curves, elapsedMs: Date.now() - started, glyphPixels: 0 } } };

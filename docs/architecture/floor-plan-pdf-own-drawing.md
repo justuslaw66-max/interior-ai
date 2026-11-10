@@ -32,10 +32,26 @@ It is no longer a re-trace of the 144 dpi page picture. Images, scanned PDFs and
 | Fernvale | 447 | 46,274 | 1.62 MB | 2.1 |
 | Tengah | 350 | 77,377 | 2.34 MB | 2.0 |
 
-Thomson (AutoCAD, with a picture on the page) keeps its picture-based trace.
+Thomson (AutoCAD, with a picture on the page) keeps its picture-based trace. (Superseded 10 Nov: see below.)
+
+## A sheet with several plans: the plan area only (10 Nov 2026)
+
+Thomson Reserve's A1 brochure sheet came out blank in Traced: two plans (approved and show unit), tables, notes, a key
+plan and pictures, about 170,000 points and pictures that are no lines; the faithful trace skips it (16 Mpx) and the
+vectorizer could not read it. J: "proceed with 1 fix it now".
+
+- `pdf-own-plan-area.ts` finds the plan: the largest group of walls lying close together (within 3% of the sheet). The
+  walls are the vectorizer's wall edges and rooms where it read the page (12% margin for the dimension chains), or else
+  the sheet's own solid dark fills, which are walls and dimension ticks (3% margin for the figures). Of plans weighing
+  within 10% of each other the first in reading order is taken (Thomson: the approved plan, above the show-unit plan).
+- The recorder keeps where each problem lies. Where the whole sheet cannot be drawn, only the shapes wholly inside the
+  area are, unless a picture or lettering lies over the area, or a shape left out (cut by a clip, a pattern) lies wholly
+  inside it. The page notes that the rest of the sheet is left out.
+- Thomson: 591 paths, 12,284 points (live worker image, J's job). Single-plan sheets draw whole, as before.
 
 ## Limits and follow-ups
 
-- A page over 100,000 points keeps the tracer.
+- A page over 100,000 points keeps the tracer, unless its plan area can be drawn alone.
+- A sheet's second plan is left out; choosing which plan to import is a follow-up after the testers.
 - The trace export (`floor-plan-source-trace-export.ts`) does not yet carry line ends.
 - The review's manual "Trace" preview still re-traces the picture.

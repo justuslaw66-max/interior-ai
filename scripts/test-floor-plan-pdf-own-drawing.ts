@@ -4,10 +4,12 @@ import {
   popGraphicsState, pushGraphicsState, rectangle, setFillingGrayscaleColor,
 } from "pdf-lib";
 import { attachSourceArtwork } from "@/lib/floor-plan-imports/raster-page-evidence";
-import { dashed, evenOddAsNonZero, PDF_OWN_DRAWING_VERSION, pdfOwnDrawings } from "@/lib/floor-plan-imports/pdf-own-drawing";
+import { dashed, evenOddAsNonZero, PDF_OWN_DRAWING_VERSION, pdfOwnDrawings, pdfOwnDrawingTrace } from "@/lib/floor-plan-imports/pdf-own-drawing";
 import type { DrawnCommand, DrawnShape } from "@/lib/floor-plan-imports/pdf-drawing-recorder";
 import { cssTone, svgCommands } from "@/lib/floor-plan-imports/pdf-drawing-recorder";
 import { simplifiedCurves } from "@/lib/floor-plan-imports/pdf-own-curves";
+import { pdfDrawingPlanArea, pdfPlanArea } from "@/lib/floor-plan-imports/pdf-own-plan-area";
+import type { RegisteredVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-evidence";
 import type { RegisteredPageEvidence } from "@/lib/floor-plan-imports/deterministic-evidence";
 import type { FloorPlanAdapterContext, StoredFloorPlanSource } from "@/lib/floor-plan-imports/source-adapter";
 import type { TracePath } from "@/lib/floor-plan-imports/source-trace-fit";
@@ -17,7 +19,9 @@ import { sourceDrawingGeometryError, sourceDrawingStroke, type FloorPlanSourceDr
 // A 1 x 1 grey PNG: a page with a picture on it keeps the picture-based trace.
 const PIXEL_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNoAAAAggCBd81ytgAAAABJRU5ErkJggg==", "base64");
 
-/** Page 1: the drawing to keep. Page 2: a picture. Page 3: a clip cutting a shape. Pages are 300 x 200 points. */
+/** Page 1: the drawing to keep. Page 2: a picture. Page 3: a clip cutting a shape. Page 4: a sheet whose plan (left)
+ * sits beside a picture (right). Page 5: a brochure sheet with the same plan twice (solid walls, top and bottom), a
+ * picture, and a border line its clip cuts. Pages are 300 x 200 points. */
 async function fixturePdf() {
   const pdf = await PDFDocument.create();
   const font = await pdf.embedFont(StandardFonts.Helvetica);
@@ -43,6 +47,20 @@ async function fixturePdf() {
   clipped.pushOperators(pushGraphicsState(), rectangle(0, 0, 100, 100), clip(), endPath());
   clipped.drawRectangle({ x: 50, y: 50, width: 100, height: 100, color: grayscale(0) });
   clipped.pushOperators(popGraphicsState());
+  const sheet = pdf.addPage([300, 200]);
+  sheet.drawRectangle({ x: 20, y: 60, width: 100, height: 80, borderWidth: 4, borderColor: grayscale(0) });
+  sheet.drawLine({ start: { x: 70, y: 60 }, end: { x: 70, y: 140 }, thickness: 2 });
+  sheet.drawImage(await pdf.embedPng(PIXEL_PNG), { x: 220, y: 40, width: 60, height: 60 });
+  const brochure = pdf.addPage([300, 200]);
+  for (const y of [130, 20]) {
+    for (const [x, dy, width, height] of [[20, 0, 100, 4], [20, 46, 100, 4], [20, 0, 4, 50], [116, 0, 4, 50], [70, 0, 4, 50]]) {
+      brochure.drawRectangle({ x, y: y + dy, width, height, color: grayscale(0) });
+    }
+  }
+  brochure.drawImage(await pdf.embedPng(PIXEL_PNG), { x: 220, y: 80, width: 60, height: 60 });
+  brochure.pushOperators(pushGraphicsState(), rectangle(0, 5, 300, 190), clip(), endPath());
+  brochure.drawLine({ start: { x: 5, y: 0 }, end: { x: 5, y: 200 }, thickness: 1 });
+  brochure.pushOperators(popGraphicsState());
   return pdf.save();
 }
 
@@ -109,6 +127,81 @@ async function testPageDrawing(bytes: Uint8Array) {
   assert.ok(clipReason && "reason" in clipReason && /clip/.test(clipReason.reason), "a shape cut by a clip keeps the page's trace");
 }
 
+/** A vectorizer reading with walls on the sheet's plan (page 4, page pixels: x 40-240, y 120-280) and a stray wall
+ * far off at its corner. */
+function sheetReading(): RegisteredVectorizerEvidence {
+  const wall = (id: string, a: [number, number], b: [number, number]) =>
+    ({ id, kind: "wall_centerline" as const, sourcePx: [a, b] as [[number, number], [number, number]], thicknessPx: 8, opening: null });
+  return { exporterVersion: "test", imageSha256: "0".repeat(64), scaleHint: { millimetresPerPixel: null, basis: "none", dimensionCount: 0, needsReview: true },
+    dimensionSpans: [], diagnostics: {},
+    wallEdges: [wall("w1", [40, 120], [240, 120]), wall("w2", [240, 120], [240, 280]), wall("w3", [240, 280], [40, 280]), wall("w4", [40, 280], [40, 120]),
+      wall("w5", [140, 120], [140, 280]), wall("stray", [585, 385], [595, 385])],
+    rooms: [{ key: "r1", label: "BEDROOM", roomType: "bedroom", confidence: 0.9, sourcePoints: [{ x: 40, y: 120 }, { x: 140, y: 120 }, { x: 140, y: 280 }],
+      edgeIds: ["w1", "w5", "w4"] }] };
+}
+
+function testPlanArea() {
+  const area = pdfPlanArea({ widthPx: 600, heightPx: 400, vectorizer: sheetReading() });
+  assert.ok(area, "a sheet's plan area is found");
+  const [left, top, right, bottom] = area;
+  assert.ok(left < 40 && top < 120 && right > 240 && bottom > 280, "the area holds the plan's walls with a margin for its dimensions");
+  assert.ok(right < 400 && bottom < 360, "the stray wall at the corner is not part of the plan, and the picture lies outside the area");
+  assert.equal(pdfPlanArea({ widthPx: 600, heightPx: 400 }), null, "no vectorizer reading, no area");
+  const everywhere = { ...sheetReading(), wallEdges: [sheetReading().wallEdges[0], { ...sheetReading().wallEdges[0], id: "x", sourcePx: [[0, 0], [600, 400]] as [[number, number], [number, number]] }] };
+  assert.equal(pdfPlanArea({ widthPx: 600, heightPx: 400, vectorizer: everywhere }), null, "a plan covering the sheet is not drawn alone");
+}
+
+async function testPlanAreaDrawing(bytes: Uint8Array) {
+  const area = pdfPlanArea({ widthPx: 600, heightPx: 400, vectorizer: sheetReading() });
+  const page4 = { pageNumber: 4, widthPx: 600, heightPx: 400 };
+  const [whole, alone, covered] = await Promise.all([
+    pdfOwnDrawings(bytes, [page4]),
+    pdfOwnDrawings(bytes, [{ ...page4, area }]),
+    pdfOwnDrawings(bytes, [{ ...page4, area: [0, 0, 600, 400] }]),
+  ]).then((runs) => runs.map((run) => run.get(4)));
+  assert.ok(whole && "reason" in whole && /picture/.test(whole.reason), "the whole sheet holds a picture, so it is not drawn whole");
+  assert.ok(alone && "trace" in alone, `the plan area is drawn alone (${alone && "reason" in alone ? alone.reason : ""})`);
+  assert.deepEqual(alone.area, area, "the drawing says it is of the plan area");
+  assert.ok(alone.trace.paths.some((p) => !p.fill && p.strokeWidthPx === 8), "the plan's walls are drawn at their own width");
+  assert.ok(alone.trace.paths.every((p) => p.points.every((q) => q.x <= area![2] && q.y <= area![3])), "nothing outside the area is drawn");
+  assert.ok(covered && "reason" in covered && /picture in the plan area/.test(covered.reason), "a picture inside the area keeps the tracer");
+}
+
+/** Solid dark wall fills, in device pixels (scale 1/4), around a box of page pixels. */
+function wallFills([left, top, right, bottom]: number[], tone = 0): DrawnShape[] {
+  const fill = (box: number[]): DrawnShape => ({ kind: "fill", evenOdd: false,
+    commands: [{ op: "M", p: [box[0] * 4, box[1] * 4] }, { op: "L", p: [box[2] * 4, box[1] * 4] }, { op: "L", p: [box[2] * 4, box[3] * 4] },
+      { op: "L", p: [box[0] * 4, box[3] * 4] }, { op: "Z" }], tone, widthPx: 0, cap: "butt", join: "miter", dash: [],
+    dashOffset: 0, bbox: box.map((value) => value * 4) as DrawnShape["bbox"], letter: false });
+  return [fill([left, top, right, top + 8]), fill([left, bottom - 8, right, bottom]), fill([left, top, left + 8, bottom]), fill([right - 8, top, right, bottom])];
+}
+
+function testDrawingPlanArea() {
+  const sheet = { scale: 0.25, widthPx: 1000, heightPx: 1400 };
+  const top = [100, 100, 500, 400], below = [100, 800, 500, 1100];
+  const twins = pdfDrawingPlanArea({ ...sheet, shapes: [...wallFills(below), ...wallFills(top)] });
+  assert.ok(twins && twins[1] < 100 && twins[3] > 400 && twins[3] < 800, "of two like plans, the first in reading order (the top one)");
+  assert.ok(twins[0] >= 60 && twins[0] < 100, "the margin around solid walls is small: their dimension ticks are fills too");
+  const bigger = pdfDrawingPlanArea({ ...sheet, shapes: [...wallFills(top), ...wallFills([100, 700, 900, 1300])] });
+  assert.ok(bigger && bigger[1] > 600, "a plainly larger plan is taken over an earlier small one");
+  assert.equal(pdfDrawingPlanArea({ ...sheet, shapes: wallFills(top, 200) }), null, "grey fills are not walls");
+  // A shape left out where it crosses the area's edge is left out like any other shape there; one inside stops it.
+  const recorded = { shapes: wallFills(top), scale: 0.25, widthPx: 1000, heightPx: 1400 };
+  const crossing = { reason: "shape cut by a clip", bbox: [20, 0, 24, 5600], shape: true };
+  const inside = { reason: "shape cut by a clip", bbox: [800, 800, 1200, 1200], shape: true };
+  assert.ok("trace" in pdfOwnDrawingTrace({ ...recorded, problems: [crossing] }, Date.now(), [], [50, 50, 550, 450]), "a border line cut by a clip");
+  const stopped = pdfOwnDrawingTrace({ ...recorded, problems: [inside] }, Date.now(), [], [50, 50, 550, 450]);
+  assert.ok("reason" in stopped && /clip in the plan area/.test(stopped.reason), "a shape inside the area that is left out keeps the tracer");
+}
+
+async function testBrochureSheet(bytes: Uint8Array) {
+  const drawn = (await pdfOwnDrawings(bytes, [{ pageNumber: 5, widthPx: 600, heightPx: 400 }])).get(5);
+  assert.ok(drawn && "trace" in drawn, `a brochure sheet the vectorizer did not read: its first plan, from its own walls (${drawn && "reason" in drawn ? drawn.reason : ""})`);
+  assert.ok(drawn.area && drawn.area[3] < 220, "the area is the top plan's");
+  assert.ok(drawn.trace.paths.length > 0 && drawn.trace.paths.every((p) => p.points.every((q) => q.y < 220 && q.x < 300)),
+    "only the top plan is drawn: not the second plan, the picture or the clipped border line");
+}
+
 async function testAttachSourceArtwork(bytes: Uint8Array) {
   const page = (pageNumber: number, picture: boolean): RegisteredPageEvidence => ({ pageNumber, widthPx: 600, heightPx: 400, vectorSegments: [],
     vectorPaths: [{ id: "p", pageNumber, closed: false, segmentIds: [], bbox: { left: 0, top: 0, right: 1, bottom: 1 }, rectilinearScore: 0 }],
@@ -123,6 +216,14 @@ async function testAttachSourceArtwork(bytes: Uint8Array) {
   assert.equal(pages[0].sourceArtwork?.version, PDF_OWN_DRAWING_VERSION, "a vector page is drawn from the PDF, even with the faithful trace on");
   assert.equal(pages[1].sourceArtwork, undefined, "a page with a picture is left to the tracers");
   await attachSourceArtwork([page(1, false)], [], [], context, false, source);
+  // A sheet the vectorizer read but did not trace (over the faithful trace's size): its plan area, drawn alone.
+  const sheet: RegisteredPageEvidence = { ...page(4, true), vectorizer: sheetReading() };
+  await attachSourceArtwork([sheet], [], [], context, true, source);
+  assert.equal(sheet.sourceArtwork?.version, PDF_OWN_DRAWING_VERSION, "an untraced sheet gets the PDF's own drawing of its plan");
+  assert.ok(sheet.semantics.notes.some((note) => /plan area only/.test(note)), "with a note that the rest of the sheet is left out");
+  const untraced: RegisteredPageEvidence = page(4, true);
+  await attachSourceArtwork([untraced], [], [], context, true, source);
+  assert.equal(untraced.sourceArtwork, undefined, "a page neither traced nor read by the vectorizer stays as it was");
 }
 
 function testGeometry() {
@@ -163,6 +264,10 @@ function testViewsDrawLineEnds() {
 async function main() {
   const bytes = await fixturePdf();
   await testPageDrawing(bytes);
+  testPlanArea();
+  await testPlanAreaDrawing(bytes);
+  testDrawingPlanArea();
+  await testBrochureSheet(bytes);
   await testAttachSourceArtwork(bytes);
   testGeometry();
   testViewsDrawLineEnds();
