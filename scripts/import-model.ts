@@ -23,6 +23,8 @@ import { buildAssetQaReport } from "../lib/asset-pipeline/build-qa-report";
 import { normalizeModel } from "../lib/asset-pipeline/normalize";
 import { optimizeModel } from "../lib/asset-pipeline/optimize";
 import { extractModelMetadata } from "../lib/asset-pipeline/extract-metadata";
+import { evaluateDimensionFit } from "../lib/asset-pipeline/dimension-fit";
+import { measureGlbSceneBounds } from "../lib/asset-pipeline/glb-scene-bounds";
 import {
   createPngPlaceholder,
   generateModelThumbnail,
@@ -44,6 +46,7 @@ type ImportInput = {
     size: { x: number; y: number; z: number };
     center: { x: number; y: number; z: number };
   }; // optional fallback
+  swapWidthDepthAxes?: boolean; // mirrors GLBCalibration.swapWidthDepthAxes for models authored rotated 90°
   approved?: boolean;
   catalogItemId?: string;
   brandName?: string;
@@ -272,6 +275,35 @@ function checkBoundsScale(
   return checks;
 }
 
+function checkDimensionFit(glbPath: string, input: ImportInput, limits: ImportQaLimits): ImportCheck[] {
+  if (!input.dimsMm) return [];
+  const measured = measureGlbSceneBounds(glbPath);
+  if (!measured.size) {
+    return [
+      {
+        severity: "warning",
+        code: "DIMENSION_FIT_SKIPPED",
+        message: "Could not measure GLB bounds; dimension-fit check skipped.",
+        details: measured.error,
+      },
+    ];
+  }
+  const fit = evaluateDimensionFit({
+    glbSize: measured.size,
+    dimsMm: input.dimsMm,
+    swapWidthDepthAxes: input.swapWidthDepthAxes,
+    warnRatio: limits.dimensionWarnRatio,
+    errorRatio: limits.dimensionErrorRatio,
+  });
+  if (!fit) return [];
+  const m = fit.metrics;
+  console.log(
+    `   dimensionFit: glb=${measured.size.x.toFixed(3)}x${measured.size.y.toFixed(3)}x${measured.size.z.toFixed(3)}m ` +
+      `scale=(${m.scaleX.toFixed(2)}, ${m.scaleY.toFixed(2)}, ${m.scaleZ.toFixed(2)}) worst=${(m.worstError * 100).toFixed(1)}%`
+  );
+  return fit.checks;
+}
+
 function printQASummary(result: ImportQAResult) {
   const { stats, checks } = result;
   console.log("\n📋 Import QA Summary");
@@ -478,6 +510,7 @@ async function main() {
   qa = runImportQA(optimizedInputPath, input, limits);
   qa.checks.push(...pipelineWarnings);
   qa.checks.push(...checkBoundsScale(input, aabb, limits));
+  qa.checks.push(...checkDimensionFit(optimizedInputPath, input, limits));
 
   if (optimizeEnabled && optimizedInputPath !== normalizedInputPath) {
     qa.checks.push({

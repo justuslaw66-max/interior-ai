@@ -16,8 +16,8 @@ design_zone: "living_zone"
 anchor_role: "secondary"
 
 dimensions:
-  width_cm: 86.3
-  depth_cm: 51.7
+  width_cm: 139
+  depth_cm: 67
   height_cm: 48
 
 size_class: "small"
@@ -135,7 +135,7 @@ authoring_notes:
   single_variant_expected: true
   preset_family: "table"
   source_checked: "Castlery Singapore product page, 2026-06-09"
-  note: "Castlery SG page lists this as the Walnut nested coffee table set. Top-level dimensions use the largest safe planning footprint across the low and high nesting tables."
+  note: "Castlery SG page lists this as the Walnut nested coffee table set. Top-level dimensions use the largest safe planning footprint across the low and high nesting tables. Product and variant dimensions describe the set as modelled (both tables side by side, the high table offset): 139 x 67 x 48cm, from the GLB at the 48cm high-table height; Castlery lists the pieces as High W51.7 x D49.4 x H48 and Low W51 x D86.3 x H38 (86.3 + 51.7 = 138 wide side by side). size_label keeps the Castlery SKU label."
 
 feature_flags:
   has_storage: false
@@ -218,8 +218,8 @@ variants:
     brand_tier: "premium_mid"
 
     dimensions:
-      width_cm: 86.3
-      depth_cm: 51.7
+      width_cm: 139
+      depth_cm: 67
       height_cm: 48
 
     size_class: "small"
