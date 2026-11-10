@@ -86,6 +86,8 @@ function labelRun(row: Token[]): { labels: Token[]; unit: "m" | "mm" } | null {
     labels.unshift(row[index]);
     if (row[index].value === 0) break;
   }
+  // A row that starts with a lone unit (OCR reads an "M" off a door swing) has no numbers before it: no bar.
+  if (!labels.length) return null;
   // OCR can miss the 0 at the start of a bar; four rising numbers then stand without it.
   return labels.length >= (labels[0].value === 0 ? 3 : 4) ? { labels, unit } : null;
 }
