@@ -6,8 +6,7 @@ product_family: "Joseph"
 product_name: "Joseph Bed"
 variant: "Queen - Fabric Bedframe - Stone Grey"
 
-price_sgd: 1069
-compare_at_price_sgd: 1099
+price_sgd: 1099
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -113,8 +112,7 @@ variants:
     model_url: "/assets/models/bed-real-castlery-joseph-fabric-queen-stone-grey.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed?bed_frame_size=queen&material=stone_grey"
     available: true
-    price_sgd: 1069
-    compare_at_price_sgd: 1099
+    price_sgd: 1099
     dimensions: &fabric_queen_dims
       width_cm: 161.2
       depth_cm: 210.6
@@ -149,7 +147,7 @@ variants:
     collection_type: "stocked"
     model_url: "/assets/models/bed-real-castlery-joseph-fabric-king-stone-grey.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed?bed_frame_size=king&material=stone_grey"
-    available: true
+    available: false
     price_sgd: 1199
     dimensions:
       width_cm: 191.2
@@ -179,8 +177,7 @@ variants:
     model_url: "/assets/models/bed-real-castlery-joseph-fabric-queen-ivory-beige.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed?bed_frame_size=queen&material=ivory_beige"
     available: true
-    price_sgd: 1069
-    compare_at_price_sgd: 1099
+    price_sgd: 1099
     dimensions: *fabric_queen_dims
     size_class: "large"
     color_family: "beige"
@@ -205,7 +202,7 @@ variants:
     collection_type: "stocked"
     model_url: "/assets/models/bed-real-castlery-joseph-fabric-king-ivory-beige.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed?bed_frame_size=king&material=ivory_beige"
-    available: true
+    available: false
     price_sgd: 1199
     dimensions:
       width_cm: 191.2
@@ -235,8 +232,7 @@ variants:
     model_url: "/assets/models/bed-real-castlery-joseph-boucle-queen-snow.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-boucle?bed_frame_size=queen"
     available: true
-    price_sgd: 959
-    compare_at_price_sgd: 1099
+    price_sgd: 1099
     dimensions: *fabric_queen_dims
     size_class: "large"
     color_family: "white"
@@ -268,7 +264,7 @@ variants:
     collection_type: "stocked"
     model_url: "/assets/models/bed-real-castlery-joseph-boucle-king-snow.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-boucle?bed_frame_size=king"
-    available: true
+    available: false
     price_sgd: 1049
     compare_at_price_sgd: 1199
     dimensions:
@@ -299,8 +295,7 @@ variants:
     model_url: "/assets/models/bed-real-castlery-joseph-walnut-queen.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-walnut?bed_frame_size=queen"
     available: true
-    price_sgd: 1039
-    compare_at_price_sgd: 1199
+    price_sgd: 1199
     dimensions: &walnut_queen_dims
       width_cm: 159.2
       depth_cm: 210.6
@@ -336,7 +331,7 @@ variants:
     collection_type: "stocked"
     model_url: "/assets/models/bed-real-castlery-joseph-walnut-king.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-walnut?bed_frame_size=king"
-    available: true
+    available: false
     price_sgd: 1129
     compare_at_price_sgd: 1299
     dimensions:
@@ -397,7 +392,7 @@ variants:
     collection_type: "stocked"
     model_url: "/assets/models/bed-real-castlery-joseph-fabric-set-king-stone-grey.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-with-2-bedside-tables?bed_frame_size=king&material=stone_grey"
-    available: true
+    available: false
     price_sgd: 2059
     dimensions:
       width_cm: 311.2
@@ -456,7 +451,7 @@ variants:
     collection_type: "stocked"
     model_url: "/assets/models/bed-real-castlery-joseph-fabric-set-king-ivory-beige.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-with-2-bedside-tables?bed_frame_size=king&material=ivory_beige"
-    available: true
+    available: false
     price_sgd: 2059
     dimensions:
       width_cm: 311.2
@@ -515,7 +510,7 @@ variants:
     collection_type: "stocked"
     model_url: "/assets/models/bed-real-castlery-joseph-boucle-set-king-snow.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-boucle-with-2-joseph-bedside-tables?bed_frame_size=king"
-    available: true
+    available: false
     price_sgd: 2079
     dimensions:
       width_cm: 311.2
@@ -575,7 +570,7 @@ variants:
     collection_type: "stocked"
     model_url: "/assets/models/bed-real-castlery-joseph-walnut-set-king.glb"
     affiliate_url: "https://www.castlery.com/sg/products/joseph-bed-walnut-with-2-bedside-tables?bed_frame_size=king"
-    available: true
+    available: false
     price_sgd: 1889
     dimensions:
       width_cm: 309.2

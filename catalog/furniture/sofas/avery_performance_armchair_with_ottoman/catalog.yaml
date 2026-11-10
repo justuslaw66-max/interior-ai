@@ -9,6 +9,7 @@ slug: "castlery-avery-performance-boucle-armchair-with-ottoman"
 variant: "Armchair with Ottoman / Performance Infinity Boucle, Light Grey (White Quartz)"
 
 price_sgd: 709
+compare_at_price_sgd: 748
 price_band: "mid_premium"
 brand_tier: "premium_mid"
 
@@ -245,6 +246,7 @@ variants:
     color_family: "grey"
     tone: "cool"
     price_sgd: 709
+    compare_at_price_sgd: 748
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 130, height_cm: 75 }
@@ -278,6 +280,7 @@ variants:
     color_family: "rust"
     tone: "warm"
     price_sgd: 709
+    compare_at_price_sgd: 748
     price_band: "mid_premium"
     brand_tier: "premium_mid"
     dimensions: { width_cm: 81.5, depth_cm: 130, height_cm: 75 }

@@ -6,11 +6,12 @@ import type { ThreeEvent } from "@react-three/fiber";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
 import { useCanvasPalette } from "@/lib/canvas-colours";
+import { PLAN_SYMBOL_BASE_Y, PLAN_SYMBOL_OVERLAY_Y } from "@/lib/plan-symbols/plan-symbol-item";
+import PlanSymbol2D from "./PlanSymbol2D";
 
 type ItemRenderer2DProps = {
   width: number;
   depth: number;
-  color: string;
   category: string;
   selected: boolean;
   hovered?: boolean;
@@ -29,14 +30,9 @@ type ItemRenderer2DProps = {
   onRotateHandlePointerUp?: (e: ThreeEvent<PointerEvent>) => void;
 };
 
-function roundedCategory(category: string) {
-  return category === "coffee_table" || category === "side_table" || category === "dining_table";
-}
-
 export default function ItemRenderer2D({
   width,
   depth,
-  color,
   category,
   selected,
   hovered = false,
@@ -62,121 +58,50 @@ export default function ItemRenderer2D({
       ? colour("#2a66ff")
       : hovered
         ? colour("#0f766e")
-      : snapped && dragging
-        ? colour("#4ea81f")
-        : colour("#5f6770");
+        : colour("#4ea81f");
 
-  const fillColor = invalidPlacement ? colour("#f8b6b6") : color;
-
+  // The symbol is the item's outline; a coloured border shows only what is happening to it.
+  const showBorder = selected || hovered || invalidPlacement || (snapped && dragging);
+  const markY = PLAN_SYMBOL_OVERLAY_Y;
   const corner = 0.04;
   const formatDimension = (meters: number) =>
     formatDisplayLength(meters * 1000, measurementUnit);
   const cornerPoints: Array<[number, number, number]> = [
-    [-width / 2, 0.003, -depth / 2],
-    [width / 2, 0.003, -depth / 2],
-    [width / 2, 0.003, depth / 2],
-    [-width / 2, 0.003, depth / 2],
+    [-width / 2, markY, -depth / 2],
+    [width / 2, markY, -depth / 2],
+    [width / 2, markY, depth / 2],
+    [-width / 2, markY, depth / 2],
   ];
 
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2}>
+      {/* The pick target: the whole footprint, drawn invisibly under the symbol. */}
+      <mesh rotation-x={-Math.PI / 2} position={[0, PLAN_SYMBOL_BASE_Y, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color={fillColor} transparent opacity={selected ? 0.7 : hovered ? 0.62 : 0.5} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
-      <Line
-        points={[
-          [-width / 2, 0.002, -depth / 2],
-          [width / 2, 0.002, -depth / 2],
-          [width / 2, 0.002, depth / 2],
-          [-width / 2, 0.002, depth / 2],
-          [-width / 2, 0.002, -depth / 2],
-        ]}
-        color={borderColor}
-        lineWidth={selected ? 2.4 : hovered ? 2 : 1.4}
-      />
+      <PlanSymbol2D category={category} label={label} width={width} depth={depth} />
 
-      {category === "sofa" && (
-        <Line
-          points={[
-            [-width / 2 + 0.02, 0.0025, -depth / 2 + 0.03],
-            [width / 2 - 0.02, 0.0025, -depth / 2 + 0.03],
-          ]}
-          color={colour("#38424c")}
-          lineWidth={1.8}
-        />
-      )}
-
-      {category === "chair" && (
-        <Line
-          points={[
-            [-width / 2 + 0.03, 0.0025, -depth / 2 + 0.03],
-            [width / 2 - 0.03, 0.0025, -depth / 2 + 0.03],
-          ]}
-          color={colour("#38424c")}
-          lineWidth={1.4}
-        />
-      )}
-
-      {category === "bed" && (
-        <>
-          <Line
-            points={[
-              [-width / 2 + 0.03, 0.0025, -depth / 2 + 0.08],
-              [width / 2 - 0.03, 0.0025, -depth / 2 + 0.08],
-            ]}
-            color={colour("#38424c")}
-            lineWidth={1.8}
-          />
-          <Line
-            points={[
-              [0, 0.0025, -depth / 2 + 0.08],
-              [0, 0.0025, depth / 2 - 0.03],
-            ]}
-            color={colour("#38424c")}
-            lineWidth={1.2}
-          />
-        </>
-      )}
-
-      {(category === "dining_table" || category === "desk") && (
-        <Line
-          points={[
-            [-width / 2 + 0.03, 0.0025, 0],
-            [width / 2 - 0.03, 0.0025, 0],
-          ]}
-          color={colour("#38424c")}
-          lineWidth={1.2}
-        />
-      )}
-
-      {(category === "storage" || category === "bookshelf" || category === "cabinet") && (
-        <>
-          <Line
-            points={[
-              [-width / 6, 0.0025, -depth / 2 + 0.03],
-              [-width / 6, 0.0025, depth / 2 - 0.03],
-            ]}
-            color={colour("#38424c")}
-            lineWidth={1.1}
-          />
-          <Line
-            points={[
-              [width / 6, 0.0025, -depth / 2 + 0.03],
-              [width / 6, 0.0025, depth / 2 - 0.03],
-            ]}
-            color={colour("#38424c")}
-            lineWidth={1.1}
-          />
-        </>
-      )}
-
-      {(category === "coffee_table" || category === "side_table") && roundedCategory(category) && (
-        <mesh rotation-x={-Math.PI / 2} position={[0, 0.0022, 0]}>
-          <circleGeometry args={[Math.max(0.08, Math.min(width, depth) * 0.3), 28]} />
-          <meshBasicMaterial color="#6b4f31" transparent opacity={0.28} />
+      {invalidPlacement && (
+        <mesh rotation-x={-Math.PI / 2} position={[0, markY, 0]}>
+          <planeGeometry args={[width, depth]} />
+          <meshBasicMaterial color={colour("#f8b6b6")} transparent opacity={0.45} depthWrite={false} />
         </mesh>
+      )}
+
+      {showBorder && (
+        <Line
+          points={[
+            [-width / 2, markY, -depth / 2],
+            [width / 2, markY, -depth / 2],
+            [width / 2, markY, depth / 2],
+            [-width / 2, markY, depth / 2],
+            [-width / 2, markY, -depth / 2],
+          ]}
+          color={borderColor}
+          lineWidth={selected ? 2.4 : 2}
+        />
       )}
 
       {selected &&
@@ -191,19 +116,19 @@ export default function ItemRenderer2D({
         <>
           <Line
             points={[
-              [0, 0.002, -depth / 2],
-              [0, 0.002, -depth / 2 - 0.16],
+              [0, markY, -depth / 2],
+              [0, markY, -depth / 2 - 0.16],
             ]}
             color={colour("#2a66ff")}
             lineWidth={1.8}
           />
-          <mesh rotation-x={-Math.PI / 2} position={[0, 0.0023, -depth / 2 - 0.18]}>
+          <mesh rotation-x={-Math.PI / 2} position={[0, markY + 0.0003, -depth / 2 - 0.18]}>
             <circleGeometry args={[0.03, 24]} />
             <meshBasicMaterial color={colour("#2a66ff")} />
           </mesh>
           <mesh
             rotation-x={-Math.PI / 2}
-            position={[0, 0.0026, -depth / 2 - 0.18]}
+            position={[0, markY + 0.0006, -depth / 2 - 0.18]}
             onPointerDown={onRotateHandlePointerDown}
             onPointerMove={onRotateHandlePointerMove}
             onPointerUp={onRotateHandlePointerUp}

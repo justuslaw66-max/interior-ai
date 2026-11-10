@@ -753,7 +753,6 @@ export function Furniture({
         <ItemRenderer2D
           width={planningWidth}
           depth={planningDepth}
-          color={materialProps.color}
           category={product.category}
           selected={Boolean(showSelection && isSelected)}
           hovered={hovered}

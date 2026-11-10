@@ -710,14 +710,6 @@ export const LENGTH_OPTIONS_BY_PRODUCT_ID: Record<
     { label: "90CM", productId: "dining-real-castlery-forma-round-90" },
     { label: "120CM", productId: "dining-real-castlery-forma-round-120" },
   ],
-  "dining-real-castlery-kelsey-marble-160": [
-    { label: "160CM", productId: "dining-real-castlery-kelsey-marble-160" },
-    { label: "180CM", productId: "dining-real-castlery-kelsey-marble-180" },
-  ],
-  "dining-real-castlery-kelsey-marble-180": [
-    { label: "160CM", productId: "dining-real-castlery-kelsey-marble-160" },
-    { label: "180CM", productId: "dining-real-castlery-kelsey-marble-180" },
-  ],
   "dining-real-castlery-seb-dining-table-150": [
     { label: "150CM", productId: "dining-real-castlery-seb-dining-table-150" },
     { label: "180CM", productId: "dining-real-castlery-seb-dining-table-180" },
