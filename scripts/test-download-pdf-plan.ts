@@ -73,7 +73,9 @@ function testRoomsDrawing() {
   assert(roles.filter((role) => role === "wall").length >= 8, "Every room's walls draw as filled bands.");
   const arc = primitives.find((primitive) => primitive.role === "swing_arc");
   assert(arc?.kind === "path" && / C /.test(arc.path), "A door swing is one true curve, not dashes.");
-  assert.equal(roles.filter((role) => role === "glazing").length, 2, "A window draws its two glazing lines.");
+  assert.equal(roles.filter((role) => role === "glazing").length, 1, "A window draws one glass line on the wall's centreline.");
+  const sills = primitives.filter((primitive) => primitive.role === "window-sill").map((primitive) => primitive.kind === "path" ? primitive.points[0].zMm : 0);
+  assert.deepEqual(sills.sort((a, b) => a - b), [-2060, -1940], "…and the wall's two faces across the opening: three lines in all (J, 11 Nov).");
   assert(roles.lastIndexOf("furniture-tag") < roles.indexOf("room-label"), "Names come after furniture, so its paper never covers them.");
   assert(roles.lastIndexOf("wall") < roles.indexOf("furniture"), "Furniture is drawn over the walls' fill.");
   const labels = primitives.filter((primitive) => primitive.kind === "text" && primitive.role === "room-label").map((primitive) => primitive.kind === "text" ? primitive.text : "");
