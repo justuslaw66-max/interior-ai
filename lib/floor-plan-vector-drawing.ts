@@ -4,16 +4,22 @@ import { compileCanonicalFloorPlanRenderModel } from "@/lib/floor-plan-render-mo
 import { buildFloorPlanVectorWalls } from "@/lib/floor-plan-vector-walls";
 import { windowFrameInkNormal } from "@/lib/floor-plan-vector-ink";
 import { buildCanonicalOpeningSymbolLinesV2 } from "@/lib/floor-plan-opening-primitives";
-import { buildFloorPlanFurnitureDrawing, type PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
+import { buildFloorPlanFurnitureDrawing, type FurnitureScheduleEntry, type PlanFurnitureDrawingSource } from "@/lib/floor-plan-vector-furniture";
 import { namedFloorPlanRooms, voidRoomCrossDashes } from "@/lib/floor-plan-void-rooms";
 
 export type PlanDrawingPrimitive =
   | { id: string; kind: "path"; path: string; fill: boolean; points: Point[]; role: string; strokeWidth?: number; strokeInsetNormal?: { x: number; z: number };
       /** The grey traced source artwork is drawn in (0 black - 255 white), where the trace gave one. */
-      tone?: number }
+      tone?: number;
+      /** Plan symbols: painted paper-white under their line, so they cover what was drawn before. */
+      paperFill?: boolean;
+      /** Line width and dash in paper millimetres, the same at any print scale (0: no line). */
+      paperStrokeMm?: number; paperDashMm?: [number, number] }
   | { id: string; kind: "text"; text: string; point: Point; role: string };
 export type PlanDrawingOptions = { floorId: string; dimensions: boolean; labels: boolean; fixtures: boolean };
-export type PlanVectorDrawing = { coordinateSpace?: "source_pixels"; sourceSize?: { width: number; height: number }; geometryHash: string; primitives: PlanDrawingPrimitive[]; unsupported: string[] };
+export type PlanVectorDrawing = { coordinateSpace?: "source_pixels"; sourceSize?: { width: number; height: number }; geometryHash: string; primitives: PlanDrawingPrimitive[]; unsupported: string[];
+  /** The furniture schedule the drawing's numbered tags key to. */
+  schedule?: FurnitureScheduleEntry[] };
 
 const number = (value: number) => Number(value.toFixed(6));
 const xy = (point: Point) => `${number(point.xMm)} ${number(point.zMm)}`;
@@ -89,6 +95,13 @@ function annotationPrimitives(floor: CompiledFloorPlanFloorV2): PlanDrawingPrimi
   });
 }
 
+/** Structures' outlines, then each placed item as its plan symbol with its tag. */
+function fixtureDrawing(floor: CompiledFloorPlanFloorV2, furniture?: PlanFurnitureDrawingSource) {
+  const primitives: PlanDrawingPrimitive[] = floor.structures.map((structure) => line(`${structure.id}:outline`, [...structure.points, structure.points[0]], "fixture"));
+  const placed = furniture ? buildFloorPlanFurnitureDrawing(floor, furniture) : { primitives: [], unsupported: [], schedule: [] };
+  return { primitives: [...primitives, ...placed.primitives], unsupported: placed.unsupported, schedule: placed.schedule };
+}
+
 export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, options: PlanDrawingOptions, furniture?: PlanFurnitureDrawingSource,
   compiledModel?: ReturnType<typeof compileCanonicalFloorPlanRenderModel>): PlanVectorDrawing {
   const model = compiledModel ?? compileCanonicalFloorPlanRenderModel(document);
@@ -103,6 +116,9 @@ export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, optio
   primitives.push(...openingPrimitives(compiled));
   // A void (duct, shaft) is drawn as the plan draws it: a dashed cross, no name.
   primitives.push(...voidRoomCrossDashes(compiled).map(({ id, dash }) => line(id, dash, "void-cross")));
+  // Fixtures and furniture before dimensions and names, so furniture's paper never covers them.
+  const fixtures = options.fixtures ? fixtureDrawing(compiled, furniture) : null;
+  if (fixtures) { primitives.push(...fixtures.primitives); unsupported.push(...fixtures.unsupported); }
   if (options.dimensions) primitives.push(...dimensionPrimitives(compiled));
   if (options.labels) {
     primitives.push(...annotationPrimitives(compiled));
@@ -115,10 +131,7 @@ export function buildFloorPlanVectorDrawing(document: FloorPlanDocumentV2, optio
       }, role: "room-label" });
     }
   }
-  if (options.fixtures) compiled.structures.forEach((structure) => primitives.push(line(`${structure.id}:outline`, [...structure.points, structure.points[0]], "fixture")));
-  if (options.fixtures && furniture) {
-    const drawing = buildFloorPlanFurnitureDrawing(compiled, furniture);
-    primitives.push(...drawing.primitives); unsupported.push(...drawing.unsupported);
-  }
-  return { geometryHash: model.geometryHash, primitives, unsupported };
+  const drawing: PlanVectorDrawing = { geometryHash: model.geometryHash, primitives, unsupported };
+  if (fixtures?.schedule.length) drawing.schedule = fixtures.schedule;
+  return drawing;
 }
