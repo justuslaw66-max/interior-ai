@@ -400,7 +400,7 @@ export function buildDesignPagePanelRegistration({
         onPreviewCatalogPlacementIntent:
           catalogActions.previewCatalogPlacementIntent,
         onCatalogDragStart: catalogActions.handleCatalogDragStart,
-        onCatalogDragEnd: catalogActions.handleCatalogDragEnd,
+        onCatalogDragEnd: catalogActions.handleCatalogDragEnd, onAddLayoutBlockToRoom: catalogActions.addLayoutBlockToRoom,
         onSelectPlacedItem: (instanceId) =>
           placementSelection.actions.selection.selectItem(instanceId, false),
         onSelectedImportedFamilyChange: importedModels.actions.setSelectedFamilyKey,

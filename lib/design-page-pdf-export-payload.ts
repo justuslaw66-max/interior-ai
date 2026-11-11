@@ -3,6 +3,7 @@ import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapsh
 import { getItemPrice } from "@/lib/design-page-utils";
 import type { PlanWirePayload } from "@/lib/download-plan-wire";
 import type { RoomOpening2D } from "@/lib/editorScene";
+import { isLayoutBlock } from "@/lib/layout-blocks";
 import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
 
 /**
@@ -21,6 +22,8 @@ export type PdfExportListItem = {
 
 export function buildPdfExportItems(items: readonly DesignItem[], tagByInstanceId: Readonly<Record<string, number>> = {}): PdfExportListItem[] {
   return items.flatMap((item) => {
+    // A layout block has no product to buy: the plan's schedule lists it, the product list doesn't.
+    if (isLayoutBlock(item)) return [];
     const liveProduct = CATALOG_ITEMS[item.productId];
     const visualProduct = resolveDesignItemVisualProduct(item, CATALOG_ITEMS);
     if (!visualProduct) return [];

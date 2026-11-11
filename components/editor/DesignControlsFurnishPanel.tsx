@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import CatalogPanel from "@/components/catalog/CatalogPanel";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
@@ -10,6 +10,8 @@ import type { ActiveRoomShoppingItem } from "@/lib/room-shopping";
 import { FurnishFooter } from "./FurnishFooter";
 import { FurnishImportedModels } from "./FurnishImportedModels";
 import { FurnishInThisRoom } from "./FurnishInThisRoom";
+import { FurnishLayoutBlocks } from "./FurnishLayoutBlocks";
+import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
 import { PlacementAddModeToggle } from "./PlacementAddModeToggle";
 import { Button } from "@/components/ui/Button";
 
@@ -56,6 +58,8 @@ type DesignControlsFurnishPanelProps = {
   onGoShop: () => void;
   onSelectedImportedFamilyChange: (familyKey: string) => void;
   onSelectedImportedProductChange: (productId: string) => void;
+  /** Layout blocks (lib/layout-blocks.ts): a plan piece with no product, placed in the room. */
+  onAddLayoutBlockToRoom?: (kind: PlanSymbolKind) => void;
   /** Above the foot: Pro's layout versions. */
   footer?: ReactNode;
 };
@@ -137,6 +141,30 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
   );
 }
 
+const SOURCE_BUTTON_CLASS =
+  "min-h-10 flex-1 rounded-md px-3 text-[13px] font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 md:min-h-8";
+
+/** Products or layout blocks: what Furnish adds (layout blocks, J 12 Nov 2026). */
+function FurnishSourceToggle({ source, onChange }: { source: "products" | "layout"; onChange: (source: "products" | "layout") => void }) {
+  const option = (value: "products" | "layout", label: string) => (
+    <button
+      type="button"
+      aria-pressed={source === value}
+      data-testid={`furnish-source-${value}`}
+      className={`${SOURCE_BUTTON_CLASS} ${source === value ? "bg-field text-label shadow-sm" : "text-control-label-idle hover:bg-control-secondary-hover"}`}
+      onClick={() => onChange(value)}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div role="group" aria-label="What to add" className="mb-3 flex gap-1 rounded-lg border border-box-border bg-surface-secondary p-1">
+      {option("products", "Products")}
+      {option("layout", "Layout blocks")}
+    </div>
+  );
+}
+
 /**
  * Furnish, products first (audit findings FU1, ST12): the room, the search with Suggest a layout
  * beside it, the category chips and the products; then what's in the room, Pro's layout versions
@@ -147,13 +175,22 @@ export default function DesignControlsFurnishPanel(props: DesignControlsFurnishP
   const { placementAddMode, onPlacementAddModeChange } = props;
   const productCount = activeRoomShoppingItems.reduce((total, item) => total + item.quantity, 0);
   const panelClass = "rounded-2xl border border-box-border bg-surface-secondary p-3 shadow-sm";
+  const [source, setSource] = useState<"products" | "layout">("products");
+  const showLayout = source === "layout" && Boolean(props.onAddLayoutBlockToRoom);
 
   return (
     <div className="space-y-3">
       <section className={panelClass} data-testid="furnish-full-catalog" data-mode-content="catalog">
         <FurnishRoomRow {...props} />
-        <PlacementAddModeToggle visible={isDesigner} mode={placementAddMode} onChange={onPlacementAddModeChange} />
-        <FurnishCatalogSection {...props} />
+        {props.onAddLayoutBlockToRoom ? <FurnishSourceToggle source={source} onChange={setSource} /> : null}
+        {showLayout && props.onAddLayoutBlockToRoom ? (
+          <FurnishLayoutBlocks roomName={activeRoomName} canEdit={canEdit} onAdd={props.onAddLayoutBlockToRoom} />
+        ) : (
+          <>
+            <PlacementAddModeToggle visible={isDesigner} mode={placementAddMode} onChange={onPlacementAddModeChange} />
+            <FurnishCatalogSection {...props} />
+          </>
+        )}
       </section>
       <FurnishInThisRoom
         roomName={activeRoomName}

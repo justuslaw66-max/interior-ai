@@ -14,7 +14,9 @@ type CatalogItems = typeof CATALOG_ITEMS;
 export type SelectedItemSale =
   | { kind: "retailer"; retailer: string }
   | { kind: "checkout" }
-  | { kind: "unavailable" };
+  | { kind: "unavailable" }
+  /** A layout block: a planned piece, no product chosen yet. */
+  | { kind: "layout" };
 
 /** A named swap: "Swap for cheaper · Cammy Armchair · S$449". */
 export type SelectedItemSwap = { productId: string; title: string; priceLabel: string };
@@ -69,9 +71,9 @@ function swapOf(target: { productId: string; title: string } | null, catalogItem
   return { ...target, priceLabel: priceText(getPriceNumber(product, product.defaultVariantId)) };
 }
 
-/** A set, or a product bought as a set, keeps its product: a swap would break the set. */
+/** A set, or a product bought as a set, keeps its product: a swap would break the set. A layout block has none to swap. */
 function canSwap(item: DesignItem | null) {
-  return Boolean(item) && !item?.bundleGroupId && !item?.purchaseOptionId;
+  return Boolean(item) && !item?.bundleGroupId && !item?.purchaseOptionId && item?.assetType !== "layout_block";
 }
 
 type PlacedLine = ReturnType<typeof resolveRoomShoppingItems>[number] | undefined;
@@ -113,8 +115,8 @@ export function buildSelectedItemSummary({
     title: product.title,
     imageUrl: line?.imageUrl ?? resolved.media.thumbUrl ?? thumbUrl,
     fallbackImageUrl: line?.fallbackImageUrl ?? thumbUrl,
-    priceLabel: priceText(price),
-    sale: saleOf(line),
+    priceLabel: item?.assetType === "layout_block" ? "Layout block" : priceText(price),
+    sale: item?.assetType === "layout_block" ? { kind: "layout" } : saleOf(line),
     sizeLabel: productSizeLabel(planningDimensionsMm ?? product.dimsMm, measurementUnit),
     swaps: swapsOf(product, item, style, catalogItems),
   };
