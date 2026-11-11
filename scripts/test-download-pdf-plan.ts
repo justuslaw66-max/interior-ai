@@ -114,8 +114,9 @@ async function testPages(decoded: NonNullable<ReturnType<typeof decodeDownloadPl
   assert.equal(decorated, 2, "Every plan page carries the tier's watermark.");
   const [width, height] = [pdf.getPage(0).getWidth(), pdf.getPage(0).getHeight()];
   assert(Math.abs(width - 297 * 72 / 25.4) < 0.01 && Math.abs(height - 210 * 72 / 25.4) < 0.01, "A small home fits A4 landscape.");
-  const content = vectorPdfPageContent(pdf);
-  assert(/ c\n/.test(content) || / c /.test(content), "The swing stays a native PDF curve.");
+  // The inspector reads saved page streams, as a viewer would.
+  const content = vectorPdfPageContent(await PDFDocument.load(await pdf.save({ useObjectStreams: false })));
+  assert(/\bc\b/.test(content), "The swing stays a native PDF curve.");
   const huge = { ...decoded, sheets: decoded.sheets.map((sheet) => ({ ...sheet, drawing: { ...sheet.drawing, primitives: [...sheet.drawing.primitives,
     { id: "far", kind: "path" as const, path: "M 0 0 L 200000 0", fill: false, points: [{ xMm: 0, zMm: 0 }, { xMm: 200000, zMm: 0 }], role: "wall" }] } })) };
   const tooLarge = await drawDownloadPlanPages(await PDFDocument.create(), huge, new Uint8Array(await vectorExportFontBytes()));
