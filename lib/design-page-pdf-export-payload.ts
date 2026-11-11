@@ -2,6 +2,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { getItemPrice } from "@/lib/design-page-utils";
 import type { PlanWirePayload } from "@/lib/download-plan-wire";
+import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
 
 /**
@@ -38,19 +39,26 @@ export function buildPdfExportItems(items: readonly DesignItem[], tagByInstanceI
 
 /**
  * The furnished plan for the request, or none: the PDF still downloads when the plan cannot be
- * drawn here, without the plan pages or the list's tags.
+ * drawn here, without the plan pages or the list's tags. The doors and windows are the plan's
+ * live ones: the snapshot carries its own copy only from the last save.
  */
-export async function buildPdfExportPlan(snapshot: DesignSnapshot): Promise<{ plan?: PlanWirePayload; tagByInstanceId: Record<string, number> }> {
+export async function buildPdfExportPlan(snapshot: DesignSnapshot, openings: readonly RoomOpening2D[]): Promise<{ plan?: PlanWirePayload; tagByInstanceId: Record<string, number> }> {
   try {
     const [{ buildDownloadPlanDrawing }, { encodeDownloadPlan }] = await Promise.all([
       import("@/lib/download-plan-drawing"),
       import("@/lib/download-plan-wire"),
     ]);
-    const drawing = buildDownloadPlanDrawing(snapshot);
+    const drawing = buildDownloadPlanDrawing({ ...snapshot, floorPlan: { ...snapshot.floorPlan, openings: [...openings] } });
     if (!drawing.sheets.length) return { tagByInstanceId: {} };
     return { plan: encodeDownloadPlan(drawing), tagByInstanceId: drawing.tagByInstanceId };
   } catch (error) {
     console.warn("[export] furnished plan skipped", error);
     return { tagByInstanceId: {} };
   }
+}
+
+/** The request's product list and plan, the list numbered to match the plan's tags. */
+export async function buildPdfExportListAndPlan(items: readonly DesignItem[], snapshot: DesignSnapshot, openings: readonly RoomOpening2D[]) {
+  const { plan, tagByInstanceId } = await buildPdfExportPlan(snapshot, openings);
+  return { items: buildPdfExportItems(items, tagByInstanceId), ...(plan ? { plan } : {}) };
 }
