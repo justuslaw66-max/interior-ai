@@ -113,7 +113,10 @@ test.describe("command bar Download", () => {
     expect(pdfRequests).toHaveLength(1);
     expect(pdfRequests[0].requestedTier).toBe("free");
     expect(pdfRequests[0].images).toHaveLength(1);
-    expect(pdfRequests[0].items).toEqual([expect.objectContaining({ name: expect.stringContaining("Dawson") })]);
+    // The furnished plan travels with the list, and the product carries its tag on the plan.
+    expect(pdfRequests[0].items).toEqual([expect.objectContaining({ name: expect.stringContaining("Dawson"), tag: 1 })]);
+    expect(pdfRequests[0].plan.sheets).toHaveLength(1);
+    expect(pdfRequests[0].plan.schedule).toEqual([expect.objectContaining({ tag: 1, name: expect.stringContaining("Dawson"), quantity: 1 })]);
     await expect(dialog).toHaveCount(0);
     await expect(download).toBeFocused();
     await expect(page.getByTestId("upgrade-dialog")).toHaveCount(0);
