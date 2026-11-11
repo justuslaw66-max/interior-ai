@@ -264,10 +264,6 @@
       "lines": 276,
       "limit": 250
     },
-    "components/scene/furniture/resolveFurnitureModelAppearance.ts": {
-      "lines": 488,
-      "limit": 400
-    },
     "components/scene/FurnitureItem.tsx": {
       "lines": 920,
       "limit": 250
@@ -425,7 +421,7 @@
       "limit": 400
     },
     "lib/catalog/imported-variant-normalization.ts": {
-      "lines": 625,
+      "lines": 614,
       "limit": 400
     },
     "lib/catalog/normalize.ts": {
@@ -2137,11 +2133,11 @@
     "components/scene/furniture/resolveFurnitureModelAppearance.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 471
+        "maximum": 353
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 58
+        "maximum": 49
       }
     },
     "components/scene/FurnitureItem.tsx": {
@@ -2793,11 +2789,11 @@
     "lib/catalog/imported-variant-normalization.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 356
+        "maximum": 344
       },
       "complexFunctions": {
         "count": 3,
-        "maximum": 148
+        "maximum": 144
       }
     },
     "lib/catalog/normalize.ts": {
