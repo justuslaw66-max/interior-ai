@@ -223,13 +223,16 @@ export function resolveFurnitureModelAppearance({
     if (isDawsonPerformanceTwillVariant) {
       return {
         ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.94,
         roughnessOverride: 0.9,
         metalnessOverride: 0,
         aoMapIntensity: 0.18,
         emissiveBoost: 0,
         specularIntensityOverride: 0.05,
+        // The fabric photo tile carries the colour; the weave is drawn at real size.
+        disableBaseColorMap: false,
+        variantMapTintStrength: 0,
+        brightness: 1,
+        saturation: 1,
         importedNormalScale: 0.3,
       };
     }
@@ -254,14 +257,17 @@ export function resolveFurnitureModelAppearance({
     if (isDawsonGenovaVariant) {
       return {
         ...modelCalibration,
-        brightness: 0.98,
-        saturation: 0.94,
         roughnessOverride: 0.92,
         metalnessOverride: 0,
         aoMapIntensity: 0.16,
         emissiveBoost: 0,
         specularIntensityOverride: 0.04,
-        importedNormalScale: 0.016,
+        // The fabric photo tile carries the colour; the weave is drawn at real size.
+        disableBaseColorMap: false,
+        variantMapTintStrength: 0,
+        brightness: 1,
+        saturation: 1,
+        importedNormalScale: 0.3,
       };
     }
 
@@ -286,14 +292,17 @@ export function resolveFurnitureModelAppearance({
     if (isDawsonChenilleVariant) {
       return {
         ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.95,
         roughnessOverride: 0.91,
         metalnessOverride: 0,
         aoMapIntensity: 0.16,
         emissiveBoost: 0,
         specularIntensityOverride: 0.04,
-        importedNormalScale: 0.015,
+        // The fabric photo tile carries the colour; the weave is drawn at real size.
+        disableBaseColorMap: false,
+        variantMapTintStrength: 0,
+        brightness: 1,
+        saturation: 1,
+        importedNormalScale: 0.3,
       };
     }
 
