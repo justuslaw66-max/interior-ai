@@ -27,8 +27,10 @@ export type FurnitureScheduleEntry = {
   rooms: string[];
 };
 
-type PlacedFurniture = {
+/** One drawable item: its symbol's place, its schedule key and the room it stands in. */
+export type PlacedFurniture = {
   placement: FurnitureSymbolPlacement;
+  roomId: string;
   key: string;
   name: string;
   variant?: string;
@@ -66,6 +68,7 @@ function placeItem(item: DesignItem, room: RoomSnapshot, source: PlanFurnitureDr
     variant,
     sizeMm: dimensions,
     quantity: item.qty && item.qty > 0 ? item.qty : 1,
+    roomId: room.id,
     room: room.name,
   };
 }
@@ -99,24 +102,35 @@ function scheduleFor(placed: readonly PlacedFurniture[]) {
 }
 
 /**
- * Each placed item as its plan symbol in world millimetres: a paper footprint, the symbol's
- * own editable paths, and a numbered tag keyed to the furniture schedule.
+ * Places every item of these rooms and numbers them for one schedule: same product, variant
+ * and size share a tag across all the rooms given, so a whole home keeps one numbering.
  */
-export function buildFloorPlanFurnitureDrawing(floor: CompiledFloorPlanFloorV2, source: PlanFurnitureDrawingSource) {
+export function placePlanFurniture(rooms: readonly RoomSnapshot[], source: PlanFurnitureDrawingSource) {
   const unsupported: string[] = [];
   const placed: PlacedFurniture[] = [];
-  const roomIds = new Set(floor.rooms.map(({ id }) => id));
-  for (const room of source.rooms) {
-    if (!roomIds.has(room.id)) continue;
+  for (const room of rooms) {
     for (const item of room.items) {
       const result = placeItem(item, room, source);
       if (typeof result === "string") unsupported.push(result);
       else placed.push(result);
     }
   }
-  const { schedule, tags } = scheduleFor(placed);
+  return { placed, unsupported, ...scheduleFor(placed) };
+}
+
+/** The placed items as paper footprints and symbol paths, then their tags, so no neighbour's paper covers one. */
+export function planFurniturePrimitives(placed: readonly PlacedFurniture[], tags: ReadonlyMap<string, number>): PlanDrawingPrimitive[] {
   const primitives: PlanDrawingPrimitive[] = placed.flatMap((item) => [footprintPrimitive(item), ...furnitureSymbolPrimitives(item.placement)]);
-  // Tags last, so no neighbour's paper covers one.
   primitives.push(...placed.map((item) => furnitureTagPrimitive(item.placement, tags.get(item.key) ?? 0)));
-  return { primitives, unsupported, schedule };
+  return primitives;
+}
+
+/**
+ * Each placed item as its plan symbol in world millimetres: a paper footprint, the symbol's
+ * own editable paths, and a numbered tag keyed to the furniture schedule.
+ */
+export function buildFloorPlanFurnitureDrawing(floor: CompiledFloorPlanFloorV2, source: PlanFurnitureDrawingSource) {
+  const roomIds = new Set(floor.rooms.map(({ id }) => id));
+  const { placed, unsupported, schedule, tags } = placePlanFurniture(source.rooms.filter((room) => roomIds.has(room.id)), source);
+  return { primitives: planFurniturePrimitives(placed, tags), unsupported, schedule };
 }

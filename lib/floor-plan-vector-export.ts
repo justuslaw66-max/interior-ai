@@ -78,6 +78,21 @@ function drawPdfTag(page: PDFPage, font: PDFFont, primitive: Extract<PlanDrawing
   page.drawText(primitive.text, { x: x - font.widthOfTextAtSize(primitive.text, size) / 2, y: y - 0.36 * size, size, font });
 }
 
+/** Every primitive as its own PDF path or text, in drawing order, on a page laid out for the drawing. */
+export function drawPlanVectorPrimitives(page: PDFPage, font: PDFFont, primitives: readonly PlanDrawingPrimitive[], layout: PlanVectorExportLayout) {
+  for (const primitive of primitives) {
+    if (primitive.kind === "path") {
+      drawPdfPath(page, primitive, layout);
+    } else if (primitive.role === "furniture-tag") {
+      drawPdfTag(page, font, primitive, layout);
+    } else {
+      const size = 2.6 * POINTS_PER_MM;
+      page.drawText(primitive.text, { x: (layout.offsetX + primitive.point.xMm / layout.scale) * POINTS_PER_MM - font.widthOfTextAtSize(primitive.text, size) / 2,
+        y: (layout.heightMm - layout.offsetY - primitive.point.zMm / layout.scale) * POINTS_PER_MM, size, font });
+    }
+  }
+}
+
 export async function exportFloorPlanVectorPdf(drawing: PlanVectorDrawing, options: PlanVectorExportOptions, resources: PlanVectorExportResources = {}): Promise<Uint8Array> {
   const fontSource = await loadPlanVectorFont(resources.fontBytes);
   const layout = layoutFloorPlanVectorExport(drawing, options, fontSource.font, resources.underlay);
@@ -92,17 +107,7 @@ export async function exportFloorPlanVectorPdf(drawing: PlanVectorDrawing, optio
   const title = options.title?.trim() || (drawing.coordinateSpace === "source_pixels" ? "Source artwork" : "Proposed plan");
   page.drawText(title, { x: 15 * POINTS_PER_MM, y: (layout.heightMm - 17) * POINTS_PER_MM, size: 4 * POINTS_PER_MM, font });
   if (resources.underlay) await drawVectorUnderlayPdf(pdf, page, resources.underlay, layout);
-  for (const primitive of drawing.primitives) {
-    if (primitive.kind === "path") {
-      drawPdfPath(page, primitive, layout);
-    } else if (primitive.role === "furniture-tag") {
-      drawPdfTag(page, font, primitive, layout);
-    } else {
-      const size = 2.6 * POINTS_PER_MM;
-      page.drawText(primitive.text, { x: (layout.offsetX + primitive.point.xMm / layout.scale) * POINTS_PER_MM - font.widthOfTextAtSize(primitive.text, size) / 2,
-        y: (layout.heightMm - layout.offsetY - primitive.point.zMm / layout.scale) * POINTS_PER_MM, size, font });
-    }
-  }
+  drawPlanVectorPrimitives(page, font, drawing.primitives, layout);
   page.drawText(`${drawing.coordinateSpace === "source_pixels" ? "Source artwork | uncalibrated image coordinates | no physical scale" : `Proposed / unverified | 1:${options.scale} | dimensions in mm, centreline | print at 100%`}`, { x: 15 * POINTS_PER_MM, y: 15 * POINTS_PER_MM, size: 2.6 * POINTS_PER_MM, font });
   if (resources.underlay) page.drawText(UNDERLAY_NOTE, { x: 15 * POINTS_PER_MM, y: 9 * POINTS_PER_MM, size: 2.6 * POINTS_PER_MM, font });
   if (drawing.schedule?.length) drawFurnitureSchedulePages(pdf, font, drawing.schedule, { widthMm: layout.widthMm, heightMm: layout.heightMm, title });

@@ -11,6 +11,11 @@ import {
   readJsonRequest,
 } from "@/lib/api-boundary";
 import { logOperationalEvent } from "@/lib/observability";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { decodeDownloadPlan, type DecodedPlan } from "@/lib/download-plan-wire";
+import { drawDownloadPlanPages } from "@/lib/download-pdf-plan-pages";
+import { drawExportItemList } from "@/lib/export-pdf-item-list";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,6 +26,7 @@ type PdfItem = {
   qty?: number;
   retailer?: string | null;
   buyUrl?: string | null;
+  tag?: number;
 };
 
 type PdfPayload = {
@@ -28,6 +34,8 @@ type PdfPayload = {
   items?: PdfItem[];
   images?: string[];
   requestedTier?: "free" | "pro" | "team";
+  /** The furnished layout plan (lib/download-plan-wire), checked before any of it is drawn. */
+  plan?: unknown;
 };
 
 type ExportTier = "free" | "pro" | "team";
@@ -40,6 +48,8 @@ const MAX_IMAGE_PIXELS = 40_000_000;
 const MAX_ITEMS = 500;
 
 const PAGE_SIZE: [number, number] = [612, 792];
+/** The vector plan's font, traced into this route's bundle (next.config.ts). */
+const PLAN_FONT_PATH = path.join(process.cwd(), "public", "fonts", "liberation-sans", "LiberationSans-Regular.ttf");
 
 const normalizeTierFromPlan = (plan: string | null | undefined): ExportTier => {
   if (!plan) return "free";
@@ -135,6 +145,24 @@ function normalizeHttpUrl(value: unknown) {
   }
 }
 
+/**
+ * The furnished plan's pages, or none: a plan that cannot be drawn (its font unreadable, a
+ * sheet too large for A3 at 1:200) leaves the rest of the export as it was.
+ */
+async function drawPlanPages(pdfDoc: PDFDocument, plan: DecodedPlan, tier: ExportTier, operationId: string) {
+  try {
+    const fontBytes = new Uint8Array(await readFile(PLAN_FONT_PATH));
+    const result = await drawDownloadPlanPages(pdfDoc, plan, fontBytes, tier === "free" ? applyFreeWatermark : undefined);
+    return result.sheetsDrawn;
+  } catch (error) {
+    logOperationalEvent({
+      operation: "export.presentation_pdf.plan", operationId, outcome: "failed", durationMs: 0, status: 200,
+      meta: { reason: error instanceof Error ? error.message.slice(0, 200) : "unknown" },
+    });
+    return 0;
+  }
+}
+
 export async function POST(req: NextRequest) {
   const operation = "export.presentation_pdf";
   const operationId = createOperationId();
@@ -182,7 +210,8 @@ export async function POST(req: NextRequest) {
           (typeof item.qty !== "number" || !Number.isFinite(item.qty) || item.qty <= 0)) ||
         (item.retailer !== undefined && item.retailer !== null &&
           (typeof item.retailer !== "string" || item.retailer.length > 120)) ||
-        (item.buyUrl !== undefined && item.buyUrl !== null && !normalizeHttpUrl(item.buyUrl))
+        (item.buyUrl !== undefined && item.buyUrl !== null && !normalizeHttpUrl(item.buyUrl)) ||
+        (item.tag !== undefined && (!Number.isInteger(item.tag) || item.tag < 1 || item.tag > 9_999))
       ) {
         throw new ApiBoundaryError(400, "BAD_REQUEST", "Export contains an invalid item.");
       }
@@ -192,8 +221,13 @@ export async function POST(req: NextRequest) {
         qty: typeof item.qty === "number" && item.qty > 0 ? Math.min(99, Math.floor(item.qty)) : 1,
         retailer: typeof item.retailer === "string" ? item.retailer.trim() : null,
         buyUrl: normalizeHttpUrl(item.buyUrl),
+        ...(typeof item.tag === "number" ? { tag: item.tag } : {}),
       };
     });
+    const plan = body.plan === undefined ? null : decodeDownloadPlan(body.plan);
+    if (body.plan !== undefined && !plan) {
+      throw new ApiBoundaryError(400, "BAD_REQUEST", "Export contains an invalid floor plan.");
+    }
 
     const images = Array.isArray(body.images) ? body.images.slice(0, maxImagesByTier[exportTier]) : [];
     const decodedImages = images.map((image) => typeof image === "string" ? decodeBase64Image(image) : null);
@@ -275,7 +309,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    let page = pdfDoc.addPage(PAGE_SIZE);
+    const page = pdfDoc.addPage(PAGE_SIZE);
     const { width, height } = page.getSize();
     let y = height - margin;
 
@@ -324,94 +358,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    page.drawText(exportTier === "team" ? "Bill of Materials" : "Room Items", {
-      x: margin,
-      y,
-      size: 12,
-      font: fontBold,
-      color: rgb(0, 0, 0),
+    drawExportItemList(pdfDoc, page, y, items, {
+      tier: exportTier, margin, pageSize: PAGE_SIZE, regular: fontRegular, bold: fontBold,
+      decorate: exportTier === "free" ? applyFreeWatermark : () => {},
     });
-    y -= 16;
-
-    for (const item of items) {
-      const qty = item.qty || 1;
-
-      if (y < margin + 90) {
-        page = pdfDoc.addPage(PAGE_SIZE);
-        y = page.getSize().height - margin;
-        if (exportTier === "free") {
-          applyFreeWatermark(page);
-        }
-        page.drawText(exportTier === "team" ? "Bill of Materials (cont.)" : "Room Items (cont.)", {
-          x: margin,
-          y,
-          size: 12,
-          font: fontBold,
-        });
-        y -= 16;
-      }
-
-      page.drawText(item.name, {
-        x: margin,
-        y,
-        size: 11,
-        font: fontBold,
-        color: rgb(0, 0, 0),
-      });
-      y -= 14;
-
-      if (item.retailer) {
-        page.drawText(`Retailer: ${item.retailer}`, {
-          x: margin,
-          y,
-          size: 9,
-          font: fontRegular,
-          color: rgb(0.35, 0.35, 0.35),
-        });
-        y -= 12;
-      }
-
-      const qtyText = qty > 1 ? `, Qty: ${qty}` : "";
-      page.drawText(`Price: $${item.price.toFixed(2)}${qtyText}`, {
-        x: margin,
-        y,
-        size: 9,
-        font: fontRegular,
-        color: rgb(0.35, 0.35, 0.35),
-      });
-      y -= 12;
-
-      if (exportTier === "team" && item.buyUrl) {
-        page.drawText(`Link: ${item.buyUrl}`, {
-          x: margin,
-          y,
-          size: 8,
-          font: fontRegular,
-          color: rgb(0.1, 0.25, 0.7),
-        });
-        y -= 12;
-      }
-
-      y -= 4;
-    }
-
-    page.drawText(`Total Budget: $${total.toFixed(2)}`, {
-      x: margin,
-      y: Math.max(y, margin + 24),
-      size: 11,
-      font: fontBold,
-      color: rgb(0.1, 0.1, 0.1),
-    });
-
-    if (exportTier === "free") {
-      page.drawText("Upgrade to Pro for clean exports, multi-room packs, and client-ready presentation pages.", {
-        x: margin,
-        y: margin,
-        size: 9,
-        font: fontRegular,
-        color: rgb(0.35, 0.35, 0.35),
-      });
-    }
+    // After the product list: the furnished plan, then the schedule its tags key to.
+    const planPages = plan ? await drawPlanPages(pdfDoc, plan, exportTier, operationId) : 0;
 
     const pdfBytes = await pdfDoc.save();
     const filename = `room-design-${exportTier}-${Date.now()}.pdf`;
@@ -422,7 +374,7 @@ export async function POST(req: NextRequest) {
       outcome: "succeeded",
       durationMs: Date.now() - startedAt,
       status: 200,
-      meta: { tier: exportTier, itemCount: items.length, imageCount: images.length },
+      meta: { tier: exportTier, itemCount: items.length, imageCount: images.length, planPages },
     });
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,

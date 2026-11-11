@@ -29,7 +29,7 @@ function line(id: string, points: Point[], role: string, fill = false): PlanDraw
 }
 
 /** Circular segments use native cubic curves; no tessellated swing dashes. */
-function swingCurve(id: string, center: Point, points: Point[]): PlanDrawingPrimitive {
+export function swingCurve(id: string, center: Point, points: Point[]): PlanDrawingPrimitive {
   const first = points[0];
   const last = points[points.length - 1];
   const a = Math.atan2(first.zMm - center.zMm, first.xMm - center.xMm);

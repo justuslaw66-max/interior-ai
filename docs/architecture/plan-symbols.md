@@ -54,9 +54,19 @@ The uploaded-plan wall editor's "Compare and export vector plan" (PDF and SVG at
 - **Schedule:** the PDF adds a page (more if needed) listing No., Item (with variant), Size W × D × H, Qty and Room (`lib/floor-plan-vector-schedule.ts`). The SVG has the tags but no list.
 - Overhead items (a ceiling fan's blades and sweep) have no paper, so the furniture under them still shows.
 
+## In the Download PDF
+
+Every design's Download PDF ends with a furnished layout plan: one sheet per floor, then the furniture schedule. Free exports carry the watermark on these pages too.
+
+- **Drawing (client, `lib/download-plan-drawing.ts`):** an imported plan draws its own walls, openings, structures and room names (`buildFloorPlanVectorDrawing`, without dimension strings). Any other design draws its rooms (`lib/download-plan-rooms-drawing.ts`): the same wall bands as the 2D editor, cut where doors and windows stand, square caps where walls turn, and each room's name and floor area on one line. Door and window symbols come from `lib/plan-opening-symbol-lines.ts`, which the 2D editor also draws from; a door swing is one cubic curve.
+- **One numbering for the home:** `placePlanFurniture` numbers every drawn room's items together, so a tag means the same product on every floor. The product list in the PDF prints each product's tag (`lib/export-pdf-item-list.ts`), and the schedule lists every tag with its size and rooms.
+- **Wire (`lib/download-plan-wire.ts`):** the request carries each sheet's paths (M, L, C and Z only, rounded to 0.1 mm) and labels, and the schedule. The server checks every path and rebuilds its points from it, with limits on sheets, primitives, path length, coordinates and text. A malformed plan rejects the request (400).
+- **Pages (server, `lib/download-pdf-plan-pages.ts`):** each sheet takes the first true scale that fits: A4 at 1:50, A4 at 1:100, A3 at 1:100, A4 at 1:200, then A3 at 1:200. A sheet too large for all of these is left out, never shrunk off-scale. Labels are set in Liberation Sans, read from `public/fonts` (traced into the route in `next.config.ts`). A room name the font cannot set (Chinese, say) falls back to its room type; any other label it cannot set is left off, and the footer says how many.
+- If the plan cannot be built in the browser or drawn on the server, the PDF still downloads, without it.
+- Not yet drawn: configured products whose size comes from their configuration (their size needs the editor's configuration resolvers), and openings not on a wall. The footer counts what was left out.
+
 ## Next
 
-- A plan page in the main Download PDF, which every design gets, with the same tags and schedule.
 - More symbols: bunk bed, sofa bed, U sofa, island counter, built-in oven, dishwasher, water heater, aircon fan-coil (dashed), bay-window seat, altar cabinet. Doors and windows stay with the openings code.
 
 ## Commands
