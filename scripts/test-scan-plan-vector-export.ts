@@ -28,8 +28,13 @@ function testFurnitureDrawing(document: ReturnType<typeof authoredApartment>) {
   const x = (room.planPosition!.x + 1) * 1000, z = (room.planPosition!.z + 1) * 1000;
   assert.deepEqual(outline.points.map((point) => [Math.round(point.xMm), Math.round(point.zMm)]),
     [[x - 300, z + 500], [x - 300, z - 500], [x + 300, z - 500], [x + 300, z + 500]], "Independent 90-degree corners must retain item world position and dimensions.");
+  assert(outline.paperFill && outline.paperStrokeMm === 0, "The footprint is the item's paper, drawn without a line of its own.");
+  assert(drawing.primitives.some((primitive) => primitive.role === "furniture-symbol" && primitive.id.startsWith("furniture:independent-sofa:symbol:")), "The sofa draws as its plan symbol, each shape its own path.");
+  assert.deepEqual(drawing.primitives.filter((primitive) => primitive.role === "furniture-tag").map((primitive) => primitive.kind === "text" ? primitive.text : ""), ["1"], "One tag keys the sofa to the schedule.");
+  assert.deepEqual(drawing.schedule, [{ tag: 1, name: "Authored sofa", variant: "Authored", sizeMm: { w: 1000, d: 600, h: 800 }, quantity: 1, rooms: [room.name] }], "The schedule lists the sofa once.");
   assert.equal(JSON.stringify({ document, snapshot }), before, "Export cannot alter accepted or original design state.");
-  assert(!buildFloorPlanVectorDrawing(document, { ...options, fixtures: false }, source).primitives.some((primitive) => primitive.role === "furniture"));
+  const withoutFixtures = buildFloorPlanVectorDrawing(document, { ...options, fixtures: false }, source);
+  assert(!withoutFixtures.primitives.some((primitive) => primitive.role.startsWith("furniture")) && !withoutFixtures.schedule);
   room.items[0].configurationCode = "missing-config";
   assert(buildFloorPlanVectorDrawing(document, options, source).unsupported.some((note) => note.includes("dimensions unresolved")), "Unknown configuration must be reported instead of exporting a guessed footprint.");
   delete room.items[0].configurationCode; delete room.items[0].productSnapshot;

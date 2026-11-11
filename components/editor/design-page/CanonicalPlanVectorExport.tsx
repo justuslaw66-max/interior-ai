@@ -16,7 +16,7 @@ export function CanonicalPlanVectorExport(props: CanonicalPlanVectorExportProps)
   const { run, busy, message, preview } = useCanonicalPlanVectorExport(props, { options, dimensions, labels, fixtures, includeUnderlay });
   const field = "mt-1 w-full rounded border border-control-edge-hover bg-transparent p-1.5";
   return <details className="mt-3 border-t border-separator pt-3"><summary className="cursor-pointer font-semibold">Compare and export vector plan</summary>
-    <p className="my-2">Exports separate paths and editable text with embedded Liberation Sans. The source image is excluded by default. Install <a className="underline" href="/fonts/liberation-sans/LiberationSans-Regular.ttf" download>Liberation Sans</a> if Illustrator requests font substitution. <a className="underline" href="/fonts/liberation-sans/OFL.txt">Font license</a></p>
+    <p className="my-2">Exports separate paths and editable text with embedded Liberation Sans. Furniture draws as plan symbols with numbered tags, and the PDF adds a furniture schedule page. The source image is excluded by default. Install <a className="underline" href="/fonts/liberation-sans/LiberationSans-Regular.ttf" download>Liberation Sans</a> if Illustrator requests font substitution. <a className="underline" href="/fonts/liberation-sans/OFL.txt">Font license</a></p>
     <fieldset disabled={busy}>
     <div className="grid grid-cols-3 gap-2">
       <label>Paper<select className={field} value={options.paper} onChange={(event) => setOptions({ ...options, paper: event.target.value === "A3" ? "A3" : "A4" })}><option>A4</option><option>A3</option></select></label>
