@@ -589,7 +589,7 @@
       "limit": 400
     },
     "lib/useDesignPageExport.ts": {
-      "lines": 423,
+      "lines": 422,
       "limit": 400
     },
     "lib/useDesignPageFloorPlanTracing.ts": {
@@ -4035,7 +4035,7 @@
     "lib/useDesignPageExport.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 347
+        "maximum": 344
       }
     },
     "lib/useDesignPageFloorPlanLifecycleRegistration.ts": {
@@ -4275,7 +4275,7 @@
     "lib/useDesignPagePresentationBackupRegistrationFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 112
+        "maximum": 111
       }
     },
     "lib/useDesignPagePresentationQaFacade.ts": {

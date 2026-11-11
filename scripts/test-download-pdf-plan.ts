@@ -8,7 +8,10 @@ import { decodeDownloadPlan, encodeDownloadPlan, planWirePathPoints } from "@/li
 import { drawDownloadPlanPages } from "@/lib/download-pdf-plan-pages";
 import { buildOpeningSymbolLines2D } from "@/lib/plan-opening-symbol-lines";
 import { formatRoomArea } from "@/lib/download-plan-rooms-drawing";
-import { buildPdfExportItems } from "@/lib/design-page-pdf-export-payload";
+import { buildPdfExportItems, buildPdfExportPlan } from "@/lib/design-page-pdf-export-payload";
+import { planWallFaceLines } from "@/lib/plan-wall-faces";
+import { furnitureBox } from "@/lib/download-plan-labels";
+import { placePlanFurniture } from "@/lib/floor-plan-vector-furniture";
 import { createRoom, type DesignItem, type DesignSnapshot } from "@/lib/room-types";
 
 /** The Download PDF's furnished layout plan: drawing, wire checks, and the pages it adds. */
@@ -40,6 +43,17 @@ function testOpeningSymbols() {
   assert.deepEqual(south[0].points[1], { x: 0, z: -1 }, "A south wall's door opens north, into its room.");
 }
 
+const lineLength = (lines: ReadonlyArray<ReadonlyArray<{ xMm: number; zMm: number }>>) => lines.reduce((sum, line) =>
+  sum + line.slice(1).reduce((run, point, index) => run + Math.hypot(point.xMm - line[index].xMm, point.zMm - line[index].zMm), 0), 0);
+
+/** Wall faces: the pieces' outlines where they meet open floor, never the seams between them. */
+function testWallFaces() {
+  const square = (x: number, z: number, size: number) => [{ xMm: x, zMm: z }, { xMm: x + size, zMm: z }, { xMm: x + size, zMm: z + size }, { xMm: x, zMm: z + size }];
+  close(lineLength(planWallFaceLines([square(0, 0, 100), square(100, 0, 100)])), 600, "Two squares side by side show their outline, not their seam");
+  close(lineLength(planWallFaceLines([square(0, 0, 100), square(50, 50, 100)])), 600, "Overlapping pieces show only the union's outline");
+  close(lineLength(planWallFaceLines([[...square(0, 0, 100)].reverse()])), 400, "Either winding works");
+}
+
 function roomsSnapshot(): DesignSnapshot {
   const living = createRoom("living", "Living", "living", { width: 5, depth: 4, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 });
   const bedroom = { ...createRoom("bed", "主人房", "bedroom", { width: 3, depth: 4, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 }), planPosition: { x: 4, z: 0 } };
@@ -64,12 +78,38 @@ function testRoomsDrawing() {
   assert(roles.lastIndexOf("wall") < roles.indexOf("furniture"), "Furniture is drawn over the walls' fill.");
   const labels = primitives.filter((primitive) => primitive.kind === "text" && primitive.role === "room-label").map((primitive) => primitive.kind === "text" ? primitive.text : "");
   assert.deepEqual(labels, ["Living · 20.0 m²", "主人房 · 12.0 m²"]);
+  const walls = primitives.filter((primitive) => primitive.role === "wall");
+  assert(walls.every((primitive) => primitive.kind === "path" && primitive.tone === 217), "Cut walls are a light grey fill (J, 11 Nov).");
+  const faces = primitives.filter((primitive) => primitive.role === "wall-face");
+  assert(faces.length > 0 && faces.every((primitive) => primitive.kind === "path" && primitive.paperStrokeMm === 0.35), "Fine lines draw the walls' faces.");
+  assert(roles.lastIndexOf("wall-face") < roles.indexOf("swing_leaf"), "Faces sit on the wall fill, under the door and window symbols.");
+  const living = primitives.find((primitive) => primitive.id === "living:label");
+  const sofaBoxes = placePlanFurniture(snapshot.rooms, { rooms: snapshot.rooms }).placed.map(furnitureBox);
+  assert(living?.kind === "text" && !sofaBoxes.some((box) => living.point.xMm > box.minX && living.point.xMm < box.maxX && living.point.zMm > box.minZ && living.point.zMm < box.maxZ),
+    "A room's name moves clear of its furniture.");
   assert.equal(plan.sheets[0].labelFallbacks["bed:label"], "Bedroom · 12.0 m²", "A name the PDF font cannot set falls back to its room type.");
   assert.deepEqual(plan.schedule.map(({ tag, quantity }) => [tag, quantity]), [[1, 2]], "Two of the same sofa share one tag.");
   assert.deepEqual(plan.tagByInstanceId, { "sofa-a": 1, "sofa-b": 1 });
   assert.deepEqual(buildPdfExportItems(snapshot.rooms[0].items, plan.tagByInstanceId).map(({ tag }) => tag), [1, 1], "The product list carries the plan's tags.");
   assert.equal(formatRoomArea(123.4), "123 m²");
   return plan;
+}
+
+/** One plain room with no doors or windows: its faces are the outer and inner outlines, and nothing between. */
+function testRoomWallFaces() {
+  const room = createRoom("solo", "Solo", "living", { width: 5, depth: 4, wallThickness: 0.12, height: 2.6, slabThickness: 0.1 });
+  const plan = buildDownloadPlanDrawing({ version: 3, rooms: [room], activeRoomId: "solo" });
+  const faces = plan.sheets[0].primitives.flatMap((primitive) => primitive.role === "wall-face" && primitive.kind === "path" ? [primitive.points] : []);
+  close(Math.round(lineLength(faces)), 2 * (5120 + 4120) + 2 * (4880 + 3880), "outer and inner outlines");
+}
+
+/** The doors and windows are the plan's live ones: the snapshot only has them from the last save. */
+async function testLiveOpenings() {
+  const snapshot = roomsSnapshot(), openings = snapshot.floorPlan?.openings ?? [];
+  const unsaved = { ...snapshot, floorPlan: undefined };
+  const { plan } = await buildPdfExportPlan(unsaved, openings);
+  assert(plan?.sheets[0].primitives.some((primitive) => primitive.role === "swing_arc"), "The export draws the doors the editor shows, saved or not.");
+  assert(plan?.sheets[0].primitives.some((primitive) => primitive.role === "glazing"));
 }
 
 function testCanonicalDrawing() {
@@ -125,6 +165,9 @@ async function testPages(decoded: NonNullable<ReturnType<typeof decodeDownloadPl
 
 async function main() {
   testOpeningSymbols();
+  testWallFaces();
+  testRoomWallFaces();
+  await testLiveOpenings();
   const plan = testRoomsDrawing();
   testCanonicalDrawing();
   await testPages(testWire(plan));

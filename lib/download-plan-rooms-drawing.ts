@@ -6,6 +6,7 @@ import { swingCurve, type PlanDrawingPrimitive } from "@/lib/floor-plan-vector-d
 import { buildOpeningSymbolLines2D } from "@/lib/plan-opening-symbol-lines";
 import { getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
+import type { PlanBox } from "@/lib/download-plan-labels";
 import {
   buildRoomWallSegments2D,
   buildWallBandCornerCaps2D,
@@ -21,7 +22,13 @@ import {
  * floor area. Furniture is added by the caller, between these walls and the labels.
  */
 
-export type RoomLabel = { primitive: Extract<PlanDrawingPrimitive, { kind: "text" }>; fallback: string };
+/** A room's label, its stand-in name, and the room's box in plan millimetres (where the label may move). */
+export type RoomLabel = { primitive: Extract<PlanDrawingPrimitive, { kind: "text" }>; fallback: string; room?: PlanBox };
+
+/** The room's box in plan millimetres. */
+export function roomPlanBox(room: Pick<HousePlanRoom2D, "x" | "z" | "w" | "d">): PlanBox {
+  return { minX: mm(room.x - room.w / 2), maxX: mm(room.x + room.w / 2), minZ: mm(room.z - room.d / 2), maxZ: mm(room.z + room.d / 2) };
+}
 
 const mm = (metres: number) => Number((metres * 1000).toFixed(3));
 const point = (x: number, z: number): Point => ({ xMm: mm(x), zMm: mm(z) });
@@ -100,6 +107,7 @@ function roomLabel(room: HousePlanRoom2D): RoomLabel {
   return {
     primitive: { id: `${room.id}:label`, kind: "text", text: `${name} · ${area}`, point: point(x, z), role: "room-label" },
     fallback: `${ROOM_TYPE_LABELS[room.roomType]} · ${area}`,
+    room: roomPlanBox(room),
   };
 }
 

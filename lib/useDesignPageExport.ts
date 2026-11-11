@@ -8,9 +8,10 @@ import { track } from "@/lib/analytics";
 import { renderLightCapture } from "@/lib/canvas-capture";
 import type { CameraView } from "@/lib/design-page-types";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
-import { buildPdfExportItems, buildPdfExportPlan } from "@/lib/design-page-pdf-export-payload";
+import { buildPdfExportListAndPlan } from "@/lib/design-page-pdf-export-payload";
 import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
 import type { Plan } from "@/lib/plan";
+import type { RoomOpening2D } from "@/lib/editorScene";
 import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
 import { getRuntimeSurfaceMaterialById } from "@/lib/surface-material-runtime";
 import type { ExportStylePreset } from "@/lib/useDesignPagePlanState";
@@ -41,6 +42,7 @@ type DesignPageExportRefs = {
   sceneRef: MutableRefObject<THREE.Scene | null>;
   cameraViewRef: MutableRefObject<CameraView>; // live while the controls glide; the committed cameraView state trails it
   designSnapshotRef: MutableRefObject<DesignSnapshot>;
+  planOpeningsRef: MutableRefObject<RoomOpening2D[]>;
 };
 
 export function countExportedSurfaceMaterials(snapshot: DesignSnapshot): number {
@@ -107,6 +109,7 @@ export function useDesignPageExport({
     sceneRef,
     cameraViewRef,
     designSnapshotRef,
+    planOpeningsRef,
   } = refs;
   const capabilities = resolveEditorCapabilities(plan);
   const canExportMultipleViews = capabilities.exportMultipleViews;
@@ -346,7 +349,6 @@ export function useDesignPageExport({
     const timeoutId = window.setTimeout(() => controller.abort(), 20_000);
     try {
       const images = await captureExportImages();
-      const planExport = await buildPdfExportPlan(designSnapshotRef.current);
       const tierImages = canExportPdf ? images : images.slice(0, 1);
       const response = await fetch("/api/export/pdf", {
         method: "POST",
@@ -360,18 +362,14 @@ export function useDesignPageExport({
           images: tierImages,
           exportStylePreset,
           requestedTier: canExportPdf ? "pro" : "free",
-          items: buildPdfExportItems(items, planExport.tagByInstanceId),
-          ...(planExport.plan ? { plan: planExport.plan } : {}),
+          ...(await buildPdfExportListAndPlan(items, designSnapshotRef.current, planOpeningsRef.current)),
         }),
         credentials: "include",
         cache: "no-store",
         signal: controller.signal,
       });
 
-      if (!response.ok) {
-        const responseText = await response.text();
-        throw new Error(`PDF export failed: ${response.status} ${responseText}`);
-      }
+      if (!response.ok) throw new Error(`PDF export failed: ${response.status} ${await response.text()}`);
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
@@ -411,6 +409,7 @@ export function useDesignPageExport({
     designSnapshotRef,
     exportStylePreset,
     items,
+    planOpeningsRef,
     logFunnelEvent,
     plan,
     showToast,
