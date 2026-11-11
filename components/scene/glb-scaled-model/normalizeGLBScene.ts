@@ -8,6 +8,7 @@ import {
   type PendantCableAdjustment,
 } from "@/lib/pendant-light-adjustment";
 import { createHuggTopTint } from "./huggMaterial";
+import { applyPhysicalUpholsteryTileSize } from "./upholsteryTileScale";
 
 export type GLBUpholsteryTextures = {
   baseColorMap?: THREE.Texture;
@@ -213,6 +214,7 @@ export function normalizeGLBScene({
     if (calibration?.swapWidthDepthAxes) {
       scene.rotation.y = Math.PI / 2;
     }
+    applyPhysicalUpholsteryTileSize(scene, upholsteryTextures, variantRenderAssets?.tileSizeM);
     if (rootTransform?.position) {
       scene.position.x += rootTransform.position[0];
       scene.position.y += rootTransform.position[1];
@@ -814,7 +816,8 @@ export function normalizeGLBScene({
             !(m instanceof THREE.MeshPhysicalMaterial)
           ) {
             physicalMat = new THREE.MeshPhysicalMaterial();
-            physicalMat.copy(m);
+            // MeshPhysicalMaterial.copy reads physical-only fields a standard material lacks.
+            THREE.MeshStandardMaterial.prototype.copy.call(physicalMat, m);
             const matArr = mesh.material as THREE.MeshStandardMaterial[];
             const idx = matArr.indexOf(m);
             if (idx >= 0) matArr[idx] = physicalMat;
@@ -1010,7 +1013,7 @@ export function normalizeGLBScene({
           !(mat instanceof THREE.MeshPhysicalMaterial)
         ) {
           physicalMat = new THREE.MeshPhysicalMaterial();
-          physicalMat.copy(mat);
+          THREE.MeshStandardMaterial.prototype.copy.call(physicalMat, mat);
           mesh.material = physicalMat;
           mat.dispose();
         } else {
