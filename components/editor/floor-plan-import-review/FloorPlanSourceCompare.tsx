@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { ChevronsLeftRight } from "lucide-react";
 import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
-import { sourceDrawingInk, sourceDrawingStroke, sourceDrawingSvgPath } from "@/lib/floor-plan-source-drawing";
+import { sourceDrawingHairline, sourceDrawingInk, sourceDrawingStroke, sourceDrawingSvgPath, type FloorPlanSourceDrawingGeometryV2 } from "@/lib/floor-plan-source-drawing";
 import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import type { SourceReviewLayer } from "./useSourceReviewLayers";
@@ -47,6 +47,17 @@ export function FloorPlanSourceCompareToggle({ layer, onLayer, wipe, onWipe, dis
   );
 }
 
+/** One traced shape, with its hairline under a line (`sourceDrawingHairline`) so the thinnest pens show at any zoom. */
+function CompareShape({ geometry, finalTrace }: { geometry: FloorPlanSourceDrawingGeometryV2; finalTrace: boolean }) {
+  const d = sourceDrawingSvgPath(geometry);
+  const ink = sourceDrawingInk(geometry, "#222");
+  const hairline = sourceDrawingHairline(geometry, finalTrace);
+  return <>
+    {hairline ? <path d={d} fill="none" stroke={ink} {...hairline} /> : null}
+    <path d={d} fill={geometry.fill ? ink : "none"} stroke={geometry.fill ? "none" : ink} {...sourceDrawingStroke(geometry, finalTrace)} />
+  </>;
+}
+
 /** The trace on white, clipped to the right of the divider, over the original; the divider drags. Its lines are drawn
  * as the Traced view draws them (`sourceDrawingStroke`), so both sides of the divider are at the same scale. */
 export function FloorPlanSourceCompareWipe({ layer, wipe, onWipe, annotations, widthPx, heightPx }: {
@@ -64,8 +75,7 @@ export function FloorPlanSourceCompareWipe({ layer, wipe, onWipe, annotations, w
       <div className="absolute inset-0 bg-white" style={{ clipPath: `inset(0 0 0 ${wipe}%)` }} aria-hidden="true">
         <svg className="h-full w-full" preserveAspectRatio="none" viewBox={`0 0 ${widthPx} ${heightPx}`}>
           {annotations.map((annotation) => annotation.geometry.kind === "source_drawing" && annotation.geometry.command !== "text" ? (
-            <path key={annotation.id} d={sourceDrawingSvgPath(annotation.geometry)} fill={annotation.geometry.fill ? sourceDrawingInk(annotation.geometry, "#222") : "none"}
-              stroke={annotation.geometry.fill ? "none" : sourceDrawingInk(annotation.geometry, "#222")} {...sourceDrawingStroke(annotation.geometry, isFinalSourceTrace(annotation))} />
+            <CompareShape key={annotation.id} geometry={annotation.geometry} finalTrace={isFinalSourceTrace(annotation)} />
           ) : null)}
         </svg>
       </div>

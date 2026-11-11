@@ -72,10 +72,6 @@
       "lines": 533,
       "limit": 400
     },
-    "app/api/export/pdf/route.ts": {
-      "lines": 441,
-      "limit": 400
-    },
     "app/api/floor-plan-imports/route.ts": {
       "lines": 436,
       "limit": 400
@@ -249,7 +245,7 @@
       "limit": 250
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
-      "lines": 5403,
+      "lines": 5314,
       "limit": 250
     },
     "components/editor/renderers/useSurfaceMaterialTexture.ts": {
@@ -593,7 +589,7 @@
       "limit": 400
     },
     "lib/useDesignPageExport.ts": {
-      "lines": 445,
+      "lines": 423,
       "limit": 400
     },
     "lib/useDesignPageFloorPlanTracing.ts": {
@@ -1177,11 +1173,11 @@
     "app/api/export/pdf/route.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 304
+        "maximum": 228
       },
       "complexFunctions": {
         "count": 3,
-        "maximum": 38
+        "maximum": 32
       }
     },
     "app/api/floor-plan-imports/[id]/confirm/route.ts": {
@@ -2060,7 +2056,7 @@
     },
     "components/editor/renderers/RoomRenderer2D.tsx": {
       "overlongFunctions": {
-        "count": 17,
+        "count": 16,
         "maximum": 4090
       },
       "complexFunctions": {
@@ -4039,7 +4035,7 @@
     "lib/useDesignPageExport.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 367
+        "maximum": 347
       }
     },
     "lib/useDesignPageFloorPlanLifecycleRegistration.ts": {

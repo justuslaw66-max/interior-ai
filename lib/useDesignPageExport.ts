@@ -4,13 +4,11 @@ import { useCallback, useState, type Dispatch, type MutableRefObject, type RefOb
 import * as THREE from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
-import { CATALOG_ITEMS } from "@/lib/catalog";
-import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { track } from "@/lib/analytics";
 import { renderLightCapture } from "@/lib/canvas-capture";
 import type { CameraView } from "@/lib/design-page-types";
 import type { FunnelEventName } from "@/lib/design-page-paywall";
-import { getItemPrice } from "@/lib/design-page-utils";
+import { buildPdfExportItems, buildPdfExportPlan } from "@/lib/design-page-pdf-export-payload";
 import { resolveEditorCapabilities } from "@/lib/editor-capabilities";
 import type { Plan } from "@/lib/plan";
 import type { DesignItem, DesignSnapshot } from "@/lib/room-types";
@@ -348,6 +346,7 @@ export function useDesignPageExport({
     const timeoutId = window.setTimeout(() => controller.abort(), 20_000);
     try {
       const images = await captureExportImages();
+      const planExport = await buildPdfExportPlan(designSnapshotRef.current);
       const tierImages = canExportPdf ? images : images.slice(0, 1);
       const response = await fetch("/api/export/pdf", {
         method: "POST",
@@ -361,29 +360,8 @@ export function useDesignPageExport({
           images: tierImages,
           exportStylePreset,
           requestedTier: canExportPdf ? "pro" : "free",
-          items: items
-            .map((item) => {
-              const liveProduct = CATALOG_ITEMS[item.productId];
-              const visualProduct = resolveDesignItemVisualProduct(
-                item,
-                CATALOG_ITEMS
-              );
-              if (!visualProduct) return null;
-              return {
-                name: visualProduct.title,
-                price: liveProduct ? getItemPrice(liveProduct) : 0,
-                qty: item.qty || 1,
-                retailer:
-                  liveProduct?.commerce.type === "affiliate"
-                    ? liveProduct.commerce.data.retailer
-                    : null,
-                buyUrl:
-                  liveProduct?.commerce.type === "affiliate"
-                    ? liveProduct.commerce.data.url
-                    : null,
-              };
-            })
-            .filter(Boolean),
+          items: buildPdfExportItems(items, planExport.tagByInstanceId),
+          ...(planExport.plan ? { plan: planExport.plan } : {}),
         }),
         credentials: "include",
         cache: "no-store",

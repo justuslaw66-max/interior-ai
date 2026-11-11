@@ -75,6 +75,22 @@ export function sourceDrawingStroke(geometry: Pick<FloorPlanSourceDrawingGeometr
     ...(geometry.lineJoin ? { strokeLinejoin: geometry.lineJoin } : {}) };
 }
 
+/** The thinnest a final trace's line is drawn on screen, in CSS pixels: one device pixel on a 2x screen, as a PDF viewer
+ * draws a PDF's thinnest pen. */
+export const SOURCE_HAIRLINE_SCREEN_PX = 0.5;
+
+/**
+ * A final trace's line drawn again under it at a fixed screen width (J, 11 Nov: Thomson Reserve's AutoCAD hairlines,
+ * 0.25-0.29 page pixels, vanished with the whole plan in view). Of the two, whichever is wider shows: the hairline when
+ * the page is shown small, the line's own width once zoomed in. Null for fills and review marks.
+ */
+export function sourceDrawingHairline(geometry: Pick<FloorPlanSourceDrawingGeometryV2, "fill" | "lineCap" | "lineJoin">, finalTrace: boolean):
+  { strokeWidth: number; vectorEffect: "non-scaling-stroke"; strokeLinecap?: "round" | "square"; strokeLinejoin?: "round" | "bevel" } | null {
+  if (!finalTrace || geometry.fill) return null;
+  return { strokeWidth: SOURCE_HAIRLINE_SCREEN_PX, vectorEffect: "non-scaling-stroke", ...(geometry.lineCap ? { strokeLinecap: geometry.lineCap } : {}),
+    ...(geometry.lineJoin ? { strokeLinejoin: geometry.lineJoin } : {}) };
+}
+
 export function sourceDrawingSvgPoints(points: FloorPlanSourceDrawingGeometryV2["points"]) {
   return points.map((point) => `${point.x},${point.y}`).join(" ");
 }

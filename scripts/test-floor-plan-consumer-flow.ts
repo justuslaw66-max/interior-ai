@@ -21,7 +21,7 @@ import { inverseFloorPlanAddressTransform } from "@/lib/floor-plan-consumer-orie
 import { cancelFloorPlanImportInBackground, requestFloorPlanImportCancel } from "@/components/editor/useFloorPlanImportCancel";
 import { UserFacingError } from "@/lib/user-facing-error";
 import { floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
-import { sourceDrawingStroke } from "@/lib/floor-plan-source-drawing";
+import { SOURCE_HAIRLINE_SCREEN_PX, sourceDrawingHairline, sourceDrawingStroke } from "@/lib/floor-plan-source-drawing";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanImportStatus } from "@/lib/floor-plan-imports/types";
@@ -93,6 +93,7 @@ const confirmRoute = read(
   "app/api/floor-plan-imports/[id]/confirm/route.ts"
 );
 const roomRenderer = read("components/editor/renderers/RoomRenderer2D.tsx");
+const openingSymbols = read("lib/plan-opening-symbol-lines.ts");
 const openingGeometry = read(
   "components/editor/renderers/room-renderer-2d-opening-geometry.ts"
 );
@@ -885,12 +886,27 @@ assert.match(
 );
 assert.match(
   roomRenderer,
-  /segment\.kind === "window"[\s\S]*?glazingOffset[\s\S]*?firstStart[\s\S]*?secondStart[\s\S]*?\[firstStart, firstEnd\][\s\S]*?\[secondStart, secondEnd\]/,
+  /function buildOpeningSymbolLines\([\s\S]*?return buildOpeningSymbolLines2D\(/,
+  "The 2D renderer should draw the opening symbols shared with the Download PDF plan."
+);
+assert.match(
+  openingSymbols,
+  /if \(input\.kind === "window"\) return windowLines/,
   "Windows should render as a distinct double-line glazing symbol."
 );
 assert.match(
-  roomRenderer,
-  /!segment\.doorStyle \|\| segment\.doorStyle === "swing"[\s\S]*?const openEnd[\s\S]*?const swingArc = Array\.from\(\{ length: 9 \}[\s\S]*?return \[\[start, openEnd\], swingArc\];/,
+  openingSymbols,
+  /function windowLines\([\s\S]*?GLAZING_OFFSET_METERS[\s\S]*?\[firstStart, firstEnd\][\s\S]*?\[secondStart, secondEnd\][\s\S]*?\[firstStart, secondStart\][\s\S]*?\[firstEnd, secondEnd\]/,
+  "Windows should render as a distinct double-line glazing symbol."
+);
+assert.match(
+  openingSymbols,
+  /if \(!input\.doorStyle \|\| input\.doorStyle === "swing"\) return swingLines/,
+  "Swing doors should render a leaf and quarter-circle swing arc."
+);
+assert.match(
+  openingSymbols,
+  /const SWING_SAMPLES = 9;[\s\S]*?function swingLines\([\s\S]*?Array\.from\(\{ length: SWING_SAMPLES \}[\s\S]*?role: "swing_leaf"[\s\S]*?role: "swing_arc", points: arc/,
   "Swing doors should render a leaf and quarter-circle swing arc."
 );
 assert.match(
@@ -899,18 +915,23 @@ assert.match(
   "Every unselected opening in the active room should carry a compact visible identity label."
 );
 assert.match(
-  roomRenderer,
-  /function buildOpeningSymbolLines\([\s\S]*?segment\.doorStyle === "sliding"[\s\S]*?secondStart[\s\S]*?secondEnd/,
+  openingSymbols,
+  /function slidingLines\([\s\S]*?secondStart[\s\S]*?role: "sliding_leaf"[\s\S]*?role: "sliding_leaf"/,
   "Sliding doors should render as overlapping parallel leaves instead of a swing symbol."
 );
 assert.match(
-  roomRenderer,
-  /const foldPoints = Array\.from\(\{ length: 5 \}[\s\S]*?return \[foldPoints\];/,
+  openingSymbols,
+  /if \(input\.doorStyle === "sliding"\) return slidingLines/,
+  "Sliding doors should render as overlapping parallel leaves instead of a swing symbol."
+);
+assert.match(
+  openingSymbols,
+  /function foldingLines\([\s\S]*?Array\.from\(\{ length: 5 \}[\s\S]*?return \[\{ role: "folding_leaf", points \}\];/,
   "Folding doors should render with a distinct folded-leaf polyline."
 );
 assert.match(
-  roomRenderer,
-  /if \(segment\.doorStyle === "open"\) return \[\];/,
+  openingSymbols,
+  /if \(input\.doorStyle === "open"\) return \[\];/,
   "Open passages should not render a false door leaf."
 );
 assert.match(
@@ -951,9 +972,15 @@ assert.deepEqual(sourceDrawingStroke({ strokeWidthPx: 2.5 }, true), { strokeWidt
 assert.deepEqual(sourceDrawingStroke({}, true), { strokeWidth: 1 });
 assert.deepEqual(sourceDrawingStroke({ strokeWidthPx: 2.5 }, false), { strokeWidth: 1.5, vectorEffect: "non-scaling-stroke" });
 assert.deepEqual(sourceDrawingStroke({ strokeWidthPx: 2.5 }, false, true), { strokeWidth: 4, vectorEffect: "non-scaling-stroke" });
+// A final trace's line is also drawn under it at a fixed screen width, so a PDF's thinnest pens (Thomson Reserve's
+// AutoCAD hairlines, 0.25 page pixels) still show with the whole plan in view (J, 11 Nov); fills and marks get none.
+assert.deepEqual(sourceDrawingHairline({ lineCap: "round" }, true), { strokeWidth: SOURCE_HAIRLINE_SCREEN_PX, vectorEffect: "non-scaling-stroke", strokeLinecap: "round" });
+assert.equal(sourceDrawingHairline({ fill: true }, true), null);
+assert.equal(sourceDrawingHairline({}, false), null);
 for (const view of ["FloorPlanSourceCompare.tsx", "FloorPlanSourceReviewOverlay.tsx"]) {
   const source = read(`components/editor/floor-plan-import-review/${view}`);
   assert.match(source, /\{\.\.\.sourceDrawingStroke\(/, `${view} should draw source shapes with sourceDrawingStroke.`);
+  assert.match(source, /\{\.\.\.hairline\}/, `${view} should draw a final trace's hairline under its lines.`);
   assert.doesNotMatch(source, /strokeWidth=\{[^}]*strokeWidthPx/, `${view} should not set a trace's line width by hand.`);
 }
 

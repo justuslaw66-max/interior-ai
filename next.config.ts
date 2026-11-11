@@ -55,6 +55,8 @@ const nextConfig: NextConfig = {
     "/api/designs": SHARP_LINUX_NATIVE_FILES,
     "/api/designs/**": SHARP_LINUX_NATIVE_FILES,
     "/api/floor-plans/**": SHARP_LINUX_NATIVE_FILES,
+    // The Download PDF's furnished plan sets its labels in the vector exporter's font, read from public/ at run time.
+    "/api/export/pdf": ["./public/fonts/liberation-sans/LiberationSans-Regular.ttf"],
     // The admin condo map reads its developments from catalog/condo-map at run time (lib/condo-map/condo-map-files).
     "/api/admin/condo-map/**": ["./catalog/condo-map/**/*"],
     "/admin/condo-map": ["./catalog/condo-map/index.json"],

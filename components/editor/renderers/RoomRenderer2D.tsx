@@ -62,6 +62,7 @@ import { RoomPanelFaces2D } from "./RoomPanelFaces2D";
 import { getHouseRoomWallPlanColor } from "./roomWallPlanColour2D";
 import { getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import { OpeningInteractionQaMarker2D } from "./OpeningInteractionQaMarker2D";
+import { buildOpeningSymbolLines2D } from "@/lib/plan-opening-symbol-lines";
 import { moveOpeningCenterFromWorldPoint,
   projectWorldPointToOpeningHost, resizeOpeningFromWorldPoint } from "@/lib/design-page-opening-interaction";
 import { CANVAS_CHIP, CANVAS_CHIP_BUTTON, CANVAS_CHIP_TEXT, CANVAS_CHIP_TOUCH_CLASS, CANVAS_FIELD_TEXT_CLASS } from "./canvasChipStyle";
@@ -75,109 +76,19 @@ type RectZone = {
   label: string;
 };
 
-function getOpeningInwardNormal(
-  wall: OpeningSegment2D["wall"],
-  resolved?: { x: number; z: number }
-): [number, number] {
-  if (resolved) return [resolved.x, resolved.z];
-  if (wall === "north") return [0, 1];
-  if (wall === "south") return [0, -1];
-  if (wall === "west") return [1, 0];
-  return [-1, 0];
-}
-
+/** The opening's shared plan symbol (lib/plan-opening-symbol-lines), lifted to the opening's draw height. */
 function buildOpeningSymbolLines(
   segment: OpeningSegment2D
 ): Array<Array<[number, number, number]>> {
   const [start, end] = segment.points;
-  const alongX = end[0] - start[0];
-  const alongZ = end[2] - start[2];
-  const width = Math.max(0.001, Math.hypot(alongX, alongZ));
-  const alongUnitX = alongX / width;
-  const alongUnitZ = alongZ / width;
-  const [inwardX, inwardZ] = getOpeningInwardNormal(
-    segment.wall,
-    segment.inwardNormal
-  );
-
-  if (segment.kind === "window") {
-    const glazingOffset = 0.045;
-    const firstStart: [number, number, number] = [
-      start[0] - inwardX * glazingOffset,
-      start[1],
-      start[2] - inwardZ * glazingOffset,
-    ];
-    const firstEnd: [number, number, number] = [
-      end[0] - inwardX * glazingOffset,
-      end[1],
-      end[2] - inwardZ * glazingOffset,
-    ];
-    const secondStart: [number, number, number] = [
-      start[0] + inwardX * glazingOffset,
-      start[1],
-      start[2] + inwardZ * glazingOffset,
-    ];
-    const secondEnd: [number, number, number] = [
-      end[0] + inwardX * glazingOffset,
-      end[1],
-      end[2] + inwardZ * glazingOffset,
-    ];
-    return [
-      [firstStart, firstEnd],
-      [secondStart, secondEnd],
-      [firstStart, secondStart],
-      [firstEnd, secondEnd],
-    ];
-  }
-
-  if (segment.doorStyle === "open") return [];
-
-  if (segment.doorStyle === "sliding") {
-    const firstEnd: [number, number, number] = [
-      start[0] + alongX * 0.58,
-      start[1],
-      start[2] + alongZ * 0.58,
-    ];
-    const secondStart: [number, number, number] = [
-      start[0] + alongX * 0.42 + inwardX * 0.055,
-      start[1],
-      start[2] + alongZ * 0.42 + inwardZ * 0.055,
-    ];
-    const secondEnd: [number, number, number] = [
-      end[0] + inwardX * 0.055,
-      end[1],
-      end[2] + inwardZ * 0.055,
-    ];
-    return [[start, firstEnd], [secondStart, secondEnd]];
-  }
-
-  if (!segment.doorStyle || segment.doorStyle === "swing") {
-    const openEnd: [number, number, number] = [
-      start[0] + inwardX * width,
-      start[1],
-      start[2] + inwardZ * width,
-    ];
-    const swingArc = Array.from({ length: 9 }, (_, index): [number, number, number] => {
-      const angle = (index / 8) * (Math.PI / 2);
-      return [
-        start[0] + alongUnitX * width * Math.cos(angle) + inwardX * width * Math.sin(angle),
-        start[1],
-        start[2] + alongUnitZ * width * Math.cos(angle) + inwardZ * width * Math.sin(angle),
-      ];
-    });
-    return [[start, openEnd], swingArc];
-  }
-
-  const foldPoints = Array.from({ length: 5 }, (_, index): [number, number, number] => {
-    const ratio = index / 4;
-    const fold = index === 0 || index === 4 ? 0 : index % 2 === 0 ? -0.07 : 0.07;
-    return [
-      start[0] + alongX * ratio + inwardX * fold,
-      start[1],
-      start[2] + alongZ * ratio + inwardZ * fold,
-    ];
-  });
-  return [foldPoints];
+  return buildOpeningSymbolLines2D({
+    start: { x: start[0], z: start[2] },
+    end: { x: end[0], z: end[2] },
+    kind: segment.kind,
+    doorStyle: segment.doorStyle,
+    wall: segment.wall,
+    inwardNormal: segment.inwardNormal,
+  }).map(({ points }) => points.map((point): [number, number, number] => [point.x, start[1], point.z]));
 }
 
 function openingDisplayName(segment: OpeningSegment2D) {

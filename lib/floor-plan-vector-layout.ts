@@ -3,12 +3,12 @@ import type { PlanVectorDrawing } from "@/lib/floor-plan-vector-drawing";
 import { vectorTextMetrics } from "@/lib/floor-plan-vector-font";
 import { vectorUnderlayCorners, type PlanVectorUnderlay } from "@/lib/floor-plan-vector-underlay";
 
-export type PlanVectorExportOptions = { paper: "A4" | "A3"; orientation: "portrait" | "landscape"; scale: 50 | 100; title?: string };
+export type PlanVectorExportOptions = { paper: "A4" | "A3"; orientation: "portrait" | "landscape"; scale: 50 | 100 | 200; title?: string };
 export type PlanVectorExportLayout = { widthMm: number; heightMm: number; offsetX: number; offsetY: number; scale: number };
 
 /** Include visible text bounds, curve control hulls and half the stroke width in fixed-scale page fitting. */
 export function layoutFloorPlanVectorExport(drawing: PlanVectorDrawing, options: PlanVectorExportOptions, font: Font, underlay?: PlanVectorUnderlay): PlanVectorExportLayout {
-  if (![50, 100].includes(options.scale)) throw new Error("Choose a supported fixed scale: 1:50 or 1:100.");
+  if (![50, 100, 200].includes(options.scale)) throw new Error("Choose a supported fixed scale: 1:50, 1:100 or 1:200.");
   if (!["A4", "A3"].includes(options.paper) || !["portrait", "landscape"].includes(options.orientation)) throw new Error("Choose paper size and orientation.");
   const paper = options.paper === "A3" ? [297, 420] : [210, 297];
   const [widthMm, heightMm] = options.orientation === "landscape" ? [...paper].reverse() : paper;
