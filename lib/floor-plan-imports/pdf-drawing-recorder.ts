@@ -4,7 +4,8 @@
  * and dots, and its lettering as the font's outlines. PDF.js draws through the 2D canvas API; this context takes the
  * same calls, follows the transform, styles and clips as a canvas does, and keeps each fill and stroke in page pixels.
  * Anything it cannot keep as a shape (a picture, a pattern, a gradient, text with no outline, a clip that cuts what is
- * drawn) is counted in `unsupported`, and the page keeps its picture-based trace.
+ * drawn) is kept in `problems` with where it is on the page, if known: the page keeps its picture-based trace, unless
+ * every problem lies outside the plan area drawn alone (pdf-own-plan-area.ts).
  */
 export type Matrix = [number, number, number, number, number, number];
 export type DrawnCommand = { op: "M"; p: [number, number] } | { op: "L"; p: [number, number] }
@@ -75,7 +76,10 @@ class RecordedPath {
 
 export class DrawingRecorder {
   readonly shapes: DrawnShape[] = [];
-  readonly unsupported = new Map<string, number>();
+  /** What could not be kept as a shape, and its bounds in device pixels (null where they are not known). `shape` marks a
+   * single shape left out (a plan area only misses it if the shape lies wholly inside); otherwise it is a picture or
+   * lettering, which covers whatever its bounds overlap. */
+  readonly problems: Array<{ reason: string; bbox: number[] | null; shape?: boolean }> = [];
   readonly canvas: { width: number; height: number; getContext: () => DrawingRecorder };
   private state: Style;
   private readonly stack: Style[] = [];
@@ -92,12 +96,20 @@ export class DrawingRecorder {
       miterLimit: 10, alpha: 1, composite: "source-over", dash: [], dashOffset: 0, filter: "none", font: "10px sans-serif", clip: null };
   }
 
-  /** Called at the first shape that cannot be kept (the page's drawing then stops). */
+  /** Called at the first problem with no known place (the page's drawing then stops: no area can leave it out). */
   onUnsupported: (() => void) | null = null;
-  private note(reason: string) {
-    this.unsupported.set(reason, (this.unsupported.get(reason) ?? 0) + 1);
+  private note(reason: string, bbox: number[] | null = null, shape = false) {
+    this.problems.push(shape ? { reason, bbox, shape } : { reason, bbox });
+    if (bbox) return;
     this.onUnsupported?.();
     this.onUnsupported = null;
+  }
+  /** Device bounds of a rectangle in the current transform's space. */
+  private deviceBox(x: number, y: number, w: number, h: number): number[] {
+    const corners = [apply(this.state.matrix, x, y), apply(this.state.matrix, x + w, y), apply(this.state.matrix, x, y + h),
+      apply(this.state.matrix, x + w, y + h)];
+    return [Math.min(...corners.map((c) => c[0])), Math.min(...corners.map((c) => c[1])), Math.max(...corners.map((c) => c[0])),
+      Math.max(...corners.map((c) => c[1]))];
   }
 
   // Styles
@@ -161,11 +173,11 @@ export class DrawingRecorder {
   }
 
   /** Why the current paint cannot be kept as a shape (a blend, a filter, a pattern or gradient), or its grey. */
-  private paintTone(kind: "fill" | "stroke"): number | null {
-    if (this.state.composite !== "source-over") { this.note(`composite ${this.state.composite}`); return null; }
-    if (this.state.filter && this.state.filter !== "none") { this.note("filter"); return null; }
+  private paintTone(kind: "fill" | "stroke", bbox: number[]): number | null {
+    if (this.state.composite !== "source-over") { this.note(`composite ${this.state.composite}`, bbox, true); return null; }
+    if (this.state.filter && this.state.filter !== "none") { this.note("filter", bbox, true); return null; }
     const colour = cssTone(kind === "fill" ? this.state.fill : this.state.stroke);
-    if (!colour) { this.note(`${kind} pattern or gradient`); return null; }
+    if (!colour) { this.note(`${kind} pattern or gradient`, bbox, true); return null; }
     const alpha = colour.alpha * this.state.alpha;
     return alpha > 0 ? Math.round(255 - (255 - colour.tone) * alpha) : null;
   }
@@ -175,21 +187,21 @@ export class DrawingRecorder {
   private showsWhole(bbox: number[]) {
     const clip = this.state.clip;
     if (!clip) return true;
-    if (!inside(bbox, clip.bbox)) { if (overlaps(bbox, clip.bbox)) this.note("shape cut by a clip"); return false; }
-    if (!clip.rectangular) this.note("shape under a shaped clip");
+    if (!inside(bbox, clip.bbox)) { if (overlaps(bbox, clip.bbox)) this.note("shape cut by a clip", bbox, true); return false; }
+    if (!clip.rectangular) this.note("shape under a shaped clip", bbox, true);
     return clip.rectangular;
   }
 
   private paint(kind: "fill" | "stroke", path: unknown, rule?: unknown) {
     const evenOdd = rule === "evenodd" || path === "evenodd";
-    const tone = this.paintTone(kind);
-    const raw = tone === null ? null : this.commandsOf(typeof path === "string" ? undefined : path);
+    const raw = this.commandsOf(typeof path === "string" ? undefined : path);
     const commands = raw && normalise(raw);
     if (raw && !commands) this.note("path command not kept");
-    if (tone === null || !commands?.length) return;
+    if (!commands?.length) return;
     const m = this.state.matrix, scale = Math.sqrt(Math.abs(m[0] * m[3] - m[1] * m[2]));
     const bbox = boundsOf(commands, kind === "stroke" ? (this.state.lineWidth * scale) / 2 : 0);
-    if (!this.showsWhole(bbox)) return;
+    const tone = this.paintTone(kind, bbox);
+    if (tone === null || !this.showsWhole(bbox)) return;
     const { lineCap, lineJoin } = this.state;
     this.shapes.push({ kind, commands, evenOdd, tone, widthPx: this.state.lineWidth * scale, bbox, letter: this.letter,
       cap: lineCap === "round" || lineCap === "square" ? lineCap : "butt", join: lineJoin === "round" || lineJoin === "bevel" ? lineJoin : "miter",
@@ -218,15 +230,23 @@ export class DrawingRecorder {
   }
 
   // What is not kept as a shape
-  drawImage() { this.note("picture"); }
+  /** A picture is left out, and kept as a problem where it lies (`drawImage(image, [sx, sy, sw, sh,] dx, dy[, dw, dh])`). */
+  drawImage(image: { width?: number; height?: number }, ...n: number[]) {
+    const [dx, dy, dw = image?.width ?? 0, dh = image?.height ?? 0] = n.length >= 8 ? n.slice(4) : n;
+    this.note("picture", Number.isFinite(dx) && Number.isFinite(dy) ? this.deviceBox(dx, dy, dw, dh) : null);
+  }
   putImageData() { this.note("picture"); }
   getImageData(_x: number, _y: number, w: number, h: number) { this.note("read back"); return { data: new Uint8ClampedArray(Math.max(1, w * h * 4)), width: w, height: h }; }
   createImageData(w: number, h: number) { return { data: new Uint8ClampedArray(Math.max(1, w * h * 4)), width: w, height: h }; }
   createPattern() { return { setTransform() {} }; }
   createLinearGradient() { return { addColorStop() {} }; }
   createRadialGradient() { return { addColorStop() {} }; }
-  fillText() { this.note("text with no outline"); }
-  strokeText() { this.note("text with no outline"); }
+  fillText(_text: string, x: number, y: number) { this.letterProblem(x, y); }
+  strokeText(_text: string, x: number, y: number) { this.letterProblem(x, y); }
+  private letterProblem(x: number, y: number) {
+    const size = Number(/([\d.]+)px/.exec(this.state.font)?.[1] ?? 10);
+    this.note("text with no outline", Number.isFinite(x) && Number.isFinite(y) ? this.deviceBox(x - size, y - size, 2 * size, 2 * size) : null);
+  }
   measureText(text: string) { const size = Number(/([\d.]+)px/.exec(this.state.font)?.[1] ?? 10);
     return { width: String(text).length * size * 0.5, actualBoundingBoxLeft: 0, actualBoundingBoxRight: 0, actualBoundingBoxAscent: 0, actualBoundingBoxDescent: 0 }; }
   drawFocusIfNeeded() {}
