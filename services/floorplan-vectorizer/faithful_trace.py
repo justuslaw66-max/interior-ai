@@ -3234,6 +3234,20 @@ def trace(path, keep_text=True):
 
 
 def trace_gray(g0, keep_text=True):
+    """the trace of a grey picture (uint8, H x W), in its pixels. (stage 1) A plan whose lettering was read but not set
+    (all or none, retype.ALL_SHARE) is traced again without reading it, so it comes out exactly as without retyping."""
+    t = _trace_gray(g0, keep_text)
+    if RT.RETYPE and RT.ALL_SHARE > 0 and t.get("_read") and not t["typed"]:
+        RT.RETYPE = False
+        try:
+            t = _trace_gray(g0, keep_text)
+        finally:
+            RT.RETYPE = True
+    t.pop("_read", None)
+    return t
+
+
+def _trace_gray(g0, keep_text=True):
     """the trace of a grey picture (uint8, H x W), in its pixels"""
     global FIT_PX, SNAP_PX, SOLID_R, EDGE_TOL, RUN, MARK_PX, PX
     interp = cv2.INTER_NEAREST if __import__("os").environ.get("FT_INTERP", "nearest") == "nearest" else cv2.INTER_CUBIC
@@ -3502,7 +3516,7 @@ def _trace(g0, g, keep_text):
         # (r12) lettering read with confidence set in type
         polys, elems, words = RT.retype(polys, g0, paper, words_, elems)
     return {"size": [int(g0.shape[1]), int(g0.shape[0])], "paper": int(paper), "walls": polys, "strokes": elems,
-            "text_px": int(text.sum()), "typed": words}
+            "text_px": int(text.sum()), "typed": words, "_read": bool(words_)}
 
 
 PENS = os.environ.get("FT_PENS", "1") == "1"   # (r12) every line drawn with one of the plan's few pens

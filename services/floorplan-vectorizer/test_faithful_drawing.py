@@ -1031,5 +1031,87 @@ class Retype(unittest.TestCase):
             self.assertFalse(retype.plausible(bad), bad)
 
 
+def _stroke_font():
+    import retype
+    if "stroke" not in retype.glyphs()["fonts"]:
+        retype.glyphs()["fonts"].update(retype._stroke_fonts(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hershey_strokes.json")))
+
+
+def _cad_lettering(run):
+    """run() with CAD lettering on (FT_CAD_LETTERING=1's settings), the single-stroke font loaded"""
+    import faithful_trace, retype
+    on = {"RETYPE": True, "FONTS": ["regular", "bold", "stroke-light", "stroke", "stroke-heavy"], "SET": ["stroke"],
+          "MATCH_READ": True, "ALL_SHARE": 0.75, "TRACED_WEIGHT": True, "SPACING": 0.3}
+    keep = {k: getattr(retype, k) for k in on}
+    try:
+        for k, v in on.items():
+            setattr(retype, k, v)
+        _stroke_font()
+        return run()
+    finally:
+        for k, v in keep.items():
+            setattr(retype, k, v)
+
+
+def _cad_plan(big, s, mirrored=False):
+    """a CAD plan's lettering, a pen's single strokes: two room names, a figure along the rows, one reading up the page;
+    and (mirrored) a row of letters no reader can read"""
+    _stroke_font()
+    _letter(big, s, "KITCHEN", 30, 40, 10, "stroke")
+    _letter(big, s, "BEDROOM 3", 30, 75, 10, "stroke")
+    _letter(big, s, "3000", 120, 125, 10, "stroke")
+    up = np.full((40 * s, 120 * s), 255, np.uint8)
+    _letter(up, s, "7900", 10, 30, 9, "stroke")
+    up = cv2.rotate(up, cv2.ROTATE_90_COUNTERCLOCKWISE)          # (reads from the bottom, as a drawing's figures do)
+    big[10 * s:130 * s, 190 * s:230 * s] = np.minimum(big[10 * s:130 * s, 190 * s:230 * s], up)
+    if mirrored:
+        row = np.full((20 * s, 160 * s), 255, np.uint8)
+        _letter(row, s, "BRWKGNJSPQEZ", 2, 15, 10, "stroke")
+        big[95 * s:115 * s, 25 * s:185 * s] = np.minimum(big[95 * s:115 * s, 25 * s:185 * s], cv2.flip(row, 1))
+
+
+@unittest.skipUnless(shutil.which("tesseract"), "tesseract is not installed")
+class CadLettering(unittest.TestCase):
+    """(stage 1, 11 Nov 2026) a CAD plan's single-stroke lettering set in the single-stroke font, whole or not at all"""
+
+    def test_cad_lettering_set_in_the_stroke_font(self):
+        img = _reduced(lambda big, s: _cad_plan(big, s), 240, 140, 8)
+        t = _cad_lettering(lambda: _trace_small(img))
+        typed = {w[0]: w[1] for w in t["typed"]}
+        self.assertTrue({"KITCHEN", "BEDROOM", "3000"} <= set(typed), typed)
+        self.assertTrue(all(f.startswith("stroke") for f in typed.values()), "set in the single-stroke font")
+        # the figure reading up the page is read from the bottom: 7900, never 0067 or 006
+        self.assertTrue(any(w.endswith("900") for w in typed), typed)
+        self.assertFalse(any(w.startswith("006") or w == "0067" for w in typed), typed)
+        # one pen: every word set in one tone
+        self.assertEqual(len({p["g"] for p in t["walls"] if p.get("type")}), 1)
+
+    def test_sans_lettering_left_as_traced(self):
+        import faithful_trace
+        def draw(big, s):
+            _letter(big, s, "KITCHEN", 30, 50, 10, "bold")
+            _letter(big, s, "3050", 40, 90, 10, "bold")
+        img = _reduced(draw, 200, 110, 8)
+        plain = _switched_in(faithful_trace.RT, "RETYPE", False, lambda: _trace_small(img))
+        cad = _cad_lettering(lambda: _trace_small(img))
+        self.assertEqual(cad["typed"], [], "a sans font fits its own lettering better")
+        self.assertEqual(json.dumps(cad, sort_keys=True), json.dumps(plain, sort_keys=True), "and the trace is as without retyping")
+
+    def test_a_plan_that_cannot_be_set_whole_is_traced_as_without(self):
+        import faithful_trace
+        img = _reduced(lambda big, s: _cad_plan(big, s, mirrored=True), 240, 140, 8)
+        plain = _switched_in(faithful_trace.RT, "RETYPE", False, lambda: _trace_small(img))
+        cad = _cad_lettering(lambda: _trace_small(img))
+        self.assertEqual(cad["typed"], [])
+        self.assertEqual(json.dumps(cad, sort_keys=True), json.dumps(plain, sort_keys=True))
+
+    def test_words_bracketed_or_run_on_are_plan_words(self):
+        import retype
+        for ok in ("(CORRIDOR", "END)", "LIVING/", "HOUSE-", "BATH/"):
+            self.assertTrue(retype.plausible(ok), ok)
+        for bad in ("8ED/", "(B4D", "/"):
+            self.assertFalse(retype.plausible(bad), bad)
+
+
 if __name__ == "__main__":
     unittest.main()

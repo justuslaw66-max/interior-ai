@@ -3,11 +3,32 @@ confidence, and that the word set in a clean typeface (Liberation Sans, regular 
 angle matches closely, is drawn as that type - sharp at any zoom - in place of its letters' traced outlines. A word it
 is unsure of, or whose type does not match the picture (a misreading: 8ED for BED), keeps its traced letters.
 
-J, 29 Oct: "Retype what's read"."""
+J, 29 Oct: "Retype what's read".
+
+(stage 1, 11 Nov) CAD lettering (FT_CAD_LETTERING=1): J, 11 Nov: "my goal is for everything to be clean and 100% perfect
+like what the vector plan produce". A CAD plan's lettering is a pen's single strokes; it is set in the single-stroke
+font CAD lettering comes from (Hershey simplex, hershey_strokes.json), and only:
+  - where that font fits a word better than the sans font, and its strokes are pen-thin (a brochure's bold footer stays
+    traced), at the weight and tone of the plan's own lettering, each letter keeping its spacing;
+  - and only on a plan whose lettering can be set almost whole (75 %): clean type beside traced letters reads as two
+    styles, so a plan that cannot be set whole is traced exactly as without retyping (faithful_trace.trace_gray).
+Read from the bottom when upright (aligned dimensions: read upside down, 900 is 006); words left unread by tesseract
+are read by matching the plan's own words set in the font (never figures: one whose digit touches its dimension line
+fits as another figure). Blind A/Bs, 11 Nov (claude/image-to-clean-vector-plan-2026-11-11.md): on the 74-plan set the
+qualifying plans came out the same or clearly better (J's 4-room plan, 3 of 3 graders), every other plan unchanged."""
 import json, math, os, re
 import cv2, numpy as np
 
-RETYPE = os.environ.get("FT_RETYPE", "0") == "1"      # (off: blind A/B 29 Oct, r11 64 / r12 5 - mixed fonts, greys, misread figures)
+CAD = os.environ.get("FT_CAD_LETTERING", "0") == "1"
+
+
+def _env(name, plain, cad):
+    """a setting: its own variable if set, else the CAD-lettering default when that is on, else the plain one"""
+    v = os.environ.get(name)
+    return v if v is not None else (cad if CAD else plain)
+
+
+RETYPE = _env("FT_RETYPE", "0", "1") == "1"      # (off: blind A/B 29 Oct, r11 64 / r12 5 - mixed fonts, greys, misread figures)
 CONF = float(os.environ.get("FT_RETYPE_CONF", "75"))      # tesseract's confidence in the word, at least
 MATCH = float(os.environ.get("FT_RETYPE_MATCH", "0.7"))   # the type and the picture's letters alike, at least
 MATCH_NUM = float(os.environ.get("FT_RETYPE_MATCH_NUM", "0.78"))   # ... for a figure (a wrong figure misleads)
@@ -18,14 +39,67 @@ LETTER_STROKE = float(os.environ.get("FT_LETTER_STROKE", "0.07"))   # a letter's
 SHIFT_LIM = float(os.environ.get("FT_RETYPE_SHIFT_LIM", "0.6"))   # ... moved at most this share of the height
 WEIGHT = os.environ.get("FT_RETYPE_WEIGHT", "1") == "1"  # the type's weight brought to the lettering's own
 DEBUG = os.environ.get("FT_RETYPE_DEBUG") == "1"
+UP_BIAS = float(os.environ.get("FT_RETYPE_UP_BIAS", "15"))   # confidence points in favour of upright lettering read from the bottom
+# the fonts a word is fitted in, and those it may be set in: a word whose best fit is another font is left as traced
+FONTS = [f for f in _env("FT_RETYPE_FONTS", "regular,bold", "regular,bold,stroke-light,stroke,stroke-heavy").split(",") if f]
+SET = [f for f in _env("FT_RETYPE_SET", "", "stroke").split(",") if f]
+PEN_SHARE = float(os.environ.get("FT_RETYPE_PEN_SHARE", "0.16"))   # a stroke-font word's stroke at most this share of its height
+MATCH_READ = _env("FT_RETYPE_MATCH_READ", "0", "1") == "1"   # unread lettering read by matching the plan's font and words
+MATCH_GAP = float(os.environ.get("FT_RETYPE_MATCH_GAP", "0.03"))   # ... the best reading at least this far ahead of the next
+# all or none: the share of the plan's lettering that must be set for any of it to be (else all stays traced), and,
+# before the trace, the share read (at least this part of it)
+ALL_SHARE = float(_env("FT_RETYPE_ALL_SHARE", "0", "0.75"))
+READ_SHARE = float(os.environ.get("FT_RETYPE_READ_SHARE", "0.9"))
+TRACED_WEIGHT = _env("FT_RETYPE_TRACED_WEIGHT", "0", "1") == "1"   # stroke words at the weight of the plan's traced lettering
+SPACING = float(_env("FT_RETYPE_SPACING", "9", "0.3"))   # neighbouring characters moved apart by at most this share of the height
+# (built, off: lettering not retyped redrawn as pen strokes along its letters - lost the blind A/B 53 to 1, 11 Nov)
+REDRAW = os.environ.get("FT_RETYPE_REDRAW", "0") == "1"
+REDRAW_GAIN = float(os.environ.get("FT_RETYPE_REDRAW_GAIN", "-9"))
+REDRAW_T = float(os.environ.get("FT_RETYPE_REDRAW_T", "0.3"))
 _GLYPHS = None
+STROKE_WEIGHTS = {"stroke-light": 0.06, "stroke": 0.09, "stroke-heavy": 0.13}   # pen widths, shares of the cap height
+
+
+def _stroke_fonts(path):
+    """the single-stroke font (hershey_strokes.json: Hershey simplex, public domain, as built into OpenCV) outlined at
+    STROKE_WEIGHTS' pen widths, in the form faithful_glyphs.json's fonts take (contours of on-curve points, y up)"""
+    with open(path) as f:
+        src = json.load(f)
+    R, cap = 24.0, src["capHeight"]
+    fonts = {}
+    for name, share in STROKE_WEIGHTS.items():
+        pen = share * cap
+        out = {}
+        for ch, g in src["glyphs"].items():
+            if not g["s"]:
+                out[ch] = {"adv": g["adv"], "c": []}
+                continue
+            allp = np.array([p for L in g["s"] for p in L], float)
+            x0, y0 = allp.min(0) - 2 * pen
+            x1, y1 = allp.max(0) + 2 * pen
+            img = np.zeros((int((y1 - y0) * R) + 4, int((x1 - x0) * R) + 4), np.uint8)
+            for L in g["s"]:
+                P = np.array([[(x - x0) * R * 16, (y1 - y) * R * 16] for x, y in L], np.int32)
+                cv2.polylines(img, [P], False, 255, max(1, int(round(pen * R))), cv2.LINE_AA, shift=4)
+            cs, _ = cv2.findContours((img >= 128).astype(np.uint8), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
+            rings = []
+            for c in cs:
+                a = cv2.approxPolyDP(c.astype(np.float32), 0.6, True).reshape(-1, 2)
+                if len(a) >= 3:
+                    rings.append([[round(float(px) / R + x0, 3), round(y1 - float(py) / R, 3), 1] for px, py in a])
+            out[ch] = {"adv": g["adv"], "c": rings}
+        fonts[name] = {"capHeight": cap, "xHeight": 0.7 * cap, "glyphs": out}
+    return fonts
 
 
 def glyphs():
     global _GLYPHS
     if _GLYPHS is None:
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "faithful_glyphs.json")) as f:
+        here = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(here, "faithful_glyphs.json")) as f:
             _GLYPHS = json.load(f)
+        if any(f_.startswith("stroke") for f_ in FONTS):
+            _GLYPHS["fonts"].update(_stroke_fonts(os.path.join(here, "hershey_strokes.json")))
     return _GLYPHS
 
 
@@ -255,7 +329,8 @@ WALK-IN WARDROBE DRY WET PES PATIO TERRACE ROOF POOL GARDEN LAUNDRY PANTRY FAMIL
 HALL PRIVATE STAIR STAIRS UP DOWN OPEN VOID ATTIC UNIT TYPE AREA LEVEL FLOOR GROUND BASEMENT PORCH SHOE CABINET FRIDGE
 WASHER DRYER HOB OVEN SINK BASIN VANITY BENCH ISLAND MAID HELPER OFFICE LIBRARY GYM MEDIA THEATRE WINE CELLAR
 CARPARK CAR LANAI DECK VERANDAH VERANDA HOUSE MAIN ENSUITE COMMON REFUSE CHUTE BIN DUCT SHAFT STOREY PLAN KEY
-NORTH SOUTH EAST WEST SCALE SQM SQFT TOTAL INTERNAL STRATA AIRCON AC""".split())
+NORTH SOUTH EAST WEST SCALE SQM SQFT TOTAL INTERNAL STRATA AIRCON AC DROP END ACCESS HOLD SUGGESTED LAYOUT
+OPTIONAL FUTURE FLEXI BLOCK STANDARD APARTMENT EXECUTIVE MAISONETTE FLAT NEW ROOM OF FOR ONLY TO BE""".split())
 
 
 def _lev(a, b):
@@ -293,6 +368,10 @@ def plausible(txt):
     t = txt.strip()
     if not t or len(t) > 24:
         return False
+    # a name may be bracketed, or run on with a slash or hyphen to the next line: (CORRIDOR, END), LIVING/, HOUSE-
+    core = re.sub(r"^[(]", "", re.sub(r"[)/-]$", "", t))
+    if core != t and core and PLAIN.match(core) and not any(ch.isdigit() for ch in core):
+        return True
     return bool(PLAIN.match(t) or NUMBER.match(t) or TAG.match(t))
 
 
@@ -390,9 +469,9 @@ def letter_marks(weak, px):
     return keep[lab].astype(np.uint8)
 
 
-def _ocr(img, psm):
+def _ocr(img, psm, extra=""):
     import pytesseract
-    return pytesseract.image_to_data(img, config="--psm %d --oem 1" % psm, output_type=pytesseract.Output.DICT)
+    return pytesseract.image_to_data(img, config=("--psm %d --oem 1 " % psm) + extra, output_type=pytesseract.Output.DICT)
 
 
 def _dark(g, paper):
@@ -504,7 +583,7 @@ def _line_strips(g0, paper, members_mask, box, turn, h):
     return [(0, big, geo)]
 
 
-def _read_strips(strips, paper):
+def _read_strips(strips, paper, extra=""):
     """the strips read by tesseract in one go, stacked one under another: per strip [(text, conf, page box)]"""
     gap = 24
     Wc = max(s_[1].shape[1] for s_ in strips) + 2 * gap
@@ -516,7 +595,7 @@ def _read_strips(strips, paper):
         canvas[y:y + img.shape[0], gap:gap + img.shape[1]] = img
         tops.append(y)
         y += img.shape[0] + gap
-    data = _ocr(canvas, 6)
+    data = _ocr(canvas, 6, extra)
     out = [[] for _ in strips]
     for q in range(len(data["text"])):
         txt = data["text"][q].strip()
@@ -586,7 +665,23 @@ def read_words(weak, g0, px, paper):
     boxes = [(st[i, 0] / px, st[i, 1] / px, (st[i, 0] + st[i, 2]) / px, (st[i, 1] + st[i, 3]) / px) for i in cand]
     words = []
     lines = []
-    for turn, gm in lines_of(None, boxes):
+    grouped = lines_of(None, boxes)
+    # a word whose letters touch (a small or blurred picture: 4000, LEDGE) is one mark: shaped like a word, at the
+    # height of the plan's lettering, it is a line of its own
+    inline = {i for _, gm in grouped for i in gm}
+    heights = sorted(min(b[2] - b[0], b[3] - b[1]) for b in (boxes[i] for _, gm in grouped for i in gm))
+    if heights:
+        lh = heights[len(heights) // 2]
+        for i, (x0, y0, x1, y1) in enumerate(boxes):
+            w_, h_ = x1 - x0, y1 - y0
+            if i in inline:
+                continue
+            if 0.7 * lh <= h_ <= 2.2 * lh and w_ >= 1.6 * h_:
+                grouped.append((0, [i, i]))
+            elif 0.7 * lh <= w_ <= 2.2 * lh and h_ >= 1.6 * w_:
+                grouped.append((1, [i, i]))
+    for turn, gm in grouped:
+        gm = sorted(set(gm)) if len(set(gm)) > 1 else gm
         if len(gm) < 2:
             continue
         ids = [cand[i] for i in gm]
@@ -615,17 +710,49 @@ def read_words(weak, g0, px, paper):
         reads = _read_strips(strips, paper)
     except Exception:
         return [], taken
+    # a line read as a figure gone wrong ("250, 495, £5)) is read again as figures only; the new reading is taken
+    # where it is all figures and surer
+    def figure_like(ws):
+        t = "".join(x for x, _, _ in ws)
+        return len(t) >= 2 and sum(ch.isdigit() for ch in t) >= 0.5 * len(t) and \
+            (any(not ch.isdigit() for ch in t) or min(c for _, c, _ in ws) < CONF_NUM)
+    again = [i for i, ws in enumerate(reads) if ws and figure_like(ws)]
+    if again:
+        try:
+            digits = _read_strips([strips[i] for i in again], paper, "-c tessedit_char_whitelist=0123456789")
+            for i, ws in zip(again, digits):
+                if ws and all(x.isdigit() for x, _, _ in ws) and \
+                        sum(c for _, c, _ in ws) / len(ws) >= sum(c for _, c, _ in reads[i]) / len(reads[i]):
+                    if DEBUG:
+                        print("figures", [x for x, _, _ in reads[i]], "->", [(x, c) for x, c, _ in ws])
+                    reads[i] = ws
+        except Exception:
+            pass
+    line_words, unread = [], []
     for li, (turn, gm, h, ss) in enumerate(lines):
         best = None
+        read_as = {}
         for si in [i for i, o in enumerate(owner) if o == li]:
             ws = reads[si]
             score = sum(c for _, c, _ in ws) / len(ws) if ws else -1
+            if ws:
+                read_as[strips[si][0]] = " ".join(t for t, _, _ in ws)
+            # a drawing's upright lettering reads from the bottom (aligned dimensions, ISO 129): read upside down,
+            # 900 is 006 and 6 is 9, so the other way must read clearly better to be taken
+            if ws and turn == 1 and strips[si][0] == 1:
+                score += UP_BIAS
             if ws and (best is None or score > best[0]):
                 best = (score, strips[si][0], ws)
         if best is None:
+            unread.append((li, 1 if turn == 1 else 0))
             continue
+        # a figure is read from the bottom whenever it reads that way at all (upside down, 900 is 006)
+        if best[1] == -1 and 1 in read_as and any(ch.isdigit() for ch in read_as[-1]):
+            best = next((sc, t_, ws) for sc, t_, ws in [(0, 1, reads[i]) for i, o in enumerate(owner)
+                                                        if o == li and strips[i][0] == 1])
         _, t_, ws = best
         ws = _glued(list(ws), turn, h)
+        line_words.append((li, t_))
         for txt, conf, wb in ws:
             if DEBUG:
                 print("read", turn, t_, repr(txt), conf, [round(v, 1) for v in wb])
@@ -663,6 +790,57 @@ def read_words(weak, g0, px, paper):
             for i in mem:
                 x, y, w, h_ = st[i, :4]
                 taken[y:y + h_, x:x + w] |= (lab[y:y + h_, x:x + w] == i).astype(np.uint8)
+    if MATCH_READ:
+        # the marks of a line that tesseract left unread (or read as nothing the plan holds), grouped into words by
+        # the gaps between them, are offered to the matching reader (retype's _guess: the plan's own font and words)
+        for li, t_ in unread + line_words:
+            turn, gm, h, _ = lines[li]
+            left = [i for i in gm if not taken[st[cand[i], 1]:st[cand[i], 1] + st[cand[i], 3],
+                                             st[cand[i], 0]:st[cand[i], 0] + st[cand[i], 2]].any()]
+            ax = 0 if turn == 0 else 1
+            left.sort(key=lambda i: boxes[i][ax])
+            groups_, cur = [], []
+            for i in left:
+                if cur and boxes[i][ax] - max(boxes[j][ax + 2] for j in cur) > 0.75 * h:
+                    groups_.append(cur); cur = []
+                cur.append(i)
+            if cur:
+                groups_.append(cur)
+            for gw in groups_:
+                mem = [cand[i] for i in gw]
+                ux0, uy0 = min(st[i, 0] for i in mem), min(st[i, 1] for i in mem)
+                ux1, uy1 = max(st[i, 0] + st[i, 2] for i in mem), max(st[i, 1] + st[i, 3] for i in mem)
+                sub = np.isin(lab[uy0:uy1, ux0:ux1], mem).astype(np.uint8)
+                if px > 1:
+                    sub = cv2.resize(sub, ((ux1 - ux0 + px - 1) // px, (uy1 - uy0 + px - 1) // px), interpolation=cv2.INTER_AREA)
+                ox, oy = ux0 // px, uy0 // px
+                sub = (sub > 0).astype(np.uint8)
+                crop = g0[oy:oy + sub.shape[0], ox:ox + sub.shape[1]]
+                sub = sub[:crop.shape[0], :crop.shape[1]]
+                dk = _dark(crop, paper) * sub
+                if dk.max() <= 0:
+                    continue
+                ys_, xs_ = np.nonzero(dk >= 0.5 * dk.max())
+                box = (ox + xs_.min(), oy + ys_.min(), ox + xs_.max() + 1, oy + ys_.max() + 1)
+                L = (box[2] - box[0]) if turn == 0 else (box[3] - box[1])
+                T = (box[3] - box[1]) if turn == 0 else (box[2] - box[0])
+                if L < 0.8 * h:                       # a lone letter or mark: not guessed
+                    continue
+                if T > 1.6 * h:                       # taller than a line of lettering: a symbol's marks, not a word
+                    continue
+                words.append({"text": None, "conf": 0.0, "turn": 0 if turn == 0 else (t_ or 1), "h": h, "box": box,
+                              "mask": (ox, oy, sub), "members": mem})
+    if ALL_SHARE > 0:
+        # all or none, decided before the trace uses what was read: a plan whose lettering does not read well enough
+        # to be set almost whole is left exactly as traced (its letters' pixels are not set aside either)
+        read_l = sum(sum(ch.isalnum() for ch in w_["text"]) for w_ in words if w_["text"])
+        left_l = sum(((w_["box"][2] - w_["box"][0]) if w_["turn"] == 0 else (w_["box"][3] - w_["box"][1])) / max(1.0, 0.7 * w_["h"])
+                     for w_ in words if not w_["text"])
+        share = read_l / max(1.0, read_l + left_l)
+        if DEBUG:
+            print("lettering read: %d letters, unread %.0f, share %.2f" % (read_l, left_l, share))
+        if share < READ_SHARE * ALL_SHARE:
+            return [], np.zeros_like(taken)
     return words, taken
 
 
@@ -676,6 +854,7 @@ def retype(polys, g0, paper, words, strokes=None):
     marks = [polys[i] for i in mi]
     boxes = _boxes(marks) if marks else []
     drop, add, done, sdrop = set(), [], [], set()
+    pending = []
     H, W = g0.shape
     for w in words:
         bx0, by0, bx1, by1 = w["box"]
@@ -688,7 +867,17 @@ def retype(polys, g0, paper, words, strokes=None):
         crop = g0[oy:oy + sub.shape[0], ox:ox + sub.shape[1]]
         sd = _dark(crop, paper) * cv2.dilate(sub, np.ones((3, 3), np.uint8))
         sdk = cv2.resize(sd, None, fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
+        if txt is None:
+            txt = _guess(w, sdk, ox, oy, [x["text"] for x in words if x["text"]])
+            if txt is None:
+                # an unread word whose strokes are heavier than a pen's is lettering in another style (a brochure's
+                # bold footer), as a read one would be found to be
+                heavy = _stroke_w(sdk > 0.5 * sdk.max()) / 4.0 > PEN_SHARE * h if sdk.max() > 0 else False
+                pending.append((w, inw, "other style" if heavy else None))
+                continue
+            w = dict(w, text=txt, conf=max(CONF, CONF_NUM))
         res = None
+        extra = None
         src_w = _stroke_w(sdk > 0.5 * sdk.max()) / 4.0
         if inw:
             # the letters' outlines give the box to a fraction of a pixel, where they hold the whole word
@@ -697,10 +886,16 @@ def retype(polys, g0, paper, words, strokes=None):
             if mx1 - mx0 >= 0.85 * (bx1 - bx0) and my1 - my0 >= 0.85 * (by1 - by0):
                 bx0, by0, bx1, by1 = mx0, my0, mx1, my1
         lets = letters_of([boxes[j] for j in inw], w["turn"], (bx0, by0, bx1, by1)) if inw else []
+        traced_w = 0.0
+        if inw:
+            rs = [np.array(r_, float) for j in inw for r_ in marks[j]["rings"] if len(r_) >= 3]
+            if rs:
+                tm = _raster(rs, ox, oy, 4, sdk.shape)
+                traced_w = _stroke_w(tm > 0) / 4.0
         def place(weight, box):
             P = placed(txt, weight, box, w["turn"])
             return None if P is None else (P, None)
-        for weight in ("regular", "bold"):
+        for weight in FONTS:
             box = [bx0, by0, bx1, by1]
             r_ = place(weight, tuple(box))
             if r_ is None:
@@ -732,11 +927,17 @@ def retype(polys, g0, paper, words, strokes=None):
                                 o2 = list(offs); o2[kk] += dv
                                 if abs(o2[kk]) > lim:
                                     continue
+                                # letters keep their spacing: a character is not pulled away from its neighbours
+                                # onto a letter of their word (KITC HEN)
+                                if (kk > 0 and abs(o2[kk] - o2[kk - 1]) > SPACING * h) or \
+                                        (kk + 1 < len(o2) and abs(o2[kk + 1] - o2[kk]) > SPACING * h):
+                                    continue
                                 P2 = to_page_polys(loc, o2, tuple(box), w["turn"])
                                 s2 = _match(P2, sdk, ox, oy, 4)
                                 if s2 > score:
                                     offs, P, score = o2, P2, s2
             delta = 0.0
+            P0, typ_w = P, 0.0
             if WEIGHT and src_w > 0:
                 typ_w = _stroke_w(_raster(P, ox, oy, 4, sdk.shape) > 0) / 4.0
                 delta = max(-0.35 * typ_w, min(0.35 * typ_w, (typ_w - src_w) / 2.0))
@@ -751,21 +952,44 @@ def retype(polys, g0, paper, words, strokes=None):
                                                              max(q[:, 0].max() for q in P), max(q[:, 1].max() for q in P))])
             if res is None or whole > res[0]:
                 res = (whole, weight, P, least, bool(cb), tuple(box), offs, delta)
+                extra = (P0, typ_w, src_w, traced_w)
         if DEBUG:
-            print("type", repr(txt), None if res is None else (round(res[0], 3), res[1], "least %.3f" % res[3], "by letter" if res[4] else "word"), "marks", len(inw))
+            print("type", repr(txt), None if res is None else (round(res[0], 3), res[1], "least %.3f" % res[3], "by letter" if res[4] else "word"), "marks", len(inw), "box", [round(v) for v in w["box"]], "turn", w["turn"], "conf", w["conf"])
         digits = any(ch.isdigit() for ch in txt)
-        if res is None or res[0] < (MATCH_NUM if digits else MATCH) or (res[4] and res[3] < LEAST) \
+        wrong_font = res is not None and SET and not any(res[1].startswith(f_) for f_ in SET)
+        thick = res is not None and res[1].startswith("stroke") and src_w > PEN_SHARE * h
+        if DEBUG and (wrong_font or thick):
+            print("   left traced:", "fits %s better" % res[1] if wrong_font else "strokes %.2f thick for %.1f tall" % (src_w, h))
+        if res is None or wrong_font or thick or res[0] < (MATCH_NUM if digits else MATCH) or (res[4] and res[3] < LEAST) \
                 or (digits and w["conf"] < CONF_NUM):
+            # (lettering in another style - a brochure's sans footer - is consistent as traced: it does not count
+            # against the plan's own lettering being set whole)
+            pending.append((w, inw, "other style" if wrong_font else None))
             continue
         # the reading must fit the picture better than any reading a letter away that is easily mistaken for it (3
         # for 8, 1 for 7): unless it is one of the plan's own words, such a near thing is left as traced
-        if not all(part.upper() in VOCAB for part in re.split(r"[/ ]", txt) if part):
+        if not all(part.upper().strip("()-.") in VOCAB for part in re.split(r"[/ ]", txt) if part.strip("()-.")):
             amb = _rival(txt, res, sdk, ox, oy, w["turn"])
             if DEBUG and amb:
                 print("   rival", amb)
             if amb:
+                pending.append((w, inw, None))
                 continue
         tone = int(np.median([marks[j]["g"] for j in inw])) if inw else int(np.percentile(crop[sub > 0], 10))
+        if res[1].startswith("stroke"):
+            # a pen's thin strokes are mostly edge: their traced outlines' grey is far lighter than the pen; the
+            # lettering's darkest pixels are its ink
+            tone = int(np.percentile(crop[sub > 0], 5))
+        # only the traced letters the type covers are dropped: a mark beside the word (the stem of an H read as part of
+        # a door swing, BAT|) keeps its trace
+        cover = cv2.dilate(_raster(res[2], ox, oy, 4, sdk.shape), np.ones((int(max(3, 1.2 * h)) | 1,) * 2, np.uint8))
+        for j in list(inw):
+            rs = [np.array(r_, float) for r_ in marks[j]["rings"] if len(r_) >= 3]
+            mm = _raster(rs, ox, oy, 4, sdk.shape) if rs else None
+            if mm is not None and mm.sum() > 0 and (mm & cover).sum() < 0.6 * mm.sum():
+                inw.remove(j)
+                if DEBUG:
+                    print("   kept traced beside", repr(txt), [round(v) for v in boxes[j]])
         for j in inw:
             drop.add(mi[j])
         if strokes:
@@ -775,14 +999,262 @@ def retype(polys, g0, paper, words, strokes=None):
                 pts = _stroke_pts(e_)
                 if len(pts) and pts[:, 0].min() >= bx0 - e and pts[:, 0].max() <= bx1 + e and \
                         pts[:, 1].min() >= by0 - e and pts[:, 1].max() <= by1 + e:
+                    # (and only where the type covers it: a letter's stem beside the word keeps its line)
+                    dense = np.vstack([pts[i] + (pts[i + 1] - pts[i]) * t_ for i in range(len(pts) - 1) for t_ in np.linspace(0, 1, 6)]) \
+                        if len(pts) > 1 else pts
+                    cx_ = np.clip(((dense[:, 0] - ox) * 4).astype(int), 0, cover.shape[1] - 1)
+                    cy_ = np.clip(((dense[:, 1] - oy) * 4).astype(int), 0, cover.shape[0] - 1)
+                    inside = ((dense[:, 0] - ox) * 4 >= 0) & ((dense[:, 0] - ox) * 4 < cover.shape[1]) & \
+                        ((dense[:, 1] - oy) * 4 >= 0) & ((dense[:, 1] - oy) * 4 < cover.shape[0])
+                    if (cover[cy_, cx_].astype(bool) & inside).mean() < 0.6:
+                        if DEBUG:
+                            print("   kept traced line beside", repr(txt), e_["k"])
+                        continue
                     sdrop.add(k)
         rings = [[[round(float(a), 2), round(float(b), 2)] for a, b in P_] for P_ in res[2]]
-        add.append({"rings": rings, "g": tone, "type": txt})
+        add.append({"rings": rings, "g": tone, "type": txt, "_pen": extra if res[1].startswith("stroke") else None})
         done.append((txt, res[1], round(res[0], 3)))
-    if not add:
+    # the redraw is for a CAD plan's single-stroke lettering: a plan with words set in the stroke font, and only words
+    # no heavier than that plan's pen
+    cad = [a_ for a_ in add if a_.get("_pen")]
+    if ALL_SHARE > 0:
+        # all or none: a plan whose lettering is only partly set keeps all of it traced (clean type beside traced
+        # letters reads as two styles)
+        set_letters = sum(sum(ch.isalnum() for ch in a_["type"]) for a_ in add)
+        left = 0.0
+        for w_, inw_, why_ in pending:
+            if why_ == "other style":
+                continue
+            L_ = (w_["box"][2] - w_["box"][0]) if w_["turn"] == 0 else (w_["box"][3] - w_["box"][1])
+            if DEBUG:
+                print("   left:", repr(w_["text"]), why_, [round(v) for v in w_["box"]], "conf", w_["conf"])
+            left += sum(ch.isalnum() for ch in w_["text"]) if w_["text"] else L_ / max(1.0, 0.7 * w_["h"])
+        share = set_letters / max(1.0, set_letters + left)
+        if DEBUG:
+            print("lettering set: %d letters, left %.0f, share %.2f" % (set_letters, left, share))
+        if share < ALL_SHARE:
+            return polys, strokes, []
+    redrawn = []
+    if REDRAW and len(cad) >= 2:
+        pen_px = float(np.median([a_["_pen"][2] for a_ in cad]))
+        redrawn = _redraw(pending, marks, mi, boxes, drop, add, g0, paper, 1.3 * pen_px)
+    if not add and not redrawn:
         return polys, strokes, []
+    # a plan's lettering is one pen: words set in the stroke type share the darkest tone among them (a thin letter in a
+    # small or compressed picture never reaches its pen's black)
+    pen = [a_ for a_ in add if a_.get("_pen")]
+    width, ink = 0.0, 0
+    if pen:
+        ink = min(a_["g"] for a_ in pen)
+        # ... and one width: the median of the words' own (a blurred thin letter measures thinner than it is drawn,
+        # and the thinnest words came out lighter than the rest)
+        width = float(np.median([a_["_pen"][2] for a_ in pen]))
+        if TRACED_WEIGHT:
+            tw = [a_["_pen"][3] for a_ in pen if a_["_pen"][3] > 0]
+            if tw:
+                width = max(width, float(np.median(tw)))
+        for a_ in pen:
+            P0, typ_w, _, _ = a_["_pen"]
+            delta = max(-0.45 * typ_w, min(0.6 * typ_w, (typ_w - width) / 2.0)) if typ_w > 0 else 0.0
+            a_["g"] = ink
+            a_["rings"] = [[[round(float(x), 2), round(float(y), 2)] for x, y in Q] for Q in _offset(P0, delta)]
+    for a_ in add:
+        a_.pop("_pen", None)
+    if redrawn:
+        pen_w = width if pen else float(np.median([r_["_w"] for r_ in redrawn]))
+        pen_g = ink if pen else int(np.median([r_["_g"] for r_ in redrawn]))
+        for r_ in redrawn:
+            r_["w"], r_["g"] = round(pen_w, 2), int(pen_g)
+            r_.pop("_w"); r_.pop("_g")
+        strokes = list(strokes or []) + redrawn
+        done += [("(redrawn)", "pen", 0.0)] * 0
     strokes = [e_ for k, e_ in enumerate(strokes)] if strokes is None else [e_ for k, e_ in enumerate(strokes) if k not in sdrop]
     return [p for i, p in enumerate(polys) if i not in drop] + add, strokes, done
+
+
+def _word_choices(seen):
+    """the words the plan's lettering may hold, as set: its vocabulary, run on or bracketed, and what it read elsewhere"""
+    out = set(seen)
+    for v in VOCAB:
+        out |= {v, v + "/", v + "-", "(" + v, v + ")"}
+    out |= {"AIR-CON", "W.C.", "W.C", "SCALE"}
+    return sorted(t for t in out if t and not any(ch.isdigit() for ch in t))
+
+
+def _refined(t, font, box, turn, sdk, ox, oy, h):
+    """t set over the letters as retype() sets a reading: the box's edges, then each character, moved where the type
+    fits the picture better. The best fit's score, or -1 where t cannot be set there."""
+    P = placed(t, font, box, turn)
+    if P is None:
+        return -1.0
+    score = _match(P, sdk, ox, oy, 4)
+    box = list(box)
+    for step in (0.5, 0.25):
+        for k_ in range(4):
+            for dv in (-step, step):
+                b2 = list(box); b2[k_] += dv
+                P2 = placed(t, font, tuple(b2), turn)
+                if P2 is not None:
+                    s2 = _match(P2, sdk, ox, oy, 4)
+                    if s2 > score:
+                        box, score = b2, s2
+    loc = placed_local(t, font, tuple(box), turn)
+    if loc is not None:
+        offs = [0.0] * len(loc)
+        lim = SHIFT_LIM * h
+        for step in (0.5, 0.25):
+            for kk in range(len(loc)):
+                for dv in (-step, step, -2 * step, 2 * step):
+                    o2 = list(offs); o2[kk] += dv
+                    if abs(o2[kk]) > lim:
+                        continue
+                    s2 = _match(to_page_polys(loc, o2, tuple(box), turn), sdk, ox, oy, 4)
+                    if s2 > score:
+                        offs, score = o2, s2
+    return score
+
+
+def _guess(w, sdk, ox, oy, seen):
+    """an unread line's word, read by matching (MATCH_READ): the plan's words and figures set in the stroke font over
+    its letters, each fitted as retype() fits a reading; the best is kept where it matches well and clearly better than
+    the next. None otherwise."""
+    box, turn, h = w["box"], w["turn"], w["h"]
+    font = "stroke"
+    L = (box[2] - box[0]) if turn == 0 else (box[3] - box[1])
+    quick = {}
+
+    def score(t):
+        if t not in quick:
+            P = placed(t, font, box, turn)
+            quick[t] = -1.0 if P is None else _match(P, sdk, ox, oy, 4)
+        return quick[t]
+    for t in _word_choices(seen):
+        score(t)
+    # (no figures: a figure whose digit touches its dimension line is seen in part, and 2250 then fits as 1250 -
+    # a wrong figure misleads, so figures are read by tesseract only)
+    top = [t for v, t in sorted(((v, t) for t, v in quick.items() if v > 0), reverse=True)[:8]]
+    ranked = sorted(((_refined(t, font, box, turn, sdk, ox, oy, h), t) for t in top), reverse=True)
+    ranked = [(v, t) for v, t in ranked if v > 0]
+    if not ranked:
+        return None
+    best, t = ranked[0]
+    rest = [v for v, u in ranked[1:] if u.strip("()/-") != t.strip("()/-")]
+    nxt = rest[0] if rest else 0.0
+    need = MATCH_NUM if any(ch.isdigit() for ch in t) else MATCH
+    if DEBUG:
+        print("guess", [(u, round(v, 3)) for v, u in ranked[:3]], "box", [round(v) for v in box], "turn", turn)
+    if best < need + 0.1 or best - nxt < MATCH_GAP:
+        return None
+    return t
+
+
+def _center_paths(mask):
+    """a thin shape's centre lines: its skeleton walked from end and branch points as polylines (mask's pixels)"""
+    from skimage.morphology import skeletonize
+    sk = skeletonize(mask > 0)
+    ys, xs = np.nonzero(sk)
+    pix = set(zip(xs.tolist(), ys.tolist()))
+    nb = lambda p: [(p[0] + dx, p[1] + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1)
+                    if (dx or dy) and (p[0] + dx, p[1] + dy) in pix]
+    nodes = {p for p in pix if len(nb(p)) != 2}
+    seen, out = set(), []
+
+    def walk(a, b):
+        path = [a, b]; seen.add(frozenset((a, b)))
+        while path[-1] not in nodes:
+            nxt = [q for q in nb(path[-1]) if frozenset((path[-1], q)) not in seen and q != path[-2]]
+            if not nxt:
+                break
+            nxt.sort(key=lambda q: abs(q[0] - path[-1][0]) + abs(q[1] - path[-1][1]))
+            seen.add(frozenset((path[-1], nxt[0]))); path.append(nxt[0])
+        return path
+    for a in nodes:
+        for b in nb(a):
+            if frozenset((a, b)) not in seen:
+                out.append(walk(a, b))
+    rest = {p for p in pix if all(frozenset((p, q)) not in seen for q in nb(p))}
+    while rest:
+        a = rest.pop(); n_ = nb(a)
+        if not n_:
+            continue
+        path = walk(a, n_[0]); out.append(path + [a]); rest -= set(path)
+    return out
+
+
+def _redraw(pending, marks, mi, boxes, drop, add, g0, paper, max_sw=1e9):
+    """(stage 1) lettering that was not retyped, redrawn as clean pen strokes along its letters: the picture's own
+    letters there (whole where the traced outlines broke), letter-sized pieces only, reduced to their centre lines,
+    each line the fewest straight runs within a third of a pixel. Width and tone are set afterwards (the plan's
+    lettering pen). Returns the strokes; the word's traced letters are dropped."""
+    out = []
+    K = 4.0
+    H, W = g0.shape
+    for w, inw, _ in pending:
+        h = w["h"]
+        bx0, by0, bx1, by1 = w["box"]
+        e = 0.15 * h + 1
+        x0, y0 = int(max(0, math.floor(bx0 - e))), int(max(0, math.floor(by0 - e)))
+        x1, y1 = int(min(W, math.ceil(bx1 + e))), int(min(H, math.ceil(by1 + e)))
+        if x1 - x0 < 3 or y1 - y0 < 3:
+            continue
+        dk = cv2.resize(_dark(g0[y0:y1, x0:x1], paper), None, fx=K, fy=K, interpolation=cv2.INTER_CUBIC)
+        if dk.max() <= 0:
+            continue
+        m = (dk > REDRAW_T * dk.max()).astype(np.uint8)
+        # letter-sized pieces: not a dimension line or a door swing running through the word's box
+        n, lab, st, _ = cv2.connectedComponentsWithStats(m, 8)
+        keep = np.zeros_like(m)
+        for i in range(1, n):
+            ww, hh = st[i, 2] / K, st[i, 3] / K
+            if hh <= 1.5 * h and ww <= 3.0 * h and st[i, 4] >= 2 * K * K:
+                keep[lab == i] = 1
+        if not keep.any():
+            continue
+        dist = cv2.distanceTransform(keep, cv2.DIST_L2, 3)
+        paths = _center_paths(keep)
+        if not paths:
+            continue
+        sw = 2.0 * float(np.median([dist[y, x] for P in paths for x, y in P])) / K
+        if sw > 0.22 * h or sw > max_sw:         # a bold or outline lettering: not a pen's single strokes
+            continue
+        drawn, mine = 0, []
+        for P in paths:
+            if len(P) < 2:
+                continue
+            arr = np.array(P, np.float32).reshape(-1, 1, 2)
+            ap = cv2.approxPolyDP(arr, K / 3.0, False).reshape(-1, 2)
+            pts = [[round((float(x) + 0.5) / K - 0.5 + x0, 2), round((float(y) + 0.5) / K - 0.5 + y0, 2)] for x, y in ap]
+            if sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(pts, pts[1:])) < 0.12 * h:
+                continue
+            mine.append({"k": "path", "parts": [["L", a, b] for a, b in zip(pts, pts[1:])], "closed": False,
+                         "_w": sw, "_g": int(np.percentile(g0[y0:y1, x0:x1], 5))})
+            drawn += 1
+        # kept only where it is closer to the picture than the word's traced letters are ("only better")
+        letters = [j for j in inw if mi[j] not in drop and boxes[j][3] - boxes[j][1] <= 1.5 * h and boxes[j][2] - boxes[j][0] <= 3.0 * h]
+        tm = np.zeros(dk.shape, np.uint8)
+        rings = [np.round((np.array(r, float) - [x0 - 0.5 + 0.5 / K, y0 - 0.5 + 0.5 / K]) * K * 16).astype(np.int32)
+                 for j in letters for r in marks[j]["rings"] if len(r) >= 3]
+        if rings:
+            cv2.fillPoly(tm, rings, 1, cv2.LINE_AA, shift=4)
+        rm = np.zeros(dk.shape, np.uint8)
+        for P in paths:
+            if len(P) >= 2:
+                cv2.polylines(rm, [np.array(P, np.int32)], False, 1, max(1, int(round(sw * K))), cv2.LINE_AA)
+        blur = lambda a_: cv2.GaussianBlur(a_.astype(np.float32), (0, 0), 0.6 * K)
+        pic = blur(dk)
+        s_trace, s_redraw = _corr(blur(tm), pic), _corr(blur(rm), pic)
+        if DEBUG:
+            print("   redraw %.3f against traced %.3f" % (s_redraw, s_trace))
+        if s_redraw < s_trace + REDRAW_GAIN:
+            continue
+        out += mine
+        if drawn:
+            for j in inw:
+                if mi[j] not in drop and boxes[j][3] - boxes[j][1] <= 1.5 * h and boxes[j][2] - boxes[j][0] <= 3.0 * h:
+                    drop.add(mi[j])
+        if DEBUG:
+            print("redrawn", repr(w["text"]), "paths", drawn, "stroke %.2f" % sw, [round(v) for v in w["box"]])
+    return out
 
 
 CONFUSED = {"0": "8698DO", "1": "7Il", "2": "7Z", "3": "859", "4": "9A", "5": "63S", "6": "5809G", "7": "12",
@@ -796,6 +1268,10 @@ def _rival(txt, res, sdk, ox, oy, turn, margin=0.015):
     own, weight, _, _, _, box, offs, delta = res
     for k, ch in enumerate(txt):
         for alt in CONFUSED.get(ch, ""):
+            # a rival keeps its kind: a figure's digit against digits, a word's letter against letters (0 and O are
+            # one shape in a pen's lettering; 54O0 is no reading of a dimension)
+            if ch.isdigit() != alt.isdigit():
+                continue
             var = txt[:k] + alt + txt[k + 1:]
             loc = placed_local(var, weight, box, turn)
             if loc is None or len(loc) != len(offs):
