@@ -125,6 +125,17 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   Retyping confidently read lettering in clean type (`retype.py`, Liberation Sans outlines in `faithful_glyphs.json`,
   SIL Open Font License, `OFL.txt`, rebuilt by `make_glyphs.py`, which needs fontTools) is built but off
   (`FT_RETYPE=1` turns it on): in a blind check it set two fonts on one plan and misread a few figures.
+- CAD lettering (stage 1 of the clean image plan, 11 Nov; `FT_CAD_LETTERING=1`, off by default): a CAD plan's lettering
+  is a pen's single strokes, and is set in the single-stroke font it comes from (Hershey simplex, public domain, its
+  strokes in `hershey_strokes.json` as built into OpenCV, recovered by `tools/hershey_extract.py`, outlined at three pen
+  widths when loaded). Each word is fitted in the sans font and the stroke font and set only where the stroke font
+  fits best and its strokes are pen-thin, at the weight and tone of the plan's own lettering, its letters keeping their
+  spacing; upright lettering is read from the bottom; words tesseract leaves unread are read by matching the plan's
+  words in the font (never figures). All or none: a plan is set only if 75 % of its lettering can be (another style -
+  a brochure's bold footer - does not count), and a plan that cannot is traced exactly as without retyping. Blind
+  A/Bs on the 74-plan set (`claude/image-to-clean-vector-plan-2026-11-11.md`): every plan set came out the same or
+  clearly better, every other plan unchanged. A centre-line redraw of unread lettering (`FT_RETYPE_REDRAW`) lost its
+  blind A/B 53 to 1 and is off.
 - Since 31 Oct a plan that leans a little is drawn straight (`FT_STRAIGHTEN`, on; `FT_STRAIGHTEN=0` draws it as
   traced). A scan or a re-saved web plan often has its plumb lines all leaning one way by a few tenths of a degree,
   and sometimes its level lines too (a shear or a slight turn; J on s038). The lean is read from the drawing's own
