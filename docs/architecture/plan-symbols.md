@@ -12,7 +12,8 @@ Black-and-white furniture and fixture symbols for the 2D plan, in the style of a
 
 - **Frame:** metres, in the item's own plan frame as `ItemRenderer2D` draws it: x across the width (−w/2 to +w/2), z across the depth from −d/2 (the back, against the wall) to +d/2 (the front). Arc angles are degrees from +x towards +z. `rotationDeg` and position are applied by the renderer, as for any item.
 - **Three line weights** (`PlanSymbolStroke`): `outline` for the footprint, `detail` for the main parts (arms, pillows, bowls, burners), `fine` for texture (seat seams, hangers, books). The SVG adapter maps them to 1.5, 1 and 0.6 px by default.
-- **Dashed** for what is overhead or hidden: pendant lights, a ceiling fan's sweep, a cooker hood, upper cabinets above a counter, a wardrobe's rail.
+- **Dashed** for what is overhead or hidden: pendant lights, a ceiling fan's sweep, a cooker hood, wall cabinets, a wall TV, an aircon fan-coil, a water heater, a mirror cabinet, a ceiling drying rack, a bunk bed's upper bunk, a recliner's footrest, a wardrobe's rail.
+- **Crossed** corner to corner for full-height units: a tall cabinet, a fridge and its housing.
 - **Fill:** shapes marked `fill` are painted paper-white first, so they hide what was drawn before them (a table over the tucked-in part of its chairs, a sofa over the floor).
 
 ## Code
@@ -24,8 +25,11 @@ Black-and-white furniture and fixture symbols for the 2D plan, in the style of a
 | `lib/plan-symbols/plan-symbols-living.ts` | Sofas, chairs, tables, TV console, rug, lights, fan, plant |
 | `lib/plan-symbols/plan-symbols-dining-bedroom.ts` | Dining, beds, wardrobe, desk, cabinets and shelves |
 | `lib/plan-symbols/plan-symbols-kitchen-bath.ts` | Counter, hob, sink, appliances, toilet, basin, vanity, shower, bath |
+| `lib/plan-symbols/plan-symbols-living-more.ts` | Batch 2: U-shaped sofa, sofa bed, daybed, recliner, console table, bar stool, wall TV, piano, aircon fan-coil, balcony set, planter box, bay-window seat |
+| `lib/plan-symbols/plan-symbols-bedroom-storage-more.ts` | Batch 2: bunk bed, cot, dressing table, study table, tall cabinet, shoe bench, coat rack, altar cabinet |
+| `lib/plan-symbols/plan-symbols-kitchen-bath-more.ts` | Batch 2: kitchen island, built-in oven, dishwasher, wall cabinets, fridge housing, ceiling drying rack, water heater, shower screen, towel rail, mirror cabinet |
 | `lib/plan-symbols/plan-symbol-library.ts` | The registry: label, group, typical size and builder per kind; `buildPlanSymbol` |
-| `lib/plan-symbols/plan-symbol-match.ts` | `resolvePlanSymbolKind(category, name)`: catalogue category first, then words in the name |
+| `lib/plan-symbols/plan-symbol-match.ts` | `resolvePlanSymbolKind(category, name)`: a name that refines a broad category first (sofa bed, bunk bed, altar cabinet), then the catalogue category, then words in the name |
 | `lib/plan-symbols/plan-symbol-svg.ts` | The SVG adapter (exports, sheets, thumbnails) |
 | `lib/plan-symbols/plan-symbol-item.ts` | A placed item's shapes, and the plan heights |
 | `lib/plan-symbols/plan-symbol-tessellate.ts` | Shapes as segments and paper polygons, layered by drawing order |
@@ -67,7 +71,8 @@ Every design's Download PDF ends with a furnished layout plan: one sheet per flo
 
 ## Next
 
-- More symbols: bunk bed, sofa bed, U sofa, island counter, built-in oven, dishwasher, water heater, aircon fan-coil (dashed), bay-window seat, altar cabinet. Doors and windows stay with the openings code.
+- Batch 2 (11 Nov 2026) added 30 symbols (71 in all): the list above, by J's word ("proceed with what u recommend"). J reviews the sheet; corrections go in as he finds them.
+- Lighting and power (downlights, track lights, power points) belong on a lighting or electrical plan, not this furniture library. Doors and windows stay with the openings code.
 
 ## Commands
 
