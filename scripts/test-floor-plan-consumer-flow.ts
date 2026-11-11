@@ -21,7 +21,7 @@ import { inverseFloorPlanAddressTransform } from "@/lib/floor-plan-consumer-orie
 import { cancelFloorPlanImportInBackground, requestFloorPlanImportCancel } from "@/components/editor/useFloorPlanImportCancel";
 import { UserFacingError } from "@/lib/user-facing-error";
 import { floorPlanUploadFormats } from "@/lib/floor-plan-upload-formats";
-import { sourceDrawingStroke } from "@/lib/floor-plan-source-drawing";
+import { SOURCE_HAIRLINE_SCREEN_PX, sourceDrawingHairline, sourceDrawingStroke } from "@/lib/floor-plan-source-drawing";
 import { applyFloorPlanAddressTransformV2 } from "@/lib/floor-plan-legacy-adapters";
 import type { FloorPlanDocumentV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanImportStatus } from "@/lib/floor-plan-imports/types";
@@ -951,9 +951,15 @@ assert.deepEqual(sourceDrawingStroke({ strokeWidthPx: 2.5 }, true), { strokeWidt
 assert.deepEqual(sourceDrawingStroke({}, true), { strokeWidth: 1 });
 assert.deepEqual(sourceDrawingStroke({ strokeWidthPx: 2.5 }, false), { strokeWidth: 1.5, vectorEffect: "non-scaling-stroke" });
 assert.deepEqual(sourceDrawingStroke({ strokeWidthPx: 2.5 }, false, true), { strokeWidth: 4, vectorEffect: "non-scaling-stroke" });
+// A final trace's line is also drawn under it at a fixed screen width, so a PDF's thinnest pens (Thomson Reserve's
+// AutoCAD hairlines, 0.25 page pixels) still show with the whole plan in view (J, 11 Nov); fills and marks get none.
+assert.deepEqual(sourceDrawingHairline({ lineCap: "round" }, true), { strokeWidth: SOURCE_HAIRLINE_SCREEN_PX, vectorEffect: "non-scaling-stroke", strokeLinecap: "round" });
+assert.equal(sourceDrawingHairline({ fill: true }, true), null);
+assert.equal(sourceDrawingHairline({}, false), null);
 for (const view of ["FloorPlanSourceCompare.tsx", "FloorPlanSourceReviewOverlay.tsx"]) {
   const source = read(`components/editor/floor-plan-import-review/${view}`);
   assert.match(source, /\{\.\.\.sourceDrawingStroke\(/, `${view} should draw source shapes with sourceDrawingStroke.`);
+  assert.match(source, /\{\.\.\.hairline\}/, `${view} should draw a final trace's hairline under its lines.`);
   assert.doesNotMatch(source, /strokeWidth=\{[^}]*strokeWidthPx/, `${view} should not set a trace's line width by hand.`);
 }
 

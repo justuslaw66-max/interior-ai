@@ -3,7 +3,7 @@
 import type { FloorPlanAnnotationV2 } from "@/lib/floor-plan-document-v2";
 import { isFinalSourceTrace } from "@/lib/floor-plan-source-trace";
 import type { ReviewOverlay } from "@/lib/floor-plan-import-review-overlay";
-import { sourceDrawingInk, sourceDrawingStroke, sourceDrawingSvgPath, sourceDrawingSvgPoints as points } from "@/lib/floor-plan-source-drawing";
+import { sourceDrawingHairline, sourceDrawingInk, sourceDrawingStroke, sourceDrawingSvgPath, sourceDrawingSvgPoints as points } from "@/lib/floor-plan-source-drawing";
 
 function SourceArtwork({ annotations, selectedId, picking, onSelect, focused }: {
   annotations: FloorPlanAnnotationV2[]; selectedId: string; picking: boolean; onSelect: (id: string) => void; focused: Set<string>;
@@ -57,9 +57,13 @@ export default function FloorPlanSourceReviewOverlay(props: {
 }
 
 function SourceArtworkShape({geometry,selected,trace,proposal,picking}:{geometry:import("@/lib/floor-plan-source-drawing").FloorPlanSourceDrawingGeometryV2;selected:boolean;trace:boolean;proposal:boolean;picking:boolean}) {
+  // A final trace's line also drawn at a fixed screen width under it, so the thinnest pens show at any zoom.
+  const hairline = sourceDrawingHairline(geometry, trace);
   return <>
           <path d={sourceDrawingSvgPath(geometry)} fill="none" stroke="transparent" strokeWidth={12}
             vectorEffect="non-scaling-stroke" pointerEvents={picking ? "none" : "stroke"} aria-hidden="true" />
+          {hairline ? <path d={sourceDrawingSvgPath(geometry)} fill="none" stroke={selected ? "#dc2626" : sourceDrawingInk(geometry,"#333")}
+            {...hairline} pointerEvents="none" aria-hidden="true" /> : null}
           <path data-source-artwork-shape data-final-trace={trace||undefined} d={sourceDrawingSvgPath(geometry)} fill={geometry.fill ? (selected?"#dc2626":sourceDrawingInk(geometry,"#333")) : "none"} stroke={geometry.fill?"none":selected ? "#dc2626" : trace ? sourceDrawingInk(geometry,"#333") : "#7c3aed"}
             strokeDasharray={proposal ? "4 3" : undefined}
             {...sourceDrawingStroke(geometry, trace, selected)} pointerEvents="none" />
