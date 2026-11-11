@@ -206,14 +206,17 @@ export function resolveFurnitureModelAppearance({
       return {
         ...modelCalibration,
         forceBaseColorHex: "#dfd7ca",
-        brightness: 0.95,
-        saturation: 0.88,
         roughnessOverride: 0.9,
         metalnessOverride: 0,
         aoMapIntensity: 0.18,
         emissiveBoost: 0,
         specularIntensityOverride: 0.04,
-        importedNormalScale: 0.012,
+        // The fabric photo tile carries the colour; the weave is drawn at real size.
+        disableBaseColorMap: false,
+        variantMapTintStrength: 0,
+        brightness: 1,
+        saturation: 1,
+        importedNormalScale: 0.3,
       };
     }
 
@@ -227,21 +230,24 @@ export function resolveFurnitureModelAppearance({
         aoMapIntensity: 0.18,
         emissiveBoost: 0,
         specularIntensityOverride: 0.05,
-        importedNormalScale: 0.014,
+        importedNormalScale: 0.3,
       };
     }
 
     if (isDawsonPeytonVariant) {
       return {
         ...modelCalibration,
-        brightness: 0.96,
-        saturation: 0.94,
         roughnessOverride: 0.93,
         metalnessOverride: 0,
         aoMapIntensity: 0.14,
         emissiveBoost: 0,
         specularIntensityOverride: 0.03,
-        importedNormalScale: 0.014,
+        // The fabric photo tile carries the colour; the weave is drawn at real size.
+        disableBaseColorMap: false,
+        variantMapTintStrength: 0,
+        brightness: 1,
+        saturation: 1,
+        importedNormalScale: 0.25,
       };
     }
 
@@ -262,14 +268,18 @@ export function resolveFurnitureModelAppearance({
     if (isDawsonBoucleVariant) {
       return {
         ...modelCalibration,
-        brightness: 0.97,
-        saturation: 0.95,
         roughnessOverride: 0.95,
         metalnessOverride: 0,
         aoMapIntensity: 0.12,
         emissiveBoost: 0,
         specularIntensityOverride: 0.025,
-        importedNormalScale: 0.02,
+        // The fabric photo tile carries the colour; loops are drawn at real size, so
+        // they need real relief (the old 0.02 hid a weave drawn 20x too large).
+        disableBaseColorMap: false,
+        variantMapTintStrength: 0,
+        brightness: 1,
+        saturation: 1,
+        importedNormalScale: 0.9,
       };
     }
 
@@ -287,17 +297,39 @@ export function resolveFurnitureModelAppearance({
       };
     }
 
+    if (
+      isDawsonFabricVariant &&
+      /(?:\bmarcel\b|\btextured[\s_-]*plain[\s_-]*weave\b|\bpm400[12]\b)/i.test(variantMarker)
+    ) {
+      // Marcel: the fabric photo tile gives the colour and the weave.
+      return {
+        ...modelCalibration,
+        disableBaseColorMap: false,
+        variantMapTintStrength: 0,
+        brightness: 1,
+        saturation: 1,
+        roughnessOverride: 0.92,
+        metalnessOverride: 0,
+        emissiveBoost: 0,
+        specularIntensityOverride: 0.04,
+        importedNormalScale: 0.35,
+      };
+    }
+
     if (isDawsonStockedLinenVariant) {
       return {
         ...modelCalibration,
-        brightness: 0.98,
-        saturation: 0.94,
         roughnessOverride: 0.92,
         metalnessOverride: 0,
         aoMapIntensity: 0.16,
         emissiveBoost: 0,
         specularIntensityOverride: 0.04,
-        importedNormalScale: 0.018,
+        // The fabric photo tile carries the colour; the weave is drawn at real size.
+        disableBaseColorMap: false,
+        variantMapTintStrength: 0,
+        brightness: 1,
+        saturation: 1,
+        importedNormalScale: 0.3,
       };
     }
 

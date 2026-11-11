@@ -52,6 +52,8 @@ upholstery_options:
       tile_scale:
         x: 2.2
         y: 2.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: performance_creamy_white
     upholstery_label: "Performance Creamy White"
@@ -88,6 +90,8 @@ upholstery_options:
       tile_scale:
         x: 2.3
         y: 2.3
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: marcel_brilliant_white
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -125,6 +129,8 @@ upholstery_options:
       tile_scale:
         x: 2.1
         y: 2.1
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: peyton_ivory
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -163,6 +169,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: peyton_dove_grey
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -201,6 +209,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: marcel_smoke_grey
     upholstery_label: "Performance Textured Plain Weave (Marcel), Smoke Grey"
@@ -236,6 +246,8 @@ upholstery_options:
       tile_scale:
         x: 2.1
         y: 2.1
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: peyton_moss
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -274,6 +286,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: peyton_cumin
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -312,6 +326,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: infinity_boucle_ginger
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -349,6 +365,8 @@ upholstery_options:
       tile_scale:
         x: 1.0
         y: 1.0
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.10
 
   - upholstery_code: infinity_boucle_white_quartz
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -386,6 +404,8 @@ upholstery_options:
       tile_scale:
         x: 1.0
         y: 1.0
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.10
 
   - upholstery_code: beach_linen
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -423,6 +443,8 @@ upholstery_options:
       tile_scale:
         x: 2.2
         y: 2.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: navagio_beach_linen
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -460,6 +482,8 @@ upholstery_options:
       tile_scale:
         x: 2.2
         y: 2.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: performance_boucle_cream
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -497,6 +521,8 @@ upholstery_options:
       tile_scale:
         x: 1.0
         y: 1.0
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.10
 
   - upholstery_code: performance_infinity_boucle_moss
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -534,6 +560,8 @@ upholstery_options:
       tile_scale:
         x: 1.0
         y: 1.0
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.10
 
   - upholstery_code: performance_twill_pearl_beige
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -572,6 +600,8 @@ upholstery_options:
       tile_scale:
         x: 2.3
         y: 2.3
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: performance_twill_slate
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -610,6 +640,8 @@ upholstery_options:
       tile_scale:
         x: 2.3
         y: 2.3
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: performance_twill_moss
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -648,6 +680,8 @@ upholstery_options:
       tile_scale:
         x: 2.3
         y: 2.3
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: performance_twill_dove_grey
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -686,6 +720,8 @@ upholstery_options:
       tile_scale:
         x: 2.3
         y: 2.3
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: performance_genova_oat
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -724,6 +760,8 @@ upholstery_options:
       tile_scale:
         x: 2.2
         y: 2.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: performance_linen_weave_cream
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -762,6 +800,8 @@ upholstery_options:
       tile_scale:
         x: 2.2
         y: 2.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: performance_linen_weave_light_grey
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -800,6 +840,8 @@ upholstery_options:
       tile_scale:
         x: 2.2
         y: 2.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: greta_ivory
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -834,6 +876,8 @@ upholstery_options:
       tile_scale:
         x: 1.5
         y: 1.5
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: washed_chenille_sand
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -868,6 +912,8 @@ upholstery_options:
       tile_scale:
         x: 1.5
         y: 1.5
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: greta_mustard_brown
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -902,6 +948,8 @@ upholstery_options:
       tile_scale:
         x: 1.5
         y: 1.5
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: greta_moss
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -936,6 +984,8 @@ upholstery_options:
       tile_scale:
         x: 1.5
         y: 1.5
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: cocoa_leather
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -970,6 +1020,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: caramel_leather
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -1004,6 +1056,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: warm_taupe_leather
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -1038,6 +1092,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: marche_ivory_leather
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -1072,6 +1128,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: marche_graphite_leather
     upholstery_label: "Marche Graphite (Leather)"
@@ -1105,6 +1163,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
   - upholstery_code: marche_cocoa_leather
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -1139,6 +1199,8 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
+      # One tile covers this much real cloth; the renderer works out the repeat per model.
+      tile_size_m: 0.08
 
 # Maps which upholstery_codes are active for this family
 # These match the 30+ fabric options available on Castlery website
