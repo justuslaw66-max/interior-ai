@@ -244,10 +244,6 @@
       "lines": 697,
       "limit": 250
     },
-    "components/editor/renderers/ItemRenderer2D.tsx": {
-      "lines": 253,
-      "limit": 250
-    },
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
       "lines": 500,
       "limit": 250
@@ -2045,11 +2041,11 @@
     "components/editor/renderers/ItemRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 221
+        "maximum": 185
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 23
+        "maximum": 20
       }
     },
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {

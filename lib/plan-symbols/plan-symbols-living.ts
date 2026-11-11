@@ -176,7 +176,8 @@ function fanBlade(sweep: number, angleDeg: number): PlanSymbolShape {
     [inner, -rootHalf], [outer - tipHalf * 0.4, -tipHalf], [outer, -tipHalf * 0.35],
     [outer, tipHalf * 0.35], [outer - tipHalf * 0.4, tipHalf], [inner, rootHalf],
   ];
-  return polyline(placePoints(points, angleDeg, 0, 0), true, "detail", { fill: true });
+  // Overhead: no paper, so the furniture under the fan still shows.
+  return polyline(placePoints(points, angleDeg, 0, 0), true, "detail");
 }
 
 export const ceilingFanSymbol: PlanSymbolBuilder = (width, depth) => {
@@ -186,7 +187,7 @@ export const ceilingFanSymbol: PlanSymbolBuilder = (width, depth) => {
     fanBlade(sweep, -90),
     fanBlade(sweep, 30),
     fanBlade(sweep, 150),
-    circle(0, 0, sweep * 0.2, "detail", { fill: true }),
+    circle(0, 0, sweep * 0.2, "detail"),
     circle(0, 0, sweep * 0.09, "fine"),
   ];
 };

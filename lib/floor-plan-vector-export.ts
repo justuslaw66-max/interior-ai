@@ -1,6 +1,7 @@
-import { PDFDocument, rgb } from "pdf-lib";
+import { PDFDocument, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import type { PlanDrawingPrimitive, PlanVectorDrawing } from "@/lib/floor-plan-vector-drawing";
-import { layoutFloorPlanVectorExport, type PlanVectorExportOptions } from "@/lib/floor-plan-vector-layout";
+import { layoutFloorPlanVectorExport, type PlanVectorExportLayout, type PlanVectorExportOptions } from "@/lib/floor-plan-vector-layout";
+import { drawFurnitureSchedulePages } from "@/lib/floor-plan-vector-schedule";
 import { loadPlanVectorFont, vectorFontDataUrl, PLAN_VECTOR_FONT_FAMILY, PLAN_VECTOR_FONT_FEATURES } from "@/lib/floor-plan-vector-font";
 import { drawVectorUnderlayPdf, vectorUnderlaySvg, type PlanVectorUnderlay } from "@/lib/floor-plan-vector-underlay";
 import { vectorInkPath } from "@/lib/floor-plan-vector-ink";
@@ -16,12 +17,30 @@ const xml = (text: string) => text.replace(/[<>&"']/g, (value) => ({ "<": "&lt;"
 const svgTone = (tone: number | undefined) => (tone === undefined ? null : `rgb(${tone},${tone},${tone})`);
 const pdfTone = (tone: number | undefined, fallback: ReturnType<typeof rgb>) => (tone === undefined ? fallback : rgb(tone / 255, tone / 255, tone / 255));
 
+/** A furniture tag: its number in a paper-white circle, sized in paper millimetres. */
+const TAG_RADIUS_MM = 2.1, TAG_TEXT_MM = 2.2;
+
+function svgTag(primitive: Extract<PlanDrawingPrimitive, { kind: "text" }>, scale: number) {
+  const { xMm: x, zMm: z } = primitive.point, id = xml(primitive.id);
+  return `<g id="${id}"><circle cx="${x}" cy="${z}" r="${TAG_RADIUS_MM * scale}" fill="white" stroke-width="${0.18 * scale}"/>`
+    + `<text x="${x}" y="${z + 0.36 * TAG_TEXT_MM * scale}" font-size="${TAG_TEXT_MM * scale}" stroke="none" text-anchor="middle">${xml(primitive.text)}</text></g>`;
+}
+
+function svgStroke(primitive: Extract<PlanDrawingPrimitive, { kind: "path" }>, scale: number) {
+  if (primitive.role === "wall" || primitive.role === "source_fill" || primitive.paperStrokeMm === 0) return ' stroke="none"';
+  const dash = primitive.paperDashMm ? ` stroke-dasharray="${primitive.paperDashMm.map((mm) => mm * scale).join(" ")}"` : "";
+  if (primitive.paperStrokeMm !== undefined) return ` stroke-width="${primitive.paperStrokeMm * scale}"${dash}`;
+  return primitive.strokeWidth !== undefined ? ` stroke-width="${primitive.strokeWidth}"${dash}` : dash;
+}
+
 function svgPrimitive(primitive: PlanDrawingPrimitive, scale: number) {
   const id = xml(primitive.id);
+  if (primitive.kind === "text" && primitive.role === "furniture-tag") return svgTag(primitive, scale);
   if (primitive.kind === "text") return `<text id="${id}" x="${primitive.point.xMm}" y="${primitive.point.zMm}" stroke="none" text-anchor="middle">${xml(primitive.text)}</text>`;
   const tone = svgTone(primitive.tone);
   const toned = tone && !primitive.fill ? ` stroke="${tone}"` : "";
-  return `<path id="${id}" d="${vectorInkPath(primitive, scale)}" fill="${primitive.fill ? tone ?? "#454545" : "none"}"${(primitive.role === "wall" || primitive.role === "source_fill") ? ' stroke="none"' : primitive.strokeWidth !== undefined ? ` stroke-width="${primitive.strokeWidth}"` : ""}${toned}/>`;
+  const fill = primitive.paperFill ? "white" : primitive.fill ? tone ?? "#454545" : "none";
+  return `<path id="${id}" d="${vectorInkPath(primitive, scale)}" fill="${fill}"${svgStroke(primitive, scale)}${toned}/>`;
 }
 
 export async function exportFloorPlanVectorSvg(drawing: PlanVectorDrawing, options: PlanVectorExportOptions, resources: PlanVectorExportResources = {}) {
@@ -40,6 +59,25 @@ ${resources.underlay ? `<text x="15" y="${layout.heightMm - 9}" font-size="2.6">
 }
 
 /** One PDF path/text object per primitive, no raster architectural linework. */
+function drawPdfPath(page: PDFPage, primitive: Extract<PlanDrawingPrimitive, { kind: "path" }>, layout: PlanVectorExportLayout) {
+  const unstroked = primitive.role === "wall" || primitive.role === "source_fill" || primitive.paperStrokeMm === 0;
+  const width = primitive.paperStrokeMm !== undefined ? primitive.paperStrokeMm * layout.scale : primitive.strokeWidth ?? 0.18 * layout.scale;
+  page.drawSvgPath(vectorInkPath(primitive, layout.scale), { x: layout.offsetX * POINTS_PER_MM, y: (layout.heightMm - layout.offsetY) * POINTS_PER_MM,
+    scale: POINTS_PER_MM / layout.scale,
+    borderWidth: unstroked ? 0 : width,
+    borderColor: unstroked ? undefined : pdfTone(primitive.tone, rgb(0.13, 0.13, 0.13)),
+    borderDashArray: primitive.paperDashMm?.map((mm) => mm * layout.scale),
+    color: primitive.paperFill ? rgb(1, 1, 1) : primitive.fill ? pdfTone(primitive.tone, rgb(0.27, 0.27, 0.27)) : undefined });
+}
+
+function drawPdfTag(page: PDFPage, font: PDFFont, primitive: Extract<PlanDrawingPrimitive, { kind: "text" }>, layout: PlanVectorExportLayout) {
+  const x = (layout.offsetX + primitive.point.xMm / layout.scale) * POINTS_PER_MM;
+  const y = (layout.heightMm - layout.offsetY - primitive.point.zMm / layout.scale) * POINTS_PER_MM;
+  const size = TAG_TEXT_MM * POINTS_PER_MM;
+  page.drawCircle({ x, y, size: TAG_RADIUS_MM * POINTS_PER_MM, color: rgb(1, 1, 1), borderColor: rgb(0.13, 0.13, 0.13), borderWidth: 0.18 * POINTS_PER_MM });
+  page.drawText(primitive.text, { x: x - font.widthOfTextAtSize(primitive.text, size) / 2, y: y - 0.36 * size, size, font });
+}
+
 export async function exportFloorPlanVectorPdf(drawing: PlanVectorDrawing, options: PlanVectorExportOptions, resources: PlanVectorExportResources = {}): Promise<Uint8Array> {
   const fontSource = await loadPlanVectorFont(resources.fontBytes);
   const layout = layoutFloorPlanVectorExport(drawing, options, fontSource.font, resources.underlay);
@@ -56,10 +94,9 @@ export async function exportFloorPlanVectorPdf(drawing: PlanVectorDrawing, optio
   if (resources.underlay) await drawVectorUnderlayPdf(pdf, page, resources.underlay, layout);
   for (const primitive of drawing.primitives) {
     if (primitive.kind === "path") {
-      page.drawSvgPath(vectorInkPath(primitive, layout.scale), { x: layout.offsetX * POINTS_PER_MM, y: (layout.heightMm - layout.offsetY) * POINTS_PER_MM,
-        scale: POINTS_PER_MM / layout.scale, borderWidth: primitive.role === "wall" || primitive.role === "source_fill" ? 0 : primitive.strokeWidth ?? 0.18 * layout.scale,
-        borderColor: primitive.role === "wall" || primitive.role === "source_fill" ? undefined : pdfTone(primitive.tone, rgb(0.13, 0.13, 0.13)),
-        color: primitive.fill ? pdfTone(primitive.tone, rgb(0.27, 0.27, 0.27)) : undefined });
+      drawPdfPath(page, primitive, layout);
+    } else if (primitive.role === "furniture-tag") {
+      drawPdfTag(page, font, primitive, layout);
     } else {
       const size = 2.6 * POINTS_PER_MM;
       page.drawText(primitive.text, { x: (layout.offsetX + primitive.point.xMm / layout.scale) * POINTS_PER_MM - font.widthOfTextAtSize(primitive.text, size) / 2,
@@ -68,5 +105,6 @@ export async function exportFloorPlanVectorPdf(drawing: PlanVectorDrawing, optio
   }
   page.drawText(`${drawing.coordinateSpace === "source_pixels" ? "Source artwork | uncalibrated image coordinates | no physical scale" : `Proposed / unverified | 1:${options.scale} | dimensions in mm, centreline | print at 100%`}`, { x: 15 * POINTS_PER_MM, y: 15 * POINTS_PER_MM, size: 2.6 * POINTS_PER_MM, font });
   if (resources.underlay) page.drawText(UNDERLAY_NOTE, { x: 15 * POINTS_PER_MM, y: 9 * POINTS_PER_MM, size: 2.6 * POINTS_PER_MM, font });
+  if (drawing.schedule?.length) drawFurnitureSchedulePages(pdf, font, drawing.schedule, { widthMm: layout.widthMm, heightMm: layout.heightMm, title });
   return pdf.save({ useObjectStreams: false });
 }
