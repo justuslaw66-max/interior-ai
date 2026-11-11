@@ -179,7 +179,6 @@ export type ImportedModelCatalog = {
         x?: number;
         y?: number;
       };
-      tile_size_m?: number;
     };
   }>;
   bundleMetadata?: unknown;

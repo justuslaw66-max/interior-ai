@@ -171,9 +171,7 @@ export interface ProductVariant {
     baseColorMap?: string;
     normalMap?: string;
     roughnessMap?: string;
-    tileScale?: { x?: number; y?: number };
-    /** Real size of one texture tile in metres; the renderer derives the repeat per model. */
-    tileSizeM?: number;
+    tileScale?: { x?: number; y?: number; sizeM?: number };
   };
 }
 

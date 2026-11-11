@@ -22,9 +22,7 @@ export type UpholsteryRenderAssets = {
   base_color_map?: string;
   normal_map?: string;
   roughness_map?: string;
-  tile_scale?: { x?: number; y?: number };
-  /** Real size of one texture tile in metres (overrides tile_scale at render time). */
-  tile_size_m?: number;
+  tile_scale?: { x?: number; y?: number; size_m?: number };
 };
 
 export type UpholsteryOption = {

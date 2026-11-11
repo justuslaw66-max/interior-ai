@@ -12,19 +12,12 @@ import {
   sentenceCaseLabel,
 } from "./variant-normalization";
 import { resolveCastleryVariantAffiliateUrl } from "./castlery-retailer-links";
+import { toVariantRenderAssets } from "./upholstery-render-assets";
 
 type ImportedRenderAssetsLike = {
-  base_color_map?: string;
   normal_map?: string;
   tile_scale?: { x?: number; y?: number };
-  tile_size_m?: number;
 };
-
-/** A physical tile size opts a fabric into its own colour photo and per-model weave scale. */
-function normalizeTileSizeM(value: unknown): number | undefined {
-  const size = Number(value);
-  return Number.isFinite(size) && size >= 0.005 && size <= 1 ? size : undefined;
-}
 
 export type ImportedUpholsteryOptionLike = {
   upholstery_code?: string;
@@ -594,22 +587,7 @@ export function normalizeImportedVariants({
       collectionType,
       legFinishCode,
       legFinishLabel,
-      renderAssets: matchingUpholsteryOption?.render_assets
-        ? {
-            baseColorMap: normalizeTileSizeM(matchingUpholsteryOption.render_assets.tile_size_m)
-              ? normalizeImportedUrl(matchingUpholsteryOption.render_assets.base_color_map)
-              : undefined,
-            normalMap: matchingUpholsteryOption.render_assets.normal_map,
-            roughnessMap: undefined,
-            tileScale: matchingUpholsteryOption.render_assets.tile_scale
-              ? {
-                  x: Math.max(0.75, Math.min(4, matchingUpholsteryOption.render_assets.tile_scale.x ?? 1)),
-                  y: Math.max(0.75, Math.min(4, matchingUpholsteryOption.render_assets.tile_scale.y ?? 1)),
-                }
-              : undefined,
-            tileSizeM: normalizeTileSizeM(matchingUpholsteryOption.render_assets.tile_size_m),
-          }
-        : undefined,
+      renderAssets: toVariantRenderAssets(matchingUpholsteryOption?.render_assets),
       modelUrl,
       thumbnailUrl: resolvedThumbnailUrl,
       galleryImages: variantGalleryImages,

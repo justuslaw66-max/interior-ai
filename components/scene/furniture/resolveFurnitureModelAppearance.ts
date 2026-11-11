@@ -4,6 +4,7 @@ import {
   type GLBCalibration,
   getModelCalibration,
 } from "@/lib/design-page-calibration";
+import { resolveDawsonFabricCalibration } from "./dawsonFabricAppearance";
 
 function normalizeModelCandidate(
   value: string | null | undefined
@@ -62,30 +63,6 @@ export function resolveFurnitureModelAppearance({
   const isMadisonCamilleForestFabricVariant =
     isMadisonFabricVariant &&
     (/\bcamille\b.*\bforest\b/i.test(normalizedVariantMarker) || /\bforest\b/i.test(normalizedVariantMarker));
-  const isDawsonFabricVariant =
-    product.id.startsWith("sofa-real-castlery-dawson-") && !isLeatherVariant;
-  const isDawsonCreamyWhiteVariant =
-    product.id.startsWith("sofa-real-castlery-dawson-") &&
-    /(?:\bcreamy[\s_-]*white\b|\bperformance[\s_-]*creamy[\s_-]*white\b|\bpt4001\b)/i.test(variantMarker);
-  const isDawsonPerformanceTwillVariant =
-    isDawsonFabricVariant &&
-    !isDawsonCreamyWhiteVariant &&
-    /(?:\bperformance[\s_-]*twill\b|\bperformance_twill_\w+\b|\bpt400[2-5]\b)/i.test(variantMarker);
-  const isDawsonPeytonVariant =
-    isDawsonFabricVariant &&
-    /(?:\bpeyton\b|\bpy400[1-4]\b|\bpeyton_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonGenovaVariant =
-    isDawsonFabricVariant &&
-    /(?:\bgenova\b|\bperformance_linen_weave\b|\bperformance[\s_-]*linen[\s_-]*weave\b|\bpg400[2-4]\b)/i.test(variantMarker);
-  const isDawsonBoucleVariant =
-    isDawsonFabricVariant &&
-    /(?:\bboucle\b|\bin400[2-5]\b|\bperformance_boucle_cream\b|\bperformance_infinity_boucle_moss\b|\binfinity_boucle_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonChenilleVariant =
-    isDawsonFabricVariant &&
-    /(?:\bwashed[\s_-]*chenille\b|\bgreta\b|\bgr400[1-4]\b|\bwashed_chenille_[a-z_]+\b|\bgreta_[a-z_]+\b)/i.test(variantMarker);
-  const isDawsonStockedLinenVariant =
-    isDawsonFabricVariant &&
-    /(?:\bbeach[\s_-]*linen\b|\bnavagio\b|\bseagull\b|\bng400[12]\b|\bbeach_linen\b|\bnavagio_seagull\b)/i.test(variantMarker);
   const isJaronProduct =
     product.id.startsWith("sofa-real-castlery-jaron-") ||
     product.id.startsWith("armchair-real-castlery-jaron-");
@@ -200,148 +177,13 @@ export function resolveFurnitureModelAppearance({
       };
     }
 
-    if (isDawsonCreamyWhiteVariant) {
-      // Dawson Creamy White should stay soft and warm relative to Sand, without the
-      // crisp, pebbled micro-relief that makes it read as artificial plaster.
-      return {
-        ...modelCalibration,
-        forceBaseColorHex: "#dfd7ca",
-        roughnessOverride: 0.9,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.18,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        // The fabric photo tile carries the colour; the weave is drawn at real size.
-        disableBaseColorMap: false,
-        variantMapTintStrength: 0,
-        brightness: 1,
-        saturation: 1,
-        importedNormalScale: 0.3,
-      };
-    }
-
-    if (isDawsonPerformanceTwillVariant) {
-      return {
-        ...modelCalibration,
-        roughnessOverride: 0.9,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.18,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.05,
-        // The fabric photo tile carries the colour; the weave is drawn at real size.
-        disableBaseColorMap: false,
-        variantMapTintStrength: 0,
-        brightness: 1,
-        saturation: 1,
-        importedNormalScale: 0.3,
-      };
-    }
-
-    if (isDawsonPeytonVariant) {
-      return {
-        ...modelCalibration,
-        roughnessOverride: 0.93,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.14,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.03,
-        // The fabric photo tile carries the colour; the weave is drawn at real size.
-        disableBaseColorMap: false,
-        variantMapTintStrength: 0,
-        brightness: 1,
-        saturation: 1,
-        importedNormalScale: 0.25,
-      };
-    }
-
-    if (isDawsonGenovaVariant) {
-      return {
-        ...modelCalibration,
-        roughnessOverride: 0.92,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        // The fabric photo tile carries the colour; the weave is drawn at real size.
-        disableBaseColorMap: false,
-        variantMapTintStrength: 0,
-        brightness: 1,
-        saturation: 1,
-        importedNormalScale: 0.3,
-      };
-    }
-
-    if (isDawsonBoucleVariant) {
-      return {
-        ...modelCalibration,
-        roughnessOverride: 0.95,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.12,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.025,
-        // The fabric photo tile carries the colour; loops are drawn at real size, so
-        // they need real relief (the old 0.02 hid a weave drawn 20x too large).
-        disableBaseColorMap: false,
-        variantMapTintStrength: 0,
-        brightness: 1,
-        saturation: 1,
-        importedNormalScale: 0.9,
-      };
-    }
-
-    if (isDawsonChenilleVariant) {
-      return {
-        ...modelCalibration,
-        roughnessOverride: 0.91,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        // The fabric photo tile carries the colour; the weave is drawn at real size.
-        disableBaseColorMap: false,
-        variantMapTintStrength: 0,
-        brightness: 1,
-        saturation: 1,
-        importedNormalScale: 0.3,
-      };
-    }
-
-    if (
-      isDawsonFabricVariant &&
-      /(?:\bmarcel\b|\btextured[\s_-]*plain[\s_-]*weave\b|\bpm400[12]\b)/i.test(variantMarker)
-    ) {
-      // Marcel: the fabric photo tile gives the colour and the weave.
-      return {
-        ...modelCalibration,
-        disableBaseColorMap: false,
-        variantMapTintStrength: 0,
-        brightness: 1,
-        saturation: 1,
-        roughnessOverride: 0.92,
-        metalnessOverride: 0,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        importedNormalScale: 0.35,
-      };
-    }
-
-    if (isDawsonStockedLinenVariant) {
-      return {
-        ...modelCalibration,
-        roughnessOverride: 0.92,
-        metalnessOverride: 0,
-        aoMapIntensity: 0.16,
-        emissiveBoost: 0,
-        specularIntensityOverride: 0.04,
-        // The fabric photo tile carries the colour; the weave is drawn at real size.
-        disableBaseColorMap: false,
-        variantMapTintStrength: 0,
-        brightness: 1,
-        saturation: 1,
-        importedNormalScale: 0.3,
-      };
-    }
-
+    const dawsonFabricCalibration = resolveDawsonFabricCalibration({
+      productId: product.id,
+      isLeatherVariant,
+      variantMarker,
+      modelCalibration,
+    });
+    if (dawsonFabricCalibration) return dawsonFabricCalibration;
 
     if (isMadisonCaramelLeatherVariant) {
       // Keep base texture map for Madison caramel leather so non-upholstery parts

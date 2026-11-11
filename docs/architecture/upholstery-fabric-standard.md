@@ -18,10 +18,11 @@ are separate: one model per shape, one library entry per fabric.
    lighting flattened, made seamless with a variance-preserving cross-fade,
    mean colour scaled to `swatch_hex`. The photo supplies only the weave; the
    catalogue supplies the colour.
-3. **Size is physical.** `render_assets.tile_size_m` says how many metres of
+3. **Size is physical.** `render_assets.tile_scale.size_m` says how many metres of
    cloth one tile covers (0.08 for flat weaves, 0.10 for boucle). The renderer
    measures the model's metres per UV unit at its final scale
-   (`components/scene/glb-scaled-model/upholsteryTileScale.ts`) and sets the
+   (`components/scene/glb-scaled-model/upholsteryTileScale.ts`, called from
+   `glbModelResourceResolution.ts` after the model is normalised) and sets the
    repeat. Do not tune `tile_scale` by eye: an AI-generated sofa packs several
    metres of surface into one UV unit, and the right repeat differs per model.
 4. **Relief suits the real size.** With threads at real size, flat weaves take
@@ -39,9 +40,9 @@ are separate: one model per shape, one library entry per fabric.
    detail shot). Sample `swatch_hex`.
 2. Make the tile; look at a 2x2 repeat of it. No plaid grid, no seam, no
    lighting gradient.
-3. Add `swatch_hex`, `base_color_map`, `normal_map` and `tile_size_m` to the
-   library option. In `resolveFurnitureModelAppearance.ts` the family block
-   needs `disableBaseColorMap: false`, `variantMapTintStrength: 0`,
+3. Add `swatch_hex`, `base_color_map`, `normal_map` and `tile_scale.size_m` to the
+   library option. The family's row in its appearance table (Dawson:
+   `components/scene/furniture/dawsonFabricAppearance.ts`) needs `disableBaseColorMap: false`, `variantMapTintStrength: 0`,
    `brightness: 1`, `saturation: 1` and its relief.
 4. Look at it on the model in the app next to the swatch, at room distance and
    close up, on at least one fabric per family and on every fabric whose tile
