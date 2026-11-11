@@ -7,6 +7,7 @@ import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
 import { useCanvasPalette } from "@/lib/canvas-colours";
 import { PLAN_SYMBOL_BASE_Y, PLAN_SYMBOL_OVERLAY_Y } from "@/lib/plan-symbols/plan-symbol-item";
+import PlanItemName2D from "./PlanItemName2D";
 import PlanSymbol2D from "./PlanSymbol2D";
 
 type ItemRenderer2DProps = {
@@ -165,51 +166,15 @@ export default function ItemRenderer2D({
       )}
 
       {showLabels && (selected || hovered || !dragging) && (
-        <Html zIndexRange={htmlZIndexRange} position={[0, 0.01, 0]} center transform={false}>
-          {interactive && onSelect ? (
-            <button
-              type="button"
-              data-testid="plan-item-keyboard-target"
-              aria-label={`Select ${label} in 2D`}
-              aria-pressed={selected}
-              className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={(event) => {
-                event.stopPropagation();
-                onSelect(event.shiftKey);
-              }}
-              style={{
-                appearance: "none",
-                fontSize: 12,
-                padding: "2px 6px",
-                borderRadius: 6,
-                background: colour("rgba(255,255,255,0.9)"),
-                border: colour(selected ? "1px solid rgba(37,99,235,0.62)" : "1px solid rgba(120,120,120,0.35)"),
-                color: colour("#1f2937"),
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                pointerEvents: "auto",
-              }}
-            >
-              {label}
-            </button>
-          ) : (
-            <div
-              style={{
-                fontSize: 12,
-                padding: "2px 6px",
-                borderRadius: 6,
-                background: colour("rgba(255,255,255,0.9)"),
-                border: colour("1px solid rgba(120,120,120,0.35)"),
-                color: colour("#1f2937"),
-                whiteSpace: "nowrap",
-                pointerEvents: "none",
-              }}
-            >
-              {label}
-            </div>
-          )}
-        </Html>
+        <PlanItemName2D
+          label={label}
+          category={category}
+          selected={selected}
+          hovered={hovered}
+          interactive={interactive}
+          onSelect={onSelect}
+          zIndexRange={htmlZIndexRange}
+        />
       )}
 
       {showDimensions && selected && (

@@ -407,7 +407,7 @@ assert.match(
 );
 
 const planItemRenderer = read(
-  "components/editor/renderers/ItemRenderer2D.tsx"
+  "components/editor/renderers/PlanItemName2D.tsx"
 );
 for (const required of [
   'data-testid="plan-item-keyboard-target"',

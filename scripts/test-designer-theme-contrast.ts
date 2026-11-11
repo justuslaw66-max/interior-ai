@@ -716,6 +716,8 @@ for (const material of ["#c9c2b4", "#c6a77b", "#9b7659", "#eeeae0", "#b8b0a1"]) 
 const CANVAS_SOURCES = [
   "components/editor/renderers/RoomRenderer2D.tsx",
   "components/editor/renderers/ItemRenderer2D.tsx",
+  "components/editor/renderers/PlanItemName2D.tsx",
+  "components/editor/renderers/PlanSymbol2D.tsx",
   "components/editor/renderers/PlanUnderlayRenderer2D.tsx",
   "components/editor/renderers/CanonicalFloorPlanStructure.tsx",
   "components/editor/renderers/canonical-floor-plan/CanonicalWallSegments2D.tsx",
