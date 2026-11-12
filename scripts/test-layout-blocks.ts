@@ -22,7 +22,7 @@ import { getRotatedFootprint } from "@/lib/design-page-utils";
 
 /** Layout blocks (lib/layout-blocks.ts): plan pieces with no product, placed, sized and drawn like items. */
 
-const block = (kind: Parameters<typeof createLayoutBlockItem>[0]["kind"], instanceId = kind, position: [number, number, number] = [0, 0, 0]) =>
+const block = (kind: Parameters<typeof createLayoutBlockItem>[0]["kind"], instanceId: string = kind, position: [number, number, number] = [0, 0, 0]) =>
   createLayoutBlockItem({ kind, instanceId, position });
 
 function testEveryKind() {
