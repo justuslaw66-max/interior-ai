@@ -9,6 +9,7 @@ import {
 import type { GLBLocalRenderBounds } from "./localRenderBounds";
 import { recordGLBMainThreadTiming } from "./glbMainThreadTelemetryFacade";
 import type { GLBModelTerminalErrorCategory } from "./modelLifecycleTypes";
+import { applyPhysicalUpholsteryTileSize } from "./upholsteryTileScale";
 import {
   normalizeGLBScene,
   type GLBUpholsteryTextures,
@@ -92,6 +93,13 @@ function normalizeParsedResource(
       loadedScene: resource.scene,
       upholsteryTextures,
     });
+    if (model) {
+      applyPhysicalUpholsteryTileSize(
+        model,
+        upholsteryTextures,
+        config.variantRenderAssets?.tileScale?.sizeM,
+      );
+    }
     const completedAtMs = performance.now();
     recordGLBMainThreadTiming("normalization", startedAtMs, completedAtMs);
     const completedEventLoopDelayMs = observedEventLoopDelayMs();

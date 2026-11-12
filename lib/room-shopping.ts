@@ -61,7 +61,8 @@ type ShoppingRoom = Pick<RoomSnapshot, "id" | "name" | "roomType" | "items">;
 type RoomWithItems = Pick<RoomSnapshot, "items"> | null | undefined;
 
 function shouldCountItem(item: DesignItem): boolean {
-  if (item.assetType === "parametric_cabinet") return false;
+  // Built-ins are quoted, and layout blocks are not products: neither is bought here.
+  if (item.assetType === "parametric_cabinet" || item.assetType === "layout_block") return false;
   return item.bundleRole !== "component";
 }
 

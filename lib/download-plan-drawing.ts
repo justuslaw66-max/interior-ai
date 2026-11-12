@@ -10,9 +10,11 @@ import {
   type PlacedFurniture,
   type PlanFurnitureDrawingSource,
 } from "@/lib/floor-plan-vector-furniture";
-import { buildRoomsFloorDrawing, formatRoomArea, type RoomLabel } from "@/lib/download-plan-rooms-drawing";
+import { buildRoomsFloorDrawing, formatRoomArea, roomPlanBox, type RoomLabel } from "@/lib/download-plan-rooms-drawing";
+import { clearLabelPoint, furnitureBox, type PlanBox } from "@/lib/download-plan-labels";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
 import type { DesignSnapshot, RoomSnapshot } from "@/lib/room-types";
+import { closedPathPolygons, planWallFaceLines } from "@/lib/plan-wall-faces";
 
 /**
  * The Download PDF's furnished layout plan: one sheet per floor, drawn as vectors from the
@@ -38,11 +40,14 @@ export type DownloadPlanDrawing = {
 };
 
 const SHEET_TITLE = "Furnished layout plan";
+/** Cut walls: a light grey fill (0-255) under fine face lines, at their true thickness (J, 11 Nov). */
+const WALL_FILL_TONE = 217;
+const WALL_FACE_STROKE_MM = 0.35;
 /** Drawn after furniture, so furniture's paper never covers them. */
 const LABEL_ROLES = new Set(["room-label", "annotation", "annotation-text"]);
 
 /** A label or annotation, drawn last, with the stand-in text for a name the PDF font cannot set. */
-type LateEntry = { primitive: PlanDrawingPrimitive; fallback: string };
+type LateEntry = { primitive: PlanDrawingPrimitive; fallback: string; room?: PlanBox };
 type Floor = { id: string; name: string; roomIds: Set<string>; structure: PlanDrawingPrimitive[]; labels: LateEntry[] };
 
 function sheetTitle(floor: Floor, floorCount: number) {
@@ -69,7 +74,7 @@ function canonicalLabel(primitive: Extract<PlanDrawingPrimitive, { kind: "text" 
   const room = primitive.role === "room-label" ? roomsById.get(primitive.id.replace(/:label$/, "")) : undefined;
   if (!room) return { primitive, fallback: "" };
   const area = formatRoomArea(getPlanRoomFloorAreaSqm(room));
-  return { primitive: { ...primitive, text: `${primitive.text} · ${area}` }, fallback: `${ROOM_TYPE_LABELS[room.roomType]} · ${area}` };
+  return { primitive: { ...primitive, text: `${primitive.text} · ${area}` }, fallback: `${ROOM_TYPE_LABELS[room.roomType]} · ${area}`, room: roomPlanBox(room) };
 }
 
 /** An imported plan's floors: its own walls, openings, structures and names, without dimension strings. */
@@ -91,11 +96,36 @@ function canonicalFloors(document: FloorPlanDocumentV2, rooms: readonly HousePla
   return { floors, unsupported };
 }
 
+/** The walls' fills turned light grey, and their visible faces drawn as fine lines just above them. */
+function lightWalls(structure: readonly PlanDrawingPrimitive[]): PlanDrawingPrimitive[] {
+  const walls = structure.filter((primitive): primitive is Extract<PlanDrawingPrimitive, { kind: "path" }> => primitive.kind === "path" && primitive.role === "wall");
+  if (!walls.length) return [...structure];
+  const faces: PlanDrawingPrimitive[] = planWallFaceLines(walls.flatMap(closedPathPolygons)).map((points, index) => ({
+    id: `wall-face:${index}`, kind: "path", fill: false, points, role: "wall-face", paperStrokeMm: WALL_FACE_STROKE_MM,
+    path: points.map((point, order) => `${order ? "L" : "M"} ${Number(point.xMm.toFixed(3))} ${Number(point.zMm.toFixed(3))}`).join(" "),
+  }));
+  const lastWall = structure.lastIndexOf(walls[walls.length - 1]);
+  return [
+    ...structure.slice(0, lastWall + 1).map((primitive) => primitive.kind === "path" && primitive.role === "wall" ? { ...primitive, tone: WALL_FILL_TONE } : primitive),
+    ...faces,
+    ...structure.slice(lastWall + 1),
+  ];
+}
+
+/** A room's name moved to the free spot nearest its middle, clear of the furniture. */
+function placedLabel({ primitive, room }: LateEntry, obstacles: readonly PlanBox[]): PlanDrawingPrimitive {
+  if (primitive.kind !== "text" || !room) return primitive;
+  return { ...primitive, point: clearLabelPoint(primitive.text, primitive.point, room, obstacles) };
+}
+
 function sheetFor(floor: Floor, floorCount: number, placed: readonly PlacedFurniture[], tags: ReadonlyMap<string, number>): DownloadPlanSheet {
-  const furniture = planFurniturePrimitives(placed.filter((item) => floor.roomIds.has(item.roomId)), tags);
+  const onFloor = placed.filter((item) => floor.roomIds.has(item.roomId));
+  const obstacles = onFloor.map(furnitureBox);
   const labelFallbacks: Record<string, string> = {};
   for (const label of floor.labels) if (label.fallback) labelFallbacks[label.primitive.id] = label.fallback;
-  return { title: sheetTitle(floor, floorCount), primitives: [...floor.structure, ...furniture, ...floor.labels.map(({ primitive }) => primitive)], labelFallbacks };
+  return { title: sheetTitle(floor, floorCount), labelFallbacks, primitives: [
+    ...lightWalls(floor.structure), ...planFurniturePrimitives(onFloor, tags), ...floor.labels.map((label) => placedLabel(label, obstacles)),
+  ] };
 }
 
 /** Items stand where the plan puts their room, including a room still on its default place. */

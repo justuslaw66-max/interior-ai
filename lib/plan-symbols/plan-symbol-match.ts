@@ -33,11 +33,62 @@ const CATEGORY_SYMBOLS: Record<string, PlanSymbolKind> = {
   bookshelf: "bookshelf",
   shelving: "bookshelf",
   shoe_cabinet: "shoe_cabinet",
+  console_table: "console_table",
+  bar_stool: "bar_stool",
+  stool: "bar_stool",
+  daybed: "chaise_lounge",
+  recliner: "recliner",
+  piano: "piano",
+  bunk_bed: "bunk_bed",
+  cot: "cot",
+  crib: "cot",
+  dressing_table: "dressing_table",
+  kitchen_island: "kitchen_island",
+  dishwasher: "dishwasher",
+  oven: "oven",
+  planter: "planter_box",
 };
 
-/** Words in a product's name that say what it is, checked in order. */
+/**
+ * Names that say a product is a particular kind of a broader category (a sofa bed among sofas,
+ * an altar cabinet among storage), checked before the category.
+ */
+const NAME_REFINEMENTS: Array<[RegExp, PlanSymbolKind]> = [
+  [/\b(u-shaped|u shaped|u-shape) (sofa|sectional)\b/, "u_shaped_sofa"],
+  [/\b(sofa bed|sofabed|sleeper sofa)\b/, "sofa_bed"],
+  [/\b(daybed|day bed|chaise longue|chaise lounge)\b/, "chaise_lounge"],
+  [/\brecliner\b/, "recliner"],
+  [/(?<!tv )\bconsole table\b/, "console_table"],
+  [/\b(bar|counter) stool\b/, "bar_stool"],
+  [/\bpiano\b/, "piano"],
+  [/\bbunk\b/, "bunk_bed"],
+  [/\b(cot|crib)\b/, "cot"],
+  [/\b(dressing table|makeup table|vanity table)\b/, "dressing_table"],
+  [/\b(study table|study desk)\b/, "study_table"],
+  [/\b(tall cabinet|pantry|larder|utility cabinet)\b/, "tall_cabinet"],
+  [/\bshoe bench\b/, "shoe_bench"],
+  [/\baltar\b/, "altar_cabinet"],
+  [/\b(wall cabinet|upper cabinet|top cabinet|overhead cabinet)s?\b/, "wall_cabinet"],
+  [/\b(fridge|refrigerator) housing\b/, "fridge_housing"],
+  [/\bmirror cabinet\b/, "mirror_cabinet"],
+];
+
+/** Words in a product's name that say what it is, checked in order when the category says nothing. */
 const NAME_SYMBOLS: Array<[RegExp, PlanSymbolKind]> = [
   [/\b(sectional|l-shaped|corner sofa|chaise)\b/, "sectional_sofa"],
+  [/\btv (console|cabinet|stand|unit)\b/, "tv_console"],
+  [/\b(tv|television)\b/, "wall_tv"],
+  [/\b(aircon|air-con|air con|air conditioner|fan coil|fan-coil)\b/, "aircon"],
+  [/\b(bistro|patio|balcony|outdoor) set\b/, "outdoor_set"],
+  [/\bplanter\b/, "planter_box"],
+  [/\b(bay window|window seat)\b/, "bay_window_seat"],
+  [/\b(coat rack|coat stand|hat stand)\b/, "coat_rack"],
+  [/\b(kitchen )?island\b/, "kitchen_island"],
+  [/\b(water heater|storage heater|instant heater)\b/, "water_heater"],
+  [/\b(drying rack|laundry rack|clothes rack|ceiling rack)\b/, "drying_rack"],
+  [/\b(shower screen|shower glass|glass panel)\b/, "shower_screen"],
+  [/\b(towel rail|towel bar|towel rack)\b/, "towel_rail"],
+  [/\bdishwasher\b/, "dishwasher"],
   [/\b(sofa|couch|loveseat|settee)\b/, "sofa"],
   [/\bdining set\b/, "dining_set"],
   [/\b(toilet|wc|water closet)\b/, "toilet"],
@@ -51,6 +102,7 @@ const NAME_SYMBOLS: Array<[RegExp, PlanSymbolKind]> = [
   [/\b(hob|cooktop|stove)\b/, "hob"],
   [/\b(hood|chimney)\b/, "range_hood"],
   [/\bmicrowave\b/, "microwave"],
+  [/\boven\b/, "oven"],
   [/\bshower\b/, "shower"],
   [/\b(bathtub|bath tub)\b/, "bathtub"],
   [/\bceiling fan\b/, "ceiling_fan"],
@@ -69,6 +121,9 @@ const NAME_SYMBOLS: Array<[RegExp, PlanSymbolKind]> = [
  */
 export function resolvePlanSymbolKind(category: string, name = ""): PlanSymbolKind | null {
   const lowerName = name.toLowerCase();
+  for (const [pattern, kind] of NAME_REFINEMENTS) {
+    if (pattern.test(lowerName)) return kind;
+  }
   const fromCategory = CATEGORY_SYMBOLS[category.trim().toLowerCase()];
   if (fromCategory === "dining_table" && /\bset\b/.test(lowerName)) return "dining_set";
   if (fromCategory) return fromCategory;

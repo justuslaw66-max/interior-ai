@@ -12,6 +12,7 @@ import {
   sentenceCaseLabel,
 } from "./variant-normalization";
 import { resolveCastleryVariantAffiliateUrl } from "./castlery-retailer-links";
+import { toVariantRenderAssets } from "./upholstery-render-assets";
 
 type ImportedRenderAssetsLike = {
   normal_map?: string;
@@ -586,19 +587,7 @@ export function normalizeImportedVariants({
       collectionType,
       legFinishCode,
       legFinishLabel,
-      renderAssets: matchingUpholsteryOption?.render_assets
-        ? {
-            baseColorMap: undefined,
-            normalMap: matchingUpholsteryOption.render_assets.normal_map,
-            roughnessMap: undefined,
-            tileScale: matchingUpholsteryOption.render_assets.tile_scale
-              ? {
-                  x: Math.max(0.75, Math.min(4, matchingUpholsteryOption.render_assets.tile_scale.x ?? 1)),
-                  y: Math.max(0.75, Math.min(4, matchingUpholsteryOption.render_assets.tile_scale.y ?? 1)),
-                }
-              : undefined,
-          }
-        : undefined,
+      renderAssets: toVariantRenderAssets(matchingUpholsteryOption?.render_assets),
       modelUrl,
       thumbnailUrl: resolvedThumbnailUrl,
       galleryImages: variantGalleryImages,

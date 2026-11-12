@@ -181,7 +181,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 728,
+      "lines": 725,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -263,10 +263,6 @@
     "components/GoogleAddressAutocomplete.tsx": {
       "lines": 276,
       "limit": 250
-    },
-    "components/scene/furniture/resolveFurnitureModelAppearance.ts": {
-      "lines": 488,
-      "limit": 400
     },
     "components/scene/FurnitureItem.tsx": {
       "lines": 920,
@@ -425,7 +421,7 @@
       "limit": 400
     },
     "lib/catalog/imported-variant-normalization.ts": {
-      "lines": 625,
+      "lines": 614,
       "limit": 400
     },
     "lib/catalog/normalize.ts": {
@@ -585,11 +581,11 @@
       "limit": 400
     },
     "lib/useDesignPageCatalogPlacement.ts": {
-      "lines": 2040,
+      "lines": 2029,
       "limit": 400
     },
     "lib/useDesignPageExport.ts": {
-      "lines": 423,
+      "lines": 422,
       "limit": 400
     },
     "lib/useDesignPageFloorPlanTracing.ts": {
@@ -2137,11 +2133,11 @@
     "components/scene/furniture/resolveFurnitureModelAppearance.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 471
+        "maximum": 353
       },
       "complexFunctions": {
         "count": 2,
-        "maximum": 58
+        "maximum": 49
       }
     },
     "components/scene/FurnitureItem.tsx": {
@@ -2793,11 +2789,11 @@
     "lib/catalog/imported-variant-normalization.ts": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 356
+        "maximum": 344
       },
       "complexFunctions": {
         "count": 3,
-        "maximum": 148
+        "maximum": 144
       }
     },
     "lib/catalog/normalize.ts": {
@@ -3931,7 +3927,7 @@
     "lib/useDesignPageCatalogPlacement.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 1862
+        "maximum": 1860
       },
       "complexFunctions": {
         "count": 2,
@@ -4035,7 +4031,7 @@
     "lib/useDesignPageExport.ts": {
       "overlongFunctions": {
         "count": 3,
-        "maximum": 347
+        "maximum": 344
       }
     },
     "lib/useDesignPageFloorPlanLifecycleRegistration.ts": {
@@ -4275,7 +4271,7 @@
     "lib/useDesignPagePresentationBackupRegistrationFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 112
+        "maximum": 111
       }
     },
     "lib/useDesignPagePresentationQaFacade.ts": {
@@ -4401,7 +4397,7 @@
     "lib/useDesignPageSelectedItemPanelController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 200
+        "maximum": 194
       }
     },
     "lib/useDesignPageSelectionCoordinator.ts": {

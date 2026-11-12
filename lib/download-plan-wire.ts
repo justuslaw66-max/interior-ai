@@ -13,6 +13,8 @@ import type { DownloadPlanDrawing } from "@/lib/download-plan-drawing";
 export type PlanWirePath = {
   kind: "path"; path: string; role: string; fill?: boolean; paperFill?: boolean;
   paperStrokeMm?: number; paperDashMm?: [number, number]; strokeWidth?: number; inset?: { x: number; z: number };
+  /** Grey, 0 black to 255 white: a light wall fill. */
+  tone?: number;
 };
 export type PlanWireText = { kind: "text"; text: string; x: number; z: number; role: string; fallback?: string };
 export type PlanWireSheet = { title: string; primitives: Array<PlanWirePath | PlanWireText> };
@@ -42,6 +44,7 @@ function encodePath(primitive: Extract<PlanDrawingPrimitive, { kind: "path" }>):
   if (primitive.paperDashMm) wire.paperDashMm = primitive.paperDashMm;
   if (primitive.strokeWidth !== undefined) wire.strokeWidth = primitive.strokeWidth;
   if (primitive.strokeInsetNormal) wire.inset = primitive.strokeInsetNormal;
+  if (primitive.tone !== undefined) wire.tone = primitive.tone;
   return wire;
 }
 
@@ -96,6 +99,7 @@ const strokeMm = (value: unknown): value is number => finite(value, 5) && value 
 const strokeWidth = (value: unknown): value is number => finite(value, 1_000) && value >= 0;
 const dashMm = (value: unknown): value is [number, number] =>
   Array.isArray(value) && value.length === 2 && value.every((entry) => finite(entry, 20) && entry > 0);
+const greyTone = (value: unknown): value is number => typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 255;
 const unitNormal = (value: unknown): value is { x: number; z: number } => record(value) && finite(value.x, 1) && finite(value.z, 1);
 
 /** The path's optional paper styling, or null when any of it is out of range. */
@@ -104,13 +108,15 @@ function pathStyle(value: Record<string, unknown>): Partial<PathPrimitive> | nul
   const paperDashMm = optional(value.paperDashMm, dashMm);
   const width = optional(value.strokeWidth, strokeWidth);
   const inset = optional(value.inset, unitNormal);
-  if (paperStrokeMm === INVALID || paperDashMm === INVALID || width === INVALID || inset === INVALID) return null;
+  const tone = optional(value.tone, greyTone);
+  if (paperStrokeMm === INVALID || paperDashMm === INVALID || width === INVALID || inset === INVALID || tone === INVALID) return null;
   const style: Partial<PathPrimitive> = {};
   if (value.paperFill === true) style.paperFill = true;
   if (paperStrokeMm !== undefined) style.paperStrokeMm = paperStrokeMm;
   if (paperDashMm) style.paperDashMm = [paperDashMm[0], paperDashMm[1]];
   if (width !== undefined) style.strokeWidth = width;
   if (inset) style.strokeInsetNormal = { x: inset.x, z: inset.z };
+  if (tone !== undefined) style.tone = tone;
   return style;
 }
 

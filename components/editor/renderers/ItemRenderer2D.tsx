@@ -9,11 +9,14 @@ import { useCanvasPalette } from "@/lib/canvas-colours";
 import { PLAN_SYMBOL_BASE_Y, PLAN_SYMBOL_OVERLAY_Y } from "@/lib/plan-symbols/plan-symbol-item";
 import PlanItemName2D from "./PlanItemName2D";
 import PlanSymbol2D from "./PlanSymbol2D";
+import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
 
 type ItemRenderer2DProps = {
   width: number;
   depth: number;
   category: string;
+  /** A layout block's own symbol; products are matched from their category and name. */
+  symbolKind?: PlanSymbolKind | null;
   selected: boolean;
   hovered?: boolean;
   dragging: boolean;
@@ -34,7 +37,7 @@ type ItemRenderer2DProps = {
 export default function ItemRenderer2D({
   width,
   depth,
-  category,
+  category, symbolKind = null,
   selected,
   hovered = false,
   dragging,
@@ -82,7 +85,7 @@ export default function ItemRenderer2D({
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
-      <PlanSymbol2D category={category} label={label} width={width} depth={depth} />
+      <PlanSymbol2D category={category} label={label} kind={symbolKind} width={width} depth={depth} />
 
       {invalidPlacement && (
         <mesh rotation-x={-Math.PI / 2} position={[0, markY, 0]}>

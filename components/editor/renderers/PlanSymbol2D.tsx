@@ -13,7 +13,7 @@ import {
   tessellatePlanSymbol,
   type PlanSymbolFillPolygon,
 } from "@/lib/plan-symbols/plan-symbol-tessellate";
-import type { PlanSymbolStroke } from "@/lib/plan-symbols/plan-symbol-types";
+import type { PlanSymbolKind, PlanSymbolStroke } from "@/lib/plan-symbols/plan-symbol-types";
 
 /** Screen widths of the three line weights, in pixels (they hold steady as the plan zooms). */
 const LINE_PX: Record<PlanSymbolStroke, number> = { outline: 1.4, detail: 1, fine: 0.75 };
@@ -21,6 +21,8 @@ const LINE_PX: Record<PlanSymbolStroke, number> = { outline: 1.4, detail: 1, fin
 type PlanSymbol2DProps = {
   category: string;
   label: string;
+  /** A layout block's own symbol, ahead of matching the category and name. */
+  kind?: PlanSymbolKind | null;
   width: number;
   depth: number;
 };
@@ -43,15 +45,15 @@ function fillGeometry(fills: readonly PlanSymbolFillPolygon[]): BufferGeometry {
  * A placed product drawn as its black-and-white plan symbol (lib/plan-symbols), at its
  * real footprint: one paper mesh and one line batch per weight and dash.
  */
-export default function PlanSymbol2D({ category, label, width, depth }: PlanSymbol2DProps) {
+export default function PlanSymbol2D({ category, label, kind = null, width, depth }: PlanSymbol2DProps) {
   const { colour } = useCanvasPalette();
   const drawing = useMemo(
     () =>
-      tessellatePlanSymbol(planSymbolShapesForItem(category, label, width, depth), {
+      tessellatePlanSymbol(planSymbolShapesForItem(category, label, width, depth, kind), {
         baseY: PLAN_SYMBOL_BASE_Y,
         layerStep: PLAN_SYMBOL_LAYER_STEP,
       }),
-    [category, depth, label, width]
+    [category, depth, kind, label, width]
   );
   const paper = useMemo(() => fillGeometry(drawing.fills), [drawing]);
   useEffect(() => () => paper.dispose(), [paper]);

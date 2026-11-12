@@ -3,6 +3,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { FurnitureRoomContext } from "@/lib/furniture-room-fit";
+import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
 import type {
   ConfigurableNodeTransform,
   PlanMeasurementUnit,
@@ -16,6 +17,8 @@ import type {
 
 export type FurnitureProps = {
   product: CatalogItemSchema;
+  /** A layout block's own plan symbol (lib/layout-blocks.ts), whatever the person names it. */
+  planSymbolKind?: PlanSymbolKind | null;
   planningBoundsMm?: { w: number; d: number; h: number };
   nodeTransforms?: Record<string, ConfigurableNodeTransform>;
   variantColor: string;

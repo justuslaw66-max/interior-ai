@@ -3,7 +3,7 @@
 import { useRef, type MutableRefObject } from "react";
 
 import { trackProductEvent } from "@/lib/analytics";
-import { CATALOG_ITEMS } from "@/lib/catalog";
+import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import {
   findCatalogSurfacePlacement,
   getCeilingMountedItemBaseY,
@@ -304,7 +304,7 @@ export function useDesignPageSceneItemDrag({
           showDragRejection("This item is no longer available.");
           return false;
         }
-        const product = CATALOG_ITEMS[mover.productId];
+        const product = resolveDesignItemVisualProduct(mover);
         if (product?.category === "rug") return true;
 
         if (
@@ -457,7 +457,7 @@ export function useDesignPageSceneItemDrag({
         if (moverBounds) {
           for (const blocker of currentItems) {
             if (blocker.instanceId === id) continue;
-            const blockerProduct = CATALOG_ITEMS[blocker.productId];
+            const blockerProduct = resolveDesignItemVisualProduct(blocker);
             if (blockerProduct?.category === "rug") continue;
             if (
               isCeilingOnlyCatalogItem(product) !==
@@ -510,7 +510,7 @@ export function useDesignPageSceneItemDrag({
       const blockers = currentItems.filter((item) => !movableIds.has(item.instanceId));
       const nextItems = currentItems.map((item) => {
         if (!movableIds.has(item.instanceId)) return item;
-        const product = CATALOG_ITEMS[item.productId];
+        const product = resolveDesignItemVisualProduct(item);
         if (!product) return item;
         const [safeX, safeZ] = clampToRoom(
           item.position[0] + deltaX,
@@ -533,12 +533,12 @@ export function useDesignPageSceneItemDrag({
 
       for (const moved of nextItems) {
         if (!movableIds.has(moved.instanceId)) continue;
-        const movedProduct = CATALOG_ITEMS[moved.productId];
+        const movedProduct = resolveDesignItemVisualProduct(moved);
         if (movedProduct?.category === "rug") continue;
         const movedBounds = getItemBounds(moved);
         if (!movedBounds) continue;
         for (const blocker of blockers) {
-          const blockerProduct = CATALOG_ITEMS[blocker.productId];
+          const blockerProduct = resolveDesignItemVisualProduct(blocker);
           if (blockerProduct?.category === "rug") continue;
           if (
             isCeilingOnlyCatalogItem(movedProduct) !==

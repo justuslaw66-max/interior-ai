@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import type { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { DesignItem } from "@/lib/room-types";
+import { resolveLayoutBlockProduct } from "@/lib/design-item-product-snapshot";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
 import {
   resolveItemConfigurationCode as _resolveItemConfigurationCode,
@@ -255,7 +256,7 @@ export function useDesignPageConfigState(params: UseDesignPageConfigStateParams)
     });
   }, [importedModelById, itemConfigurationByInstanceId, importedModelUrlByAssetId, catalogItems]);
 
-  const selectedProduct = selectedItem ? catalogItems[selectedItem.productId] : null;
+  const selectedProduct = selectedItem ? catalogItems[selectedItem.productId] ?? resolveLayoutBlockProduct(selectedItem) : null;
   const selectedProductAssetId = String(selectedProduct?.assets?.assetId ?? "").trim();
   const selectedImportedCatalog = selectedProduct
     ? importedModelById.get(selectedProduct.id)?.catalog ??

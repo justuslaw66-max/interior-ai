@@ -15,12 +15,9 @@ import type { DesignPageOpeningMetricsPatch } from "@/lib/design-page-opening-me
 import type { FloorPlanPropertyEvidenceV2 } from "@/lib/floor-plan-document-v2";
 import type { FloorPlanConsumerMeasurementEvidenceV2 } from "@/lib/floor-plan-measured-property-mutations";
 import type { ReactNode } from "react";
+import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
 import type { FloorPlanDrawAngleLockMode, FloorPlanDrawRoomMode, FloorPlanUnderlay } from "@/lib/floor-plan-types";
-import type {
-  FloorPlanQualityAction,
-  FloorPlanQualityIssue,
-  FloorPlanQualityReport,
-} from "@/lib/floor-plan-quality";
+import type { FloorPlanQualityAction, FloorPlanQualityIssue, FloorPlanQualityReport } from "@/lib/floor-plan-quality";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
 import type { AiLayoutRole } from "@/lib/ai/layout-planner";
 import type { CatalogTopCategory } from "@/lib/catalog/view-builders";
@@ -245,7 +242,7 @@ export type DesignControlsPanelProps = {
   onAutoPlaceCatalogItemInRoom?: (productId: string, variantId?: string, purchaseOptionId?: string) => void;
   onPreviewCatalogPlacementIntent?: (productId: string | null, variantId?: string) => void;
   onCatalogDragStart?: (productId: string, variantId?: string) => void;
-  onCatalogDragEnd?: () => void;
+  onCatalogDragEnd?: () => void; onAddLayoutBlockToRoom?: (kind: PlanSymbolKind) => void;
   onSelectPlacedItem: (instanceId: string) => void;
   onSelectedImportedFamilyChange: (familyKey: string) => void;
   onSelectedImportedProductChange: (productId: string) => void;
@@ -453,7 +450,7 @@ export default function DesignControlsPanel({
   onAutoPlaceCatalogItemInRoom,
   onPreviewCatalogPlacementIntent,
   onCatalogDragStart,
-  onCatalogDragEnd,
+  onCatalogDragEnd, onAddLayoutBlockToRoom,
   onSelectPlacedItem,
   onSelectedImportedFamilyChange,
   onSelectedImportedProductChange,
@@ -710,7 +707,7 @@ export default function DesignControlsPanel({
             onAutoPlaceCatalogItemInRoom={onAutoPlaceCatalogItemInRoom}
             onPreviewCatalogPlacementIntent={onPreviewCatalogPlacementIntent}
             onCatalogDragStart={onCatalogDragStart}
-            onCatalogDragEnd={onCatalogDragEnd}
+            onCatalogDragEnd={onCatalogDragEnd} onAddLayoutBlockToRoom={onAddLayoutBlockToRoom}
             onSelectPlacedItem={onSelectPlacedItem}
             onSelectRoom={onSelectRoom}
             onPlacementAddModeChange={onPlacementAddModeChange}

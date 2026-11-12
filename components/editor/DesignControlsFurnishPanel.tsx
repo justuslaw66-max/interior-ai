@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import CatalogPanel from "@/components/catalog/CatalogPanel";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ImportedModelOption } from "@/lib/catalog/imported-model-assembly";
@@ -10,8 +10,11 @@ import type { ActiveRoomShoppingItem } from "@/lib/room-shopping";
 import { FurnishFooter } from "./FurnishFooter";
 import { FurnishImportedModels } from "./FurnishImportedModels";
 import { FurnishInThisRoom } from "./FurnishInThisRoom";
+import { FurnishLayoutBlocks } from "./FurnishLayoutBlocks";
+import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
 import { PlacementAddModeToggle } from "./PlacementAddModeToggle";
 import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 type ImportedFamilyOption = {
   familyKey: string;
@@ -56,6 +59,8 @@ type DesignControlsFurnishPanelProps = {
   onGoShop: () => void;
   onSelectedImportedFamilyChange: (familyKey: string) => void;
   onSelectedImportedProductChange: (productId: string) => void;
+  /** Layout blocks (lib/layout-blocks.ts): a plan piece with no product, placed in the room. */
+  onAddLayoutBlockToRoom?: (kind: PlanSymbolKind) => void;
   /** Above the foot: Pro's layout versions. */
   footer?: ReactNode;
 };
@@ -137,6 +142,16 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
   );
 }
 
+const SOURCE_OPTIONS = [
+  { value: "products", label: "Products", testId: "furnish-source-products" },
+  { value: "layout", label: "Layout blocks", testId: "furnish-source-layout" },
+] as const;
+
+/** Products or layout blocks: what Furnish adds (layout blocks, J 12 Nov 2026). */
+function FurnishSourceToggle({ source, onChange }: { source: "products" | "layout"; onChange: (source: "products" | "layout") => void }) {
+  return <SegmentedControl label="What to add" value={source} onChange={onChange} options={SOURCE_OPTIONS} fill className="mb-3" />;
+}
+
 /**
  * Furnish, products first (audit findings FU1, ST12): the room, the search with Suggest a layout
  * beside it, the category chips and the products; then what's in the room, Pro's layout versions
@@ -147,13 +162,22 @@ export default function DesignControlsFurnishPanel(props: DesignControlsFurnishP
   const { placementAddMode, onPlacementAddModeChange } = props;
   const productCount = activeRoomShoppingItems.reduce((total, item) => total + item.quantity, 0);
   const panelClass = "rounded-2xl border border-box-border bg-surface-secondary p-3 shadow-sm";
+  const [source, setSource] = useState<"products" | "layout">("products");
+  const showLayout = source === "layout" && Boolean(props.onAddLayoutBlockToRoom);
 
   return (
     <div className="space-y-3">
       <section className={panelClass} data-testid="furnish-full-catalog" data-mode-content="catalog">
         <FurnishRoomRow {...props} />
-        <PlacementAddModeToggle visible={isDesigner} mode={placementAddMode} onChange={onPlacementAddModeChange} />
-        <FurnishCatalogSection {...props} />
+        {props.onAddLayoutBlockToRoom ? <FurnishSourceToggle source={source} onChange={setSource} /> : null}
+        {showLayout && props.onAddLayoutBlockToRoom ? (
+          <FurnishLayoutBlocks roomName={activeRoomName} canEdit={canEdit} onAdd={props.onAddLayoutBlockToRoom} />
+        ) : (
+          <>
+            <PlacementAddModeToggle visible={isDesigner} mode={placementAddMode} onChange={onPlacementAddModeChange} />
+            <FurnishCatalogSection {...props} />
+          </>
+        )}
       </section>
       <FurnishInThisRoom
         roomName={activeRoomName}

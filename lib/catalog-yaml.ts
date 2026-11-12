@@ -22,7 +22,7 @@ export type UpholsteryRenderAssets = {
   base_color_map?: string;
   normal_map?: string;
   roughness_map?: string;
-  tile_scale?: { x?: number; y?: number };
+  tile_scale?: { x?: number; y?: number; size_m?: number };
 };
 
 export type UpholsteryOption = {

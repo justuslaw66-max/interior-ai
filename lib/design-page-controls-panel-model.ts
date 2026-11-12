@@ -214,6 +214,7 @@ type ShoppingActions = ActionSlice<
   | "onPreviewCatalogPlacementIntent"
   | "onCatalogDragStart"
   | "onCatalogDragEnd"
+  | "onAddLayoutBlockToRoom"
   | "onSelectPlacedItem"
   | "onSelectedImportedFamilyChange"
   | "onSelectedImportedProductChange"

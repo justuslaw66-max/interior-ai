@@ -36,8 +36,7 @@ export function useDesignPagePresentationBackupRegistrationFacade({
     },
   } = coreShell;
   const { planViewport } = viewportShell.boundaries;
-  const { snapshotDocument, documentRoom } =
-    documentSelection.boundaries;
+  const { snapshotDocument, documentRoom } = documentSelection.boundaries;
 
   const exportRuntime = useDesignPagePresentationExportRuntime({
     state: {
@@ -46,8 +45,7 @@ export function useDesignPagePresentationBackupRegistrationFacade({
       presentation: {
         designId: base.state.identity.designId,
         plan: base.state.access.plan,
-        exportStylePreset:
-          planViewport.state.plan.exportStylePreset,
+        exportStylePreset: planViewport.state.plan.exportStylePreset,
         sceneReady: documentSelection.boundaries.sceneRoomRead.state.scene.sceneReady,
         clientPreview: base.state.access.clientPreview,
       },
@@ -67,6 +65,7 @@ export function useDesignPagePresentationBackupRegistrationFacade({
       scene: planViewport.refs.camera.scene,
       cameraView: planViewport.refs.camera.cameraView,
       designSnapshot: snapshotDocument.refs.designSnapshotRef,
+      planOpenings: planViewport.refs.plan.planOpeningsRef,
     },
   });
 

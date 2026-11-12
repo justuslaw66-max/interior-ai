@@ -97,6 +97,7 @@ export type BuildDesignPageSelectionPanelModelsInput = {
         swapSelectedItemToPricier: ItemActions["onSwapToPricier"];
         openSelectedItemCommerce: ItemActions["onViewProduct"];
         toggleSelectedItemLock: ItemActions["onToggleLock"];
+        updateSelectedLayoutBlock: ItemActions["onUpdateLayoutBlock"];
       };
       placement: Pick<
         ItemDetailsActions,
@@ -275,8 +276,8 @@ export function buildDesignPageSelectionPanelModels({
           item.actions.inspectionController.swapSelectedItemToPricier,
         onViewProduct:
           item.actions.inspectionController.openSelectedItemCommerce,
-        onToggleLock:
-          item.actions.inspectionController.toggleSelectedItemLock,
+        onToggleLock: item.actions.inspectionController.toggleSelectedItemLock,
+        onUpdateLayoutBlock: item.actions.inspectionController.updateSelectedLayoutBlock,
       },
     },
   };

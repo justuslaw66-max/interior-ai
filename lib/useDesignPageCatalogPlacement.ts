@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type DragEvent,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 
 import { CATALOG_ITEMS } from "@/lib/catalog";
@@ -29,10 +22,8 @@ import type { CatalogItemSchema, DimensionsMm } from "@/lib/catalog-schema";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { computeCirculationAnalysis } from "@/lib/circulation-analysis";
 import type { AABB } from "@/lib/design-page-geometry";
-import {
-  ROOM_DIMENSION_DEFAULTS,
-  type HousePlanRoom2D,
-} from "@/lib/design-page-house-plan";
+import { ROOM_DIMENSION_DEFAULTS, type HousePlanRoom2D } from "@/lib/design-page-house-plan";
+import { useDesignPageLayoutBlockPlacement } from "@/lib/useDesignPageLayoutBlockPlacement";
 import type { RoomOpening2D } from "@/lib/editorScene";
 import type { ManualPlacementScore } from "@/lib/manual-placement-scoring";
 import { createLayoutVersion } from "@/lib/layout-versions";
@@ -192,10 +183,7 @@ export function useDesignPageCatalogPlacement({
   const pendingPlacementRef = useRef<PendingCatalogPlacement | null>(null);
   const dragOffsetRef = useRef<{ x: number; z: number } | null>(null);
   const dragMoveFrameRef = useRef<number | null>(null);
-  const dragLatestClientRef = useRef<{
-    clientX: number;
-    clientY: number;
-  } | null>(null);
+  const dragLatestClientRef = useRef<{ clientX: number; clientY: number } | null>(null);
   const dragLastWorldRef = useRef<{
     x: number;
     z: number;
@@ -237,6 +225,7 @@ export function useDesignPageCatalogPlacement({
     setCanvasObjectDragging,
     setPreviewTarget,
   } = adapters;
+  const addLayoutBlockToRoom = useDesignPageLayoutBlockPlacement({ getRooms, getActiveRoomId, getItemAABB, isContained: isCatalogPlacementContainedInRoom, commitItemsToRoom, selectItems, createInstanceId, showToast });
 
   const catalogPlacementCollides = useCallback<CatalogPlacementCollisionQuery>(
     (productId, position, rotationY, dimsMm, excludedInstanceId) =>
@@ -2017,7 +2006,7 @@ export function useDesignPageCatalogPlacement({
       movePendingCatalogPlacementToBestRoom,
       switchPendingCatalogPlacementToBestOption,
       addCatalogPlacementToRoom,
-      addCatalogItemToRoom,
+      addCatalogItemToRoom, addLayoutBlockToRoom,
       autoPlaceCatalogItemInRoom,
       previewCatalogPlacementIntent,
       selectPendingCatalogPlacementBlocker,
