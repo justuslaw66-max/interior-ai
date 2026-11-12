@@ -1,6 +1,7 @@
 import type { FloorPlanPointMmV2 as Point } from "@/lib/floor-plan-document-v2";
 import type { PlanDrawingPrimitive } from "@/lib/floor-plan-vector-drawing";
 import { planSymbolShapesForItem } from "@/lib/plan-symbols/plan-symbol-item";
+import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
 import { planSymbolShapeOutline } from "@/lib/plan-symbols/plan-symbol-tessellate";
 import type { PlanSymbolStroke } from "@/lib/plan-symbols/plan-symbol-types";
 
@@ -17,6 +18,8 @@ export type FurnitureSymbolPlacement = {
   id: string;
   category: string;
   name: string;
+  /** A layout block's own symbol (lib/layout-blocks.ts); products are matched from category and name. */
+  kind?: PlanSymbolKind | null;
   widthMm: number;
   depthMm: number;
   /** The item's centre in world millimetres, and its plan rotation (Three.js Y rotation). */
@@ -43,7 +46,7 @@ function pathOf(points: readonly Point[], closed: boolean) {
 
 /** The symbol's shapes as paths, in drawing order, so later paper covers earlier lines. */
 export function furnitureSymbolPrimitives(placement: FurnitureSymbolPlacement): PlanDrawingPrimitive[] {
-  const shapes = planSymbolShapesForItem(placement.category, placement.name, placement.widthMm / 1000, placement.depthMm / 1000);
+  const shapes = planSymbolShapesForItem(placement.category, placement.name, placement.widthMm / 1000, placement.depthMm / 1000, placement.kind ?? null);
   const world = toWorld(placement);
   return shapes.map((shape, index) => {
     const outline = planSymbolShapeOutline(shape);

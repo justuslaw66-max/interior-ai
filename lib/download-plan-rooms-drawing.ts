@@ -6,6 +6,7 @@ import { swingCurve, type PlanDrawingPrimitive } from "@/lib/floor-plan-vector-d
 import { buildOpeningSymbolLines2D } from "@/lib/plan-opening-symbol-lines";
 import { getRoomPlanOutlinePoints } from "@/lib/room-finished-outline";
 import { getPlanRoomFloorAreaSqm } from "@/lib/room-floor-area";
+import type { PlanBox } from "@/lib/download-plan-labels";
 import {
   buildRoomWallSegments2D,
   buildWallBandCornerCaps2D,
@@ -21,7 +22,13 @@ import {
  * floor area. Furniture is added by the caller, between these walls and the labels.
  */
 
-export type RoomLabel = { primitive: Extract<PlanDrawingPrimitive, { kind: "text" }>; fallback: string };
+/** A room's label, its stand-in name, and the room's box in plan millimetres (where the label may move). */
+export type RoomLabel = { primitive: Extract<PlanDrawingPrimitive, { kind: "text" }>; fallback: string; room?: PlanBox };
+
+/** The room's box in plan millimetres. */
+export function roomPlanBox(room: Pick<HousePlanRoom2D, "x" | "z" | "w" | "d">): PlanBox {
+  return { minX: mm(room.x - room.w / 2), maxX: mm(room.x + room.w / 2), minZ: mm(room.z - room.d / 2), maxZ: mm(room.z + room.d / 2) };
+}
 
 const mm = (metres: number) => Number((metres * 1000).toFixed(3));
 const point = (x: number, z: number): Point => ({ xMm: mm(x), zMm: mm(z) });
@@ -65,11 +72,25 @@ function wallPrimitives(rooms: readonly HousePlanRoom2D[], openings: readonly Ro
   ];
 }
 
+/**
+ * A window as a layout plan draws it: three lines across the opening, the wall's two faces
+ * (its sills) and the glass on the wall's centreline. The jambs are the cut wall's own faces.
+ */
+function windowPrimitives(opening: RoomRendererOpening, centre: { x: number; z: number }, tangent: { x: number; z: number }, thickness: number) {
+  const half = opening.width / 2, normal = { x: -tangent.z, z: tangent.x };
+  return [-thickness / 2, 0, thickness / 2].map((offset, index) => {
+    const at = (along: number) => point(centre.x + tangent.x * along + normal.x * offset, centre.z + tangent.z * along + normal.z * offset);
+    return openPath(`${opening.id}:${offset ? "window-sill" : "glazing"}:${index}`, [at(-half), at(half)], offset ? "window-sill" : "glazing");
+  });
+}
+
 /** Each resolved opening's symbol; a door's swing is one true arc. */
-function openingPrimitives(openings: readonly RoomRendererOpening[]): PlanDrawingPrimitive[] {
+function openingPrimitives(openings: readonly RoomRendererOpening[], thicknessByRoomId: ReadonlyMap<string, number>): PlanDrawingPrimitive[] {
   return openings.flatMap((opening) => {
     const centre = opening.hostWorldCenter, tangent = opening.hostTangent;
     if (!centre || !tangent) return [];
+    const thickness = Math.max(0.025, thicknessByRoomId.get(opening.roomId ?? "") ?? 0.12);
+    if (opening.kind === "window") return windowPrimitives(opening, centre, tangent, thickness);
     const half = opening.width / 2;
     const lines = buildOpeningSymbolLines2D({
       start: { x: centre.x - tangent.x * half, z: centre.z - tangent.z * half },
@@ -100,6 +121,7 @@ function roomLabel(room: HousePlanRoom2D): RoomLabel {
   return {
     primitive: { id: `${room.id}:label`, kind: "text", text: `${name} · ${area}`, point: point(x, z), role: "room-label" },
     fallback: `${ROOM_TYPE_LABELS[room.roomType]} · ${area}`,
+    room: roomPlanBox(room),
   };
 }
 
@@ -111,7 +133,7 @@ export function buildRoomsFloorDrawing(rooms: readonly HousePlanRoom2D[], openin
     .filter((opening) => opening.hostResolution?.status !== "resolved")
     .map((opening) => `Opening ${opening.id}: not on a wall; not drawn`);
   return {
-    structure: [...wallPrimitives(rooms, resolved), ...openingPrimitives(resolved)],
+    structure: [...wallPrimitives(rooms, resolved), ...openingPrimitives(resolved, new Map(rooms.map((room) => [room.id, room.wallThickness ?? 0.12])))],
     labels: rooms.map(roomLabel),
     unsupported,
   };

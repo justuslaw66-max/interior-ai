@@ -292,7 +292,7 @@ export interface DesignItem {
   productId: string;
   variantId: string;
   productSnapshot?: PersistedProductSnapshot;
-  assetType?: "catalog_item" | "parametric_cabinet";
+  assetType?: "catalog_item" | "parametric_cabinet" | "layout_block"; // layout_block: lib/layout-blocks.ts
   roomId?: string;
   assemblyType?: MillworkAssemblyType;
   millworkAssetManifest?: MillworkAssetManifest;

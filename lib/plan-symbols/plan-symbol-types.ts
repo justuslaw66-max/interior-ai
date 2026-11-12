@@ -72,6 +72,15 @@ export type PlanSymbolKind =
   | "pendant_light"
   | "ceiling_fan"
   | "plant"
+  | "u_shaped_sofa"
+  | "sofa_bed"
+  | "chaise_lounge"
+  | "recliner"
+  | "console_table"
+  | "bar_stool"
+  | "wall_tv"
+  | "piano"
+  | "aircon"
   // Dining
   | "dining_table"
   | "dining_set"
@@ -85,11 +94,19 @@ export type PlanSymbolKind =
   | "dresser"
   | "desk"
   | "office_chair"
+  | "bunk_bed"
+  | "cot"
+  | "dressing_table"
+  | "study_table"
   // Storage
   | "sideboard"
   | "storage"
   | "bookshelf"
   | "shoe_cabinet"
+  | "tall_cabinet"
+  | "shoe_bench"
+  | "coat_rack"
+  | "altar_cabinet"
   // Kitchen and laundry
   | "kitchen_counter"
   | "hob"
@@ -99,12 +116,26 @@ export type PlanSymbolKind =
   | "dryer"
   | "microwave"
   | "range_hood"
+  | "kitchen_island"
+  | "oven"
+  | "dishwasher"
+  | "wall_cabinet"
+  | "fridge_housing"
+  | "drying_rack"
   // Bathroom
   | "toilet"
   | "basin"
   | "vanity"
   | "shower"
-  | "bathtub";
+  | "bathtub"
+  | "water_heater"
+  | "shower_screen"
+  | "towel_rail"
+  | "mirror_cabinet"
+  // Balcony and window
+  | "outdoor_set"
+  | "planter_box"
+  | "bay_window_seat";
 
 export type PlanSymbolOptions = {
   /** Sofa seat cushions. */

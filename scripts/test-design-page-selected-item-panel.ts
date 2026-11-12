@@ -291,7 +291,7 @@ assert.match(
   /data-testid="selected-item-availability"[\s\S]*?Sold by \{sale\.retailer\}[\s\S]*?aria-label=\{`View product at \$\{sale\.retailer\}`\}[\s\S]*?onClick=\{onViewProduct\}[\s\S]*?View product/,
   "A product sold by a shop should read \"Sold by <shop> · View product\".",
 );
-assert.match(summaryCardSource, /"Checkout here, from your Shopping list" : "Not sold online yet"/);
+assert.match(summaryCardSource, /"Checkout here, from your Shopping list" : sale\.kind === "layout" \? "For planning: no product chosen yet" : "Not sold online yet"/);
 assert.match(panelSource, /onViewProduct=\{actions\.onViewProduct\}/);
 for (const retired of ["External retailer", "Check stock", "View retailer", "Needs commerce review", "Buy now"]) {
   assert.ok(

@@ -100,7 +100,7 @@ export function Furniture({
   showGuidesAndMeasurements = true,
   cartPreviewed = false,
   viewMode = "3d",
-  planShowLabels = true,
+  planShowLabels = true, planSymbolKind = null,
   planShowDimensions = true,
   planMeasurementUnit = "mm",
   rotationSnapStepRadians = ROTATION_SNAP_STEP_RADIANS,
@@ -753,7 +753,7 @@ export function Furniture({
         <ItemRenderer2D
           width={planningWidth}
           depth={planningDepth}
-          category={product.category}
+          category={product.category} symbolKind={planSymbolKind}
           selected={Boolean(showSelection && isSelected)}
           hovered={hovered}
           dragging={dragging}

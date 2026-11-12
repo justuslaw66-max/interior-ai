@@ -814,7 +814,7 @@ export function normalizeGLBScene({
             !(m instanceof THREE.MeshPhysicalMaterial)
           ) {
             physicalMat = new THREE.MeshPhysicalMaterial();
-            physicalMat.copy(m);
+            THREE.MeshStandardMaterial.prototype.copy.call(physicalMat, m);
             const matArr = mesh.material as THREE.MeshStandardMaterial[];
             const idx = matArr.indexOf(m);
             if (idx >= 0) matArr[idx] = physicalMat;
@@ -1010,7 +1010,7 @@ export function normalizeGLBScene({
           !(mat instanceof THREE.MeshPhysicalMaterial)
         ) {
           physicalMat = new THREE.MeshPhysicalMaterial();
-          physicalMat.copy(mat);
+          THREE.MeshStandardMaterial.prototype.copy.call(physicalMat, mat);
           mesh.material = physicalMat;
           mat.dispose();
         } else {

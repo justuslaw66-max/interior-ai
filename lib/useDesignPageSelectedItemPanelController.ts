@@ -10,6 +10,8 @@ import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ResolvedCatalogVariant } from "@/lib/catalog/variant-resolver";
 import type { Style } from "@/lib/design-page-types";
 import { announceUndoableAction } from "@/lib/editor-action-toast";
+import { isLayoutBlock } from "@/lib/layout-blocks";
+import { useSelectedLayoutBlockUpdate } from "@/lib/useSelectedLayoutBlockUpdate";
 import type { DesignItem } from "@/lib/room-types";
 import { cheaperSwapFor, pricierSwapFor, withShoppingLineSwapped } from "@/lib/shopping-list";
 
@@ -192,10 +194,7 @@ export function useDesignPageSelectedItemPanelController({
   const applySelectedItemStyleAlternative = useCallback(
     (productId: string) => {
       const alternative = catalogItems[productId];
-      switchSelectedProductModel(
-        productId,
-        `Switch to ${alternative?.title ?? "style alternative"}`
-      );
+      switchSelectedProductModel(productId, `Switch to ${alternative?.title ?? "style alternative"}`);
       if (alternative) showToast(`Switched to ${alternative.title}`);
     },
     [catalogItems, showToast, switchSelectedProductModel]
@@ -206,7 +205,7 @@ export function useDesignPageSelectedItemPanelController({
   const swapSelectedItem = useCallback(
     (direction: "cheaper" | "pricier") => {
       if (!selectedInstanceId || !selectedProduct || !selectedItem) return;
-      if (selectedItem.bundleGroupId || selectedItem.purchaseOptionId) return;
+      if (selectedItem.bundleGroupId || selectedItem.purchaseOptionId || isLayoutBlock(selectedItem)) return;
       const findSwap = direction === "cheaper" ? cheaperSwapFor : pricierSwapFor;
       const target = findSwap(selectedProduct.id, style, catalogItems);
       const product = target ? catalogItems[target.productId] : undefined;
@@ -221,13 +220,8 @@ export function useDesignPageSelectedItemPanelController({
     [catalogItems, commitItems, selectedInstanceId, selectedItem, selectedProduct, showToast, style]
   );
 
-  const swapSelectedItemToCheaper = useCallback(() => {
-    swapSelectedItem("cheaper");
-  }, [swapSelectedItem]);
-
-  const swapSelectedItemToPricier = useCallback(() => {
-    swapSelectedItem("pricier");
-  }, [swapSelectedItem]);
+  const swapSelectedItemToCheaper = useCallback(() => swapSelectedItem("cheaper"), [swapSelectedItem]);
+  const swapSelectedItemToPricier = useCallback(() => swapSelectedItem("pricier"), [swapSelectedItem]);
 
   const openSelectedItemCommerce = useCallback(async () => {
     if (!selectedProduct || !selectedResolvedVariant) return;
@@ -307,6 +301,7 @@ export function useDesignPageSelectedItemPanelController({
     );
   }, [commitItems, getItems, getSelectedIds, selectedItem]);
 
+  const updateSelectedLayoutBlock = useSelectedLayoutBlockUpdate(selectedItem, commitItems);
   const selectedItemLockLabel = getDesignPageSelectedItemLockLabel({
     selectedCount: selectedIds.size,
     items: getItems(),
@@ -333,6 +328,7 @@ export function useDesignPageSelectedItemPanelController({
       swapSelectedItemToPricier,
       openSelectedItemCommerce,
       toggleSelectedItemLock,
+      updateSelectedLayoutBlock,
     },
   };
 }

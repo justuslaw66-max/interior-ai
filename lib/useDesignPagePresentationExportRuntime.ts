@@ -24,6 +24,7 @@ export type UseDesignPagePresentationExportRuntimeInput = {
     scene: ExportRefs["sceneRef"];
     cameraView: ExportRefs["cameraViewRef"];
     designSnapshot: ExportRefs["designSnapshotRef"];
+    planOpenings: ExportRefs["planOpeningsRef"];
   };
   actions: {
     setClientPreview: ExportActions["setClientPreview"];
@@ -78,6 +79,7 @@ export function useDesignPagePresentationExportRuntime({
       sceneRef: refs.scene,
       cameraViewRef: refs.cameraView,
       designSnapshotRef: refs.designSnapshot,
+      planOpeningsRef: refs.planOpenings,
     },
   });
 
