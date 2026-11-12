@@ -994,7 +994,7 @@ def retype(polys, g0, paper, words, strokes=None):
             drop.add(mi[j])
         if strokes:
             for k, e_ in enumerate(strokes):
-                if e_["k"] not in ("line", "arc", "dot", "path") or k in sdrop:
+                if e_["k"] not in ("line", "arc", "dot", "path") or k in sdrop or e_.get("top"):
                     continue
                 pts = _stroke_pts(e_)
                 if len(pts) and pts[:, 0].min() >= bx0 - e and pts[:, 0].max() <= bx1 + e and \

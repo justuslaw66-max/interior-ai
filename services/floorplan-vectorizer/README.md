@@ -136,6 +136,13 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   A/Bs on the 74-plan set (`claude/image-to-clean-vector-plan-2026-11-11.md`): every plan set came out the same or
   clearly better, every other plan unchanged. A centre-line redraw of unread lettering (`FT_RETYPE_REDRAW`) lost its
   blind A/B 53 to 1 and is off.
+- Dimension dots (12 Nov, r13; `FT_LINE_DOTS=1`, off by default, on with `FT_CAD_LETTERING=1`): a dimension line's end
+  dot - a small solid disc where two thin lines meet - was too small to be a solid fill and was read as the lines'
+  crossing, so it was lost. A round solid disc of ink on level or plumb line work at least 2.8 times as wide as the
+  line running on from it (6 of its radii or more), with nothing but thin level or plumb lines leaving it and not in
+  the middle of a straight line with nothing crossing it, is drawn as a dot of its own, over the lines through it; a
+  plan's dots share one size. Junctions of hatching with a wall's outline, letters' joins and a figure's foot on a
+  dimension line are not dots.
 - Since 31 Oct a plan that leans a little is drawn straight (`FT_STRAIGHTEN`, on; `FT_STRAIGHTEN=0` draws it as
   traced). A scan or a re-saved web plan often has its plumb lines all leaning one way by a few tenths of a degree,
   and sometimes its level lines too (a shear or a slight turn; J on s038). The lean is read from the drawing's own
