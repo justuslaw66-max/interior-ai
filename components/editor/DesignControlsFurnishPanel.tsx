@@ -14,6 +14,7 @@ import { FurnishLayoutBlocks } from "./FurnishLayoutBlocks";
 import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
 import { PlacementAddModeToggle } from "./PlacementAddModeToggle";
 import { Button } from "@/components/ui/Button";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
 
 type ImportedFamilyOption = {
   familyKey: string;
@@ -141,28 +142,14 @@ function FurnishCatalogSection(props: DesignControlsFurnishPanelProps) {
   );
 }
 
-const SOURCE_BUTTON_CLASS =
-  "min-h-10 flex-1 rounded-md px-3 text-[13px] font-semibold focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 md:min-h-8";
+const SOURCE_OPTIONS = [
+  { value: "products", label: "Products", testId: "furnish-source-products" },
+  { value: "layout", label: "Layout blocks", testId: "furnish-source-layout" },
+] as const;
 
 /** Products or layout blocks: what Furnish adds (layout blocks, J 12 Nov 2026). */
 function FurnishSourceToggle({ source, onChange }: { source: "products" | "layout"; onChange: (source: "products" | "layout") => void }) {
-  const option = (value: "products" | "layout", label: string) => (
-    <button
-      type="button"
-      aria-pressed={source === value}
-      data-testid={`furnish-source-${value}`}
-      className={`${SOURCE_BUTTON_CLASS} ${source === value ? "bg-field text-label shadow-sm" : "text-control-label-idle hover:bg-control-secondary-hover"}`}
-      onClick={() => onChange(value)}
-    >
-      {label}
-    </button>
-  );
-  return (
-    <div role="group" aria-label="What to add" className="mb-3 flex gap-1 rounded-lg border border-box-border bg-surface-secondary p-1">
-      {option("products", "Products")}
-      {option("layout", "Layout blocks")}
-    </div>
-  );
+  return <SegmentedControl label="What to add" value={source} onChange={onChange} options={SOURCE_OPTIONS} fill className="mb-3" />;
 }
 
 /**
