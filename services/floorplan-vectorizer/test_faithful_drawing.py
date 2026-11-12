@@ -1079,7 +1079,8 @@ def _cad_lettering(run):
     """run() with CAD lettering on (FT_CAD_LETTERING=1's settings), the single-stroke font loaded"""
     import faithful_trace, retype
     on = {"RETYPE": True, "FONTS": ["regular", "bold", "stroke-light", "stroke", "stroke-heavy"], "SET": ["stroke"],
-          "MATCH_READ": True, "ALL_SHARE": 0.75, "TRACED_WEIGHT": True, "SPACING": 0.3}
+          "MATCH_READ": True, "ALL_SHARE": 0.75, "TRACED_WEIGHT": True, "SPACING": 0.3,
+          "TALL_APART": True, "SHEET_WORD": True, "JOIN": True, "VOCAB_READ": True, "HEIGHT_ALL": True}
     keep = {k: getattr(retype, k) for k in on}
     try:
         for k, v in on.items():
@@ -1142,6 +1143,38 @@ class CadLettering(unittest.TestCase):
         cad = _cad_lettering(lambda: _trace_small(img))
         self.assertEqual(cad["typed"], [])
         self.assertEqual(json.dumps(cad, sort_keys=True), json.dumps(plain, sort_keys=True))
+
+    def test_a_word_read_in_pieces_matched_whole(self):
+        # (r13) BED read, its R not, OOM read: matched against the plan's words that hold BED and OOM in order -
+        # BEDROOM - and only those
+        import retype
+        _stroke_font()
+        img = _reduced(lambda big, s: _letter(big, s, "BEDROOM", 10, 25, 10, "stroke"), 120, 36, 8)
+        paper = 255
+        dk = retype._dark(img, paper)
+        ys, xs = np.nonzero(dk >= 0.5 * dk.max())
+        box = (float(xs.min()), float(ys.min()), float(xs.max() + 1), float(ys.max() + 1))
+        sub = (dk > 0.1).astype(np.uint8)
+        w = {"box": box, "turn": 0, "h": box[3] - box[1], "mask": (0, 0, sub)}
+        sdk = cv2.resize(retype._dark(img, paper) * cv2.dilate(sub, np.ones((3, 3), np.uint8)), None, fx=4, fy=4,
+                         interpolation=cv2.INTER_CUBIC)
+        self.assertEqual(retype._guess(w, sdk, 0, 0, [], ("BED.+OOM", ["BED", "OOM"])), "BEDROOM")
+        self.assertIsNone(retype._guess(w, sdk, 0, 0, [], ("KIT.+", ["KIT"])), "no plan word holds the pieces")
+
+    def test_a_door_swing_beside_a_label_is_not_in_its_line(self):
+        # (r13) HOUSE- and HOLD, one above the other, beside a door swing as tall as both: the swing joined the two
+        # lines into one; it is far taller than a letter, so each line stands alone
+        import retype
+        letters = [(30 + 12 * i, 10, 40 + 12 * i, 28) for i in range(5)] + [(30 + 12 * i, 36, 40 + 12 * i, 54) for i in range(4)]
+        swing = [(0, 2, 26, 56)]
+        on = retype.lines_of(None, swing + letters, True)
+        off = retype.lines_of(None, swing + letters)
+        rows = lambda ls: sorted(sorted(gm) for t, gm in ls if t == 0)
+        self.assertEqual(rows(on), [[1, 2, 3, 4, 5], [6, 7, 8, 9]])
+        self.assertEqual(rows(off), [list(range(10))], "(as before: one line through the swing)")
+        # a hyphen still joins its word
+        hyph = letters[:5] + [(92, 18, 98, 20)]
+        self.assertEqual(rows(retype.lines_of(None, hyph, True)), [[0, 1, 2, 3, 4, 5]])
 
     def test_words_bracketed_or_run_on_are_plan_words(self):
         import retype

@@ -136,6 +136,15 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   A/Bs on the 74-plan set (`claude/image-to-clean-vector-plan-2026-11-11.md`): every plan set came out the same or
   clearly better, every other plan unchanged. A centre-line redraw of unread lettering (`FT_RETYPE_REDRAW`) lost its
   blind A/B 53 to 1 and is off.
+- More of a CAD plan's lettering read (12 Nov, r13; on with `FT_CAD_LETTERING=1`, each its own switch): a word read in
+  pieces (BED, an R tesseract could not read, OOM) is matched whole against the plan's words that hold the pieces in
+  order (`FT_RETYPE_JOIN`), its damaged letter allowed a weaker match (`FT_RETYPE_LEAST_JOIN`, 0.3); a mark far taller
+  than the letter beside it (a door swing by HOUSE- / HOLD) no longer joins two lines of a label into one, for the
+  reading only (`FT_RETYPE_TALL_APART`); a word read elsewhere on the plan is matched at the plain bar
+  (`FT_RETYPE_SHEET_WORD`); a plan word read exactly with little confidence (LIVING/DINING on a small plan) is checked
+  by its match instead of dropped (`FT_RETYPE_VOCAB_READ`); and the lettering height that decides which small drawings
+  are redrawn clean is measured with every letter, read or not (`FT_RETYPE_HEIGHT_ALL`: measured on the unread ones,
+  it changed with what was read, and s018's basins were redrawn).
 - Dimension dots (12 Nov, r13; `FT_LINE_DOTS=1`, off by default, on with `FT_CAD_LETTERING=1`): a dimension line's end
   dot - a small solid disc where two thin lines meet - was too small to be a solid fill and was read as the lines'
   crossing, so it was lost. A round solid disc of ink on level or plumb line work at least 2.8 times as wide as the
