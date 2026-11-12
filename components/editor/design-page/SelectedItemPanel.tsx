@@ -21,6 +21,8 @@ import { ProductLightControls } from "@/components/editor/design-page/ProductLig
 import type { ProductFixtureLight } from "@/lib/product-fixture-light";
 import type { PlacedFixtureLightState } from "@/lib/room-types";
 import type { SelectedItemSummary } from "@/lib/selected-item-summary";
+import { isLayoutBlock, type LayoutBlockPatch } from "@/lib/layout-blocks";
+import { LayoutBlockFields } from "@/components/editor/design-page/LayoutBlockFields";
 
 type SelectedItemDetailsPanelProps = ComponentProps<
   typeof SelectedItemDetailsPanel
@@ -120,6 +122,8 @@ export type SelectedItemPanelActions = {
   onViewProduct: () => void;
   onToggleLock: () => void;
   onChangeLight?: (patch: PlacedFixtureLightState) => void;
+  /** A layout block's name and size (lib/layout-blocks.ts). */
+  onUpdateLayoutBlock: (patch: LayoutBlockPatch) => void;
 };
 
 export type SelectedItemPanelProps = {
@@ -162,7 +166,7 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
           onDeselect={actions.onDeselect}
         />
         <SelectedItemSummaryCard summary={summary} title={title} locked={locked} onViewProduct={actions.onViewProduct} />
-        <SelectedItemOptions state={state} actions={actions} />
+        <SelectedItemOptions state={state} actions={actions} disabled={editsDisabled} />
         <SelectedItemActionRow
           rotationOpen={state.rotation?.expanded ?? false}
           canRotate={Boolean(state.rotation)}
@@ -188,14 +192,25 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
   );
 }
 
-/** The product's configuration and colour pickers, then its size in the design's units. */
+/** The product's configuration and colour pickers, then its size in the design's units; a layout block's own name and size. */
 function SelectedItemOptions({
   state,
   actions,
+  disabled,
 }: {
   state: SelectedItemPanelState;
   actions: SelectedItemPanelActions;
+  disabled: boolean;
 }) {
+  const item = state.details.item;
+  if (item && isLayoutBlock(item) && item.productSnapshot) {
+    return (
+      <LayoutBlockFields
+        key={`${item.instanceId}:${item.productSnapshot.name}`} name={item.productSnapshot.name} sizeMm={item.productSnapshot.dimensionsMm}
+        unit={state.details.measurementUnit} disabled={disabled} onUpdate={actions.onUpdateLayoutBlock}
+      />
+    );
+  }
   return (
     <div className="flex flex-col gap-3">
       <ProductModelVariantControls

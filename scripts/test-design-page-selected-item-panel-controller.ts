@@ -228,7 +228,8 @@ const swapSource = sourceBetween(
 // sets keep theirs, and each swap is one "Swap X for Y" step with Undo in the toast.
 for (const expected of [
   'const findSwap = direction === "cheaper" ? cheaperSwapFor : pricierSwapFor',
-  "if (selectedItem.bundleGroupId || selectedItem.purchaseOptionId) return",
+  // A layout block has no product to swap (lib/layout-blocks.ts).
+  "if (selectedItem.bundleGroupId || selectedItem.purchaseOptionId || isLayoutBlock(selectedItem)) return",
   '"No cheaper alternatives found"',
   '"No pricier alternatives found"',
   "const step = `Swap ${selectedProduct.title} for ${product.title}`",

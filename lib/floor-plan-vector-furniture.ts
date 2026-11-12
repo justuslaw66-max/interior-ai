@@ -3,6 +3,7 @@ import type { PlanDrawingPrimitive } from "@/lib/floor-plan-vector-drawing";
 import type { CatalogItemSchema, DimensionsMm } from "@/lib/catalog-schema";
 import type { DesignItem, RoomSnapshot } from "@/lib/room-types";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
+import { layoutBlockKind } from "@/lib/layout-blocks";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { getCabinetPlanningDimsMm } from "@/features/cabinetry/designItemAdapters";
 import { resolveSceneItemCanonicalTransform } from "@/lib/design-page-scene-domain";
@@ -62,8 +63,9 @@ function placeItem(item: DesignItem, room: RoomSnapshot, source: PlanFurnitureDr
   const name = product?.title ?? item.productId;
   const variant = product?.variants.find((entry) => entry.id === item.variantId)?.label;
   return {
-    placement: { id: item.instanceId, category: product?.category ?? "", name, widthMm: dimensions.w, depthMm: dimensions.d, centre, rotationY: transform.rotationY },
-    key: [item.productId, item.variantId, item.configurationCode ?? "", dimensions.w, dimensions.d, dimensions.h].join("|"),
+    placement: { id: item.instanceId, category: product?.category ?? "", name, kind: layoutBlockKind(item), widthMm: dimensions.w, depthMm: dimensions.d, centre, rotationY: transform.rotationY },
+    // The name too: two layout blocks of one kind and size, named apart, are two lines.
+    key: [item.productId, item.variantId, item.configurationCode ?? "", dimensions.w, dimensions.d, dimensions.h, name].join("|"),
     name,
     variant,
     sizeMm: dimensions,

@@ -181,7 +181,7 @@
       "limit": 250
     },
     "components/editor/DesignControlsPanel.tsx": {
-      "lines": 728,
+      "lines": 725,
       "limit": 250
     },
     "components/editor/DesignControlsPlanPanel.tsx": {
@@ -581,7 +581,7 @@
       "limit": 400
     },
     "lib/useDesignPageCatalogPlacement.ts": {
-      "lines": 2040,
+      "lines": 2029,
       "limit": 400
     },
     "lib/useDesignPageExport.ts": {
@@ -3927,7 +3927,7 @@
     "lib/useDesignPageCatalogPlacement.ts": {
       "overlongFunctions": {
         "count": 4,
-        "maximum": 1862
+        "maximum": 1860
       },
       "complexFunctions": {
         "count": 2,
@@ -4397,7 +4397,7 @@
     "lib/useDesignPageSelectedItemPanelController.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 200
+        "maximum": 194
       }
     },
     "lib/useDesignPageSelectionCoordinator.ts": {

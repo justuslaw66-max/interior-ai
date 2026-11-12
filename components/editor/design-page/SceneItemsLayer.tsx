@@ -8,9 +8,9 @@ import { SceneItemGroup } from "@/components/scene/SceneItemGroup";
 import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
+import { layoutBlockKind } from "@/lib/layout-blocks";
 import {
-  findCatalogSurfacePlacement,
-  getCeilingMountedItemBaseY,
+  findCatalogSurfacePlacement, getCeilingMountedItemBaseY,
   isCeilingOnlyCatalogItem,
   isSurfaceOnlyCatalogItem,
 } from "@/lib/catalog-placement";
@@ -371,7 +371,7 @@ export function SceneItemsLayer({
           >
             <Furniture
               data-testid="item-in-scene"
-              product={effectiveProduct}
+              product={effectiveProduct} planSymbolKind={layoutBlockKind(item)}
               variantColor={variant.colorHex}
               variantName={variant.label}
               variantId={variant.id}

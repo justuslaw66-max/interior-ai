@@ -6,6 +6,7 @@ import {
   type ProductVariant,
 } from "@/lib/catalog-schema";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
+import { isLayoutBlock, isOverheadLayoutBlockKind, layoutBlockKind } from "@/lib/layout-blocks";
 import type {
   DesignItem,
   DesignSnapshot,
@@ -65,7 +66,7 @@ export function enrichDesignItemProductSnapshot(
   item: DesignItem,
   catalogItems: typeof CATALOG_ITEMS = CATALOG_ITEMS
 ): DesignItem {
-  if (item.assetType === "parametric_cabinet") return item;
+  if (item.assetType === "parametric_cabinet" || isLayoutBlock(item)) return item;
   if (
     item.productSnapshot?.productId === item.productId &&
     item.productSnapshot.variantId === item.variantId
@@ -121,6 +122,34 @@ function buildSavedVariant(
 export function resolveDesignItemVisualProduct(
   item: DesignItem,
   catalogItems: typeof CATALOG_ITEMS = CATALOG_ITEMS
+): CatalogItemSchema | null {
+  const product = resolveSavedVisualProduct(item, catalogItems);
+  const kind = layoutBlockKind(item);
+  if (!product || !kind) return product;
+  // A layout block stands on the floor, or passes over it when fixed high (an aircon, wall cabinets).
+  const overhead = isOverheadLayoutBlockKind(kind);
+  return {
+    ...product,
+    placementRules: { ...product.placementRules, floorOnly: !overhead, ceilingOnly: overhead, surfaceOnly: false },
+    commerce: { type: "not_buyable", reason: "Layout block" },
+  };
+}
+
+const layoutBlockProducts = new WeakMap<DesignItem, CatalogItemSchema | null>();
+
+/**
+ * A layout block's product, the same object for as long as the item is: the item panel reads a
+ * block's name and size from it. Null for anything that is not a block.
+ */
+export function resolveLayoutBlockProduct(item: DesignItem): CatalogItemSchema | null {
+  if (!isLayoutBlock(item)) return null;
+  if (!layoutBlockProducts.has(item)) layoutBlockProducts.set(item, resolveDesignItemVisualProduct(item));
+  return layoutBlockProducts.get(item) ?? null;
+}
+
+function resolveSavedVisualProduct(
+  item: DesignItem,
+  catalogItems: typeof CATALOG_ITEMS
 ): CatalogItemSchema | null {
   const live = catalogItems[item.productId];
   const snapshot = item.productSnapshot;

@@ -1,7 +1,7 @@
 import { buildPlanSymbol } from "./plan-symbol-library";
 import { resolvePlanSymbolKind } from "./plan-symbol-match";
 import { rect } from "./plan-symbol-shapes";
-import type { PlanSymbolShape } from "./plan-symbol-types";
+import type { PlanSymbolKind, PlanSymbolShape } from "./plan-symbol-types";
 
 /** Where a placed item's symbol starts above the floor in the 2D plan (metres). */
 export const PLAN_SYMBOL_BASE_Y = 0.002;
@@ -18,9 +18,10 @@ export function planSymbolShapesForItem(
   category: string,
   name: string,
   width: number,
-  depth: number
+  depth: number,
+  explicitKind: PlanSymbolKind | null = null
 ): PlanSymbolShape[] {
-  const kind = resolvePlanSymbolKind(category, name);
+  const kind = explicitKind ?? resolvePlanSymbolKind(category, name);
   if (kind) return buildPlanSymbol(kind, width, depth).shapes;
   const safeWidth = Number.isFinite(width) ? Math.max(0.05, width) : 0.5;
   const safeDepth = Number.isFinite(depth) ? Math.max(0.05, depth) : 0.5;

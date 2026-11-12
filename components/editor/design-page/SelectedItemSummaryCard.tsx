@@ -18,7 +18,7 @@ function SelectedItemSaleLine({ sale, onViewProduct }: { sale: SelectedItemSale;
   if (sale.kind !== "retailer") {
     return (
       <div data-testid="selected-item-availability" data-sale={sale.kind} className="text-[13px] text-label-secondary">
-        {sale.kind === "checkout" ? "Checkout here, from your Shopping list" : "Not sold online yet"}
+        {sale.kind === "checkout" ? "Checkout here, from your Shopping list" : sale.kind === "layout" ? "For planning: no product chosen yet" : "Not sold online yet"}
       </div>
     );
   }
