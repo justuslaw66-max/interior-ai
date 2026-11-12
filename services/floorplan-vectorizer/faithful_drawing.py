@@ -277,7 +277,7 @@ def drawing(t):
             r = max(0.5, e["w"] / 2.0)
             piece = (_p(e["c"][0] + r, e["c"][1]),
                      [("C", [_p(*c1), _p(*c2), _p(*p3)]) for c1, c2, p3 in _arc_cubics(e["c"][0], e["c"][1], r, 0.0, 2 * math.pi)], True)
-            key = (2, -int(e["g"]), 0.0, "dot")
+            key = (3 if e.get("top") else 2, -int(e["g"]), 0.0, "dot")   # (r13) a dot on line work over its lines
         else:
             piece = _stroke_piece(e)
             key = (1 if e.get("light") else 0, -int(e["g"]), round(float(e["w"]), 2), e["k"])

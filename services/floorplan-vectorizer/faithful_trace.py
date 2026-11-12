@@ -1815,8 +1815,158 @@ def marks_on_lines(segs, weak, d, g):
     return [e for k, e in enumerate(segs) if k not in drop], out
 
 
+# (r13) a round solid dot on thin line work (a dimension line's end dot) drawn as a dot (off; on with CAD lettering)
+LINE_DOTS = os.environ.get("FT_LINE_DOTS", os.environ.get("FT_CAD_LETTERING", "0")) == "1"
+DOT_R_MIN = float(os.environ.get("FT_DOT_R_MIN", "1.6"))  # ... its radius at least this (picture px; a full stop is smaller)
+DOT_R_MAX = float(os.environ.get("FT_DOT_R_MAX", "6.0"))  # ... and at most this (larger is a solid fill's)
+DOT_RING = float(os.environ.get("FT_DOT_RING", "0.36"))   # ... the ink just outside it at most this share of the ring (thin lines leaving it)
+DOT_THICK = float(os.environ.get("FT_DOT_THICK", "0.45"))  # ... and no ink there thicker than this share of its own radius
+DOT_KIN = float(os.environ.get("FT_DOT_KIN", "0.75"))     # ... and, among four or more, at least this share of their median size (a plan's dots are one size)
+DOT_LINE = float(os.environ.get("FT_DOT_LINE", "2.8"))    # ... at least this many times as wide as the line running on from it, 6 of its radii or more
+DOT_OFF = float(os.environ.get("FT_DOT_OFF", "0.15"))     # ... the ink leaving it off its row, column and the lines passing by it, at most this share
+DOT_DEBUG = os.environ.get("FT_DOT_DEBUG", "0") == "1"   # (prints each dot candidate measured)
+
+
+def line_dots(ink, d, solid, text):
+    """(r13) a dimension line's end dot - a small solid disc where the dimension line meets its extension line - is
+    too small to be a solid fill (a spot of thick ink is where two heavy lines meet) and its pixels were read as the
+    two thin lines' crossing, so the dot was lost. A disc of ink, round and solid, whose surroundings are paper but
+    for thin lines leaving it, is drawn as a dot of its own (the lines are still traced through it, and drawn over it).
+    The plan's dots are drawn alike: their sizes, if within a third of each other, are their median."""
+    m = (ink & (1 - solid) & (1 - text)).astype(np.uint8)
+    if not m.any():
+        return []
+    dt = cv2.distanceTransform(m, cv2.DIST_L2, 5)
+    rmin, rmax = DOT_R_MIN * PX, DOT_R_MAX * PX
+    k = int(math.ceil(rmax))
+    peak = (dt >= rmin) & (dt <= rmax) & (dt >= cv2.dilate(dt, cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE, (2 * k + 1, 2 * k + 1))) - 1e-3)
+    n, lab, st, cen = cv2.connectedComponentsWithStats(peak.astype(np.uint8), 8)
+    H, W = m.shape
+    dots = []
+    for i in range(1, n):
+        if max(st[i, 2], st[i, 3]) > 2 * PX:
+            continue                                            # a ridge, not a centre: a thick line's middle
+        cx, cy = cen[i]
+        r = float(dt[lab == i].max()) + 0.5                     # (the distance runs to the nearest paper pixel's centre)
+        R = int(math.ceil(r + 3 * PX)) + 1
+        x0, y0, x1, y1 = int(cx) - R, int(cy) - R, int(cx) + R + 1, int(cy) + R + 1
+        if x0 < 0 or y0 < 0 or x1 > W or y1 > H:
+            continue
+        yy, xx = np.mgrid[y0:y1, x0:x1]
+        rr = np.hypot(xx - cx, yy - cy)
+        mm = m[y0:y1, x0:x1] > 0
+        inside = rr <= r - 0.75
+        ring = (rr >= r + 1.0 * PX) & (rr <= r + 2.5 * PX)
+        if not inside.any() or not ring.any():
+            continue
+        if DOT_DEBUG:
+            print("dotcand", round(cx / PX, 1), round(cy / PX, 1), "r", round(r / PX, 2), "solid", round(float(mm[inside].mean()), 2),
+                  "ring", round(float(mm[ring].mean()), 2), "thick", round(float(dt[y0:y1, x0:x1][ring].max()) / r, 2),
+                  "dk", round(float(np.percentile(d[y0:y1, x0:x1][inside], 90)), 2),
+                  "ringd", round(float(np.median(d[y0:y1, x0:x1][ring & mm])) if (ring & mm).any() else 0.0, 2))
+        if mm[inside].mean() < 0.95:
+            continue                                            # not solid: a loop, a letter's bowl
+        share = float(mm[ring].mean())
+        if share > DOT_RING or share <= 0.0:
+            continue                                            # a blob in heavy line work, or a dot standing alone (copied as a mark)
+        if float(dt[y0:y1, x0:x1][ring].max()) > DOT_THICK * r:
+            continue                                            # a heavy line runs on from it: its end or corner, not a dot
+        dk = float(np.percentile(d[y0:y1, x0:x1][inside], 90))
+        # its drawn size: where its ink falls to half its darkness, the median over 32 directions (the few along the
+        # lines leaving it run on, and are outvoted)
+        dd = d[y0:y1, x0:x1]
+        steps = np.arange(0.0, r + 3 * PX, 0.25)
+        edge = []
+        for a in np.linspace(0, 2 * math.pi, 32, endpoint=False):
+            px_ = np.clip(np.round(cx - x0 + steps * math.cos(a)).astype(int), 0, dd.shape[1] - 1)
+            py_ = np.clip(np.round(cy - y0 + steps * math.sin(a)).astype(int), 0, dd.shape[0] - 1)
+            below = np.nonzero(dd[py_, px_] < 0.5 * dk)[0]
+            edge.append(steps[below[0]] if len(below) else steps[-1])
+        re = float(np.median(edge))
+        # the long straight line through it (a dimension line runs on from its dot, level or plumb), far thinner than
+        # the dot: where hatching meets a wall's outline, or a letter's strokes meet, the ink is thick at a spot too,
+        # but the line it lies on is nearly as heavy, or there is none
+        best_line = None
+        runs = {}
+        icx, icy = int(round(cx)), int(round(cy))
+        for axis in (0, 1):
+            for sgn in (1, -1):
+                L, gap, k_ = 0, 0, int(r) + 1
+                while True:
+                    x_ = icx + sgn * k_ if axis == 0 else icx
+                    y_ = icy if axis == 0 else icy + sgn * k_
+                    if not (0 <= x_ < W and 0 <= y_ < H):
+                        break
+                    if m[y_, x_]:
+                        L = k_; gap = 0
+                    else:
+                        gap += 1
+                        if gap > 1:
+                            break
+                    k_ += 1
+                runs[(axis, sgn)] = L
+                if best_line is None or L > best_line[0]:
+                    best_line = (L, axis, sgn)
+        def width_along(axis, sgn, L, t0, t1):
+            # a line's half width, a little away from the dot
+            ws = []
+            for t_ in np.linspace(t0, max(t0, min(L - 1, t1)), 5):
+                x_ = icx + sgn * int(t_) if axis == 0 else icx
+                y_ = icy if axis == 0 else icy + sgn * int(t_)
+                col = m[:, x_] if axis == 0 else m[y_, :]
+                c0 = y_ if axis == 0 else x_
+                if not col[c0]:
+                    continue
+                a_ = c0
+                while a_ > 0 and col[a_ - 1]:
+                    a_ -= 1
+                b_ = c0
+                while b_ + 1 < len(col) and col[b_ + 1]:
+                    b_ += 1
+                ws.append(b_ - a_ + 1)
+            return float(np.median(ws)) / 2.0 if ws else 0.0
+        L, axis, sgn = best_line
+        hw = width_along(axis, sgn, L, 3 * r, 6 * r) if L >= 6 * r else 0.0
+        if DOT_DEBUG:
+            print("dotline", round(cx / PX, 1), round(cy / PX, 1), "r", round(r / PX, 2), "L", round(L / r, 1), "hw", round(hw / PX, 2), "ratio", round(r / hw, 2) if hw else 0)
+        if hw <= 0 or r < DOT_LINE * hw:
+            continue                                            # no line runs on from it, or one nearly as heavy: a junction
+        # and the ink leaving it is level or plumb line work: along its own row or column, or a line passing by it
+        # (a figure's foot touching a dimension line - the 2 of 3025 - leaves it at a slant, and is not a dot)
+        band = max(hw, 0.5 * PX) + 1.0 * PX
+        ry, rx = np.nonzero(ring & mm)
+        if len(rx):
+            ddx, ddy = rx + x0 - cx, ry + y0 - cy
+            on = (np.abs(ddy) <= band) | (np.abs(ddx) <= band)
+            cols_up = set(rx[ddy < -band].tolist()); cols_dn = set(rx[ddy > band].tolist())
+            rows_l = set(ry[ddx < -band].tolist()); rows_r = set(ry[ddx > band].tolist())
+            passing = np.array([(x_ in cols_up and x_ in cols_dn) or (y_ in rows_l and y_ in rows_r) for x_, y_ in zip(rx, ry)])
+            off = float((~on & ~passing).mean())
+            # (a dot marks where a dimension line ends or its extension line crosses: one in the middle of a straight
+            # line with no other line running on from it is a figure's foot or a blot on the line)
+            dirs = {k for k, key in (("L", (0, -1)), ("R", (0, 1)), ("U", (1, -1)), ("D", (1, 1))) if runs[key] >= 1.5 * r}
+            if DOT_DEBUG:
+                print("dotoff", round(cx / PX, 1), round(cy / PX, 1), "off", round(off, 2), "dirs", "".join(sorted(dirs)), "runs", {k: round(v / r, 1) for k, v in runs.items()})
+            if off > DOT_OFF or dirs in ({"L", "R"}, {"U", "D"}):
+                continue
+        dots.append({"k": "dot", "c": np.array([cx + 0.5, cy + 0.5]), "w": 2.0 * max(r, re), "dark": dk, "top": True, "r0": r})
+    if len(dots) >= 4:
+        # a plan's dimension dots are drawn alike: a much smaller one is a thickened crossing of two lines
+        # (by its solid core's size: a crossing's blur can measure wide at half its darkness)
+        med = float(np.median([e["r0"] for e in dots]))
+        dots = [e for e in dots if e["r0"] >= DOT_KIN * med]
+    if len(dots) >= 2:
+        ws = np.array([e["w"] for e in dots])
+        med = float(np.median(ws))
+        if ws.max() <= 1.34 * ws.min():
+            for e in dots:
+                e["w"] = med
+    return dots
+
+
 # ---------------------------------------------------------------- level and plumb lines
-STEPS = os.environ.get("FT_STEPS", "1") == "1"   # (r7) a short dark piece spanning the gap between two lines (a panel's end) is drawn
+STEPS =os.environ.get("FT_STEPS", "1") == "1"   # (r7) a short dark piece spanning the gap between two lines (a panel's end) is drawn
 
 
 def _spans_gap(m, x, y, w, h, used, dm):
@@ -3343,6 +3493,7 @@ def _trace(g0, g, keep_text):
     ink = ink & (1 - text)
     polys, solid = solid_polygons(d, ink, g)
     polys += over
+    ldots = line_dots(ink, d, solid, text) if LINE_DOTS else []
     K = np.ones((2 * PX + 1, 2 * PX + 1), np.uint8)
     # (r9) not in a soft picture: there the light lines a low-resolution picture blurs (a tub's rim, a planter's edge,
     # a headboard's cushions) read as grey areas and were drawn as ragged grey shapes; traced as line work they are
@@ -3462,7 +3613,7 @@ def _trace(g0, g, keep_text):
     segs = segs + rings_
     if TIDY:
         segs = tidy(segs, d)
-    segs = segs + drawn_
+    segs = segs + drawn_ + ldots
     # the fills' own line work: darker edges, and lighter lines through dark fills (their tone kept as lightness)
     rim, light = solid_polygons.rim, solid_polygons.light
     over = []
@@ -3494,6 +3645,8 @@ def _trace(g0, g, keep_text):
                           "w": round(float(e["w"]), 2), "g": tone(e["dark"])})
         else:
             elems.append({"k": "dot", "c": [round(float(e["c"][0]), 2), round(float(e["c"][1]), 2)], "w": round(float(e["w"]), 2), "g": tone(e["dark"])})
+            if e.get("top"):
+                elems[-1]["top"] = True                         # (r13) a dot on line work: drawn over the lines through it
         if e.get("light"):
             elems[-1]["light"] = True                           # (a light line through a dark fill: drawn over it)
     if UP > 1:

@@ -780,6 +780,44 @@ class Sharp(unittest.TestCase):
 
 
 # ------------------------------------------------------------------------------------------------ (r12)
+class LineDots(unittest.TestCase):
+    """(r13) a dimension line's end dots drawn as dots"""
+
+    @staticmethod
+    def _dims(big, s):
+        # a dimension line with its extension lines, a dot at each end and one between; a plain crossing beside them
+        cv2.line(big, (10 * s, 40 * s), (190 * s, 40 * s), 0, s)
+        for x in (20, 90, 180):
+            cv2.line(big, (x * s, 20 * s), (x * s, 70 * s), 0, s)
+            cv2.circle(big, (x * s, 40 * s), int(3.5 * s), 0, -1, cv2.LINE_AA)
+        cv2.line(big, (10 * s, 100 * s), (190 * s, 100 * s), 0, s)
+        cv2.line(big, (130 * s, 80 * s), (130 * s, 120 * s), 0, s)
+
+    def test_dimension_dots_drawn_over_their_lines(self):
+        import faithful_trace
+        img = _reduced(self._dims, 200, 130, 8)
+        def dots(t):
+            return [e for e in t["strokes"] if e["k"] == "dot" and e.get("top")]
+        on = _untyped(lambda: _switched("LINE_DOTS", True, lambda: faithful_trace.trace_gray(img)))
+        got = sorted((round(e["c"][0]), round(e["c"][1]), e["w"]) for e in dots(on))
+        self.assertEqual([(x, y) for x, y, _ in got], [(20, 40), (90, 40), (180, 40)], got)
+        self.assertTrue(all(6.0 <= w <= 8.0 for _, _, w in got), "drawn their own size, alike")
+        self.assertEqual(len({w for _, _, w in got}), 1)
+        # the lines through them are still drawn
+        self.assertTrue(any(e["k"] == "line" and abs(e["a"][1] - 40) < 1 and abs(e["b"][0] - e["a"][0]) > 150 for e in on["strokes"]))
+        # (off, as before: no dots)
+        off = _untyped(lambda: _switched("LINE_DOTS", False, lambda: faithful_trace.trace_gray(img)))
+        self.assertEqual(dots(off), [])
+
+    def test_dots_drawn_after_the_lines(self):
+        t = {"walls": [], "strokes": [{"k": "line", "a": [0, 5], "b": [20, 5], "w": 1.0, "g": 40},
+                                      {"k": "dot", "c": [10, 5], "w": 6.0, "g": 20, "top": True},
+                                      {"k": "dot", "c": [30, 5], "w": 1.0, "g": 20}], "size": [40, 10]}
+        kinds = [(it["kind"], round(it["points"][0][0])) for it in fd.drawing(t)["items"]]
+        self.assertEqual([k for k, _ in kinds], ["dot", "line", "dot"], kinds)
+        self.assertEqual(kinds[-1][1], 13, "the line's dot last, over its line")
+
+
 def _letter(big, s, text, x, y, cap, weight):
     """text drawn into `big` (s times the picture) from the bundled type's outlines: its baseline's start at (x, y)
     picture px, its capitals `cap` picture px tall"""
