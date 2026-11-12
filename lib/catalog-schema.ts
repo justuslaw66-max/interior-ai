@@ -171,7 +171,7 @@ export interface ProductVariant {
     baseColorMap?: string;
     normalMap?: string;
     roughnessMap?: string;
-    tileScale?: { x?: number; y?: number };
+    tileScale?: { x?: number; y?: number; sizeM?: number };
   };
 }
 
