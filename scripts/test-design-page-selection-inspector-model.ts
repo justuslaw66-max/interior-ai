@@ -515,7 +515,7 @@ assert.equal(
 );
 assert.equal(
   buildDesignSelectionContext({ ...selectionContextParams, planMeasurementUnit: "ft-in" })?.detail,
-  "16′ 4.9″ × 13′ 1.5″",
+  "16′ 4 7/8″ × 13′ 1 1/2″",
   "The selected-room context card should follow a feet-and-inches preference."
 );
 assert.equal(
@@ -529,7 +529,7 @@ assert.equal(
     planMeasurementUnit: "ft-in",
     visiblePlanOpening: opening,
   })?.detail,
-  "2′ 11.4″ wide",
+  "2′ 11 7/16″ wide",
   "The selected-door context card should follow a feet-and-inches preference."
 );
 assert.match(

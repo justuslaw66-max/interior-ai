@@ -567,7 +567,7 @@ assert.match(
 );
 assert.match(
   renderConnectionChecklist("ft-in"),
-  />9′ 10\.1″ shared wall</,
+  />9′ 10 1\/8″ shared wall</,
   "The connections checklist should follow a feet-and-inches preference."
 );
 assert.deepEqual(

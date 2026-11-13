@@ -1,3 +1,5 @@
+import { formatInchesAsFraction, formatWholeAndFraction, INCH_AMOUNT_PATTERN, parseInchAmount, roundToSixteenths } from "@/lib/inch-fractions";
+
 export type DisplayUnit = "mm" | "cm" | "in" | "ft-in";
 export type MeasurementSystem = "metric" | "imperial";
 export type DisplayUnitMetadata = {
@@ -60,17 +62,16 @@ const SIGNED_DECIMAL_TOKEN = String.raw`[+-]?${DECIMAL_TOKEN}`;
 const FEET_MARKER = String.raw`(?:'|ft\.?|feet|foot)`;
 const INCH_MARKER = String.raw`(?:"|in\.?|inches|inch)`;
 const COMPOUND_FEET_AND_INCHES = new RegExp(
-  String.raw`^(\d+)\s*${FEET_MARKER}\s*(${DECIMAL_TOKEN})\s*${INCH_MARKER}$`,
+  String.raw`^(\d+)\s*${FEET_MARKER}\s*(${INCH_AMOUNT_PATTERN})\s*${INCH_MARKER}$`,
   "i"
 );
 const FEET_ONLY = new RegExp(
   String.raw`^(${SIGNED_DECIMAL_TOKEN})\s*${FEET_MARKER}$`,
   "i"
 );
-const INCHES_ONLY = new RegExp(
-  String.raw`^(${SIGNED_DECIMAL_TOKEN})\s*${INCH_MARKER}$`,
-  "i"
-);
+const INCHES_ONLY = new RegExp(String.raw`^([+-]?)(${INCH_AMOUNT_PATTERN})\s*${INCH_MARKER}$`, "i");
+/** An inches field's entry: a decimal or a fraction, with or without the unit. */
+const INCH_FIELD = new RegExp(String.raw`^([+-]?)(${INCH_AMOUNT_PATTERN})\s*(?:${INCH_MARKER})?$`, "i");
 export type DisplayLengthParseResult =
   | { status: "valid"; valueMm: number }
   | {
@@ -116,19 +117,18 @@ function normalizePrimeCharacters(value: string): string {
 function scalarSuffix(unit: Exclude<DisplayUnit, "ft-in">): RegExp {
   return new RegExp(`^(${SIGNED_DECIMAL_TOKEN}(?:[eE][+-]?\\d+)?)\\s*${unit}$`, "i");
 }
-function feetAndInchesParts(valueMm: number, inchDecimalPlaces: number) {
+/** Feet, then inches to the nearest 1/16″ ("9 3/8"), rounding up into the next foot at 11 31/32″. */
+function feetAndInchesParts(valueMm: number) {
   const sign = valueMm < 0 ? "-" : "";
-  const roundedTotalInches = roundTo(
-    Math.abs(valueMm) / DISPLAY_UNIT_METADATA.in.millimetresPerScalarUnit,
-    inchDecimalPlaces
-  );
-  const feet = Math.floor(roundedTotalInches / 12);
-  const inches = roundTo(roundedTotalInches - feet * 12, inchDecimalPlaces);
-  return { sign, feet, inches };
+  const { whole, sixteenths } = roundToSixteenths(Math.abs(valueMm) / DISPLAY_UNIT_METADATA.in.millimetresPerScalarUnit);
+  const feet = Math.floor(whole / 12);
+  return { sign, feet, inches: formatWholeAndFraction(whole - feet * 12, sixteenths) };
 }
-function formatInchPart(inches: number, inchDecimalPlaces: number): string {
-  if (inches === 0) return "0";
-  return inches.toFixed(inchDecimalPlaces);
+/** Signed inches to the nearest 1/16″ for an inches field: "47 3/8", "-3/8". */
+function formatInchesField(valueMm: number): string {
+  const inches = Math.abs(valueMm) / DISPLAY_UNIT_METADATA.in.millimetresPerScalarUnit;
+  const text = formatInchesAsFraction(inches);
+  return valueMm < 0 && text !== "0" ? `-${text}` : text;
 }
 export function isDisplayUnit(value: unknown): value is DisplayUnit {
   return (
@@ -176,36 +176,39 @@ export function scalarDisplayToMillimetres(
   if (!Number.isFinite(value)) return value;
   return roundTo(value * getMillimetresPerDisplayScalarUnit(unit), 3);
 }
-export function formatDisplayLengthInput(
-  valueMm: number,
-  unit: DisplayUnit,
-  options: { inchDecimalPlaces?: number } = {}
-): string {
+/** A length as its field shows it: metric decimals, inches as 1/16″ fractions (lib/inch-fractions.ts). */
+export function formatDisplayLengthInput(valueMm: number, unit: DisplayUnit): string {
   if (!Number.isFinite(valueMm)) return "";
+  if (unit === "in") return formatInchesField(valueMm);
   if (unit !== "ft-in") return String(millimetresToScalarDisplay(valueMm, unit));
-
-  const inchDecimalPlaces = options.inchDecimalPlaces ?? 1;
-  const { sign, feet, inches } = feetAndInchesParts(valueMm, inchDecimalPlaces);
-  return `${sign}${feet}′ ${formatInchPart(inches, inchDecimalPlaces)}″`;
+  const { sign, feet, inches } = feetAndInchesParts(valueMm);
+  return `${sign}${feet}′ ${inches}″`;
 }
-export function formatDisplayLength(
-  valueMm: number,
-  unit: DisplayUnit,
-  options: { inchDecimalPlaces?: number } = {}
-): string {
+export function formatDisplayLength(valueMm: number, unit: DisplayUnit): string {
   if (!Number.isFinite(valueMm)) return "—";
-  if (unit === "ft-in") return formatDisplayLengthInput(valueMm, unit, options);
+  if (unit === "ft-in") return formatDisplayLengthInput(valueMm, unit);
+  if (unit === "in") return `${formatInchesField(valueMm)} in`;
 
   const displayValue = millimetresToScalarDisplay(valueMm, unit);
-  const maximumFractionDigits = unit === "in" ? 3 : unit === "cm" ? 2 : 1;
+  const maximumFractionDigits = unit === "cm" ? 2 : 1;
   return `${displayValue.toLocaleString("en-US", {
     maximumFractionDigits,
   })} ${unit}`;
+}
+/** Inches typed with a sign, from their sign and amount; NaN amounts are non-finite. */
+function signedInchesResult(sign: string, amount: string): DisplayLengthParseResult {
+  const inches = parseInchAmount(amount);
+  if (!Number.isFinite(inches)) return { status: "invalid", code: "non_finite" };
+  return { status: "valid", valueMm: scalarDisplayToMillimetres(sign === "-" ? -inches : inches, "in") };
 }
 function parseScalarDisplayLength(
   normalized: string,
   unit: Exclude<DisplayUnit, "ft-in">
 ): DisplayLengthParseResult {
+  if (unit === "in") {
+    const inchMatch = normalized.match(INCH_FIELD);
+    return inchMatch ? signedInchesResult(inchMatch[1], inchMatch[2]) : { status: "invalid", code: "invalid_syntax" };
+  }
   const suffixMatch = normalized.match(scalarSuffix(unit));
   const numericToken = suffixMatch?.[1] ?? normalized;
   if (!COMPLETE_DECIMAL_NUMBER.test(numericToken)) {
@@ -220,7 +223,7 @@ function parseFeetAndInchesLength(normalized: string): DisplayLengthParseResult 
   const compoundMatch = normalized.match(COMPOUND_FEET_AND_INCHES);
   if (compoundMatch) {
     const feet = Number(compoundMatch[1]);
-    const inches = Number(compoundMatch[2]);
+    const inches = parseInchAmount(compoundMatch[2]);
     if (!Number.isFinite(feet) || !Number.isFinite(inches)) {
       return { status: "invalid", code: "non_finite" };
     }
@@ -246,14 +249,8 @@ function parseFeetAndInchesLength(normalized: string): DisplayLengthParseResult 
   }
 
   const inchesMatch = normalized.match(INCHES_ONLY);
-  const inchesToken = inchesMatch?.[1];
-  if (inchesToken === undefined) {
-    return { status: "invalid", code: "invalid_syntax" };
-  }
-
-  const inches = Number(inchesToken);
-  if (!Number.isFinite(inches)) return { status: "invalid", code: "non_finite" };
-  return { status: "valid", valueMm: scalarDisplayToMillimetres(inches, "in") };
+  if (!inchesMatch) return { status: "invalid", code: "invalid_syntax" };
+  return signedInchesResult(inchesMatch[1], inchesMatch[2]);
 }
 
 export function parseDisplayLength(
@@ -384,7 +381,7 @@ export function getDisplayLengthInputError(
     return `Use a valid ${getDisplayUnitMetadata(unit).indicator} increment.`;
   }
   return unit === "ft-in"
-    ? "Enter a length such as 13′ 9.4″."
+    ? "Enter a length such as 13′ 9 3/8″."
     : "Enter a decimal measurement using digits and a decimal point.";
 }
 

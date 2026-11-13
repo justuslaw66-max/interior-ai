@@ -1389,9 +1389,9 @@ function exerciseOpeningDisplayUnitIntegration() {
     sillHeight: "assumed",
   });
   assert.equal(formatDisplayLength(estimatedWindow.widthMm, "mm"), "1,200 mm");
-  assert.equal(formatDisplayLength(estimatedWindow.widthMm, "ft-in"), "3′ 11.2″");
-  assert.equal(formatDisplayLength(openingHeightMm, "ft-in"), "3′ 7.3″");
-  assert.equal(formatDisplayLength(openingBottomMm, "ft-in"), "2′ 3.6″");
+  assert.equal(formatDisplayLength(estimatedWindow.widthMm, "ft-in"), "3′ 11 1/4″");
+  assert.equal(formatDisplayLength(openingHeightMm, "ft-in"), "3′ 7 5/16″");
+  assert.equal(formatDisplayLength(openingBottomMm, "ft-in"), "2′ 3 9/16″");
   assert.equal(getDisplayUnitMetadata("ft-in").indicator, "ft + in");
 
   const params = { rooms: [singleRoom], planWidthMeters: 5, planDepthMeters: 4 };

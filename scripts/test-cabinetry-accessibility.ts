@@ -88,9 +88,9 @@ assert.equal((inchOverallHandles.match(/role="slider"/g) ?? []).length, 3);
 assert.match(inchOverallHandles, /aria-valuenow="35\.433"/);
 assert.match(inchOverallHandles, /aria-valuemin="7\.874"/);
 assert.match(inchOverallHandles, /aria-valuemax="787\.402"/);
-assert.match(inchOverallHandles, /35\.433 in \(900 mm\)/);
-assert.match(inchOverallHandles, /0\.394 in \(10 mm\)/);
-assert.match(inchOverallHandles, /0\.039 in \(1 mm\)/);
+assert.match(inchOverallHandles, /35 7\/16 in \(900 mm\)/);
+assert.match(inchOverallHandles, /3\/8 in \(10 mm\)/);
+assert.match(inchOverallHandles, /1\/16 in \(1 mm\)/);
 assert.match(inchOverallHandles, /Use arrow keys/);
 
 const centimetreDivider = renderToStaticMarkup(

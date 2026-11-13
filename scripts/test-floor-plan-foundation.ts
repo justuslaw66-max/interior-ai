@@ -717,7 +717,7 @@ assert.equal(
 );
 assert.equal(
   formatFloorPlanCalibrationSummary(calibrated, "ft-in"),
-  "16′ 4.9″ set (16′ 4.9″ × 8′ 2.4″)",
+  "16′ 4 7/8″ set (16′ 4 7/8″ × 8′ 2 7/16″)",
   "Imperial viewers should read the calibration reference and underlay extent in feet and inches."
 );
 assert.equal(

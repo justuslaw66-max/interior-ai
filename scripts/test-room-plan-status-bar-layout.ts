@@ -71,7 +71,7 @@ assert.equal(
 );
 assert.equal(
   renderRoomSize("ft-in"),
-  "13′ 9.4″ × 12′ 5.6″",
+  "13′ 9 3/8″ × 12′ 5 5/8″",
   "Imperial viewers should read the command-bar room size in feet and inches."
 );
 // Until the saved display unit loads, the pill must not flash the default unit (server HTML included).
@@ -91,7 +91,7 @@ assert.equal(
   formatRoomStatusDetails({
     roomTypeLabel: "Living", widthMeters: 4.2, depthMeters: 3.8, measurementUnit: "ft-in", roomCount: 2,
   }),
-  "Living · 13′ 9.4″ × 12′ 5.6″ · 2 rooms",
+  "Living · 13′ 9 3/8″ × 12′ 5 5/8″ · 2 rooms",
   "The compact overflow room details should show the size in the plan display unit."
 );
 assert.equal(

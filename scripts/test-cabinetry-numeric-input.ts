@@ -36,7 +36,7 @@ assert.equal(
 );
 assert.equal(
   formatCabinetMeasurementTokens("Offsets: -12.7 mm / 25.4 mm.", "in"),
-  "Offsets: -0.5 in (-12.7 mm) / 1 in (25.4 mm)."
+  "Offsets: -1/2 in (-12.7 mm) / 1 in (25.4 mm)."
 );
 assert.equal(
   formatCabinetMeasurementTokens(
@@ -59,7 +59,7 @@ assert.equal(
 );
 assert.equal(
   formatCabinetMeasurementTokens("Single height is 380 mm.", "ft-in"),
-  "Single height is 1′ 3.0″ (380 mm)."
+  "Single height is 1′ 2 15/16″ (380 mm)."
 );
 const feetAndInchesRange = formatCabinetMeasurementTokens(
   "Typical heights are 380-520 mm.",
@@ -67,11 +67,11 @@ const feetAndInchesRange = formatCabinetMeasurementTokens(
 );
 assert.equal(
   feetAndInchesRange,
-  "Typical heights are 1′ 3.0″ (380 mm)-1′ 8.5″ (520 mm)."
+  "Typical heights are 1′ 2 15/16″ (380 mm)-1′ 8 1/2″ (520 mm)."
 );
 assert.equal(
-  formatCabinetMeasurementTokens("Already 1′ 3.0″ (380 mm).", "ft-in"),
-  "Already 1′ 3.0″ (380 mm)."
+  formatCabinetMeasurementTokens("Already 1′ 2 15/16″ (380 mm).", "ft-in"),
+  "Already 1′ 2 15/16″ (380 mm)."
 );
 assert.equal(
   formatCabinetMeasurementTokens(feetAndInchesRange, "ft-in"),

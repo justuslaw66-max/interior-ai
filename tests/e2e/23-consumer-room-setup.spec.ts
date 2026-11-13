@@ -520,7 +520,7 @@ test.describe("23. Consumer room setup", () => {
     await expect(unitRegion).toHaveAttribute("aria-busy", "false");
     await expect(page.getByTestId("room-setup-measurement-units")).toHaveValue("ft-in");
     await expect(page.getByTestId("room-setup-scale-summary")).toContainText(
-      "16′ 4.9″ × 13′ 1.5″ · 215.3 ft²"
+      "16′ 4 7/8″ × 13′ 1 1/2″ · 215.3 ft²"
     );
     const observed = await page.evaluate(() =>
       (window as Window & { __measurementPreferenceStates?: string[] })
@@ -537,7 +537,7 @@ test.describe("23. Consumer room setup", () => {
     );
     const firstReady = observed.findIndex((entry) => entry.startsWith("ready:"));
     expect(firstReady).toBeGreaterThanOrEqual(0);
-    expect(observed[firstReady]).toContain("16′ 4.9″ × 13′ 1.5″ · 215.3 ft²");
+    expect(observed[firstReady]).toContain("16′ 4 7/8″ × 13′ 1 1/2″ · 215.3 ft²");
     expect(observed.slice(0, firstReady).some((entry) => /\d+(?:\.\d+)?\s*(?:mm|cm|m²|ft²|′|″)/.test(entry))).toBe(false);
     expect(observed.some((entry) => /500 cm|400 cm|m²/.test(entry))).toBe(false);
 
@@ -736,9 +736,9 @@ test.describe("23. Consumer room setup", () => {
     await depth.fill("15 ft 9.0 in");
     await depth.press("Enter");
     await expect(depth).toHaveAttribute("data-model-value-mm", "4800.6");
-    await expect(depth).toHaveValue("15′ 9.0″");
+    await expect(depth).toHaveValue("15′ 9″");
     await expect(page.getByTestId("room-setup-scale-summary")).toContainText(
-      "14′ 0″ × 15′ 9.0″ · 220.5 ft²"
+      "14′ 0″ × 15′ 9″ · 220.5 ft²"
     );
 
     await reloadConsumerAfterReady(page, {
@@ -954,7 +954,7 @@ test.describe("23. Consumer room setup", () => {
       );
       expect(designUpdates.at(-1)).toMatchObject({ roomWidth: 4.266184 });
       const exactRenderedText = await width.inputValue();
-      expect(exactRenderedText).toBe("14′ 0″");
+      expect(exactRenderedText).toBe("13′ 11 15/16″");
       await expectUpdateCountStableAcrossAutosaveWindow(
         designUpdates,
         afterHiddenPrecision.matchingPutCount,

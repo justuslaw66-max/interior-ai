@@ -43,11 +43,18 @@ assert.equal(formatDisplayLength(2_540, "mm"), "2,540 mm");
 assert.equal(formatDisplayLength(2_540, "cm"), "254 cm");
 assert.equal(formatDisplayLength(2_540, "in"), "100 in");
 
-assert.equal(formatDisplayLength(4_200, "ft-in"), "13′ 9.4″");
-assert.equal(formatDisplayLength(4_800, "ft-in"), "15′ 9.0″");
+assert.equal(formatDisplayLength(4_200, "ft-in"), "13′ 9 3/8″");
+assert.equal(formatDisplayLength(4_800, "ft-in"), "15′ 9″");
+// Inches read like a tape measure: the nearest 1/16″, reduced (market practice, 14 Nov 2026).
+assert.equal(formatDisplayLength(1_204, "in"), "47 3/8 in");
+assert.equal(formatDisplayLengthInput(1_204, "in"), "47 3/8");
+assert.equal(formatDisplayLengthInput(9.525, "in"), "3/8");
+assert.equal(formatDisplayLengthInput(-9.525, "in"), "-3/8");
+assert.equal(formatDisplayLengthInput(450, "ft-in"), "1′ 5 11/16″");
+assert.equal(formatDisplayLengthInput(2_400, "ft-in"), "7′ 10 1/2″");
 assert.equal(formatDisplayLength(8 * 304.8, "ft-in"), "8′ 0″");
 assert.equal(
-  formatDisplayLength((13 * 12 + 11.96) * 25.4, "ft-in"),
+  formatDisplayLength((13 * 12 + 11.98) * 25.4, "ft-in"),
   "14′ 0″",
   "rounded inches should carry into the feet value"
 );
@@ -62,6 +69,16 @@ expectParsedMm("165.4 in", "ft-in", 4_201.16);
 expectParsedMm("0′ 0″", "ft-in", 0);
 expectParsedMm("11.96 in", "ft-in", 303.784);
 expectParsedMm("9.4 in", "ft-in", 238.76);
+expectParsedMm(`13' 9 3/8"`, "ft-in", 4_200.525);
+expectParsedMm("13′ 9 3/8″", "ft-in", 4_200.525);
+expectParsedMm("13 ft 9-3/8 in", "ft-in", 4_200.525);
+expectParsedMm("165 3/8 in", "ft-in", 4_200.525);
+expectParsedMm("3/8 in", "ft-in", 9.525);
+expectParsedMm("47 3/8", "in", 1_203.325);
+expectParsedMm("47-3/8 in", "in", 1_203.325);
+expectParsedMm(`47 3/8"`, "in", 1_203.325);
+expectParsedMm("47.4", "in", 1_203.96);
+expectParsedMm("3/8", "in", 9.525);
 
 for (const input of [
   "13.75 ft 9.4 in",
@@ -83,6 +100,8 @@ for (const input of [
   "",
   "   ",
   "--13 in",
+  "13 ft 9 3/8 3/8 in",
+  "3/8/2 in",
 ]) {
   expectInvalid(input);
 }
@@ -141,7 +160,7 @@ for (const referenceMm of [4_266.184, 4_200]) {
   const exactRenderedText = formatDisplayLengthInput(referenceMm, "ft-in");
   assert.equal(
     exactRenderedText,
-    referenceMm === 4_266.184 ? "14′ 0″" : "13′ 9.4″"
+    referenceMm === 4_266.184 ? "13′ 11 15/16″" : "13′ 9 3/8″"
   );
   let repeatedReferenceMm = referenceMm;
   for (let iteration = 0; iteration < 100; iteration += 1) {
