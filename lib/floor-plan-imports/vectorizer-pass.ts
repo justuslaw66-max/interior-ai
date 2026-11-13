@@ -1,4 +1,5 @@
 import type { RegisteredPageEvidence, PageSemanticEvidence } from "./deterministic-evidence";
+import { pdfOwnWallsEnabled, withPdfOwnWalls } from "./pdf-own-walls";
 import { orientRasterUpload } from "./raster-orientation";
 import type { FloorPlanAdapterContext } from "./source-adapter";
 import type { FloorPlanRenderedPage } from "./types";
@@ -72,7 +73,9 @@ export async function applyVectorizerEvidence(input: VectorizerPassInput) {
     const pageImage = { pageNumber: page.pageNumber, widthPx: page.widthPx, heightPx: page.heightPx, mimeType: derivative.mimeType,
       bytes: derivative.bytes, unturned: await unturnedUpload(rendered, input.source, provider) };
     try {
-      const evidence = await provider.analyzePage(pageImage, { timeoutMs, signal: context.signal });
+      const read = await provider.analyzePage(pageImage, { timeoutMs, signal: context.signal });
+      // A vector PDF page's walls and rooms from its own drawing (pdf-own-walls.ts), where that is switched on.
+      const evidence = pdfOwnWallsEnabled() ? withPdfOwnWalls(page, read) : read;
       page.semantics = input.mergeSemantics(page.semantics, registerVectorizerEvidence(page, evidence, derivative.bytes), page);
       diagnostics.set(page.pageNumber, {
         providerId: provider.id,

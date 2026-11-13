@@ -1,5 +1,6 @@
 import type { FloorPlanDocumentV2, FloorPlanVertexV2, FloorPlanWallV2 } from "@/lib/floor-plan-document-v2";
 import type { RegisteredPageEvidence } from "./deterministic-evidence";
+import { hasPdfOwnWalls } from "./pdf-own-walls";
 import {
   addVertex,
   directionFrom,
@@ -98,6 +99,8 @@ export function cleanImportedTopology(
   const floor = document.floors[0];
   if (environment.FLOOR_PLAN_TOPOLOGY_CLEANUP !== "1" || !floor) return "off";
   if (!pages.some((page) => (page.vectorizer?.rooms.length ?? 0) > 0) || !floor.rooms.length) return "off";
+  // Walls taken from a PDF's own drawing (pdf-own-walls.ts) are exact: there is nothing to repair.
+  if (pages.some(hasPdfOwnWalls)) return "off";
   return summarizeTopologyCleanup(cleanVectorizerTopology(floor));
 }
 

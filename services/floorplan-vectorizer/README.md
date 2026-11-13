@@ -222,6 +222,19 @@ into it, joins free wall ends onto a wall end or wall ahead of them (a corner or
 nothing, undoing any edit the compiler would refuse. What it did goes in the job's `topologyCleanup` metric.
 `tools/score/topology.py` scores the result per plan.
 
+Walls from the PDF's own drawing (13 Nov 2026; `FLOOR_PLAN_PDF_OWN_WALLS=1`, off unless set) also run in the app's
+import, on a vector PDF page whose scale the reader solved from printed dimensions. A vector PDF holds its walls
+exactly - solid fills (or lines drawn side by side until the wall is black) and closed strips between two lines - so
+`lib/floor-plan-imports/pdf-own-walls.ts` takes the walls, the openings between them and the rooms they enclose from
+that geometry and writes them as this reader's rooms and wall edges (room outlines on wall centre-lines, every edge
+with its thickness; an opening jamb to jamb, the same edge for the rooms either side). The reader still gives what is
+lettered: the scale, the room names, and what kind of door it saw in a gap. A gap between two walls is an opening
+where both stop short of each other (up to 1300 mm), or where a door is drawn in it (a swing hinged at a jamb, a pair
+of leaves, folding leaves, sliding panels; up to 3600 mm); thin layers in an outer wall with next to nothing solid
+among them are a window. Doors and windows drawn inside a wall's own lines are not read yet. On such a page the wall
+snap and the topology clean-up above are skipped: they repair walls read from a picture, and these are exact. A page
+it cannot use (no scale from dimensions, no drawing of its own, no enclosed room) keeps the reader's walls.
+
 Everything runs on the worker; page bytes are written to a private temporary folder that is removed afterwards.
 Development history, scoring tools, truth files and test plans live in the main checkout's copy of this folder
 (`APP-EXPORT.md`, `TUNING.md`, `tools/`); this copy holds only what the worker runs.
