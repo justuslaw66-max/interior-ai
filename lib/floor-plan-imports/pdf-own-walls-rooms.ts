@@ -14,11 +14,11 @@ export const PDF_OWN_ROOM_LIMITS = {
   /** A stretch thicker than the wall on both sides of it is another wall meeting this one from behind (a door's jamb,
    * the end of a wall) where it is no longer than this, or shorter than twice what it stands out; it is left to that wall. */
   stubMm: 150,
-  /** A stretch of several thin layers with next to nothing solid among them, at least this long, is a window. (A
-   * solid wall behind its outer skin has as many layers; a window over a solid sill is left as wall for now.) */
+  /** A stretch of several thin layers of which at most this share is solid, at least this long, is a window: glass
+   * over a sill is about a quarter solid, a solid wall behind its outer skin about half. */
   windowMinMm: 400,
   windowLayers: 3,
-  windowSolidShare: 0.15,
+  windowSolidShare: 0.35,
   /** A wall whose thickness is unknown (solid further back than any wall is thick) is drawn this thick. */
   defaultWallMm: 200,
 } as const;
@@ -128,24 +128,27 @@ type Floors = { /** This room's floor. */ own: Uint8Array; /** Every room's floo
 
 /**
  * What stands behind one cell-width of a room's side: an opening or wall, how deep, and whether it is a window (thin
- * layers, next to nothing solid, with no room behind them: between two rooms such layers are a wall or a door's own lines).
+ * layers, little of them solid, or a casement drawn on the wall; with no room behind: between two rooms such layers are a wall or a door's own lines).
  */
 function probe(grid: WallGrid, mass: WallMass, { own: floor, indoors }: Floors, i: number, j: number, ni: number, nj: number, maxWallPx: number): Probe {
   const { nx, ny, xs, ys } = grid, closure = mass.closure[j * nx + i], through = closure >= 0;
   const inGrid = () => i >= 0 && j >= 0 && i < nx && j < ny;
   // The probe stops at this room's floor, at anything that is no barrier, and where wall gives way to an opening.
   const stops = (index: number) => floor[index] === 1 || !isBarrier(mass, index) || (mass.closure[index] >= 0) !== through;
-  let depth = 0, solid = 0, layers = 0, unit = -3;
+  let depth = 0, solid = 0, glass = 0, layers = 0, unit = -3;
   for (; inGrid() && !stops(j * nx + i); i += ni, j += nj) {
     const index = j * nx + i, filled = mass.kind[index] === FILLED, here = filled ? -2 : mass.region[index];
     const size = ni ? xs[i + 1] - xs[i] : ys[j + 1] - ys[j];
     depth += size;
     if (filled) solid += size;
+    glass += mass.glazed[index] * size;
     if (here !== unit) { layers += 1; unit = here; }
     if (depth > maxWallPx + 1e-6) return { closure, depthPx: Infinity, window: false };
   }
   const outdoors = !inGrid() || indoors[j * nx + i] !== 1;
-  return { closure, depthPx: depth, window: !through && outdoors && layers >= PDF_OWN_ROOM_LIMITS.windowLayers && solid <= PDF_OWN_ROOM_LIMITS.windowSolidShare * depth };
+  // A window: a casement drawn on this piece of wall, or thin layers with little solid among them.
+  const layered = layers >= PDF_OWN_ROOM_LIMITS.windowLayers && solid <= PDF_OWN_ROOM_LIMITS.windowSolidShare * depth;
+  return { closure, depthPx: depth, window: !through && outdoors && ((glass > 0 && glass >= depth - 1e-6) || layered) };
 }
 
 /** The stretches of one side as probed, cell by cell, equal neighbours joined. */

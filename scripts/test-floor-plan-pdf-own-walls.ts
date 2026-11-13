@@ -13,9 +13,14 @@ type Line = [number, number, number, number];
 const segment = (id: string, [x0, y0, x1, y1]: Line): SourceVectorSegment =>
   ({ id, pageNumber: 1, start: { x: x0, y: y0 }, end: { x: x1, y: y1 }, strokeWidthPx: 1, evidenceKind: "pdf_vector" });
 
-/** The plan's lines, with the gap between the rooms from `gapTop` to `gapBottom`. */
-function planLines(gapTop: number, gapBottom: number): Line[] {
+/**
+ * The plan's lines, with the gap between the rooms from `gapTop` to `gapBottom`. With `walled`, the wall between the
+ * rooms is not broken there: its two lines run on and the two lines across it are a door's jambs.
+ */
+function planLines(gapTop: number, gapBottom: number, walled = false): Line[] {
+  const through: Line[] = walled ? [[395, gapTop, 395, gapBottom], [405, gapTop, 405, gapBottom]] : [];
   return [
+    ...through,
     // The outer rectangle and the two rooms' own faces.
     [100, 100, 700, 100], [700, 100, 700, 400], [700, 400, 100, 400], [100, 400, 100, 100],
     [110, 110, 395, 110], [110, 390, 395, 390], [110, 110, 110, 390], [395, 110, 395, gapTop], [395, gapBottom, 395, 390],
@@ -34,6 +39,16 @@ const swing: SourceVectorPath = {
   curves: [{ id: "swing-c1", pageNumber: 1, sourceSubpathId: "swing-sub1", sourceCommandIndex: 1, command: "cubic", start: { x: 550, y: 200 },
     controlPoints: [{ x: 550, y: 283 }, { x: 483, y: 350 }], end: { x: 400, y: 350 } }],
 };
+
+/** A quarter-circle swing: hinge, the open leaf's tip and the shut leaf's tip. */
+function arc(id: string, hinge: [number, number], open: [number, number], shut: [number, number]): SourceVectorPath {
+  const corner = [open[0] + shut[0] - hinge[0], open[1] + shut[1] - hinge[1]], toward = (from: number[], k: number) => from[k] + 0.55 * (corner[k] - from[k]);
+  const xs = [hinge[0], corner[0]], ys = [hinge[1], corner[1]];
+  return { id, pageNumber: 1, closed: false, segmentIds: [], rectilinearScore: 0, evidenceKind: "pdf_vector", paintOperation: "stroke", containsCurves: true,
+    bbox: { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) },
+    curves: [{ id: `${id}-c1`, pageNumber: 1, sourceSubpathId: `${id}-sub1`, sourceCommandIndex: 1, command: "cubic", start: { x: open[0], y: open[1] },
+      controlPoints: [{ x: toward(open, 0), y: toward(open, 1) }, { x: toward(shut, 0), y: toward(shut, 1) }], end: { x: shut[0], y: shut[1] } }] };
+}
 
 function page(lines: Line[], paths: SourceVectorPath[] = []): RegisteredPageEvidence {
   // Lettering elsewhere on the sheet: strokes too short to bound a wall, enough of them for a drawn page.
@@ -104,6 +119,29 @@ function testWideGapNeedsADoor() {
   assert.deepEqual(ends(doors[0]), [[400, 200], [400, 350]]);
 }
 
+function testDoorDrawnInsideTheWall() {
+  // The wall between the rooms runs on through the door; two lines across it are the jambs, and the leaf hangs from one.
+  const leaf = arc("leaf", [405, 200], [495, 200], [405, 290]);
+  const evidence = withPdfOwnWalls(page(planLines(200, 290, true), [leaf]), reader());
+  assert.equal(evidence.rooms.length, 2);
+  const doors = evidence.wallEdges.filter((edge) => edge.opening?.kind === "door");
+  assert.ok(doors.length >= 1 && doors.every((edge) => edge.opening?.operation === "swing" && edge.opening.widthMm === 900), "the piece of wall the leaf hangs on is a door");
+  assert.deepEqual(ends(doors[0]), [[400, 200], [400, 290]]);
+  // Without the leaf the piece is wall like the rest.
+  const plain = withPdfOwnWalls(page(planLines(200, 290, true)), reader());
+  assert.equal(plain.wallEdges.filter((edge) => edge.opening && edge.opening.kind !== "window").length, 0);
+}
+
+function testCasementInAnOutsideWall() {
+  // A piece of the right room's outer wall between two lines across it, with a pair of even leaves opening outwards.
+  const jambs: Line[] = [[690, 200, 700, 200], [690, 300, 700, 300]];
+  const pair = [arc("upper", [700, 200], [750, 200], [700, 250]), arc("lower", [700, 300], [750, 300], [700, 250])];
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...jambs], pair), reader());
+  const windows = evidence.wallEdges.filter((edge) => edge.opening?.kind === "window").map(ends);
+  assert.deepEqual(windows.sort((a, b) => a[0][0] - b[0][0]), [[[105, 200], [105, 300]], [[695, 200], [695, 300]]], "an even pair of leaves in an outside wall is a casement window");
+  assert.equal(evidence.wallEdges.filter((edge) => edge.opening?.kind === "door").length, 0);
+}
+
 function testLeftAsRead() {
   const drawn = page(planLines(200, 290)), read = reader();
   assert.equal(pdfOwnWallsEnabled({}), false, "off unless FLOOR_PLAN_PDF_OWN_WALLS=1");
@@ -128,6 +166,8 @@ testRoomsOnCentreLines();
 testOpeningSharedJambToJamb();
 testWindow();
 testWideGapNeedsADoor();
+testDoorDrawnInsideTheWall();
+testCasementInAnOutsideWall();
 testLeftAsRead();
 testMarksItsPages();
 console.log("floor-plan PDF own walls: ok");

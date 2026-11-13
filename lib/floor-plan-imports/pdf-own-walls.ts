@@ -2,7 +2,7 @@ import { pointInPolygon, type RegisteredPageEvidence } from "./deterministic-evi
 import { roomCentreLines, standaloneWalls, type OwnWallEdge } from "./pdf-own-walls-edges";
 import { doorFinder, type DoorFinder, type Drawn } from "./pdf-own-walls-doors";
 import { PDF_OWN_WALL_LIMITS, buildWallGrid, wallLinesAndFills, type WallGrid } from "./pdf-own-walls-grid";
-import { closeGaps, dropPocketOpenings, wallMass, type WallMass } from "./pdf-own-walls-mass";
+import { closeGaps, dropPocketOpenings, openInWall, wallMass, type WallMass } from "./pdf-own-walls-mass";
 import { PDF_OWN_ROOM_LIMITS, floorOutline, roomCells, roomFaces, roomFloor } from "./pdf-own-walls-rooms";
 import type { FloorPlanVectorizerEvidence } from "./vectorizer-evidence-schema";
 
@@ -62,7 +62,12 @@ export function pdfOwnWallsModel(page: RegisteredPageEvidence, evidence: Evidenc
   let pass: { grid: WallGrid; mass: WallMass; doors: DoorFinder; needed: { xs: number[]; ys: number[] } } = built({ xs: [], ys: [] });
   if (pass.needed.xs.length || pass.needed.ys.length) pass = built(pass.needed);
   const { grid, mass, doors } = pass;
-  dropPocketOpenings(grid, mass, (PDF_OWN_ROOM_LIMITS.minRoomM2 * 1e6) / millimetresPerPixel ** 2);
+  // Openings that only cut off a pocket are taken back, before and after the doors drawn inside the walls are found
+  // (a swing such an opening had used may be one of those).
+  const minRoomPx2 = (PDF_OWN_ROOM_LIMITS.minRoomM2 * 1e6) / millimetresPerPixel ** 2;
+  for (const gap of dropPocketOpenings(grid, mass, minRoomPx2)) doors.release(gap);
+  for (const leaf of doors.inWalls(mass)) openInWall(grid, mass, leaf.part, leaf.kind === "casement");
+  dropPocketOpenings(grid, mass, minRoomPx2);
   const cells = roomCells(grid, mass, millimetresPerPixel), maxWallPx = PDF_OWN_WALL_LIMITS.maxWallMm / millimetresPerPixel;
   const rooms: PdfOwnWallsModel["rooms"] = [];
   let unbuiltRooms = 0;
