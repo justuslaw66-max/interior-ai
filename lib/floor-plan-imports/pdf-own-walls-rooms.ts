@@ -1,4 +1,4 @@
-import { PDF_OWN_WALL_LIMITS, labelCells, type WallGrid } from "./pdf-own-walls-grid";
+import { PDF_OWN_WALL_LIMITS, type WallGrid } from "./pdf-own-walls-grid";
 import { FILLED, FREE, floorPieces, isBarrier, type WallMass } from "./pdf-own-walls-mass";
 
 /**

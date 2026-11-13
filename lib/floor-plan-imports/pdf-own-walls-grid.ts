@@ -213,7 +213,10 @@ function closeCorners(grid: WallGrid, lines: AxisLine[], reachPx: number) {
 export function buildWallGrid(lines: AxisLine[], fills: FillPath[], widthPx: number, heightPx: number, reachPx = 0,
   cuts: { xs: number[]; ys: number[] } = { xs: [], ys: [] }): WallGrid {
   const xValues = [0, widthPx, ...cuts.xs], yValues = [0, heightPx, ...cuts.ys];
-  for (const line of lines) (line.plumb ? xValues : yValues).push(line.at), (line.plumb ? yValues : xValues).push(line.from, line.to);
+  for (const line of lines) {
+    (line.plumb ? xValues : yValues).push(line.at);
+    (line.plumb ? yValues : xValues).push(line.from, line.to);
+  }
   for (const rings of fills) for (const ring of rings) for (const point of ring) { xValues.push(point.x); yValues.push(point.y); }
   const xs = gridCoordinates(xValues), ys = gridCoordinates(yValues), nx = xs.length - 1, ny = ys.length - 1;
   const grid: WallGrid = { xs, ys, nx, ny, plumb: new Uint8Array((nx + 1) * ny), level: new Uint8Array(nx * (ny + 1)), fill: new Uint8Array(nx * ny) };
