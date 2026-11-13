@@ -144,7 +144,7 @@ export function SelectedCabinetPanel({
                   <Button
                     data-testid="selected-cabinet-center"
                     variant="secondary" size="regular"
-                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    disabled={!canEdit || Boolean(selectedCabinetItem.locked)}
                     onClick={actions.center}
                   >
                     Centre
@@ -152,7 +152,7 @@ export function SelectedCabinetPanel({
                   <Button
                     data-testid="selected-cabinet-snap-wall"
                     variant="secondary" size="regular"
-                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    disabled={!canEdit || Boolean(selectedCabinetItem.locked)}
                     onClick={actions.snapToWall}
                   >
                     Snap wall
@@ -162,7 +162,7 @@ export function SelectedCabinetPanel({
                   <Button
                     size="compact"
                     data-testid="selected-cabinet-nudge-left"
-                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    disabled={!canEdit || Boolean(selectedCabinetItem.locked)}
                     onClick={() => actions.nudge(-0.05, 0)}
                   >
                     Left
@@ -170,7 +170,7 @@ export function SelectedCabinetPanel({
                   <Button
                     size="compact"
                     data-testid="selected-cabinet-nudge-back"
-                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    disabled={!canEdit || Boolean(selectedCabinetItem.locked)}
                     onClick={() => actions.nudge(0, -0.05)}
                   >
                     Back
@@ -178,7 +178,7 @@ export function SelectedCabinetPanel({
                   <Button
                     size="compact"
                     data-testid="selected-cabinet-nudge-front"
-                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    disabled={!canEdit || Boolean(selectedCabinetItem.locked)}
                     onClick={() => actions.nudge(0, 0.05)}
                   >
                     Front
@@ -186,7 +186,7 @@ export function SelectedCabinetPanel({
                   <Button
                     size="compact"
                     data-testid="selected-cabinet-nudge-right"
-                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    disabled={!canEdit || Boolean(selectedCabinetItem.locked)}
                     onClick={() => actions.nudge(0.05, 0)}
                   >
                     Right
@@ -196,7 +196,7 @@ export function SelectedCabinetPanel({
                   <Button
                     data-testid="selected-cabinet-rotate-quarter"
                     variant="secondary" size="regular"
-                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    disabled={!canEdit || Boolean(selectedCabinetItem.locked)}
                     onClick={() => actions.rotateByDegrees(90)}
                   >
                     +90 deg
@@ -204,7 +204,7 @@ export function SelectedCabinetPanel({
                   <Button
                     data-testid="selected-cabinet-reset-rotation"
                     variant="secondary" size="regular"
-                    disabled={!canEdit || (isDesigner && Boolean(selectedCabinetItem.locked))}
+                    disabled={!canEdit || Boolean(selectedCabinetItem.locked)}
                     onClick={actions.resetRotation}
                   >
                     Reset rotation

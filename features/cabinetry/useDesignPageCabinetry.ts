@@ -784,7 +784,7 @@ export function useDesignPageCabinetry({
   const moveSelectedToPosition = useCallback(
     (targetX: number, targetZ: number, actionLabel = "Move built-in") => {
       if (!selected || !activeRoom || !canEdit) return;
-      if (isDesigner && selected.item.locked) return;
+      if (selected.item.locked) return;
       const { item, planningDimensionsMm } = selected;
       if (!planningDimensionsMm) return;
       const rotationY = getCabinetRotationY(item);
@@ -850,7 +850,7 @@ export function useDesignPageCabinetry({
 
   const snapSelectedToWall = useCallback(() => {
     if (!selected || !activeRoom || !canEdit) return;
-    if (isDesigner && selected.item.locked) return;
+    if (selected.item.locked) return;
     const planningDimensionsMm = selected.planningDimensionsMm;
     if (!planningDimensionsMm) return;
     // The nearest side of the room's finished faces: there if it fits there (the way isn't checked), else toward it.
@@ -862,7 +862,7 @@ export function useDesignPageCabinetry({
   const setSelectedRotation = useCallback(
     (targetRotationY: number, actionLabel = "Rotate built-in") => {
       if (!selected || !activeRoom || !canEdit) return;
-      if (isDesigner && selected.item.locked) return;
+      if (selected.item.locked) return;
       const planningDimensionsMm = selected.planningDimensionsMm;
       if (!planningDimensionsMm) return;
       const resolvedRotationY = rotationSnapEnabled

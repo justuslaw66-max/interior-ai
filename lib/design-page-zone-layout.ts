@@ -205,7 +205,6 @@ type AlignSelectionParams = {
   axis: "x" | "z";
   currentItems: DesignItem[];
   selectedIds: Set<string>;
-  isDesigner: boolean;
   catalogItems: typeof CATALOG_ITEMS;
   roomWidth: number;
   roomDepth: number;
@@ -221,7 +220,6 @@ export function buildAlignedSelectionItems(params: AlignSelectionParams): Design
     axis,
     currentItems,
     selectedIds,
-    isDesigner,
     catalogItems,
     roomWidth,
     roomDepth,
@@ -235,7 +233,7 @@ export function buildAlignedSelectionItems(params: AlignSelectionParams): Design
   if (selectedIds.size < 2) return null;
 
   const movable = currentItems.filter(
-    (x) => selectedIds.has(x.instanceId) && !(isDesigner && x.locked)
+    (x) => selectedIds.has(x.instanceId) && !x.locked
   );
   if (!movable.length) return null;
 
@@ -298,7 +296,6 @@ type AutoLayoutZoneParams = {
   zoneId: string;
   zones: ZoneMin[];
   currentItems: DesignItem[];
-  isDesigner: boolean;
   catalogItems: typeof CATALOG_ITEMS;
   roomWidth: number;
   roomDepth: number;
@@ -313,7 +310,6 @@ export function buildAutoLayoutZoneItems(
     zoneId,
     zones,
     currentItems,
-    isDesigner,
     catalogItems,
     roomWidth,
     roomDepth,
@@ -339,7 +335,7 @@ export function buildAutoLayoutZoneItems(
     const sofaWidth = (sofaProduct?.dimsMm.w ?? 1800) / 1000;
 
     const coffee = zoneItems.find((item) => getCategory(item) === "coffee_table");
-    if (coffee && !(isDesigner && coffee.locked)) {
+    if (coffee && !coffee.locked) {
       const coffeeProduct = catalogItems[coffee.productId];
       const coffeeDepth = (coffeeProduct?.dimsMm.d ?? 600) / 1000;
       const sofaFrontZ = sofa.position[2] + sofaDepth / 2;
@@ -361,7 +357,7 @@ export function buildAutoLayoutZoneItems(
     }
 
     const rug = zoneItems.find((item) => getCategory(item) === "rug");
-    if (rug && !(isDesigner && rug.locked)) {
+    if (rug && !rug.locked) {
       const rugProduct = catalogItems[rug.productId];
       const rugZ = sofa.position[2] + sofaDepth * 0.35;
       const [safeX, safeZ] = clampToRoom(
@@ -383,7 +379,7 @@ export function buildAutoLayoutZoneItems(
     const chairs = zoneItems.filter((item) => getCategory(item) === "accent_chair");
     const baseZ = sofa.position[2] + sofaDepth * 0.4;
     chairs.forEach((chair, index) => {
-      if (isDesigner && chair.locked) return;
+      if (chair.locked) return;
       const chairProduct = catalogItems[chair.productId];
       const chairWidth = (chairProduct?.dimsMm.w ?? 800) / 1000;
       const offsetX = sofaWidth / 2 + chairWidth / 2 + 0.25;
@@ -409,7 +405,7 @@ export function buildAutoLayoutZoneItems(
   if (zone.type === "reading") {
     const chair = zoneItems.find((item) => getCategory(item) === "accent_chair");
     const lamp = zoneItems.find((item) => getCategory(item) === "floor_lamp");
-    if (chair && lamp && !(isDesigner && lamp.locked)) {
+    if (chair && lamp && !lamp.locked) {
       const lampProduct = catalogItems[lamp.productId];
       const targetX = chair.position[0] + 0.45;
       const targetZ = chair.position[2] + 0.25;
@@ -435,7 +431,7 @@ export function buildAutoLayoutZoneItems(
       const category = getCategory(item);
       return category === "tv_console" || category === "sideboard";
     });
-    if (consoleItem && !(isDesigner && consoleItem.locked)) {
+    if (consoleItem && !consoleItem.locked) {
       const consoleProduct = catalogItems[consoleItem.productId];
       const targetX = 0;
       const targetZ = roomDepth / 2 - wallThickness - consoleProduct.dimsMm.d / 1000 / 2;
@@ -466,7 +462,6 @@ type RotateZoneParams = {
   deltaRot: number;
   zones: ZoneMin[];
   currentItems: DesignItem[];
-  isDesigner: boolean;
   catalogItems: typeof CATALOG_ITEMS;
   roomWidth: number;
   roomDepth: number;
@@ -483,7 +478,6 @@ export function buildRotatedZoneItems(params: RotateZoneParams): DesignItem[] | 
     deltaRot,
     zones,
     currentItems,
-    isDesigner,
     catalogItems,
     roomWidth,
     roomDepth,
@@ -499,7 +493,7 @@ export function buildRotatedZoneItems(params: RotateZoneParams): DesignItem[] | 
 
   const zoneSet = new Set(zone.itemIds);
   const movable = currentItems.filter(
-    (item) => zoneSet.has(item.instanceId) && !(isDesigner && item.locked)
+    (item) => zoneSet.has(item.instanceId) && !item.locked
   );
   if (!movable.length) return null;
 

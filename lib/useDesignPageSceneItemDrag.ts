@@ -68,6 +68,7 @@ type SceneDragHistory = {
 type SceneItemDragOptions = {
   state: {
     hasWholeHousePlan: boolean;
+    /** Locks hold in Consumer and Pro alike (market practice, 14 Nov 2026), so the drag no longer reads this. */
     designerMode: boolean;
     activeRoom: RoomSnapshot | null;
     roomWidth: number;
@@ -144,7 +145,6 @@ export function useDesignPageSceneItemDrag({
 }: SceneItemDragOptions) {
   const {
     hasWholeHousePlan,
-    designerMode,
     activeRoom,
     roomWidth,
     roomDepth,
@@ -500,7 +500,7 @@ export function useDesignPageSceneItemDrag({
       const deltaX = localPosition[0] - mover.position[0];
       const deltaZ = localPosition[2] - mover.position[2];
       const movable = currentItems.filter(
-        (item) => selectedIds.has(item.instanceId) && !(designerMode && item.locked)
+        (item) => selectedIds.has(item.instanceId) && !item.locked
       );
       if (!movable.length) {
         showDragRejection("Unlock at least one selected item to move the group.");
