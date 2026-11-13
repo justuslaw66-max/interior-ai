@@ -260,16 +260,56 @@ def _items_of(pieces, base):
     return items
 
 
+# (r13, J 13 Nov: "can we keep the walls traced colour consistent ... I want all of it to be black") one ink: every
+# line, arc, dot and filled shape the trace drew in a grey is drawn black - a picture's lines come out grey where it
+# was soft or re-saved (a JPEG's thin lines), and two lines of one wall were drawn one black and one grey, a grey line
+# showed where it ran under a black wall. A light pen of its own (a plan's furniture or a neighbour drawn pale, tones
+# from ONE_INK_LIGHT up) keeps its tone, and so do light lines drawn over dark fills. A filled area keeps a grey of
+# its own (a wall's grey poche, a fitting shaded grey, a smudge of a soft picture), unless it is dark already (to
+# ONE_INK_DARK) or no thicker than a pen (ONE_INK_THIN: a letter or a mark copied by its outline is line work).
+# Off; on with CAD lettering.
+ONE_INK = os.environ.get("FT_ONE_INK", os.environ.get("FT_CAD_LETTERING", "0")) == "1"
+ONE_INK_LIGHT = int(os.environ.get("FT_ONE_INK_LIGHT", "176"))   # a tone this light or lighter is a pen of its own
+ONE_INK_DARK = int(os.environ.get("FT_ONE_INK_DARK", "96"))      # a fill this dark or darker is drawn black
+ONE_INK_THIN = float(os.environ.get("FT_ONE_INK_THIN", "3.0"))   # picture px: a fill no thicker than this is line work
+
+
+def _ink(g, light=False):
+    """the tone drawn: black under one ink, but for a light pen"""
+    g = int(g)
+    return 0 if ONE_INK and not light and g < ONE_INK_LIGHT else g
+
+
+def _thickness(poly):
+    """a filled shape's mean thickness: twice its area over its outline's length"""
+    rings = [np.asarray(r, float) for r in poly["rings"] if len(r) >= 3]
+    if not rings:
+        return 0.0
+    depth = _depths(rings)
+    area = sum(abs(_area(r)) * (1 if dp % 2 == 0 else -1) for r, dp in zip(rings, depth))
+    per = sum(float(np.hypot(*np.diff(np.vstack([r, r[:1]]), axis=0).T).sum()) for r in rings)
+    return 2.0 * max(0.0, area) / per if per > 0 else 0.0
+
+
+def _fill_ink(poly):
+    g = int(poly["g"])
+    if g <= ONE_INK_DARK or (g < ONE_INK_LIGHT and _thickness(poly) <= ONE_INK_THIN):
+        return 0
+    return g
+
+
 def drawing(t):
     """the trace (faithful_trace.trace) as the evidence's drawing"""
     items = []
     for poly in t["walls"]:
-        it = fill_item(poly)
+        it = fill_item(dict(poly, g=_fill_ink(poly)) if ONE_INK else poly)
         if it:
             items.append(it)
     groups = {}
     lines_by = {}
     for e in t["strokes"]:
+        if ONE_INK:
+            e = dict(e, g=_ink(e["g"], e.get("light")))
         if JOIN and e["k"] == "line":
             lines_by.setdefault((1 if e.get("light") else 0, -int(e["g"]), round(float(e["w"]), 2), "line"), []).append(e)
             continue
