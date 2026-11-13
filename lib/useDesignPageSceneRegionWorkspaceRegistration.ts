@@ -359,8 +359,8 @@ export function useDesignPageSceneRegionWorkspaceRegistration({
         onDragPointerMove: scene.hasWholeHousePlan
           ? camera.actions.navigation.nudgeWholeHomeCameraForDrag
           : undefined,
-        applyItemRotation:
-          placementSelection.actions.interaction.applyItemRotation,
+        applyItemRotation: placementSelection.actions.interaction.applyItemRotation,
+        onResizeLayoutBlock: placementSelection.actions.interaction.resizeLayoutBlock,
         onSnapPulse: camera.actions.canvas.pulseSnapGrid,
         onDragEnd: sceneDrag.actions.handleDragEnd,
       },

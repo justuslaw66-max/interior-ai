@@ -55,6 +55,16 @@ async function readDemandSnapshot(page: Page): Promise<DemandSnapshot> {
   });
 }
 
+/** At least one frame renders after a mutation recorded at `rendererCalls`. */
+async function expectRenderAfter(page: Page, rendererCalls: number | undefined) {
+  expect(rendererCalls).toBeDefined();
+  await expect
+    .poll(async () => (await readDemandSnapshot(page)).rendererCalls, {
+      timeout: 2_000,
+    })
+    .toBeGreaterThan(rendererCalls ?? Number.MAX_SAFE_INTEGER);
+}
+
 async function expectRendererPlateau(page: Page, durationMs = 1_800) {
   let settled: DemandSnapshot | null = null;
   await expect
@@ -500,9 +510,9 @@ test.describe("2. Editor Correctness", () => {
     const exposureMutation = snapshot.mutationEvents.filter(
       (event) => event.kind === "exposure",
     ).at(-1);
-    expect(snapshot.rendererCalls).toBeGreaterThan(
-      exposureMutation?.rendererCalls ?? Number.MAX_SAFE_INTEGER,
-    );
+    // The change is recorded inside the input event; its frame comes on the next
+    // animation frame, which can land after the first read. Wait for that frame.
+    await expectRenderAfter(page, exposureMutation?.rendererCalls);
     const changedExposure = await canvas.getAttribute("data-lighting-exposure");
     const afterExposureImage = await canvas.screenshot();
     expect(changedExposure).not.toBeNull();
@@ -545,9 +555,7 @@ test.describe("2. Editor Correctness", () => {
     const resizeMutation = snapshot.mutationEvents.filter(
       (event) => event.kind === "resize",
     ).at(-1);
-    expect(snapshot.rendererCalls).toBeGreaterThan(
-      resizeMutation?.rendererCalls ?? Number.MAX_SAFE_INTEGER,
-    );
+    await expectRenderAfter(page, resizeMutation?.rendererCalls);
     await expectRendererPlateau(page);
   });
 

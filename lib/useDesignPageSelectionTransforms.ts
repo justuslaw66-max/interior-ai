@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef } from "react";
 
 import { track, trackProductEvent } from "@/lib/analytics";
 import { CATALOG_ITEMS } from "@/lib/catalog";
+import { catalogOrLayoutBlockProduct } from "@/lib/design-item-product-snapshot";
 import {
   findCatalogSurfacePlacement,
   isSurfaceOnlyCatalogItem,
@@ -316,9 +317,7 @@ export function useDesignPageSelectionTransforms({
         trackFirstInteraction();
         const shouldSnap = options?.snap ?? true;
         const resolvedRotationY =
-          shouldSnap && rotationSnapEnabled
-            ? snapRotationRadians(targetRotationY, rotationSnapStepRadians)
-            : targetRotationY;
+          shouldSnap && rotationSnapEnabled ? snapRotationRadians(targetRotationY, rotationSnapStepRadians) : targetRotationY;
         const selectedSet = getSelectedIds();
         const isGroupRotate = selectedSet.size > 1 && selectedSet.has(id);
         const source = options?.source ?? "canvas";
@@ -334,7 +333,7 @@ export function useDesignPageSelectionTransforms({
             return false;
           }
           const previous = currentItem?.rotationY ?? 0;
-          const product = CATALOG_ITEMS[currentItem.productId];
+          const product = catalogOrLayoutBlockProduct(currentItem);
           if (!product) {
             reportTransformRejection("rotate", "Rotation is unavailable for this item.");
             return false;
@@ -460,7 +459,7 @@ export function useDesignPageSelectionTransforms({
         const sine = Math.sin(deltaRotation);
         const nextItems = currentItems.map((item) => {
           if (!movableIds.has(item.instanceId)) return item;
-          const product = CATALOG_ITEMS[item.productId];
+          const product = catalogOrLayoutBlockProduct(item);
           if (!product) return item;
           const offsetX = item.position[0] - bounds.centerX;
           const offsetZ = item.position[2] - bounds.centerZ;
@@ -484,11 +483,11 @@ export function useDesignPageSelectionTransforms({
 
         const collision = nextItems.some((movedItem) => {
           if (!movableIds.has(movedItem.instanceId)) return false;
-          if (CATALOG_ITEMS[movedItem.productId]?.category === "rug") return false;
+          if (catalogOrLayoutBlockProduct(movedItem)?.category === "rug") return false;
           const movedBounds = getItemAABB(movedItem);
           if (!movedBounds) return false;
           return blockers.some((blocker) => {
-            if (CATALOG_ITEMS[blocker.productId]?.category === "rug") return false;
+            if (catalogOrLayoutBlockProduct(blocker)?.category === "rug") return false;
             const blockerBounds = getItemAABB(blocker);
             return Boolean(blockerBounds && aabbIntersects(movedBounds, blockerBounds));
           });
@@ -973,7 +972,7 @@ export function useDesignPageSelectionTransforms({
 
         const movedItems: DesignItem[] = [];
         for (const item of movableSelectedItems) {
-          const product = CATALOG_ITEMS[item.productId];
+          const product = catalogOrLayoutBlockProduct(item);
           if (!product) continue;
           const dimensionsMm = getPlanningDimensions(item, product);
           const [safeX, safeZ] = clampToCatalogPlacementRoom(

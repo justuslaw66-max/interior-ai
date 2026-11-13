@@ -9,7 +9,10 @@ async function openEditor(page: Page) {
   await page.route("**/api/me", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ plan: "free", source: "playwright" }) }),
   );
+  // A fresh start on the first load only, so a reload keeps what the test saved (Preferences).
   await page.addInitScript(() => {
+    if (window.name === "layout-blocks-started") return;
+    window.name = "layout-blocks-started";
     window.localStorage.clear();
     window.sessionStorage.clear();
     window.localStorage.setItem("interior-ai:beta-start-dismissed", "1");
@@ -53,6 +56,15 @@ test.describe("layout blocks", () => {
     await name.press("Enter");
     await expect(panel).toContainText("Master wardrobe");
 
+    // The unit can be changed right here, as in Plan (J, 13 Nov 2026).
+    await panel.getByTestId("layout-block-units").selectOption("mm");
+    await expect(width).toHaveValue("2400");
+
+    // A block turns like any item (it was refused as "unavailable" before 13 Nov 2026).
+    if ((await panel.getByTestId("rotation-btn-quarter-turn").count()) === 0) await panel.getByTestId("rotation-controls-toggle").click();
+    await panel.getByTestId("rotation-btn-quarter-turn").click();
+    await expect(panel.getByTestId("rotation-angle-label")).toContainText("Angle 90 deg");
+
     await page.getByTestId("furnish-source-products").click();
     await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(0);
 
@@ -61,5 +73,18 @@ test.describe("layout blocks", () => {
     await page.locator('[data-testid="editor-view-2d"]:visible').first().click();
     await page.locator('[data-testid="editor-view-3d"]:visible').first().click();
     await expect(page.getByTestId("scene-ready-veil")).toHaveCount(0, { timeout: 20_000 });
+
+    // Preferences: the cursor style is the customer's, kept on this device (J, 13 Nov 2026).
+    await page.getByTestId("editor-command-overflow").click();
+    await page.getByTestId("editor-command-overflow-preferences").click();
+    const drawer = page.getByTestId("preferences-drawer");
+    await expect(drawer.locator('input[value="gummy"]')).toBeChecked();
+    await drawer.getByTestId("preferences-cursor-marshmallow").click();
+    await expect(drawer.locator('input[value="marshmallow"]')).toBeChecked();
+    await page.getByTestId("preferences-close").click();
+    await page.reload();
+    await page.getByTestId("editor-command-overflow").click();
+    await page.getByTestId("editor-command-overflow-preferences").click();
+    await expect(page.getByTestId("preferences-drawer").locator('input[value="marshmallow"]')).toBeChecked();
   });
 });

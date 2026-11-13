@@ -284,14 +284,14 @@ export function useDesignPagePlanPresentationModel({
   const effectivePlanTheme = presentation.simplePlanControls
     ? "consumer"
     : presentation.planTheme;
+  // With Select the plan passes on the cursor of whatever is under the pointer (resize, rotate, grab),
+  // set on the page by the plan's handles; "default" here used to hide them all behind the arrow.
   const planCanvasCursor =
-    layout.viewMode !== "2d"
+    layout.viewMode !== "2d" || presentation.activeFloorPlanTool === "select"
       ? undefined
-      : presentation.activeFloorPlanTool === "select"
-        ? "default"
-        : presentation.activeFloorPlanTool === "draw_room"
-          ? "crosshair"
-          : "copy";
+      : presentation.activeFloorPlanTool === "draw_room"
+        ? "crosshair"
+        : "copy";
   const planCanvasGuidance = useMemo(() => {
     if (!presentation.planGuidedActionsEnabled) return null;
 

@@ -9,6 +9,7 @@ import { CATALOG_ITEMS } from "@/lib/catalog";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import { resolveDesignItemVisualProduct } from "@/lib/design-item-product-snapshot";
 import { layoutBlockKind } from "@/lib/layout-blocks";
+import type { LayoutBlockFootprint } from "@/lib/layout-block-resize";
 import {
   findCatalogSurfacePlacement, getCeilingMountedItemBaseY,
   isCeilingOnlyCatalogItem,
@@ -120,6 +121,7 @@ type SceneItemsLayerActions = {
   onMove: (context: SceneItemMoveContext) => boolean | void;
   onDragPointerMove?: (event: ThreeEvent<PointerEvent>) => void;
   onRotate: (id: string, rotationY: number, meta?: ItemRotationMeta) => boolean | void;
+  onResizeLayoutBlock?: (id: string, footprint: LayoutBlockFootprint) => boolean;
   onSnapPulse: () => void;
   onDragEnd: (context: SceneItemDragEndContext) => void;
 };
@@ -384,16 +386,12 @@ export function SceneItemsLayer({
               // The room inside its laminate panels, so the item stops and snaps at each panel (lib/room-finished-outline.ts).
               {...getFurnitureRoomFrameInsideFinishes(sceneEntry, roomOffset)}
               wallThickness={sceneEntry.roomWallThickness}
-              wallContactInset={getFurnitureWallInset(
-                sceneEntry.roomWallThickness
-              )}
+              wallContactInset={getFurnitureWallInset(sceneEntry.roomWallThickness)}
               onDraggingChange={actions.onDraggingChange}
               walls={isActiveSceneRoom ? configuration.walls : []}
               instanceId={continuity.instanceId}
               isSelected={continuity.selected}
-              isPrimarySelected={
-                isActiveSceneRoom && item.instanceId === state.selectedInstanceId
-              }
+              isPrimarySelected={isActiveSceneRoom && item.instanceId === state.selectedInstanceId}
               onDuplicate={() => {
                 if (item.instanceId !== state.selectedInstanceId) return;
                 actions.onDuplicateSelectedItem();
@@ -433,7 +431,7 @@ export function SceneItemsLayer({
                 })
               }
               onDragPointerMove={actions.onDragPointerMove}
-              onRotate={actions.onRotate}
+              onRotate={actions.onRotate} onResizeLayoutBlock={actions.onResizeLayoutBlock}
               locked={item.locked}
               interactive={configuration.canEdit && isActiveSceneRoom}
               allowCrossRoomDrag={configuration.hasWholeHousePlan && isActiveSceneRoom}

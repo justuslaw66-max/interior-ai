@@ -15,6 +15,7 @@ import {
   useDesignPageSelectionTransforms,
   type UseDesignPageSelectionTransformsInput,
 } from "@/lib/useDesignPageSelectionTransforms";
+import { useLayoutBlockResizeCommit } from "@/lib/useLayoutBlockResizeCommit";
 
 type TransformInput = UseDesignPageSelectionTransformsInput;
 type KeyboardInput = UseDesignPageSelectionKeyboardControllerInput;
@@ -189,14 +190,8 @@ export function useDesignPageItemInteractionFacade({
   actions,
 }: UseDesignPageItemInteractionFacadeInput) {
   const { items: itemsRef, selectedIds: selectedIdsRef } = refs;
-  const getSelectedItemPanelSelectedIds = useCallback(
-    () => selectedIdsRef.current,
-    [selectedIdsRef]
-  );
-  const getSelectedItemPanelItems = useCallback(
-    () => itemsRef.current,
-    [itemsRef]
-  );
+  const getSelectedItemPanelSelectedIds = useCallback(() => selectedIdsRef.current, [selectedIdsRef]);
+  const getSelectedItemPanelItems = useCallback(() => itemsRef.current, [itemsRef]);
 
   const transforms = useDesignPageSelectionTransforms({
     state: {
@@ -259,6 +254,7 @@ export function useDesignPageItemInteractionFacade({
     { state, configuration, refs, actions },
     transforms
   );
+  const resizeLayoutBlock = useLayoutBlockResizeCommit(state.room.activeRoom, getSelectedItemPanelItems, actions);
 
   const selectedItemPanel = useDesignPageSelectedItemPanelController({
     state: {
@@ -308,6 +304,7 @@ export function useDesignPageItemInteractionFacade({
     },
     actions: {
       ...transforms.actions,
+      resizeLayoutBlock,
       selectedItemPanelControllerActions: selectedItemPanel.actions,
     },
   };

@@ -1,15 +1,19 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { Line } from "@react-three/drei/core/Line";
-import { Html } from "@react-three/drei/web/Html";
 import type { ThreeEvent } from "@react-three/fiber";
+import type { Group } from "three";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatDisplayLength } from "@/lib/display-units";
 import { useCanvasPalette } from "@/lib/canvas-colours";
+import type { LayoutBlockFootprint } from "@/lib/layout-block-resize";
 import { PLAN_SYMBOL_BASE_Y, PLAN_SYMBOL_OVERLAY_Y } from "@/lib/plan-symbols/plan-symbol-item";
-import PlanItemName2D from "./PlanItemName2D";
-import PlanSymbol2D from "./PlanSymbol2D";
 import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
+import LayoutBlockResizeHandles2D from "./LayoutBlockResizeHandles2D";
+import PlanItemName2D from "./PlanItemName2D";
+import { PLAN_ITEM_HTML_Z_INDEX, PlanItemCorners2D, PlanItemDimensionLabels2D, PlanItemRotateHandle2D } from "./PlanItemSelection2D";
+import PlanSymbol2D from "./PlanSymbol2D";
 
 type ItemRenderer2DProps = {
   width: number;
@@ -32,190 +36,118 @@ type ItemRenderer2DProps = {
   onRotateHandlePointerDown?: (e: ThreeEvent<PointerEvent>) => void;
   onRotateHandlePointerMove?: (e: ThreeEvent<PointerEvent>) => void;
   onRotateHandlePointerUp?: (e: ThreeEvent<PointerEvent>) => void;
+  /** The item, for a layout block's resize from its outline (J, 13 Nov 2026). */
+  instanceId?: string;
+  onResizeLayoutBlock?: (id: string, footprint: LayoutBlockFootprint) => boolean;
+  onResizeDraggingChange?: (dragging: boolean) => void;
 };
 
-export default function ItemRenderer2D({
-  width,
-  depth,
-  category, symbolKind = null,
-  selected,
-  hovered = false,
-  dragging,
-  snapped,
-  invalidPlacement,
-  showLabels,
-  showDimensions,
-  label,
-  measurementUnit = "mm",
-  rotationHudLabel = null,
-  interactive = false,
-  onSelect,
-  onRotateHandlePointerDown,
-  onRotateHandlePointerMove,
-  onRotateHandlePointerUp,
-}: ItemRenderer2DProps) {
-  const htmlZIndexRange: [number, number] = [5, 0];
-  const { colour } = useCanvasPalette();
-  const borderColor = invalidPlacement
-    ? colour("#d91f1f")
-    : selected
-      ? colour("#2a66ff")
-      : hovered
-        ? colour("#0f766e")
-        : colour("#4ea81f");
+function borderColour(props: Pick<ItemRenderer2DProps, "invalidPlacement" | "selected" | "hovered">) {
+  if (props.invalidPlacement) return "#d91f1f";
+  if (props.selected) return "#2a66ff";
+  return props.hovered ? "#0f766e" : "#4ea81f";
+}
 
-  // The symbol is the item's outline; a coloured border shows only what is happening to it.
-  const showBorder = selected || hovered || invalidPlacement || (snapped && dragging);
+/** The symbol is the item's outline; a coloured border shows only what is happening to it. */
+function showsBorder(props: ItemRenderer2DProps) {
+  return props.selected || props.hovered === true || props.invalidPlacement || (props.snapped && props.dragging);
+}
+
+/** The item to resize from its outline: a selected, editable layout block; undefined otherwise. */
+function resizableId(props: ItemRenderer2DProps) {
+  return props.selected && props.interactive && props.symbolKind && props.onResizeLayoutBlock ? props.instanceId : undefined;
+}
+
+/** The footprint drawn: the resize preview while one is dragged, else the saved size. */
+function drawnFootprint(preview: LayoutBlockFootprint | null, width: number, depth: number): LayoutBlockFootprint {
+  return preview ?? { width, depth, offsetX: 0, offsetZ: 0 };
+}
+
+export default function ItemRenderer2D(props: ItemRenderer2DProps) {
+  const { category, selected, dragging, invalidPlacement, label, onResizeLayoutBlock } = props;
+  const frameRef = useRef<Group>(null);
+  // A layout block's resize while it is dragged; the saved size takes over when it is let go.
+  const [preview, setPreview] = useState<LayoutBlockFootprint | null>(null);
+  const { width, depth, offsetX, offsetZ } = drawnFootprint(preview, props.width, props.depth);
+  const { colour } = useCanvasPalette();
+  const resizeId = resizableId(props);
   const markY = PLAN_SYMBOL_OVERLAY_Y;
-  const corner = 0.04;
-  const formatDimension = (meters: number) =>
-    formatDisplayLength(meters * 1000, measurementUnit);
-  const cornerPoints: Array<[number, number, number]> = [
-    [-width / 2, markY, -depth / 2],
-    [width / 2, markY, -depth / 2],
-    [width / 2, markY, depth / 2],
-    [-width / 2, markY, depth / 2],
-  ];
+  const formatDimension = (meters: number) => formatDisplayLength(meters * 1000, props.measurementUnit ?? "mm");
 
   return (
-    <group>
-      {/* The pick target: the whole footprint, drawn invisibly under the symbol. */}
-      <mesh rotation-x={-Math.PI / 2} position={[0, PLAN_SYMBOL_BASE_Y, 0]}>
-        <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
-
-      <PlanSymbol2D category={category} label={label} kind={symbolKind} width={width} depth={depth} />
-
-      {invalidPlacement && (
-        <mesh rotation-x={-Math.PI / 2} position={[0, markY, 0]}>
+    <group ref={frameRef}>
+      <group position={[offsetX, 0, offsetZ]}>
+        {/* The pick target: the whole footprint, drawn invisibly under the symbol. */}
+        <mesh rotation-x={-Math.PI / 2} position={[0, PLAN_SYMBOL_BASE_Y, 0]}>
           <planeGeometry args={[width, depth]} />
-          <meshBasicMaterial color={colour("#f8b6b6")} transparent opacity={0.45} depthWrite={false} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
-      )}
 
-      {showBorder && (
-        <Line
-          points={[
-            [-width / 2, markY, -depth / 2],
-            [width / 2, markY, -depth / 2],
-            [width / 2, markY, depth / 2],
-            [-width / 2, markY, depth / 2],
-            [-width / 2, markY, -depth / 2],
-          ]}
-          color={borderColor}
-          lineWidth={selected ? 2.4 : 2}
-        />
-      )}
+        <PlanSymbol2D category={category} label={label} kind={props.symbolKind ?? null} width={width} depth={depth} />
 
-      {selected &&
-        cornerPoints.map((p, idx) => (
-          <mesh key={idx} rotation-x={-Math.PI / 2} position={p}>
-            <planeGeometry args={[corner, corner]} />
-            <meshBasicMaterial color={colour("#2a66ff")} />
+        {invalidPlacement && (
+          <mesh rotation-x={-Math.PI / 2} position={[0, markY, 0]}>
+            <planeGeometry args={[width, depth]} />
+            <meshBasicMaterial color={colour("#f8b6b6")} transparent opacity={0.45} depthWrite={false} />
           </mesh>
-        ))}
+        )}
 
-      {selected && (
-        <>
+        {showsBorder(props) && (
           <Line
             points={[
-              [0, markY, -depth / 2],
-              [0, markY, -depth / 2 - 0.16],
+              [-width / 2, markY, -depth / 2],
+              [width / 2, markY, -depth / 2],
+              [width / 2, markY, depth / 2],
+              [-width / 2, markY, depth / 2],
+              [-width / 2, markY, -depth / 2],
             ]}
-            color={colour("#2a66ff")}
-            lineWidth={1.8}
+            color={colour(borderColour(props))}
+            lineWidth={selected ? 2.4 : 2}
           />
-          <mesh rotation-x={-Math.PI / 2} position={[0, markY + 0.0003, -depth / 2 - 0.18]}>
-            <circleGeometry args={[0.03, 24]} />
-            <meshBasicMaterial color={colour("#2a66ff")} />
-          </mesh>
-          <mesh
-            rotation-x={-Math.PI / 2}
-            position={[0, markY + 0.0006, -depth / 2 - 0.18]}
-            onPointerDown={onRotateHandlePointerDown}
-            onPointerMove={onRotateHandlePointerMove}
-            onPointerUp={onRotateHandlePointerUp}
-            onPointerCancel={onRotateHandlePointerUp}
-          >
-            <circleGeometry args={[0.05, 24]} />
-            <meshBasicMaterial transparent opacity={0} />
-          </mesh>
-          {rotationHudLabel ? (
-            <Html
-              zIndexRange={htmlZIndexRange}
-              position={[0, 0.01, -depth / 2 - 0.32]}
-              center
-              transform={false}
-            >
-              <div
-                data-testid="rotation-hud"
-                style={{
-                  fontSize: 12,
-                  padding: "2px 6px",
-                  borderRadius: 999,
-                  background: "rgba(20,28,45,0.92)",
-                  border: "1px solid rgba(120,140,190,0.55)",
-                  color: "#f9fafb",
-                  whiteSpace: "nowrap",
-                  pointerEvents: "none",
-                }}
-              >
-                {rotationHudLabel}
-              </div>
-            </Html>
-          ) : null}
-        </>
-      )}
+        )}
 
-      {showLabels && (selected || hovered || !dragging) && (
-        <PlanItemName2D
-          label={label}
-          category={category}
-          selected={selected}
-          hovered={hovered}
-          interactive={interactive}
-          onSelect={onSelect}
-          zIndexRange={htmlZIndexRange}
-        />
-      )}
+        {resizeId && onResizeLayoutBlock ? (
+          <LayoutBlockResizeHandles2D
+            frameRef={frameRef}
+            footprint={{ width, depth, offsetX: 0, offsetZ: 0 }}
+            startWidth={props.width}
+            startDepth={props.depth}
+            markY={markY}
+            onPreview={setPreview}
+            onCommit={(footprint) => onResizeLayoutBlock(resizeId, footprint)}
+            onDraggingChange={props.onResizeDraggingChange}
+          />
+        ) : (
+          selected && <PlanItemCorners2D width={width} depth={depth} markY={markY} />
+        )}
 
-      {showDimensions && selected && (
-        <>
-          <Html zIndexRange={htmlZIndexRange} position={[0, 0.01, depth / 2 + 0.12]} center transform={false}>
-            <div
-              style={{
-                fontSize: 12,
-                padding: "2px 6px",
-                borderRadius: 6,
-                background: colour("rgba(255,255,255,0.92)"),
-                border: colour("1px solid rgba(120,120,120,0.35)"),
-                color: colour("#111827"),
-                whiteSpace: "nowrap",
-                pointerEvents: "none",
-              }}
-            >
-                {formatDimension(width)}
-            </div>
-          </Html>
-          <Html zIndexRange={htmlZIndexRange} position={[width / 2 + 0.12, 0.01, 0]} center transform={false}>
-            <div
-              style={{
-                fontSize: 12,
-                padding: "2px 6px",
-                borderRadius: 6,
-                background: colour("rgba(255,255,255,0.92)"),
-                border: colour("1px solid rgba(120,120,120,0.35)"),
-                color: colour("#111827"),
-                whiteSpace: "nowrap",
-                pointerEvents: "none",
-              }}
-            >
-                {formatDimension(depth)}
-            </div>
-          </Html>
-        </>
-      )}
+        {selected && (
+          <PlanItemRotateHandle2D
+            depth={depth}
+            markY={markY}
+            hudLabel={props.rotationHudLabel ?? null}
+            onPointerDown={props.onRotateHandlePointerDown}
+            onPointerMove={props.onRotateHandlePointerMove}
+            onPointerUp={props.onRotateHandlePointerUp}
+          />
+        )}
+
+        {props.showLabels && (selected || props.hovered || !dragging) && (
+          <PlanItemName2D
+            label={label}
+            category={category}
+            selected={selected}
+            hovered={props.hovered ?? false}
+            interactive={props.interactive ?? false}
+            onSelect={props.onSelect}
+            zIndexRange={PLAN_ITEM_HTML_Z_INDEX}
+          />
+        )}
+
+        {props.showDimensions && selected && (
+          <PlanItemDimensionLabels2D width={width} depth={depth} widthLabel={formatDimension(width)} depthLabel={formatDimension(depth)} />
+        )}
+      </group>
     </group>
   );
 }
