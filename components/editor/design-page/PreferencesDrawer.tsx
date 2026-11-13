@@ -11,6 +11,14 @@ import {
   type PlanCursorTheme,
 } from "@/lib/plan-cursor-preference";
 import { CLIENT_PREVIEW_FALLBACK_ACTION_ID } from "@/lib/useClientPreviewCommandBarFocus";
+import { useMediaQuery } from "@/lib/useMediaQuery";
+
+/**
+ * A mouse, trackpad or pen is connected (any of the device's pointers is fine). The cursor style only
+ * shows then, as iPad shows Pointer Control only while a pointing device is connected (14 Nov 2026);
+ * it appears as soon as one is plugged in.
+ */
+const FINE_POINTER_MEDIA_QUERY = "(any-pointer: fine)";
 
 const svgSource = (svg: string) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
 
@@ -82,6 +90,17 @@ export function CursorStylePreference() {
   );
 }
 
+/** The settings this device can use: the cursor style needs a pointer to show. */
+function DevicePreferences() {
+  const hasPointer = useMediaQuery(FINE_POINTER_MEDIA_QUERY);
+  if (hasPointer) return <CursorStylePreference />;
+  return (
+    <p data-testid="preferences-touch-note" className="text-sm text-label-secondary">
+      Nothing to set on a touch screen yet. Connect a mouse or trackpad to choose a cursor style.
+    </p>
+  );
+}
+
 /**
  * Preferences: the customer's own settings for this device, starting with the cursor style
  * (J, 13 Nov 2026: one place for more personal options as they come). It opens from More like
@@ -105,7 +124,7 @@ export function PreferencesDrawer({ open, onClose }: { open: boolean; onClose: (
       layerClassName="z-[120]"
     >
       <div className="space-y-5">
-        <CursorStylePreference />
+        <DevicePreferences />
       </div>
     </EditorDialog>,
     document.body

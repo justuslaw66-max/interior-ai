@@ -1,6 +1,7 @@
 "use client";
 
 import { type ComponentProps } from "react";
+import { createPortal } from "react-dom";
 
 import SelectedItemDetailsPanel from "@/components/editor/SelectedItemDetailsPanel";
 import SelectedItemRotationControls from "@/components/editor/SelectedItemRotationControls";
@@ -23,6 +24,7 @@ import type { PlacedFixtureLightState } from "@/lib/room-types";
 import type { SelectedItemSummary } from "@/lib/selected-item-summary";
 import { isLayoutBlock, type LayoutBlockPatch } from "@/lib/layout-blocks";
 import { LayoutBlockFields } from "@/components/editor/design-page/LayoutBlockFields";
+import { selectedItemPanelFrameClass, useSelectedItemPanelPlacement } from "@/components/editor/design-page/selectedItemPanelPlacement";
 
 type SelectedItemDetailsPanelProps = ComponentProps<
   typeof SelectedItemDetailsPanel
@@ -145,23 +147,18 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
   const { details, summary } = state;
   const title = details.selectedModelTitle || summary.title;
   const locked = Boolean(details.item?.locked);
-  const editsDisabled = !canEdit || !details.item || (isDesigner && locked);
+  const editsDisabled = !canEdit || !details.item || locked;
+  const placement = useSelectedItemPanelPlacement(isClientPreview);
 
-  return (
-    <div
-      className={`absolute right-4 top-bar-17 z-40 md:top-bar-6 w-[320px] max-h-[calc(100vh-12.75rem-env(safe-area-inset-bottom))] overflow-y-auto pr-1 transition-opacity duration-300 md:max-h-[calc(100vh-var(--editor-bar-h)-2.5rem)] md:w-[21.25rem] ${
-        isClientPreview ? "pointer-events-none opacity-0" : "opacity-100"
-      }`}
-      aria-hidden={isClientPreview}
-    >
+  const panel = (
+    <div className={selectedItemPanelFrameClass(placement.inSheet, isClientPreview)} aria-hidden={isClientPreview}>
       <section
-        data-testid="selected-item-panel" data-touch-area data-surface="floating"
+        data-testid="selected-item-panel" data-touch-area data-surface={placement.inSheet ? undefined : "floating"}
         aria-label="Selected product"
-        className="flex w-full flex-col gap-4 rounded-xl bg-surface-floating p-4 shadow ring-1 ring-surface-floating-edge"
+        className={`flex w-full flex-col gap-4 rounded-xl p-4 ${placement.inSheet ? "bg-surface-secondary ring-1 ring-box-border" : "bg-surface-floating shadow ring-1 ring-surface-floating-edge"}`}
       >
         <SelectedItemPanelHeader
           title={title}
-          isDesigner={isDesigner}
           canEdit={canEdit}
           lockLabel={state.lockLabel}
           onToggleLock={actions.onToggleLock}
@@ -192,6 +189,7 @@ export function SelectedItemPanel({ state, configuration, actions }: SelectedIte
       </section>
     </div>
   );
+  return placement.slot ? createPortal(panel, placement.slot) : panel;
 }
 
 /** The product's configuration and colour pickers, then its size in the design's units; a layout block's own name and size. */
