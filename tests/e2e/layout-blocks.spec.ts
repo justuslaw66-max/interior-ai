@@ -9,7 +9,10 @@ async function openEditor(page: Page) {
   await page.route("**/api/me", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ plan: "free", source: "playwright" }) }),
   );
+  // A fresh start on the first load only, so a reload keeps what the test saved (Preferences).
   await page.addInitScript(() => {
+    if (window.name === "layout-blocks-started") return;
+    window.name = "layout-blocks-started";
     window.localStorage.clear();
     window.sessionStorage.clear();
     window.localStorage.setItem("interior-ai:beta-start-dismissed", "1");
