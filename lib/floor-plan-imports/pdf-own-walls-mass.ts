@@ -22,6 +22,9 @@ export const PDF_OWN_OPENING_LIMITS = {
 /** A cell's kind: free; solid (inside a fill, or inked over by the lines either side of it); or a closed strip. */
 export const FREE = 0, FILLED = 1, STRIP = 2;
 
+/** `glazed` values: a casement's piece of wall, a piece with a dashed glass line down its middle. */
+export const CASEMENT_GLASS = 1, DASHED_GLASS = 2;
+
 export type WallMass = {
   /** FREE, FILLED or STRIP per cell. */
   kind: Uint8Array;
@@ -30,7 +33,7 @@ export type WallMass = {
   /** Index into `closures` of the opening a cell lies in, else -1. */
   closure: Int32Array;
   closures: Closure[];
-  /** 1 where the cell is part of a casement window drawn inside the wall's own lines. */
+  /** Where the cell is part of a window drawn inside the wall's own lines: CASEMENT_GLASS or DASHED_GLASS, else 0. */
   glazed: Uint8Array;
 };
 
@@ -236,7 +239,7 @@ export function closeGaps(grid: WallGrid, mass: WallMass, millimetresPerPixel: n
 /** Makes a piece of the wall mass an opening (a door drawn inside the wall's own lines), or marks it as a casement window. */
 export function openInWall(grid: WallGrid, mass: WallMass, part: Closure, casement: boolean) {
   const cells = gapCells(part, grid.nx);
-  if (casement) { for (const index of cells) mass.glazed[index] = 1; return; }
+  if (casement) { for (const index of cells) mass.glazed[index] = CASEMENT_GLASS; return; }
   for (const index of cells) mass.closure[index] = mass.closures.length;
   mass.closures.push(part);
 }

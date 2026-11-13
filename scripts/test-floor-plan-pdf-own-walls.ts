@@ -151,6 +151,40 @@ function testGlazedPieceOfAnOutsideWall() {
   assert.equal(windows.length, 2);
 }
 
+/** A row of dashes 100 mm long, 50 mm apart, along y = `at` from x = `from` to x = `to` (page px at 10 mm a pixel). */
+const dashes = (at: number, from: number, to: number): Line[] => Array.from({ length: Math.round((to - from + 5) / 15) }, (_, k) => [from + 15 * k, at, Math.min(from + 15 * k + 10, to), at]);
+
+function testDashedGlassLine() {
+  // A piece of the right room's top wall between two lines across it, with a dashed glass line down its middle (HDB's bathroom windows).
+  const jambs: Line[] = [[500, 100, 500, 110], [595, 100, 595, 110]];
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...jambs, ...dashes(105, 500, 595)]), reader());
+  const windows = evidence.wallEdges.filter((edge) => edge.opening?.kind === "window");
+  assert.ok(windows.some((edge) => JSON.stringify(ends(edge)) === JSON.stringify([[500, 105], [595, 105]])), "a dashed glass line down a piece of wall is a window, jamb to jamb");
+  assert.equal(windows.length, 2);
+  // Without the dashes the piece is wall like the rest.
+  const plain = withPdfOwnWalls(page([...planLines(200, 290), ...jambs]), reader());
+  assert.equal(plain.wallEdges.filter((edge) => edge.opening?.kind === "window").length, 1);
+}
+
+function testDashedGlassBehindAnOuterSkin() {
+  // An outer skin 200 mm out along the whole top wall: the window is as thick as the wall beside it, skin and all.
+  const skin: Line[] = [[100, 80, 700, 80], [100, 80, 100, 100], [700, 80, 700, 100]];
+  const jambs: Line[] = [[500, 100, 500, 110], [595, 100, 595, 110]];
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...skin, ...jambs, ...dashes(105, 500, 595)]), reader());
+  const top = evidence.wallEdges.filter((edge) => ends(edge)[0][1] === 95 && ends(edge)[1][1] === 95);
+  const window = top.find((edge) => edge.opening?.kind === "window");
+  assert.ok(window, "the dashed piece is a window with the skin outside it");
+  assert.deepEqual(ends(window), [[500, 95], [595, 95]]);
+  assert.ok(top.every((edge) => Math.abs(edge.thicknessPx - 30) < 1e-6), "window and wall beside it alike 300 mm thick: no jog");
+}
+
+function testDashedLineInARoomIsNotGlass() {
+  // An overhead line (a beam, a cabinet above) dashed across the right room: no wall either side of it, not a window.
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...dashes(250, 500, 595)]), reader());
+  assert.equal(evidence.wallEdges.filter((edge) => edge.opening?.kind === "window").length, 1);
+  assert.equal(evidence.rooms.length, 2);
+}
+
 function testLeftAsRead() {
   const drawn = page(planLines(200, 290)), read = reader();
   assert.equal(pdfOwnWallsEnabled({}), false, "off unless FLOOR_PLAN_PDF_OWN_WALLS=1");
@@ -178,6 +212,9 @@ testWideGapNeedsADoor();
 testDoorDrawnInsideTheWall();
 testCasementInAnOutsideWall();
 testGlazedPieceOfAnOutsideWall();
+testDashedGlassLine();
+testDashedGlassBehindAnOuterSkin();
+testDashedLineInARoomIsNotGlass();
 testLeftAsRead();
 testMarksItsPages();
 console.log("floor-plan PDF own walls: ok");

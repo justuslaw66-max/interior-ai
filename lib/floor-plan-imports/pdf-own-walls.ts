@@ -2,6 +2,7 @@ import { pointInPolygon, type RegisteredPageEvidence } from "./deterministic-evi
 import { roomCentreLines, standaloneWalls, type OwnWallEdge } from "./pdf-own-walls-edges";
 import { doorFinder, type DoorFinder, type Drawn } from "./pdf-own-walls-doors";
 import { PDF_OWN_WALL_LIMITS, buildWallGrid, gridIndex, wallLinesAndFills, type WallGrid } from "./pdf-own-walls-grid";
+import { markDashedGlass } from "./pdf-own-walls-glass";
 import { closeGaps, dropPocketOpenings, openInWall, wallMass, type WallMass } from "./pdf-own-walls-mass";
 import { PDF_OWN_ROOM_LIMITS, floorOutline, roomCells, roomFaces, roomFloor } from "./pdf-own-walls-rooms";
 import type { FloorPlanVectorizerEvidence } from "./vectorizer-evidence-schema";
@@ -84,6 +85,7 @@ export function pdfOwnWallsModel(page: RegisteredPageEvidence, evidence: Evidenc
   for (const gap of dropPocketOpenings(grid, mass, minRoomPx2)) doors.release(gap);
   for (const leaf of doors.inWalls(mass)) openInWall(grid, mass, leaf.part, leaf.kind === "casement");
   dropPocketOpenings(grid, mass, minRoomPx2);
+  markDashedGlass(grid, mass, drawing.lines, millimetresPerPixel);
   const cells = roomCells(grid, mass, millimetresPerPixel), maxWallPx = PDF_OWN_WALL_LIMITS.maxWallMm / millimetresPerPixel;
   // A window may look out onto a ledge, a balcony or a yard: floor lettered as open to the air is not indoors.
   const openAir = openAirPieces(evidence, grid, cells.labels, sx, sy);

@@ -1,5 +1,5 @@
 import { PDF_OWN_WALL_LIMITS, type WallGrid } from "./pdf-own-walls-grid";
-import { FILLED, FREE, floorPieces, isBarrier, type WallMass } from "./pdf-own-walls-mass";
+import { DASHED_GLASS, FILLED, FREE, floorPieces, isBarrier, type WallMass } from "./pdf-own-walls-mass";
 
 /**
  * The rooms of a vector PDF page, from its wall mass and openings (pdf-own-walls-mass.ts): each room is the free floor
@@ -129,6 +129,30 @@ type Probe = { closure: number; depthPx: number; window: boolean; glass: boolean
 type Floors = { /** This room's floor. */ own: Uint8Array; /** Every room's floor. */ indoors: Uint8Array };
 
 /**
+ * What a probe has gone through so far: how deep, how much of it solid or glass, how many layers; and of the first
+ * layer (the wall's own), how deep and how much of it glass.
+ */
+type Tally = { depth: number; solid: number; glass: number; layers: number; unit: number; ownDepth: number; ownGlass: number; ownDashed: number };
+
+function tallied(tally: Tally, mass: WallMass, index: number, size: number) {
+  const filled = mass.kind[index] === FILLED, here = filled ? -2 : mass.region[index], glazed = mass.glazed[index];
+  tally.depth += size;
+  if (filled) tally.solid += size;
+  if (glazed) tally.glass += size;
+  if (here !== tally.unit) { tally.layers += 1; tally.unit = here; }
+  if (tally.layers !== 1) return;
+  tally.ownDepth += size;
+  if (glazed) tally.ownGlass += size;
+  if (glazed === DASHED_GLASS) tally.ownDashed += size;
+}
+
+/** Whether the wall's own layer is all glass (`dashed`: a dashed glass line's), with nothing solid behind it. */
+const ownGlazed = (tally: Tally, dashed: boolean) => {
+  const glass = dashed ? tally.ownDashed : tally.ownGlass;
+  return tally.solid === 0 && glass > 0 && glass >= tally.ownDepth - 1e-6;
+};
+
+/**
  * What stands behind one cell-width of a room's side: an opening or wall, how deep, and whether it is a window (thin
  * layers, little of them solid, or a casement drawn on the wall; with no room behind: between two rooms such layers are a wall or a door's own lines).
  */
@@ -137,24 +161,22 @@ function probe(grid: WallGrid, mass: WallMass, { own: floor, indoors }: Floors, 
   const inGrid = () => i >= 0 && j >= 0 && i < nx && j < ny;
   // The probe stops at this room's floor, at anything that is no barrier, and where wall gives way to an opening.
   const stops = (index: number) => floor[index] === 1 || !isBarrier(mass, index) || (mass.closure[index] >= 0) !== through;
-  let depth = 0, solid = 0, glass = 0, layers = 0, unit = -3;
+  const tally: Tally = { depth: 0, solid: 0, glass: 0, layers: 0, unit: -3, ownDepth: 0, ownGlass: 0, ownDashed: 0 };
   for (; inGrid() && !stops(j * nx + i); i += ni, j += nj) {
-    const index = j * nx + i, filled = mass.kind[index] === FILLED, here = filled ? -2 : mass.region[index];
-    const size = ni ? xs[i + 1] - xs[i] : ys[j + 1] - ys[j];
-    depth += size;
-    if (filled) solid += size;
-    glass += mass.glazed[index] * size;
-    if (here !== unit) { layers += 1; unit = here; }
-    if (depth > maxWallPx + 1e-6) return { closure, depthPx: Infinity, window: false, glass: false };
+    tallied(tally, mass, j * nx + i, ni ? xs[i + 1] - xs[i] : ys[j + 1] - ys[j]);
+    // Past any wall's thickness: unknown depth; a window still where the wall's own layer is a dashed glass line's.
+    if (tally.depth > maxWallPx + 1e-6) return { closure, depthPx: Infinity, window: !through && tally.layers >= 2 && ownGlazed(tally, true), glass: false };
   }
-  const outdoors = !inGrid() || indoors[j * nx + i] !== 1;
-  return { closure, depthPx: depth, ...glazing(!through && outdoors, depth, solid, glass, layers) };
+  const outdoors = !inGrid() || indoors[j * nx + i] !== 1, { depth, solid, glass, layers } = tally;
+  // Glass across the wall's own layer, nothing solid behind it (only the wall's outer skin): a window as thick as the
+  // wall, skin and all, like the wall either side of it.
+  return { closure, depthPx: depth, ...glazing(!through && outdoors, depth, solid, ownGlazed(tally, false) ? depth : glass, layers) };
 }
 
 /**
- * Whether what a probe went through is a window: a casement drawn on that piece of wall, or thin layers with little
- * solid among them. Failing that, whether it is at least two layers of nothing solid (glass, if the wall beside it is
- * not drawn the same way). `outside`: it is wall, with no room beyond.
+ * Whether what a probe went through is a window: glass drawn on that piece of wall (a casement, a dashed glass line),
+ * or thin layers with little solid among them. Failing that, whether it is at least two layers of nothing solid
+ * (glass, if the wall beside it is not drawn the same way). `outside`: it is wall, with no room beyond.
  */
 function glazing(outside: boolean, depth: number, solid: number, glass: number, layers: number): Pick<Probe, "window" | "glass"> {
   if (!outside) return { window: false, glass: false };
@@ -240,6 +262,8 @@ function glazedWindows(raw: FaceStretch[]): FaceStretch[] {
   });
 }
 
+const thicker = (a: number, b: number) => (!Number.isFinite(a) ? b : !Number.isFinite(b) ? a : Math.max(a, b));
+
 /**
  * A side's windows as whole windows: the glazed pieces of an outside wall; a short piece of wall between two windows
  * is their mullion, and they are one window; glass right beside a door is that door's own panel, and stays wall.
@@ -252,7 +276,8 @@ function wholeWindows(raw: FaceStretch[], length: (s: FaceStretch) => number, sh
   const joined: FaceStretch[] = [];
   for (const s of glazed) {
     const last = joined[joined.length - 1];
-    if (last?.kind === "window" && s.kind === "window") { last.to = s.to; last.thicknessPx = Math.max(last.thicknessPx, s.thicknessPx); } else joined.push(s);
+    // Joined windows take the thicker known depth (a piece of unknown depth takes the other's).
+    if (last?.kind === "window" && s.kind === "window") { last.to = s.to; last.thicknessPx = thicker(last.thicknessPx, s.thicknessPx); } else joined.push(s);
   }
   return joined.map((s, k) => (s.kind === "window" && (joined[k - 1]?.kind === "opening" || joined[k + 1]?.kind === "opening") ? { ...s, kind: "wall" as const } : s));
 }
