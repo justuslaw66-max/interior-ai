@@ -11,6 +11,7 @@ import { mergeSemantics } from "./semantic-merge";
 import { sourceTextEvidenceFromLocalOcr } from "./local-ocr-rotation";
 import { applyVectorizerEvidence } from "./vectorizer-pass";
 import { hasPdfOwnWalls } from "./pdf-own-walls";
+import { isLightFillColour } from "./pdf-paint-colour";
 import { ownLineworkClosesRooms, vectorizerCandidatePages, vectorizerReadingsLead } from "./vectorizer-pdf-pages";
 import {
   createDefaultFloorPlanVectorizerProvider,
@@ -617,7 +618,8 @@ async function extractPdfEvidence(
       let lineWidthSource = 1;
       let drawPathIndex = 0;
       let curveCount = 0;
-      const stack: Array<{ transform: Matrix2D; lineWidthSource: number }> = [];
+      let fillLight = false;
+      const stack: Array<{ transform: Matrix2D; lineWidthSource: number; fillLight: boolean }> = [];
       const formStack: Array<{
         id: string;
         transform: Matrix2D;
@@ -626,21 +628,16 @@ async function extractPdfEvidence(
       let formIndex = 0;
       const paintOperationFor = (value: unknown): SourceVectorPath["paintOperation"] => {
         const operation = Number(value);
-        if (operation === OPS.stroke || operation === OPS.closeStroke) return "stroke";
-        if (operation === OPS.fill || operation === OPS.eoFill) return "fill";
-        if (
-          operation === OPS.fillStroke ||
-          operation === OPS.eoFillStroke ||
-          operation === OPS.closeFillStroke ||
-          operation === OPS.closeEOFillStroke
-        ) return "fill_stroke";
-        if (operation === OPS.clip || operation === OPS.eoClip) return "clip";
-        return "unknown";
+        if ([OPS.stroke, OPS.closeStroke].includes(operation)) return "stroke";
+        if ([OPS.fill, OPS.eoFill].includes(operation)) return "fill";
+        if ([OPS.fillStroke, OPS.eoFillStroke, OPS.closeFillStroke, OPS.closeEOFillStroke].includes(operation)) return "fill_stroke";
+        return [OPS.clip, OPS.eoClip].includes(operation) ? "clip" : "unknown";
       };
       for (let index = 0; index < operatorList.fnArray.length; index += 1) {
         const fn = operatorList.fnArray[index];
         const args = operatorList.argsArray[index] ?? [];
         appendPdfRasterRegion(rasterRegions, fn, OPS, transform, rendered);
+        if (fn === OPS.setFillRGBColor) fillLight = isLightFillColour(args);
         if (fn === OPS.paintFormXObjectBegin) {
           const id = `p${rendered.pageNumber}-form${++formIndex}`;
           formStack.push({
@@ -666,12 +663,13 @@ async function extractPdfEvidence(
             lineWidthSource = restored.lineWidthSource;
           }
         } else if (fn === OPS.save) {
-          stack.push({ transform: [...transform] as Matrix2D, lineWidthSource });
+          stack.push({ transform: [...transform] as Matrix2D, lineWidthSource, fillLight });
         } else if (fn === OPS.restore) {
           const restored = stack.pop();
           if (restored) {
             transform = restored.transform;
             lineWidthSource = restored.lineWidthSource;
+            fillLight = restored.fillLight;
           }
         } else if (fn === OPS.transform && args.length >= 6) {
           transform = multiplyMatrices(
@@ -705,7 +703,7 @@ async function extractPdfEvidence(
             maxCurves: MAX_VECTOR_SEGMENTS_PER_PAGE - curveCount,
           });
           if (!parsed) continue;
-          paths.push(parsed.path);
+          paths.push(fillLight && parsed.path.paintOperation !== "stroke" ? { ...parsed.path, fillLight: true } : parsed.path);
           segments.push(...parsed.segments);
           curveCount += parsed.path.curves?.length ?? 0;
         }

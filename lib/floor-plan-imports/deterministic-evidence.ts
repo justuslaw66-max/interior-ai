@@ -52,12 +52,9 @@ export type SourceVectorPath = {
   /** Curve controls were present; automatic straight-wall topology must reject it. */
   containsCurves?: boolean;
   /** PDF paint operator retained for deterministic layer/topology diagnostics. */
-  paintOperation?:
-    | "stroke"
-    | "fill"
-    | "fill_stroke"
-    | "clip"
-    | "unknown";
+  paintOperation?: "stroke" | "fill" | "fill_stroke" | "clip" | "unknown";
+  /** Filled in a light colour (white): a mask over what lies under it, not a solid wall (pdf-paint-colour.ts). */
+  fillLight?: boolean;
   /** Exact PDF operator/subpath context retained for source-symbol matching. */
   sourceOperatorIndex?: number;
   graphicsStateDepth?: number;

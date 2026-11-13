@@ -1,5 +1,5 @@
 import { PDF_OWN_WALL_LIMITS, type WallGrid } from "./pdf-own-walls-grid";
-import { FREE, type Closure, type WallMass } from "./pdf-own-walls-mass";
+import { FREE, floorPieces, takeBackOpenings, type Closure, type WallMass } from "./pdf-own-walls-mass";
 
 /**
  * Openings shallower than the walls either side of them (14 Nov 2026). Tengah's entrance door frame stands about
@@ -62,4 +62,39 @@ export function widenSetBackOpenings(grid: WallGrid, mass: WallMass, millimetres
     widened += 1;
   });
   return widened;
+}
+
+/** For each enclosed piece of floor, how much of its edge is an opening and how much in all (page pixels). */
+function edgeShares(grid: WallGrid, mass: WallMass, labels: Int32Array, count: number) {
+  const { nx, ny, xs, ys } = grid, opening = new Float64Array(count), all = new Float64Array(count);
+  for (let index = 0; index < nx * ny; index += 1) {
+    const label = labels[index], i = index % nx, j = (index - i) / nx;
+    if (label < 0) continue;
+    for (const [di, dj] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+      const ni = i + di, nj = j + dj, next = nj * nx + ni;
+      if (ni < 0 || nj < 0 || ni >= nx || nj >= ny || labels[next] === label) continue;
+      const side = di ? ys[j + 1] - ys[j] : xs[i + 1] - xs[i];
+      all[label] += side;
+      if (mass.closure[next] >= 0) opening[label] += side;
+    }
+  }
+  return { opening, all };
+}
+
+/**
+ * Takes back the openings with no door drawn that close off a piece of floor whose edge is at least half openings:
+ * a stretch of corridor between doors, not a room (Tengah: the passage between bedroom 2's, the main bedroom's and
+ * bath 2's doors was closed across the corridor). Returns those taken back.
+ */
+export function dropCorridorOpenings(grid: WallGrid, mass: WallMass, undrawn: (gap: Closure) => boolean): Closure[] {
+  const { labels, area, edge } = floorPieces(grid, mass), { opening, all } = edgeShares(grid, mass, labels, area.length);
+  const corridor = (label: number) => label >= 0 && !edge[label] && opening[label] >= 0.5 * all[label];
+  const { nx, ny } = grid, cut = new Set<number>();
+  mass.closure.forEach((closure, index) => {
+    if (closure < 0 || cut.has(closure) || !undrawn(mass.closures[closure])) return;
+    const i = index % nx, j = (index - i) / nx;
+    const beside = [[i - 1, j], [i + 1, j], [i, j - 1], [i, j + 1]].filter(([ci, cj]) => ci >= 0 && cj >= 0 && ci < nx && cj < ny);
+    if (beside.some(([ci, cj]) => corridor(labels[cj * nx + ci]))) cut.add(closure);
+  });
+  return cut.size ? takeBackOpenings(mass, cut) : [];
 }

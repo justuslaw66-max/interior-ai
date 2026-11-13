@@ -70,7 +70,8 @@ export function pageStrokesAndFills(page: RegisteredPageEvidence): { strokes: St
     const filled = path.paintOperation === "fill" || path.paintOperation === "fill_stroke";
     if (stroked) for (const id of path.segmentIds) { const s = segments.get(id); if (s) strokes.push(s); }
     if (stroked && path.containsCurves) swings.push(swingOf(path));
-    if (!filled) continue;
+    // A light fill masks what lies under it (a window's frame filled white): its outline is drawn, it is not solid.
+    if (!filled || path.fillLight) continue;
     const rings = (path.subpaths ?? [{ segmentIds: path.segmentIds }]).map((subpath) => {
       const points = subpath.segmentIds.flatMap((id) => { const s = segments.get(id); return s ? [s.start, s.end] : []; });
       return points.filter((p, i) => i === 0 || p.x !== points[i - 1].x || p.y !== points[i - 1].y);

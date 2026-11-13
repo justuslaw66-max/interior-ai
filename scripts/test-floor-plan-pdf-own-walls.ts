@@ -3,6 +3,7 @@ import type { RegisteredPageEvidence, SourceVectorPath, SourceVectorSegment } fr
 import { hasPdfOwnWalls, pdfOwnWallsEnabled, pdfOwnWallsModel, withPdfOwnWalls } from "@/lib/floor-plan-imports/pdf-own-walls";
 import { parseFloorPlanVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-evidence";
 import { widenSetBackOpenings } from "@/lib/floor-plan-imports/pdf-own-walls-openings";
+import { isLightFillColour } from "@/lib/floor-plan-imports/pdf-paint-colour";
 import { FILLED, FREE, type Closure, type WallMass } from "@/lib/floor-plan-imports/pdf-own-walls-mass";
 import type { WallGrid } from "@/lib/floor-plan-imports/pdf-own-walls-grid";
 
@@ -53,7 +54,7 @@ function arc(id: string, hinge: [number, number], open: [number, number], shut: 
       controlPoints: [{ x: toward(open, 0), y: toward(open, 1) }, { x: toward(shut, 0), y: toward(shut, 1) }], end: { x: shut[0], y: shut[1] } }] };
 }
 
-function page(lines: Line[], paths: SourceVectorPath[] = [], solids: Line[] = []): RegisteredPageEvidence {
+function page(lines: Line[], paths: SourceVectorPath[] = [], solids: Line[] = [], light = false): RegisteredPageEvidence {
   // Lettering elsewhere on the sheet: strokes too short to bound a wall, enough of them for a drawn page.
   const lettering: Line[] = Array.from({ length: 40 }, (_, k) => [100 + 10 * k, 900, 102 + 10 * k, 900]);
   const vectorSegments = [...lines, ...lettering].map((line, k) => segment(`s${k}`, line));
@@ -63,7 +64,7 @@ function page(lines: Line[], paths: SourceVectorPath[] = [], solids: Line[] = []
   const filled = solids.map(([l, t, r, b], k): SourceVectorPath => {
     const ring = [[l, t, r, t], [r, t, r, b], [r, b, l, b], [l, b, l, t]] as Line[], ids = ring.map((_, e) => `f${k}-${e}`);
     ring.forEach((edge, e) => vectorSegments.push(segment(ids[e], edge)));
-    return { id: `fill${k}`, pageNumber: 1, closed: true, segmentIds: ids, bbox: { left: l, top: t, right: r, bottom: b }, rectilinearScore: 1, evidenceKind: "pdf_vector", paintOperation: "fill" };
+    return { id: `fill${k}`, pageNumber: 1, closed: true, segmentIds: ids, bbox: { left: l, top: t, right: r, bottom: b }, rectilinearScore: 1, evidenceKind: "pdf_vector", paintOperation: "fill", ...(light ? { fillLight: true } : {}) };
   });
   return { pageNumber: 1, widthPx: 1000, heightPx: 1000, text: [], vectorSegments, vectorPaths: [stroke, ...filled, ...paths],
     semantics: { roomLabels: [], dimensionLabels: [], openingSymbols: [], notes: [] } };
@@ -290,6 +291,20 @@ function testOpeningSetBackFromTheWallFaces() {
   assert.equal(setBackCase(["F", "W"], 1.3).widened, 0);
 }
 
+function testLightFillIsNotSolid() {
+  // The left room's layered window under a white fill (Tengah draws its windows' frames filled white): still a window.
+  const frame: Line = [100, 200, 110, 300];
+  const white = withPdfOwnWalls(page(planLines(200, 290), [], [frame], true), reader());
+  assert.equal(white.wallEdges.filter((edge) => edge.opening?.kind === "window").length, 1, "a light fill masks, it is not solid");
+  const dark = withPdfOwnWalls(page(planLines(200, 290), [], [frame]), reader());
+  assert.equal(dark.wallEdges.filter((edge) => edge.opening?.kind === "window").length, 0, "the same piece filled dark is solid wall");
+  assert.equal(isLightFillColour(["#ffffff"]), true);
+  assert.equal(isLightFillColour(["#f2f2f2"]), true);
+  assert.equal(isLightFillColour(["#000000"]), false);
+  assert.equal(isLightFillColour(["#808080"]), false);
+  assert.equal(isLightFillColour([255, 255, 255]), false, "only pdf.js's hex form is read");
+}
+
 function testLeftAsRead() {
   const drawn = page(planLines(200, 290)), read = reader();
   assert.equal(pdfOwnWallsEnabled({}), false, "off unless FLOOR_PLAN_PDF_OWN_WALLS=1");
@@ -328,6 +343,7 @@ testRackOnAnOutsideFaceIsNotWall();
 testLinesOnOneCoordinateJoinInOrder();
 testFillWithNoWidthIsNoDimensionDot();
 testOpeningSetBackFromTheWallFaces();
+testLightFillIsNotSolid();
 testLeftAsRead();
 testMarksItsPages();
 console.log("floor-plan PDF own walls: ok");
