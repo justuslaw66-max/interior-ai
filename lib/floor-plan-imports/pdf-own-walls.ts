@@ -1,8 +1,8 @@
 import { pointInPolygon, type RegisteredPageEvidence } from "./deterministic-evidence";
 import { roomCentreLines, standaloneWalls, type OwnWallEdge } from "./pdf-own-walls-edges";
 import { doorFinder, type DoorFinder, type Drawn } from "./pdf-own-walls-doors";
-import { PDF_OWN_WALL_LIMITS, buildWallGrid, wallLinesAndFills, type WallGrid } from "./pdf-own-walls-grid";
-import { closeGaps, dropPocketOpenings, wallMass, type WallMass } from "./pdf-own-walls-mass";
+import { PDF_OWN_WALL_LIMITS, buildWallGrid, gridIndex, wallLinesAndFills, type WallGrid } from "./pdf-own-walls-grid";
+import { closeGaps, dropPocketOpenings, openInWall, wallMass, type WallMass } from "./pdf-own-walls-mass";
 import { PDF_OWN_ROOM_LIMITS, floorOutline, roomCells, roomFaces, roomFloor } from "./pdf-own-walls-rooms";
 import type { FloorPlanVectorizerEvidence } from "./vectorizer-evidence-schema";
 
@@ -41,6 +41,22 @@ export type PdfOwnWallsModel = {
   dimensionLines: number;
 };
 
+/** A room name that says the space is open to the air. */
+const OPEN_AIR_NAME = /\b(ledge|balcony|yard|terrace|planter|patio|roof)\b/i;
+
+/** The pieces of floor the reader's lettering names as open to the air. */
+function openAirPieces(evidence: Evidence, grid: WallGrid, labels: Int32Array, sx: number, sy: number) {
+  const pieces = new Set<number>();
+  for (const label of evidence.semantics.roomLabels) {
+    if (!OPEN_AIR_NAME.test(label.label)) continue;
+    const x = label.centerXRatio * evidence.page.widthPx * sx, y = label.centerYRatio * evidence.page.heightPx * sy;
+    const i = Math.min(grid.nx - 1, Math.max(0, gridIndex(grid.xs, x) - (grid.xs[gridIndex(grid.xs, x)] > x ? 1 : 0)));
+    const j = Math.min(grid.ny - 1, Math.max(0, gridIndex(grid.ys, y) - (grid.ys[gridIndex(grid.ys, y)] > y ? 1 : 0)));
+    if (labels[j * grid.nx + i] >= 0) pieces.add(labels[j * grid.nx + i]);
+  }
+  return pieces;
+}
+
 /** The grid, wall mass, openings, rooms and standing-alone walls of a page, or null where it cannot be read this way. */
 export function pdfOwnWallsModel(page: RegisteredPageEvidence, evidence: Evidence): PdfOwnWallsModel | null {
   const millimetresPerPixel = evidence.scale.basis === "explicit_dimension" ? evidence.scale.millimetresPerPixel : null;
@@ -62,8 +78,16 @@ export function pdfOwnWallsModel(page: RegisteredPageEvidence, evidence: Evidenc
   let pass: { grid: WallGrid; mass: WallMass; doors: DoorFinder; needed: { xs: number[]; ys: number[] } } = built({ xs: [], ys: [] });
   if (pass.needed.xs.length || pass.needed.ys.length) pass = built(pass.needed);
   const { grid, mass, doors } = pass;
-  dropPocketOpenings(grid, mass, (PDF_OWN_ROOM_LIMITS.minRoomM2 * 1e6) / millimetresPerPixel ** 2);
+  // Openings that only cut off a pocket are taken back, before and after the doors drawn inside the walls are found
+  // (a swing such an opening had used may be one of those).
+  const minRoomPx2 = (PDF_OWN_ROOM_LIMITS.minRoomM2 * 1e6) / millimetresPerPixel ** 2;
+  for (const gap of dropPocketOpenings(grid, mass, minRoomPx2)) doors.release(gap);
+  for (const leaf of doors.inWalls(mass)) openInWall(grid, mass, leaf.part, leaf.kind === "casement");
+  dropPocketOpenings(grid, mass, minRoomPx2);
   const cells = roomCells(grid, mass, millimetresPerPixel), maxWallPx = PDF_OWN_WALL_LIMITS.maxWallMm / millimetresPerPixel;
+  // A window may look out onto a ledge, a balcony or a yard: floor lettered as open to the air is not indoors.
+  const openAir = openAirPieces(evidence, grid, cells.labels, sx, sy);
+  for (let index = 0; index < cells.indoors.length; index += 1) if (openAir.has(cells.labels[index])) cells.indoors[index] = 0;
   const rooms: PdfOwnWallsModel["rooms"] = [];
   let unbuiltRooms = 0;
   for (const label of cells.rooms) {

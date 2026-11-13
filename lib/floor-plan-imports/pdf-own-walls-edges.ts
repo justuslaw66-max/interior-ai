@@ -139,7 +139,11 @@ function leftoverBlocks(grid: WallGrid, leftover: Uint8Array) {
 export function standaloneWalls(grid: WallGrid, mass: WallMass, rooms: OwnWallEdge[][], millimetresPerPixel: number): OwnWallEdge[] {
   const { nx, ny, xs, ys } = grid, claimed = new Uint8Array(nx * ny), minPx = PDF_OWN_WALL_LIMITS.minWallMm / millimetresPerPixel - 1e-6;
   for (const edges of rooms) {
-    edges.forEach((edge, k) => claimEdge(grid, claimed, edge, edges[(k + edges.length - 1) % edges.length].thicknessPx, edges[(k + 1) % edges.length].thicknessPx));
+    edges.forEach((edge, k) => {
+      // A wall shorter than it is thick is drawn as its own rectangle: it does not run on under the walls it meets.
+      const stub = Math.abs(edge.end[0] - edge.start[0]) + Math.abs(edge.end[1] - edge.start[1]) < edge.thicknessPx;
+      claimEdge(grid, claimed, edge, stub ? 0 : edges[(k + edges.length - 1) % edges.length].thicknessPx, stub ? 0 : edges[(k + 1) % edges.length].thicknessPx);
+    });
   }
   const leftover = new Uint8Array(nx * ny);
   for (let index = 0; index < nx * ny; index += 1) if (isMass(mass, index) && !claimed[index]) leftover[index] = 1;

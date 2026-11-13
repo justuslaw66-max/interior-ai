@@ -14,11 +14,11 @@ export const PDF_OWN_ROOM_LIMITS = {
   /** A stretch thicker than the wall on both sides of it is another wall meeting this one from behind (a door's jamb,
    * the end of a wall) where it is no longer than this, or shorter than twice what it stands out; it is left to that wall. */
   stubMm: 150,
-  /** A stretch of several thin layers with next to nothing solid among them, at least this long, is a window. (A
-   * solid wall behind its outer skin has as many layers; a window over a solid sill is left as wall for now.) */
+  /** A stretch of several thin layers of which at most this share is solid, at least this long, is a window: glass
+   * over a sill is about a quarter solid, a solid wall behind its outer skin about half. */
   windowMinMm: 400,
   windowLayers: 3,
-  windowSolidShare: 0.15,
+  windowSolidShare: 0.35,
   /** A wall whose thickness is unknown (solid further back than any wall is thick) is drawn this thick. */
   defaultWallMm: 200,
 } as const;
@@ -34,6 +34,8 @@ export type FaceStretch = {
   /** Where it runs along the side, as grid-line indices in the side's direction of travel. */
   from: number;
   to: number;
+  /** Two or more thin layers, nothing solid, outdoors beyond: glass, if the wall beside it is not drawn the same way. */
+  glass?: boolean;
 };
 
 export type RoomFace = {
@@ -122,31 +124,47 @@ export function floorOutline(grid: WallGrid, floor: Uint8Array): GridPoint[] {
   });
 }
 
-type Probe = { closure: number; depthPx: number; window: boolean };
+type Probe = { closure: number; depthPx: number; window: boolean; glass: boolean };
 
 type Floors = { /** This room's floor. */ own: Uint8Array; /** Every room's floor. */ indoors: Uint8Array };
 
 /**
  * What stands behind one cell-width of a room's side: an opening or wall, how deep, and whether it is a window (thin
- * layers, next to nothing solid, with no room behind them: between two rooms such layers are a wall or a door's own lines).
+ * layers, little of them solid, or a casement drawn on the wall; with no room behind: between two rooms such layers are a wall or a door's own lines).
  */
 function probe(grid: WallGrid, mass: WallMass, { own: floor, indoors }: Floors, i: number, j: number, ni: number, nj: number, maxWallPx: number): Probe {
   const { nx, ny, xs, ys } = grid, closure = mass.closure[j * nx + i], through = closure >= 0;
   const inGrid = () => i >= 0 && j >= 0 && i < nx && j < ny;
   // The probe stops at this room's floor, at anything that is no barrier, and where wall gives way to an opening.
   const stops = (index: number) => floor[index] === 1 || !isBarrier(mass, index) || (mass.closure[index] >= 0) !== through;
-  let depth = 0, solid = 0, layers = 0, unit = -3;
+  let depth = 0, solid = 0, glass = 0, layers = 0, unit = -3;
   for (; inGrid() && !stops(j * nx + i); i += ni, j += nj) {
     const index = j * nx + i, filled = mass.kind[index] === FILLED, here = filled ? -2 : mass.region[index];
     const size = ni ? xs[i + 1] - xs[i] : ys[j + 1] - ys[j];
     depth += size;
     if (filled) solid += size;
+    glass += mass.glazed[index] * size;
     if (here !== unit) { layers += 1; unit = here; }
-    if (depth > maxWallPx + 1e-6) return { closure, depthPx: Infinity, window: false };
+    if (depth > maxWallPx + 1e-6) return { closure, depthPx: Infinity, window: false, glass: false };
   }
   const outdoors = !inGrid() || indoors[j * nx + i] !== 1;
-  return { closure, depthPx: depth, window: !through && outdoors && layers >= PDF_OWN_ROOM_LIMITS.windowLayers && solid <= PDF_OWN_ROOM_LIMITS.windowSolidShare * depth };
+  return { closure, depthPx: depth, ...glazing(!through && outdoors, depth, solid, glass, layers) };
 }
+
+/**
+ * Whether what a probe went through is a window: a casement drawn on that piece of wall, or thin layers with little
+ * solid among them. Failing that, whether it is at least two layers of nothing solid (glass, if the wall beside it is
+ * not drawn the same way). `outside`: it is wall, with no room beyond.
+ */
+function glazing(outside: boolean, depth: number, solid: number, glass: number, layers: number): Pick<Probe, "window" | "glass"> {
+  if (!outside) return { window: false, glass: false };
+  const casement = glass > 0 && glass >= depth - 1e-6, layered = layers >= PDF_OWN_ROOM_LIMITS.windowLayers && solid <= PDF_OWN_ROOM_LIMITS.windowSolidShare * depth;
+  return { window: casement || layered, glass: !casement && !layered && layers >= 2 && solid === 0 };
+}
+
+/** Whether a probe found the same thing as the stretch before it: one kind, one opening, one depth, glass alike. */
+const runsOn = (last: FaceStretch, kind: FaceStretch["kind"], found: Probe) => last.kind === kind && last.closure === found.closure
+  && Boolean(last.glass) === found.glass && (last.thicknessPx === found.depthPx || Math.abs(last.thicknessPx - found.depthPx) < 0.03);
 
 /** The stretches of one side as probed, cell by cell, equal neighbours joined. */
 function probedStretches(grid: WallGrid, mass: WallMass, floors: Floors, face: Omit<RoomFace, "stretches">, maxWallPx: number): FaceStretch[] {
@@ -159,8 +177,8 @@ function probedStretches(grid: WallGrid, mass: WallMass, floors: Floors, face: O
     const found = probe(grid, mass, floors, ci, cj, ni, nj, maxWallPx);
     const kind = found.closure >= 0 ? "opening" : found.window ? "window" : "wall";
     const last = stretches[stretches.length - 1];
-    if (last && last.kind === kind && last.closure === found.closure && (last.thicknessPx === found.depthPx || Math.abs(last.thicknessPx - found.depthPx) < 0.03)) last.to = step + 1;
-    else stretches.push({ kind, closure: found.closure, thicknessPx: found.depthPx, from: step, to: step + 1 });
+    if (last && runsOn(last, kind, found)) last.to = step + 1;
+    else stretches.push({ kind, closure: found.closure, thicknessPx: found.depthPx, from: step, to: step + 1, ...(found.glass ? { glass: true } : {}) });
   }
   return stretches;
 }
@@ -210,6 +228,36 @@ function evenedStretches(stretches: FaceStretch[], length: (s: FaceStretch) => n
 }
 
 /**
+ * A window drawn as a piece of an outside wall split lengthwise by its glass line: two layers and nothing solid, where
+ * the wall on either side of it along the side is as deep but not drawn that way (one layer, or solid). A wall with an
+ * outer skin has two layers along its whole length, and is left as wall.
+ */
+function glazedWindows(raw: FaceStretch[]): FaceStretch[] {
+  const plainWall = (s: FaceStretch | undefined, like: FaceStretch) => !s || ((s.kind === "wall" || s.kind === "step") && !s.glass && Math.abs(s.thicknessPx - like.thicknessPx) < 0.05);
+  return raw.map((s, k) => {
+    const before = raw[k - 1], after = raw[k + 1];
+    return s.glass && s.kind === "wall" && (before || after) && plainWall(before, s) && plainWall(after, s) ? { ...s, kind: "window" as const } : { ...s };
+  });
+}
+
+/**
+ * A side's windows as whole windows: the glazed pieces of an outside wall; a short piece of wall between two windows
+ * is their mullion, and they are one window; glass right beside a door is that door's own panel, and stays wall.
+ */
+function wholeWindows(raw: FaceStretch[], length: (s: FaceStretch) => number, shortPx: number): FaceStretch[] {
+  const glazed = glazedWindows(raw);
+  glazed.forEach((s, k) => {
+    if (s.kind === "wall" && length(s) < shortPx && glazed[k - 1]?.kind === "window" && glazed[k + 1]?.kind === "window") { s.kind = "window"; s.thicknessPx = glazed[k - 1].thicknessPx; }
+  });
+  const joined: FaceStretch[] = [];
+  for (const s of glazed) {
+    const last = joined[joined.length - 1];
+    if (last?.kind === "window" && s.kind === "window") { last.to = s.to; last.thicknessPx = Math.max(last.thicknessPx, s.thicknessPx); } else joined.push(s);
+  }
+  return joined.map((s, k) => (s.kind === "window" && (joined[k - 1]?.kind === "opening" || joined[k + 1]?.kind === "opening") ? { ...s, kind: "wall" as const } : s));
+}
+
+/**
  * Settles a side's stretches. A short window is wall. A short stretch thicker than the wall on both sides of it is
  * another wall meeting this one from behind, and takes the thickness beside it. A stretch at the side's end, at an
  * inside corner of the room, with solid further back than any wall is thick is the end of a thicker piece of the wall
@@ -221,7 +269,7 @@ function evenedStretches(stretches: FaceStretch[], length: (s: FaceStretch) => n
 function settledStretches(grid: WallGrid, face: Omit<RoomFace, "stretches">, raw: FaceStretch[], millimetresPerPixel: number, insideCorner: [boolean, boolean]): FaceStretch[] {
   const px = (mm: number) => mm / millimetresPerPixel, length = (s: FaceStretch) => stretchLength(grid, face, s);
   const maxWallPx = px(PDF_OWN_WALL_LIMITS.maxWallMm) + 1e-6, jogPx = px(PDF_OWN_WALL_LIMITS.minWallMm);
-  const stretches = raw.map((s) => (s.kind === "window" && length(s) < px(PDF_OWN_ROOM_LIMITS.windowMinMm) ? { ...s, kind: "wall" as const } : { ...s }));
+  const stretches = wholeWindows(raw, length, px(PDF_OWN_ROOM_LIMITS.shortStretchMm)).map((s) => (s.kind === "window" && length(s) < px(PDF_OWN_ROOM_LIMITS.windowMinMm) ? { ...s, kind: "wall" as const } : s));
   stretches.forEach((s, k) => {
     const before = stretches[k - 1], after = stretches[k + 1];
     if (s.kind !== "wall" || !before || !after || ![s, before, after].every((n) => Number.isFinite(n.thicknessPx))) return;

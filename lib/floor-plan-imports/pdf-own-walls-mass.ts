@@ -30,6 +30,8 @@ export type WallMass = {
   /** Index into `closures` of the opening a cell lies in, else -1. */
   closure: Int32Array;
   closures: Closure[];
+  /** 1 where the cell is part of a casement window drawn inside the wall's own lines. */
+  glazed: Uint8Array;
 };
 
 export type Closure = {
@@ -126,7 +128,7 @@ export function wallMass(grid: WallGrid, millimetresPerPixel: number, planArea: 
   for (let index = 0; index < kind.length; index += 1) kind[index] = grid.fill[index] ? FILLED : !strip[labels[index]] ? FREE : thickness[index] <= inked ? FILLED : STRIP;
   clearBays(grid, kind, thickness, PDF_OWN_WALL_LIMITS.maxStripMm / millimetresPerPixel);
   pruneMass(grid, kind, millimetresPerPixel, planArea);
-  return { kind, region: labels, closure: new Int32Array(kind.length).fill(-1), closures: [] };
+  return { kind, region: labels, closure: new Int32Array(kind.length).fill(-1), closures: [], glazed: new Uint8Array(kind.length) };
 }
 
 type Gap = Closure;
@@ -231,6 +233,14 @@ export function closeGaps(grid: WallGrid, mass: WallMass, millimetresPerPixel: n
   return cuts;
 }
 
+/** Makes a piece of the wall mass an opening (a door drawn inside the wall's own lines), or marks it as a casement window. */
+export function openInWall(grid: WallGrid, mass: WallMass, part: Closure, casement: boolean) {
+  const cells = gapCells(part, grid.nx);
+  if (casement) { for (const index of cells) mass.glazed[index] = 1; return; }
+  for (const index of cells) mass.closure[index] = mass.closures.length;
+  mass.closures.push(part);
+}
+
 /** The pieces of floor the wall mass and the openings leave: each cell's piece, each piece's area, and whether it runs off the page. */
 export function floorPieces(grid: WallGrid, mass: WallMass) {
   const { nx, ny, xs, ys } = grid;
@@ -249,10 +259,10 @@ export function floorPieces(grid: WallGrid, mass: WallMass) {
 
 /**
  * Takes back the openings that only cut a pocket off a room: the floor either side of an opening is a room's or the
- * outside's, never an enclosed piece smaller than a room (`minRoomPx2`, in square page pixels).
+ * outside's, never an enclosed piece smaller than a room (`minRoomPx2`, in square page pixels). Returns those taken back.
  */
-export function dropPocketOpenings(grid: WallGrid, mass: WallMass, minRoomPx2: number) {
-  const { nx, ny } = grid, beside = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+export function dropPocketOpenings(grid: WallGrid, mass: WallMass, minRoomPx2: number): Closure[] {
+  const { nx, ny } = grid, beside = [[-1, 0], [1, 0], [0, -1], [0, 1]], dropped: Closure[] = [];
   for (;;) {
     const { labels, area, edge } = floorPieces(grid, mass), cut = new Set<number>();
     const pocket = (i: number, j: number) => {
@@ -263,7 +273,8 @@ export function dropPocketOpenings(grid: WallGrid, mass: WallMass, minRoomPx2: n
       const i = index % nx, j = (index - i) / nx;
       if (closure >= 0 && beside.some(([di, dj]) => pocket(i + di, j + dj))) cut.add(closure);
     });
-    if (!cut.size) return;
+    if (!cut.size) return dropped;
+    dropped.push(...mass.closures.filter((_, index) => cut.has(index)));
     const kept = mass.closures.map((_, index) => index).filter((index) => !cut.has(index)), renumbered = new Map(kept.map((index, k) => [index, k]));
     mass.closures = kept.map((index) => mass.closures[index]);
     mass.closure.forEach((closure, index) => { if (closure >= 0) mass.closure[index] = renumbered.get(closure) ?? -1; });

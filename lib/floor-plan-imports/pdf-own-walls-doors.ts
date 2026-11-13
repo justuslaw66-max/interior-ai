@@ -1,5 +1,6 @@
 import { PDF_OWN_WALL_LIMITS, type AxisLine, type Swing, type WallGrid } from "./pdf-own-walls-grid";
-import type { Closure } from "./pdf-own-walls-mass";
+import { wallLeaves, type WallLeaf } from "./pdf-own-walls-leaves";
+import type { Closure, WallMass } from "./pdf-own-walls-mass";
 import type { FloorPlanVectorizerEvidence } from "./vectorizer-evidence-schema";
 
 /**
@@ -30,6 +31,11 @@ const DOOR_SIGNS = {
 } as const;
 
 const SWING: Drawn = { opening: { kind: "door", operation: "swing", confidence: 0.8 }, note: "a door swing drawn at a gap of the PDF's walls" };
+const FOLDING: Drawn = { opening: { kind: "door", operation: "folding", confidence: 0.7 }, note: "folding leaves drawn at a gap of the PDF's walls" };
+const IN_WALL: Record<"swing" | "folding", Drawn> = {
+  swing: { opening: { kind: "door", operation: "swing", confidence: 0.8 }, note: "a door swing drawn on a piece of the PDF's wall" },
+  folding: { opening: { kind: "door", operation: "folding", confidence: 0.7 }, note: "folding leaves drawn on a piece of the PDF's wall" },
+};
 const SLIDING: Drawn = { opening: { kind: "door", operation: "sliding", confidence: 0.6 }, note: "panels drawn along a gap of the PDF's walls" };
 
 type Span = { from: number; to: number; low: number; high: number };
@@ -108,7 +114,7 @@ function drawnDoor(gap: Closure, grid: WallGrid, drawing: DoorDrawing, millimetr
     const x = (start.x + end.x) / 2, y = (start.y + end.y) / 2, [along, across] = gap.level ? [x, y] : [y, x];
     return Math.hypot(end.x - start.x, end.y - start.y) >= DOOR_SIGNS.foldMin * length && along >= span.from && along <= span.to && across >= span.low - reach && across <= span.high + reach;
   });
-  if (folding) return { opening: { kind: "door", operation: "folding", confidence: 0.7 }, note: "folding leaves drawn at a gap of the PDF's walls" };
+  if (folding) return FOLDING;
   const panel = (line: AxisLine) => line.plumb !== gap.level && line.at > span.low + 1e-6 && line.at < span.high - 1e-6
     && Math.min(line.to, span.to) - Math.max(line.from, span.from) >= DOOR_SIGNS.panelCover * length;
   return drawing.lines.some(panel) ? SLIDING : null;
@@ -137,25 +143,45 @@ export type DoorFinder = {
   at(gap: Closure): Drawn | null;
   /** In a gap deeper than a wall: the band across it (page pixels along its depth) where a door is drawn, or null. */
   deep(gap: Closure): { from: number; to: number; keep(part: Closure): void } | null;
+  /** The doors and casements drawn inside the wall mass (after the gaps are closed: a swing a gap used is not one). */
+  inWalls(mass: WallMass): WallLeaf[];
+  /** Forgets an opening that was taken back: the swing drawn at it is free for another. */
+  release(gap: Closure): void;
 };
 
 /** Finds the doors drawn at the gaps of one grid; what it finds for a gap it keeps, and a swing serves one gap. */
 export function doorFinder(evidence: Evidence, grid: WallGrid, drawing: DoorDrawing, millimetresPerPixel: number, sx: number, sy: number): DoorFinder {
-  const found = new Map<Closure, Drawn | null>(), used = new Set<number>();
+  const found = new Map<Closure, Drawn | null>(), used = new Set<number>(), swingsOf = new Map<Closure, number[]>();
   return {
     at(gap) {
-      if (!found.has(gap)) found.set(gap, readerOpening(evidence, gap, grid, sx, sy) ?? drawnDoor(gap, grid, drawing, millimetresPerPixel, used));
-      return found.get(gap) ?? null;
+      if (found.has(gap)) return found.get(gap) ?? null;
+      const before = new Set(used), drawn = readerOpening(evidence, gap, grid, sx, sy) ?? drawnDoor(gap, grid, drawing, millimetresPerPixel, used);
+      found.set(gap, drawn);
+      swingsOf.set(gap, [...used].filter((index) => !before.has(index)));
+      return drawn;
+    },
+    release(gap) {
+      for (const index of swingsOf.get(gap) ?? []) used.delete(index);
+      swingsOf.delete(gap);
+      found.delete(gap);
     },
     deep(gap) {
       const span = spanOf(gap, grid), swing = swingDoor(gap, span, drawing, used);
       if (swing) {
         const thick = Math.min(DOOR_SIGNS.doorMm / millimetresPerPixel, span.high - span.low), reach = DOOR_SIGNS.hingeReach * gap.lengthPx;
         const from = swing.depth - span.low <= reach ? span.low : span.high - swing.depth <= reach ? span.high - thick : Math.max(span.low, Math.min(span.high - thick, swing.depth - thick / 2));
-        return { from, to: from + thick, keep: (part) => { for (const index of swing.indices) used.add(index); found.set(part, SWING); } };
+        return { from, to: from + thick, keep: (part) => { for (const index of swing.indices) used.add(index); found.set(part, SWING); swingsOf.set(part, swing.indices); } };
       }
       const panels = panelBand(gap, span, drawing.lines, millimetresPerPixel);
       return panels && { ...panels, keep: (part) => { found.set(part, SLIDING); } };
+    },
+    inWalls(mass) {
+      const leaves = wallLeaves(grid, mass, drawing, millimetresPerPixel, used);
+      for (const leaf of leaves) {
+        for (const index of leaf.swings) used.add(index);
+        if (leaf.kind !== "casement") found.set(leaf.part, IN_WALL[leaf.kind]);
+      }
+      return leaves;
     },
   };
 }

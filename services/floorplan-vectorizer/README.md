@@ -236,7 +236,11 @@ with its thickness; an opening jamb to jamb, the same edge for the rooms either 
 lettered: the scale, the room names, and what kind of door it saw in a gap. A gap between two walls is an opening
 where both stop short of each other (up to 1300 mm), or where a door is drawn in it (a swing hinged at a jamb, a pair
 of leaves, folding leaves, sliding panels; up to 3600 mm); thin layers in an outer wall with next to nothing solid
-among them are a window. Doors and windows drawn inside a wall's own lines are not read yet. On such a page the wall
+among them are a window. A door drawn inside a wall's own lines (the wall not broken, two lines across it for the
+jambs) is found from what hangs on that piece of wall: a leaf's swing, a pair of leaves, or a folding door's two
+slanted leaves; an even pair of window-wide leaves in an outside wall is a casement window. A piece of an outside
+wall split lengthwise by a glass line, with plain wall either side, is a window too; windows may look onto a ledge, a
+balcony or a yard; windows either side of a mullion are one window. On such a page the wall
 snap and the topology clean-up above are skipped: they repair walls read from a picture, and these are exact. A page
 it cannot use (no scale from dimensions, no drawing of its own, no enclosed room) keeps the reader's walls.
 
