@@ -185,9 +185,9 @@ function testBlocksAsFurniture() {
     return dims ? computeAABB(item.position, dims.w / 1000, dims.d / 1000) : null;
   };
   const args = { position: [0.2, 0, 0] as [number, number, number], rotationY: 0, items: [sofa], getItemAABB: aabb };
-  assert.equal(findCatalogPlacementCollision({ productId: "layout-block:armchair", dimsMm: { w: 800, d: 800, h: 800 }, ...args }), sofa, "A block runs into a block");
-  assert.equal(findCatalogPlacementCollision({ productId: "layout-block:aircon", dimsMm: { w: 800, d: 250, h: 300 }, ...args }), null, "An aircon block passes over it");
-  assert.equal(findCatalogPlacementCollision({ productId: "layout-block:rug", dimsMm: { w: 2000, d: 1400, h: 10 }, ...args }), null, "A rug block lies under it");
+  assert.equal(findCatalogPlacementCollision({ productId: "layout-block:armchair", dimsMm: { w: 800, d: 800 }, ...args }), sofa, "A block runs into a block");
+  assert.equal(findCatalogPlacementCollision({ productId: "layout-block:aircon", dimsMm: { w: 800, d: 250 }, ...args }), null, "An aircon block passes over it");
+  assert.equal(findCatalogPlacementCollision({ productId: "layout-block:rug", dimsMm: { w: 2000, d: 1400 }, ...args }), null, "A rug block lies under it");
 }
 
 testEveryKind();
