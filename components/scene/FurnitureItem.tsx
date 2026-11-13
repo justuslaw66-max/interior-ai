@@ -686,18 +686,18 @@ export function Furniture({
   useEffect(() => {
     if (!renderReadyKey) return;
     const lastReported = lastReportedRenderReadyRef.current;
-    if (
-      lastReported?.key === renderReadyKey &&
+    if ( // Per view: leaving 3D clears the page's readiness, so an item with no model (a layout block) reports again.
+      lastReported?.key === `${renderReadyKey}:${viewMode}` &&
       lastReported.ready === renderReady
     ) {
       return;
     }
     lastReportedRenderReadyRef.current = {
-      key: renderReadyKey,
+      key: `${renderReadyKey}:${viewMode}`,
       ready: renderReady,
     };
     onRenderReadyChange?.(renderReadyKey, renderReady);
-  }, [onRenderReadyChange, renderReady, renderReadyKey]);
+  }, [onRenderReadyChange, renderReady, renderReadyKey, viewMode]);
   // Stable props: a page re-render that changes nothing here doesn't make R3F redraw.
   const groupUserData = useMemo(() => sceneDemandItemUserData(instanceId, viewMode, height), [height, instanceId, viewMode]);
   const handleClick = useLatestCallback((e: ThreeEvent<MouseEvent>) => {

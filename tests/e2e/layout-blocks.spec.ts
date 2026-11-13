@@ -55,5 +55,11 @@ test.describe("layout blocks", () => {
 
     await page.getByTestId("furnish-source-products").click();
     await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(0);
+
+    // A block has no model, so it is ready at once; after a trip to 2D the 3D view still opens
+    // (J's look, 13 Nov: it stayed on "Preparing room").
+    await page.locator('[data-testid="editor-view-2d"]:visible').first().click();
+    await page.locator('[data-testid="editor-view-3d"]:visible').first().click();
+    await expect(page.getByTestId("scene-ready-veil")).toHaveCount(0, { timeout: 20_000 });
   });
 });
