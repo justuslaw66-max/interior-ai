@@ -22,8 +22,9 @@ export const PDF_OWN_OPENING_LIMITS = {
 /** A cell's kind: free; solid (inside a fill, or inked over by the lines either side of it); or a closed strip. */
 export const FREE = 0, FILLED = 1, STRIP = 2;
 
-/** `glazed` values: a casement's piece of wall, a piece with a dashed glass line down its middle. */
-export const CASEMENT_GLASS = 1, DASHED_GLASS = 2;
+/** `glazed` values: a casement's piece of wall, a piece with a dashed glass line down its middle, a bay window's
+ * platform and frame outside the room's wall (pdf-own-walls-bays.ts). */
+export const CASEMENT_GLASS = 1, DASHED_GLASS = 2, BAY_GLASS = 3;
 
 export type WallMass = {
   /** FREE, FILLED or STRIP per cell. */
@@ -33,7 +34,7 @@ export type WallMass = {
   /** Index into `closures` of the opening a cell lies in, else -1. */
   closure: Int32Array;
   closures: Closure[];
-  /** Where the cell is part of a window drawn inside the wall's own lines: CASEMENT_GLASS or DASHED_GLASS, else 0. */
+  /** Where the cell is part of a window: CASEMENT_GLASS, DASHED_GLASS or BAY_GLASS, else 0. */
   glazed: Uint8Array;
 };
 
@@ -286,3 +287,21 @@ export function dropPocketOpenings(grid: WallGrid, mass: WallMass, minRoomPx2: n
 
 /** A cell that stops a room: wall mass or an opening. */
 export const isBarrier = (mass: WallMass, index: number) => mass.kind[index] !== FREE || mass.closure[index] >= 0;
+
+/** Whether a cell is part of a bay window outside a room's wall: mass that closes the room, but not wall. */
+export const isBay = (mass: WallMass, index: number) => mass.glazed[index] === BAY_GLASS && mass.kind[index] !== FREE;
+
+/** Each closed strip region's cell box: [i0, i1] by [j0, j1], inclusive. */
+export function stripRegionBoxes(grid: WallGrid, mass: WallMass) {
+  const boxes = new Map<number, [number, number, number, number]>();
+  for (let j = 0; j < grid.ny; j += 1) {
+    for (let i = 0; i < grid.nx; i += 1) {
+      const index = j * grid.nx + i;
+      if (mass.kind[index] !== STRIP) continue;
+      const box = boxes.get(mass.region[index]);
+      if (!box) boxes.set(mass.region[index], [i, i, j, j]);
+      else { box[0] = Math.min(box[0], i); box[1] = Math.max(box[1], i); box[2] = Math.min(box[2], j); box[3] = Math.max(box[3], j); }
+    }
+  }
+  return boxes;
+}

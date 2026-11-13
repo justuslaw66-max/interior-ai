@@ -1,5 +1,5 @@
 import { PDF_OWN_WALL_LIMITS, type WallGrid } from "./pdf-own-walls-grid";
-import { DASHED_GLASS, FILLED, FREE, floorPieces, isBarrier, type WallMass } from "./pdf-own-walls-mass";
+import { DASHED_GLASS, FILLED, FREE, floorPieces, isBarrier, isBay, type WallMass } from "./pdf-own-walls-mass";
 
 /**
  * The rooms of a vector PDF page, from its wall mass and openings (pdf-own-walls-mass.ts): each room is the free floor
@@ -36,6 +36,8 @@ export type FaceStretch = {
   to: number;
   /** Two or more thin layers, nothing solid, outdoors beyond: glass, if the wall beside it is not drawn the same way. */
   glass?: boolean;
+  /** Some of what stands behind it is solid (a fill: a column, a concrete wall). */
+  solid?: boolean;
 };
 
 export type RoomFace = {
@@ -124,9 +126,16 @@ export function floorOutline(grid: WallGrid, floor: Uint8Array): GridPoint[] {
   });
 }
 
-type Probe = { closure: number; depthPx: number; window: boolean; glass: boolean };
+type Probe = { closure: number; depthPx: number; window: boolean; glass: boolean; solid?: boolean };
 
-type Floors = { /** This room's floor. */ own: Uint8Array; /** Every room's floor. */ indoors: Uint8Array };
+type Floors = {
+  /** This room's floor. */
+  own: Uint8Array;
+  /** Every room's floor, less the floor open to the air. */
+  indoors: Uint8Array;
+  /** Whether this room's floor is lettered as open to the air (a balcony, a ledge, a yard). */
+  openRoom: boolean;
+};
 
 /**
  * What a probe has gone through so far: how deep, how much of it solid or glass, how many layers; and of the first
@@ -156,37 +165,43 @@ const ownGlazed = (tally: Tally, dashed: boolean) => {
  * What stands behind one cell-width of a room's side: an opening or wall, how deep, and whether it is a window (thin
  * layers, little of them solid, or a casement drawn on the wall; with no room behind: between two rooms such layers are a wall or a door's own lines).
  */
-function probe(grid: WallGrid, mass: WallMass, { own: floor, indoors }: Floors, i: number, j: number, ni: number, nj: number, maxWallPx: number): Probe {
+function probe(grid: WallGrid, mass: WallMass, { own: floor, indoors, openRoom }: Floors, i: number, j: number, ni: number, nj: number, maxWallPx: number): Probe {
   const { nx, ny, xs, ys } = grid, closure = mass.closure[j * nx + i], through = closure >= 0;
   const inGrid = () => i >= 0 && j >= 0 && i < nx && j < ny;
-  // The probe stops at this room's floor, at anything that is no barrier, and where wall gives way to an opening.
-  const stops = (index: number) => floor[index] === 1 || !isBarrier(mass, index) || (mass.closure[index] >= 0) !== through;
+  // The probe stops at this room's floor, at anything that is no barrier, where wall gives way to an opening, and at a
+  // bay: the room's own wall line in front of a bay is its window.
+  const stops = (index: number) => floor[index] === 1 || !isBarrier(mass, index) || (mass.closure[index] >= 0) !== through || isBay(mass, index);
   const tally: Tally = { depth: 0, solid: 0, glass: 0, layers: 0, unit: -3, ownDepth: 0, ownGlass: 0, ownDashed: 0 };
   for (; inGrid() && !stops(j * nx + i); i += ni, j += nj) {
     tallied(tally, mass, j * nx + i, ni ? xs[i + 1] - xs[i] : ys[j + 1] - ys[j]);
     // Past any wall's thickness: unknown depth; a window still where the wall's own layer is a dashed glass line's.
     if (tally.depth > maxWallPx + 1e-6) return { closure, depthPx: Infinity, window: !through && tally.layers >= 2 && ownGlazed(tally, true), glass: false };
   }
+  if (inGrid() && isBay(mass, j * nx + i)) return { closure, depthPx: tally.depth > 0 ? tally.depth : Infinity, window: !through, glass: false };
   const outdoors = !inGrid() || indoors[j * nx + i] !== 1, { depth, solid, glass, layers } = tally;
   // Glass across the wall's own layer, nothing solid behind it (only the wall's outer skin): a window as thick as the
   // wall, skin and all, like the wall either side of it.
-  return { closure, depthPx: depth, ...glazing(!through && outdoors, depth, solid, ownGlazed(tally, false) ? depth : glass, layers) };
+  const air = { own: openRoom };
+  return { closure, depthPx: depth, solid: solid > 0, ...glazing(!through && outdoors, depth, solid, ownGlazed(tally, false) ? depth : glass, layers, air) };
 }
 
 /**
  * Whether what a probe went through is a window: glass drawn on that piece of wall (a casement, a dashed glass line),
  * or thin layers with little solid among them. Failing that, whether it is at least two layers of nothing solid
- * (glass, if the wall beside it is not drawn the same way). `outside`: it is wall, with no room beyond.
+ * (glass, if the wall beside it is not drawn the same way). `outside`: it is wall, with no room beyond. A space open
+ * to the air (`air.own`: a balcony) has windows only where glass is drawn: its layered sides are parapets (J, 14 Nov
+ * 2026, Blk 670's balcony).
  */
-function glazing(outside: boolean, depth: number, solid: number, glass: number, layers: number): Pick<Probe, "window" | "glass"> {
+function glazing(outside: boolean, depth: number, solid: number, glass: number, layers: number, air: { own: boolean }): Pick<Probe, "window" | "glass"> {
   if (!outside) return { window: false, glass: false };
-  const casement = glass > 0 && glass >= depth - 1e-6, layered = layers >= PDF_OWN_ROOM_LIMITS.windowLayers && solid <= PDF_OWN_ROOM_LIMITS.windowSolidShare * depth;
-  return { window: casement || layered, glass: !casement && !layered && layers >= 2 && solid === 0 };
+  const casement = glass > 0 && glass >= depth - 1e-6;
+  const layered = !air.own && layers >= PDF_OWN_ROOM_LIMITS.windowLayers && solid <= PDF_OWN_ROOM_LIMITS.windowSolidShare * depth;
+  return { window: casement || layered, glass: !casement && !layered && !air.own && layers >= 2 && solid === 0 };
 }
 
 /** Whether a probe found the same thing as the stretch before it: one kind, one opening, one depth, glass alike. */
 const runsOn = (last: FaceStretch, kind: FaceStretch["kind"], found: Probe) => last.kind === kind && last.closure === found.closure
-  && Boolean(last.glass) === found.glass && (last.thicknessPx === found.depthPx || Math.abs(last.thicknessPx - found.depthPx) < 0.03);
+  && Boolean(last.glass) === found.glass && Boolean(last.solid) === Boolean(found.solid) && (last.thicknessPx === found.depthPx || Math.abs(last.thicknessPx - found.depthPx) < 0.03);
 
 /** The stretches of one side as probed, cell by cell, equal neighbours joined. */
 function probedStretches(grid: WallGrid, mass: WallMass, floors: Floors, face: Omit<RoomFace, "stretches">, maxWallPx: number): FaceStretch[] {
@@ -200,7 +215,7 @@ function probedStretches(grid: WallGrid, mass: WallMass, floors: Floors, face: O
     const kind = found.closure >= 0 ? "opening" : found.window ? "window" : "wall";
     const last = stretches[stretches.length - 1];
     if (last && runsOn(last, kind, found)) last.to = step + 1;
-    else stretches.push({ kind, closure: found.closure, thicknessPx: found.depthPx, from: step, to: step + 1, ...(found.glass ? { glass: true } : {}) });
+    else stretches.push({ kind, closure: found.closure, thicknessPx: found.depthPx, from: step, to: step + 1, ...(found.glass ? { glass: true } : {}), ...(found.solid ? { solid: true } : {}) });
   }
   return stretches;
 }
@@ -251,11 +266,13 @@ function evenedStretches(stretches: FaceStretch[], length: (s: FaceStretch) => n
 
 /**
  * A window drawn as a piece of an outside wall split lengthwise by its glass line: two layers and nothing solid, where
- * the wall on either side of it along the side is as deep but not drawn that way (one layer, or solid). A wall with an
- * outer skin has two layers along its whole length, and is left as wall.
+ * the wall on either side of it along the side is as deep, drawn with lines too, but not split (one layer). A wall
+ * with an outer skin has two layers along its whole length, and is left as wall; so is such a piece between two solid
+ * columns, an infill (J, 14 Nov 2026: Blk 670's bedroom 3 onto its balcony; Fernvale's bath 1 window stands between
+ * walls drawn with lines).
  */
 function glazedWindows(raw: FaceStretch[]): FaceStretch[] {
-  const plainWall = (s: FaceStretch | undefined, like: FaceStretch) => !s || ((s.kind === "wall" || s.kind === "step") && !s.glass && Math.abs(s.thicknessPx - like.thicknessPx) < 0.05);
+  const plainWall = (s: FaceStretch | undefined, like: FaceStretch) => !s || ((s.kind === "wall" || s.kind === "step") && !s.glass && !s.solid && Math.abs(s.thicknessPx - like.thicknessPx) < 0.05);
   return raw.map((s, k) => {
     const before = raw[k - 1], after = raw[k + 1];
     return s.glass && s.kind === "wall" && (before || after) && plainWall(before, s) && plainWall(after, s) ? { ...s, kind: "window" as const } : { ...s };
@@ -276,8 +293,13 @@ function wholeWindows(raw: FaceStretch[], length: (s: FaceStretch) => number, sh
   const joined: FaceStretch[] = [];
   for (const s of glazed) {
     const last = joined[joined.length - 1];
-    // Joined windows take the thicker known depth (a piece of unknown depth takes the other's).
-    if (last?.kind === "window" && s.kind === "window") { last.to = s.to; last.thicknessPx = thicker(last.thicknessPx, s.thicknessPx); } else joined.push(s);
+    // Joined windows take the thicker known depth (a piece of unknown depth, or one shorter than `shortPx` - a corner's
+    // end, Blk 88's bay - takes the other's).
+    if (last?.kind === "window" && s.kind === "window") {
+      const [a, b] = [length(last) < shortPx ? Infinity : last.thicknessPx, length(s) < shortPx ? Infinity : s.thicknessPx];
+      last.thicknessPx = Number.isFinite(a) || Number.isFinite(b) ? thicker(a, b) : thicker(last.thicknessPx, s.thicknessPx);
+      last.to = s.to;
+    } else joined.push(s);
   }
   return joined.map((s, k) => (s.kind === "window" && (joined[k - 1]?.kind === "opening" || joined[k + 1]?.kind === "opening") ? { ...s, kind: "wall" as const } : s));
 }
@@ -334,5 +356,5 @@ export function roomFaces(grid: WallGrid, mass: WallMass, floors: Floors, outlin
   });
 }
 
-/** Whether a cell is wall mass no room's side has claimed: kept for the walls that stand alone. */
-export const isMass = (mass: WallMass, index: number) => mass.kind[index] !== FREE && mass.closure[index] < 0;
+/** Whether a cell is wall mass (not a bay) no room's side has claimed: kept for the walls that stand alone. */
+export const isMass = (mass: WallMass, index: number) => mass.kind[index] !== FREE && mass.closure[index] < 0 && !isBay(mass, index);

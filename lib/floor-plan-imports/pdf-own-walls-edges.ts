@@ -1,5 +1,5 @@
 import { PDF_OWN_WALL_LIMITS, gridIndex, runThickness, type WallGrid } from "./pdf-own-walls-grid";
-import type { Closure, WallMass } from "./pdf-own-walls-mass";
+import { isBay, type Closure, type WallMass } from "./pdf-own-walls-mass";
 import { isMass, type FaceStretch, type RoomFace } from "./pdf-own-walls-rooms";
 
 /**
@@ -132,9 +132,18 @@ function leftoverBlocks(grid: WallGrid, leftover: Uint8Array) {
   return blocks;
 }
 
+/** Whether any cell beside a block of cells is a bay's (pdf-own-walls-bays.ts). */
+function touchesBay(grid: WallGrid, mass: WallMass, block: { i0: number; i1: number; j0: number; j1: number }) {
+  const { nx, ny } = grid, bay = (i: number, j: number) => i >= 0 && j >= 0 && i < nx && j < ny && isBay(mass, j * nx + i);
+  for (let i = block.i0; i < block.i1; i += 1) if (bay(i, block.j0 - 1) || bay(i, block.j1)) return true;
+  for (let j = block.j0; j < block.j1; j += 1) if (bay(block.i0 - 1, j) || bay(block.i1, j)) return true;
+  return false;
+}
+
 /**
  * The walls that stand alone: wall mass that no room's edge covers (a wall inside a room, a parapet, a wall past the
- * last room), each block of it as one wall along its longer side. Slivers thinner than a wall are left out.
+ * last room), each block of it as one wall along its longer side. Slivers thinner than a wall are left out, and
+ * short pieces beside a bay.
  */
 export function standaloneWalls(grid: WallGrid, mass: WallMass, rooms: OwnWallEdge[][], millimetresPerPixel: number): OwnWallEdge[] {
   const { nx, ny, xs, ys } = grid, claimed = new Uint8Array(nx * ny), minPx = PDF_OWN_WALL_LIMITS.minWallMm / millimetresPerPixel - 1e-6;
@@ -149,9 +158,12 @@ export function standaloneWalls(grid: WallGrid, mass: WallMass, rooms: OwnWallEd
   for (let index = 0; index < nx * ny; index += 1) if (isMass(mass, index) && !claimed[index]) leftover[index] = 1;
   const thickness = runThickness(grid, (index) => leftover[index] === 1, () => true);
   for (let index = 0; index < nx * ny; index += 1) if (leftover[index] && thickness[index] < minPx) leftover[index] = 0;
+  const maxWallPx = PDF_OWN_WALL_LIMITS.maxWallMm / millimetresPerPixel;
   return leftoverBlocks(grid, leftover).flatMap((block): OwnWallEdge[] => {
     const left = xs[block.i0], right = xs[block.i1], top = ys[block.j0], bottom = ys[block.j1], wide = right - left, tall = bottom - top;
     if (Math.min(wide, tall) < minPx || Math.max(wide, tall) < 2 * minPx) return [];
+    // A short piece beside a bay is the end of the bay's frame (Blk 88): left out with the bay.
+    if (Math.max(wide, tall) <= maxWallPx && touchesBay(grid, mass, block)) return [];
     return wide >= tall
       ? [{ kind: "wall", closure: -1, thicknessPx: tall, start: [left, (top + bottom) / 2], end: [right, (top + bottom) / 2] }]
       : [{ kind: "wall", closure: -1, thicknessPx: wide, start: [(left + right) / 2, top], end: [(left + right) / 2, bottom] }];
