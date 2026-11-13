@@ -142,6 +142,15 @@ function testCasementInAnOutsideWall() {
   assert.equal(evidence.wallEdges.filter((edge) => edge.opening?.kind === "door").length, 0);
 }
 
+function testGlazedPieceOfAnOutsideWall() {
+  // A piece of the right room's top wall between two lines across it, split lengthwise by one glass line.
+  const glazed: Line[] = [[500, 100, 500, 110], [600, 100, 600, 110], [500, 105, 600, 105]];
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...glazed]), reader());
+  const windows = evidence.wallEdges.filter((edge) => edge.opening?.kind === "window").map(ends);
+  assert.ok(windows.some(([a, b]) => a[0] === 500 && b[0] === 600 && a[1] === 105 && b[1] === 105), "two layers and nothing solid, with plain wall either side, are a window");
+  assert.equal(windows.length, 2);
+}
+
 function testLeftAsRead() {
   const drawn = page(planLines(200, 290)), read = reader();
   assert.equal(pdfOwnWallsEnabled({}), false, "off unless FLOOR_PLAN_PDF_OWN_WALLS=1");
@@ -168,6 +177,7 @@ testWindow();
 testWideGapNeedsADoor();
 testDoorDrawnInsideTheWall();
 testCasementInAnOutsideWall();
+testGlazedPieceOfAnOutsideWall();
 testLeftAsRead();
 testMarksItsPages();
 console.log("floor-plan PDF own walls: ok");

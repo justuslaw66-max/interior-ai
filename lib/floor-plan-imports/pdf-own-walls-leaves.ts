@@ -18,8 +18,9 @@ const LEAF_SIGNS = {
   solidShare: 0.2,
   /** Folding leaves are two slanted strokes from one point, each at least this long, their far ends on the wall. */
   foldMinMm: 250,
-  /** A pair of leaves is a casement where neither is under this share of the two together and one side is outdoors. */
-  evenShare: 0.35,
+  /** A pair of leaves is a casement where neither is under this share of the two together, neither is wider than a
+   * window's leaf, and one side is outdoors (two door-wide leaves are a double door, outdoors or not). */
+  evenShare: 0.35, casementLeafMaxMm: 800,
 } as const;
 
 export type WallLeaf = {
@@ -153,7 +154,7 @@ function hungSwings(swings: Swing[], used: Set<number>, millimetresPerPixel: num
       const meets = b.index !== a.index && b.level === a.level && b.side === a.side && Math.sign(b.tip - b.hinge) === -Math.sign(a.tip - a.hinge);
       const near = LEAF_SIGNS.reach * (a.width + b.width);
       if (!meets || a.hinge > b.hinge || Math.abs(a.at - b.at) > near || Math.abs(a.tip - b.tip) > near) continue;
-      const even = Math.min(a.width, b.width) >= LEAF_SIGNS.evenShare * (a.width + b.width);
+      const even = Math.min(a.width, b.width) >= LEAF_SIGNS.evenShare * (a.width + b.width) && Math.max(a.width, b.width) * millimetresPerPixel <= LEAF_SIGNS.casementLeafMaxMm;
       hung.push({ level: a.level, at: (a.at + b.at) / 2, from: a.hinge, to: b.hinge, side: a.side, kind: even ? "casement" : "swing", swings: [a.index, b.index] });
     }
     hung.push({ level: a.level, at: a.at, from: Math.min(a.hinge, a.tip), to: Math.max(a.hinge, a.tip), side: a.side, kind: "swing", swings: [a.index] });
