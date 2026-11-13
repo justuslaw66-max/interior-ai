@@ -10,6 +10,7 @@ import { registerRasterOpeningSpans, sourceOpeningSpan } from "./raster-opening-
 import { mergeSemantics } from "./semantic-merge";
 import { sourceTextEvidenceFromLocalOcr } from "./local-ocr-rotation";
 import { applyVectorizerEvidence } from "./vectorizer-pass";
+import { hasPdfOwnWalls } from "./pdf-own-walls";
 import { ownLineworkClosesRooms, vectorizerCandidatePages, vectorizerReadingsLead } from "./vectorizer-pdf-pages";
 import {
   createDefaultFloorPlanVectorizerProvider,
@@ -1128,30 +1129,22 @@ function applyVisionGuidedFallback(
   );
 }
 
-export function registerSupportedPageTopology(
+/** A page whose walls and rooms the PDF-own-walls builder took from its own drawing leads with them (pdf-own-walls.ts). */
+export function registerSupportedPageTopology(sourcePage: RegisteredPageEvidence, scale: PageScaleSolution | null): RegisteredPageTopology {
+  const own = scale && hasPdfOwnWalls(sourcePage) ? vectorizerRoomBoundaries(sourcePage, scale.millimetresPerPixel) : [];
+  return own.length ? { ...unavailableRegisteredPageTopology(0, "pdf_own_walls_preferred"), rooms: own, promotionComplete: true, promotionBlockers: [] } : registerLineworkTopology(sourcePage, scale);
+}
+
+function registerLineworkTopology(
   sourcePage: RegisteredPageEvidence,
   scale: PageScaleSolution | null
 ): RegisteredPageTopology {
   const page=architecturalLineworkPage(sourcePage);
   const directRooms = registerRoomBoundaries(page).filter(room=>!hasSourceDivider(page,room.sourcePoints));
   const wallFootprintBands = detectRegisteredWallFootprintBands(page);
-  const directCompleteness = directRooms.length
-    ? assessRegisteredDirectPathCompleteness(
-        page,
-        directRooms,
-        wallFootprintBands
-      )
-    : null;
+  const directCompleteness = directRooms.length ? assessRegisteredDirectPathCompleteness(page, directRooms, wallFootprintBands) : null;
   if (directCompleteness?.complete) {
-    return {
-      ...unavailableRegisteredPageTopology(
-        wallFootprintBands.length,
-        "direct_closed_paths_preferred"
-      ),
-      rooms: directRooms,
-      promotionComplete: true,
-      promotionBlockers: [],
-    };
+    return { ...unavailableRegisteredPageTopology(wallFootprintBands.length, "direct_closed_paths_preferred"), rooms: directRooms, promotionComplete: true, promotionBlockers: [] };
   }
   const directBlockers = directCompleteness?.blockers ?? [];
   // Registration is pixel-space work. Run it even before scale is solved so a

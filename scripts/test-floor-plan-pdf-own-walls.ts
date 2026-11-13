@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import type { RegisteredPageEvidence, SourceVectorPath, SourceVectorSegment } from "@/lib/floor-plan-imports/deterministic-evidence";
 import { hasPdfOwnWalls, pdfOwnWallsEnabled, pdfOwnWallsModel, withPdfOwnWalls } from "@/lib/floor-plan-imports/pdf-own-walls";
 import { parseFloorPlanVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-evidence";
+import { widenSetBackOpenings } from "@/lib/floor-plan-imports/pdf-own-walls-openings";
+import { FILLED, FREE, type Closure, type WallMass } from "@/lib/floor-plan-imports/pdf-own-walls-mass";
+import type { WallGrid } from "@/lib/floor-plan-imports/pdf-own-walls-grid";
 
 /**
  * Walls from a vector PDF's own drawing (lib/floor-plan-imports/pdf-own-walls.ts). The page here is 1000 px square at
@@ -240,6 +243,53 @@ function testRackOnAnOutsideFaceIsNotWall() {
   assert.ok(evidence.wallEdges.every((edge) => edge.sourcePx.every(([, y]) => y >= 100 - 1e-6)), "nothing is built on the rack");
 }
 
+function testLinesOnOneCoordinateJoinInOrder() {
+  // The right room's face along its bottom wall drawn as two pieces 0.01 px apart in height, the far one first in
+  // height (Tengah's 162.42 and 162.43): both stay; the room keeps its bottom face.
+  const lines = planLines(200, 290).filter(([x0, y0, x1, y1]) => !(x0 === 405 && y0 === 390 && x1 === 690 && y1 === 390));
+  const split: Line[] = [[600, 389.99, 690, 389.99], [405, 390, 550, 390]];
+  const evidence = withPdfOwnWalls(page([...lines, ...split, [550, 390, 600, 390]]), reader());
+  assert.deepEqual(evidence.rooms.map((room) => box(room.sourcePoints)), [[105, 105, 400, 395], [400, 105, 695, 395]]);
+}
+
+function testFillWithNoWidthIsNoDimensionDot() {
+  // A fill with no width on a jamb line (a CAD plot's sliver along a column's edge, Tengah): the line is a wall's.
+  const sliver: Line = [400, 195, 400, 205];
+  const evidence = withPdfOwnWalls(page(planLines(200, 290), [], [sliver]), reader());
+  assert.deepEqual(evidence.rooms.map((room) => room.label), ["LIVING", "KITCHEN"], "the jamb still closes the wall's end");
+}
+
+/**
+ * An opening in a level wall on a hand-made grid (10 mm a pixel): columns are wall, opening, opening, wall; rows from
+ * the top are `rows` (`rowPx` high; F free floor between free ends, W free floor between wall ends) and then the
+ * opening's two rows.
+ */
+function setBackCase(rows: ("F" | "W")[], rowPx = 5) {
+  const ys = [0, ...rows.map((_, k) => rowPx * (k + 1)), rowPx * rows.length + 10, rowPx * rows.length + 20];
+  const grid = { xs: Float64Array.from([0, 10, 20, 30, 40]), ys: Float64Array.from(ys), nx: 4, ny: ys.length - 1 } as unknown as WallGrid;
+  const cells = grid.nx * grid.ny, kind = new Uint8Array(cells), closure = new Int32Array(cells).fill(-1);
+  const gap: Closure = { i0: 1, i1: 3, j0: rows.length, j1: rows.length + 2, level: true, lengthPx: 20, depthPx: 20, endToEnd: true, staggered: false };
+  for (let j = 0; j < grid.ny; j += 1) {
+    const walled = j >= rows.length || rows[j] === "W";
+    for (const i of [0, 3]) kind[j * 4 + i] = walled ? FILLED : FREE;
+    if (j >= rows.length) for (const i of [1, 2]) closure[j * 4 + i] = 0;
+  }
+  const mass = { kind, region: new Int32Array(cells).fill(-1), closure, closures: [gap], glazed: new Uint8Array(cells) } as WallMass;
+  return { widened: widenSetBackOpenings(grid, mass, 10), gap };
+}
+
+function testOpeningSetBackFromTheWallFaces() {
+  // The frame 50 mm back from the walls' faces, the walls ending there (Tengah's entrance): the opening runs to them.
+  const { widened, gap } = setBackCase(["F", "W"]);
+  assert.equal(widened, 1);
+  assert.deepEqual([gap.j0, gap.j1, gap.depthPx], [1, 4, 25]);
+  // The walls running on past the band (a corridor's sides): the opening is left as it is.
+  const corridor = setBackCase(["W", "W", "W", "W"]);
+  assert.equal(corridor.widened, 0);
+  // A band thinner than the least jog (Fernvale's 13 mm) is not taken in.
+  assert.equal(setBackCase(["F", "W"], 1.3).widened, 0);
+}
+
 function testLeftAsRead() {
   const drawn = page(planLines(200, 290)), read = reader();
   assert.equal(pdfOwnWallsEnabled({}), false, "off unless FLOOR_PLAN_PDF_OWN_WALLS=1");
@@ -275,6 +325,9 @@ testBalconySideIsParapet();
 testCasementPairDrawnAsOnePath();
 testBayWindowAtTheRoomFace();
 testRackOnAnOutsideFaceIsNotWall();
+testLinesOnOneCoordinateJoinInOrder();
+testFillWithNoWidthIsNoDimensionDot();
+testOpeningSetBackFromTheWallFaces();
 testLeftAsRead();
 testMarksItsPages();
 console.log("floor-plan PDF own walls: ok");

@@ -509,7 +509,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/pdf-raster-adapter.ts": {
-      "lines": 2650,
+      "lines": 2643,
       "limit": 400
     },
     "lib/floor-plan-imports/planar-face-evidence.ts": {

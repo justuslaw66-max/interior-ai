@@ -4,6 +4,7 @@ import { doorFinder, openAirPoints, type DoorFinder, type Drawn } from "./pdf-ow
 import { PDF_OWN_WALL_LIMITS, buildWallGrid, gridIndex, wallLinesAndFills, type WallGrid } from "./pdf-own-walls-grid";
 import { markBays } from "./pdf-own-walls-bays";
 import { markDashedGlass } from "./pdf-own-walls-glass";
+import { widenSetBackOpenings } from "./pdf-own-walls-openings";
 import { dropWallFittings } from "./pdf-own-walls-racks";
 import { closeGaps, dropPocketOpenings, openInWall, wallMass, type WallMass } from "./pdf-own-walls-mass";
 import { PDF_OWN_ROOM_LIMITS, floorOutline, roomCells, roomFaces, roomFloor } from "./pdf-own-walls-rooms";
@@ -82,6 +83,7 @@ export function pdfOwnWallsModel(page: RegisteredPageEvidence, evidence: Evidenc
   for (const gap of dropPocketOpenings(grid, mass, minRoomPx2)) doors.release(gap);
   for (const leaf of doors.inWalls(mass)) openInWall(grid, mass, leaf.part, leaf.kind === "casement");
   dropPocketOpenings(grid, mass, minRoomPx2);
+  widenSetBackOpenings(grid, mass, millimetresPerPixel);
   dropWallFittings(grid, mass, millimetresPerPixel);
   markDashedGlass(grid, mass, drawing.lines, millimetresPerPixel);
   markBays(grid, mass, doors.unused(), millimetresPerPixel);
