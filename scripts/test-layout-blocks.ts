@@ -22,7 +22,8 @@ import { getRotatedFootprint } from "@/lib/design-page-utils";
 import { catalogOrLayoutBlockProduct } from "@/lib/design-item-product-snapshot";
 import { findCatalogPlacementCollision } from "@/lib/catalog-placement";
 import { layoutBlockResizeTarget, resizeLayoutBlockFootprint } from "@/lib/layout-block-resize";
-import { nativeResizeCursor, PLAN_ROTATE_CURSOR, planResizeCursor, resizeCursorAngle } from "@/lib/plan-cursors";
+import { nativeResizeCursor, planResizeCursor, planRotateCursor, resizeCursorAngle } from "@/lib/plan-cursors";
+import { getPlanCursorTheme, PLAN_CURSOR_THEME_STORAGE_KEY, PLAN_CURSOR_THEMES, setPlanCursorTheme } from "@/lib/plan-cursor-preference";
 import { layoutBlockCollisionProduct } from "@/lib/layout-blocks";
 import { resolveLayoutBlockResize } from "@/lib/useLayoutBlockResizeCommit";
 
@@ -156,11 +157,29 @@ function testPlanCursors() {
   assert.equal(resizeCursorAngle(1, 1), 45);
   assert.equal(resizeCursorAngle(0, -1), 90);
   assert.equal(resizeCursorAngle(Math.cos(0.52), Math.sin(0.52)), 30, "Snapped to 5°");
-  const diagonal = planResizeCursor(1, 1);
-  assert.match(diagonal, /^url\("data:image\/svg\+xml,.*"\) 16 16, nwse-resize$/);
-  assert.ok(decodeURIComponent(diagonal).includes("rotate(45 16 16)"), "Turned to the handle");
-  assert.equal(planResizeCursor(2, 2), diagonal, "One cursor per angle");
-  assert.match(PLAN_ROTATE_CURSOR, /\) 16 16, grab$/);
+  for (const theme of PLAN_CURSOR_THEMES) {
+    const diagonal = planResizeCursor(1, 1, theme);
+    if (theme === "standard") {
+      assert.equal(diagonal, "nwse-resize", "Standard is the browser's own");
+      assert.equal(planRotateCursor(theme), "grab");
+      continue;
+    }
+    assert.match(diagonal, /^url\("data:image\/svg\+xml,.*"\) 16 16, nwse-resize$/, theme);
+    assert.ok(decodeURIComponent(diagonal).includes("rotate(45 16 16)"), `${theme}: turned to the handle`);
+    assert.equal(planResizeCursor(2, 2, theme), diagonal, "One cursor per style and angle");
+    assert.match(planRotateCursor(theme), /\) 16 16, grab$/, theme);
+  }
+  assert.notEqual(planResizeCursor(1, 0, "gummy"), planResizeCursor(1, 0, "marshmallow"), "Each style draws its own");
+
+  // The choice is kept on this device; Gummy until one is picked, and nonsense reads as Gummy.
+  const stored = new Map<string, string>();
+  Object.assign(globalThis, { localStorage: { getItem: (k: string) => stored.get(k) ?? null, setItem: (k: string, v: string) => stored.set(k, v) } });
+  assert.equal(getPlanCursorTheme(), "gummy");
+  setPlanCursorTheme("sprinkles");
+  assert.equal(stored.get(PLAN_CURSOR_THEME_STORAGE_KEY), "sprinkles");
+  assert.equal(getPlanCursorTheme(), "sprinkles");
+  assert.ok(decodeURIComponent(planResizeCursor(1, 0)).includes("#8FE3C8"), "Cursors follow the chosen style");
+  setPlanCursorTheme("gummy");
 }
 
 function testResizeCommit() {

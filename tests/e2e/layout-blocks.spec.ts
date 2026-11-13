@@ -70,5 +70,18 @@ test.describe("layout blocks", () => {
     await page.locator('[data-testid="editor-view-2d"]:visible').first().click();
     await page.locator('[data-testid="editor-view-3d"]:visible').first().click();
     await expect(page.getByTestId("scene-ready-veil")).toHaveCount(0, { timeout: 20_000 });
+
+    // Preferences: the cursor style is the customer's, kept on this device (J, 13 Nov 2026).
+    await page.getByTestId("editor-command-overflow").click();
+    await page.getByTestId("editor-command-overflow-preferences").click();
+    const drawer = page.getByTestId("preferences-drawer");
+    await expect(drawer.locator('input[value="gummy"]')).toBeChecked();
+    await drawer.getByTestId("preferences-cursor-marshmallow").click();
+    await expect(drawer.locator('input[value="marshmallow"]')).toBeChecked();
+    await page.getByTestId("preferences-close").click();
+    await page.reload();
+    await page.getByTestId("editor-command-overflow").click();
+    await page.getByTestId("editor-command-overflow-preferences").click();
+    await expect(page.getByTestId("preferences-drawer").locator('input[value="marshmallow"]')).toBeChecked();
   });
 });

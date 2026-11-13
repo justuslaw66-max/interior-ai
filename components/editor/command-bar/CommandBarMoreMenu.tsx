@@ -27,6 +27,8 @@ type CommandBarMoreMenuProps = {
   onToggleClientPreview: () => void;
   onOpenLightingSettings: () => void;
   onCloseLightingSettings: () => void;
+  /** The customer's own settings, starting with the cursor style (PreferencesDrawer). */
+  onOpenPreferences: () => void;
   onFeedback: () => void;
   /** Phones have no room for Download in the bar, so More offers it there. */
   onDownload?: () => void;
@@ -158,14 +160,14 @@ function MoreMenuModeItems({
 }
 
 // Present & export retired (phase 4's small PR): Share and Download are in the bar.
-function MoreMenuViewItems({
-  menuButtonClass,
-  onClose,
-  lightingAvailable,
-  onOpenLightingSettings,
-}: CommandBarMoreMenuProps) {
+function MoreMenuViewItems(props: CommandBarMoreMenuProps) {
+  const { menuButtonClass, onClose, lightingAvailable, isClientPreview, onOpenLightingSettings } = props;
   return (
     <>
+      <MoreMenuDialogItem {...props} testId="editor-command-overflow-preferences"
+        onSelect={isClientPreview ? undefined : props.onOpenPreferences}>
+        Preferences
+      </MoreMenuDialogItem>
       {lightingAvailable ? (
         <button
           type="button"

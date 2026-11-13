@@ -5,7 +5,7 @@ import { Html } from "@react-three/drei/web/Html";
 import type { ThreeEvent } from "@react-three/fiber";
 import { useRef, type CSSProperties } from "react";
 import { useCanvasPalette } from "@/lib/canvas-colours";
-import { PLAN_ROTATE_CURSOR } from "@/lib/plan-cursors";
+import { planRotateCursor } from "@/lib/plan-cursors";
 
 /** Labels and handles stay above the plan's own overlays. */
 export const PLAN_ITEM_HTML_Z_INDEX: [number, number] = [5, 0];
@@ -35,7 +35,7 @@ type TurnHandler = ((e: ThreeEvent<PointerEvent>) => void) | undefined;
 function useRotateCursor(onPointerDown: TurnHandler, onPointerUp: TurnHandler) {
   const turning = useRef(false);
   const show = (on: boolean) => {
-    document.body.style.cursor = on ? PLAN_ROTATE_CURSOR : "";
+    document.body.style.cursor = on ? planRotateCursor() : "";
   };
   const end = (e: ThreeEvent<PointerEvent>) => {
     turning.current = false;

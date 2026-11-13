@@ -1787,7 +1787,7 @@
     "components/editor/EditorCommandBar.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 118
+        "maximum": 117
       }
     },
     "components/editor/EditorToolRail.tsx": {
