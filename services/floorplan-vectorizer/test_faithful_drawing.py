@@ -780,6 +780,29 @@ class Sharp(unittest.TestCase):
 
 
 # ------------------------------------------------------------------------------------------------ (r12)
+class OneInk(unittest.TestCase):
+    """(r13) one ink: line work black, a light pen and grey areas kept"""
+
+    def test_line_work_black_light_pen_and_grey_areas_kept(self):
+        sq = lambda x, y, w, h: [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]
+        t = {"walls": [{"rings": [sq(0, 0, 40, 30)], "g": 120},       # a grey area (a wall's poche): kept
+                       {"rings": [sq(50, 0, 30, 2)], "g": 140},        # a letter's stroke, pen-thin: black
+                       {"rings": [sq(90, 0, 20, 20)], "g": 80}],       # dark already: black
+             "strokes": [{"k": "line", "a": [0, 50], "b": [80, 50], "w": 1.0, "g": 150},          # grey line: black
+                         {"k": "line", "a": [0, 60], "b": [80, 60], "w": 1.0, "g": 200},          # a light pen: kept
+                         {"k": "line", "a": [0, 70], "b": [80, 70], "w": 1.0, "g": 230, "light": True}],
+             "size": [120, 80]}
+        def tones(on):
+            was = fd.ONE_INK
+            fd.ONE_INK = on
+            try:
+                return sorted((it["kind"], it["tone"]) for it in fd.drawing(t)["items"])
+            finally:
+                fd.ONE_INK = was
+        self.assertEqual(tones(True), [("fill", 0), ("fill", 0), ("fill", 120), ("line", 0), ("line", 200), ("line", 230)])
+        self.assertEqual(tones(False), [("fill", 80), ("fill", 120), ("fill", 140), ("line", 150), ("line", 200), ("line", 230)])
+
+
 class LineDots(unittest.TestCase):
     """(r13) a dimension line's end dots drawn as dots"""
 
