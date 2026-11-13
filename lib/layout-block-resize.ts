@@ -83,15 +83,3 @@ export function layoutBlockResizeTarget(
     sizeMm: { w: Math.round(footprint.width * 1000), d: Math.round(footprint.depth * 1000) },
   };
 }
-
-/**
- * The resize cursor for a handle on screen, from the handle's direction in the room (x right, z down
- * on the plan): ew, ns, nwse or nesw, whichever is nearest that direction.
- */
-export function layoutBlockResizeCursor(directionX: number, directionZ: number): string {
-  const degrees = ((Math.atan2(directionZ, directionX) * 180) / Math.PI + 180) % 180;
-  if (degrees < 22.5 || degrees >= 157.5) return "ew-resize";
-  if (degrees < 67.5) return "nwse-resize";
-  if (degrees < 112.5) return "ns-resize";
-  return "nesw-resize";
-}

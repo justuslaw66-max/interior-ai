@@ -21,7 +21,8 @@ import { computeAABB } from "@/lib/snapGuides";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import { catalogOrLayoutBlockProduct } from "@/lib/design-item-product-snapshot";
 import { findCatalogPlacementCollision } from "@/lib/catalog-placement";
-import { layoutBlockResizeCursor, layoutBlockResizeTarget, resizeLayoutBlockFootprint } from "@/lib/layout-block-resize";
+import { layoutBlockResizeTarget, resizeLayoutBlockFootprint } from "@/lib/layout-block-resize";
+import { nativeResizeCursor, PLAN_ROTATE_CURSOR, planResizeCursor, resizeCursorAngle } from "@/lib/plan-cursors";
 import { layoutBlockCollisionProduct } from "@/lib/layout-blocks";
 import { resolveLayoutBlockResize } from "@/lib/useLayoutBlockResizeCommit";
 
@@ -142,10 +143,24 @@ function testResizeTarget() {
   const target = layoutBlockResizeTarget({ position: [2, 0.5, 3], rotationY: Math.PI / 2 }, { width: 2.4, depth: 0.6, offsetX: 0.3, offsetZ: 0 });
   near(target.position[0], 2, "Turned: x unchanged"); near(target.position[1], 0.5, "…height kept"); near(target.position[2], 2.7, "…moved along −z");
   assert.deepEqual(target.sizeMm, { w: 2400, d: 600 });
-  assert.equal(layoutBlockResizeCursor(1, 0), "ew-resize");
-  assert.equal(layoutBlockResizeCursor(0, -1), "ns-resize");
-  assert.equal(layoutBlockResizeCursor(1, 1), "nwse-resize", "Down-right on the plan");
-  assert.equal(layoutBlockResizeCursor(-1, 1), "nesw-resize");
+  assert.equal(nativeResizeCursor(1, 0), "ew-resize");
+  assert.equal(nativeResizeCursor(0, -1), "ns-resize");
+  assert.equal(nativeResizeCursor(1, 1), "nwse-resize", "Down-right on the plan");
+  assert.equal(nativeResizeCursor(-1, 1), "nesw-resize");
+}
+
+/** The plan's own cursors (J, 13 Nov 2026): an SVG at the handle's exact angle, with a standard fallback. */
+function testPlanCursors() {
+  assert.equal(resizeCursorAngle(1, 0), 0);
+  assert.equal(resizeCursorAngle(-1, 0), 0, "A double arrow either way round");
+  assert.equal(resizeCursorAngle(1, 1), 45);
+  assert.equal(resizeCursorAngle(0, -1), 90);
+  assert.equal(resizeCursorAngle(Math.cos(0.52), Math.sin(0.52)), 30, "Snapped to 5°");
+  const diagonal = planResizeCursor(1, 1);
+  assert.match(diagonal, /^url\("data:image\/svg\+xml,.*"\) 16 16, nwse-resize$/);
+  assert.ok(decodeURIComponent(diagonal).includes("rotate(45 16 16)"), "Turned to the handle");
+  assert.equal(planResizeCursor(2, 2), diagonal, "One cursor per angle");
+  assert.match(PLAN_ROTATE_CURSOR, /\) 16 16, grab$/);
 }
 
 function testResizeCommit() {
@@ -196,6 +211,7 @@ testNotForSale();
 testSpot();
 testResizeFootprint();
 testResizeTarget();
+testPlanCursors();
 testResizeCommit();
 testBlocksAsFurniture();
-console.log(`layout blocks: ${PLAN_SYMBOL_KINDS.length} kinds, sizing, shopping, panel, placement, resizing and collision checked`);
+console.log(`layout blocks: ${PLAN_SYMBOL_KINDS.length} kinds, sizing, shopping, panel, placement, resizing, cursors and collision checked`);

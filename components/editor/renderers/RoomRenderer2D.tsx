@@ -40,6 +40,7 @@ import {
 import { resolveLoneRoomPlanFrame2D } from "@/lib/room-renderer-2d-lone-room";
 import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import { useCanvasPalette, type CanvasPalette } from "@/lib/canvas-colours";
+import { planResizeCursor } from "@/lib/plan-cursors";
 import { drawPlanColoursAsChosen } from "@/lib/canvas-tone-mapping";
 import type { Plan2DViewOrientation } from "@/components/editor/camera/EditorCamera2D";
 import { CanonicalFloorPlanWalls2D } from "./CanonicalFloorPlanStructure";
@@ -2441,8 +2442,7 @@ export default function RoomRenderer2D({
     if (next.offsetMeters !== null) onMoveOpening(opening.id, next.offsetMeters);
   };
 
-  const getOpeningResizeCursor = (wall: Opening2D["wall"]) =>
-    wall === "north" || wall === "south" ? "ew-resize" : "ns-resize";
+  const getOpeningResizeCursor = (wall: Opening2D["wall"]) => (wall === "north" || wall === "south" ? planResizeCursor(1, 0) : planResizeCursor(0, 1));
 
   const handleOpeningResize = (
     opening: Opening2D,

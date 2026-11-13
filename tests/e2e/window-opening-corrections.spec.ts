@@ -697,7 +697,9 @@ async function findCanvasCursorPoint({
         y: approximate.y + yOffset,
       };
       await page.mouse.move(point.x, point.y);
-      if (await page.evaluate((expected) => document.body.style.cursor === expected, cursor)) {
+      // The plan's own cursors are an SVG with the standard one as fallback (lib/plan-cursors.ts).
+      const matches = (expected: string) => document.body.style.cursor === expected || document.body.style.cursor.endsWith(`, ${expected}`);
+      if (await page.evaluate(matches, cursor)) {
         return point;
       }
     }

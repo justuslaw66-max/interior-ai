@@ -2053,7 +2053,7 @@
     "components/editor/renderers/RoomRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 16,
-        "maximum": 4090
+        "maximum": 4089
       },
       "complexFunctions": {
         "count": 7,

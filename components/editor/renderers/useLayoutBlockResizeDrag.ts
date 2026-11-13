@@ -4,11 +4,11 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 import { Plane, Quaternion, Vector3, type Group } from "three";
 import {
-  layoutBlockResizeCursor,
   resizeLayoutBlockFootprint,
   type LayoutBlockFootprint,
   type LayoutBlockResizeHandle,
 } from "@/lib/layout-block-resize";
+import { planResizeCursor } from "@/lib/plan-cursors";
 
 export type LayoutBlockResizeDragInput = {
   frameRef: RefObject<Group | null>;
@@ -34,7 +34,7 @@ function pointerInFrame(frame: Group | null, e: ThreeEvent<PointerEvent>) {
 function cursorFor(frame: Group | null, handle: LayoutBlockResizeHandle) {
   const direction = new Vector3(handle.sx, 0, handle.sz);
   if (frame) direction.applyQuaternion(frame.getWorldQuaternion(new Quaternion()));
-  return layoutBlockResizeCursor(direction.x, direction.z);
+  return planResizeCursor(direction.x, direction.z);
 }
 
 function releaseCapture({ target, pointerId }: ActiveDrag) {
@@ -75,6 +75,7 @@ export function useLayoutBlockResizeDrag({ frameRef, startWidth, startDepth, onP
     setDragging(false);
     onDraggingChange?.(false);
     document.body.style.cursor = "";
+    document.body.style.userSelect = "";
     const moved = Math.abs(active.last.width - startWidth) > 1e-6 || Math.abs(active.last.depth - startDepth) > 1e-6;
     // The commit and the cleared preview land in the same render, so the block never jumps back.
     if (commit && moved) onCommit(active.last);
@@ -97,6 +98,8 @@ export function useLayoutBlockResizeDrag({ frameRef, startWidth, startDepth, onP
       const target = e.target as unknown as Element; // the capture target, as the rotate handle uses it (FurnitureItem)
       target.setPointerCapture(e.pointerId);
       drag.current = { handle, pointerId: e.pointerId, target, last: { width: startWidth, depth: startDepth, offsetX: 0, offsetZ: 0 } };
+      document.body.style.userSelect = "none"; // the drag would otherwise select the labels' text
+      document.body.style.cursor = cursorFor(frameRef.current, handle);
       setDragging(true);
       onDraggingChange?.(true);
     },
