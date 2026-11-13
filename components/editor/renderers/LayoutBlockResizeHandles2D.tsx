@@ -10,6 +10,7 @@ import {
   type LayoutBlockFootprint,
   type LayoutBlockResizeHandle,
 } from "@/lib/layout-block-resize";
+import { planMetresForPixels, usePlanHandleSizes, type PlanHandleSizes } from "@/lib/plan-handle-sizes";
 import { useLayoutBlockResizeDrag, type LayoutBlockResizeDragInput } from "./useLayoutBlockResizeDrag";
 
 type Props = LayoutBlockResizeDragInput & {
@@ -18,36 +19,35 @@ type Props = LayoutBlockResizeDragInput & {
   markY: number;
 };
 
-/**
- * Sizes on screen, in CSS pixels, so the handles can be grabbed at any zoom; in metres they never go
- * below the sizes beside them (the plan's orthographic camera zoom is pixels per metre).
- */
-const CORNER_HIT = { px: 16, m: 0.12 };
-const CORNER_MARK = { px: 8, m: 0.05 };
-const EDGE_HIT = { px: 12, m: 0.08 };
-const EDGE_MARK = { px: [14, 5], m: [0.08, 0.03] } as const;
+/** Smallest sizes in metres, so the handles keep their shape when zoomed right in. */
+const CORNER_HIT_M = 0.12;
+const CORNER_MARK_M = 0.05;
+const EDGE_HIT_M = 0.08;
+const EDGE_MARK_M = [0.08, 0.03] as const;
 /**
  * The grab areas sit this far above the block, over any item's own pick volume (a chair's is its full
  * height), so a selected block's handles win where it touches a neighbour. The plan camera looks
  * straight down, so the height does not move them on screen.
  */
 const GRAB_LIFT_M = 3;
-const atLeast = (minimumM: number, px: number, zoom: number) => Math.max(minimumM, px / Math.max(zoom, 1e-6));
 
-/** A handle's grab area and mark, sized each frame for the zoom; the edge's grab area runs between the corners. */
-function sizeHandle(handle: LayoutBlockResizeHandle, footprint: LayoutBlockFootprint, zoom: number, hit: Mesh, mark: Mesh) {
+/**
+ * A handle's grab area and mark, sized each frame for the zoom (lib/plan-handle-sizes.ts: 24px with a
+ * mouse, 44px on touch); the edge's grab area runs between the corners.
+ */
+function sizeHandle(handle: LayoutBlockResizeHandle, footprint: LayoutBlockFootprint, zoom: number, sizes: PlanHandleSizes, hit: Mesh, mark: Mesh) {
+  const cornerHit = planMetresForPixels(sizes.cornerHit, zoom, CORNER_HIT_M);
   if (isCornerResizeHandle(handle)) {
-    const hitSize = atLeast(CORNER_HIT.m, CORNER_HIT.px, zoom);
-    const markSize = atLeast(CORNER_MARK.m, CORNER_MARK.px, zoom);
-    hit.scale.set(hitSize, hitSize, 1);
+    const markSize = planMetresForPixels(sizes.cornerMark, zoom, CORNER_MARK_M);
+    hit.scale.set(cornerHit, cornerHit, 1);
     mark.scale.set(markSize, markSize, 1);
     return;
   }
   const alongX = handle.sx === 0;
-  const length = (alongX ? footprint.width : footprint.depth) - atLeast(CORNER_HIT.m, CORNER_HIT.px, zoom);
-  const thickness = atLeast(EDGE_HIT.m, EDGE_HIT.px, zoom);
-  const markLong = atLeast(EDGE_MARK.m[0], EDGE_MARK.px[0], zoom);
-  const markShort = atLeast(EDGE_MARK.m[1], EDGE_MARK.px[1], zoom);
+  const length = (alongX ? footprint.width : footprint.depth) - cornerHit;
+  const thickness = planMetresForPixels(sizes.edgeHit, zoom, EDGE_HIT_M);
+  const markLong = planMetresForPixels(sizes.edgeMark[0], zoom, EDGE_MARK_M[0]);
+  const markShort = planMetresForPixels(sizes.edgeMark[1], zoom, EDGE_MARK_M[1]);
   hit.visible = length > 0;
   mark.visible = length > 0;
   hit.scale.set(alongX ? Math.max(length, 1e-3) : thickness, alongX ? thickness : Math.max(length, 1e-3), 1);
@@ -58,17 +58,19 @@ function ResizeHandle({
   handle,
   footprint,
   colour,
+  sizes,
   handlers,
 }: {
   handle: LayoutBlockResizeHandle;
   footprint: LayoutBlockFootprint;
   colour: string;
+  sizes: PlanHandleSizes;
   handlers: ReturnType<ReturnType<typeof useLayoutBlockResizeDrag>>;
 }) {
   const hit = useRef<Mesh>(null);
   const mark = useRef<Mesh>(null);
   useFrame(({ camera }) => {
-    if (hit.current && mark.current) sizeHandle(handle, footprint, camera.zoom, hit.current, mark.current);
+    if (hit.current && mark.current) sizeHandle(handle, footprint, camera.zoom, sizes, hit.current, mark.current);
   });
   const key = `${handle.sx}:${handle.sz}`;
   return (
@@ -93,10 +95,11 @@ function ResizeHandle({
 export default function LayoutBlockResizeHandles2D({ footprint, markY, ...drag }: Props) {
   const { colour } = useCanvasPalette();
   const handlers = useLayoutBlockResizeDrag(drag);
+  const sizes = usePlanHandleSizes();
   return (
     <group position={[0, markY, 0]}>
       {LAYOUT_BLOCK_RESIZE_HANDLES.map((handle) => (
-        <ResizeHandle key={`${handle.sx}:${handle.sz}`} handle={handle} footprint={footprint} colour={colour("#2a66ff")} handlers={handlers(handle)} />
+        <ResizeHandle key={`${handle.sx}:${handle.sz}`} handle={handle} footprint={footprint} colour={colour("#2a66ff")} sizes={sizes} handlers={handlers(handle)} />
       ))}
     </group>
   );

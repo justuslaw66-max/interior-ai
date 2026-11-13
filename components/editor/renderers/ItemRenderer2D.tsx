@@ -32,6 +32,8 @@ type ItemRenderer2DProps = {
   measurementUnit?: PlanMeasurementUnit;
   rotationHudLabel?: string | null;
   interactive?: boolean;
+  /** A locked item shows only its corners: no resize or rotate handles, as in Canva and Live Home 3D. */
+  locked?: boolean;
   onSelect?: (additive: boolean) => void;
   onRotateHandlePointerDown?: (e: ThreeEvent<PointerEvent>) => void;
   onRotateHandlePointerMove?: (e: ThreeEvent<PointerEvent>) => void;
@@ -53,9 +55,14 @@ function showsBorder(props: ItemRenderer2DProps) {
   return props.selected || props.hovered === true || props.invalidPlacement || (props.snapped && props.dragging);
 }
 
-/** The item to resize from its outline: a selected, editable layout block; undefined otherwise. */
+/** The item to resize from its outline: a selected, editable, unlocked layout block; undefined otherwise. */
 function resizableId(props: ItemRenderer2DProps) {
-  return props.selected && props.interactive && props.symbolKind && props.onResizeLayoutBlock ? props.instanceId : undefined;
+  return props.selected && props.interactive && !props.locked && props.symbolKind && props.onResizeLayoutBlock ? props.instanceId : undefined;
+}
+
+/** The rotate knob: on a selected item that can be edited and isn't locked. */
+function showsRotateHandle(props: ItemRenderer2DProps) {
+  return props.selected && props.interactive === true && !props.locked;
 }
 
 /** The footprint drawn: the resize preview while one is dragged, else the saved size. */
@@ -121,7 +128,7 @@ export default function ItemRenderer2D(props: ItemRenderer2DProps) {
           selected && <PlanItemCorners2D width={width} depth={depth} markY={markY} />
         )}
 
-        {selected && (
+        {showsRotateHandle(props) && (
           <PlanItemRotateHandle2D
             depth={depth}
             markY={markY}

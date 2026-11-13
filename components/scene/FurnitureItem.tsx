@@ -764,7 +764,7 @@ export function Furniture({
           measurementUnit={planMeasurementUnit}
           label={product.title}
           rotationHudLabel={rotationHudLabel}
-          interactive={interactive}
+          interactive={interactive} locked={Boolean(locked)}
           onSelect={(additive) => onSelect?.(instanceId, additive)}
           onRotateHandlePointerDown={onRotateHandlePointerDown}
           onRotateHandlePointerMove={onRotateHandlePointerMove}
@@ -909,7 +909,7 @@ export function Furniture({
         <Html position={[width / 2 - 0.12, height / 2 - 0.12, depth / 2 - 0.12]}>
           <div
             className={`designer-lock ${hovered ? "designer-lock-active" : ""}`}
-            title="Locked by designer"
+            title="Locked: select it and choose Unlock to change it"
           >
             <Lock size={14} aria-hidden="true" focusable="false" />
           </div>
