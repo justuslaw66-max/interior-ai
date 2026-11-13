@@ -62,7 +62,7 @@ import FloorPlanToolStrip from "./FloorPlanToolStrip";
 import PlanOpeningInspector from "./PlanOpeningInspector";
 import MeasurementField from "./MeasurementField";
 import { ConsumerRoomSetupCard } from "./ConsumerRoomSetupCard";
-import { RoomSetupProgressChips } from "./RoomSetupProgressChips";
+import { openingsProgressChip, RoomSetupProgressChips } from "./RoomSetupProgressChips";
 import FloorPlanPropertyEvidenceControl from "./FloorPlanPropertyEvidenceControl";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
 import RoomConnectionChecklist from "./RoomConnectionChecklist";
@@ -1720,7 +1720,7 @@ export default function DesignControlsPlanPanel({
             </div>
             <RoomSetupProgressChips roomIsDraft={roomIsDraft} hasRooms={hasRooms}
               furniture={{ label: furnitureStatusLabel, ready: hasStartedFurniture }}
-              openings={{ label: openingStatusLabel, ready: hasOpenings || !hasConnectionBlockers }}
+              openings={openingsProgressChip({ hasOpenings, hasConnectionBlockers, openingCount: planOpeningCount, statusLabel: openingStatusLabel })}
               readyClass={progressReadyClass} todoClass={progressTodoClass} />
           </div>
 
