@@ -3527,12 +3527,16 @@ def _trace(g0, g, keep_text):
     if CLN.CLEAN:
         # (r12) thin line drawings - a sink, a hob, a bath, furniture - redrawn clean, as lines and arcs joined
         weak_c = ((weak_all | ink) if weak_all is not None else ink) & (1 - cv2.dilate(solid, K)) & (1 - text)
+        h_all = None
         if words_:
+            if RT.HEIGHT_ALL:
+                RT.letter_marks(weak_c, PX)
+                h_all = RT.letter_marks.height                  # (r13) the plan's lettering, read or not
             weak_c = weak_c & (1 - ttaken)
         # (lettering is not line work to be redrawn: a word's letters run together are outlined as before)
         weak_c = weak_c & (1 - RT.letter_marks(weak_c, PX))
         drawn_, ctaken = CLN.clean_drawings(weak_c, d, PX, max(g0.shape), skeleton_graph, prune_spurs,
-                                            RT.letter_marks.height)
+                                            h_all if h_all is not None else RT.letter_marks.height)
         if drawn_:
             keep_ = (1 - ctaken).astype(np.uint8)
             stroke = stroke & keep_; ink = ink & keep_

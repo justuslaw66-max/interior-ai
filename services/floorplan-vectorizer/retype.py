@@ -52,6 +52,27 @@ ALL_SHARE = float(_env("FT_RETYPE_ALL_SHARE", "0", "0.75"))
 READ_SHARE = float(os.environ.get("FT_RETYPE_READ_SHARE", "0.9"))
 TRACED_WEIGHT = _env("FT_RETYPE_TRACED_WEIGHT", "0", "1") == "1"   # stroke words at the weight of the plan's traced lettering
 SPACING = float(_env("FT_RETYPE_SPACING", "9", "0.3"))   # neighbouring characters moved apart by at most this share of the height
+# (r13, 12 Nov) more of a plan's lettering read, each its own switch, on with CAD lettering:
+# a word read in pieces (BED, an R not read, OOM) matched whole against the plan's words that hold the pieces in order
+JOIN = _env("FT_RETYPE_JOIN", "0", "1") == "1"
+JOIN_GAP = float(os.environ.get("FT_RETYPE_JOIN_GAP", "0.75"))   # ... pieces and marks at most this share of the height apart
+LEAST_JOIN = float(os.environ.get("FT_RETYPE_LEAST_JOIN", "0.3"))  # ... and each of its characters and its letter alike at least this
+# (the letter tesseract could not read is the damaged one - an R or O broken by the picture's compression - and the
+# pieces read on either side hold the word to the plan's own)
+# a mark far taller than the letter beside it (a door swing by HOUSE- / HOLD) is not in that letter's line - it joined
+# two lines of a label into one, which read as nothing
+TALL_APART = _env("FT_RETYPE_TALL_APART", "0", "1") == "1"
+TALL = float(os.environ.get("FT_RETYPE_TALL", "1.8"))      # ... far taller: this many times, beside a letter at least 6 px tall
+# a word the plan's lettering holds elsewhere (BATH/ read in one bathroom) is matched in another at the plain bar,
+# where it is well ahead of the next reading
+SHEET_WORD = _env("FT_RETYPE_SHEET_WORD", "0", "1") == "1"
+SHEET_GAP = float(os.environ.get("FT_RETYPE_SHEET_GAP", "0.1"))
+# a plan's own word read exactly (LIVING/DINING) with little confidence - small or blurred lettering - is taken as read
+# for the type's match to decide, as a word put right by the plan's words is (corrected)
+VOCAB_READ = _env("FT_RETYPE_VOCAB_READ", "0", "1") == "1"
+# the plan's lettering height, which decides what is a small drawing to redraw clean (a basin), measured with all its
+# lettering, read or not: measured on the letters left unread it changed with what was read (s018's basins redrawn)
+HEIGHT_ALL = _env("FT_RETYPE_HEIGHT_ALL", "0", "1") == "1"
 # (built, off: lettering not retyped redrawn as pen strokes along its letters - lost the blind A/B 53 to 1, 11 Nov)
 REDRAW = os.environ.get("FT_RETYPE_REDRAW", "0") == "1"
 REDRAW_GAIN = float(os.environ.get("FT_RETYPE_REDRAW_GAIN", "-9"))
@@ -383,9 +404,10 @@ def _boxes(polys):
     return out
 
 
-def lines_of(_unused, boxes):
+def lines_of(_unused, boxes, tall_apart=False):
     """the marks standing side by side as the letters of a line of lettering, along the rows or up the columns:
-    [(turn, [mark index])]"""
+    [(turn, [mark index])]. (tall_apart: a mark far taller than the letter beside it is not in its line - for the
+    reading only, so the trace's own lettering marks are as before)"""
     out = []
     for turn in (0, 1):
         B = [(b[0], b[1], b[2], b[3]) if turn == 0 else (b[1], b[0], b[3], b[2]) for b in boxes]
@@ -414,6 +436,8 @@ def lines_of(_unused, boxes):
                     continue
                 if H_ > 3.0 * min(hi, hj) and min(hi, hj) > 0.35 * H_:
                     continue
+                if tall_apart and H_ > TALL * min(hi, hj) and min(hi, hj) >= 6:
+                    continue                                    # (r13) a door swing beside a letter (a hyphen still joins)
                 parent[find(i)] = find(j)
         groups = {}
         for i in idx:
@@ -649,6 +673,107 @@ def _glued(ws, turn, h):
     return out
 
 
+def _word_of(mem, st, lab, g0, paper, px):
+    """a word's own letters at the picture's size (its mask) and their box at half their ink's darkness: (box, mask),
+    or None"""
+    ux0, uy0 = min(st[i, 0] for i in mem), min(st[i, 1] for i in mem)
+    ux1, uy1 = max(st[i, 0] + st[i, 2] for i in mem), max(st[i, 1] + st[i, 3] for i in mem)
+    sub = np.isin(lab[uy0:uy1, ux0:ux1], mem).astype(np.uint8)
+    if px > 1:
+        sub = cv2.resize(sub, ((ux1 - ux0 + px - 1) // px, (uy1 - uy0 + px - 1) // px), interpolation=cv2.INTER_AREA)
+    ox, oy = ux0 // px, uy0 // px
+    sub = (sub > 0).astype(np.uint8)
+    crop = g0[oy:oy + sub.shape[0], ox:ox + sub.shape[1]]
+    sub = sub[:crop.shape[0], :crop.shape[1]]
+    dk = _dark(crop, paper) * sub
+    if dk.max() <= 0:
+        return None
+    ys_, xs_ = np.nonzero(dk >= 0.5 * dk.max())
+    return (ox + xs_.min(), oy + ys_.min(), ox + xs_.max() + 1, oy + ys_.max() + 1), (ox, oy, sub)
+
+
+def _join_rows(words, lines, line_words, st, cand, boxes, taken, lab, g0, paper, px):
+    """(r13) a row's word read in pieces - BED, an R not read, OOM; H, an O not read, LD - matched whole: the pieces
+    read and the unread marks between or beside them, no more than JOIN_GAP of the height apart, matched (_guess)
+    against the plan's words that hold the pieces read, in order (BED.+OOM: BEDROOM), and taken as read where one
+    matches; where none does, everything is as it was. Returns the marks taken into such words."""
+    claimed, dead = set(), set()
+    for li, t_ in line_words:
+        turn, gm, h, _ = lines[li]
+        if turn != 0:
+            continue
+        reads = [k for k, w_ in enumerate(words) if k not in dead and w_.get("text") and w_.get("line") == li
+                 and not w_.get("join")]
+        if not reads:
+            continue
+        ys0 = min(words[k]["box"][1] for k in reads); ys1 = max(words[k]["box"][3] for k in reads)
+        hb = ys1 - ys0
+        # the unread marks in the row's band, letter-sized
+        free = []
+        for i in range(len(cand)):
+            if i in claimed:
+                continue
+            b = boxes[i]
+            cy = 0.5 * (b[1] + b[3])
+            if not (ys0 - 0.2 * hb <= cy <= ys1 + 0.2 * hb) or (b[3] - b[1]) > 1.3 * hb or (b[3] - b[1]) < 0.3 * hb:
+                continue
+            x, y, w, hh = st[cand[i], :4]
+            if taken[y:y + hh, x:x + w][lab[y:y + hh, x:x + w] == cand[i]].any():
+                continue
+            free.append(i)
+        pieces = [("w", k, words[k]["box"][0], words[k]["box"][2]) for k in reads] + \
+                 [("m", i, boxes[i][0], boxes[i][2]) for i in free]
+        pieces.sort(key=lambda p_: p_[2])
+        runs, cur = [], []
+        for p_ in pieces:
+            if cur and p_[2] - max(q[3] for q in cur) > JOIN_GAP * h:
+                runs.append(cur); cur = []
+            cur.append(p_)
+        if cur:
+            runs.append(cur)
+        for run in runs:
+            ws_ = [p_ for p_ in run if p_[0] == "w"]
+            ms_ = [p_ for p_ in run if p_[0] == "m"]
+            if not ws_ or not ms_ or any(any(ch.isdigit() for ch in words[p_[1]]["text"]) for p_ in ws_):
+                continue
+            pat, prev = "", None
+            for p_ in run:
+                if p_[0] == "w":
+                    pat += re.escape(words[p_[1]]["text"].upper())
+                elif prev != "m":
+                    pat += ".+"
+                prev = p_[0]
+            mem = [m_ for p_ in ws_ for m_ in words[p_[1]]["members"]] + [cand[p_[1]] for p_ in ms_]
+            got = _word_of(mem, st, lab, g0, paper, px)
+            if got is None:
+                continue
+            jbox, (ox, oy, sub) = got
+            crop = g0[oy:oy + sub.shape[0], ox:ox + sub.shape[1]]
+            sdk = cv2.resize(_dark(crop, paper) * cv2.dilate(sub, np.ones((3, 3), np.uint8)), None, fx=4, fy=4,
+                             interpolation=cv2.INTER_CUBIC)
+            parts = [words[p_[1]]["text"] for p_ in ws_]
+            t = _guess({"box": jbox, "turn": 0, "h": h}, sdk, ox, oy,
+                       [w_["text"] for k, w_ in enumerate(words) if w_.get("text") and k not in dead], (pat, parts))
+            if DEBUG:
+                print("join", pat, "box", [round(v) for v in jbox], "->", t)
+            if t is None:
+                continue                                        # (not one word: the pieces stay as they were)
+            ms_ids = {cand[p_[1]] for p_ in ms_}
+            # (a mark of the run another line read - an R read up its column - is the word's)
+            gone = {p_[1] for p_ in ws_} | {k for k, w_ in enumerate(words) if k not in dead and w_.get("members")
+                                            and set(w_["members"]) <= ms_ids}
+            first = min(gone)
+            words[first] = {"text": t, "conf": max(CONF, words[first].get("conf", 0.0)), "turn": 0, "h": h, "box": jbox,
+                            "mask": (ox, oy, sub), "members": mem, "line": li, "join": (pat, parts)}
+            dead |= gone - {first}
+            claimed |= {p_[1] for p_ in ms_}
+            for m_ in ms_ids:
+                x, y, w, hh = st[m_, :4]
+                taken[y:y + hh, x:x + w] |= (lab[y:y + hh, x:x + w] == m_).astype(np.uint8)
+    words[:] = [w_ for k, w_ in enumerate(words) if k not in dead]
+    return claimed
+
+
 def read_words(weak, g0, px, paper):
     """(r12) the plan's lettering read before anything else is drawn: the small marks standing side by side as letters
     do, each line shown alone to tesseract. Returns the words read with confidence ([{"text", "conf", "box", "turn",
@@ -665,7 +790,7 @@ def read_words(weak, g0, px, paper):
     boxes = [(st[i, 0] / px, st[i, 1] / px, (st[i, 0] + st[i, 2]) / px, (st[i, 1] + st[i, 3]) / px) for i in cand]
     words = []
     lines = []
-    grouped = lines_of(None, boxes)
+    grouped = lines_of(None, boxes, TALL_APART)
     # a word whose letters touch (a small or blurred picture: 4000, LEDGE) is one mark: shaped like a word, at the
     # height of the plan's lettering, it is a line of its own
     inline = {i for _, gm in grouped for i in gm}
@@ -757,7 +882,7 @@ def read_words(weak, g0, px, paper):
             if DEBUG:
                 print("read", turn, t_, repr(txt), conf, [round(v, 1) for v in wb])
             fixed = corrected(txt)
-            if fixed != txt:
+            if fixed != txt or (VOCAB_READ and conf < CONF and len(txt) >= 3 and _in_vocab(txt.upper().strip("()-"))):
                 txt = fixed
                 conf = max(conf, CONF)                 # (a plan's own word: the type's match decides)
             if conf < CONF or not plausible(txt):
@@ -786,16 +911,17 @@ def read_words(weak, g0, px, paper):
             ys_, xs_ = np.nonzero(dk >= 0.5 * dk.max())
             box = (ox + xs_.min(), oy + ys_.min(), ox + xs_.max() + 1, oy + ys_.max() + 1)
             words.append({"text": txt, "conf": conf, "turn": 0 if turn == 0 else t_, "h": h, "box": box,
-                          "mask": (ox, oy, sub)})
+                          "mask": (ox, oy, sub), "members": mem, "line": li})
             for i in mem:
                 x, y, w, h_ = st[i, :4]
                 taken[y:y + h_, x:x + w] |= (lab[y:y + h_, x:x + w] == i).astype(np.uint8)
     if MATCH_READ:
+        claimed = _join_rows(words, lines, line_words, st, cand, boxes, taken, lab, g0, paper, px) if JOIN else set()
         # the marks of a line that tesseract left unread (or read as nothing the plan holds), grouped into words by
         # the gaps between them, are offered to the matching reader (retype's _guess: the plan's own font and words)
         for li, t_ in unread + line_words:
             turn, gm, h, _ = lines[li]
-            left = [i for i in gm if not taken[st[cand[i], 1]:st[cand[i], 1] + st[cand[i], 3],
+            left = [i for i in gm if i not in claimed and not taken[st[cand[i], 1]:st[cand[i], 1] + st[cand[i], 3],
                                              st[cand[i], 0]:st[cand[i], 0] + st[cand[i], 2]].any()]
             ax = 0 if turn == 0 else 1
             left.sort(key=lambda i: boxes[i][ax])
@@ -960,7 +1086,8 @@ def retype(polys, g0, paper, words, strokes=None):
         thick = res is not None and res[1].startswith("stroke") and src_w > PEN_SHARE * h
         if DEBUG and (wrong_font or thick):
             print("   left traced:", "fits %s better" % res[1] if wrong_font else "strokes %.2f thick for %.1f tall" % (src_w, h))
-        if res is None or wrong_font or thick or res[0] < (MATCH_NUM if digits else MATCH) or (res[4] and res[3] < LEAST) \
+        if res is None or wrong_font or thick or res[0] < (MATCH_NUM if digits else MATCH) or \
+                (res[4] and res[3] < (LEAST_JOIN if w.get("join") else LEAST)) \
                 or (digits and w["conf"] < CONF_NUM):
             # (lettering in another style - a brochure's sans footer - is consistent as traced: it does not count
             # against the plan's own lettering being set whole)
@@ -1114,7 +1241,7 @@ def _refined(t, font, box, turn, sdk, ox, oy, h):
     return score
 
 
-def _guess(w, sdk, ox, oy, seen):
+def _guess(w, sdk, ox, oy, seen, join=None):
     """an unread line's word, read by matching (MATCH_READ): the plan's words and figures set in the stroke font over
     its letters, each fitted as retype() fits a reading; the best is kept where it matches well and clearly better than
     the next. None otherwise."""
@@ -1128,7 +1255,11 @@ def _guess(w, sdk, ox, oy, seen):
             P = placed(t, font, box, turn)
             quick[t] = -1.0 if P is None else _match(P, sdk, ox, oy, 4)
         return quick[t]
-    for t in _word_choices(seen):
+    choices = _word_choices(seen)
+    if join:
+        # (r13) a word read in pieces: only the plan's words that hold the pieces, in order
+        choices = [t for t in choices if re.fullmatch(join[0], t.upper().strip("()"))]
+    for t in choices:
         score(t)
     # (no figures: a figure whose digit touches its dimension line is seen in part, and 2250 then fits as 1250 -
     # a wrong figure misleads, so figures are read by tesseract only)
@@ -1142,7 +1273,11 @@ def _guess(w, sdk, ox, oy, seen):
     nxt = rest[0] if rest else 0.0
     need = MATCH_NUM if any(ch.isdigit() for ch in t) else MATCH
     if DEBUG:
-        print("guess", [(u, round(v, 3)) for v, u in ranked[:3]], "box", [round(v) for v in box], "turn", turn)
+        print("guess", [(u, round(v, 3)) for v, u in ranked[:3]], "box", [round(v) for v in box], "turn", turn,
+              "join %s" % (join,) if join else "")
+    if SHEET_WORD and not join and t in seen:
+        # (r13) the word read elsewhere on this plan vouches for it: the plain bar, well ahead of the next
+        return t if best >= need and best - nxt >= SHEET_GAP else None
     if best < need + 0.1 or best - nxt < MATCH_GAP:
         return None
     return t
