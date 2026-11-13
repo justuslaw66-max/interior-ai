@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { DisplayUnitSelect } from "@/components/editor/DisplayUnitSelect";
 import MeasurementField from "@/components/editor/MeasurementField";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { LAYOUT_BLOCK_LIMITS_MM, type LayoutBlockPatch } from "@/lib/layout-blocks";
@@ -11,6 +12,8 @@ export type LayoutBlockFieldsProps = {
   unit: PlanMeasurementUnit;
   disabled: boolean;
   onUpdate: (patch: LayoutBlockPatch) => void;
+  /** The design's unit, the same setting as Plan's Units (J, 13 Nov 2026). */
+  onUnitChange: (unit: PlanMeasurementUnit) => void;
 };
 
 const AXES = [
@@ -23,7 +26,7 @@ const AXES = [
  * A layout block's own name and size: it isn't a product, so both are the person's to set.
  * Keyed by the block and its name, so an undone rename shows the name it went back to.
  */
-export function LayoutBlockFields({ name, sizeMm, unit, disabled, onUpdate }: LayoutBlockFieldsProps) {
+export function LayoutBlockFields({ name, sizeMm, unit, disabled, onUpdate, onUnitChange }: LayoutBlockFieldsProps) {
   const nameId = useId();
   const [draftName, setDraftName] = useState(name);
   const commitName = () => {
@@ -46,6 +49,7 @@ export function LayoutBlockFields({ name, sizeMm, unit, disabled, onUpdate }: La
           if (event.key === "Enter") event.currentTarget.blur();
         }}
       />
+      <DisplayUnitSelect value={unit} testId="layout-block-units" disabled={disabled} onChange={onUnitChange} />
       {AXES.map((axis) => (
         <MeasurementField
           key={axis.key}

@@ -99,6 +99,7 @@ export type BuildDesignPageSelectionPanelModelsInput = {
         toggleSelectedItemLock: ItemActions["onToggleLock"];
         updateSelectedLayoutBlock: ItemActions["onUpdateLayoutBlock"];
       };
+      units: { onMeasurementUnitChange: ItemActions["onMeasurementUnitChange"] };
       placement: Pick<
         ItemDetailsActions,
         | "onMoveToRoom"
@@ -270,14 +271,13 @@ export function buildDesignPageSelectionPanelModels({
         onDuplicate,
         onRemove: onDelete,
         onDeselect: item.actions.selection.clearAllSelection,
-        onSwapToCheaper:
-          item.actions.inspectionController.swapSelectedItemToCheaper,
-        onSwapToPricier:
-          item.actions.inspectionController.swapSelectedItemToPricier,
+        onSwapToCheaper: item.actions.inspectionController.swapSelectedItemToCheaper,
+        onSwapToPricier: item.actions.inspectionController.swapSelectedItemToPricier,
         onViewProduct:
           item.actions.inspectionController.openSelectedItemCommerce,
         onToggleLock: item.actions.inspectionController.toggleSelectedItemLock,
         onUpdateLayoutBlock: item.actions.inspectionController.updateSelectedLayoutBlock,
+        onMeasurementUnitChange: item.actions.units.onMeasurementUnitChange,
       },
     },
   };

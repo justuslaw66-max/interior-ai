@@ -2,7 +2,7 @@
 
 import { useCallback, type MutableRefObject } from "react";
 
-import { CATALOG_ITEMS } from "@/lib/catalog";
+import { catalogOrLayoutBlockProduct } from "@/lib/design-item-product-snapshot";
 import type { CatalogItemSchema, DimensionsMm } from "@/lib/catalog-schema";
 import {
   findCatalogSurfacePlacement,
@@ -150,7 +150,7 @@ export function transferDesignPageItemToRoom({
     (entry) => entry.instanceId === instanceId
   );
   if (!item) return false;
-  const product = CATALOG_ITEMS[item.productId];
+  const product = catalogOrLayoutBlockProduct(item);
   if (!product) return false;
 
   const configuredDims = getPlanningDimensions(item, product);

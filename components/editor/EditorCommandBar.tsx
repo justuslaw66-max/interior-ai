@@ -14,6 +14,7 @@ import { CommandBarSaveStatus } from "@/components/editor/command-bar/CommandBar
 import { CommandBarShareButton } from "@/components/editor/command-bar/CommandBarShareButton";
 import { CommandBarStepTabs, type CommandBarStep } from "@/components/editor/command-bar/CommandBarStepTabs";
 import { LightingSettingsDrawer, useLightingSettingsOpen } from "@/components/editor/design-page/LightingSettingsDrawer";
+import { PreferencesDrawer } from "@/components/editor/design-page/PreferencesDrawer";
 import { CLIENT_PREVIEW_COMMAND_BAR_ID, guardHiddenCommandAction } from "@/lib/useClientPreviewCommandBarFocus";
 import type { EditorSaveStatus } from "@/lib/design-page-save-status";
 import { useDismissibleMenu } from "@/lib/useDismissibleMenu";
@@ -108,6 +109,7 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [lightingSettingsOpen, setLightingSettingsOpen] = useLightingSettingsOpen(viewMode);
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement | null>(null);
   const accountRef = useRef<HTMLDivElement | null>(null);
   const moreButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -152,6 +154,7 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
       onFeedback={props.onFeedback} onDownload={props.onDownload}
       onRenameDesign={props.onRenameDesign} onOpenEarlierVersions={props.onOpenEarlierVersions}
       onOpenLightingSettings={() => setLightingSettingsOpen(true)} onCloseLightingSettings={closeLightingSettings}
+      onOpenPreferences={() => setPreferencesOpen(true)}
     />
   );
 
@@ -205,16 +208,13 @@ export default function EditorCommandBar(props: EditorCommandBarProps) {
       </div>
       {lightingSettingsSlot ? (
         <LightingSettingsDrawer
-          open={
-            lightingSettingsOpen &&
-            !isClientPreview &&
-            viewMode === "3d"
-          }
+          open={lightingSettingsOpen && !isClientPreview && viewMode === "3d"}
           onClose={closeLightingSettings}
         >
           {lightingSettingsSlot}
         </LightingSettingsDrawer>
       ) : null}
+      <PreferencesDrawer open={preferencesOpen && !isClientPreview} onClose={() => setPreferencesOpen(false)} />
     </div>
   );
 }

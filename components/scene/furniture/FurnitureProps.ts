@@ -2,6 +2,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 
 import type { EditorViewMode } from "@/components/editor/EditorViewToggle";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
+import type { LayoutBlockFootprint } from "@/lib/layout-block-resize";
 import type { FurnitureRoomContext } from "@/lib/furniture-room-fit";
 import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
 import type {
@@ -62,6 +63,8 @@ export type FurnitureProps = {
     }
   ) => boolean | void;
   onDragEnd?: (id: string, pos: [number, number, number]) => void;
+  /** A layout block's new footprint after a resize from its outline on the plan; false keeps it. */
+  onResizeLayoutBlock?: (id: string, footprint: LayoutBlockFootprint) => boolean;
   locked?: boolean;
   interactive?: boolean;
   showSelection?: boolean;

@@ -126,8 +126,7 @@ export function buildDesignPagePanelRegistration({
         canEdit: configuration.canEdit, canChangeProducts: configuration.canChangeProducts,
       },
       actions: {
-        inspectionController:
-          interactionActions.selectedItemPanelControllerActions,
+        inspectionController: interactionActions.selectedItemPanelControllerActions,
         placement: {
           onMoveToRoom: interactionActions.moveSelectedItemToRoom,
           onDuplicate: interactionActions.duplicateSelectedItem,
@@ -138,6 +137,7 @@ export function buildDesignPagePanelRegistration({
           onAdjustHangingHeight: placementSelection.actions.inspection.adjustSelectedPendantHeight,
         },
         selection: { clearAllSelection: placementSelection.actions.selection.clearAllSelection },
+        units: { onMeasurementUnitChange: planDocument.actions.setPlanMeasurementUnit },
         rotation: {
           onSnapPresetChange:
             placementSelection.actions.inspection.setRotationSnapPresetDegrees,

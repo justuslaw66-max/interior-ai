@@ -132,7 +132,9 @@ const more = renderToStaticMarkup(createElement(CommandBarMoreMenu, {
   lightingAvailable: false, onOpenMyDesigns: noop, onNewPlan: noop,
   onToggleDesignerMode: noop, onToggleClientPreview: noop,
   onOpenLightingSettings: noop, onCloseLightingSettings: noop, onFeedback: noop, onRenameDesign: noop,
+  onOpenPreferences: noop,
 } satisfies MoreProps));
+assert.match(more, /data-testid="editor-command-overflow-preferences"[^>]*>Preferences</, "Preferences opens from More (cursor style, 13 Nov 2026).");
 assert.match(more, /data-testid="editor-command-overflow-rename-design"[^>]*class="item md:hidden"[^>]*>Rename design</);
 assert.doesNotMatch(more, /editor-workflow-export|editor-command-overflow-present-export|Present &amp; export|Export &amp; Camera/, "Present & export retired: Share and Download are in the bar.");
 assert.deepEqual(DESIGN_RENAME_RETURN_FOCUS_IDS, [DESIGN_RENAME_OPENER_ID, CLIENT_PREVIEW_FALLBACK_ACTION_ID]);
