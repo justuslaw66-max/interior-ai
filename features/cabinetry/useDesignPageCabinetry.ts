@@ -825,7 +825,7 @@ export function useDesignPageCabinetry({
       commitItems,
       findSelectedPlacementBlocker,
       getItemDisplayName,
-      isCatalogPlacementContainedInRoom, isDesigner,
+      isCatalogPlacementContainedInRoom,
       planRoomById, canonicalModel,
       selected,
       showToast,
@@ -857,7 +857,7 @@ export function useDesignPageCabinetry({
     const [targetX, targetZ] = getBuiltInSnapTarget(activeRoom, selected.item.position,
       planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, getCabinetRotationY(selected.item), planRoomById, canonicalModel);
     moveSelectedToPosition(targetX, targetZ, "Snap built-in to wall");
-  }, [activeRoom, canEdit, canonicalModel, isDesigner, moveSelectedToPosition, planRoomById, selected]);
+  }, [activeRoom, canEdit, canonicalModel, moveSelectedToPosition, planRoomById, selected]);
 
   const setSelectedRotation = useCallback(
     (targetRotationY: number, actionLabel = "Rotate built-in") => {
@@ -907,7 +907,6 @@ export function useDesignPageCabinetry({
       findSelectedPlacementBlocker,
       getItemDisplayName,
       isCatalogPlacementContainedInRoom,
-      isDesigner,
       planRoomById, canonicalModel,
       rotationSnapEnabled,
       rotationSnapStepRadians,
