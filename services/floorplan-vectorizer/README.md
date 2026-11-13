@@ -145,6 +145,11 @@ picture or traced from it beside it). Stage 1's rooms, walls, doors, scale and t
   by its match instead of dropped (`FT_RETYPE_VOCAB_READ`); and the lettering height that decides which small drawings
   are redrawn clean is measured with every letter, read or not (`FT_RETYPE_HEIGHT_ALL`: measured on the unread ones,
   it changed with what was read, and s018's basins were redrawn).
+- One ink (13 Nov, r13; `FT_ONE_INK=1`, off by default, on with `FT_CAD_LETTERING=1`; J: "I want all of it to be
+  black"): every line, arc, dot and pen-thin filled shape (a letter or a mark copied by its outline, no thicker than
+  3 px) the trace drew in a grey is drawn black, and so is a fill already dark (to 96). A light pen of its own (tones
+  from 176), light lines drawn over dark fills, and grey areas (a wall's grey poche, a fitting shaded grey, a smudge
+  of a soft picture) keep their tone.
 - Dimension dots (12 Nov, r13; `FT_LINE_DOTS=1`, off by default, on with `FT_CAD_LETTERING=1`): a dimension line's end
   dot - a small solid disc where two thin lines meet - was too small to be a solid fill and was read as the lines'
   crossing, so it was lost. A round solid disc of ink on level or plumb line work at least 2.8 times as wide as the
