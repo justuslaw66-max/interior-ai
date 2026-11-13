@@ -691,7 +691,7 @@ test.describe("23. Consumer room setup", () => {
       .toBe("ft-in");
     await expect(width).toHaveAttribute("data-model-value-mm", canonicalBeforeSwitch ?? "");
     await expect(width).toHaveRole("textbox");
-    await expect(width).toHaveValue(/\d+′ \d+(?:\.\d)?″/);
+    await expect(width).toHaveValue(/^\d+′ \d+(?: \d+\/\d+)?″$/); // to the nearest 1/16″ (14 Nov 2026)
     await expect(page.getByTestId("room-setup-scale-summary")).toContainText("ft²");
 
     await displayUnits.selectOption("cm");
