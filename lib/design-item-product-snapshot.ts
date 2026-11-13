@@ -147,6 +147,11 @@ export function resolveLayoutBlockProduct(item: DesignItem): CatalogItemSchema |
   return layoutBlockProducts.get(item) ?? null;
 }
 
+/** The live catalogue product, or a layout block's own; null for a product no longer listed. */
+export function catalogOrLayoutBlockProduct(item: DesignItem): CatalogItemSchema | null {
+  return CATALOG_ITEMS[item.productId] ?? resolveLayoutBlockProduct(item);
+}
+
 function resolveSavedVisualProduct(
   item: DesignItem,
   catalogItems: typeof CATALOG_ITEMS

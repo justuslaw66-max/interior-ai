@@ -124,6 +124,8 @@ export type SelectedItemPanelActions = {
   onChangeLight?: (patch: PlacedFixtureLightState) => void;
   /** A layout block's name and size (lib/layout-blocks.ts). */
   onUpdateLayoutBlock: (patch: LayoutBlockPatch) => void;
+  /** The design's measuring unit, from the block's size fields as from Plan (J, 13 Nov 2026). */
+  onMeasurementUnitChange: (unit: SelectedItemPanelDetailsState["measurementUnit"]) => void;
 };
 
 export type SelectedItemPanelProps = {
@@ -207,7 +209,7 @@ function SelectedItemOptions({
     return (
       <LayoutBlockFields
         key={`${item.instanceId}:${item.productSnapshot.name}`} name={item.productSnapshot.name} sizeMm={item.productSnapshot.dimensionsMm}
-        unit={state.details.measurementUnit} disabled={disabled} onUpdate={actions.onUpdateLayoutBlock}
+        unit={state.details.measurementUnit} disabled={disabled} onUpdate={actions.onUpdateLayoutBlock} onUnitChange={actions.onMeasurementUnitChange}
       />
     );
   }

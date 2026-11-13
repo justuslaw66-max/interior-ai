@@ -53,6 +53,15 @@ test.describe("layout blocks", () => {
     await name.press("Enter");
     await expect(panel).toContainText("Master wardrobe");
 
+    // The unit can be changed right here, as in Plan (J, 13 Nov 2026).
+    await panel.getByTestId("layout-block-units").selectOption("mm");
+    await expect(width).toHaveValue("2400");
+
+    // A block turns like any item (it was refused as "unavailable" before 13 Nov 2026).
+    if ((await panel.getByTestId("rotation-btn-quarter-turn").count()) === 0) await panel.getByTestId("rotation-controls-toggle").click();
+    await panel.getByTestId("rotation-btn-quarter-turn").click();
+    await expect(panel.getByTestId("rotation-angle-label")).toContainText("Angle 90 deg");
+
     await page.getByTestId("furnish-source-products").click();
     await expect(page.getByTestId("furnish-room-bom-item")).toHaveCount(0);
 

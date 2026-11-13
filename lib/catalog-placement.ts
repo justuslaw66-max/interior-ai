@@ -1,5 +1,5 @@
 import { CATALOG_ITEMS } from "@/lib/catalog";
-import type { CatalogItemSchema, DimensionsMm, ProductCategory } from "@/lib/catalog-schema";
+import type { CatalogItemSchema, DimensionsMm, PlacementRules, ProductCategory } from "@/lib/catalog-schema";
 import { resolveCatalogVariant } from "@/lib/catalog/variant-resolver";
 import { mapToTopCategory, type CatalogTopCategory } from "@/lib/catalog/view-builders";
 import {
@@ -10,6 +10,7 @@ import {
 } from "@/lib/design-page-geometry";
 import { clamp, getRotatedFootprint } from "@/lib/design-page-utils";
 import { isWithinEditorBoundary } from "@/lib/editor-geometry-tolerances";
+import { layoutBlockCollisionProduct } from "@/lib/layout-blocks";
 import type { DesignItem } from "@/lib/room-types";
 import { computeAABB } from "@/lib/snapGuides";
 
@@ -108,7 +109,7 @@ export function isSurfaceOnlyCatalogItem(product: Pick<CatalogItemSchema, "place
   return product?.placementRules.surfaceOnly === true;
 }
 
-export function isCeilingOnlyCatalogItem(product: Pick<CatalogItemSchema, "placementRules"> | null | undefined) {
+export function isCeilingOnlyCatalogItem(product: { placementRules: Pick<PlacementRules, "ceilingOnly"> } | null | undefined) {
   return product?.placementRules.ceilingOnly === true;
 }
 
@@ -436,45 +437,12 @@ export function isCatalogPlacementLocalFootprintInsideRoom({
   });
 }
 
-export function doesCatalogPlacementCollide({
-  productId,
-  position,
-  rotationY,
-  dimsMm,
-  items,
-  getItemAABB,
-  excludedInstanceId,
-  excludedInstanceIds,
-}: CatalogPlacementCollisionArgs): boolean {
-  const product = CATALOG_ITEMS[productId];
-  if (!product || product.category === "rug") return false;
-  const ceilingOnly = isCeilingOnlyCatalogItem(product);
-  const excluded = new Set([
-    ...(excludedInstanceId ? [excludedInstanceId] : []),
-    ...(excludedInstanceIds ?? []),
-  ]);
+/** A product, or a layout block's stand-in, for collision checks: blocks block like furniture. */
+const collisionProduct = (productId: string) => CATALOG_ITEMS[productId] ?? layoutBlockCollisionProduct(productId);
 
-  const [widthMeters, depthMeters] = getRotatedFootprint(
-    dimsMm.w / 1000,
-    dimsMm.d / 1000,
-    rotationY
-  );
-  const candidateAABB = computeAABB(position, widthMeters, depthMeters);
-
-  for (const blocker of items) {
-    if (excluded.has(blocker.instanceId)) continue;
-    const blockerProduct = CATALOG_ITEMS[blocker.productId];
-    if (!blockerProduct || blockerProduct.category === "rug") continue;
-    if (ceilingOnly !== isCeilingOnlyCatalogItem(blockerProduct)) continue;
-
-    const blockerAABB = getItemAABB(blocker);
-    if (!blockerAABB) continue;
-    if (aabbIntersects(candidateAABB, blockerAABB)) {
-      return true;
-    }
-  }
-
-  return false;
+/** Whether the placement runs into another item; see findCatalogPlacementCollision. */
+export function doesCatalogPlacementCollide(args: CatalogPlacementCollisionArgs): boolean {
+  return findCatalogPlacementCollision(args) !== null;
 }
 
 export function findCatalogPlacementCollision({
@@ -487,7 +455,7 @@ export function findCatalogPlacementCollision({
   excludedInstanceId,
   excludedInstanceIds,
 }: CatalogPlacementCollisionArgs): DesignItem | null {
-  const product = CATALOG_ITEMS[productId];
+  const product = collisionProduct(productId);
   if (!product || product.category === "rug") return null;
   const ceilingOnly = isCeilingOnlyCatalogItem(product);
   const excluded = new Set([
@@ -504,7 +472,7 @@ export function findCatalogPlacementCollision({
 
   for (const blocker of items) {
     if (excluded.has(blocker.instanceId)) continue;
-    const blockerProduct = CATALOG_ITEMS[blocker.productId];
+    const blockerProduct = collisionProduct(blocker.productId);
     if (!blockerProduct || blockerProduct.category === "rug") continue;
     if (ceilingOnly !== isCeilingOnlyCatalogItem(blockerProduct)) continue;
 

@@ -133,6 +133,7 @@ const buildSelectionModels = (rotationEnabled: boolean) =>
         },
         placement: { onDelete: removeItem, onDuplicate: noop },
         selection: { clearAllSelection: deselect },
+        units: { onMeasurementUnitChange: noop },
         rotation: {},
         productConfiguration: { model: {}, finish: {}, selectVariant: noop },
       },

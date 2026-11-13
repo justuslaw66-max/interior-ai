@@ -1,4 +1,4 @@
-import type { ProductCategory } from "@/lib/catalog-schema";
+import type { PlacementRules, ProductCategory } from "@/lib/catalog-schema";
 import { PLAN_SYMBOLS, PLAN_SYMBOL_KINDS } from "@/lib/plan-symbols/plan-symbol-library";
 import type { PlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-types";
 import type { DesignItem } from "@/lib/room-types";
@@ -59,6 +59,17 @@ export function layoutBlockKind(item: Pick<DesignItem, "assetType" | "productId"
   if (!isLayoutBlock(item) || !item.productId.startsWith(PRODUCT_PREFIX)) return null;
   const kind = item.productId.slice(PRODUCT_PREFIX.length);
   return isPlanSymbolKind(kind) ? kind : null;
+}
+
+/**
+ * What collision checks need of a block, from its product id alone: it is a piece of furniture
+ * that blocks others, overhead kinds only overhead ones. Null for anything that is not a block.
+ */
+export function layoutBlockCollisionProduct(
+  productId: string
+): { category: ProductCategory; placementRules: Pick<PlacementRules, "ceilingOnly"> } | null {
+  const kind = layoutBlockKind({ assetType: LAYOUT_BLOCK_ASSET_TYPE, productId });
+  return kind ? { category: layoutBlockCategory(kind), placementRules: { ceilingOnly: isOverheadLayoutBlockKind(kind) } } : null;
 }
 
 export function isOverheadLayoutBlockKind(kind: PlanSymbolKind): boolean {

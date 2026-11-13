@@ -12,7 +12,10 @@ J, 12 Nov 2026: "lets do layout blocks now first". A layout block is a plan piec
 ## How it is used
 
 - **Adding:** Furnish has Products | Layout blocks. Layout blocks lists every symbol by group at its usual size (`components/editor/FurnishLayoutBlocks.tsx`). Adding one puts it at the clear spot nearest the room's middle (`lib/layout-block-placement.ts`), selected, as one undoable step.
-- **Item panel:** the panel shows the block's Name, Width, Depth and Height in the design's units (`LayoutBlockFields`). Each change is one undoable step, and sizes are clamped (50 mm to 20 m on plan, 10 mm to 5 m high).
+- **Item panel:** the panel shows the block's Name, a Units select (the design's unit, the same setting as Plan's Units) and Width, Depth and Height in that unit (`LayoutBlockFields`). Each change is one undoable step, and sizes are clamped (50 mm to 20 m on plan, 10 mm to 5 m high).
+- **Resizing on the plan (13 Nov 2026):** a selected block has a square at each corner and a bar at the middle of each side; the whole side can be grabbed. Dragging one moves that corner or side and keeps the opposite one in place, snapped to 1 cm (1 mm with Alt), with the size labels updating live; Escape cancels. Letting go is one undoable "Resize layout block" step, refused with a message if the block would leave the room or run into another item.
+  - Math, in the block's own frame: `lib/layout-block-resize.ts`. Drag and preview: `components/editor/renderers/useLayoutBlockResizeDrag.ts`, `LayoutBlockResizeHandles2D.tsx`, `ItemRenderer2D.tsx`. Commit and checks: `resolveLayoutBlockResize` in `lib/useLayoutBlockResizeCommit.ts`, wired through the item interaction facade and `SceneItemsLayer`'s `onResizeLayoutBlock`.
+- **Turning, moving between rooms, collisions (13 Nov 2026):** these looked items up in the catalogue only, so a block could not be turned ("Rotation is unavailable for this item"), was skipped in group turns and room moves, and never blocked anything. They now use `catalogOrLayoutBlockProduct` (`lib/design-item-product-snapshot.ts`), and collision checks use `layoutBlockCollisionProduct`: a block blocks like furniture, an overhead block only overhead ones, a rug block nothing.
 - **Drawing:**
   - 2D plan and PDF: its own symbol, whatever its name (an explicit `kind` passed to `planSymbolShapesForItem`).
   - 3D and shared views: a plain box at its size.
@@ -21,5 +24,4 @@ J, 12 Nov 2026: "lets do layout blocks now first". A layout block is a plan piec
 ## Not yet
 
 - Replace a block with a product (same spot and angle).
-- Drag handles to resize on the plan.
-- Collision checks after a resize.
+- Collision checks when the size is typed in the panel (dragging is checked).

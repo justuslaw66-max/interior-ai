@@ -165,7 +165,7 @@
       "limit": 250
     },
     "components/editor/design-page/SceneItemsLayer.tsx": {
-      "lines": 473,
+      "lines": 471,
       "limit": 250
     },
     "components/editor/design-page/SelectedCabinetPanel.tsx": {
@@ -405,7 +405,7 @@
       "limit": 400
     },
     "lib/catalog-placement.ts": {
-      "lines": 777,
+      "lines": 745,
       "limit": 400
     },
     "lib/catalog-schema.ts": {
@@ -645,7 +645,7 @@
       "limit": 400
     },
     "lib/useDesignPageSelectionTransforms.ts": {
-      "lines": 1144,
+      "lines": 1143,
       "limit": 400
     },
     "lib/useDesignPageSurfaceActions.ts": {
@@ -1709,7 +1709,7 @@
     "components/editor/design-page/SceneItemsLayer.tsx": {
       "overlongFunctions": {
         "count": 2,
-        "maximum": 339
+        "maximum": 335
       },
       "complexFunctions": {
         "count": 1,
@@ -2033,11 +2033,11 @@
     "components/editor/renderers/ItemRenderer2D.tsx": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 185
+        "maximum": 88
       },
       "complexFunctions": {
         "count": 1,
-        "maximum": 20
+        "maximum": 18
       }
     },
     "components/editor/renderers/PlanUnderlayRenderer2D.tsx": {
@@ -3019,7 +3019,7 @@
     "lib/design-page-selection-panel-model.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 145
+        "maximum": 144
       }
     },
     "lib/design-page-surface-inspector.ts": {
@@ -4101,7 +4101,7 @@
     "lib/useDesignPageItemInteractionFacade.ts": {
       "overlongFunctions": {
         "count": 1,
-        "maximum": 131
+        "maximum": 127
       }
     },
     "lib/useDesignPageItemSelectionController.ts": {
@@ -4425,7 +4425,7 @@
     "lib/useDesignPageSelectionTransforms.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 979
+        "maximum": 977
       },
       "complexFunctions": {
         "count": 4,
