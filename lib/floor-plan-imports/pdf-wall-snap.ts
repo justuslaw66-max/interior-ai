@@ -2,6 +2,7 @@ import type { FloorPlanDocumentV2, FloorPlanVertexV2, FloorPlanWallV2 } from "@/
 import type { RegisteredPageEvidence } from "./deterministic-evidence";
 import { pageLineworkKind } from "./mixed-pdf-evidence";
 import { addFillWalls } from "./pdf-fill-walls";
+import { hasPdfOwnWalls } from "./pdf-own-walls";
 import { type PdfFace, type PdfFillGround, pdfPageDrawing } from "./pdf-wall-faces";
 import { moveVertex, restoreFloor, snapshotFloor, type TopologyFloor, vertexMap, wallsStillValid } from "./vectorizer-topology-graph";
 
@@ -179,13 +180,16 @@ export function summarizePdfWallSnap(log: PdfWallSnapLog) {
 
 /**
  * The adapter's step: on a floor read by the vectorizer from a vector PDF page, snap its walls to that page's lines.
- * "off" unless FLOOR_PLAN_PDF_WALL_SNAP=1 and there is such a page with a calibration.
+ * "off" unless FLOOR_PLAN_PDF_WALL_SNAP=1 and there is such a page with a calibration whose walls were read from a
+ * picture of it.
  */
 export function snapImportedWallsToPdf(document: FloorPlanDocumentV2, pages: RegisteredPageEvidence[],
   environment: Readonly<Record<string, string | undefined>> = process.env) {
   const floor = document.floors[0];
   if (environment.FLOOR_PLAN_PDF_WALL_SNAP !== "1" || !floor?.walls.length) return "off";
   const page = pages.find((p) => (p.vectorizer?.rooms.length ?? 0) > 0 && pageLineworkKind(p) !== "raster_linework");
+  // Walls taken from the PDF's own drawing (pdf-own-walls.ts) are on its lines already.
+  if (page && hasPdfOwnWalls(page)) return "off";
   const drawing = page ? pdfPageDrawing(page, floor.calibrations.find((c) => c.pageNumber === page.pageNumber)) : null;
   if (!drawing) return "off";
   return summarizePdfWallSnap(snapWallsToPdf(floor, drawing.faces, drawing.fills));
