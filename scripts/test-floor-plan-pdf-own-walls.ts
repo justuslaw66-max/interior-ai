@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import type { RegisteredPageEvidence, SourceVectorPath, SourceVectorSegment } from "@/lib/floor-plan-imports/deterministic-evidence";
 import { hasPdfOwnWalls, pdfOwnWallsEnabled, pdfOwnWallsModel, withPdfOwnWalls } from "@/lib/floor-plan-imports/pdf-own-walls";
 import { parseFloorPlanVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-evidence";
-import { widenSetBackOpenings } from "@/lib/floor-plan-imports/pdf-own-walls-openings";
+import { dropCorridorOpenings, widenSetBackOpenings } from "@/lib/floor-plan-imports/pdf-own-walls-openings";
 import { isLightFillColour } from "@/lib/floor-plan-imports/pdf-paint-colour";
 import { FILLED, FREE, type Closure, type WallMass } from "@/lib/floor-plan-imports/pdf-own-walls-mass";
 import type { WallGrid } from "@/lib/floor-plan-imports/pdf-own-walls-grid";
@@ -291,6 +291,45 @@ function testOpeningSetBackFromTheWallFaces() {
   assert.equal(setBackCase(["F", "W"], 1.3).widened, 0);
 }
 
+function testShortStepBackIsAJog() {
+  // The living room's top wall 180 mm thick for its last 950 mm, standing 60 mm out past the wall's outer face and 20 mm
+  // into the room (a door stop's detail at the corner): the short side between them comes out backwards along the
+  // centre-lines. The room is still built, its outline square, with a 20 mm jog back.
+  const evidence = withPdfOwnWalls(page(planLines(200, 290), [], [[300, 94, 395, 112]]), reader());
+  assert.deepEqual(evidence.rooms.map((room) => room.label), ["LIVING", "KITCHEN"], "the room with the step is built");
+  const living = evidence.rooms[0].sourcePoints.map((p) => [Math.round(p.x * 100) / 100, Math.round(p.y * 100) / 100]);
+  assert.deepEqual(living.slice(0, 4), [[105, 105], [302, 105], [302, 103], [400, 103]], "the step is a short jog back, every side level or plumb");
+}
+
+/**
+ * A hand-made grid (10 mm a pixel, every cell 1 px): W wall, F floor, a digit an opening (that closure's cells).
+ */
+function corridorCase(rows: string[]) {
+  const ny = rows.length, nx = rows[0].length;
+  const grid = { xs: Float64Array.from({ length: nx + 1 }, (_, k) => k), ys: Float64Array.from({ length: ny + 1 }, (_, k) => k), nx, ny } as unknown as WallGrid;
+  const kind = new Uint8Array(nx * ny), closure = new Int32Array(nx * ny).fill(-1);
+  rows.forEach((row, j) => [...row].forEach((c, i) => { if (c === "W") kind[j * nx + i] = FILLED; else if (c !== "F") closure[j * nx + i] = Number(c); }));
+  const count = Math.max(-1, ...closure) + 1;
+  const closures = Array.from({ length: count }, (_, k): Closure => ({ i0: k, i1: k + 1, j0: 0, j1: 1, level: true, lengthPx: 1, depthPx: 1, endToEnd: true, staggered: false }));
+  const mass = { kind, region: new Int32Array(nx * ny).fill(-1), closure, closures, glazed: new Uint8Array(nx * ny) } as WallMass;
+  return { grid, mass, closures };
+}
+
+function testCorridorPassageIsTakenBack() {
+  // A short stretch of floor whose sides are three openings and one wall: a passage between doors, not a room.
+  const passage = corridorCase(["W0W", "1F2", "WWW"]);
+  const all = dropCorridorOpenings(passage.grid, passage.mass, () => true);
+  assert.equal(all.length, 3, "every undrawn opening beside the passage is taken back");
+  assert.ok([...passage.mass.closure].every((c) => c < 0) && passage.mass.closures.length === 0);
+  // A door drawn in one of them keeps it.
+  const drawn = corridorCase(["W0W", "1F2", "WWW"]), door = drawn.closures[1];
+  assert.deepEqual(dropCorridorOpenings(drawn.grid, drawn.mass, (gap) => gap !== door), [drawn.closures[0], drawn.closures[2]]);
+  assert.deepEqual(drawn.mass.closures, [door], "the drawn door's opening stays");
+  // A room with one opening in ten sides' worth of edge is a room: its opening stays.
+  const room = corridorCase(["WWWWW", "WFFFW", "WFFF0", "WWWWW"]);
+  assert.equal(dropCorridorOpenings(room.grid, room.mass, () => true).length, 0);
+}
+
 function testLightFillIsNotSolid() {
   // The left room's layered window under a white fill (Tengah draws its windows' frames filled white): still a window.
   const frame: Line = [100, 200, 110, 300];
@@ -343,6 +382,8 @@ testRackOnAnOutsideFaceIsNotWall();
 testLinesOnOneCoordinateJoinInOrder();
 testFillWithNoWidthIsNoDimensionDot();
 testOpeningSetBackFromTheWallFaces();
+testShortStepBackIsAJog();
+testCorridorPassageIsTakenBack();
 testLightFillIsNotSolid();
 testLeftAsRead();
 testMarksItsPages();
