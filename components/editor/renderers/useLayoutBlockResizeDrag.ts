@@ -109,7 +109,8 @@ export function useLayoutBlockResizeDrag({ frameRef, startWidth, startDepth, onP
       e.stopPropagation();
       const pointer = pointerInFrame(frameRef.current, e);
       if (!pointer) return;
-      const input = { handle: active.handle, startWidth, startDepth, pointerX: pointer.x, pointerZ: pointer.z, snap: !e.altKey };
+      // Alt: 1 mm steps; Shift on a corner: keep the block's proportions (J, 14 Nov 2026).
+      const input = { handle: active.handle, startWidth, startDepth, pointerX: pointer.x, pointerZ: pointer.z, snap: !e.altKey, keepProportion: e.shiftKey };
       active.last = resizeLayoutBlockFootprint(input);
       onPreview(active.last);
     },

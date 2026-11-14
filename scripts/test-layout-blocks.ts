@@ -137,6 +137,24 @@ function testResizeFootprint() {
   next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 0 }, startWidth: 1, startDepth: 1, pointerX: -3, pointerZ: 0 });
   near(next.width, LAYOUT_BLOCK_LIMITS_MM.minPlan / 1000, "Never below the minimum"); near(next.offsetX - next.width / 2, -0.5, "…anchored");
   near(resizeLayoutBlockFootprint({ handle: { sx: 0, sz: 1 }, startWidth: 1, startDepth: 1, pointerX: 0, pointerZ: 99 }).depth, 20, "Never above 20 m");
+  testProportionalResize();
+}
+
+/** A corner with Shift keeps the block's proportions, as in Illustrator (J, 14 Nov 2026). */
+function testProportionalResize() {
+  // A 1.2 × 0.4 block; the bottom-right corner pulled to x = 1.2 (width asks 1.8, ×1.5) and z = 0.3 (depth asks 0.5, ×1.25).
+  let next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 1 }, startWidth: 1.2, startDepth: 0.4, pointerX: 1.2, pointerZ: 0.3, keepProportion: true });
+  near(next.width, 1.8, "Shift: the axis pulled further leads"); near(next.depth, 0.6, "…the other follows, 3:1 kept");
+  near(next.offsetX - next.width / 2, -0.6, "…left edge stays"); near(next.offsetZ - next.depth / 2, -0.2, "…top edge stays");
+  // Depth pulled further (×2) than width (×1.1): depth leads, snapped to 1 cm.
+  next = resizeLayoutBlockFootprint({ handle: { sx: -1, sz: -1 }, startWidth: 1.2, startDepth: 0.4, pointerX: -0.72, pointerZ: -0.6034, keepProportion: true });
+  near(next.depth, 0.8, "Depth leads"); near(next.width, 2.4, "…width follows");
+  // Shrunk past the smallest size: both stop where the smaller side is at the minimum, ratio kept.
+  next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 1 }, startWidth: 1.2, startDepth: 0.4, pointerX: -5, pointerZ: -5, keepProportion: true });
+  near(next.depth, LAYOUT_BLOCK_LIMITS_MM.minPlan / 1000, "Smallest side at the minimum"); near(next.width / next.depth, 3, "…ratio kept");
+  // Shift on a side handle changes only that side.
+  next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 0 }, startWidth: 1.2, startDepth: 0.4, pointerX: 1.2, pointerZ: 0, keepProportion: true });
+  near(next.width, 1.8, "Side with Shift: width only"); near(next.depth, 0.4, "…depth unchanged");
 }
 
 function testResizeTarget() {
