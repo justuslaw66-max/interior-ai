@@ -12,6 +12,8 @@ import { sourceTextEvidenceFromLocalOcr } from "./local-ocr-rotation";
 import { applyVectorizerEvidence } from "./vectorizer-pass";
 import { hasPdfOwnWalls } from "./pdf-own-walls";
 import { isLightFillColour } from "./pdf-paint-colour";
+import { PDF_PAGE_PATH_LIMITS, pathsWithinLimits } from "./pdf-page-path-limits";
+import { roomTypeFromLabel } from "./room-type-from-label";
 import { ownLineworkClosesRooms, vectorizerCandidatePages, vectorizerReadingsLead } from "./vectorizer-pdf-pages";
 import {
   createDefaultFloorPlanVectorizerProvider,
@@ -111,8 +113,6 @@ import {
 const EXTRACTION_VERSION = "pdf-raster-hybrid-2.6.0";
 const MAX_PDF_PAGES = 30;
 const MAX_SEMANTIC_PAGES = 8;
-const MAX_VECTOR_SEGMENTS_PER_PAGE = 20_000;
-const MAX_VECTOR_PATHS_PER_PAGE = 8_000;
 const PDF_RENDER_SCALE = 2;
 const MAX_RENDER_PIXELS = 16_000_000;
 const DEFAULT_LOCAL_OCR_PAGES = 8;
@@ -346,20 +346,6 @@ function buildPageCandidates(
     vectorPathCount: page.vectorPaths.length,
     vectorSegmentCount: page.vectorSegments.length,
   }));
-}
-
-function roomTypeFromLabel(label: string): PageSemanticEvidence["roomLabels"][number]["roomType"] | null {
-  const normalized = label.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-  if (!normalized) return null;
-  if (/bed|master|main room/.test(normalized)) return "bedroom";
-  if (/kitchen/.test(normalized)) return "kitchen";
-  if (/bath|wc|toilet/.test(normalized)) return "toilet";
-  if (/service yard|utility/.test(normalized)) return "service_yard";
-  if (/shelter|store/.test(normalized)) return "shelter";
-  if (/study/.test(normalized)) return "study";
-  if (/living/.test(normalized)) return "living";
-  if (/dining/.test(normalized)) return "dining";
-  return null;
 }
 
 function semanticsFromPositionedText(
@@ -680,7 +666,7 @@ async function extractPdfEvidence(
           lineWidthSource = Math.max(0.01, Number(args[0]));
         } else if (fn === OPS.constructPath) {
           drawPathIndex += 1;
-          if (paths.length >= MAX_VECTOR_PATHS_PER_PAGE) continue;
+          if (paths.length >= PDF_PAGE_PATH_LIMITS.readPaths) continue;
           const containers = args[1];
           const first = Array.isArray(containers) ? containers[0] : null;
           const data = first && typeof first === "object" && Symbol.iterator in first
@@ -699,8 +685,8 @@ async function extractPdfEvidence(
             sourceOperatorIndex: index,
             graphicsStateDepth: stack.length + formStack.length,
             sourceFormPath: formStack.map((form) => form.id),
-            maxSegments: MAX_VECTOR_SEGMENTS_PER_PAGE - segments.length,
-            maxCurves: MAX_VECTOR_SEGMENTS_PER_PAGE - curveCount,
+            maxSegments: PDF_PAGE_PATH_LIMITS.readSegments - segments.length,
+            maxCurves: PDF_PAGE_PATH_LIMITS.readSegments - curveCount,
           });
           if (!parsed) continue;
           paths.push(fillLight && parsed.path.paintOperation !== "stroke" ? { ...parsed.path, fillLight: true } : parsed.path);
@@ -713,12 +699,13 @@ async function extractPdfEvidence(
         rendered.widthPx,
         rendered.heightPx
       );
+      const kept = pathsWithinLimits(paths, segments, rendered.widthPx, rendered.heightPx);
       pages.push({
         pageNumber: rendered.pageNumber,
         widthPx: rendered.widthPx,
         heightPx: rendered.heightPx,
-        vectorSegments: segments,
-        vectorPaths: paths,
+        vectorSegments: kept.segments,
+        vectorPaths: kept.paths,
         text,
         semantics: deterministic,
         rasterRegions,

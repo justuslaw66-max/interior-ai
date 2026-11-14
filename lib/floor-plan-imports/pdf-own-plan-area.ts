@@ -1,4 +1,4 @@
-import type { RegisteredPageEvidence } from "./deterministic-evidence";
+import type { RegisteredPageEvidence, SourceVectorPath } from "./deterministic-evidence";
 import type { DrawnShape } from "./pdf-drawing-recorder";
 
 /**
@@ -126,4 +126,15 @@ export function pdfPlanArea(page: Pick<RegisteredPageEvidence, "vectorizer" | "w
  * the vectorizer did not read; null where there is none. */
 export function pdfDrawingPlanArea(drawing: { shapes: readonly DrawnShape[]; scale: number; widthPx: number; heightPx: number }): Box | null {
   return areaAround(fillItems(drawing.shapes, drawing.scale), drawing.widthPx, drawing.heightPx, PLAN_AREA_SETTINGS.drawingMarginShare);
+}
+
+/** The plan's area from the page's own filled paths (filled, not white, thick enough), for a sheet read as paths. */
+export function pdfPathsPlanArea(paths: readonly SourceVectorPath[], widthPx: number, heightPx: number): Box | null {
+  const items = paths.flatMap((path): Item[] => {
+    const { left, top, right, bottom } = path.bbox;
+    const filled = path.paintOperation === "fill" || path.paintOperation === "fill_stroke";
+    if (!filled || path.fillLight || Math.min(right - left, bottom - top) < PLAN_AREA_SETTINGS.minFillThicknessPx) return [];
+    return [{ box: [left, top, right, bottom], weight: (right - left) * (bottom - top) }];
+  });
+  return areaAround(items, widthPx, heightPx, PLAN_AREA_SETTINGS.drawingMarginShare);
 }
