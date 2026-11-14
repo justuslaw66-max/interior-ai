@@ -1,10 +1,10 @@
 import { pointInPolygon, type RegisteredPageEvidence } from "./deterministic-evidence";
 import { roomCentreLines, standaloneWalls, type OwnWallEdge } from "./pdf-own-walls-edges";
-import { doorFinder, openAirPoints, type DoorFinder, type Drawn } from "./pdf-own-walls-doors";
+import { doorFinder, isShutDoor, openAirPoints, type DoorFinder, type Drawn } from "./pdf-own-walls-doors";
 import { PDF_OWN_WALL_LIMITS, buildWallGrid, gridIndex, wallLinesAndFills, type WallGrid } from "./pdf-own-walls-grid";
 import { markBays } from "./pdf-own-walls-bays";
 import { markDashedGlass } from "./pdf-own-walls-glass";
-import { dropCorridorOpenings, widenSetBackOpenings } from "./pdf-own-walls-openings";
+import { dropCorridorOpenings, dropUnnamedShutDoors, widenSetBackOpenings } from "./pdf-own-walls-openings";
 import { dropWallFittings } from "./pdf-own-walls-racks";
 import { closeGaps, dropPocketOpenings, openInWall, wallMass, type WallMass } from "./pdf-own-walls-mass";
 import { PDF_OWN_ROOM_LIMITS, floorOutline, roomCells, roomFaces, roomFloor } from "./pdf-own-walls-rooms";
@@ -56,6 +56,12 @@ function openAirPieces(evidence: Evidence, grid: WallGrid, labels: Int32Array, s
   return pieces;
 }
 
+/** Doors drawn shut that cut off a piece of floor with no name in it (a shower's screen) are taken back. */
+function takeBackScreens(grid: WallGrid, mass: WallMass, doors: DoorFinder, evidence: Evidence, sx: number, sy: number) {
+  const names = evidence.semantics.roomLabels.map((label) => ({ x: label.centerXRatio * evidence.page.widthPx * sx, y: label.centerYRatio * evidence.page.heightPx * sy }));
+  for (const gap of dropUnnamedShutDoors(grid, mass, (gap) => isShutDoor(doors.at(gap)), names)) doors.release(gap);
+}
+
 /** The grid, wall mass, openings, rooms and standing-alone walls of a page, or null where it cannot be read this way. */
 export function pdfOwnWallsModel(page: RegisteredPageEvidence, evidence: Evidence): PdfOwnWallsModel | null {
   const millimetresPerPixel = evidence.scale.basis === "explicit_dimension" ? evidence.scale.millimetresPerPixel : null;
@@ -77,6 +83,8 @@ export function pdfOwnWallsModel(page: RegisteredPageEvidence, evidence: Evidenc
   let pass: { grid: WallGrid; mass: WallMass; doors: DoorFinder; needed: { xs: number[]; ys: number[] } } = built({ xs: [], ys: [] });
   if (pass.needed.xs.length || pass.needed.ys.length) pass = built(pass.needed);
   const { grid, mass, doors } = pass;
+  // A line across a shower or a bath (its screen) is no door shut: taken back before the pockets are judged.
+  takeBackScreens(grid, mass, doors, evidence, sx, sy);
   // Openings that only cut off a pocket are taken back, before and after the doors drawn inside the walls are found
   // (a swing such an opening had used may be one of those).
   const minRoomPx2 = (PDF_OWN_ROOM_LIMITS.minRoomM2 * 1e6) / millimetresPerPixel ** 2;

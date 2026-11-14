@@ -37,6 +37,13 @@ const DOOR_SIGNS = {
   /** Between two walls that face each other deeper than a wall is thick, a door stands this thick at its hinge; its
    * sliding panels are two or more lines along the gap, each over this share of it, no further apart than this. */
   doorMm: 100, panelShare: 0.2, panelSpreadMm: 300,
+  /** A door drawn shut is one line across the gap, reaching to within this share of it of both jambs; a bi-fold's
+   * leaves stand stacked beside one jamb, lines across the gap's line at least this long, this near it. */
+  shutReach: 0.05, stackMin: 0.15, stackNear: 0.6,
+  /** A door drawn shut stands at the gap's mouth, within this of where its walls stop (a screen across a shower or a
+   * bath stands further in). Sliding panels parked open reach this share of the gap in from each jamb (both jambs),
+   * or `parkedOneShare` from one. */
+  mouthMm: 300, parkedOneShare: 0.4,
 } as const;
 
 const SWING: Drawn = { opening: { kind: "door", operation: "swing", confidence: 0.8 }, note: "a door swing drawn at a gap of the PDF's walls" };
@@ -128,7 +135,50 @@ function drawnDoor(gap: Closure, grid: WallGrid, drawing: DoorDrawing, millimetr
   if (folding) return FOLDING;
   const panel = (line: AxisLine) => line.plumb !== gap.level && line.at > span.low + 1e-6 && line.at < span.high - 1e-6
     && Math.min(line.to, span.to) - Math.max(line.from, span.from) >= DOOR_SIGNS.panelCover * length;
-  return drawing.lines.some(panel) ? SLIDING : null;
+  return drawing.lines.some(panel) ? SLIDING : shutDoor(gap, span, drawing.lines, millimetresPerPixel)?.drawn ?? null;
+}
+
+const SHUT_SLIDING: Drawn = { opening: { kind: "door", operation: "sliding", confidence: 0.6 }, note: "a door drawn shut across a gap of the PDF's walls" };
+const SHUT_FOLDING: Drawn = { opening: { kind: "door", operation: "folding", confidence: 0.6 }, note: "a bi-fold door drawn shut, its leaves stacked at a jamb" };
+/** Whether what was found at a gap is a door drawn shut across it. */
+export const isShutDoor = (drawn: Drawn | null) => drawn === SHUT_SLIDING || drawn === SHUT_FOLDING;
+
+/**
+ * A door drawn shut in a deep gap: one line across it from jamb to jamb, often one with the walls' own end faces (J,
+ * 14 Nov 2026: Thomson Reserve's kitchen sliding doors and its WC's bi-fold). Where its leaves are drawn stacked beside one jamb (lines across the door's line, near it) it
+ * is a bi-fold; otherwise a sliding door. The door stands at the gap's mouth, where its walls stop: a line further in
+ * (a shower's screen) is no door. The door stands its own thickness about the line.
+ */
+function shutDoor(gap: Closure, span: Span, lines: AxisLine[], millimetresPerPixel: number) {
+  const length = gap.lengthPx, reach = DOOR_SIGNS.shutReach * length, thick = Math.min(DOOR_SIGNS.doorMm / millimetresPerPixel, span.high - span.low);
+  const mouth = DOOR_SIGNS.mouthMm / millimetresPerPixel;
+  const snap = PDF_OWN_WALL_LIMITS.snapPx;
+  const door = lines.find((line) => line.plumb !== gap.level && line.at >= span.low - snap && line.at <= span.high + snap
+    && Math.min(line.at - span.low, span.high - line.at) <= mouth && line.from <= span.from + reach && line.to >= span.to - reach);
+  if (!door) return parkedPanels(gap, span, lines, mouth, reach, thick);
+  const stacked = lines.some((line) => line.plumb === gap.level && line.to - line.from >= DOOR_SIGNS.stackMin * length
+    && (Math.abs(line.at - span.from) <= DOOR_SIGNS.stackMin * length || Math.abs(line.at - span.to) <= DOOR_SIGNS.stackMin * length)
+    && line.at > span.from - reach && line.at < span.to + reach && Math.min(Math.abs(line.from - door.at), Math.abs(line.to - door.at)) <= DOOR_SIGNS.stackNear * length);
+  const from = Math.max(span.low, Math.min(span.high - thick, door.at - thick / 2));
+  return { from, to: from + thick, drawn: stacked ? SHUT_FOLDING : SHUT_SLIDING };
+}
+
+/**
+ * A sliding door drawn open, its panels parked at the jambs (Thomson Reserve's kitchen: a panel at each side of a
+ * 3.5 m opening): lines at the gap's mouth that run from inside a jamb part of the way across. One at each jamb, each
+ * over `stackMin` of the gap, or one over `parkedOneShare`. The door stands its own thickness about the panels.
+ */
+function parkedPanels(gap: Closure, span: Span, lines: AxisLine[], mouth: number, reach: number, thick: number) {
+  const length = gap.lengthPx, snap = PDF_OWN_WALL_LIMITS.snapPx, part = DOOR_SIGNS.stackMin * length;
+  const along = lines.filter((line) => line.plumb !== gap.level && line.at >= span.low - snap && line.at <= span.high + snap
+    && Math.min(line.at - span.low, span.high - line.at) <= mouth);
+  const atFrom = along.filter((line) => line.from <= span.from + reach && line.to >= span.from + part && line.to <= span.to - reach);
+  const atTo = along.filter((line) => line.to >= span.to - reach && line.from <= span.to - part && line.from >= span.from + reach);
+  const one = [...atFrom, ...atTo].find((line) => Math.min(line.to, span.to) - Math.max(line.from, span.from) >= DOOR_SIGNS.parkedOneShare * length);
+  const panel = atFrom.length && atTo.length ? atFrom[0] : one;
+  if (!panel) return null;
+  const from = Math.max(span.low, Math.min(span.high - thick, panel.at - thick / 2));
+  return { from, to: from + thick, drawn: SHUT_SLIDING };
 }
 
 /** Sliding panels in a deep gap: lines along it, close together, that between them lie over most of the gap. */
@@ -186,7 +236,9 @@ export function doorFinder(evidence: Evidence, grid: WallGrid, drawing: DoorDraw
         return { from, to: from + thick, keep: (part) => { for (const index of swing.indices) used.add(index); found.set(part, SWING); swingsOf.set(part, swing.indices); } };
       }
       const panels = panelBand(gap, span, drawing.lines, millimetresPerPixel);
-      return panels && { ...panels, keep: (part) => { found.set(part, SLIDING); } };
+      if (panels) return { ...panels, keep: (part) => { found.set(part, SLIDING); } };
+      const shut = shutDoor(gap, span, drawing.lines, millimetresPerPixel);
+      return shut && { from: shut.from, to: shut.to, keep: (part) => { found.set(part, shut.drawn); } };
     },
     inWalls(mass) {
       const leaves = wallLeaves(grid, mass, drawing, millimetresPerPixel, used, openAirPoints(evidence, sx, sy));

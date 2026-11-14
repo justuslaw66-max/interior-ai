@@ -1,4 +1,4 @@
-import { PDF_OWN_WALL_LIMITS, type WallGrid } from "./pdf-own-walls-grid";
+import { PDF_OWN_WALL_LIMITS, gridIndex, type WallGrid } from "./pdf-own-walls-grid";
 import { FREE, floorPieces, takeBackOpenings, type Closure, type WallMass } from "./pdf-own-walls-mass";
 
 /**
@@ -95,6 +95,34 @@ export function dropCorridorOpenings(grid: WallGrid, mass: WallMass, undrawn: (g
     const i = index % nx, j = (index - i) / nx;
     const beside = [[i - 1, j], [i + 1, j], [i, j - 1], [i, j + 1]].filter(([ci, cj]) => ci >= 0 && cj >= 0 && ci < nx && cj < ny);
     if (beside.some(([ci, cj]) => corridor(labels[cj * nx + ci]))) cut.add(closure);
+  });
+  return cut.size ? takeBackOpenings(mass, cut) : [];
+}
+
+/** The grid cell a page point lies in (gridIndex gives the nearest grid line). */
+function cellAt(grid: WallGrid, x: number, y: number) {
+  const i = gridIndex(grid.xs, x), j = gridIndex(grid.ys, y);
+  return (j - (grid.ys[j] > y ? 1 : 0)) * grid.nx + (i - (grid.xs[i] > x ? 1 : 0));
+}
+
+/**
+ * A door drawn shut (one line across an opening, J 14 Nov 2026) stands between two named spaces: a WC and its yard,
+ * a kitchen and its dining. A line across a shower or a bath (its screen) cuts off a piece of floor that holds no
+ * name: such an opening is taken back.
+ */
+export function dropUnnamedShutDoors(grid: WallGrid, mass: WallMass, shut: (gap: Closure) => boolean, names: { x: number; y: number }[]): Closure[] {
+  const { labels } = floorPieces(grid, mass), named = new Set<number>();
+  for (const { x, y } of names) {
+    const index = cellAt(grid, x, y);
+    if (index >= 0 && index < labels.length && labels[index] >= 0) named.add(labels[index]);
+  }
+  const { nx, ny } = grid, cut = new Set<number>();
+  mass.closure.forEach((closure, index) => {
+    if (closure < 0 || cut.has(closure) || !shut(mass.closures[closure])) return;
+    const i = index % nx, j = (index - i) / nx;
+    const beside = [[i - 1, j], [i + 1, j], [i, j - 1], [i, j + 1]].filter(([ci, cj]) => ci >= 0 && cj >= 0 && ci < nx && cj < ny)
+      .map(([ci, cj]) => labels[cj * nx + ci]).filter((label) => label >= 0);
+    if (beside.some((label) => !named.has(label))) cut.add(closure);
   });
   return cut.size ? takeBackOpenings(mass, cut) : [];
 }

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import type { RegisteredPageEvidence, SourceVectorPath, SourceVectorSegment } from "@/lib/floor-plan-imports/deterministic-evidence";
 import { hasPdfOwnWalls, pdfOwnWallsEnabled, pdfOwnWallsModel, withPdfOwnWalls } from "@/lib/floor-plan-imports/pdf-own-walls";
 import { parseFloorPlanVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-evidence";
-import { dropCorridorOpenings, widenSetBackOpenings } from "@/lib/floor-plan-imports/pdf-own-walls-openings";
+import { dropCorridorOpenings, dropUnnamedShutDoors, widenSetBackOpenings } from "@/lib/floor-plan-imports/pdf-own-walls-openings";
 import { isLightFillColour } from "@/lib/floor-plan-imports/pdf-paint-colour";
 import { dimensionSpan } from "@/lib/floor-plan-imports/dimension-arrowheads";
 import { PDF_PAGE_PATH_LIMITS, pathsWithinLimits } from "@/lib/floor-plan-imports/pdf-page-path-limits";
@@ -450,6 +450,31 @@ function testWallFaceBeyondTheHingeIsNoLeaf() {
   assert.ok(model.drawn.some((drawn) => drawn?.opening.operation === "swing"), "the swing is the gap's door");
 }
 
+function testDoorsDrawnShut() {
+  // The living room's face runs on across the gap: a door drawn shut (J, 14 Nov 2026: Thomson Reserve's WC).
+  const kinds = (model: NonNullable<ReturnType<typeof pdfOwnWallsModel>>) => model.drawn.map((drawn) => drawn ? `${drawn.opening.kind} ${drawn.opening.operation}` : "open");
+  const shut = pdfOwnWallsModel(page([...planLines(200, 290), [395, 200, 395, 290]]), reader())!;
+  assert.deepEqual(kinds(shut), ["door sliding"], "the line across the gap is a door drawn shut");
+  assert.ok(shut.drawn[0]?.note.includes("drawn shut"));
+  // A sliding door drawn open, a panel parked at each jamb (Thomson Reserve's kitchen).
+  const parked = pdfOwnWallsModel(page([...planLines(200, 290), [400, 195, 400, 215], [400, 275, 400, 295]]), reader())!;
+  assert.deepEqual(kinds(parked), ["door sliding"], "panels parked at both jambs are a sliding door");
+  // Neither: an open passage.
+  assert.deepEqual(kinds(pdfOwnWallsModel(page(planLines(200, 290)), reader())!), ["open"]);
+}
+
+function testShutDoorBesideUnnamedFloorIsTakenBack() {
+  // A line across a room cuts off a piece with no name in it (a shower's screen): taken back. Between two named
+  // pieces (a WC and its yard) it stays.
+  const rows = ["WWWWW", "WFFFW", "W000W", "WFFFW", "WWWWW"];
+  const screen = corridorCase(rows);
+  assert.equal(dropUnnamedShutDoors(screen.grid, screen.mass, () => true, [{ x: 2.5, y: 1.5 }]).length, 1, "a screen is taken back");
+  const door = corridorCase(rows);
+  assert.equal(dropUnnamedShutDoors(door.grid, door.mass, () => true, [{ x: 2.5, y: 1.5 }, { x: 2.5, y: 3.5 }]).length, 0, "a door between named spaces stays");
+  const swing = corridorCase(rows);
+  assert.equal(dropUnnamedShutDoors(swing.grid, swing.mass, () => false, [{ x: 2.5, y: 1.5 }]).length, 0, "only doors drawn shut are judged");
+}
+
 function testLightFillIsNotSolid() {
   // The left room's layered window under a white fill (Tengah draws its windows' frames filled white): still a window.
   const frame: Line = [100, 200, 110, 300];
@@ -510,6 +535,8 @@ testArcOfStraightPiecesIsASwing();
 testOwnRoomNames();
 testJogClosesAWall();
 testWallFaceBeyondTheHingeIsNoLeaf();
+testDoorsDrawnShut();
+testShutDoorBesideUnnamedFloorIsTakenBack();
 testLightFillIsNotSolid();
 testLeftAsRead();
 testMarksItsPages();
