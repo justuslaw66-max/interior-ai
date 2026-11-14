@@ -109,6 +109,23 @@ function joinedLines(pieces: AxisLine[]): AxisLine[] {
   return joined;
 }
 
+/**
+ * Strokes shorter than a wall's line that join two of them end to end: the jogs of a wall's outline (Thomson
+ * Reserve's 100 mm partition steps out 25 mm at its foot, beside a door's leaf). Left out, the outline stayed open and
+ * the wall was floor. Lettering and symbol details join no wall lines at both ends.
+ */
+function jogs(edges: [SourcePointPx, SourcePointPx][], lines: AxisLine[], minPx: number): AxisLine[] {
+  const snap = PDF_OWN_WALL_LIMITS.snapPx;
+  const onLine = (x: number, y: number) => lines.some((line) => {
+    const [across, along] = line.plumb ? [x, y] : [y, x];
+    return Math.abs(across - line.at) <= snap && along >= line.from - snap && along <= line.to + snap;
+  });
+  return edges.flatMap(([a, b]) => {
+    const jog = axisLine(a, b, 0);
+    return jog && jog.to - jog.from < minPx && jog.to - jog.from > snap && onLine(a.x, a.y) && onLine(b.x, b.y) ? [jog] : [];
+  });
+}
+
 /** Whether a dimension's dot or arrowhead sits at the point (within the reach). */
 function markAt(marks: SourcePointPx[], x: number, y: number, reach: number) {
   return marks.some((mark) => Math.abs(mark.x - x) <= reach && Math.abs(mark.y - y) <= reach);
@@ -130,9 +147,10 @@ export function wallLinesAndFills(page: RegisteredPageEvidence, millimetresPerPi
   const marks: SourcePointPx[] = fills.filter(isMark).map((rings) => { const b = ringBox(rings); return { x: (b.left + b.right) / 2, y: (b.top + b.bottom) / 2 }; });
   const solid = fills.filter((rings) => !isMark(rings));
   const reach = px(PDF_OWN_WALL_LIMITS.markReachMm), minPx = px(PDF_OWN_WALL_LIMITS.minLineMm);
-  const pieces: AxisLine[] = strokes.flatMap((stroke) => axisLine(stroke.start, stroke.end, minPx) ?? []);
-  for (const rings of solid) for (const ring of rings) ring.forEach((point, i) => { const line = axisLine(point, ring[(i + 1) % ring.length], minPx); if (line) pieces.push(line); });
-  const candidates = joinedLines(pieces);
+  const edges = [...strokes.map((stroke): [SourcePointPx, SourcePointPx] => [stroke.start, stroke.end]),
+    ...solid.flatMap((rings) => rings.flatMap((ring) => ring.map((point, i): [SourcePointPx, SourcePointPx] => [point, ring[(i + 1) % ring.length]])))];
+  const pieces: AxisLine[] = edges.flatMap(([a, b]) => axisLine(a, b, minPx) ?? []);
+  const candidates = joinedLines([...pieces, ...jogs(edges, pieces, minPx)]);
   const measured = (line: AxisLine) => dimensionSpans.some(([[x0, y0], [x1, y1]]) => {
     const [at, from, to] = line.plumb ? [(x0 + x1) / 2, Math.min(y0, y1), Math.max(y0, y1)] : [(y0 + y1) / 2, Math.min(x0, x1), Math.max(x0, x1)];
     const shared = Math.min(line.to, to) - Math.max(line.from, from);
