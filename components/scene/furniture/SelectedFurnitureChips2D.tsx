@@ -7,34 +7,53 @@ import { Vector3, type Group } from "three";
 import { useCanvasPalette } from "@/lib/canvas-colours";
 import { PLAN_HTML_PASS_THROUGH } from "@/lib/plan-html-overlay";
 import { usePlanHandleSizes } from "@/lib/plan-handle-sizes";
-import { chipsFitAbove, chipsGapPx, chipsTransform, type ChipsFitInput, type ChipsSide } from "@/lib/selected-chips-placement";
+import {
+  chipsCheckDue,
+  chipsFitAbove,
+  chipsGapPx,
+  chipsTransform,
+  unsetChipsCheckMark,
+  type ChipsCheckMark,
+  type ChipsFitInput,
+  type ChipsSide,
+} from "@/lib/selected-chips-placement";
 
 export type SelectedFurnitureChip = { id: "rotate" | "copy" | "delete"; label: string; disabled: boolean; action: () => void };
 
-/** How often, in rendered frames, the chips check whether they still fit above the item. */
-const CHECK_EVERY_FRAMES = 10;
 const anchorOnScreen = new Vector3();
 
 /**
- * Above the item while that spot shows the plan, otherwise below it. State changes only when the
- * side does, and the check reuses one input object, so the frame callback allocates nothing.
+ * The plan's own area: the nearest element holding both the canvas and the chips. drei puts every
+ * plan label there, beside the canvas's own wrapper, so a label (or the chips) there isn't a
+ * control covering the spot; the page's controls (the 2D/3D switch, the toolbar) sit outside it.
+ */
+function planRegionOf(chips: HTMLElement, canvas: HTMLCanvasElement): Element | null {
+  let node = chips.parentElement;
+  while (node && !node.contains(canvas)) node = node.parentElement;
+  return node;
+}
+
+/**
+ * Above the item while that spot shows the plan, otherwise below it. The spot is checked only when
+ * the item has moved on screen (chipsCheckDue), state changes only when the side does, and the
+ * frame callback reuses its objects, so it allocates nothing.
  */
 function useChipsSide(anchorRef: RefObject<Group | null>, chipsRef: RefObject<HTMLDivElement | null>, gapAbove: number): ChipsSide {
   const { camera, gl } = useThree();
   const [side, setSide] = useState<ChipsSide>("above");
-  const frame = useRef(0);
+  const region = useRef<Element | null>(null);
+  const mark = useRef<ChipsCheckMark>(unsetChipsCheckMark());
   const input = useRef<ChipsFitInput>({
     anchorX: 0, anchorY: 0, gap: 0, width: 0, height: 0, regionTop: 0,
     isClear: (x, y) => {
       const hit = document.elementFromPoint(x, y);
-      return hit !== null && Boolean(gl.domElement.parentElement?.contains(hit));
+      return hit !== null && Boolean(region.current?.contains(hit));
     },
   });
   useFrame(() => {
-    frame.current = (frame.current + 1) % CHECK_EVERY_FRAMES;
     const anchor = anchorRef.current;
     const chips = chipsRef.current;
-    if (frame.current !== 0 || !anchor || !chips) return;
+    if (!anchor || !chips) return;
     anchor.getWorldPosition(anchorOnScreen).project(camera);
     const rect = gl.domElement.getBoundingClientRect();
     const check = input.current;
@@ -44,6 +63,8 @@ function useChipsSide(anchorRef: RefObject<Group | null>, chipsRef: RefObject<HT
     check.width = chips.offsetWidth;
     check.height = chips.offsetHeight;
     check.regionTop = rect.top;
+    if (!chipsCheckDue(mark.current, check)) return;
+    region.current ??= planRegionOf(chips, gl.domElement);
     const next: ChipsSide = chipsFitAbove(check) ? "above" : "below";
     if (next !== side) setSide(next);
   });
@@ -91,8 +112,9 @@ export function SelectedFurnitureChips2D({ depth, chips }: { depth: number; chip
   return (
     <>
       <group ref={anchorRef} position={[0, 0.08, -depth / 2]} />
+      {/* Over the plan's door and window labels (20), under the page's own controls (40 and up). */}
       <Html
-        zIndexRange={[18, 0]}
+        zIndexRange={[22, 0]}
         position={[0, 0.08, side === "above" ? -depth / 2 : depth / 2]}
         center
         transform={false}

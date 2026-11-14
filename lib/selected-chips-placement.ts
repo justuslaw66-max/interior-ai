@@ -27,7 +27,10 @@ export type ChipsFitInput = {
   height: number;
   /** The top of the plan on screen. */
   regionTop: number;
-  /** Whether a screen point shows the plan itself (the canvas or its own labels), not a control over it. */
+  /**
+   * Whether a screen point shows the plan itself, not one of the page's controls over it. The plan
+   * includes its own labels and the chips themselves, so the chips never send themselves below.
+   */
   isClear: (x: number, y: number) => boolean;
 };
 
@@ -45,4 +48,35 @@ export function chipsFitAbove({ anchorX, anchorY, gap, width, height, regionTop,
     if (!isClear(x, top + Math.min(2, height / 2)) || !isClear(x, top + height / 2)) return false;
   }
   return true;
+}
+
+/** What the side was last decided from; it starts unset, so the first check always runs. */
+export type ChipsCheckMark = { anchorX: number; anchorY: number; width: number; regionTop: number; gap: number };
+
+export function unsetChipsCheckMark(): ChipsCheckMark {
+  return { anchorX: Number.NEGATIVE_INFINITY, anchorY: Number.NEGATIVE_INFINITY, width: 0, regionTop: 0, gap: 0 };
+}
+
+/**
+ * Whether the item moved on screen, or the chips or plan changed, by half a pixel or more since the
+ * side was last decided; if so it records the new values. The plan only redraws while something
+ * changes, so checking on every move (rather than every few frames) never misses the frame where a
+ * pan or the phone sheet's framing comes to rest (J's browser check, 14 Nov 2026), and a still plan
+ * does no work.
+ */
+export function chipsCheckDue(mark: ChipsCheckMark, input: ChipsFitInput): boolean {
+  const due =
+    Math.abs(mark.anchorX - input.anchorX) >= 0.5 ||
+    Math.abs(mark.anchorY - input.anchorY) >= 0.5 ||
+    mark.width !== input.width ||
+    mark.regionTop !== input.regionTop ||
+    mark.gap !== input.gap;
+  if (due) {
+    mark.anchorX = input.anchorX;
+    mark.anchorY = input.anchorY;
+    mark.width = input.width;
+    mark.regionTop = input.regionTop;
+    mark.gap = input.gap;
+  }
+  return due;
 }

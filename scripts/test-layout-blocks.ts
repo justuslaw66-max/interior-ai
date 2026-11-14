@@ -23,7 +23,7 @@ import { catalogOrLayoutBlockProduct } from "@/lib/design-item-product-snapshot"
 import { findCatalogPlacementCollision } from "@/lib/catalog-placement";
 import { layoutBlockResizeGrab, layoutBlockResizeTarget, resizeLayoutBlockFootprint } from "@/lib/layout-block-resize";
 import { PLAN_HANDLE_SIZES_POINTER, PLAN_HANDLE_SIZES_TOUCH } from "@/lib/plan-handle-sizes";
-import { chipsFitAbove, chipsGapPx, chipsTransform } from "@/lib/selected-chips-placement";
+import { chipsCheckDue, chipsFitAbove, chipsGapPx, chipsTransform, unsetChipsCheckMark } from "@/lib/selected-chips-placement";
 import { readFileSync } from "node:fs";
 import { nativeResizeCursor, planResizeCursor, planRotateCursor, resizeCursorAngle } from "@/lib/plan-cursors";
 import { getPlanCursorTheme, PLAN_CURSOR_THEME_STORAGE_KEY, PLAN_CURSOR_THEMES, setPlanCursorTheme } from "@/lib/plan-cursor-preference";
@@ -169,6 +169,14 @@ function testSelectedChipsPlacement() {
   assert.equal(chipsFitAbove({ ...base, anchorY: 60, isClear: () => true }), false, "Off the plan's top: below");
   // A toolbar over the chips' left end (x < 130, y < 230) sends them below.
   assert.equal(chipsFitAbove({ ...base, isClear: (x, y) => !(x < 130 && y < 230) }), false, "Under a control: below");
+  // The side is decided again only once the item moves on screen, so the frame where a pan comes to rest is never skipped.
+  const mark = unsetChipsCheckMark();
+  const input = { ...base, isClear: () => true };
+  assert.equal(chipsCheckDue(mark, input), true, "The first check always runs");
+  assert.equal(chipsCheckDue(mark, input), false, "Nothing moved: no check");
+  assert.equal(chipsCheckDue(mark, { ...input, anchorY: 300.3 }), false, "Under half a pixel: no check");
+  assert.equal(chipsCheckDue(mark, { ...input, anchorY: 301 }), true, "Moved a pixel: check");
+  assert.equal(chipsCheckDue(mark, { ...input, anchorY: 301, regionTop: 12 }), true, "The plan moved: check");
   // The pointer passes through the Html wrappers that sit over an item, so its handles stay reachable.
   for (const path of ["components/scene/furniture/SelectedFurnitureChips2D.tsx", "components/editor/renderers/PlanItemName2D.tsx", "components/editor/renderers/PlanItemSelection2D.tsx"]) {
     const source = readFileSync(path, "utf8");
