@@ -9,6 +9,15 @@ import type { FloorPlanVectorizerEvidence } from "./vectorizer-evidence-schema";
  * one gap only (the narrowest it fits), so the same door cannot close two.
  */
 type Evidence = FloorPlanVectorizerEvidence;
+
+/** A room name that says the space is open to the air. */
+const OPEN_AIR_NAME = /\b(ledge|balcony|yard|terrace|planter|patio|roof)\b/i;
+
+/** Where the reader's lettering names a space as open to the air (a ledge, a balcony, a yard), in page pixels. */
+export const openAirPoints = (evidence: Evidence, sx: number, sy: number) => evidence.semantics.roomLabels
+  .filter((label) => OPEN_AIR_NAME.test(label.label))
+  .map((label) => ({ x: label.centerXRatio * evidence.page.widthPx * sx, y: label.centerYRatio * evidence.page.heightPx * sy }));
+
 type ReaderOpening = NonNullable<Evidence["wallEdges"][number]["opening"]>;
 export type Drawn = { opening: Pick<ReaderOpening, "kind" | "operation" | "confidence"> & Partial<ReaderOpening>; note: string };
 export type DoorDrawing = { lines: AxisLine[]; swings: Swing[]; diagonals: { start: { x: number; y: number }; end: { x: number; y: number } }[] };
@@ -145,6 +154,8 @@ export type DoorFinder = {
   deep(gap: Closure): { from: number; to: number; keep(part: Closure): void } | null;
   /** The doors and casements drawn inside the wall mass (after the gaps are closed: a swing a gap used is not one). */
   inWalls(mass: WallMass): WallLeaf[];
+  /** The swings no gap and no piece of wall has used. */
+  unused(): Swing[];
   /** Forgets an opening that was taken back: the swing drawn at it is free for another. */
   release(gap: Closure): void;
 };
@@ -176,12 +187,13 @@ export function doorFinder(evidence: Evidence, grid: WallGrid, drawing: DoorDraw
       return panels && { ...panels, keep: (part) => { found.set(part, SLIDING); } };
     },
     inWalls(mass) {
-      const leaves = wallLeaves(grid, mass, drawing, millimetresPerPixel, used);
+      const leaves = wallLeaves(grid, mass, drawing, millimetresPerPixel, used, openAirPoints(evidence, sx, sy));
       for (const leaf of leaves) {
         for (const index of leaf.swings) used.add(index);
         if (leaf.kind !== "casement") found.set(leaf.part, IN_WALL[leaf.kind]);
       }
       return leaves;
     },
+    unused: () => drawing.swings.filter((_, index) => !used.has(index)),
   };
 }
