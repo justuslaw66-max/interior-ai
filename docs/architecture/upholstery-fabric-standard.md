@@ -32,7 +32,9 @@ are separate: one model per shape, one library entry per fabric.
    `/pbr/fabrics/<family>/normal.jpg` and the file is missing, derive it from
    the processed tile of one fabric in the family.
 6. **Leather is colour and sheen,** not a photo tile, until a leather grain map
-   exists; its calibration is shared across retailers' leather sofas.
+   exists; its calibration is shared across retailers' leather sofas. A leather
+   option takes `swatch_hex` only: no `tile_scale.size_m`, because giving a
+   size makes the app fetch a colour photo that leather does not have.
 
 ## Adding a fabric or a family
 

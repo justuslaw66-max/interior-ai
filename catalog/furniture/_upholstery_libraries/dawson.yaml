@@ -1020,8 +1020,6 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
-        # Metres of cloth one tile covers; the renderer works out the repeat per model.
-        size_m: 0.08
 
   - upholstery_code: caramel_leather
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -1056,8 +1054,6 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
-        # Metres of cloth one tile covers; the renderer works out the repeat per model.
-        size_m: 0.08
 
   - upholstery_code: warm_taupe_leather
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -1092,8 +1088,6 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
-        # Metres of cloth one tile covers; the renderer works out the repeat per model.
-        size_m: 0.08
 
   - upholstery_code: marche_ivory_leather
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -1128,8 +1122,6 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
-        # Metres of cloth one tile covers; the renderer works out the repeat per model.
-        size_m: 0.08
 
   - upholstery_code: marche_graphite_leather
     upholstery_label: "Marche Graphite (Leather)"
@@ -1163,8 +1155,6 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
-        # Metres of cloth one tile covers; the renderer works out the repeat per model.
-        size_m: 0.08
 
   - upholstery_code: marche_cocoa_leather
     # Averaged from this fabric's Castlery swatch photo (11 Nov 2026).
@@ -1199,8 +1189,6 @@ upholstery_options:
       tile_scale:
         x: 1.2
         y: 1.2
-        # Metres of cloth one tile covers; the renderer works out the repeat per model.
-        size_m: 0.08
 
 # Maps which upholstery_codes are active for this family
 # These match the 30+ fabric options available on Castlery website
