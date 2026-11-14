@@ -42,6 +42,7 @@ import { EDITOR_GEOMETRY_TOLERANCES } from "@/lib/editor-geometry-tolerances";
 import { resolveObjectShadowEligibility } from "@/components/editor/design-page/lighting";
 import type { FurnitureProps } from "./furniture/FurnitureProps";
 import { FurnitureSelectionOutline } from "./furniture/FurnitureSelectionOutline";
+import { SelectedFurnitureChips2D } from "./furniture/SelectedFurnitureChips2D";
 import { resolveFurnitureModelAppearance } from "./furniture/resolveFurnitureModelAppearance";
 import { useFurnitureFiniteAnimations } from "./furniture/useFurnitureFiniteAnimations";
 import { sceneDemandItemUserData } from "./sceneDemandDiagnostics";
@@ -826,78 +827,14 @@ export function Furniture({
         />
       ) : null}
       {viewMode === "2d" && showSelection && isPrimarySelected && !dragging && !rotateDragging && (
-        <Html zIndexRange={[18, 0]} position={[0, 0.08, -planningDepth / 2]} center transform={false}>
-          {/* Lifted a fixed distance off the edge, clear of the rotate knob (28px out, 44px on touch; J's check, 14 Nov 2026). */}
-          <div
-            data-testid="selected-furniture-action-chips"
-            className="-translate-y-[calc(50%+46px)] touch:-translate-y-[calc(50%+72px)]"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-              padding: 4,
-              border: colour("1px solid rgba(37,99,235,0.24)"),
-              borderRadius: 999,
-              background: colour("rgba(255,255,255,0.96)"),
-              boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
-              pointerEvents: "auto",
-              whiteSpace: "nowrap",
-            }}
-            onPointerDown={(event) => event.stopPropagation()}
-            onClick={(event) => event.stopPropagation()}
-          >
-            {[
-              {
-                id: "rotate",
-                label: "Rotate",
-                disabled: locked || !interactive || !onRotate,
-                action: () =>
-                  onRotate?.(instanceId, rotation + Math.PI / 2, {
-                    source: "canvas",
-                    snap: true,
-                  }),
-              },
-              {
-                id: "copy",
-                label: "Copy",
-                disabled: locked || !interactive || !onDuplicate,
-                action: () => onDuplicate?.(instanceId),
-              },
-              {
-                id: "delete",
-                label: "Delete",
-                disabled: locked || !interactive || !onDelete,
-                action: () => onDelete?.(instanceId),
-              },
-            ].map((chip) => (
-              <button
-                key={chip.id}
-                type="button"
-                data-testid={`selected-furniture-${chip.id}`}
-                aria-label={`${chip.label} selected furniture`}
-                title={`${chip.label} selected furniture`}
-                disabled={chip.disabled}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  chip.action();
-                }}
-                style={{
-                  border: "none",
-                  borderRadius: 999,
-                  background: colour(chip.id === "delete" ? "#fee2e2" : "#f3f4f6"),
-                  color: colour(chip.id === "delete" ? "#991b1b" : "#111827"),
-                  cursor: chip.disabled ? "not-allowed" : "pointer",
-                  fontSize: 12, fontWeight: 800,
-                  opacity: chip.disabled ? 0.45 : 1,
-                  minWidth: chip.id === "delete" ? 46 : 42,
-                  padding: "5px 8px",
-                }}
-              >
-                {chip.label}
-              </button>
-            ))}
-          </div>
-        </Html>
+        <SelectedFurnitureChips2D
+          depth={planningDepth}
+          chips={[
+            { id: "rotate", label: "Rotate", disabled: Boolean(locked) || !interactive || !onRotate, action: () => onRotate?.(instanceId, rotation + Math.PI / 2, { source: "canvas", snap: true }) },
+            { id: "copy", label: "Copy", disabled: Boolean(locked) || !interactive || !onDuplicate, action: () => onDuplicate?.(instanceId) },
+            { id: "delete", label: "Delete", disabled: Boolean(locked) || !interactive || !onDelete, action: () => onDelete?.(instanceId) },
+          ]}
+        />
       )}
       <SnapGuides guides={snapGuides} visible={showGuidesAndMeasurements && dragging} isDesigner={interactive} />
       <Measurements measures={measurements} visible={showGuidesAndMeasurements && dragging} />

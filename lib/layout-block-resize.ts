@@ -92,6 +92,25 @@ export function resizeLayoutBlockFootprint({
 }
 
 /**
+ * How far from its own side the pointer took hold of a handle, in the block's frame. Taking that off
+ * every later pointer keeps the side the same distance from the pointer, so it follows the drag
+ * instead of jumping to the pointer; a 44px touch handle is often grabbed 20px off (Figma and Canva
+ * work the same way; J's browser check, 14 Nov 2026).
+ */
+export function layoutBlockResizeGrab(
+  handle: LayoutBlockResizeHandle,
+  startWidth: number,
+  startDepth: number,
+  pointerX: number,
+  pointerZ: number
+): { x: number; z: number } {
+  return {
+    x: handle.sx === 0 ? 0 : pointerX - handle.sx * (startWidth / 2),
+    z: handle.sz === 0 ? 0 : pointerZ - handle.sz * (startDepth / 2),
+  };
+}
+
+/**
  * Where the block goes and how big it is once a resize is let go: the centre offset turned into the
  * room's frame by the block's rotation (three.js turns about y: x' = x cos + z sin, z' = z cos - x sin).
  */

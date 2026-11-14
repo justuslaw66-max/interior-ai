@@ -7,12 +7,11 @@ import type { Group, Mesh } from "three";
 import { useCanvasPalette } from "@/lib/canvas-colours";
 import { planRotateCursor } from "@/lib/plan-cursors";
 import { planMetresForPixels, usePlanHandleSizes, type PlanHandleSizes } from "@/lib/plan-handle-sizes";
+import { PLAN_HTML_PASS_THROUGH } from "@/lib/plan-html-overlay";
 
 /** Labels and handles stay above the plan's own overlays. */
 export const PLAN_ITEM_HTML_Z_INDEX: [number, number] = [5, 0];
 const CORNER = 0.04;
-/** Labels next to an item never take the pointer, so the plan (and a block's resize edges) under them still can. */
-const NO_POINTER: CSSProperties = { pointerEvents: "none" };
 
 /** The four small corner squares of a selected item that cannot be resized. */
 export function PlanItemCorners2D({ width, depth, markY }: { width: number; depth: number; markY: number }) {
@@ -94,7 +93,7 @@ function placeKnob(depth: number, zoom: number, sizes: PlanHandleSizes, parts: {
 /** The angle readout, lifted clear of the knob by the knob's own size on screen. */
 function RotationHud({ label, liftPx }: { label: string; liftPx: number }) {
   return (
-    <Html zIndexRange={PLAN_ITEM_HTML_Z_INDEX} position={[0, 0.01, 0]} center transform={false} style={NO_POINTER}>
+    <Html zIndexRange={PLAN_ITEM_HTML_Z_INDEX} position={[0, 0.01, 0]} center transform={false} style={PLAN_HTML_PASS_THROUGH}>
       <div data-testid="rotation-hud" style={{ ...ROTATION_HUD_STYLE, transform: `translateY(-${liftPx}px)` }}>
         {label}
       </div>
@@ -176,10 +175,10 @@ export function PlanItemDimensionLabels2D({
   };
   return (
     <>
-      <Html zIndexRange={PLAN_ITEM_HTML_Z_INDEX} position={[0, 0.01, depth / 2 + 0.12]} center transform={false} style={NO_POINTER}>
+      <Html zIndexRange={PLAN_ITEM_HTML_Z_INDEX} position={[0, 0.01, depth / 2 + 0.12]} center transform={false} style={PLAN_HTML_PASS_THROUGH}>
         <div style={style}>{widthLabel}</div>
       </Html>
-      <Html zIndexRange={PLAN_ITEM_HTML_Z_INDEX} position={[width / 2 + 0.12, 0.01, 0]} center transform={false} style={NO_POINTER}>
+      <Html zIndexRange={PLAN_ITEM_HTML_Z_INDEX} position={[width / 2 + 0.12, 0.01, 0]} center transform={false} style={PLAN_HTML_PASS_THROUGH}>
         <div style={style}>{depthLabel}</div>
       </Html>
     </>

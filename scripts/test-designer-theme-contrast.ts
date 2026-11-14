@@ -727,6 +727,7 @@ const CANVAS_SOURCES = [
   "components/editor/design-page/DesignSceneCanvas.tsx",
   "components/editor/design-page/DesignSceneStructureLayer.tsx",
   "components/scene/FurnitureItem.tsx",
+  "components/scene/furniture/SelectedFurnitureChips2D.tsx",
   "features/cabinetry/components/CabinetPreviewScene3D.tsx",
   "features/cabinetry/components/CabinetSceneItem.tsx",
   "components/public-share/ShareScene.tsx",

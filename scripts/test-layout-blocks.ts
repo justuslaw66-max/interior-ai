@@ -21,7 +21,10 @@ import { computeAABB } from "@/lib/snapGuides";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import { catalogOrLayoutBlockProduct } from "@/lib/design-item-product-snapshot";
 import { findCatalogPlacementCollision } from "@/lib/catalog-placement";
-import { layoutBlockResizeTarget, resizeLayoutBlockFootprint } from "@/lib/layout-block-resize";
+import { layoutBlockResizeGrab, layoutBlockResizeTarget, resizeLayoutBlockFootprint } from "@/lib/layout-block-resize";
+import { PLAN_HANDLE_SIZES_POINTER, PLAN_HANDLE_SIZES_TOUCH } from "@/lib/plan-handle-sizes";
+import { chipsFitAbove, chipsGapPx, chipsTransform } from "@/lib/selected-chips-placement";
+import { readFileSync } from "node:fs";
 import { nativeResizeCursor, planResizeCursor, planRotateCursor, resizeCursorAngle } from "@/lib/plan-cursors";
 import { getPlanCursorTheme, PLAN_CURSOR_THEME_STORAGE_KEY, PLAN_CURSOR_THEMES, setPlanCursorTheme } from "@/lib/plan-cursor-preference";
 import { layoutBlockCollisionProduct } from "@/lib/layout-blocks";
@@ -138,6 +141,40 @@ function testResizeFootprint() {
   near(next.width, LAYOUT_BLOCK_LIMITS_MM.minPlan / 1000, "Never below the minimum"); near(next.offsetX - next.width / 2, -0.5, "…anchored");
   near(resizeLayoutBlockFootprint({ handle: { sx: 0, sz: 1 }, startWidth: 1, startDepth: 1, pointerX: 0, pointerZ: 99 }).depth, 20, "Never above 20 m");
   testProportionalResize();
+  testResizeGrab();
+}
+
+/** A handle grabbed off its side keeps that gap: the side follows the drag, it doesn't jump (J's check, 14 Nov 2026). */
+function testResizeGrab() {
+  // A 1.46 × 0.43 block; its right edge (x = 0.73) taken 0.02 m outside it, its bottom-left corner 0.25 m in from x.
+  let grab = layoutBlockResizeGrab({ sx: 1, sz: 0 }, 1.46, 0.43, 0.75, 0.1);
+  near(grab.x, 0.02, "Edge: the gap along its axis"); near(grab.z, 0, "…none along the edge");
+  let next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 0 }, startWidth: 1.46, startDepth: 0.43, pointerX: 0.75 - grab.x, pointerZ: 0.1 - grab.z });
+  near(next.width, 1.46, "Taking hold changes nothing");
+  grab = layoutBlockResizeGrab({ sx: -1, sz: 1 }, 1.46, 0.43, -0.48, 0.2);
+  // Straight down by 1.08 m: only the depth grows; the width stays, though the corner was grabbed 0.25 m in.
+  next = resizeLayoutBlockFootprint({ handle: { sx: -1, sz: 1 }, startWidth: 1.46, startDepth: 0.43, pointerX: -0.48 - grab.x, pointerZ: 0.2 + 1.08 - grab.z });
+  near(next.width, 1.46, "Corner dragged straight down: width kept"); near(next.depth, 1.51, "…depth follows the drag");
+}
+
+/** The Rotate / Copy / Delete chips sit above the item, or below it when the plan's controls cover that spot. */
+function testSelectedChipsPlacement() {
+  assert.equal(chipsGapPx("above", PLAN_HANDLE_SIZES_POINTER), 46, "Above: past the knob with a mouse");
+  assert.equal(chipsGapPx("above", PLAN_HANDLE_SIZES_TOUCH), 72, "…and on touch");
+  assert.equal(chipsGapPx("below", PLAN_HANDLE_SIZES_TOUCH), 32, "Below: past the edge's grab area");
+  assert.equal(chipsTransform("above", 46), "translateY(calc(-50% - 46px))");
+  assert.equal(chipsTransform("below", 22), "translateY(calc(50% + 22px))");
+  const base = { anchorX: 200, anchorY: 300, gap: 46, width: 160, height: 34, regionTop: 0 };
+  assert.equal(chipsFitAbove({ ...base, isClear: () => true }), true, "Room above: above");
+  assert.equal(chipsFitAbove({ ...base, anchorY: 60, isClear: () => true }), false, "Off the plan's top: below");
+  // A toolbar over the chips' left end (x < 130, y < 230) sends them below.
+  assert.equal(chipsFitAbove({ ...base, isClear: (x, y) => !(x < 130 && y < 230) }), false, "Under a control: below");
+  // The pointer passes through the Html wrappers that sit over an item, so its handles stay reachable.
+  for (const path of ["components/scene/furniture/SelectedFurnitureChips2D.tsx", "components/editor/renderers/PlanItemName2D.tsx", "components/editor/renderers/PlanItemSelection2D.tsx"]) {
+    const source = readFileSync(path, "utf8");
+    const htmlTags = source.match(/<Html\b[^>]*>/g) ?? [];
+    assert(htmlTags.length > 0 && htmlTags.every((tag) => tag.includes("style={PLAN_HTML_PASS_THROUGH}")), `${path}: every Html lets the pointer through`);
+  }
 }
 
 /** A corner with Shift keeps the block's proportions, as in Illustrator (J, 14 Nov 2026). */
@@ -249,6 +286,7 @@ testSpot();
 testResizeFootprint();
 testResizeTarget();
 testPlanCursors();
+testSelectedChipsPlacement();
 testResizeCommit();
 testBlocksAsFurniture();
 console.log(`layout blocks: ${PLAN_SYMBOL_KINDS.length} kinds, sizing, shopping, panel, placement, resizing, cursors and collision checked`);
