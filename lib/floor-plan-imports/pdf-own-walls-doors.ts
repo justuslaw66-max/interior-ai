@@ -74,13 +74,15 @@ type Hung = { index: number; far: boolean; size: number; cover: number; depth: n
 
 /**
  * Whether the leaf of a swing is drawn standing open across the gap: a line from the hinge along the gap, as long as
- * the swing is big. Such a leaf shuts against the wall it is hinged on (a casement, a door in that wall), not across
- * this gap.
+ * the swing is big, lying over the swing's own extent. Such a leaf shuts against the wall it is hinged on (a casement,
+ * a door in that wall), not across this gap. The wall's own face running on from the hinge, away from the swing, is
+ * no leaf (Thomson Reserve's lift lobby door).
  */
-function leafAcross(gap: Closure, lines: AxisLine[], [x, y]: [number, number], sizePx: number) {
+function leafAcross(gap: Closure, lines: AxisLine[], [x, y]: [number, number], swing: Swing) {
+  const sizePx = Math.max(swing.right - swing.left, swing.bottom - swing.top), [lo, hi] = gap.level ? [swing.left, swing.right] : [swing.top, swing.bottom];
   const [along, depth] = gap.level ? [x, y] : [y, x], near = DOOR_SIGNS.leafNear * sizePx;
   return lines.some((line) => line.plumb !== gap.level && Math.abs(line.at - depth) <= near && Math.abs(line.to - line.from - sizePx) <= 2 * near
-    && (Math.abs(line.from - along) <= near || Math.abs(line.to - along) <= near));
+    && (Math.abs(line.from - along) <= near || Math.abs(line.to - along) <= near) && Math.min(line.to, hi) - Math.max(line.from, lo) >= 0.5 * (line.to - line.from));
 }
 
 /** The swings not yet used that are hinged at one of the gap's two sides, within the depth the walls face each other. */
@@ -93,7 +95,7 @@ function hungSwings(gap: Closure, span: Span, drawing: DoorDrawing, used: Set<nu
     return swing.hinges.flatMap((hinge) => {
       const [along, depth] = gap.level ? hinge : [hinge[1], hinge[0]];
       const near = Math.abs(along - span.from) <= reach, far = Math.abs(along - span.to) <= reach;
-      if (!(near || far) || depth < span.low - reach || depth > span.high + reach || leafAcross(gap, drawing.lines, hinge, sizePx)) return [];
+      if (!(near || far) || depth < span.low - reach || depth > span.high + reach || leafAcross(gap, drawing.lines, hinge, swing)) return [];
       return [{ index, far: !near, size: sizePx / length, cover, depth }];
     });
   });

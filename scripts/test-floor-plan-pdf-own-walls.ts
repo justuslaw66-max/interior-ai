@@ -421,6 +421,35 @@ function testOwnRoomNames() {
   assert.deepEqual(names, [["MAIN BEDROOM", "bedroom"], ["LIVING/DINING", "living"], ["MASTER BEDROOM", "bedroom"], ["AC LEDGE", "other"]]);
 }
 
+function testJogClosesAWall() {
+  // The wall between the rooms ends at the gap with a foot 20 mm wider (Thomson Reserve's partition at a door's
+  // leaf): its right line stops 70 mm above the end, a 20 mm jog steps out and a 70 mm line runs down. The wall is
+  // still wall.
+  const lines = planLines(200, 290).flatMap((line): Line[] => {
+    if (JSON.stringify(line) === JSON.stringify([405, 110, 405, 200])) return [[405, 110, 405, 193], [405, 193, 407, 193], [407, 193, 407, 200]];
+    if (JSON.stringify(line) === JSON.stringify([395, 200, 405, 200])) return [[395, 200, 407, 200]];
+    return [line];
+  });
+  const model = pdfOwnWallsModel(page(lines), reader())!;
+  const { grid, mass } = model, cell = (x: number, y: number) => {
+    const i = grid.xs.findIndex((v, k) => v <= x && grid.xs[k + 1] > x), j = grid.ys.findIndex((v, k) => v <= y && grid.ys[k + 1] > y);
+    return mass.kind[j * grid.nx + i];
+  };
+  assert.notEqual(cell(400, 150), FREE, "the wall between the rooms is wall");
+  assert.equal(model.rooms.length, 2, "two rooms");
+}
+
+function testWallFaceBeyondTheHingeIsNoLeaf() {
+  // A door swing in the gap, hinged at its lower jamb, opening into the kitchen. The kitchen's own face runs on below
+  // the hinge, as long as the door is wide: it lies away from the swing, so it is no leaf drawn open across the gap.
+  const swing = { id: "swing", pageNumber: 1, closed: false, segmentIds: [], rectilinearScore: 0, containsCurves: true, confidence: 1,
+    evidenceKind: "pdf_vector", paintOperation: "stroke", bbox: { left: 405, top: 200, right: 495, bottom: 290 },
+    curves: [{ id: "swing-c", pageNumber: 1, sourceSubpathId: "", sourceCommandIndex: 0, command: "cubic", start: { x: 495, y: 290 },
+      controlPoints: [{ x: 495, y: 240 }, { x: 455, y: 200 }], end: { x: 405, y: 200 } }] } as unknown as SourceVectorPath;
+  const model = pdfOwnWallsModel(page(planLines(200, 290), [swing]), reader())!;
+  assert.ok(model.drawn.some((drawn) => drawn?.opening.operation === "swing"), "the swing is the gap's door");
+}
+
 function testLightFillIsNotSolid() {
   // The left room's layered window under a white fill (Tengah draws its windows' frames filled white): still a window.
   const frame: Line = [100, 200, 110, 300];
@@ -479,6 +508,8 @@ testDimensionMeasuresTipToTip();
 testPageOverLimitsKeepsThePlan();
 testArcOfStraightPiecesIsASwing();
 testOwnRoomNames();
+testJogClosesAWall();
+testWallFaceBeyondTheHingeIsNoLeaf();
 testLightFillIsNotSolid();
 testLeftAsRead();
 testMarksItsPages();
