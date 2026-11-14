@@ -497,7 +497,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/deterministic-evidence.ts": {
-      "lines": 1114,
+      "lines": 1113,
       "limit": 400
     },
     "lib/floor-plan-imports/lease.ts": {
@@ -509,7 +509,7 @@
       "limit": 400
     },
     "lib/floor-plan-imports/pdf-raster-adapter.ts": {
-      "lines": 2641,
+      "lines": 2628,
       "limit": 400
     },
     "lib/floor-plan-imports/planar-face-evidence.ts": {
@@ -3217,7 +3217,7 @@
     "lib/floor-plan-imports/deterministic-evidence.ts": {
       "overlongFunctions": {
         "count": 5,
-        "maximum": 202
+        "maximum": 200
       },
       "complexFunctions": {
         "count": 2,

@@ -4,6 +4,10 @@ import { hasPdfOwnWalls, pdfOwnWallsEnabled, pdfOwnWallsModel, withPdfOwnWalls }
 import { parseFloorPlanVectorizerEvidence } from "@/lib/floor-plan-imports/vectorizer-evidence";
 import { dropCorridorOpenings, widenSetBackOpenings } from "@/lib/floor-plan-imports/pdf-own-walls-openings";
 import { isLightFillColour } from "@/lib/floor-plan-imports/pdf-paint-colour";
+import { dimensionSpan } from "@/lib/floor-plan-imports/dimension-arrowheads";
+import { PDF_PAGE_PATH_LIMITS, pathsWithinLimits } from "@/lib/floor-plan-imports/pdf-page-path-limits";
+import { arcOf, pageSwings } from "@/lib/floor-plan-imports/pdf-own-walls-swings";
+import { ownRoomNames } from "@/lib/floor-plan-imports/pdf-own-text-evidence";
 import { FILLED, FREE, type Closure, type WallMass } from "@/lib/floor-plan-imports/pdf-own-walls-mass";
 import type { WallGrid } from "@/lib/floor-plan-imports/pdf-own-walls-grid";
 
@@ -330,6 +334,93 @@ function testCorridorPassageIsTakenBack() {
   assert.equal(dropCorridorOpenings(room.grid, room.mass, () => true).length, 0);
 }
 
+/** A stroked path of straight pieces through the points given, with its segments. */
+function polyline(id: string, points: [number, number][], paint: SourceVectorPath["paintOperation"] = "stroke", closed = false) {
+  const segments: SourceVectorSegment[] = points.slice(1).map(([x, y], k) => ({ id: `${id}-s${k}`, pageNumber: 1,
+    start: { x: points[k][0], y: points[k][1] }, end: { x, y }, strokeWidthPx: 0.3, confidence: 1, evidenceKind: "pdf_vector" }));
+  const xs = points.map(([x]) => x), ys = points.map(([, y]) => y);
+  const path = { id, pageNumber: 1, closed, segmentIds: segments.map((segment) => segment.id), rectilinearScore: 0, containsCurves: false, confidence: 1,
+    evidenceKind: "pdf_vector", paintOperation: paint, bbox: { left: Math.min(...xs), top: Math.min(...ys), right: Math.max(...xs), bottom: Math.max(...ys) } } as SourceVectorPath;
+  return { path, segments };
+}
+
+/** A quarter circle about (cx, cy), radius r, from angle a0 to a1 (degrees), as `count` straight pieces. */
+const quarter = (cx: number, cy: number, r: number, a0: number, a1: number, count: number) =>
+  Array.from({ length: count + 1 }, (_, k): [number, number] => {
+    const a = ((a0 + ((a1 - a0) * k) / count) * Math.PI) / 180;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  });
+
+function testDimensionMeasuresTipToTip() {
+  // Thomson Reserve's dimension lines run between 11 px arrowheads: the span is tip to tip.
+  const line = polyline("dim", [[100, 200], [500, 200]]);
+  const left = polyline("head-left", [[100, 198], [89, 200], [100, 202], [100, 198]], "fill", true);
+  const right = polyline("head-right", [[500, 198], [511, 200], [500, 202], [500, 198]], "fill", true);
+  const page = { widthPx: 1000, heightPx: 1000, vectorSegments: [...line.segments, ...left.segments, ...right.segments],
+    vectorPaths: [line.path, left.path, right.path] } as unknown as RegisteredPageEvidence;
+  const span = dimensionSpan(page, line.segments[0]);
+  assert.deepEqual([span.start, span.end, span.lengthPx], [{ x: 89, y: 200 }, { x: 511, y: 200 }, 422], "measured from tip to tip");
+  // Heads pointing in along the line (a filled marker at the end, not a terminator beyond it) leave it as drawn.
+  const inward = polyline("head-in", [[100, 198], [111, 200], [100, 202], [100, 198]], "fill", true);
+  const plain = { ...page, vectorSegments: [...line.segments, ...inward.segments], vectorPaths: [line.path, inward.path] } as unknown as RegisteredPageEvidence;
+  assert.equal(dimensionSpan(plain, line.segments[0]).lengthPx, 400, "no head beyond the end: the line's own length");
+}
+
+function testPageOverLimitsKeepsThePlan() {
+  // A sheet over the limits keeps the plan its solid fills mark, wherever it comes in drawing order.
+  const clutter = Array.from({ length: PDF_PAGE_PATH_LIMITS.paths + 10 }, (_, k) => polyline(`x${k}`, [[600 + (k % 50), 2000 + Math.floor(k / 50)], [601 + (k % 50), 2000 + Math.floor(k / 50)]]));
+  const walls = [polyline("w1", [[100, 100], [400, 100], [400, 120], [100, 120], [100, 100]], "fill", true), polyline("w2", [[100, 100], [120, 100], [120, 400], [100, 400], [100, 100]], "fill", true)];
+  const plan = polyline("p1", [[150, 200], [350, 200]]);
+  const all = [...clutter, ...walls, plan];
+  const kept = pathsWithinLimits(all.map((p) => p.path), all.flatMap((p) => p.segments), 1000, 3000);
+  assert.ok(kept.planArea, "the plan's area is found");
+  assert.deepEqual(kept.paths.map((p) => p.id), ["w1", "w2", "p1"], "the plan's paths are kept, the clutter left out");
+  assert.deepEqual(kept.segments.map((s) => s.id), [...walls, plan].flatMap((p) => p.segments.map((s) => s.id)));
+  // A page within the limits is unchanged.
+  const small = pathsWithinLimits(all.slice(-3).map((p) => p.path), all.slice(-3).flatMap((p) => p.segments), 1000, 3000);
+  assert.equal(small.paths.length, 3);
+  assert.equal(small.planArea, null);
+}
+
+function testArcOfStraightPiecesIsASwing() {
+  // A door's swing drawn as 20 short straight pieces (Thomson Reserve) is one swing, hinged at the circle's centre.
+  const arc = polyline("arc", quarter(200, 300, 60, 180, 270, 20));
+  const segments = new Map(arc.segments.map((segment) => [segment.id, segment]));
+  const swing = pageSwings([arcOf(arc.path, segments)!]);
+  assert.equal(swing.length, 1);
+  assert.deepEqual(swing[0].hinges, [[200, 300]], "hinged at the centre: the box's corner furthest from the arc");
+  // An arc drawn as a chain of curved paths, a few degrees each, that meet and run on is one swing, hinged at the
+  // centre; a wall's straight line is no arc.
+  const chain = quarter(200, 300, 60, 180, 270, 12).slice(1).map(([x, y], k, rest) => {
+    const [px, py] = k === 0 ? [140, 300] : rest[k - 1], mid: [number, number] = [(px + x) / 2, (py + y) / 2];
+    const { path } = polyline(`c${k}`, [[px, py], [x, y]]);
+    return { ...path, containsCurves: true, curves: [{ id: `c${k}-q`, pageNumber: 1, sourceSubpathId: "", sourceCommandIndex: 0, command: "quadratic" as const,
+      start: { x: px, y: py }, controlPoints: [{ x: mid[0], y: mid[1] }], end: { x, y } }] };
+  });
+  const chained = pageSwings(chain.map((path) => arcOf(path, new Map())!));
+  assert.equal(chained.length, 1, "the pieces join into one arc");
+  assert.deepEqual(chained[0].hinges, [[200, 300]]);
+  const wall = polyline("wall", Array.from({ length: 8 }, (_, k): [number, number] => [100 + 10 * k, 100]));
+  assert.equal(arcOf(wall.path, new Map(wall.segments.map((segment) => [segment.id, segment]))), null);
+  // A pair of leaves meeting at the middle of the gap turn sharply where they meet: two swings.
+  const [leafA, leafB] = [polyline("l", quarter(100, 300, 60, 0, -90, 10).reverse()), polyline("r", quarter(220, 300, 60, 180, 270, 10))];
+  const pair = new Map([...leafA.segments, ...leafB.segments].map((segment) => [segment.id, segment]));
+  assert.equal(pageSwings([arcOf(leafA.path, pair)!, arcOf(leafB.path, pair)!]).length, 2, "a pair's two leaves stay two");
+}
+
+function testOwnRoomNames() {
+  const line = (text: string, x: number, y: number, w: number, h = 13) => ({ id: text, pageNumber: 1, text, center: { x, y }, widthPx: w, heightPx: h });
+  const names = ownRoomNames([
+    line("MASTER", 694, 1280, 59), line("BEDROOM", 694, 1296, 76), // centred, two lines
+    line("MAIN", 875, 268, 35), line("BEDROOM", 894, 288, 72), // left-aligned
+    line("LIVING/", 273, 500, 50), line("DINING", 272, 520, 49), // a word carried on
+    line("AC LEDGE", 460, 1855, 72), line("(non-strata)", 459, 1872, 86), // a qualifier, left out
+    line("DW", 1316, 1815, 20, 10), line("W+D", 1657, 1844, 27, 10), // fixture letters, printed smaller
+    line("5850", 1381, 2066, 40, 16), // a dimension
+  ], null).map((name) => [name.label, name.roomType]);
+  assert.deepEqual(names, [["MAIN BEDROOM", "bedroom"], ["LIVING/DINING", "living"], ["MASTER BEDROOM", "bedroom"], ["AC LEDGE", "other"]]);
+}
+
 function testLightFillIsNotSolid() {
   // The left room's layered window under a white fill (Tengah draws its windows' frames filled white): still a window.
   const frame: Line = [100, 200, 110, 300];
@@ -384,6 +475,10 @@ testFillWithNoWidthIsNoDimensionDot();
 testOpeningSetBackFromTheWallFaces();
 testShortStepBackIsAJog();
 testCorridorPassageIsTakenBack();
+testDimensionMeasuresTipToTip();
+testPageOverLimitsKeepsThePlan();
+testArcOfStraightPiecesIsASwing();
+testOwnRoomNames();
 testLightFillIsNotSolid();
 testLeftAsRead();
 testMarksItsPages();
