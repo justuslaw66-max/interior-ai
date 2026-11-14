@@ -1,3 +1,4 @@
+import { arcOf, pageSwings } from "./pdf-own-walls-swings";
 import type { RegisteredPageEvidence, SourcePointPx } from "./deterministic-evidence";
 
 /**
@@ -50,26 +51,17 @@ type Stroke = { start: SourcePointPx; end: SourcePointPx; strokeWidthPx: number 
 /** A stroked path with curves (a door's swing): its box, and the corner(s) of the box its curves bulge away from. */
 export type Swing = { left: number; top: number; right: number; bottom: number; hinges: [number, number][] };
 
-/** The corner(s) of a curved path's box furthest from its curves' control points: where a swing is hinged. */
-function swingOf(path: RegisteredPageEvidence["vectorPaths"][number]): Swing {
-  const { left, top, right, bottom } = path.bbox, controls = (path.curves ?? []).flatMap((curve) => curve.controlPoints);
-  const corners: [number, number][] = [[left, top], [right, top], [left, bottom], [right, bottom]];
-  if (!controls.length) return { left, top, right, bottom, hinges: corners };
-  const x = controls.reduce((sum, point) => sum + point.x, 0) / controls.length, y = controls.reduce((sum, point) => sum + point.y, 0) / controls.length;
-  const away = corners.map(([cx, cy]) => Math.hypot(cx - x, cy - y)), most = Math.max(...away);
-  return { left, top, right, bottom, hinges: corners.filter((_, index) => away[index] >= 0.9 * most) };
-}
-
 /** The page's own strokes and fill paths (each fill path's subpaths as rings), in page pixels. */
 export function pageStrokesAndFills(page: RegisteredPageEvidence): { strokes: Stroke[]; fills: FillPath[]; swings: Swing[] } {
   const segments = new Map(page.vectorSegments.map((segment) => [segment.id, segment]));
-  const strokes: Stroke[] = [], fills: FillPath[] = [], swings: Swing[] = [];
+  const strokes: Stroke[] = [], fills: FillPath[] = [], arcs: NonNullable<ReturnType<typeof arcOf>>[] = [];
   for (const path of page.vectorPaths) {
     if (path.evidenceKind === "raster_linework") continue;
     const stroked = path.paintOperation === "stroke" || path.paintOperation === "fill_stroke";
     const filled = path.paintOperation === "fill" || path.paintOperation === "fill_stroke";
     if (stroked) for (const id of path.segmentIds) { const s = segments.get(id); if (s) strokes.push(s); }
-    if (stroked && path.containsCurves) swings.push(swingOf(path));
+    const arc = stroked ? arcOf(path, segments) : null;
+    if (arc) arcs.push(arc);
     // A light fill masks what lies under it (a window's frame filled white): its outline is drawn, it is not solid.
     if (!filled || path.fillLight) continue;
     const rings = (path.subpaths ?? [{ segmentIds: path.segmentIds }]).map((subpath) => {
@@ -78,7 +70,7 @@ export function pageStrokesAndFills(page: RegisteredPageEvidence): { strokes: St
     }).filter((ring) => ring.length >= 3);
     if (rings.length) fills.push(rings);
   }
-  return { strokes, fills, swings };
+  return { strokes, fills, swings: pageSwings(arcs) };
 }
 
 function ringBox(rings: FillPath) {
