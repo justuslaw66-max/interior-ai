@@ -21,7 +21,10 @@ import { computeAABB } from "@/lib/snapGuides";
 import { getRotatedFootprint } from "@/lib/design-page-utils";
 import { catalogOrLayoutBlockProduct } from "@/lib/design-item-product-snapshot";
 import { findCatalogPlacementCollision } from "@/lib/catalog-placement";
-import { layoutBlockResizeTarget, resizeLayoutBlockFootprint } from "@/lib/layout-block-resize";
+import { layoutBlockResizeGrab, layoutBlockResizeTarget, resizeLayoutBlockFootprint } from "@/lib/layout-block-resize";
+import { PLAN_HANDLE_SIZES_POINTER, PLAN_HANDLE_SIZES_TOUCH } from "@/lib/plan-handle-sizes";
+import { chipsCheckDue, chipsFitAbove, chipsGapPx, chipsTransform, unsetChipsCheckMark } from "@/lib/selected-chips-placement";
+import { readFileSync } from "node:fs";
 import { nativeResizeCursor, planResizeCursor, planRotateCursor, resizeCursorAngle } from "@/lib/plan-cursors";
 import { getPlanCursorTheme, PLAN_CURSOR_THEME_STORAGE_KEY, PLAN_CURSOR_THEMES, setPlanCursorTheme } from "@/lib/plan-cursor-preference";
 import { layoutBlockCollisionProduct } from "@/lib/layout-blocks";
@@ -137,6 +140,66 @@ function testResizeFootprint() {
   next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 0 }, startWidth: 1, startDepth: 1, pointerX: -3, pointerZ: 0 });
   near(next.width, LAYOUT_BLOCK_LIMITS_MM.minPlan / 1000, "Never below the minimum"); near(next.offsetX - next.width / 2, -0.5, "…anchored");
   near(resizeLayoutBlockFootprint({ handle: { sx: 0, sz: 1 }, startWidth: 1, startDepth: 1, pointerX: 0, pointerZ: 99 }).depth, 20, "Never above 20 m");
+  testProportionalResize();
+  testResizeGrab();
+}
+
+/** A handle grabbed off its side keeps that gap: the side follows the drag, it doesn't jump (J's check, 14 Nov 2026). */
+function testResizeGrab() {
+  // A 1.46 × 0.43 block; its right edge (x = 0.73) taken 0.02 m outside it, its bottom-left corner 0.25 m in from x.
+  let grab = layoutBlockResizeGrab({ sx: 1, sz: 0 }, 1.46, 0.43, 0.75, 0.1);
+  near(grab.x, 0.02, "Edge: the gap along its axis"); near(grab.z, 0, "…none along the edge");
+  let next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 0 }, startWidth: 1.46, startDepth: 0.43, pointerX: 0.75 - grab.x, pointerZ: 0.1 - grab.z });
+  near(next.width, 1.46, "Taking hold changes nothing");
+  grab = layoutBlockResizeGrab({ sx: -1, sz: 1 }, 1.46, 0.43, -0.48, 0.2);
+  // Straight down by 1.08 m: only the depth grows; the width stays, though the corner was grabbed 0.25 m in.
+  next = resizeLayoutBlockFootprint({ handle: { sx: -1, sz: 1 }, startWidth: 1.46, startDepth: 0.43, pointerX: -0.48 - grab.x, pointerZ: 0.2 + 1.08 - grab.z });
+  near(next.width, 1.46, "Corner dragged straight down: width kept"); near(next.depth, 1.51, "…depth follows the drag");
+}
+
+/** The Rotate / Copy / Delete chips sit above the item, or below it when the plan's controls cover that spot. */
+function testSelectedChipsPlacement() {
+  assert.equal(chipsGapPx("above", PLAN_HANDLE_SIZES_POINTER), 46, "Above: past the knob with a mouse");
+  assert.equal(chipsGapPx("above", PLAN_HANDLE_SIZES_TOUCH), 72, "…and on touch");
+  assert.equal(chipsGapPx("below", PLAN_HANDLE_SIZES_TOUCH), 32, "Below: past the edge's grab area");
+  assert.equal(chipsTransform("above", 46), "translateY(calc(-50% - 46px))");
+  assert.equal(chipsTransform("below", 22), "translateY(calc(50% + 22px))");
+  const base = { anchorX: 200, anchorY: 300, gap: 46, width: 160, height: 34, regionTop: 0 };
+  assert.equal(chipsFitAbove({ ...base, isClear: () => true }), true, "Room above: above");
+  assert.equal(chipsFitAbove({ ...base, anchorY: 60, isClear: () => true }), false, "Off the plan's top: below");
+  // A toolbar over the chips' left end (x < 130, y < 230) sends them below.
+  assert.equal(chipsFitAbove({ ...base, isClear: (x, y) => !(x < 130 && y < 230) }), false, "Under a control: below");
+  // The side is decided again only once the item moves on screen, so the frame where a pan comes to rest is never skipped.
+  const mark = unsetChipsCheckMark();
+  const input = { ...base, isClear: () => true };
+  assert.equal(chipsCheckDue(mark, input), true, "The first check always runs");
+  assert.equal(chipsCheckDue(mark, input), false, "Nothing moved: no check");
+  assert.equal(chipsCheckDue(mark, { ...input, anchorY: 300.3 }), false, "Under half a pixel: no check");
+  assert.equal(chipsCheckDue(mark, { ...input, anchorY: 301 }), true, "Moved a pixel: check");
+  assert.equal(chipsCheckDue(mark, { ...input, anchorY: 301, regionTop: 12 }), true, "The plan moved: check");
+  // The pointer passes through the Html wrappers that sit over an item, so its handles stay reachable.
+  for (const path of ["components/scene/furniture/SelectedFurnitureChips2D.tsx", "components/editor/renderers/PlanItemName2D.tsx", "components/editor/renderers/PlanItemSelection2D.tsx"]) {
+    const source = readFileSync(path, "utf8");
+    const htmlTags = source.match(/<Html\b[^>]*>/g) ?? [];
+    assert(htmlTags.length > 0 && htmlTags.every((tag) => tag.includes("style={PLAN_HTML_PASS_THROUGH}")), `${path}: every Html lets the pointer through`);
+  }
+}
+
+/** A corner with Shift keeps the block's proportions, as in Illustrator (J, 14 Nov 2026). */
+function testProportionalResize() {
+  // A 1.2 × 0.4 block; the bottom-right corner pulled to x = 1.2 (width asks 1.8, ×1.5) and z = 0.3 (depth asks 0.5, ×1.25).
+  let next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 1 }, startWidth: 1.2, startDepth: 0.4, pointerX: 1.2, pointerZ: 0.3, keepProportion: true });
+  near(next.width, 1.8, "Shift: the axis pulled further leads"); near(next.depth, 0.6, "…the other follows, 3:1 kept");
+  near(next.offsetX - next.width / 2, -0.6, "…left edge stays"); near(next.offsetZ - next.depth / 2, -0.2, "…top edge stays");
+  // Depth pulled further (×2) than width (×1.1): depth leads, snapped to 1 cm.
+  next = resizeLayoutBlockFootprint({ handle: { sx: -1, sz: -1 }, startWidth: 1.2, startDepth: 0.4, pointerX: -0.72, pointerZ: -0.6034, keepProportion: true });
+  near(next.depth, 0.8, "Depth leads"); near(next.width, 2.4, "…width follows");
+  // Shrunk past the smallest size: both stop where the smaller side is at the minimum, ratio kept.
+  next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 1 }, startWidth: 1.2, startDepth: 0.4, pointerX: -5, pointerZ: -5, keepProportion: true });
+  near(next.depth, LAYOUT_BLOCK_LIMITS_MM.minPlan / 1000, "Smallest side at the minimum"); near(next.width / next.depth, 3, "…ratio kept");
+  // Shift on a side handle changes only that side.
+  next = resizeLayoutBlockFootprint({ handle: { sx: 1, sz: 0 }, startWidth: 1.2, startDepth: 0.4, pointerX: 1.2, pointerZ: 0, keepProportion: true });
+  near(next.width, 1.8, "Side with Shift: width only"); near(next.depth, 0.4, "…depth unchanged");
 }
 
 function testResizeTarget() {
@@ -231,6 +294,7 @@ testSpot();
 testResizeFootprint();
 testResizeTarget();
 testPlanCursors();
+testSelectedChipsPlacement();
 testResizeCommit();
 testBlocksAsFurniture();
 console.log(`layout blocks: ${PLAN_SYMBOL_KINDS.length} kinds, sizing, shopping, panel, placement, resizing, cursors and collision checked`);

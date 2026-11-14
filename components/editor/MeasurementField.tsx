@@ -197,7 +197,7 @@ export default function MeasurementField({
           data-model-value-mm={valueMm}
           type="text"
           role={compound ? undefined : "spinbutton"}
-          inputMode={compound ? "text" : "decimal"}
+          inputMode={metadata.system === "imperial" ? "text" : "decimal"}
           autoComplete="off"
           spellCheck={false}
           disabled={disabled}

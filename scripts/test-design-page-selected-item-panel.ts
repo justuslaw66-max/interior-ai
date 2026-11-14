@@ -23,10 +23,12 @@ const readSource = (relativePath: string) =>
 const workspaceSource = readSource(
   "components/editor/design-page/DesignPageWorkspace.tsx",
 );
-// The panel's header ("Selected", Lock, Deselect) is its own file (UX 4f).
+// The panel's header ("Selected", Lock, Deselect) is its own file (UX 4f), and so is where it goes
+// (floating from md, in the phone's step sheet below it; 14 Nov 2026).
 const panelSource = [
   "components/editor/design-page/SelectedItemPanel.tsx",
   "components/editor/design-page/SelectedItemPanelHeader.tsx",
+  "components/editor/design-page/selectedItemPanelPlacement.ts",
 ].map(readSource).join("\n");
 const detailsPanelSource = readSource(
   "components/editor/SelectedItemDetailsPanel.tsx",
@@ -659,8 +661,10 @@ assert.doesNotMatch(
   "The selected-item panel test-id should have one owner.",
 );
 
+// Its one portal is its own move into the phone's step sheet (14 Nov 2026), not the material preview's.
+assert.match(panelSource, /return placement\.slot \? createPortal\(panel, placement\.slot\) : panel;/);
 assert.doesNotMatch(
-  panelSource,
+  panelSource.replace('import { createPortal } from "react-dom";', "").replace("createPortal(panel, placement.slot)", ""),
   /\bcreatePortal\b/,
   "The parent panel should not absorb the material preview portal.",
 );
@@ -679,5 +683,12 @@ assert.doesNotMatch(
   /font-serif|#4b2635|#5a2135|#5b2d3c|#8f4b31/,
   "Finishes, swatch rings and the material preview use the app's type and colours, not a brand's (UX 5n, J, 17 Oct).",
 );
+
+// Lock is for everyone who can edit, as in Canva and Figma, and holds in both modes (14 Nov 2026).
+assert.match(panelSource, /\{canEdit \? \(\s*<Button data-testid="selected-item-lock" onClick=\{onToggleLock\}/);
+assert.doesNotMatch(panelSource, /isDesigner \? \(\s*<Button/, "Lock is no longer Pro-only.");
+assert.match(panelSource, /const editsDisabled = !canEdit \|\| !details\.item \|\| locked;/);
+// On phones the panel moves into the step sheet so the plan and its handles stay in view.
+assert.match(panelSource, /const inSheet = !wide && !isClientPreview && Boolean\(sheet\.slot\);/);
 
 console.log("Design-page selected-item panel ownership checks passed.");

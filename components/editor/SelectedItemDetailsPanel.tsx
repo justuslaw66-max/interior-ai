@@ -6,6 +6,7 @@ import LazyImage from "@/components/common/LazyImage";
 import type { CatalogItemSchema } from "@/lib/catalog-schema";
 import type { ProductInfoRow, ProductInfoSections } from "@/lib/design-page-product-info";
 import type { DesignItem } from "@/lib/room-types";
+import { isLayoutBlock } from "@/lib/layout-blocks";
 import type { StyleConsistencyReport } from "@/lib/style-consistency";
 import type { PlanMeasurementUnit } from "@/lib/design-page-types";
 import { formatCabinetMeasurement } from "@/features/cabinetry/measurementUnits";
@@ -13,6 +14,7 @@ import MeasurementField from "./MeasurementField";
 import { Button } from "@/components/ui/Button";
 
 type SelectedItemDetailsPanelProps = {
+  /** Locks hold in Consumer and Pro alike (market practice, 14 Nov 2026), so this panel no longer reads it. */
   isDesigner: boolean;
   product: CatalogItemSchema;
   item: DesignItem | null;
@@ -49,8 +51,11 @@ type SelectedItemDetailsPanelProps = {
   onApplyStyleAlternative?: (productId: string) => void;
 };
 
+/** A product keeps its catalogue size; a layout block is the person's to size (14 Nov 2026). */
+const sizeGuidance = (item: DesignItem | null | undefined) =>
+  item && isLayoutBlock(item) ? "Set its size above, or drag its edges on the plan." : "Catalogue size is preserved. Choose an available model or size option below to resize accurately.";
+
 export default function SelectedItemDetailsPanel({
-  isDesigner,
   product,
   item,
   canEdit,
@@ -89,7 +94,7 @@ export default function SelectedItemDetailsPanel({
   const valueClass = "text-xs text-label";
   const hasFullDimensions = Boolean(fullDimensionsDetails?.length);
   const hasDeliveryWarranty = Boolean(productDetailSections?.deliveryWarranty?.length);
-  const itemActionsDisabled = !item || !canEdit || (isDesigner && Boolean(item.locked));
+  const itemActionsDisabled = !item || !canEdit || Boolean(item.locked);
   const positionX = item?.position?.[0] ?? 0;
   const positionZ = item?.position?.[2] ?? 0;
   const styleStatusClass =
@@ -242,15 +247,9 @@ export default function SelectedItemDetailsPanel({
             </Button>
           </div>
 
-          <div
-            className="rounded-lg border border-separator bg-surface-floating p-2"
-            data-testid="selected-item-precision"
-          >
-            <div
-              className="text-xs text-label-secondary"
-              data-testid="selected-item-size-guidance"
-            >
-              Catalogue size is preserved. Choose an available model or size option below to resize accurately.
+          <div className="rounded-lg border border-separator bg-surface-floating p-2" data-testid="selected-item-precision">
+            <div className="text-xs text-label-secondary" data-testid="selected-item-size-guidance">
+              {sizeGuidance(item)}
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <MeasurementField

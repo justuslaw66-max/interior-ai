@@ -2,6 +2,22 @@
 
 type ProgressChip = { label: string; ready: boolean };
 
+/**
+ * The doors-and-windows chip. Once there are openings and nothing needs a door, it names what it
+ * counts: beside "3 items" a bare "2 placed" read as two of the three items placed (J's browser
+ * check, 13 Nov 2026). Otherwise it shows the step's own status ("Needs a door", "Optional").
+ */
+export function openingsProgressChip({ hasOpenings, hasConnectionBlockers, openingCount, statusLabel }: {
+  hasOpenings: boolean;
+  hasConnectionBlockers: boolean;
+  openingCount: number;
+  statusLabel: string;
+}): ProgressChip {
+  const ready = hasOpenings || !hasConnectionBlockers;
+  if (!hasOpenings || hasConnectionBlockers) return { label: statusLabel, ready };
+  return { label: openingCount === 1 ? "1 door or window" : `${openingCount} doors & windows`, ready };
+}
+
 type RoomSetupProgressChipsProps = {
   /** The first visit's room, untouched: the card's one badge says so, and these chips wait. */
   roomIsDraft: boolean;

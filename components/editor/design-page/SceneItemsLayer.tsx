@@ -74,6 +74,7 @@ type SceneItemsLayerConfiguration = {
   viewMode: EditorViewMode;
   isClientPreview: boolean;
   canEdit: boolean;
+  /** Lock badges show in Consumer and Pro alike (market practice, 14 Nov 2026), so the layer no longer reads this. */
   isDesigner: boolean;
   hasWholeHousePlan: boolean;
   renderQuality: "standard" | "lite";
@@ -436,11 +437,7 @@ export function SceneItemsLayer({
               interactive={configuration.canEdit && isActiveSceneRoom}
               allowCrossRoomDrag={configuration.hasWholeHousePlan && isActiveSceneRoom}
               showSelection={configuration.canEdit && isActiveSceneRoom}
-              showLocks={
-                configuration.isDesigner &&
-                !configuration.isClientPreview &&
-                isActiveSceneRoom
-              }
+              showLocks={!configuration.isClientPreview && isActiveSceneRoom}
               onSnapPulse={actions.onSnapPulse}
               enableSnap={
                 configuration.snapEnabled &&

@@ -62,7 +62,6 @@ export type DesignPageZoneControllerState = {
 };
 
 export type DesignPageZoneControllerConfiguration = {
-  isDesigner: boolean;
   catalogItems: typeof CATALOG_ITEMS;
   roomWidth: number;
   roomDepth: number;
@@ -101,7 +100,6 @@ export function useDesignPageZoneController({
 }: UseDesignPageZoneControllerInput) {
   const { items, zones, selectedZoneId } = state;
   const {
-    isDesigner,
     catalogItems,
     roomWidth,
     roomDepth,
@@ -198,7 +196,6 @@ export function useDesignPageZoneController({
           zoneId,
           zones: zonesRef.current,
           currentItems: itemsRef.current,
-          isDesigner,
           catalogItems,
           roomWidth,
           roomDepth,
@@ -219,7 +216,6 @@ export function useDesignPageZoneController({
       catalogItems,
       clampToRoom,
       commitItems,
-      isDesigner,
       itemsRef,
       roomDepth,
       roomWidth,
@@ -236,7 +232,6 @@ export function useDesignPageZoneController({
           deltaRot,
           zones: zonesRef.current,
           currentItems: itemsRef.current,
-          isDesigner,
           catalogItems,
           roomWidth,
           roomDepth,
@@ -259,7 +254,6 @@ export function useDesignPageZoneController({
       commitItems,
       getItemAABB,
       getSelectionBounds,
-      isDesigner,
       itemsRef,
       roomDepth,
       roomWidth,

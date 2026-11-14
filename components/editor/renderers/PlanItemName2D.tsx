@@ -3,6 +3,7 @@
 import { Html } from "@react-three/drei/web/Html";
 import { useMemo, type CSSProperties } from "react";
 import { useCanvasPalette } from "@/lib/canvas-colours";
+import { PLAN_HTML_PASS_THROUGH } from "@/lib/plan-html-overlay";
 import { resolvePlanSymbolKind } from "@/lib/plan-symbols/plan-symbol-match";
 
 // Whole class names in plain strings, so Tailwind's scanner (and the route CSS checks) find them.
@@ -24,7 +25,10 @@ type PlanItemName2DProps = {
  * A placed product's name in the 2D plan. The symbol already says what the item is, so the
  * name shows only while the item is pointed at, selected or keyboard-focused, and always on
  * a plain box (no symbol yet). The keyboard target stays in place, unseen, so Tab still
- * reaches every item.
+ * reaches every item. Once the item is selected the name lets the pointer through: on a small
+ * block (a phone's plan) it covered the whole outline, so no resize handle could be reached
+ * (J's browser check, 14 Nov 2026). Html's own wrapper lets the pointer through too, so only the
+ * name itself is a target.
  */
 export default function PlanItemName2D({
   label,
@@ -50,7 +54,7 @@ export default function PlanItemName2D({
   if (!interactive || !onSelect) {
     if (!nameShown) return null;
     return (
-      <Html zIndexRange={zIndexRange} position={[0, 0.01, 0]} center transform={false}>
+      <Html zIndexRange={zIndexRange} position={[0, 0.01, 0]} center transform={false} style={PLAN_HTML_PASS_THROUGH}>
         <div style={{ ...style, border: colour("1px solid rgba(120,120,120,0.35)"), pointerEvents: "none" }}>
           {label}
         </div>
@@ -59,7 +63,7 @@ export default function PlanItemName2D({
   }
 
   return (
-    <Html zIndexRange={zIndexRange} position={[0, 0.01, 0]} center transform={false}>
+    <Html zIndexRange={zIndexRange} position={[0, 0.01, 0]} center transform={false} style={PLAN_HTML_PASS_THROUGH}>
       <button
         type="button"
         data-testid="plan-item-keyboard-target"
@@ -76,7 +80,7 @@ export default function PlanItemName2D({
           appearance: "none",
           border: colour(selected ? "1px solid rgba(37,99,235,0.62)" : "1px solid rgba(120,120,120,0.35)"),
           cursor: "pointer",
-          pointerEvents: "auto",
+          pointerEvents: selected ? "none" : "auto",
         }}
       >
         {label}

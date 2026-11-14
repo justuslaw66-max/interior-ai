@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { RoomSetupProgressChips } from "../components/editor/RoomSetupProgressChips";
+import { openingsProgressChip, RoomSetupProgressChips } from "../components/editor/RoomSetupProgressChips";
 import { RoomSetupStatusBadge, roomSetupStatus } from "../components/editor/RoomSetupStatusBadge";
 import { AiLayoutReadinessChecklist } from "../components/editor/AiLayoutReadinessChecklist";
 import { aiLayoutReadinessChecks } from "../lib/ai-layout-readiness";
@@ -112,5 +112,14 @@ assert.match(
 );
 assert.match(read("lib/useDesignPageSceneRegionWorkspaceRegistration.ts"), /focusRoomId: scene\.planFocusRoomId,/);
 assert.match(read("lib/design-page-scene-region-adapter.ts"), /activeRoomId: plan\.focusRoomId,/);
+
+// The openings chip names what it counts beside "3 items" (J's browser check, 13 Nov 2026).
+const chip = (hasOpenings: boolean, hasConnectionBlockers: boolean, openingCount: number) =>
+  openingsProgressChip({ hasOpenings, hasConnectionBlockers, openingCount, statusLabel: "status" });
+assert.deepEqual(chip(true, false, 2), { label: "2 doors & windows", ready: true });
+assert.deepEqual(chip(true, false, 1), { label: "1 door or window", ready: true });
+assert.deepEqual(chip(true, true, 2), { label: "status", ready: true });
+assert.deepEqual(chip(false, true, 0), { label: "status", ready: false });
+assert.deepEqual(chip(false, false, 0), { label: "status", ready: true });
 
 console.log("First room draft (FR2) checks passed.");

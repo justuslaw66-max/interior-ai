@@ -61,6 +61,7 @@ export type DesignPageSelectionTransformState = {
 
 export type DesignPageSelectionTransformConfiguration = {
   canEdit: boolean;
+  /** Locks hold in Consumer and Pro alike (market practice, 14 Nov 2026), so transforms no longer read this. */
   isDesigner: boolean;
   roomWidth: number;
   roomDepth: number;
@@ -181,7 +182,6 @@ export function useDesignPageSelectionTransforms({
   } = state;
   const {
     canEdit,
-    isDesigner,
     roomWidth,
     roomDepth,
     wallThickness,
@@ -225,7 +225,7 @@ export function useDesignPageSelectionTransforms({
   }, [selectedItem]);
 
   const rotateControlsDisabled =
-    !canEdit || (isDesigner && selectedIds.size <= 1 && Boolean(selectedItem?.locked));
+    !canEdit || (selectedIds.size <= 1 && Boolean(selectedItem?.locked));
   const transformRejectionRef = useRef<{ message: string; shownAt: number } | null>(null);
   const reportTransformRejection = useCallback(
     (
@@ -254,7 +254,6 @@ export function useDesignPageSelectionTransforms({
       axis: "x",
       currentItems: getItems(),
       selectedIds: getSelectedIds(),
-      isDesigner,
       catalogItems: CATALOG_ITEMS,
       roomWidth,
       roomDepth,
@@ -272,7 +271,6 @@ export function useDesignPageSelectionTransforms({
     getItems,
     getSelectedIds,
     getSelectionBounds,
-    isDesigner,
     roomDepth,
     roomWidth,
     wallThickness,
@@ -283,7 +281,6 @@ export function useDesignPageSelectionTransforms({
       axis: "z",
       currentItems: getItems(),
       selectedIds: getSelectedIds(),
-      isDesigner,
       catalogItems: CATALOG_ITEMS,
       roomWidth,
       roomDepth,
@@ -301,7 +298,6 @@ export function useDesignPageSelectionTransforms({
     getItems,
     getSelectedIds,
     getSelectionBounds,
-    isDesigner,
     roomDepth,
     roomWidth,
     wallThickness,
@@ -328,7 +324,7 @@ export function useDesignPageSelectionTransforms({
             reportTransformRejection("rotate", "This item is no longer available.");
             return false;
           }
-          if (isDesigner && currentItem.locked) {
+          if (currentItem.locked) {
             reportTransformRejection("rotate", "Unlock this item to rotate it.");
             return false;
           }
@@ -436,7 +432,7 @@ export function useDesignPageSelectionTransforms({
         }
         const deltaRotation = resolvedRotationY - (mover.rotationY ?? 0);
         const movableItems = currentItems.filter(
-          (item) => selectedSet.has(item.instanceId) && !(isDesigner && item.locked)
+          (item) => selectedSet.has(item.instanceId) && !item.locked
         );
         if (!movableItems.length) {
           reportTransformRejection(
@@ -546,7 +542,6 @@ export function useDesignPageSelectionTransforms({
       activeRoom,
       findCatalogPlacementBlockerInRoom,
       isCatalogPlacementContainedInRoom,
-      isDesigner,
       reportTransformRejection,
       roomDepth,
       roomWidth,
@@ -621,7 +616,7 @@ export function useDesignPageSelectionTransforms({
       alreadyThereMessage?: string
     ): boolean => {
       if (!selectedItem || !selectedProduct || !activeRoom || !canEdit) return false;
-      if (isDesigner && selectedItem.locked) {
+      if (selectedItem.locked) {
         reportTransformRejection("move", "Unlock this item to move it.");
         return false;
       }
@@ -698,7 +693,6 @@ export function useDesignPageSelectionTransforms({
       findCatalogPlacementBlockerInRoom,
       getItemDisplayName,
       isCatalogPlacementContainedInRoom,
-      isDesigner,
       reportTransformRejection,
       roomDepth,
       roomWidth,
@@ -712,7 +706,7 @@ export function useDesignPageSelectionTransforms({
 
   const duplicateSelectedItem = useCallback(() => {
     if (!selectedItem || !selectedProduct || !activeRoom || !canEdit) return;
-    if (isDesigner && selectedItem.locked) {
+    if (selectedItem.locked) {
       reportTransformRejection("duplicate", "Unlock this item to duplicate it.");
       return;
     }
@@ -837,7 +831,6 @@ export function useDesignPageSelectionTransforms({
     findCatalogPlacementBlockerInRoom,
     getItems,
     isCatalogPlacementContainedInRoom,
-    isDesigner,
     reportTransformRejection,
     roomDepth,
     roomWidth,
@@ -849,7 +842,7 @@ export function useDesignPageSelectionTransforms({
 
   const deleteSelectedItem = useCallback(() => {
     if (!selectedItem || !canEdit) return;
-    if (isDesigner && selectedItem.locked) {
+    if (selectedItem.locked) {
       reportTransformRejection("delete", "Unlock this item to remove it.");
       return;
     }
@@ -874,7 +867,6 @@ export function useDesignPageSelectionTransforms({
     commitItems,
     getPrimaryId,
     getSelectedIds,
-    isDesigner,
     reportTransformRejection,
     selectedItem,
     selectedItemDeleteLabel,
@@ -949,7 +941,7 @@ export function useDesignPageSelectionTransforms({
   const moveSelectedItemToRoom = useCallback(
     (targetRoomId: string) => {
       if (!selectedItem || !activeRoom || !canEdit) return;
-      if (isDesigner && selectedItem.locked) return;
+      if (selectedItem.locked) return;
       if (targetRoomId === activeRoom.id) return;
       const targetRoom = roomSnapshotById.get(targetRoomId);
       if (!targetRoom) return;
@@ -957,7 +949,7 @@ export function useDesignPageSelectionTransforms({
       const currentSelectedIds = getSelectedIds();
       const movableSelectedItems = activeRoom.items.filter(
         (item) =>
-          currentSelectedIds.has(item.instanceId) && !(isDesigner && item.locked)
+          currentSelectedIds.has(item.instanceId) && !item.locked
       );
       if (movableSelectedItems.length > 1) {
         const groupCenter = movableSelectedItems.reduce(
@@ -1076,7 +1068,6 @@ export function useDesignPageSelectionTransforms({
       getSelectedIds,
       history,
       isCatalogPlacementContainedInRoom,
-      isDesigner,
       replaceActiveItemsSnapshot,
       roomSnapshotById,
       selectedItem,

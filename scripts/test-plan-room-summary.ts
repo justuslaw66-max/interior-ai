@@ -251,12 +251,12 @@ assert.equal(
 );
 assert.equal(
   formatPlanRoomMetricLabel(fiveByFour, "ft-in"),
-  "16′ 4.9″ × 13′ 1.5″ · 215.3 ft²",
+  "16′ 4 7/8″ × 13′ 1 1/2″ · 215.3 ft²",
   "Plan summary dimensions should show feet/inches and ft² in ft+in mode."
 );
 assert.equal(
   formatPlanRoomMetricLabel(fiveByFour, "in"),
-  "196.85 in × 157.48 in · 215.3 ft²",
+  "196 7/8 in × 157 1/2 in · 215.3 ft²",
   "Plan summary dimensions should show inches and ft² in inch mode."
 );
 for (const pattern of [
@@ -274,7 +274,7 @@ assert.equal(
 );
 assert.equal(
   formatPlanDimensionsLabel(4.2, 4.8, "ft-in"),
-  "13′ 9.4″ × 15′ 9.0″",
+  "13′ 9 3/8″ × 15′ 9″",
   "Plan panel room dimensions should show feet/inches in ft+in mode."
 );
 assert.doesNotMatch(
@@ -295,7 +295,7 @@ assert.match(aiPanelSource, /formatDisplayArea\(roomArea, measurementUnit\)/);
 const drawPreview = { width: 4.2, depth: 3, areaSqm: 12.6 };
 assert.equal(
   formatRoomDrawPreviewLabel({ ...drawPreview, rectangle: {} }, "ft-in"),
-  "13′ 9.4″ × 9′ 10.1″ · 135.6 ft²",
+  "13′ 9 3/8″ × 9′ 10 1/8″ · 135.6 ft²",
   "A resolved rectangle-draw preview should show feet/inches and ft² in ft+in mode."
 );
 assert.equal(

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
 import { Plane, Quaternion, Vector3, type Group } from "three";
 import {
+  layoutBlockResizeGrab,
   resizeLayoutBlockFootprint,
   type LayoutBlockFootprint,
   type LayoutBlockResizeHandle,
@@ -19,7 +20,14 @@ export type LayoutBlockResizeDragInput = {
   onDraggingChange?: (dragging: boolean) => void;
 };
 
-type ActiveDrag = { handle: LayoutBlockResizeHandle; pointerId: number; target: Element; last: LayoutBlockFootprint };
+type ActiveDrag = {
+  handle: LayoutBlockResizeHandle;
+  pointerId: number;
+  target: Element;
+  last: LayoutBlockFootprint;
+  /** Where on the handle the pointer took hold, off its side (layoutBlockResizeGrab). */
+  grab: { x: number; z: number };
+};
 
 const floorPlane = new Plane(new Vector3(0, 1, 0), 0);
 
@@ -29,6 +37,12 @@ function pointerInFrame(frame: Group | null, e: ThreeEvent<PointerEvent>) {
   floorPlane.constant = -frame.getWorldPosition(new Vector3()).y;
   const hit = e.ray.intersectPlane(floorPlane, new Vector3());
   return hit ? frame.worldToLocal(hit) : null;
+}
+
+/** Where on the handle the pointer took hold; none when the floor can't be hit. */
+function grabOffset(frame: Group | null, e: ThreeEvent<PointerEvent>, handle: LayoutBlockResizeHandle, startWidth: number, startDepth: number) {
+  const pointer = pointerInFrame(frame, e);
+  return pointer ? layoutBlockResizeGrab(handle, startWidth, startDepth, pointer.x, pointer.z) : { x: 0, z: 0 };
 }
 
 function cursorFor(frame: Group | null, handle: LayoutBlockResizeHandle) {
@@ -97,7 +111,8 @@ export function useLayoutBlockResizeDrag({ frameRef, startWidth, startDepth, onP
       if (e.button !== 0) return;
       const target = e.target as unknown as Element; // the capture target, as the rotate handle uses it (FurnitureItem)
       target.setPointerCapture(e.pointerId);
-      drag.current = { handle, pointerId: e.pointerId, target, last: { width: startWidth, depth: startDepth, offsetX: 0, offsetZ: 0 } };
+      const grab = grabOffset(frameRef.current, e, handle, startWidth, startDepth);
+      drag.current = { handle, pointerId: e.pointerId, target, last: { width: startWidth, depth: startDepth, offsetX: 0, offsetZ: 0 }, grab };
       document.body.style.userSelect = "none"; // the drag would otherwise select the labels' text
       document.body.style.cursor = cursorFor(frameRef.current, handle);
       setDragging(true);
@@ -109,7 +124,8 @@ export function useLayoutBlockResizeDrag({ frameRef, startWidth, startDepth, onP
       e.stopPropagation();
       const pointer = pointerInFrame(frameRef.current, e);
       if (!pointer) return;
-      const input = { handle: active.handle, startWidth, startDepth, pointerX: pointer.x, pointerZ: pointer.z, snap: !e.altKey };
+      // Alt: 1 mm steps; Shift on a corner: keep the block's proportions (J, 14 Nov 2026). The grab gap is kept.
+      const input = { handle: active.handle, startWidth, startDepth, pointerX: pointer.x - active.grab.x, pointerZ: pointer.z - active.grab.z, snap: !e.altKey, keepProportion: e.shiftKey };
       active.last = resizeLayoutBlockFootprint(input);
       onPreview(active.last);
     },

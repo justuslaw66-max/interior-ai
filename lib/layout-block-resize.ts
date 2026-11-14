@@ -27,16 +27,38 @@ const FREE_STEP_M = 0.001;
 const MIN_M = LAYOUT_BLOCK_LIMITS_MM.minPlan / 1000;
 const MAX_M = LAYOUT_BLOCK_LIMITS_MM.maxPlan / 1000;
 
+const clampSize = (size: number) => Math.min(MAX_M, Math.max(MIN_M, size));
+const snapTo = (size: number, step: number) => Math.round(size / step) * step;
+
+/** How far the pointer is from the anchor side, along one axis: the size it asks for, unsnapped. */
+function rawSizeAlong(side: number, start: number, pointer: number): number {
+  return side * (pointer + side * (start / 2));
+}
+
 function sizeAlong(side: number, start: number, pointer: number, step: number): number {
-  const anchor = -side * (start / 2);
-  const raw = side * (pointer - anchor);
-  const snapped = Math.round(raw / step) * step;
-  return Math.min(MAX_M, Math.max(MIN_M, snapped));
+  return clampSize(snapTo(rawSizeAlong(side, start, pointer), step));
+}
+
+/**
+ * A corner dragged with Shift keeps the block's proportions, as in Illustrator (J, 14 Nov 2026):
+ * the axis the pointer has pulled further leads, snapped to the step, and the other follows it.
+ * The scale stays where both sides fit the size limits.
+ */
+function proportionalSize(handle: LayoutBlockResizeHandle, startWidth: number, startDepth: number, pointerX: number, pointerZ: number, step: number) {
+  const scaleX = rawSizeAlong(handle.sx, startWidth, pointerX) / startWidth;
+  const scaleZ = rawSizeAlong(handle.sz, startDepth, pointerZ) / startDepth;
+  const widthLeads = scaleX >= scaleZ;
+  const lead = widthLeads ? startWidth : startDepth;
+  const smallest = Math.max(MIN_M / startWidth, MIN_M / startDepth);
+  const largest = Math.min(MAX_M / startWidth, MAX_M / startDepth);
+  const scale = Math.min(largest, Math.max(smallest, snapTo(lead * Math.max(scaleX, scaleZ), step) / lead));
+  return { width: startWidth * scale, depth: startDepth * scale };
 }
 
 /**
  * The footprint while a handle is dragged to a pointer at (pointerX, pointerZ) in the block's frame.
  * The side opposite the handle is the anchor; a pointer dragged past it stops at the smallest size.
+ * With `keepProportion` (Shift), a corner scales width and depth together.
  */
 export function resizeLayoutBlockFootprint({
   handle,
@@ -45,6 +67,7 @@ export function resizeLayoutBlockFootprint({
   pointerX,
   pointerZ,
   snap = true,
+  keepProportion = false,
 }: {
   handle: LayoutBlockResizeHandle;
   startWidth: number;
@@ -52,14 +75,39 @@ export function resizeLayoutBlockFootprint({
   pointerX: number;
   pointerZ: number;
   snap?: boolean;
+  keepProportion?: boolean;
 }): LayoutBlockFootprint {
   const step = snap ? LAYOUT_BLOCK_RESIZE_STEP_M : FREE_STEP_M;
-  const width = handle.sx === 0 ? startWidth : sizeAlong(handle.sx, startWidth, pointerX, step);
-  const depth = handle.sz === 0 ? startDepth : sizeAlong(handle.sz, startDepth, pointerZ, step);
+  const { width, depth } =
+    keepProportion && isCornerResizeHandle(handle)
+      ? proportionalSize(handle, startWidth, startDepth, pointerX, pointerZ, step)
+      : {
+          width: handle.sx === 0 ? startWidth : sizeAlong(handle.sx, startWidth, pointerX, step),
+          depth: handle.sz === 0 ? startDepth : sizeAlong(handle.sz, startDepth, pointerZ, step),
+        };
   // The centre sits halfway between the anchor and the dragged side.
   const offsetX = handle.sx === 0 ? 0 : -handle.sx * (startWidth / 2) + handle.sx * (width / 2);
   const offsetZ = handle.sz === 0 ? 0 : -handle.sz * (startDepth / 2) + handle.sz * (depth / 2);
   return { width, depth, offsetX, offsetZ };
+}
+
+/**
+ * How far from its own side the pointer took hold of a handle, in the block's frame. Taking that off
+ * every later pointer keeps the side the same distance from the pointer, so it follows the drag
+ * instead of jumping to the pointer; a 44px touch handle is often grabbed 20px off (Figma and Canva
+ * work the same way; J's browser check, 14 Nov 2026).
+ */
+export function layoutBlockResizeGrab(
+  handle: LayoutBlockResizeHandle,
+  startWidth: number,
+  startDepth: number,
+  pointerX: number,
+  pointerZ: number
+): { x: number; z: number } {
+  return {
+    x: handle.sx === 0 ? 0 : pointerX - handle.sx * (startWidth / 2),
+    z: handle.sz === 0 ? 0 : pointerZ - handle.sz * (startDepth / 2),
+  };
 }
 
 /**

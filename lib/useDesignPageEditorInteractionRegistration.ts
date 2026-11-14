@@ -136,7 +136,6 @@ export function useDesignPageEditorInteractionRegistration({
   const zone = useDesignPageZoneController({
     state: { items, zones, selectedZoneId },
     configuration: {
-      isDesigner,
       catalogItems: CATALOG_ITEMS,
       roomWidth,
       roomDepth,

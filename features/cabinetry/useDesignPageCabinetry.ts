@@ -784,7 +784,7 @@ export function useDesignPageCabinetry({
   const moveSelectedToPosition = useCallback(
     (targetX: number, targetZ: number, actionLabel = "Move built-in") => {
       if (!selected || !activeRoom || !canEdit) return;
-      if (isDesigner && selected.item.locked) return;
+      if (selected.item.locked) return;
       const { item, planningDimensionsMm } = selected;
       if (!planningDimensionsMm) return;
       const rotationY = getCabinetRotationY(item);
@@ -825,7 +825,7 @@ export function useDesignPageCabinetry({
       commitItems,
       findSelectedPlacementBlocker,
       getItemDisplayName,
-      isCatalogPlacementContainedInRoom, isDesigner,
+      isCatalogPlacementContainedInRoom,
       planRoomById, canonicalModel,
       selected,
       showToast,
@@ -850,19 +850,19 @@ export function useDesignPageCabinetry({
 
   const snapSelectedToWall = useCallback(() => {
     if (!selected || !activeRoom || !canEdit) return;
-    if (isDesigner && selected.item.locked) return;
+    if (selected.item.locked) return;
     const planningDimensionsMm = selected.planningDimensionsMm;
     if (!planningDimensionsMm) return;
     // The nearest side of the room's finished faces: there if it fits there (the way isn't checked), else toward it.
     const [targetX, targetZ] = getBuiltInSnapTarget(activeRoom, selected.item.position,
       planningDimensionsMm.w / 1000, planningDimensionsMm.d / 1000, getCabinetRotationY(selected.item), planRoomById, canonicalModel);
     moveSelectedToPosition(targetX, targetZ, "Snap built-in to wall");
-  }, [activeRoom, canEdit, canonicalModel, isDesigner, moveSelectedToPosition, planRoomById, selected]);
+  }, [activeRoom, canEdit, canonicalModel, moveSelectedToPosition, planRoomById, selected]);
 
   const setSelectedRotation = useCallback(
     (targetRotationY: number, actionLabel = "Rotate built-in") => {
       if (!selected || !activeRoom || !canEdit) return;
-      if (isDesigner && selected.item.locked) return;
+      if (selected.item.locked) return;
       const planningDimensionsMm = selected.planningDimensionsMm;
       if (!planningDimensionsMm) return;
       const resolvedRotationY = rotationSnapEnabled
@@ -907,7 +907,6 @@ export function useDesignPageCabinetry({
       findSelectedPlacementBlocker,
       getItemDisplayName,
       isCatalogPlacementContainedInRoom,
-      isDesigner,
       planRoomById, canonicalModel,
       rotationSnapEnabled,
       rotationSnapStepRadians,
