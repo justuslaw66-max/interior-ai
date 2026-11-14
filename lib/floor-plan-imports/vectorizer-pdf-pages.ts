@@ -1,6 +1,7 @@
 import type { RegisteredPageEvidence } from "./deterministic-evidence";
 import { pageLineworkKind } from "./mixed-pdf-evidence";
 import type { PageScaleSolution } from "./pdf-raster-evidence";
+import { pdfOwnWallsEnabled } from "./pdf-own-walls";
 import { diagnoseSourceScale } from "./source-scale-cross-check";
 
 /** The adapter's topology registration, passed in so this module does not import the adapter. */
@@ -31,7 +32,8 @@ export function ownLineworkClosesRooms(page: RegisteredPageEvidence, registerRoo
  * no room. A drawn HDB floor-plan PDF often has clean vector paths that the deterministic
  * topology cannot pair into walls; its rendered page is then read like an image. Complete
  * deterministic topology still ranks first, so the vectorizer only adds rooms where the
- * page's own linework had none.
+ * page's own linework had none; with FLOOR_PLAN_PDF_OWN_WALLS=1 every vector page is read and the walls and rooms the
+ * builder takes from the page's own drawing lead (14 Nov 2026: Tengah's linework closed some rooms and skipped it).
  */
 export function vectorizerCandidatePages(
   pages: RegisteredPageEvidence[],
@@ -41,7 +43,8 @@ export function vectorizerCandidatePages(
   const candidates = [...rasterPages];
   for (const page of pages) {
     if (candidates.includes(page) || pageLineworkKind(page) !== "pdf_vector") continue;
-    if (!closesRooms(page)) candidates.push(page);
+    // With the PDF-own-walls builder on, every vector page is read: its walls and rooms come from its own drawing.
+    if (pdfOwnWallsEnabled() || !closesRooms(page)) candidates.push(page);
   }
   return candidates;
 }

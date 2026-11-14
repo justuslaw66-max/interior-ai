@@ -93,7 +93,11 @@ export function roomCentreLines(grid: WallGrid, mass: WallMass, faces: RoomFace[
     // A stretch that comes out empty joins the walls either side of it at one point (a thin wall centred on a thicker
     // one: the step between their faces is half the difference each side, and their centre-lines are one line).
     if (Math.abs(run) < EMPTY_PX) continue;
-    if (line.travel !== 0 && run * line.travel < -MIN_EDGE_PX) return null;
+    // A step that comes out backwards by no more than two jogs is a door stop's detail at a corner (first seen on Tengah): the thicker
+    // piece stands out past the wall's outer face too, so its centre-line lies behind the thinner wall's. It is kept as
+    // a short jog back, so the room's outline stays square.
+    const shortStepBack = line.kind === "step" && Math.abs(run) <= 2 * jogPx;
+    if (line.travel !== 0 && run * line.travel < -MIN_EDGE_PX && !shortStepBack) return null;
     const edge: OwnWallEdge = { kind: line.kind === "step" ? "wall" : line.kind, closure: line.closure, thicknessPx: line.thicknessPx, start, end };
     edges.push(...(edge.kind === "opening" && mass.closures[edge.closure] ? openingEdges(grid, mass.closures[edge.closure], edge) : [edge]));
   }

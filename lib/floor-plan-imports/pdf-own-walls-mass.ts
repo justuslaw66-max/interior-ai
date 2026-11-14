@@ -278,11 +278,17 @@ export function dropPocketOpenings(grid: WallGrid, mass: WallMass, minRoomPx2: n
       if (closure >= 0 && beside.some(([di, dj]) => pocket(i + di, j + dj))) cut.add(closure);
     });
     if (!cut.size) return dropped;
-    dropped.push(...mass.closures.filter((_, index) => cut.has(index)));
-    const kept = mass.closures.map((_, index) => index).filter((index) => !cut.has(index)), renumbered = new Map(kept.map((index, k) => [index, k]));
-    mass.closures = kept.map((index) => mass.closures[index]);
-    mass.closure.forEach((closure, index) => { if (closure >= 0) mass.closure[index] = renumbered.get(closure) ?? -1; });
+    dropped.push(...takeBackOpenings(mass, cut));
   }
+}
+
+/** Takes back the openings given (by index): their cells are wall mass again. Returns them. */
+export function takeBackOpenings(mass: WallMass, cut: Set<number>): Closure[] {
+  const dropped = mass.closures.filter((_, index) => cut.has(index));
+  const kept = mass.closures.map((_, index) => index).filter((index) => !cut.has(index)), renumbered = new Map(kept.map((index, k) => [index, k]));
+  mass.closures = kept.map((index) => mass.closures[index]);
+  mass.closure.forEach((closure, index) => { if (closure >= 0) mass.closure[index] = renumbered.get(closure) ?? -1; });
+  return dropped;
 }
 
 /** A cell that stops a room: wall mass or an opening. */
