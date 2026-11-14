@@ -146,9 +146,27 @@ function leaves(swings: Swing[], used: Set<number>, millimetresPerPixel: number)
   });
 }
 
+/**
+ * A pair of leaves drawn as one path (Blk 670's casements onto its air-con ledge): a swing about twice as long as it
+ * is deep, hinged at both ends of one long side. Hung on that side, opening towards the box.
+ */
+function drawnPairs(swings: Swing[], used: Set<number>, millimetresPerPixel: number): Hung[] {
+  return swings.flatMap((swing, index): Hung[] => {
+    const w = swing.right - swing.left, h = swing.bottom - swing.top, level = w > h, [long, deep] = level ? [w, h] : [h, w];
+    if (used.has(index) || swing.hinges.length !== 2 || Math.abs(deep / long - 0.5) > 0.15) return [];
+    const leafMm = (long / 2) * millimetresPerPixel;
+    if (leafMm < LEAF_SIGNS.halfMinMm || leafMm > LEAF_SIGNS.maxMm) return [];
+    const [[x0, y0], [x1, y1]] = swing.hinges, at = level ? y0 : x0;
+    if (level ? y0 !== y1 : x0 !== x1) return [];
+    const side = level ? (at === swing.top ? 1 : -1) : (at === swing.left ? 1 : -1);
+    const [from, to] = level ? [Math.min(x0, x1), Math.max(x0, x1)] : [Math.min(y0, y1), Math.max(y0, y1)];
+    return [{ level, at, from, to, side, kind: leafMm <= LEAF_SIGNS.casementLeafMaxMm ? "casement" : "swing", swings: [index] }];
+  });
+}
+
 /** The swings as hung leaves: each alone, and each with a second leaf hinged where its own tip shuts (a pair). */
 function hungSwings(swings: Swing[], used: Set<number>, millimetresPerPixel: number): Hung[] {
-  const all = leaves(swings, used, millimetresPerPixel), hung: Hung[] = [];
+  const all = leaves(swings, used, millimetresPerPixel), hung: Hung[] = [...drawnPairs(swings, used, millimetresPerPixel)];
   for (const a of all) {
     for (const b of all) {
       const meets = b.index !== a.index && b.level === a.level && b.side === a.side && Math.sign(b.tip - b.hinge) === -Math.sign(a.tip - a.hinge);
@@ -181,25 +199,34 @@ function hungFolds(slants: Slant[], millimetresPerPixel: number): Hung[] {
   return [...byPoint.values()].flatMap((list) => list.flatMap((first, p) => list.slice(p + 1).flatMap((second) => fold(first.far, second.far, first.near))));
 }
 
-/** Whether the floor on either side of a piece of wall runs off the page: the piece stands in an outside wall. */
-function outside(grid: WallGrid, pieces: ReturnType<typeof floorPieces>, part: Closure) {
+/**
+ * Whether a piece of wall stands in an outside wall: the floor on either side of it runs off the page, or is floor the
+ * lettering names as open to the air (casement leaves onto an air-con ledge: Blk 670's living room).
+ */
+function outside(grid: WallGrid, pieces: ReturnType<typeof floorPieces>, part: Closure, openAir: Set<number>) {
   const { nx, ny } = grid, i = (part.i0 + part.i1 - 1) >> 1, j = (part.j0 + part.j1 - 1) >> 1;
   const beside = part.level ? [[i, part.j0 - 1], [i, part.j1]] : [[part.i0 - 1, j], [part.i1, j]];
   return beside.some(([ci, cj]) => {
     const label = ci < 0 || cj < 0 || ci >= nx || cj >= ny ? -1 : pieces.labels[cj * nx + ci];
-    return label < 0 || pieces.edge[label] === 1;
+    return label < 0 || pieces.edge[label] === 1 || openAir.has(label);
   });
+}
+
+/** The floor pieces holding the given points. */
+function piecesAt(grid: WallGrid, pieces: ReturnType<typeof floorPieces>, points: Point[]) {
+  const cellOf = (lines: Float64Array, value: number) => Math.min(lines.length - 2, Math.max(0, gridIndex(lines, value) - (lines[gridIndex(lines, value)] > value ? 1 : 0)));
+  return new Set(points.map((p) => pieces.labels[cellOf(grid.ys, p.y) * grid.nx + cellOf(grid.xs, p.x)]).filter((label) => label >= 0));
 }
 
 /**
  * The doors and casements drawn inside the wall mass: pairs of leaves before single ones (a pair's leaf alone would
- * fit half its piece), each swing and each piece of wall used once. An even pair in an outside wall is a casement
- * window; an even pair between two rooms, a door and a half, a single leaf and folding leaves are doors.
+ * fit half its piece), each swing and each piece of wall used once. An even pair in an outside wall (or onto floor
+ * lettered as open to the air, `openAirAt`) is a casement window; an even pair between two rooms, a door and a half, a single leaf and folding leaves are doors.
  */
-export function wallLeaves(grid: WallGrid, mass: WallMass, drawing: { swings: Swing[]; diagonals: Slant[] }, millimetresPerPixel: number, used: Set<number>): WallLeaf[] {
+export function wallLeaves(grid: WallGrid, mass: WallMass, drawing: { swings: Swing[]; diagonals: Slant[] }, millimetresPerPixel: number, used: Set<number>, openAirAt: Point[] = []): WallLeaf[] {
   const hung = [...hungSwings(drawing.swings, used, millimetresPerPixel), ...hungFolds(drawing.diagonals, millimetresPerPixel)]
     .sort((a, b) => b.swings.length - a.swings.length);
-  const pieces = floorPieces(grid, mass), taken = new Set<number>(), claimed = new Set<number>(), found: WallLeaf[] = [];
+  const pieces = floorPieces(grid, mass), openAir = piecesAt(grid, pieces, openAirAt), taken = new Set<number>(), claimed = new Set<number>(), found: WallLeaf[] = [];
   for (const leaf of hung) {
     if (leaf.swings.some((index) => claimed.has(index))) continue;
     const part = wallPiece(grid, mass, leaf, millimetresPerPixel);
@@ -209,7 +236,7 @@ export function wallLeaves(grid: WallGrid, mass: WallMass, drawing: { swings: Sw
     if (cells.some((index) => taken.has(index))) continue;
     for (const index of cells) taken.add(index);
     for (const index of leaf.swings) claimed.add(index);
-    found.push({ part, kind: leaf.kind === "casement" && !outside(grid, pieces, part) ? "swing" : leaf.kind, swings: leaf.swings });
+    found.push({ part, kind: leaf.kind === "casement" && !outside(grid, pieces, part, openAir) ? "swing" : leaf.kind, swings: leaf.swings });
   }
   return found;
 }

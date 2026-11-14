@@ -50,18 +50,24 @@ function arc(id: string, hinge: [number, number], open: [number, number], shut: 
       controlPoints: [{ x: toward(open, 0), y: toward(open, 1) }, { x: toward(shut, 0), y: toward(shut, 1) }], end: { x: shut[0], y: shut[1] } }] };
 }
 
-function page(lines: Line[], paths: SourceVectorPath[] = []): RegisteredPageEvidence {
+function page(lines: Line[], paths: SourceVectorPath[] = [], solids: Line[] = []): RegisteredPageEvidence {
   // Lettering elsewhere on the sheet: strokes too short to bound a wall, enough of them for a drawn page.
   const lettering: Line[] = Array.from({ length: 40 }, (_, k) => [100 + 10 * k, 900, 102 + 10 * k, 900]);
   const vectorSegments = [...lines, ...lettering].map((line, k) => segment(`s${k}`, line));
   const stroke: SourceVectorPath = { id: "strokes", pageNumber: 1, closed: false, segmentIds: vectorSegments.map((s) => s.id),
     bbox: { left: 0, top: 0, right: 1000, bottom: 1000 }, rectilinearScore: 1, evidenceKind: "pdf_vector", paintOperation: "stroke" };
-  return { pageNumber: 1, widthPx: 1000, heightPx: 1000, text: [], vectorSegments, vectorPaths: [stroke, ...paths],
+  // Solid fills (a column, a concrete wall): each rectangle [left, top, right, bottom] a closed filled path.
+  const filled = solids.map(([l, t, r, b], k): SourceVectorPath => {
+    const ring = [[l, t, r, t], [r, t, r, b], [r, b, l, b], [l, b, l, t]] as Line[], ids = ring.map((_, e) => `f${k}-${e}`);
+    ring.forEach((edge, e) => vectorSegments.push(segment(ids[e], edge)));
+    return { id: `fill${k}`, pageNumber: 1, closed: true, segmentIds: ids, bbox: { left: l, top: t, right: r, bottom: b }, rectilinearScore: 1, evidenceKind: "pdf_vector", paintOperation: "fill" };
+  });
+  return { pageNumber: 1, widthPx: 1000, heightPx: 1000, text: [], vectorSegments, vectorPaths: [stroke, ...filled, ...paths],
     semantics: { roomLabels: [], dimensionLabels: [], openingSymbols: [], notes: [] } };
 }
 
 /** What the reader gives for the page: the scale from printed dimensions and the two rooms' names; no walls of its own. */
-function reader(basis: "explicit_dimension" | "none" = "explicit_dimension") {
+function reader(basis: "explicit_dimension" | "none" = "explicit_dimension", left = "LIVING") {
   return parseFloorPlanVectorizerEvidence({
     kind: "floorplan_vectorizer_evidence_v1", exporterVersion: "app-evidence-0.34.0",
     page: { widthPx: 1000, heightPx: 1000, coordinateSpace: "source_image_px" },
@@ -69,7 +75,7 @@ function reader(basis: "explicit_dimension" | "none" = "explicit_dimension") {
     semantics: { unitSystem: "metric_mm", roomBoundaries: [], entrance: null,
       planRegion: { bbox: { leftRatio: 0.05, topRatio: 0.05, rightRatio: 0.8, bottomRatio: 0.5 }, rotationDegrees: 0, confidence: 0.9, evidenceKind: "vectorizer" }, dimensionLabels: [], openingSymbols: [], fixtureSymbols: [], notes: [],
       roomLabels: [
-        { label: "LIVING", roomType: "living", centerXRatio: 0.25, centerYRatio: 0.25, confidence: 0.9, bbox: { leftRatio: 0.2, topRatio: 0.24, rightRatio: 0.3, bottomRatio: 0.26 } },
+        { label: left, roomType: "living", centerXRatio: 0.25, centerYRatio: 0.25, confidence: 0.9, bbox: { leftRatio: 0.2, topRatio: 0.24, rightRatio: 0.3, bottomRatio: 0.26 } },
         { label: "KITCHEN", roomType: "kitchen", centerXRatio: 0.55, centerYRatio: 0.25, confidence: 0.9, bbox: { leftRatio: 0.5, topRatio: 0.24, rightRatio: 0.6, bottomRatio: 0.26 } },
       ] },
     wallEdges: [], rooms: [], diagnostics: {},
@@ -151,6 +157,89 @@ function testGlazedPieceOfAnOutsideWall() {
   assert.equal(windows.length, 2);
 }
 
+/** A row of dashes 100 mm long, 50 mm apart, along y = `at` from x = `from` to x = `to` (page px at 10 mm a pixel). */
+const dashes = (at: number, from: number, to: number): Line[] => Array.from({ length: Math.round((to - from + 5) / 15) }, (_, k) => [from + 15 * k, at, Math.min(from + 15 * k + 10, to), at]);
+
+function testDashedGlassLine() {
+  // A piece of the right room's top wall between two lines across it, with a dashed glass line down its middle (HDB's bathroom windows).
+  const jambs: Line[] = [[500, 100, 500, 110], [595, 100, 595, 110]];
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...jambs, ...dashes(105, 500, 595)]), reader());
+  const windows = evidence.wallEdges.filter((edge) => edge.opening?.kind === "window");
+  assert.ok(windows.some((edge) => JSON.stringify(ends(edge)) === JSON.stringify([[500, 105], [595, 105]])), "a dashed glass line down a piece of wall is a window, jamb to jamb");
+  assert.equal(windows.length, 2);
+  // Without the dashes the piece is wall like the rest.
+  const plain = withPdfOwnWalls(page([...planLines(200, 290), ...jambs]), reader());
+  assert.equal(plain.wallEdges.filter((edge) => edge.opening?.kind === "window").length, 1);
+}
+
+function testDashedGlassBehindAnOuterSkin() {
+  // An outer skin 200 mm out along the whole top wall: the window is as thick as the wall beside it, skin and all.
+  const skin: Line[] = [[100, 80, 700, 80], [100, 80, 100, 100], [700, 80, 700, 100]];
+  const jambs: Line[] = [[500, 100, 500, 110], [595, 100, 595, 110]];
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...skin, ...jambs, ...dashes(105, 500, 595)]), reader());
+  const top = evidence.wallEdges.filter((edge) => ends(edge)[0][1] === 95 && ends(edge)[1][1] === 95);
+  const window = top.find((edge) => edge.opening?.kind === "window");
+  assert.ok(window, "the dashed piece is a window with the skin outside it");
+  assert.deepEqual(ends(window), [[500, 95], [595, 95]]);
+  assert.ok(top.every((edge) => Math.abs(edge.thicknessPx - 30) < 1e-6), "window and wall beside it alike 300 mm thick: no jog");
+}
+
+function testDashedLineInARoomIsNotGlass() {
+  // An overhead line (a beam, a cabinet above) dashed across the right room: no wall either side of it, not a window.
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...dashes(250, 500, 595)]), reader());
+  assert.equal(evidence.wallEdges.filter((edge) => edge.opening?.kind === "window").length, 1);
+  assert.equal(evidence.rooms.length, 2);
+}
+
+function testGlassBetweenSolidColumnsIsWall() {
+  // The right room's top wall: two solid columns with a piece split by one line between them (J: an infill, Blk 670).
+  const columns: Line[] = [[480, 100, 500, 110], [600, 100, 620, 110]];
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), [500, 105, 600, 105]], [], columns), reader());
+  assert.equal(evidence.wallEdges.filter((edge) => edge.opening?.kind === "window").length, 1, "only the left room's layered window");
+}
+
+function testBalconySideIsParapet() {
+  // The left room lettered BALCONY: the same three thin layers in its outer wall are its parapet, not a window.
+  const balcony = withPdfOwnWalls(page(planLines(200, 290)), reader("explicit_dimension", "BALCONY"));
+  assert.equal(balcony.wallEdges.filter((edge) => edge.opening?.kind === "window").length, 0);
+}
+
+function testCasementPairDrawnAsOnePath() {
+  // A pair of casement leaves drawn as one path with two hinges (Blk 670's living room onto its air-con ledge).
+  const jambs: Line[] = [[690, 200, 700, 200], [690, 300, 700, 300]];
+  const pair: SourceVectorPath = { id: "pair", pageNumber: 1, closed: false, segmentIds: [], rectilinearScore: 0, evidenceKind: "pdf_vector",
+    paintOperation: "stroke", containsCurves: true, bbox: { left: 700, top: 200, right: 750, bottom: 300 },
+    curves: [
+      { id: "pair-c1", pageNumber: 1, sourceSubpathId: "pair-s", sourceCommandIndex: 1, command: "cubic", start: { x: 750, y: 200 }, controlPoints: [{ x: 740, y: 215 }, { x: 745, y: 240 }], end: { x: 700, y: 250 } },
+      { id: "pair-c2", pageNumber: 1, sourceSubpathId: "pair-s", sourceCommandIndex: 2, command: "cubic", start: { x: 700, y: 250 }, controlPoints: [{ x: 745, y: 260 }, { x: 740, y: 285 }], end: { x: 750, y: 300 } },
+    ] };
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...jambs], [pair]), reader());
+  const windows = evidence.wallEdges.filter((edge) => edge.opening?.kind === "window").map(ends);
+  assert.ok(windows.some(([a, b]) => a[0] === 695 && b[0] === 695 && a[1] === 200 && b[1] === 300), "the one-path pair is a casement window");
+}
+
+function testBayWindowAtTheRoomFace() {
+  // A bay 600 mm deep outside the right room's wall: its frame and sill lines split it into thin strips, its two
+  // casement leaves hung on the bay's outer line. The room's own wall is the window; the bay is not built as wall.
+  const bay: Line[] = [[700, 200, 760, 200], [700, 300, 760, 300], [760, 200, 760, 300], [720, 200, 720, 300], [740, 200, 740, 300]];
+  const leaves = [arc("bay-upper", [760, 200], [710, 200], [760, 250]), arc("bay-lower", [760, 300], [710, 300], [760, 250])];
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...bay], leaves), reader());
+  const windows = evidence.wallEdges.filter((edge) => edge.opening?.kind === "window");
+  const bayWindow = windows.find((edge) => ends(edge)[0][0] === 695 && ends(edge)[1][0] === 695);
+  assert.ok(bayWindow && Math.abs(bayWindow.thicknessPx - 10) < 1e-6, "the window is the room's own 100 mm wall line");
+  assert.deepEqual(ends(bayWindow), [[695, 200], [695, 300]]);
+  assert.ok(evidence.wallEdges.every((edge) => edge.sourcePx.every(([x]) => x <= 700 + 1e-6)), "nothing is built on the bay");
+}
+
+function testRackOnAnOutsideFaceIsNotWall() {
+  // A clothes-drying rack: a box 50 mm deep and 1000 mm long standing on the right room's top wall.
+  const rack: Line[] = [[500, 95, 600, 95], [500, 95, 500, 100], [600, 95, 600, 100]];
+  const evidence = withPdfOwnWalls(page([...planLines(200, 290), ...rack]), reader());
+  const top = evidence.wallEdges.filter((edge) => edge.sourcePx.every(([x, y]) => y < 120 && x >= 400));
+  assert.ok(top.length > 0 && top.every((edge) => Math.abs(edge.thicknessPx - 10) < 1e-6), "the top wall keeps one thickness along the rack");
+  assert.ok(evidence.wallEdges.every((edge) => edge.sourcePx.every(([, y]) => y >= 100 - 1e-6)), "nothing is built on the rack");
+}
+
 function testLeftAsRead() {
   const drawn = page(planLines(200, 290)), read = reader();
   assert.equal(pdfOwnWallsEnabled({}), false, "off unless FLOOR_PLAN_PDF_OWN_WALLS=1");
@@ -178,6 +267,14 @@ testWideGapNeedsADoor();
 testDoorDrawnInsideTheWall();
 testCasementInAnOutsideWall();
 testGlazedPieceOfAnOutsideWall();
+testDashedGlassLine();
+testDashedGlassBehindAnOuterSkin();
+testDashedLineInARoomIsNotGlass();
+testGlassBetweenSolidColumnsIsWall();
+testBalconySideIsParapet();
+testCasementPairDrawnAsOnePath();
+testBayWindowAtTheRoomFace();
+testRackOnAnOutsideFaceIsNotWall();
 testLeftAsRead();
 testMarksItsPages();
 console.log("floor-plan PDF own walls: ok");
