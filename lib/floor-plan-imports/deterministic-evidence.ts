@@ -1,3 +1,4 @@
+import { dimensionSpan } from "./dimension-arrowheads";
 import { scaleInspection, type DimensionCandidate, type SourceScaleInspection, type SourceScaleSolution } from "./scale-diagnostics";
 import { dimensionCandidateMatchesHint, dimensionHintDistance, outvoteOutliers, rasterDimensionCandidates } from "./dimension-span-candidates";
 import type { RasterDimensionSpanEvidence } from "./raster-dimension-spans";
@@ -697,14 +698,12 @@ export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence,
     };
     const ranked = page.vectorSegments
       .map((segment) => {
-        const dx = Math.abs(segment.end.x - segment.start.x);
-        const dy = Math.abs(segment.end.y - segment.start.y);
-        const orientation = dx >= dy ? "horizontal" : "vertical";
-        const lengthPx = segmentLengthPx(segment);
+        const orientation = Math.abs(segment.end.x - segment.start.x) >= Math.abs(segment.end.y - segment.start.y) ? "horizontal" : "vertical";
+        const span = dimensionSpan(page, segment), lengthPx = span.lengthPx; // tip to tip between arrowheads
         const lineCenter = midpoint(segment);
         const extensionDistance = dimensionHintDistance(page, dimension, segment.start, segment.end);
         return {
-          segment,
+          segment, span,
           orientation,
           lengthPx,
           distancePx:
@@ -738,8 +737,8 @@ export function inspectScaleFromRegisteredEvidence(page: RegisteredPageEvidence,
         ratio,
         distancePx: entry.distancePx,
         segmentId: entry.segment.id,
-        start: entry.segment.start,
-        end: entry.segment.end,
+        start: entry.span.start,
+        end: entry.span.end,
         kind: "single_segment",
       });
     }
