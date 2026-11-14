@@ -49,7 +49,8 @@ export function LayoutBlockFields({ name, sizeMm, unit, disabled, onUpdate, onUn
           if (event.key === "Enter") event.currentTarget.blur();
         }}
       />
-      <DisplayUnitSelect value={unit} testId="layout-block-units" disabled={disabled} onChange={onUnitChange} />
+      {/* Units are the design's display setting, not the block's, so a lock doesn't grey them out (14 Nov 2026). */}
+      <DisplayUnitSelect value={unit} testId="layout-block-units" onChange={onUnitChange} />
       {AXES.map((axis) => (
         <MeasurementField
           key={axis.key}

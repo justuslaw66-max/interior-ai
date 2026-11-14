@@ -826,14 +826,11 @@ export function Furniture({
         />
       ) : null}
       {viewMode === "2d" && showSelection && isPrimarySelected && !dragging && !rotateDragging && (
-        <Html
-          zIndexRange={[18, 0]}
-          position={[0, 0.08, -planningDepth / 2 - 0.34]}
-          center
-          transform={false}
-        >
+        <Html zIndexRange={[18, 0]} position={[0, 0.08, -planningDepth / 2]} center transform={false}>
+          {/* Lifted a fixed distance off the edge, clear of the rotate knob (28px out, 44px on touch; J's check, 14 Nov 2026). */}
           <div
             data-testid="selected-furniture-action-chips"
+            className="-translate-y-[calc(50%+46px)] touch:-translate-y-[calc(50%+72px)]"
             style={{
               display: "flex",
               alignItems: "center",
@@ -890,8 +887,7 @@ export function Furniture({
                   background: colour(chip.id === "delete" ? "#fee2e2" : "#f3f4f6"),
                   color: colour(chip.id === "delete" ? "#991b1b" : "#111827"),
                   cursor: chip.disabled ? "not-allowed" : "pointer",
-                  fontSize: 12,
-                  fontWeight: 800,
+                  fontSize: 12, fontWeight: 800,
                   opacity: chip.disabled ? 0.45 : 1,
                   minWidth: chip.id === "delete" ? 46 : 42,
                   padding: "5px 8px",

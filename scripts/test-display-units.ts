@@ -52,6 +52,10 @@ assert.equal(formatDisplayLengthInput(9.525, "in"), "3/8");
 assert.equal(formatDisplayLengthInput(-9.525, "in"), "-3/8");
 assert.equal(formatDisplayLengthInput(450, "ft-in"), "1′ 5 11/16″");
 assert.equal(formatDisplayLengthInput(2_400, "ft-in"), "7′ 10 1/2″");
+// Under an inch keeps its 0 (J's browser check, 14 Nov 2026): 1229 mm read "4′ 3/8″".
+assert.equal(formatDisplayLengthInput(1_229, "ft-in"), "4′ 0 3/8″");
+assert.equal(formatDisplayLengthInput(9.525, "ft-in"), "0′ 0 3/8″");
+expectParsedMm("4′ 0 3/8″", "ft-in", 1_228.725);
 assert.equal(formatDisplayLength(8 * 304.8, "ft-in"), "8′ 0″");
 assert.equal(
   formatDisplayLength((13 * 12 + 11.98) * 25.4, "ft-in"),

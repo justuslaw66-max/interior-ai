@@ -24,7 +24,9 @@ type PlanItemName2DProps = {
  * A placed product's name in the 2D plan. The symbol already says what the item is, so the
  * name shows only while the item is pointed at, selected or keyboard-focused, and always on
  * a plain box (no symbol yet). The keyboard target stays in place, unseen, so Tab still
- * reaches every item.
+ * reaches every item. Once the item is selected the name lets the pointer through: on a small
+ * block (a phone's plan) it covered the whole outline, so no resize handle could be reached
+ * (J's browser check, 14 Nov 2026).
  */
 export default function PlanItemName2D({
   label,
@@ -76,7 +78,7 @@ export default function PlanItemName2D({
           appearance: "none",
           border: colour(selected ? "1px solid rgba(37,99,235,0.62)" : "1px solid rgba(120,120,120,0.35)"),
           cursor: "pointer",
-          pointerEvents: "auto",
+          pointerEvents: selected ? "none" : "auto",
         }}
       >
         {label}

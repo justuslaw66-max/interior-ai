@@ -22,6 +22,8 @@ J's browser check of layout block resize (PR #298, 13 Nov 2026) turned up seven 
   - On a touch screen (`pointer: coarse`): corners 44 px, sides 28 px, rotate knob 44 px.
   - The knob sits 28 px (44 px on touch) off the item's edge, clear of the edge's grab area, and is lifted above neighbouring items' pick volumes like a block's resize handles.
   - The angle readout sits just above the knob.
+  - The Rotate / Copy / Delete chips sit a fixed distance above the item's edge (46 px, 72 px on touch), clear of the knob. They used to sit 0.34 m out, which covered the moved knob (J's browser check, 14 Nov 2026). The knob stays on the item's top side, because the turn maths (`resolvePointerRotationRadians`) reads the angle from the top.
+  - Once an item is selected, its name label lets the pointer through. On a phone's small plan the label covered a block's whole outline, so no handle could be reached.
   - The knob's grab area used to be about 10 px across at the default zoom, and a missed grab panned the plan.
 
 ## Phone editing
@@ -44,11 +46,15 @@ J's browser check of layout block resize (PR #298, 13 Nov 2026) turned up seven 
 
 - **Practice:** SketchUp's architectural units and US tape measures use fractions of an inch, typically to 1/16″.
 - **Now (`lib/inch-fractions.ts`, `lib/display-units.ts`):**
-  - Feet + inches and inches show the nearest 1/16″, reduced: 3′ 11 3/8″ and 47 3/8 in, instead of 3′ 11.4″ and 47.402 in.
+  - Feet + inches and inches show the nearest 1/16″, reduced: 3′ 11 3/8″ and 47 3/8 in, instead of 3′ 11.4″ and 47.402 in. Under an inch keeps its 0 in feet + inches (4′ 0 3/8″).
   - Entry accepts a fraction or a decimal: 47 3/8, 47-3/8, 3/8 and 47.4 all work.
   - Imperial fields open the text keyboard on phones, which has the "/" key.
   - Numeric scalar APIs (aria values, cabinetry steps) keep decimals.
   - Metric units are unchanged.
+
+## Units on a locked item
+
+The item panel's Units menu stays usable while the item is locked: it's the design's display setting, not the item's.
 
 ## Copy
 

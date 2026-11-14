@@ -1,4 +1,4 @@
-import { formatInchesAsFraction, formatWholeAndFraction, INCH_AMOUNT_PATTERN, parseInchAmount, roundToSixteenths } from "@/lib/inch-fractions";
+import { formatInchesAsFraction, formatSixteenths, formatWholeAndFraction, INCH_AMOUNT_PATTERN, parseInchAmount, roundToSixteenths } from "@/lib/inch-fractions";
 
 export type DisplayUnit = "mm" | "cm" | "in" | "ft-in";
 export type MeasurementSystem = "metric" | "imperial";
@@ -117,12 +117,13 @@ function normalizePrimeCharacters(value: string): string {
 function scalarSuffix(unit: Exclude<DisplayUnit, "ft-in">): RegExp {
   return new RegExp(`^(${SIGNED_DECIMAL_TOKEN}(?:[eE][+-]?\\d+)?)\\s*${unit}$`, "i");
 }
-/** Feet, then inches to the nearest 1/16″ ("9 3/8"), rounding up into the next foot at 11 31/32″. */
+/** Feet, then inches to the nearest 1/16″ ("9 3/8"; under an inch keeps its 0: 4′ 0 3/8″). */
 function feetAndInchesParts(valueMm: number) {
   const sign = valueMm < 0 ? "-" : "";
   const { whole, sixteenths } = roundToSixteenths(Math.abs(valueMm) / DISPLAY_UNIT_METADATA.in.millimetresPerScalarUnit);
   const feet = Math.floor(whole / 12);
-  return { sign, feet, inches: formatWholeAndFraction(whole - feet * 12, sixteenths) };
+  const inchWhole = whole - feet * 12;
+  return { sign, feet, inches: inchWhole === 0 && sixteenths ? `0 ${formatSixteenths(sixteenths)}` : formatWholeAndFraction(inchWhole, sixteenths) };
 }
 /** Signed inches to the nearest 1/16″ for an inches field: "47 3/8", "-3/8". */
 function formatInchesField(valueMm: number): string {
