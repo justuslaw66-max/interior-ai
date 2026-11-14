@@ -70,7 +70,8 @@ export function pageStrokesAndFills(page: RegisteredPageEvidence): { strokes: St
     const filled = path.paintOperation === "fill" || path.paintOperation === "fill_stroke";
     if (stroked) for (const id of path.segmentIds) { const s = segments.get(id); if (s) strokes.push(s); }
     if (stroked && path.containsCurves) swings.push(swingOf(path));
-    if (!filled) continue;
+    // A light fill masks what lies under it (a window's frame filled white): its outline is drawn, it is not solid.
+    if (!filled || path.fillLight) continue;
     const rings = (path.subpaths ?? [{ segmentIds: path.segmentIds }]).map((subpath) => {
       const points = subpath.segmentIds.flatMap((id) => { const s = segments.get(id); return s ? [s.start, s.end] : []; });
       return points.filter((p, i) => i === 0 || p.x !== points[i - 1].x || p.y !== points[i - 1].y);
@@ -100,11 +101,18 @@ function axisLine(a: SourcePointPx, b: SourcePointPx, minPx: number): AxisLine |
  * does not.
  */
 function joinedLines(pieces: AxisLine[]): AxisLine[] {
-  const sorted = [...pieces].sort((a, b) => Number(a.plumb) - Number(b.plumb) || a.at - b.at || a.from - b.from), joined: AxisLine[] = [];
+  // Coordinates within the snap of one another are one line's (162.42 and 162.43 on Tengah): group them first, then
+  // join along each group in order. Sorting by the exact coordinate let a piece slip behind a far one and be lost.
+  const { snapPx } = PDF_OWN_WALL_LIMITS, byAt = [...pieces].sort((a, b) => Number(a.plumb) - Number(b.plumb) || a.at - b.at);
+  const group = new Map<AxisLine, number>();
+  byAt.forEach((piece, k) => group.set(piece, k > 0 && byAt[k - 1].plumb === piece.plumb && piece.at - byAt[k - 1].at <= snapPx ? group.get(byAt[k - 1])! : k));
+  const sorted = byAt.sort((a, b) => group.get(a)! - group.get(b)! || a.from - b.from), joined: AxisLine[] = [];
+  let lastGroup = -1;
   for (const piece of sorted) {
     const last = joined[joined.length - 1];
-    if (last && last.plumb === piece.plumb && Math.abs(last.at - piece.at) <= PDF_OWN_WALL_LIMITS.snapPx && piece.from <= last.to + PDF_OWN_WALL_LIMITS.snapPx) last.to = Math.max(last.to, piece.to);
+    if (last && group.get(piece) === lastGroup && piece.from <= last.to + snapPx) last.to = Math.max(last.to, piece.to);
     else joined.push({ ...piece });
+    lastGroup = group.get(piece)!;
   }
   return joined;
 }
@@ -122,7 +130,11 @@ function markAt(marks: SourcePointPx[], x: number, y: number, reach: number) {
 export function wallLinesAndFills(page: RegisteredPageEvidence, millimetresPerPixel: number, dimensionSpans: [[number, number], [number, number]][] = []) {
   const { strokes, fills, swings } = pageStrokesAndFills(page);
   const px = (mm: number) => mm / millimetresPerPixel;
-  const isMark = (rings: FillPath) => { const b = ringBox(rings); return b.right - b.left <= px(PDF_OWN_WALL_LIMITS.markMaxMm) && b.bottom - b.top <= px(PDF_OWN_WALL_LIMITS.markMaxMm); };
+  // A dot or arrowhead has area: a fill with no width (a CAD plot's sliver along a column's edge, Tengah) is no mark.
+  const isMark = (rings: FillPath) => {
+    const b = ringBox(rings), w = b.right - b.left, h = b.bottom - b.top, max = px(PDF_OWN_WALL_LIMITS.markMaxMm), snap = PDF_OWN_WALL_LIMITS.snapPx;
+    return w <= max && h <= max && w > snap && h > snap;
+  };
   const marks: SourcePointPx[] = fills.filter(isMark).map((rings) => { const b = ringBox(rings); return { x: (b.left + b.right) / 2, y: (b.top + b.bottom) / 2 }; });
   const solid = fills.filter((rings) => !isMark(rings));
   const reach = px(PDF_OWN_WALL_LIMITS.markReachMm), minPx = px(PDF_OWN_WALL_LIMITS.minLineMm);

@@ -48,6 +48,14 @@ function testCandidatePages() {
   assert.deepEqual(vectorizerCandidatePages([raster, closed, open], [raster], closes).map((p) => p.pageNumber), [1, 3],
     "raster pages always; a vector page only when its own linework closes no room");
   assert.deepEqual(asked, [2, 3], "the raster page is not judged again");
+  // With the PDF-own-walls builder on, every vector page is read: its walls and rooms come from its own drawing.
+  const was = process.env.FLOOR_PLAN_PDF_OWN_WALLS;
+  process.env.FLOOR_PLAN_PDF_OWN_WALLS = "1";
+  try {
+    assert.deepEqual(vectorizerCandidatePages([raster, closed, open], [raster], closes).map((p) => p.pageNumber), [1, 2, 3]);
+  } finally {
+    if (was === undefined) delete process.env.FLOOR_PLAN_PDF_OWN_WALLS; else process.env.FLOOR_PLAN_PDF_OWN_WALLS = was;
+  }
   assert.deepEqual(vectorizerCandidatePages([raster], [raster], () => assert.fail("no vector page to judge")).map((p) => p.pageNumber), [1]);
   assert.equal(vectorizerReadingsLead(raster), true, "on a raster page the vectorizer's readings lead");
   assert.equal(vectorizerReadingsLead(open), false, "on a vector page the PDF's own text leads");
